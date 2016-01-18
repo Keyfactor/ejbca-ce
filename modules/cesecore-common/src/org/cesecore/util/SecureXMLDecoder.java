@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,7 +96,7 @@ public class SecureXMLDecoder implements AutoCloseable {
             }
             
             while (true) {
-                switch (parser.nextTag()) {
+                switch (parser.getEventType()) {
                 case XmlPullParser.START_TAG:
                     return readValue();
                 case XmlPullParser.END_TAG:
@@ -128,6 +129,7 @@ public class SecureXMLDecoder implements AutoCloseable {
         if (!"java.beans.XMLDecoder".equals(className)) {
             throw new IOException("Unsupported decoder class. Only \"java.beans.XMLDecoder\" is supported");
         }
+        parser.nextTag();
         seenHeader = true;
     }
     
@@ -174,6 +176,7 @@ public class SecureXMLDecoder implements AutoCloseable {
             break;
         case "object":
             final String className = parser.getAttributeValue(null, "class");
+            String method = parser.getAttributeValue(null, "method"); // used from java.util.Collections
             parser.nextTag();
             
             // If we need to support a lot of more classes here (or custom classes), we could instead load the
@@ -212,9 +215,18 @@ public class SecureXMLDecoder implements AutoCloseable {
             case "java.util.concurrent.ConcurrentHashMap":
                 value = parseMap(new ConcurrentHashMap<>());
                 break;
+            case "java.util.Collections":
+                value = parseSpecialCollection(method);
+                method = null; // value has been used, don't report error
+                break;
             default:
                 throw new IOException(errorMessage("Deserialization of class \"" + className + "\" not supported or not allowed."));
             }
+            
+            if (method != null) {
+                throw new IOException(errorMessage("Method attribute on object element of class \"" + className + "\" is not supported or not allowed."));
+            }
+            
             break;
         case "array":
             value = readArray();
@@ -226,6 +238,7 @@ public class SecureXMLDecoder implements AutoCloseable {
         }
         
         expectEndTag(tag);
+        parser.nextTag();
         return value;
     }
     
@@ -304,7 +317,6 @@ public class SecureXMLDecoder implements AutoCloseable {
                 final int index = Integer.parseInt(indexStr);
                 final Object value = readValue();
                 Array.set(arr, index, value); // Must set using reflection since it could be an array of a primitive type
-                parser.nextTag();
                 
                 expectEndTag("void");
                 parser.nextTag();
@@ -349,7 +361,6 @@ public class SecureXMLDecoder implements AutoCloseable {
             
             final Object element = readValue();
             col.add(element);
-            parser.nextTag();
             
             expectEndTag("void");
             parser.nextTag();
@@ -370,15 +381,48 @@ public class SecureXMLDecoder implements AutoCloseable {
             }
             
             final Object key = readValue();
-            parser.nextTag();
             final Object value = readValue();
-            parser.nextTag();
             map.put(key, value);
             
             expectEndTag("void");
             parser.nextTag();
         }
         return map;
+    }
+    
+    private Object parseSpecialCollection(final String method) throws XmlPullParserException, IOException {
+        // We do not allow unmodifiable collections to be deserialized (since that could be cause a Denial of Service if used in the wrong place),
+        // instead we deserialize them as their modifiable counterpart.
+        switch (method) {
+        case "emptySet": return new HashSet<>();
+        case "emptyList": return new ArrayList<>();
+        case "emptyMap": return new HashMap<>();
+        case "unmodifiableList":
+            final Object list = readValue();
+            if (!(list instanceof List)) {
+                throw new IOException(errorMessage("Expected List argument to unmodifiableList"));
+            }
+            return list;
+        case "unmodifiableSet":
+            final Object set = readValue();
+            if (!(set instanceof Set)) {
+                throw new IOException(errorMessage("Expected Set argument to unmodifiableSet"));
+            }
+            return set;
+        case "unmodifiableMap":
+            final Object map = readValue();
+            if (!(map instanceof Map)) {
+                throw new IOException(errorMessage("Expected Map argument to unmodifiableMap"));
+            }
+            return map;
+        case "unmodifiableCollection":
+            final Object col = readValue();
+            if (!(col instanceof Collection)) {
+                throw new IOException(errorMessage("Expected Collection argument to unmodifiableCollection"));
+            }
+            return col;
+        default: throw new IOException("Method \"" + method + "\" not supported or not allowed on java.util.Collections.");
+        }
     }
     
     private String errorMessage(final String msg) {
