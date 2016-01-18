@@ -34,7 +34,6 @@ import javax.crypto.NoSuchPaddingException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.PrivateKeyNotExtractableException;
 
 /**
  * Wrapper for a CryptoToken that caches references to private and secret keys.
@@ -75,18 +74,6 @@ public class CachedCryptoToken implements CryptoToken {
     @Override
     public boolean doPermitExtractablePrivateKey() {
         return wrappedCryptoToken.doPermitExtractablePrivateKey();
-    }
-
-    @Override
-    public byte[] extractKey(String privKeyTransform, String encryptionKeyAlias, String privateKeyAlias) throws NoSuchAlgorithmException, NoSuchPaddingException,
-            NoSuchProviderException, InvalidKeyException, IllegalBlockSizeException, CryptoTokenOfflineException, PrivateKeyNotExtractableException, InvalidAlgorithmParameterException {
-        return wrappedCryptoToken.extractKey(privKeyTransform, encryptionKeyAlias, privateKeyAlias);
-    }
-
-    @Override
-    public byte[] extractKey(String privKeyTransform, AlgorithmParameterSpec spec, String encryptionKeyAlias, String privateKeyAlias) throws NoSuchAlgorithmException, NoSuchPaddingException,
-            NoSuchProviderException, InvalidKeyException, IllegalBlockSizeException, CryptoTokenOfflineException, PrivateKeyNotExtractableException, InvalidAlgorithmParameterException {
-        return wrappedCryptoToken.extractKey(privKeyTransform, spec, encryptionKeyAlias, privateKeyAlias);
     }
 
     @Override
