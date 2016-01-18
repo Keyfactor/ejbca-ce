@@ -9,7 +9,7 @@
 	<property name="src.dir" location="${cesecore-p11.dir}/src"/>
 	<property name="cesecore-p11.lib" location="${mod.cesecore-p11.dist}/cesecore-p11.jar"/>
 
-	<available classpath="${java.ext.dirs}" classname="sun.security.pkcs11.SunPKCS11" property="SunPKCS11.present"/>
+	<available classname="sun.security.pkcs11.SunPKCS11" property="SunPKCS11.present"/>
 
 	<target name="build" if="SunPKCS11.present" description="Build sun p11 extra jar">
 		<mkdir dir="${build.dir}" />
