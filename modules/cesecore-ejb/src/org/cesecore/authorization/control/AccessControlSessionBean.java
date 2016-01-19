@@ -129,6 +129,15 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
     
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public boolean isAuthorized(final AuthenticationToken authenticationToken, boolean requireRecursive, final String... resources) {
+        if (updateNeccessary()) {
+            updateAuthorizationTree();
+        }
+        return isAuthorized(authenticationToken, true, requireRecursive, resources);
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isAuthorized(final AuthenticationToken authenticationToken, final String... resources) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
