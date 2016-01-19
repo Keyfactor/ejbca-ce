@@ -27,12 +27,22 @@ public interface AccessControlSession {
     /**
      * Checks if the current user is authorized for the given resource.
      * 
-     * Will by default accept recursive accept values. 
+     * Will by default accept recursive and non-recursive accept values. 
      * 
      * @param resources String identifier(s) of the resource(s) in question.
      * @return True if user is authorized, false if not.
      */
     boolean isAuthorized(AuthenticationToken authenticationToken, String... resources);
+    
+    /**
+     * Checks if the current user is authorized for the given resource.
+     * 
+     * @param requireRecursive true if only accept recursive values should be accepted.
+     * @param resources String identifier(s) of the resource(s) in question.
+     * @return True if user is authorized, false if not.
+     */
+    boolean isAuthorized(AuthenticationToken authenticationToken, boolean requireRecursive, String... resources);
+
 
     /**
      * Checks if the current user is authorized for the given resource.
