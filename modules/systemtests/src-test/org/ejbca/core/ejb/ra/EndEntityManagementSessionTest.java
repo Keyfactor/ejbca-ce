@@ -585,52 +585,60 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             // E=foo@bar.com,CN=430208,OU=FooOrgUnit,O=hoho,C=NO
             assertEquals("E=foo@bar.com,CN=" + username + ",OU=hoho,O=AnaTom,C=SE", data.getDN());
 
-            endEntityManagementSession.deleteUser(admin, username);
-            // A real use case. Add EV SSL items as default values and merge those into the End Entity
-            profile.addField("JURISDICTIONCOUNTRY");
-            profile.setUse("JURISDICTIONCOUNTRY", 0, true);
-            profile.setValue("JURISDICTIONCOUNTRY", 0, "NO");
-            profile.addField("JURISDICTIONSTATE");
-            profile.setUse("JURISDICTIONSTATE", 0, true);
-            profile.setValue("JURISDICTIONSTATE", 0, "California");
-            profile.addField("JURISDICTIONLOCALITY");
-            profile.setUse("JURISDICTIONLOCALITY", 0, true);
-            profile.setValue("JURISDICTIONLOCALITY", 0, "Stockholm");
-            endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
-            final String subjectDN = "CN=foo subject,O=Bar";
-            addUser = new EndEntityInformation(username, subjectDN, caid, "dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", null,
-                    EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
-                    SecConst.TOKEN_SOFT_P12, 0, null);
-            addUser.setPassword("foo123");
-            try {
+            //Skip this test on Community
+            if (DnComponents.enterpriseMappingsExist()) {
+                endEntityManagementSession.deleteUser(admin, username);
+                // A real use case. Add EV SSL items as default values and merge those into the End Entity
+                profile.addField("JURISDICTIONCOUNTRY");
+                profile.setUse("JURISDICTIONCOUNTRY", 0, true);
+                profile.setValue("JURISDICTIONCOUNTRY", 0, "NO");
+                profile.addField("JURISDICTIONSTATE");
+                profile.setUse("JURISDICTIONSTATE", 0, true);
+                profile.setValue("JURISDICTIONSTATE", 0, "California");
+                profile.addField("JURISDICTIONLOCALITY");
+                profile.setUse("JURISDICTIONLOCALITY", 0, true);
+                profile.setValue("JURISDICTIONLOCALITY", 0, "Stockholm");
+                endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+                final String subjectDN = "CN=foo subject,O=Bar";
+                addUser = new EndEntityInformation(username, subjectDN, caid, "dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", null,
+                        EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), profileId,
+                        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
+                addUser.setPassword("foo123");
+                try {
+                    endEntityManagementSession.addUserFromWS(admin, addUser, false);
+                    fail("Should not be allowed since we have altNames that are not allowed in the profile.");
+                } catch (UserDoesntFullfillEndEntityProfile e) {
+                } // NOPMD
+                // Add the required end entity profile fields
+                profile.addField(DnComponents.DNSNAME);
+                profile.addField(DnComponents.DNSNAME);
+                profile.addField(DnComponents.DNSNAME);
+                profile.addField(DnComponents.RFC822NAME);
+                endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
                 endEntityManagementSession.addUserFromWS(admin, addUser, false);
-                fail("Should not be allowed since we have altNames that are not allowed in the profile.");
-            } catch (UserDoesntFullfillEndEntityProfile e) {} // NOPMD
-            // Add the required end entity profile fields
-            profile.addField(DnComponents.DNSNAME);
-            profile.addField(DnComponents.DNSNAME);
-            profile.addField(DnComponents.DNSNAME);
-            profile.addField(DnComponents.RFC822NAME);        
-            endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
-            endEntityManagementSession.addUserFromWS(admin, addUser, false);
-            data = endEntityAccessSession.findUser(admin, username);
-            assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar", data.getDN());
-            // Make sure altNames are not stripped, they shall actually be merged as well
-            assertEquals("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
-
-            // Try with some altName value to merge
-            endEntityManagementSession.deleteUser(admin, username);
-            profile.setValue(DnComponents.DNSNAME, 0, "server.bad.com");
-            profile.setValue(DnComponents.DNSNAME, 1, "server.superbad.com");
-            // The merge only handles consecutive default value for each DN component, i.e. defaultname for 0 and 1, not for 0 and 2
-            // The resulting altName will have 4 dnsNames, so we must allow this amount
-            profile.addField(DnComponents.DNSNAME);
-            endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
-            endEntityManagementSession.addUserFromWS(admin, addUser, false);
-            data = endEntityAccessSession.findUser(admin, username);
-            assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar", data.getDN());
-            // Make sure altNames are not stripped, they shall actually be merged as well. Ok cases are different but that does not matter.
-            assertEquals("DNSNAME=server.superbad.com,DNSNAME=server.bad.com,dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
+                data = endEntityAccessSession.findUser(admin, username);
+                assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar",
+                        data.getDN());
+                // Make sure altNames are not stripped, they shall actually be merged as well
+                assertEquals("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
+                // Try with some altName value to merge
+                endEntityManagementSession.deleteUser(admin, username);
+                profile.setValue(DnComponents.DNSNAME, 0, "server.bad.com");
+                profile.setValue(DnComponents.DNSNAME, 1, "server.superbad.com");
+                // The merge only handles consecutive default value for each DN component, i.e. defaultname for 0 and 1, not for 0 and 2
+                // The resulting altName will have 4 dnsNames, so we must allow this amount
+                profile.addField(DnComponents.DNSNAME);
+                endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+                endEntityManagementSession.addUserFromWS(admin, addUser, false);
+                data = endEntityAccessSession.findUser(admin, username);
+                assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar",
+                        data.getDN());
+                // Make sure altNames are not stripped, they shall actually be merged as well. Ok cases are different but that does not matter.
+                assertEquals("DNSNAME=server.superbad.com,DNSNAME=server.bad.com,dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com",
+                        data.getSubjectAltName());
+            } else {
+                log.debug("Skipped test related to Enterprise DN properties.");
+            }
         } finally {
             gc.setEnableEndEntityProfileLimitations(eelimitation);
             globalConfSession.saveConfiguration(roleMgmgToken, gc);
