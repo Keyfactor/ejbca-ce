@@ -225,12 +225,12 @@
       	</td>
       	<td style="text-align:right">
       	<div class="searchcaption">
-		Search ejbca.org for:<br>
+		Search ejbca.org on Google:<br>
 		<form id="searchForm" target="_blank" onsubmit="q.value = query.value + ' site:ejbca.org'" action="https://www.google.com/search" method="get">
 		<input name="q" type="hidden">
 		<div style="height: 18px">
 		<input name="query" id="searchBox" maxlength="255">
-		<input type="submit" value="Go">
+		<input type="submit" value="Google">
 		</div>
 		</form>
       	</div>
