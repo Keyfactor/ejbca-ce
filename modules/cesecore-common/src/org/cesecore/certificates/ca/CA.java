@@ -53,6 +53,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -473,22 +474,17 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         return certificatechain;
     }
 
-    public void setCertificateChain(Collection<Certificate> certificatechain) {
-        Iterator<Certificate> iter = certificatechain.iterator();
-        ArrayList<String> storechain = new ArrayList<String>();
-        while (iter.hasNext()) {
-            Certificate cert = iter.next();
+    public void setCertificateChain(final Collection<Certificate> certificatechain) {
+        final ArrayList<String> storechain = new ArrayList<String>();
+        for (final Certificate cert : certificatechain) {
             try {
-                String b64Cert = new String(Base64.encode(cert.getEncoded()));
-                storechain.add(b64Cert);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+                storechain.add(new String(Base64.encode(cert.getEncoded())));
+            } catch (CertificateEncodingException e) {
+                throw new IllegalArgumentException(e);
             }
         }
         data.put(CERTIFICATECHAIN, storechain);
-
-        this.certificatechain = new ArrayList<Certificate>();
-        this.certificatechain.addAll(certificatechain);
+        this.certificatechain = new ArrayList<Certificate>(certificatechain);
         this.cainfo.setCertificateChain(certificatechain);
     }
     
@@ -897,7 +893,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             final Extensions extensions, final String sequence, final AvailableCustomCertificateExtensionsConfiguration cceConfig) 
             throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
             IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, CertificateExtensionException,
-            SignatureException {
+            SignatureException, IllegalKeyException {
+        certProfile.verifyKey(publicKey);
         return generateCertificate(cryptoToken, subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence, null, cceConfig);
     }
     

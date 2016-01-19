@@ -353,7 +353,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
             assertSubjectEnforcements(ca, caSubjectDN, endEntityInformation, pk);
             // Check that the request public key fulfills policy
-            verifyKey(pk, certProfile);
+            certProfile.verifyKey(pk);
 
             // Below we have a small loop if it would happen that we generate the same serial number twice
             // If using only 4 byte serial numbers this do happen once in a while
@@ -685,32 +685,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             if (tracelog != null) {
                 log.trace(tracelog);
             }
-        }
-    }
-
-    /**
-     * Checks that a public key sent in a request fulfills the policy in the CertificateProfile
-     * 
-     * @param pk PublicKey sent in request
-     * @param certProfile CertificateProfile with the key policy (length restrictions)
-     * @throws IllegalKeyException if the PublicKey does not fulfill policy in CertificateProfile
-     */
-    private void verifyKey(final PublicKey pk, final CertificateProfile certProfile) throws IllegalKeyException {
-        final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(pk);
-        final int keyLength = KeyTools.getKeyLength(pk);
-        if (log.isDebugEnabled()) {
-            log.debug("KeyAlgorithm: " + keyAlgorithm + " KeyLength: " + keyLength);
-        }
-        // Verify that the key algorithm is compliant with the certificate profile
-        if (!certProfile.getAvailableKeyAlgorithmsAsList().contains(keyAlgorithm)) {
-            throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeyalgorithm", keyAlgorithm));
-        }
-        // Verify key length that it is compliant with certificate profile
-        if (keyLength == -1) {
-            throw new IllegalKeyException(intres.getLocalizedMessage("createcert.unsupportedkeytype", pk.getClass().getName()));
-        }
-        if ((keyLength < (certProfile.getMinimumAvailableBitLength() - 1)) || (keyLength > (certProfile.getMaximumAvailableBitLength()))) {
-            throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeylength", Integer.valueOf(keyLength)));
         }
     }
 

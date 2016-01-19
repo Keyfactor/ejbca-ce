@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -574,17 +575,11 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void testInvalidKeySpecs() throws CertificateProfileExistsException, AuthorizationDeniedException,
-            CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException, CertificateCreateException,
-            CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException, CertificateRevokeException,
-            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, CertificateExtensionException, InvalidAlgorithmParameterException, InvalidAlgorithmException {
+    public void testInvalidKeySpecs() throws Exception {
         final String TEST_NAME = Thread.currentThread().getStackTrace()[1].getMethodName();
-        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        certificateProfile.setAvailableKeyAlgorithms(new String[]{AlgorithmConstants.KEYALGORITHM_RSA});
-        certificateProfile.setAvailableBitLengths(new int[]{512});
         final String username = TEST_NAME;
-        //Make sure that certificate doesn't already exist in database.
-        for (CertificateWrapper certWrapper : certificateStoreSession.findCertificatesByUsername(username)) {
+        // Make sure that certificate doesn't already exist in database.
+        for (final CertificateWrapper certWrapper : certificateStoreSession.findCertificatesByUsername(username)) {
             internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certWrapper.getCertificate()));
         }
         final KeyPair keyPairRsa = keys;
@@ -593,108 +588,83 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         assertEquals("Unexpected key size of key pair used in this test.", 256, KeyTools.getKeyLength(keyPairEc.getPublic()));
         int issuedCerts = 0;
         try {
+            final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             final int certificateProfileId = certProfileSession.addCertificateProfile(roleMgmgToken, TEST_NAME, certificateProfile);
             final EndEntityInformation endEntityInformation = new EndEntityInformation(username, "C=SE,O=PrimeKey,CN="+TEST_NAME, testx509ca.getCAId(), null,
                     null, new EndEntityType(EndEntityTypes.ENDUSER), 0, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, 0, null);
-            // Test happy path. RSA 512 bit key. RSA 512 allowed by certificate profile.
             endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
             endEntityInformation.setPassword("foo123");
-            final SimpleRequestMessage simpleRequestMessageRsa = new SimpleRequestMessage(keyPairRsa.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
-            certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessageRsa, X509ResponseMessage.class, signSession.fetchCertGenParams());
+            // Test happy path. RSA 512 bit key. Defaults allowed by certificate profile.
+            try {
+                final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPairRsa.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
+                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessage, X509ResponseMessage.class, signSession.fetchCertGenParams());
+                issuedCerts++;
+            } catch (IllegalKeyException e) {
+                fail("Key algorithm and spec should have been allowed by certificate profile.");
+            }
+            // Test happy path. ECDSA 256 bit key. Defaults allowed by certificate profile.
+            try {
+                final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPairRsa.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
+                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessage, X509ResponseMessage.class, signSession.fetchCertGenParams());
+                issuedCerts++;
+            } catch (IllegalKeyException e) {
+                fail("Key algorithm and spec should have been allowed by certificate profile.");
+            }
+            // Test happy path. RSA 512 bit key. RSA 512 allowed by certificate profile.
+            testInvalidKeySpecsInternal(true, TEST_NAME, endEntityInformation, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{512});
             issuedCerts++;
             // Test expected failure. ECDSA 256 bit key. RSA 512 allowed by certificate profile.
-            endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
-            endEntityInformation.setPassword("foo123");
-            try {
-                final SimpleRequestMessage simpleRequestMessageEc = new SimpleRequestMessage(keyPairEc.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
-                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessageEc, X509ResponseMessage.class, signSession.fetchCertGenParams());
-                fail("Creating certificate should not work with invalid key size and/or algoritmh,");
-            } catch (IllegalKeyException e) {
-                assertEquals("Certificate was created in spite of invalid key algorithm and/or spec", issuedCerts, certificateStoreSession.findCertificatesByUsername(username).size());
-            }
+            testInvalidKeySpecsInternal(false, TEST_NAME, endEntityInformation, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{512});
+            assertEquals("Certificate was created in spite of invalid key algorithm and/or spec", issuedCerts, certificateStoreSession.findCertificatesByUsername(username).size());
             // Test expected failure. ECDSA 256 bit key. RSA 256,512 allowed by certificate profile.
-            certificateProfile.setAvailableBitLengths(new int[]{256,512});
-            certProfileSession.changeCertificateProfile(roleMgmgToken, TEST_NAME, certificateProfile);
-            try {
-                final SimpleRequestMessage simpleRequestMessageEc = new SimpleRequestMessage(keyPairEc.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
-                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessageEc, X509ResponseMessage.class, signSession.fetchCertGenParams());
-                fail("Creating certificate should not work with invalid key size and/or algoritmh,");
-            } catch (IllegalKeyException e) {
-                assertEquals("Certificate was created in spite of invalid key algorithm and/or spec", issuedCerts, certificateStoreSession.findCertificatesByUsername(username).size());
-            }
+            testInvalidKeySpecsInternal(false, TEST_NAME, endEntityInformation, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{256,512});
+            assertEquals("Certificate was created in spite of invalid key algorithm and/or spec", issuedCerts, certificateStoreSession.findCertificatesByUsername(username).size());
             // Test expected failure. ECDSA 256 bit key. ECDSA 512 allowed by certificate profile.
-            certificateProfile.setAvailableKeyAlgorithms(new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA});
-            certificateProfile.setAvailableBitLengths(new int[]{512});
-            certProfileSession.changeCertificateProfile(roleMgmgToken, TEST_NAME, certificateProfile);
-            try {
-                final SimpleRequestMessage simpleRequestMessageEc = new SimpleRequestMessage(keyPairEc.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
-                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessageEc, X509ResponseMessage.class, signSession.fetchCertGenParams());
-                fail("Creating certificate should not work with invalid key size and/or algoritmh,");
-            } catch (IllegalKeyException e) {
-                assertEquals("Certificate was created in spite of invalid key algorithm and/or spec", issuedCerts, certificateStoreSession.findCertificatesByUsername(username).size());
-            }
+            testInvalidKeySpecsInternal(false, TEST_NAME, endEntityInformation, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA}, new int[]{512});
+            assertEquals("Certificate was created in spite of invalid key algorithm and/or spec", issuedCerts, certificateStoreSession.findCertificatesByUsername(username).size());
             // Test happy path. ECDSA 256 bit key. ECDSA 256,512 allowed by certificate profile.
-            certificateProfile.setAvailableKeyAlgorithms(new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA});
-            certificateProfile.setAvailableBitLengths(new int[]{256,512});
-            certProfileSession.changeCertificateProfile(roleMgmgToken, TEST_NAME, certificateProfile);
-            try {
-                final SimpleRequestMessage simpleRequestMessageEc = new SimpleRequestMessage(keyPairEc.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
-                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessageEc, X509ResponseMessage.class, signSession.fetchCertGenParams());
-                issuedCerts++;
-            } catch (IllegalKeyException e) {
-                fail("Key algorithm and spec should have been allowed by certificate profile.");
-            }
+            testInvalidKeySpecsInternal(true, TEST_NAME, endEntityInformation, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA}, new int[]{256,512});
+            issuedCerts++;
             // Test expected failure. RSA 512 bit key. ECDSA 512 allowed by certificate profile.
-            certificateProfile.setAvailableKeyAlgorithms(new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA});
-            certificateProfile.setAvailableBitLengths(new int[]{512});
-            certProfileSession.changeCertificateProfile(roleMgmgToken, TEST_NAME, certificateProfile);
-            try {
-                final SimpleRequestMessage simpleRequestMessageEc = new SimpleRequestMessage(keyPairRsa.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
-                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessageEc, X509ResponseMessage.class, signSession.fetchCertGenParams());
-                fail("Creating certificate should not work with invalid key size and/or algoritmh,");
-            } catch (IllegalKeyException e) {
-                assertEquals("Certificate was created in spite of invalid key algorithm and/or spec", issuedCerts, certificateStoreSession.findCertificatesByUsername(username).size());
-            }
+            testInvalidKeySpecsInternal(false, TEST_NAME, endEntityInformation, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA}, new int[]{512});
+            assertEquals("Certificate was created in spite of invalid key algorithm and/or spec", issuedCerts, certificateStoreSession.findCertificatesByUsername(username).size());
             // Test expected failure. RSA 512 bit key. RSA 1024 allowed by certificate profile.
-            certificateProfile.setAvailableKeyAlgorithms(new String[]{AlgorithmConstants.KEYALGORITHM_RSA});
-            certificateProfile.setAvailableBitLengths(new int[]{1024});
-            certProfileSession.changeCertificateProfile(roleMgmgToken, TEST_NAME, certificateProfile);
-            try {
-                final SimpleRequestMessage simpleRequestMessageEc = new SimpleRequestMessage(keyPairRsa.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
-                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessageEc, X509ResponseMessage.class, signSession.fetchCertGenParams());
-                fail("Creating certificate should not work with invalid key size and/or algoritmh,");
-            } catch (IllegalKeyException e) {
-                assertEquals("Certificate was created in spite of invalid key algorithm and/or spec", issuedCerts, certificateStoreSession.findCertificatesByUsername(username).size());
-            }
+            testInvalidKeySpecsInternal(false, TEST_NAME, endEntityInformation, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{1024});
+            assertEquals("Certificate was created in spite of invalid key algorithm and/or spec", issuedCerts, certificateStoreSession.findCertificatesByUsername(username).size());
             // Test happy path. RSA 512 bit key. ECDSA, RSA 256,512,1024 allowed by certificate profile.
-            certificateProfile.setAvailableKeyAlgorithms(new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA});
-            certificateProfile.setAvailableBitLengths(new int[]{256,512,1024});
-            certProfileSession.changeCertificateProfile(roleMgmgToken, TEST_NAME, certificateProfile);
-            try {
-                final SimpleRequestMessage simpleRequestMessageEc = new SimpleRequestMessage(keyPairRsa.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
-                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessageEc, X509ResponseMessage.class, signSession.fetchCertGenParams());
-                issuedCerts++;
-            } catch (IllegalKeyException e) {
-                fail("Key algorithm and spec should have been allowed by certificate profile.");
-            }
+            testInvalidKeySpecsInternal(true, TEST_NAME, endEntityInformation, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA,
+                AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{256,512,1024});
+            issuedCerts++;
             // Test happy path. RSA 512 bit key. ECDSA, RSA 256,1024 allowed by certificate profile.
-            certificateProfile.setAvailableKeyAlgorithms(new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA});
-            certificateProfile.setAvailableBitLengths(new int[]{256,512,1024});
-            certProfileSession.changeCertificateProfile(roleMgmgToken, TEST_NAME, certificateProfile);
-            try {
-                final SimpleRequestMessage simpleRequestMessageEc = new SimpleRequestMessage(keyPairRsa.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
-                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessageEc, X509ResponseMessage.class, signSession.fetchCertGenParams());
-                issuedCerts++;
-            } catch (IllegalKeyException e) {
-                fail("Key algorithm and spec should have been allowed by certificate profile. (Unless we stopped using min-max for key sizes.)");
-            }
+            testInvalidKeySpecsInternal(true, TEST_NAME, endEntityInformation, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA,
+                AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{256,1024});
         } finally {
             certProfileSession.removeCertificateProfile(roleMgmgToken, TEST_NAME);
-            for (CertificateWrapper certWrapper : certificateStoreSession.findCertificatesByUsername(username)) {
+            for (final CertificateWrapper certWrapper : certificateStoreSession.findCertificatesByUsername(username)) {
                 internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certWrapper.getCertificate()));
             }
         }
     }
+
+    
+    private void testInvalidKeySpecsInternal(final boolean expectNoIllegalKeyException, final String certificateProfileName, final EndEntityInformation endEntityInformation, final PublicKey publicKey,
+            final String[] availableKeyAlgorithms, final int[] availableBitLengths) throws Exception {
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setAvailableKeyAlgorithms(availableKeyAlgorithms);
+        certificateProfile.setAvailableBitLengths(availableBitLengths);
+        certProfileSession.changeCertificateProfile(roleMgmgToken, certificateProfileName, certificateProfile);
+        try {
+            final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(publicKey, endEntityInformation.getUsername(), endEntityInformation.getPassword());
+            certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessage, X509ResponseMessage.class, signSession.fetchCertGenParams());
+            if (!expectNoIllegalKeyException) {
+                fail("Validation should not work with invalid key size and/or algoritmh,");
+            }
+        } catch (IllegalKeyException e) {
+            if (expectNoIllegalKeyException) {
+                fail("Key algorithm and spec should have been allowed by certificate profile.");
+            }
+        }
+    }    
 
     @Test
     public void testNullInjection() throws Exception {
