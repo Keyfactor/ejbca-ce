@@ -1334,6 +1334,63 @@ It is possible to specify more than one vendor CA. The vendor CA names should, i
 </p>
 </subsubsection>
 </subsection>
+<subsection name="Sample CMP workflow">
+<p>
+A typical PKI work-flow using CMP involves enroling a device with a certificate and then having the device automatically renew the certificate when it is about to expire.
+</p>
+<ol>
+<li>Generate a key pair</li>
+<li>Initial enrolment of client certificate using a one-time enrolment code</li>
+<li>Generate a new key pair</li>
+<li>Renew with a new certificate for the new key pair, authenticated using the old key pair and certificate</li>
+</ol>
+<p>
+The above steps can be simulated in reality using the <i>openssl</i> and <i>cmpforopenssl</i> client.
+<br/>This works with a default cmpalias (named cmp) configured with parameters: 
+</p>
+<source>
+CMP Authentication Module : HMAC
+CMP Authentication Parameters : password
+Extract Username Component : CN
+</source>
+
+<p>1. Generate a key pair:</p>
+<source>
+$ ./openssl genrsa -out certs/cl_key.pem 2048 
+</source>
+
+<p>2. Initial enrolment:
+<br/>Before inital enrolment you add a new End Entity in EJBCA, in this example with username cmptest and subject DN 'CN=cmptest', and enrolment code 'CMP-pwd'.</p>
+<source>
+$ ./openssl cmp -cmd ir \
+           -server ejbca-server:8080 \
+           -path ejbca/publicweb/cmp \
+           -srvcert certs/3GPPCA.pem \
+           -user cmptest \
+           -pass CMP-pwd \
+           -newkey certs/cl_key.pem \
+           -certout certs/cl_cert.pem \
+           -subject "/CN=cmptest" 
+</source>
+
+<p>3. Generate a new key pair:</p>
+<source>
+$ ./openssl genrsa -out certs/cl_new_key.pem 2048
+</source>
+
+<p>4. Renew with a new certificate:</p>
+<source>
+$ ./openssl cmp -cmd kur \
+           -server ejbca-server:8080 \
+           -path ejbca/publicweb/cmp \
+           -srvcert certs/3GPPCA.pem \
+           -key certs/cl_key.pem \
+           -cert certs/cl_cert.pem \
+           -newkey certs/cl_new_key.pem \
+           -certout certs/cl_new_cert.pem 
+</source>
+ 
+</subsection>
 <subsection name="Custom handling of certificate request">
 <p>
 It is possible to add a custom plug-in class to handle a certificate request.
