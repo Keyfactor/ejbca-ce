@@ -2165,11 +2165,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 
                 // Save renewed certificate for later use (we'll need their Subject DN within CA renewal with name change)
                 Collection<Certificate> certificateChain = ca.getCertificateChain();
-                X509Certificate tmp = null;
+                Certificate tmp = null;
                 if(certificateChain != null){
                     Iterator<Certificate> iterator = certificateChain.iterator();
                     while(iterator.hasNext()){
-                        tmp = (X509Certificate)iterator.next();    
+                        tmp = (Certificate) iterator.next();
                     }
                 }
                 Collection<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
