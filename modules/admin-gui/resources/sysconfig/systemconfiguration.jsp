@@ -636,7 +636,7 @@ org.cesecore.authorization.AuthorizationDeniedException
         <h:panelGroup>
             <h4>
             <h:outputText value="#{web.text.STATEDUMPTAB_TITLE}"/>
-            <%= ejbcawebbean.getHelpReference("/adminguide.html#Statedump") %></h4>
+            </h4>
             <br/>
         </h:panelGroup>
         
