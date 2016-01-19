@@ -18,7 +18,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,10 +34,13 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.junit.Test;
 
 /**
@@ -601,5 +608,47 @@ public class CertificateProfileTest {
         assertEquals("foo", pol.getQualifierId());
     } 
 
+    @Test
+    public void testInvalidKeySpecs() throws InvalidAlgorithmParameterException {
+        // Install BC for key generation (if needed)
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        final KeyPair keyPairRsa = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        assertEquals("Unexpected key size of key pair used in this test.", 512, KeyTools.getKeyLength(keyPairRsa.getPublic()));
+        final KeyPair keyPairEc = KeyTools.genKeys("prime256v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        assertEquals("Unexpected key size of key pair used in this test.", 256, KeyTools.getKeyLength(keyPairEc.getPublic()));
+        // Test happy path. RSA 512 bit key. RSA 512 allowed by certificate profile.
+        testInvalidKeySpecsInternal(true, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{512});
+        // Test expected failure. ECDSA 256 bit key. RSA 512 allowed by certificate profile.
+        testInvalidKeySpecsInternal(false, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{512});
+        // Test expected failure. ECDSA 256 bit key. RSA 256,512 allowed by certificate profile.
+        testInvalidKeySpecsInternal(false, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{256,512});
+        // Test expected failure. ECDSA 256 bit key. ECDSA 512 allowed by certificate profile.
+        testInvalidKeySpecsInternal(false, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA}, new int[]{512});
+        // Test happy path. ECDSA 256 bit key. ECDSA 256,512 allowed by certificate profile.
+        testInvalidKeySpecsInternal(true, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA}, new int[]{256,512});
+        // Test expected failure. RSA 512 bit key. ECDSA 512 allowed by certificate profile.
+        testInvalidKeySpecsInternal(false, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA}, new int[]{512});
+        // Test expected failure. RSA 512 bit key. RSA 1024 allowed by certificate profile.
+        testInvalidKeySpecsInternal(false, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{1024});
+        // Test happy path. RSA 512 bit key. ECDSA, RSA 256,512,1024 allowed by certificate profile.
+        testInvalidKeySpecsInternal(true, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{256,512,1024});
+        // Test happy path. RSA 512 bit key. ECDSA, RSA 256,1024 allowed by certificate profile.
+        testInvalidKeySpecsInternal(true, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{256,1024});
+    }
 
+    private void testInvalidKeySpecsInternal(final boolean expectedNoIllegalKeyException, final PublicKey publicKey, final String[] availableKeyAlgorithms, final int[] availableBitLengths) {
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setAvailableKeyAlgorithms(availableKeyAlgorithms);
+        certificateProfile.setAvailableBitLengths(availableBitLengths);
+        try {
+            certificateProfile.verifyKey(publicKey);
+            if (!expectedNoIllegalKeyException) {
+                fail("Validation should not work with invalid key size and/or algoritmh,");
+            }
+        } catch (IllegalKeyException e) {
+            if (expectedNoIllegalKeyException) {
+                fail("Key algorithm and spec should have been allowed by certificate profile.");
+            }
+        }
+    }    
 }

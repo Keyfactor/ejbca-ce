@@ -29,6 +29,7 @@ org.ejbca.ui.web.RevokedInfoView,
 org.ejbca.ui.web.admin.configuration.InformationMemory,
 org.bouncycastle.asn1.x500.X500Name,
 org.ejbca.core.EjbcaException,
+org.cesecore.certificates.certificate.IllegalKeyException,
 org.cesecore.certificates.certificate.request.PKCS10RequestMessage,
 org.cesecore.certificates.certificate.request.RequestMessage,
 org.cesecore.certificates.certificate.request.RequestMessageUtils,
@@ -424,6 +425,8 @@ java.security.InvalidAlgorithmParameterException
                     Exception ex = ejbe.getCausedByException();
                     if (ex instanceof InvalidAlgorithmParameterException) {
                         errormessage = ejbcawebbean.getText("INVALIDSIGORKEYALGPARAM") + ": " + ex.getLocalizedMessage();
+                    } else if (ex instanceof IllegalKeyException) {
+                        errormessage = ex.getLocalizedMessage();
                     } else {
                         throw ejbe;
                     }
@@ -473,6 +476,15 @@ java.security.InvalidAlgorithmParameterException
                 } catch (EjbcaException e) { 
                     includefile="choosecapage.jspf"; 
                     errormessage = e.getMessage(); 
+                } catch (EJBException ejbe) {
+                    Exception ex = ejbe.getCausedByException();
+                    if (ex instanceof InvalidAlgorithmParameterException) {
+                        errormessage = ejbcawebbean.getText("INVALIDSIGORKEYALGPARAM") + ": " + ex.getLocalizedMessage();
+                    } else if (ex instanceof IllegalKeyException) {
+                        errormessage = ex.getLocalizedMessage();
+                    } else {
+                        throw ejbe;
+                    }
                 }
             }
             if (requestMap.get(BUTTON_RECEIVEREQUEST) != null) {
