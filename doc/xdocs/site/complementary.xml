@@ -110,13 +110,13 @@ can be used together with PKI to even further improve your PKI experience.
 
 <subsection name="SecureMetric">
 	<p>
-	<a href="http://www.securemetric.com">SecureMetric</a> has over 13 years experience in serving clients across the world and the market leader in the Smart Card and Cryptographic Token industry for the Southeast Asian region. Our flagship SecureToken ST3 is a lightweight PKI token that is cost effective and has been proven to work better than other well known international brands.
+	SecureMetric has over 13 years experience in serving clients across the world and the market leader in the Smart Card and Cryptographic Token industry for the Southeast Asian region. Our flagship SecureToken ST3 is a lightweight PKI token that is cost effective and has been proven to work better than other well known international brands.
 	</p>
-	<p>
+	<p> 
 	When deployed together with our Token Management and Registration Authority (TMS-RA) system, we are able to unify the separated Certificate and Token life cycles into a single management system which allows operators to better manage their clients and reduce support complexity. Besides that, our TMS-RA readily fits into most CA's business models. This feature empowers our partners and customers. The business model and branding strategy technically streamlines a value-adding, outstanding solution provider.
 	</p>
 	<p>
-	Visit <a href="http://www.securemetric.com">www.securemetric.com</a> for more information.
+	Visit <a href="http://www.securemetric.com">SecureMetric</a> for more information.
 	</p>
 </subsection>
 
@@ -142,13 +142,13 @@ can be used together with PKI to even further improve your PKI experience.
 
 <subsection name="SecureMetric">
 	<p>
-	<a href="http://www.securemetric.com">SecureMetric</a> has over 13 years experience in serving clients across the world and the market leader in the Smart Card and Cryptographic Token industry for the Southeast Asian region. Our flagship SecureToken ST3 is a lightweight PKI token that is cost effective and has been proven to work better than other well known international brands.
+	SecureMetric has over 13 years experience in serving clients across the world and the market leader in the Smart Card and Cryptographic Token industry for the Southeast Asian region. Our flagship SecureToken ST3 is a lightweight PKI token that is cost effective and has been proven to work better than other well known international brands.
 	</p>
 	<p>
 	When deployed together with our Token Management and Registration Authority (TMS-RA) system, we are able to unify the separated Certificate and Token life cycles into a single management system which allows operators to better manage their clients and reduce support complexity. Besides that, our TMS-RA readily fits into most CA's business models. This feature empowers our partners and customers. The business model and branding strategy technically streamlines a value-adding, outstanding solution provider.
 	</p>
 	<p>
-	Visit <a href="http://www.securemetric.com">www.securemetric.com</a> for more information.
+	Visit <a href="http://www.securemetric.com">SecureMetric</a> for more information.
 	</p>
 </subsection>
 
@@ -159,21 +159,20 @@ Our SafeSign Identity Client (IC) is the leading smart card/USB Token middleware
 It is used by millions of people to securely store their digital certificate on smart cards and USB tokens and 
 gain access to all kinds of applications and systems, like the Industrial Commercial bank of China (ICBC) and the Dutch UZIpas.
 </p><p>
-SafeSign IC provides strong authentication, smart card logon, encryption and digital signatures on Windows, 
-Linux and MAC. Combined with the CCID compatible steel Marx CrypToken USB token it is a perfect solution to use 
-with an EJBCA PKI infrastructure. AET likes to offer EJBCA users the opportunity to evaluate and use the 
-SafeSign IC software in combination with a steel, CCID compatible USB token for a special price!
-<br/>
+BlueX eID Management is a complete token management system that provides a clear set of workflows for every step in the lifecycle of an eID.
+</p><p>
 Contact <a href="http://www.aeteurope.nl/">AET Europe</a> for more information.
 </p>
 </subsection>
 
-<subsection name="SecMaker NetID">
+<subsection name="SecMaker Net iD Card Portal">
 <p>
-The NetID PKI middleware is a client working on Windows, Linux and Mac OS X. It enables signing, authentication and usage of
-certificates in various systems. Distinguishing features of the NetID client is enhanced support in Windows Terminal Server 
+The Net iD Card Portal is a complete card management system for issuing, activating, unblocking and renewing smart cards. Lost, blocked or forgotten cards are quickly and easily handled in the portal.
+</p>
+<p>Net iD Enterprise is a client working on Windows, Linux and Mac OS X. It enables signing, authentication and usage of
+certificates in various systems. Distinguishing features of the Net iD client is enhanced support in Windows Terminal Server 
 and Citrix Presentation Server, as well as support for a variety of different smart cards.
-<br/>
+</p><p>
 Contact <a href="http://www.secmaker.com/">SecMaker</a> for more information.
 </p>
 </subsection>
@@ -181,7 +180,7 @@ Contact <a href="http://www.secmaker.com/">SecMaker</a> for more information.
 <subsection name="Aventra Card Management System">
 <p>
 Aventra Ltd is a company specialized in plastic cards, smart cards, and data security. Among it's products are the Aventra Card Management System and the MyEID multifunctional PKI card. 
-<br/>
+</p><p>
 Contact <a href="http://aventra.fi/English/index_E.php">Aventra</a> for more information.
 </p>
 </subsection>
