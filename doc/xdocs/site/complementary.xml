@@ -215,6 +215,12 @@ Contact <a href="http://aventra.fi/English/index_E.php">Aventra</a> for more inf
     </p>
 </subsection>
 
+<subsection name="Gemalto Versasec">
+<p>
+The Gemalto Versasec, vSEC:CMS, smart card management system is compatible with EJBCA. This is described in the <a href="http://www.gemalto.com/dwnld/7022_vSEC_CMS_T.PDF">product sheet</a>.
+</p>
+</subsection>
+
 </section>
 
   </body>
