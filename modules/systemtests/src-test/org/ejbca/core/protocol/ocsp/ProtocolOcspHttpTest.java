@@ -164,7 +164,10 @@ import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 
 /**
@@ -262,6 +265,20 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private final OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(OcspResponseGeneratorSessionRemote.class);
 
+    @Rule
+    public final TestWatcher traceLogMethodsRule = new TestWatcher() {
+        @Override
+        protected void starting(final Description description) {
+            log.trace(">" + description.getMethodName());
+            super.starting(description);
+        };
+        @Override
+        protected void finished(final Description description) {
+            log.trace("<" + description.getMethodName());
+            super.finished(description);
+        }
+    };
+    
     @BeforeClass
     public static void beforeClass() throws CertificateException {
         // Install BouncyCastle provider
