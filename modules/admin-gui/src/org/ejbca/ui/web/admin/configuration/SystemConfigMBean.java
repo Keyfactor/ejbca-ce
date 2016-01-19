@@ -435,7 +435,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         options.setLocation(path);
         options.setMergeCryptoTokens(true);
         
-        // TODO prompt for passwords and overwrite
         StatedumpImportResult result = statedumpSession.performDryRun(getAdmin(), options);
         for (final StatedumpObjectKey key : result.getConflicts()) {
             log.info("Will overwrite "+key);
