@@ -13,6 +13,7 @@
 package org.cesecore.certificates.certificateprofile;
 
 import java.io.Serializable;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,12 +34,14 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 
 /**
@@ -2144,6 +2147,31 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(CTMAXRETRIES, numRetries);
     }
     
+    /**
+     * Checks that a public key fulfills the policy in the CertificateProfile
+     * 
+     * @param pk PublicKey to verify
+     * @throws IllegalKeyException if the PublicKey does not fulfill policy in CertificateProfile
+     */
+    public void verifyKey(final PublicKey pk) throws IllegalKeyException {
+        final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(pk);
+        final int keyLength = KeyTools.getKeyLength(pk);
+        if (log.isDebugEnabled()) {
+            log.debug("KeyAlgorithm: " + keyAlgorithm + " KeyLength: " + keyLength);
+        }
+        // Verify that the key algorithm is compliant with the certificate profile
+        if (!getAvailableKeyAlgorithmsAsList().contains(keyAlgorithm)) {
+            throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeyalgorithm", keyAlgorithm));
+        }
+        // Verify key length that it is compliant with certificate profile
+        if (keyLength == -1) {
+            throw new IllegalKeyException(intres.getLocalizedMessage("createcert.unsupportedkeytype", pk.getClass().getName()));
+        }
+        if ((keyLength < (getMinimumAvailableBitLength() - 1)) || (keyLength > (getMaximumAvailableBitLength()))) {
+            throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeylength", Integer.valueOf(keyLength)));
+        }
+    }
+
     public CertificateProfile clone() throws CloneNotSupportedException {
         final CertificateProfile clone = new CertificateProfile(0);
         // We need to make a deep copy of the hashmap here
@@ -2428,5 +2456,4 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         log.trace("<upgrade");
     }
-
 }
