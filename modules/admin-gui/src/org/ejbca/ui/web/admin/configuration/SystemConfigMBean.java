@@ -497,8 +497,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                         log.debug("Ignoring empty file");
                         zipStream.closeEntry();
                         continue;
-                    } else if (entry.getSize() < 0 || 100*entry.getCompressedSize() < entry.getSize()) {
-                        throw new IOException("Zip file contains a file with extreme compression factor (100x or more). Aborting.");
+                    } else if (entry.getSize() < 0 || (1000*entry.getCompressedSize() < entry.getSize()) && (entry.getSize() > 100_000_000)) {
+                        throw new IOException("Zip file contains a file with extreme compression factor (1000x or more) and larger than 100 MB. Aborting.");
                     }
                     
                     // Create file exclusively (don't overwrite, and don't write to special devices or operating system special files)
