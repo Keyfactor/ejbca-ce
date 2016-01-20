@@ -500,7 +500,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             while (iter.hasNext()) {
                 String b64Cert = iter.next();
                 try {
-                    Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()));
+                    Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()), Certificate.class);
                     if (cert != null) {
                         if (log.isDebugEnabled()) {
                             log.debug("Adding CA certificate from RENEWEDCERTIFICATECHAIN to renewedcertificatechain:");
