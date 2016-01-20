@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -47,7 +48,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
  * <p>Differences from XMLDecoder:</p>
  * <ul>
  * <li>The SecureXMLDecoder throws an IOException on error instead of using the ExceptionListener.</li>
- * <li>Returns null instead of throwing ArrayIndexOutOfBoundsException at end of file</li>
+ * <li>Throws EOFException instead of ArrayIndexOutOfBoundsException at end of file</li>
  * </ul>
  * 
  * @version $Id$
@@ -110,7 +111,7 @@ public class SecureXMLDecoder implements AutoCloseable {
                     }
                     // NOPMD: Fall through
                 case XmlPullParser.END_DOCUMENT:
-                    return null;
+                    throw new EOFException("Reached end of XML document");
                 default:
                     throw new IllegalStateException("Got invalid/unsupported XML event type");
                 }
