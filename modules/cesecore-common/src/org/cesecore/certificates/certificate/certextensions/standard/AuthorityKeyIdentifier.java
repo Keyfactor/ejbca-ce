@@ -13,7 +13,9 @@
 package org.cesecore.certificates.certificate.certextensions.standard;
 
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -62,7 +64,7 @@ public class AuthorityKeyIdentifier extends StandardCertificateExtension {
         // If we have a CA-certificate (i.e. this is not a Root CA), we must take the authority key identifier from
         // the CA-certificates SubjectKeyIdentifier if it exists. If we don't do that we will get the wrong identifier if the
         // CA does not follow RFC3280 (guess if MS-CA follows RFC3280?)
-        final X509Certificate cacert = (X509Certificate) ca.getCACertificate();
+        final X509Certificate cacert = getCACertificate(ca, caPublicKey);
         final boolean isRootCA = (certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA);
         if ((cacert != null) && (!isRootCA)) {
             byte[] akibytes;
@@ -82,5 +84,14 @@ public class AuthorityKeyIdentifier extends StandardCertificateExtension {
             }
         }
         return ret;
+    }
+
+    private X509Certificate getCACertificate(final CA ca, final PublicKey caPublicKey) {
+        final List<Certificate> rolloverChain = ca.getRolloverCertificateChain();
+        if (rolloverChain != null && rolloverChain.get(0).getPublicKey().equals(caPublicKey)) {
+            return (X509Certificate) rolloverChain.get(0);
+        } else {
+            return (X509Certificate) ca.getCACertificate();
+        }
     }
 }

@@ -723,7 +723,7 @@ public class X509CA extends CA implements Serializable {
                 // The sequence is ignored later, but we fetch the same previous for now to do this the same way as for CVC..
                 final String ignoredKeySequence = catoken.getProperties().getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
                 final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), -1, currentCaCert.getNotBefore(), currentCaCert.getNotAfter(),
-                        certProfile, null, ignoredKeySequence, previousCaPublicKey, previousCaPrivateKey, provider, null, cceConfig, createLinkCertificate, caNameChange);
+                        certProfile, null, ignoredKeySequence, previousCaPublicKey, previousCaPrivateKey, provider, null, cceConfig, /*createLinkCertificate=*/true, caNameChange);
                 log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), cadata.getDN()));
                 ret = retcert.getEncoded();
             } catch (CryptoTokenOfflineException e) {
