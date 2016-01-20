@@ -44,7 +44,11 @@ import org.xmlpull.v1.XmlPullParserFactory;
  * <li>Uncommon or custom collection types</li>
  * </ul>
  * 
- * Also, unlike the XMLDecoder, the SecureXMLDecoder throws an IOException on error instead of using the ExceptionListener.
+ * <p>Differences from XMLDecoder:</p>
+ * <ul>
+ * <li>The SecureXMLDecoder throws an IOException on error instead of using the ExceptionListener.</li>
+ * <li>Returns null instead of throwing ArrayIndexOutOfBoundsException at end of file</li>
+ * </ul>
  * 
  * @version $Id$
  */
@@ -82,8 +86,9 @@ public class SecureXMLDecoder implements AutoCloseable {
     /**
      * Reads the next object from the stream, and returns it.
      * 
-     * @return The deserialized object.
-     * @throws ArrayIndexOutOfBoundsException if there are no more objects. 
+     * Note: This implementation does not throw ArrayIndexOutOfBoundsException on EOF, but returns null instead.
+     * 
+     * @return The deserialized object, or null when there are no more objects.
      * @throws IOException On parse error or IO error.
      */
     public Object readObject() throws IOException {
@@ -105,7 +110,9 @@ public class SecureXMLDecoder implements AutoCloseable {
                     }
                     // NOPMD: Fall through
                 case XmlPullParser.END_DOCUMENT:
-                    throw new ArrayIndexOutOfBoundsException("Reached end of XML document");
+                    return null;
+                default:
+                    throw new IllegalStateException("Got invalid/unsupported XML event type");
                 }
             }
         } catch (XmlPullParserException e) {

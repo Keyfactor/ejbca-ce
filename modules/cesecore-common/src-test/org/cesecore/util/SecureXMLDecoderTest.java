@@ -21,12 +21,12 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
@@ -131,6 +132,18 @@ public class SecureXMLDecoderTest {
         root.put("testmaparray", new Map[] { map });
         root.put("testbooleanarray", new boolean[] { true, false, true });
         root.put("testnestedarray", new byte[][] { new byte[] { 1, 2 }, new byte[] { 3, 4 } });
+        final Map<String, Integer> treeMap = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.hashCode() - o2.hashCode();
+            }
+        });
+        treeMap.put("aaa", 1);
+        treeMap.put("bbb", 2);
+        treeMap.put("ccc", 3);
+        treeMap.put("ddd", 4);
+        treeMap.put("eee", 5);
+        root.put("testtreemap", treeMap);
         
         final List<Object> list = new ArrayList<>(2);
         final Map<String,Long> nested = new HashMap<>();
@@ -276,7 +289,7 @@ public class SecureXMLDecoderTest {
                 final Object actualElem = actualIter.next();
                 compareObjects(expectedElem, actualElem);
             }
-        } else if (expected instanceof LinkedHashMap) {
+        } else if (expected instanceof LinkedHashMap || expected instanceof TreeMap) {
             final Map<?,?> expectedMap = (Map<?,?>)expected;
             final Map<?,?> actualMap = (Map<?,?>)actual;
             assertEquals("Number of elements in maps differ.", expectedMap.size(), actualMap.size());
