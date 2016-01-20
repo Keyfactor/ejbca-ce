@@ -96,17 +96,20 @@ public class AuditorManagedBean implements Serializable {
 	private Map<Object, String> caIdToNameMap;
 
 	private Map<String, String> columnNameMap = new HashMap<String, String>();
-	private final List<SelectItem> eventStatusOptions = new ArrayList<SelectItem>();
-	private final List<SelectItem> eventTypeOptions = new ArrayList<SelectItem>();
-	private final List<SelectItem> moduleTypeOptions = new ArrayList<SelectItem>();
-	private final List<SelectItem> serviceTypeOptions = new ArrayList<SelectItem>();
-	private final List<SelectItem> operationsOptions = new ArrayList<SelectItem>();
-	private final List<SelectItem> conditionsOptions = new ArrayList<SelectItem>();
-    private final List<SelectItem> cmsSigningCaOptions = new ArrayList<SelectItem>();
+	private final List<SelectItem> eventStatusOptions = new ArrayList<>();
+	private final List<SelectItem> eventTypeOptions = new ArrayList<>();
+	private final List<SelectItem> moduleTypeOptions = new ArrayList<>();
+	private final List<SelectItem> serviceTypeOptions = new ArrayList<>();
+	private final List<SelectItem> operationsOptions = new ArrayList<>();
+	private final List<SelectItem> conditionsOptions = new ArrayList<>();
+    private final List<SelectItem> conditionsOptionsExact = new ArrayList<>();
+    private final List<SelectItem> conditionsOptionsContains = new ArrayList<>();
+    private final List<SelectItem> conditionsOptionsNumber = new ArrayList<>();
+    private final List<SelectItem> cmsSigningCaOptions = new ArrayList<>();
     private Integer cmsSigningCa = null;
 	private String conditionColumn = AuditLogEntry.FIELD_SEARCHABLE_DETAIL2;
 	private AuditSearchCondition conditionToAdd;
-	private List<AuditSearchCondition> conditions = new ArrayList<AuditSearchCondition>();
+	private List<AuditSearchCondition> conditions = new ArrayList<>();
 	private boolean automaticReload = true;
 	
 	public AuditorManagedBean() {
@@ -141,6 +144,12 @@ public class AuditorManagedBean implements Serializable {
 		for (Condition current : Condition.values()) {
 			conditionsOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
 		}
+        conditionsOptionsExact.add(new SelectItem(Condition.EQUALS.toString(), ejbcaWebBean.getText(Condition.EQUALS.toString())));
+        conditionsOptionsExact.add(new SelectItem(Condition.NOT_EQUALS.toString(), ejbcaWebBean.getText(Condition.NOT_EQUALS.toString())));
+        conditionsOptionsNumber.addAll(conditionsOptionsExact);
+        conditionsOptionsNumber.add(new SelectItem(Condition.GREATER_THAN.toString(), ejbcaWebBean.getText(Condition.GREATER_THAN.toString())));
+        conditionsOptionsNumber.add(new SelectItem(Condition.LESS_THAN.toString(), ejbcaWebBean.getText(Condition.LESS_THAN.toString())));
+        conditionsOptionsContains.add(new SelectItem(Condition.CONTAINS.toString(), ejbcaWebBean.getText(Condition.CONTAINS.toString())));
 		for (EventStatus current : EventStatus.values()) {
 			eventStatusOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
 		}
@@ -177,7 +186,7 @@ public class AuditorManagedBean implements Serializable {
 			serviceTypeOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
 		}
 		// By default, don't show the authorized to resource events
-		conditions.add(new AuditSearchCondition(AuditLogEntry.FIELD_EVENTTYPE, Condition.NOT_EQUALS, EventTypes.ACCESS_CONTROL.name()));
+		conditions.add(new AuditSearchCondition(AuditLogEntry.FIELD_EVENTTYPE, conditionsOptionsExact, eventTypeOptions, Condition.NOT_EQUALS, EventTypes.ACCESS_CONTROL.name()));
 		updateCmsSigningCas();
 	}
 
@@ -286,29 +295,30 @@ public class AuditorManagedBean implements Serializable {
 	}
 
 	public void newCondition() {
-		if (AuditLogEntry.FIELD_ADDITIONAL_DETAILS.equals(conditionColumn)
-				|| AuditLogEntry.FIELD_AUTHENTICATION_TOKEN.equals(conditionColumn)
+		if (AuditLogEntry.FIELD_AUTHENTICATION_TOKEN.equals(conditionColumn)
 				|| AuditLogEntry.FIELD_NODEID.equals(conditionColumn)
 				|| AuditLogEntry.FIELD_SEARCHABLE_DETAIL1.equals(conditionColumn)
 				|| AuditLogEntry.FIELD_SEARCHABLE_DETAIL2.equals(conditionColumn)
 				|| AuditLogEntry.FIELD_SEQUENCENUMBER.equals(conditionColumn)) {
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, Condition.EQUALS, ""));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, conditionsOptions, null, Condition.EQUALS, ""));
 		} else if (AuditLogEntry.FIELD_CUSTOM_ID.equals(conditionColumn)) {
 			List<SelectItem> caIds = new ArrayList<SelectItem>();
 			for (Entry<Object,String> entry : caIdToNameMap.entrySet()) {
 				caIds.add(new SelectItem(entry.getKey(), entry.getValue()));
 			}
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, caIds));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, conditionsOptionsExact, caIds));
 		} else if (AuditLogEntry.FIELD_EVENTSTATUS.equals(conditionColumn)) {
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, eventStatusOptions));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, conditionsOptionsExact, eventStatusOptions));
 		} else if (AuditLogEntry.FIELD_EVENTTYPE.equals(conditionColumn)) {
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, eventTypeOptions));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, conditionsOptionsExact, eventTypeOptions));
 		} else if (AuditLogEntry.FIELD_MODULE.equals(conditionColumn)) {
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, moduleTypeOptions));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, conditionsOptionsExact, moduleTypeOptions));
 		} else if (AuditLogEntry.FIELD_SERVICE.equals(conditionColumn)) {
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, serviceTypeOptions));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, conditionsOptionsExact, serviceTypeOptions));
 		} else if (AuditLogEntry.FIELD_TIMESTAMP.equals(conditionColumn)) {
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, Condition.EQUALS, ValidityDate.formatAsISO8601(new Date(), ValidityDate.TIMEZONE_SERVER)));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, conditionsOptionsNumber, null, Condition.EQUALS, ValidityDate.formatAsISO8601(new Date(), ValidityDate.TIMEZONE_SERVER)));
+        } else if (AuditLogEntry.FIELD_ADDITIONAL_DETAILS.equals(conditionColumn)) {
+            setConditionToAdd(new AuditSearchCondition(conditionColumn, conditionsOptionsContains, null, Condition.CONTAINS, ""));
 		}
 	}
 
@@ -408,7 +418,7 @@ public class AuditorManagedBean implements Serializable {
 			reloadResultsNextView = true;
 			startIndex = 1;
 			conditions.clear();
-			conditions.add(new AuditSearchCondition(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, Condition.EQUALS, searchDetail2String));
+			conditions.add(new AuditSearchCondition(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, conditionsOptions, null, Condition.EQUALS, searchDetail2String));
 			sortColumn = AuditLogEntry.FIELD_TIMESTAMP;
 			sortOrder = ORDER_DESC;
 		}
@@ -420,7 +430,7 @@ public class AuditorManagedBean implements Serializable {
 	}
 
 	public List<SelectItem> getDefinedConditions() {
-		return conditionsOptions;
+	    return conditionToAdd.getConditions();
 	}
 
 	private String getHttpParameter(String key) {

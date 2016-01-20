@@ -28,17 +28,20 @@ public class AuditSearchCondition {
 	private String value;
 
 	private final List<SelectItem> options;
+    private final List<SelectItem> conditions;
 
-	public AuditSearchCondition(String column, Condition condition, String defaultValue) {
-		this.column = column;
-		this.options = null;
-		this.value = defaultValue;
-		this.condition = condition;
-	}
-
-	public AuditSearchCondition(String column, List<SelectItem> options) {
+	public AuditSearchCondition(String column, List<SelectItem> conditions, List<SelectItem> options, Condition condition, String defaultValue) {
 		this.column = column;
 		this.options = options;
+		this.value = defaultValue;
+		this.condition = condition;
+		this.conditions = conditions;
+	}
+
+	public AuditSearchCondition(String column, List<SelectItem> conditions, List<SelectItem> options) {
+		this.column = column;
+		this.options = options;
+        this.conditions = conditions;
 	}
 
 	public void setOperation(Operation operation) {
@@ -65,11 +68,26 @@ public class AuditSearchCondition {
 		this.value = value;
 	}
 
-	public String getValue() {
+	public String getValueLabel() {
+	    if (options!=null) {
+	        for (final SelectItem option: options) {
+	            if (option.getValue().equals(value)) {
+	                return option.getLabel();
+	            }
+	        }
+	    }
 		return value;
 	}
+
+    public String getValue() {
+        return value;
+    }
 
 	public List<SelectItem> getOptions() {
 		return options;
 	}
+
+    public List<SelectItem> getConditions() {
+        return conditions;
+    }
 }
