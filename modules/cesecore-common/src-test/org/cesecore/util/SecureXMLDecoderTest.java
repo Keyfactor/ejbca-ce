@@ -21,6 +21,7 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
@@ -245,7 +246,7 @@ public class SecureXMLDecoderTest {
                 log.debug("Reading object " + (i++) + " from SecureXMLDecoder");
                 actualObjs.add(securedec.readObject());
             }
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (EOFException e) {
             // NOPMD: Expected, happens when we reach the end
         }
         
