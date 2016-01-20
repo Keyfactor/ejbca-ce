@@ -81,7 +81,7 @@ org.cesecore.authorization.control.AuditLogRules
 		</h:column>
 		<h:column>
 			<f:facet name="header"><h:outputText value="#{web.text.VALUE}"/></f:facet>
-			<h:outputText value="#{web.text[(condition.value)]}"></h:outputText>
+			<h:outputText value="#{condition.valueLabel}"></h:outputText>
 			<f:facet name="footer">
 			<h:panelGroup rendered="#{auditor.conditionToAdd != null}">
 				<h:inputText rendered="#{empty auditor.conditionToAdd.options}" value="#{auditor.conditionToAdd.value}"></h:inputText>
