@@ -480,20 +480,20 @@ If "cmp.ra.authenticationsecret" in cmp.properties is set, this field will be ig
 
 <subsubsection name="CA Name Change">
 <p>
-The CA Name Change feature has been introduced with the document ICAO 9303 7th edition part 12.
+Changing CA names is implemented as per <a href="http://www.icao.int/publications/Documents/9303_p12_cons_en.pdf">ICAO 9303 7th edition part 12</a>.
 Some information can also be found in the document supplements to ICAO 9303 6th edition. At this moment this feature is NOT part of X509 standard (RFC5280). 
 </p>
 <p>
-The CA Name Change renewal process beside default X509 renewal covers following:
+The CA Name Change renewal process involves the following in addition to standard X509 CA Renewal:
 <ul>
-<li> Renewed CA certificate will have specified new Subject DN </li>
-<li> CRL issued with renamed CA will still contain certificates revoked before renaming </li>
-<li> If created, link certificates will have CA Name Change extension specified with ICAO 9303 document </li>
+<li> Renewed CA certificate will have an updated Subject DN </li>
+<li> CRLs issued by renewed CA will still contain certificates revoked before renaming </li>
+<li> If created, link certificates will have the CA Name Change extension specified with ICAO 9303 document </li>
 </ul>
 </p>
 <p>
-<strong>Note:</strong>CRLs checking procedure for CRLs issued by CA that has gone through Name Change process will have to be modified from standard X509 CRL checking procedure.
-More details about it can be found in ICAO 9303 7th edition part 12 in appendix chapter D1.2.3 CRL Processing.
+<note>CRLs checking procedure for CRLs issued by CA that has gone through Name Change process will have to be modified from standard X509 CRL checking procedure.
+More details about it can be found in ICAO 9303 7th edition part 12 in appendix chapter D1.2.3 CRL Processing.</note>
 </p>
 </subsubsection>
 

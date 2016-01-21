@@ -501,18 +501,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                 String b64Cert = iter.next();
                 try {
                     Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()), Certificate.class);
-                    if (cert != null) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Adding CA certificate from RENEWEDCERTIFICATECHAIN to renewedcertificatechain:");
-                            log.debug("Cert subjectDN: " + CertTools.getSubjectDN(cert));
-                            log.debug("Cert issuerDN: " + CertTools.getIssuerDN(cert));
-                        }
-                        this.renewedcertificatechain.add(cert);
-                    } else {
-                        throw new IllegalArgumentException("Can not create certificate object from: " + b64Cert);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Adding CA certificate from RENEWEDCERTIFICATECHAIN to renewedcertificatechain:");
+                        log.debug("Cert subjectDN: " + CertTools.getSubjectDN(cert));
+                        log.debug("Cert issuerDN: " + CertTools.getIssuerDN(cert));
                     }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    this.renewedcertificatechain.add(cert);
+                } catch (CertificateParsingException e) {
+                    throw new IllegalStateException("Some certificates from renewed certificate chain could not be parsed", e);
                 }
             }
         }
@@ -520,15 +516,13 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     public void setRenewedCertificateChain(Collection<Certificate> certificatechain) {
-        Iterator<Certificate> iter = certificatechain.iterator();
         ArrayList<String> storechain = new ArrayList<String>();
-        while (iter.hasNext()) {
-            Certificate cert = iter.next();
+        for (Certificate cert : certificatechain) {
             try {
                 String b64Cert = new String(Base64.encode(cert.getEncoded()));
                 storechain.add(b64Cert);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (CertificateEncodingException e) {
+                throw new IllegalStateException("Renewed certificates could not be encoded", e);
             }
         }
         data.put(RENEWEDCERTIFICATECHAIN, storechain);
@@ -1113,7 +1107,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     /** Create a certificate with all the current CA certificate info, but signed by the old issuer */
     public abstract void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile, 
-            AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean isCaNameChange) throws CryptoTokenOfflineException;
+            AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException;
 
     /** Store the latest link certificate in this object. */
     protected void updateLatestLinkCertificate(byte[] encodedLinkCertificate) {
