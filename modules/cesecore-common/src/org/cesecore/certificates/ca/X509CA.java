@@ -702,8 +702,15 @@ public class X509CA extends CA implements Serializable {
         throw new UnsupportedOperationException("Creation of authenticated CSRs is not supported for X509 CAs.");
     }
 
-    @Override
-    public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
+    /**
+     * @param caNameChange if set to false, regular X509 link certificate will be created. Otherwise, created link certificates  
+     * will be modified as explained in the ICAO 9303 7th edition part 12. In addition to regular X509 link certificate format 
+     * this link certificate will have:
+     *       SubjectDN as CA's SubjectDN/IssuerDN after CA Name Change
+     *       IssuerDN as CA's SubjectDN/IssuerDN before CA Name Change
+     *       the Name Change Extension
+     */
+    private void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
             final AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean caNameChange) throws CryptoTokenOfflineException {
         byte[] ret = null;
         if (createLinkCertificate) {
@@ -733,6 +740,18 @@ public class X509CA extends CA implements Serializable {
             }
         }
         updateLatestLinkCertificate(ret);
+    }
+    
+    
+    public void createOrRemoveLinkCertificateDuringCANameChange(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
+            final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException {
+        createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certProfile, cceConfig, /*caNameChange*/true);
+    }
+    
+    @Override
+    public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
+            final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException {
+        createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certProfile, cceConfig, /*caNameChange*/false);
     }
     
     @Override

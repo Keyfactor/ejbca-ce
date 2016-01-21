@@ -1634,7 +1634,7 @@ function toggleCANameChange(){
                             </select>
                         </td>
                     </tr>
-                    <% if (catype!=CAInfo.CATYPE_CVC) { 
+                    <% if (catype==CAInfo.CATYPE_X509) { 
                         		String newCAName = cainfo.getSubjectDN();%>
                         <tr id="Row<%=row%2%>"> 
 					        <td width="50%" align="left"> 

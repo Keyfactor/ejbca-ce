@@ -2075,22 +2075,22 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             boolean subjectDNWillBeChanged = false;
             if(newSubjectDN != null && !newSubjectDN.isEmpty()){
                 if(ca.getCAType() != CAInfo.CATYPE_X509){
-                    throw new IllegalStateException("CVC CA Name Change operation is not supported (Only for X509 CA)");
+                    throw new IllegalArgumentException("CVC CA Name Change operation is not supported (Only for X509 CA)");
                 }else{
                     subjectDNWillBeChanged = !CertTools.stringToBCDNString(newSubjectDN).equalsIgnoreCase(ca.getSubjectDN());
                 }
             }
             
             if(subjectDNWillBeChanged){
-                if(newSubjectDN.indexOf('=') == -1){ //(TODO proper validation)
+                if(CertTools.getPartFromDN(newSubjectDN, "CN") == null){
                     final String errorMessage = "Invalid DN for specified new Subject DN: " + newSubjectDN + ". Aborting renewal!";
-                    log.info(errorMessage);
-                    throw new Exception(errorMessage);
+                    log.error(errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
                 }
                 if(crlStoreSession.getLastCRL(newSubjectDN, false) != null){
                     final String errorMessage = "There are already stored some CRL data with issuer DN equal to specified new SubjectDN = " + newSubjectDN + ". Please delete them. Aborting renewal!";
                     log.info(errorMessage);
-                    throw new Exception(errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
                 }
                 log.info("CA Name Change (Subject DN change) has been triggered from: " + ca.getSubjectDN() + " to " + newSubjectDN);
             }
@@ -2106,17 +2106,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new NotSupportedException("Directly renewing a CA signed by external can not be done");
             }
             
-            //Not supporting CA name change of CVC certificates
-            if(ca.getCAType() == CAInfo.CATYPE_CVC && subjectDNWillBeChanged){
-                throw new NotSupportedException("CA name change operation is not supported for CVC certificates");
-            }
             //Not supporting CA name change for externally signed CA
             if(ca.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA && subjectDNWillBeChanged){
-                throw new NotSupportedException("CA name change operation is not supported for externally signed CA");
+                throw new IllegalStateException("CA name change operation is not supported for externally signed CA");
             }
             //Not supporting CA name change for not self-signed CA
             if(ca.getSignedBy() != CAInfo.SELFSIGNED && subjectDNWillBeChanged){
-                throw new NotSupportedException("CA name change operation is not supported for self-signed CA");
+                throw new IllegalStateException("CA name change operation is not supported for self-signed CA");
             }
             final CAToken caToken = ca.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
@@ -2203,14 +2199,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.setStatus(CAConstants.CA_ACTIVE);
             // Set the new certificate chain that we have created above
             ca.setCertificateChain(cachain);
-            ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile, cceConfig, subjectDNWillBeChanged);
             // We need to save all this, audit logging that the CA is changed
             int caidBeforeNameChange = -1;
             if(subjectDNWillBeChanged){
+                ((X509CA)ca).createOrRemoveLinkCertificateDuringCANameChange(cryptoToken, createLinkCertificate, certprofile, cceConfig);
                 caSession.addCA(authenticationToken, ca);   //add new CA into database
                 caidBeforeNameChange = caid;
                 caid = CAData.calculateCAId(newSubjectDN).intValue();  // recalculate the caid to corresponds to new CA
             }else{
+                ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile, cceConfig);
                 caSession.editCA(authenticationToken, ca, true);
             }
 
