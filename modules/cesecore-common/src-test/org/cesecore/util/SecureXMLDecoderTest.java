@@ -168,7 +168,7 @@ public class SecureXMLDecoderTest {
     }
     
     @Test
-    public void testNotAllowedType() throws IOException {
+    public void testNotAllowedType() {
         log.trace(">testNotAllowedType");
         
         // Encode
@@ -183,7 +183,7 @@ public class SecureXMLDecoderTest {
     }
     
     @Test
-    public void testNotAllowedMethod() throws IOException {
+    public void testNotAllowedMethod() {
         log.trace(">testNotAllowedMethod");
         
         final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><java version=\"1.6.0.0\" class=\"java.beans.XMLDecoder\">\n<object class=\"java.util.ArrayList\">\n" +
@@ -195,7 +195,7 @@ public class SecureXMLDecoderTest {
         log.trace("<testNotAllowedMethod");
     }
     
-    private void decodeBad(final byte[] xml) throws IOException {
+    private void decodeBad(final byte[] xml) {
         if (log.isTraceEnabled()) {
             log.trace(">decodeBad(" + new String(xml) + ")");
         }
