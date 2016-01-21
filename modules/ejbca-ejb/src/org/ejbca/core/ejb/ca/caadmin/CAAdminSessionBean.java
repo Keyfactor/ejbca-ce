@@ -2089,7 +2089,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
                 if(crlStoreSession.getLastCRL(newSubjectDN, false) != null){
                     final String errorMessage = "There are already stored some CRL data with issuer DN equal to specified new SubjectDN = " + newSubjectDN + ". Please delete them. Aborting renewal!";
-                    log.info(errorMessage);
+                    log.error(errorMessage);
                     throw new IllegalArgumentException(errorMessage);
                 }
                 log.info("CA Name Change (Subject DN change) has been triggered from: " + ca.getSubjectDN() + " to " + newSubjectDN);
