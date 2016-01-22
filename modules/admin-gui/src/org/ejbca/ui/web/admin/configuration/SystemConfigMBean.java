@@ -410,7 +410,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getStatedumpAvailableTemplates() {
         final List<SelectItem> templates = new ArrayList<>();
         try {
-            templates.add(new SelectItem("", getEjbcaWebBean().getText("NONE")));
             for (Map.Entry<String,String> entry : statedumpSession.getAvailableTemplates(getAdmin()).entrySet()) {
                 final String description = getEjbcaWebBean().getText(entry.getValue());
                 templates.add(new SelectItem(entry.getKey(), description));
@@ -419,6 +418,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             log.debug("Authorization was denied to list statedump templates");
         }
         sortSelectItemsByLabel(templates);
+        templates.add(0, new SelectItem("", getEjbcaWebBean().getText("NONE")));
         return templates;
     }
     
