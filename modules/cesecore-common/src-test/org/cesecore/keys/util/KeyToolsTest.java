@@ -44,6 +44,7 @@ import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAKeyGenParameterSpec;
+import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -639,5 +640,37 @@ public class KeyToolsTest {
             // NOPMD expected
         }
     }
-    
+
+    @Test
+    public void testBlackListedEcCurves() throws Exception {
+        for (final String blackListedEcCurve : AlgorithmConstants.BLACKLISTED_EC_CURVES) {
+            try {
+                KeyTools.genKeys(blackListedEcCurve, AlgorithmConstants.KEYALGORITHM_ECDSA);
+                fail("Black listed algorithm " + blackListedEcCurve + " now works. Please update black list.");
+            } catch (InvalidAlgorithmParameterException e) {
+                log.debug(e.getMessage(), e);
+            }
+        }
+    }
+
+    @Test
+    public void testNotBlackListedEcCurves() throws Exception {
+        final StringBuilder sb = new StringBuilder();
+        @SuppressWarnings("unchecked")
+        final Enumeration<String> ecNamedCurvesStandard = ECNamedCurveTable.getNames();
+        while (ecNamedCurvesStandard.hasMoreElements()) {
+            final String namedEcCurve = ecNamedCurvesStandard.nextElement();
+            if (AlgorithmConstants.BLACKLISTED_EC_CURVES.contains(namedEcCurve)) {
+                continue;
+            }
+            try {
+                KeyTools.genKeys(namedEcCurve, AlgorithmConstants.KEYALGORITHM_ECDSA);
+                log.debug("Succeeded to generate EC key pair using " + namedEcCurve);
+            } catch (InvalidAlgorithmParameterException | IllegalStateException | IllegalArgumentException e) {
+                log.debug("Failed to generate EC key pair using " + namedEcCurve, e);
+                sb.append(namedEcCurve + " ");
+            }
+        }
+        assertTrue("Failed to generate EC key pair using " + sb.toString(), sb.length()==0);
+    }
 }

@@ -761,6 +761,12 @@ is in the format certprofile_PROFILENAME-PROFILEID.xml. Any file with a name tha
 List of allowed key algorithms that public key used in the certificate requests must comply with.
 </p>
 </subsubsection>
+<subsubsection name="Available ECDSA curves">
+<p>
+List of allowed named curves.
+Select "Any allowed by bit lengths" to additionally allow any curve matching the selected bit lengths restriction.
+</p>
+</subsubsection>
 <subsubsection name="Available bit lengths">
 <p>
 List of allowed key sizes that public key used in the certificate requests must comply with.
