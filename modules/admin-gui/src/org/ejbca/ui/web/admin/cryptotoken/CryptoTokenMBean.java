@@ -14,14 +14,11 @@ package org.ejbca.ui.web.admin.cryptotoken;
 
 import java.io.File;
 import java.io.Serializable;
-import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,8 +30,6 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -61,6 +56,7 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
@@ -714,14 +710,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
             Arrays.sort(keys);
             for (final String name : keys) {
-                final StringBuilder names = new StringBuilder();
-                for (final String alias : namedEcCurvesMap.get(name)) {
-                    if (names.length()!=0) {
-                        names.append(" / ");
-                    }
-                    names.append(alias);
-                }
-                availableKeySpecs.add(new SelectItem(name, AlgorithmConstants.KEYALGORITHM_ECDSA + " " + names.toString()));
+                availableKeySpecs.add(new SelectItem(name, AlgorithmConstants.KEYALGORITHM_ECDSA + " " + StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(name))));
             }
         } catch (AuthorizationDeniedException e) {
             if (log.isDebugEnabled()) {
