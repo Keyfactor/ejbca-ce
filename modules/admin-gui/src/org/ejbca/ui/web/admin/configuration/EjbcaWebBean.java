@@ -194,7 +194,7 @@ public class EjbcaWebBean implements Serializable {
         if (!initialized) {
             requestServerName = getRequestServerName(request);
             if (log.isDebugEnabled()) {
-                log.error("requestServerName: "+requestServerName);
+                log.debug("requestServerName: "+requestServerName);
             }
             final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
             if (certificates == null || certificates.length == 0) {
