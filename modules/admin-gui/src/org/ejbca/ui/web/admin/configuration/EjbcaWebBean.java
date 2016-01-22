@@ -193,6 +193,9 @@ public class EjbcaWebBean implements Serializable {
     public GlobalConfiguration initialize(HttpServletRequest request, String... resources) throws Exception {
         if (!initialized) {
             requestServerName = getRequestServerName(request);
+            if (log.isDebugEnabled()) {
+                log.error("requestServerName: "+requestServerName);
+            }
             final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
             if (certificates == null || certificates.length == 0) {
                 throw new AuthenticationFailedException("Client certificate required.");
@@ -271,9 +274,9 @@ public class EjbcaWebBean implements Serializable {
     }
 
     /**
-     * Method that returns the servername, extracted from the HTTPServlet Request, no protocol, port or application path is returned
+     * Method that returns the servername including port, extracted from the HTTPServlet Request, no protocol or application path is returned
      * 
-     * @return the server name requested
+     * @return the server name and port requested, i.e. localhost:8443
      */
     private String getRequestServerName(HttpServletRequest request) {
         String requestURL = request.getRequestURL().toString();
