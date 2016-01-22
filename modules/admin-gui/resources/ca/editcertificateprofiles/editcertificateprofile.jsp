@@ -82,12 +82,26 @@
 				action="#{certProfileBean.setTypeHardToken}" value="#{certProfileBean.typeHardToken?'✓':' '}#{web.text.HARDTOKEN}"/>
 		</h:panelGroup>
 
+		<h:panelGroup>
 		<h:outputLabel for="selectavailablekeyalgorithms" value="#{web.text.AVAILABLEKEYALGORITHMS}"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Available%20key%20algorithms") %>
+		</h:panelGroup>
 		<h:selectManyListbox id="selectavailablekeyalgorithms" value="#{certProfileBean.certificateProfile.availableKeyAlgorithms}" size="5" disabled="#{certProfilesBean.viewOnly}">
 			<f:selectItems value="#{certProfileBean.availableKeyAlgorithmsAvailable}"/>
 		</h:selectManyListbox>
 
-		<h:outputLabel for="selectavailablebitlengths" value="#{web.text.AVAILABLEBITLENGTHS}"/>
+		<h:panelGroup>
+			<h:outputLabel for="selectavailableeccurves" value="#{web.text.AVAILABLEECDSACURVES}"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Available%20ECDSA%20curves") %>
+		</h:panelGroup>
+		<h:selectManyListbox id="selectavailableeccurves" value="#{certProfileBean.certificateProfile.availableEcCurves}" size="5" disabled="#{certProfilesBean.viewOnly}">
+			<f:selectItems value="#{certProfileBean.availableEcCurvesAvailable}"/>
+		</h:selectManyListbox>
+
+		<h:panelGroup>
+			<h:outputLabel for="selectavailablebitlengths" value="#{web.text.AVAILABLEBITLENGTHS}"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Available%20bit%20lengths") %>
+		</h:panelGroup>
 		<h:selectManyListbox id="selectavailablebitlengths" value="#{certProfileBean.certificateProfile.availableBitLengths}" size="5" styleClass="number" disabled="#{certProfilesBean.viewOnly}">
 			<f:selectItems value="#{certProfileBean.availableBitLengthsAvailable}"/>
 		</h:selectManyListbox>

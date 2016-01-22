@@ -16,11 +16,13 @@ package org.ejbca.ui.web.pub;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -36,6 +38,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -403,25 +406,27 @@ public class ApplyBean implements Serializable {
             }
         }
         if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+            final Set<String> ecChoices = new HashSet<>();
             final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(false);
-            final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
-            Arrays.sort(keys);
-            for (final String ecNamedCurve : keys) {
-                final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
-                if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
-                    final StringBuilder names = new StringBuilder();
-                    for (final String alias : namedEcCurvesMap.get(ecNamedCurve)) {
-                        if (names.length()!=0) {
-                            names.append(" / ");
-                        }
-                        names.append(alias);
+            if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {
+                final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
+                for (final String ecNamedCurve : keys) {
+                    if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
+                        continue;
                     }
-                    ret.add(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve + ";"+AlgorithmConstants.KEYALGORITHM_ECDSA + " " + names.toString());
-                } else {
-                    if (log.isTraceEnabled()) {
-                        log.trace("Excluding " + ecNamedCurve + " from enrollment options since bit length " + bitLength + " is not available.");
+                    final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
+                    if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                        ecChoices.add(ecNamedCurve);
                     }
                 }
+            }
+            ecChoices.addAll(certificateProfile.getAvailableEcCurvesAsList());
+            ecChoices.remove(CertificateProfile.ANY_EC_CURVE);
+            final List<String> ecChoicesList = new ArrayList<>(ecChoices);
+            Collections.sort(ecChoicesList);
+            for (final String ecNamedCurve : ecChoicesList) {
+                ret.add(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve + ";"+AlgorithmConstants.KEYALGORITHM_ECDSA + " " +
+                        StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(ecNamedCurve)));
             }
         }
         for (final String algName : CesecoreConfiguration.getExtraAlgs()) {

@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,6 +48,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.cvc.AccessRightAuthTerm;
@@ -201,6 +203,18 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         for (final String current : AlgorithmTools.getAvailableKeyAlgorithms()) {
             ret.add(new SelectItem(current));
+        }
+        return ret;
+    }
+
+    public List<SelectItem/*<String,String>*/> getAvailableEcCurvesAvailable() {
+        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(false);
+        final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
+        Arrays.sort(keys);
+        ret.add(new SelectItem(CertificateProfile.ANY_EC_CURVE, getEjbcaWebBean().getText("AVAILABLEECDSABYBITS")));
+        for (final String name : keys) {
+            ret.add(new SelectItem(name, StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(name))));
         }
         return ret;
     }

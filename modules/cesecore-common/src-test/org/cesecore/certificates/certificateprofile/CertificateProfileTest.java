@@ -614,31 +614,54 @@ public class CertificateProfileTest {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         final KeyPair keyPairRsa = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         assertEquals("Unexpected key size of key pair used in this test.", 512, KeyTools.getKeyLength(keyPairRsa.getPublic()));
-        final KeyPair keyPairEc = KeyTools.genKeys("prime256v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        final String USED_EC_CURVE_NAME = "prime256v1";
+        final KeyPair keyPairEc = KeyTools.genKeys(USED_EC_CURVE_NAME, AlgorithmConstants.KEYALGORITHM_ECDSA);
         assertEquals("Unexpected key size of key pair used in this test.", 256, KeyTools.getKeyLength(keyPairEc.getPublic()));
         // Test happy path. RSA 512 bit key. RSA 512 allowed by certificate profile.
-        testInvalidKeySpecsInternal(true, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{512});
+        testInvalidKeySpecsInternal(true, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new String[]{CertificateProfile.ANY_EC_CURVE}, new int[]{512});
         // Test expected failure. ECDSA 256 bit key. RSA 512 allowed by certificate profile.
-        testInvalidKeySpecsInternal(false, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{512});
+        testInvalidKeySpecsInternal(false, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new String[]{CertificateProfile.ANY_EC_CURVE}, new int[]{512});
         // Test expected failure. ECDSA 256 bit key. RSA 256,512 allowed by certificate profile.
-        testInvalidKeySpecsInternal(false, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{256,512});
+        testInvalidKeySpecsInternal(false, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new String[]{CertificateProfile.ANY_EC_CURVE}, new int[]{256,512});
         // Test expected failure. ECDSA 256 bit key. ECDSA 512 allowed by certificate profile.
-        testInvalidKeySpecsInternal(false, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA}, new int[]{512});
+        testInvalidKeySpecsInternal(false, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA}, new String[]{CertificateProfile.ANY_EC_CURVE}, new int[]{512});
         // Test happy path. ECDSA 256 bit key. ECDSA 256,512 allowed by certificate profile.
-        testInvalidKeySpecsInternal(true, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA}, new int[]{256,512});
+        testInvalidKeySpecsInternal(true, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA}, new String[]{CertificateProfile.ANY_EC_CURVE}, new int[]{256,512});
         // Test expected failure. RSA 512 bit key. ECDSA 512 allowed by certificate profile.
-        testInvalidKeySpecsInternal(false, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA}, new int[]{512});
+        testInvalidKeySpecsInternal(false, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA}, new String[]{CertificateProfile.ANY_EC_CURVE}, new int[]{512});
         // Test expected failure. RSA 512 bit key. RSA 1024 allowed by certificate profile.
-        testInvalidKeySpecsInternal(false, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{1024});
+        testInvalidKeySpecsInternal(false, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_RSA}, new String[]{CertificateProfile.ANY_EC_CURVE}, new int[]{1024});
         // Test happy path. RSA 512 bit key. ECDSA, RSA 256,512,1024 allowed by certificate profile.
-        testInvalidKeySpecsInternal(true, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{256,512,1024});
+        testInvalidKeySpecsInternal(true, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA},
+                new String[]{CertificateProfile.ANY_EC_CURVE}, new int[]{256,512,1024});
         // Test happy path. RSA 512 bit key. ECDSA, RSA 256,1024 allowed by certificate profile.
-        testInvalidKeySpecsInternal(true, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA}, new int[]{256,1024});
+        testInvalidKeySpecsInternal(true, keyPairRsa.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA},
+                new String[]{CertificateProfile.ANY_EC_CURVE}, new int[]{256,1024});
+        // Test happy path. EC 256 bit "prime256v1" key. ECDSA (bit restricted + "prime256v1"), RSA 256,1024 allowed by certificate profile.
+        testInvalidKeySpecsInternal(true, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA},
+                new String[]{CertificateProfile.ANY_EC_CURVE, USED_EC_CURVE_NAME}, new int[]{256,1024});
+        // Test happy path. EC 256 bit "prime256v1" key. ECDSA (bit restricted + "secp256k1"), 256,1024 allowed by certificate profile.
+        testInvalidKeySpecsInternal(true, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA},
+                new String[]{CertificateProfile.ANY_EC_CURVE, USED_EC_CURVE_NAME}, new int[]{256,1024});
+        // Test happy path. EC 256 bit "prime256v1" key. ECDSA (bit restricted + "secp256k1"), RSA 256,1024 allowed by certificate profile.
+        testInvalidKeySpecsInternal(true, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA},
+                new String[]{CertificateProfile.ANY_EC_CURVE, "secp256k1"}, new int[]{256,1024});
+        // Test expected failure. EC 256 bit "prime256v1" key. ECDSA (bit restricted + "secp256k1"), RSA 512,1024 allowed by certificate profile.
+        testInvalidKeySpecsInternal(false, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA},
+                new String[]{CertificateProfile.ANY_EC_CURVE, "secp256k1"}, new int[]{512,1024});
+        // Test happy path. EC 256 bit "prime256v1" key. ECDSA (bit restricted + "prime256v1"), RSA 512,1024 allowed by certificate profile.
+        testInvalidKeySpecsInternal(true, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA},
+                new String[]{CertificateProfile.ANY_EC_CURVE, USED_EC_CURVE_NAME}, new int[]{512,1024});
+        // Test expected failure. EC 256 bit "prime256v1" key. ECDSA ("secp256k1"), RSA 256,1024 allowed by certificate profile.
+        testInvalidKeySpecsInternal(false, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA},
+                new String[]{"secp256k1"}, new int[]{256,1024});
     }
 
-    private void testInvalidKeySpecsInternal(final boolean expectedNoIllegalKeyException, final PublicKey publicKey, final String[] availableKeyAlgorithms, final int[] availableBitLengths) {
+    private void testInvalidKeySpecsInternal(final boolean expectedNoIllegalKeyException, final PublicKey publicKey, final String[] availableKeyAlgorithms, 
+            final String[] availableEcCurves, final int[] availableBitLengths) {
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certificateProfile.setAvailableKeyAlgorithms(availableKeyAlgorithms);
+        certificateProfile.setAvailableEcCurves(availableEcCurves);
         certificateProfile.setAvailableBitLengths(availableBitLengths);
         try {
             certificateProfile.verifyKey(publicKey);

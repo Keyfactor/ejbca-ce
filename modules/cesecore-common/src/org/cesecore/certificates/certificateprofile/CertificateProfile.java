@@ -55,7 +55,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 39.0;
+    public static final float LATEST_VERSION = (float) 40.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -132,6 +132,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /** Constant indicating that any CA can be used with this certificate profile. */
     public static final int ANYCA = -1;
+    /** Constant indicating that any elliptic curve may be used with this profile. */
+    public static final String ANY_EC_CURVE = "ANY_EC_CURVE";
 
     /** Constant holding the default available bit lengths for certificate profiles */
     public static final int[] DEFAULTBITLENGTHS = { 0, 192, 224, 239, 256, 384, 512, 521, 1024, 1536, 2048, 3072, 4096, 6144, 8192 };
@@ -148,6 +150,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String ALLOWDNOVERRIDEBYEEI = "allowdnoverridebyeei";
     protected static final String ALLOWCERTSNOVERIDE = "allowcertsnoverride";
     protected static final String AVAILABLEKEYALGORITHMS = "availablekeyalgorithms";
+    protected static final String AVAILABLEECCURVES = "availableeccurves";
     protected static final String AVAILABLEBITLENGTHS = "availablebitlengths";
     protected static final String MINIMUMAVAILABLEBITLENGTH = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH = "maximumavailablebitlength";
@@ -365,6 +368,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setCertificatePolicies(policies);
 
         setAvailableKeyAlgorithmsAsList(getAvailableKeyAlgorithmsAvailable());
+        setAvailableEcCurvesAsList(getAvailableEcCurvesAvailable());
         setAvailableBitLengths(DEFAULTBITLENGTHS);
 
         setUseKeyUsage(true);
@@ -1035,6 +1039,26 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     public List<String> getAvailableKeyAlgorithmsAvailable() {
         return AlgorithmTools.getAvailableKeyAlgorithms();
+    }
+
+    public String[] getAvailableEcCurves() {
+        final List<String> availableEcCurves = getAvailableEcCurvesAsList();
+        return availableEcCurves.toArray(new String[availableEcCurves.size()]);
+    }
+    @SuppressWarnings("unchecked")
+    public List<String> getAvailableEcCurvesAsList() {
+        return (ArrayList<String>) data.get(AVAILABLEECCURVES);
+    }
+    public void setAvailableEcCurves(final String[] availableEcCurves) {
+        setAvailableEcCurvesAsList(Arrays.asList(availableEcCurves));
+    }
+    public void setAvailableEcCurvesAsList(final List<String> availableEcCurves) {
+        data.put(AVAILABLEECCURVES, new ArrayList<>(availableEcCurves));
+    }
+    public List<String> getAvailableEcCurvesAvailable() {
+        final List<String> ret = new ArrayList<>(AlgorithmTools.getNamedEcCurvesMap(false).keySet());
+        ret.add(ANY_EC_CURVE);
+        return ret;
     }
 
 	public int[] getAvailableBitLengths() {
@@ -2150,12 +2174,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Checks that a public key fulfills the policy in the CertificateProfile
      * 
-     * @param pk PublicKey to verify
+     * @param publicKey PublicKey to verify
      * @throws IllegalKeyException if the PublicKey does not fulfill policy in CertificateProfile
      */
-    public void verifyKey(final PublicKey pk) throws IllegalKeyException {
-        final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(pk);
-        final int keyLength = KeyTools.getKeyLength(pk);
+    public void verifyKey(final PublicKey publicKey) throws IllegalKeyException {
+        final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
+        final int keyLength = KeyTools.getKeyLength(publicKey);
         if (log.isDebugEnabled()) {
             log.debug("KeyAlgorithm: " + keyAlgorithm + " KeyLength: " + keyLength);
         }
@@ -2163,9 +2187,21 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if (!getAvailableKeyAlgorithmsAsList().contains(keyAlgorithm)) {
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeyalgorithm", keyAlgorithm));
         }
+        if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyAlgorithm)) {
+            final List<String> availableEcCurves = getAvailableEcCurvesAsList();
+            final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
+            if (availableEcCurves.contains(keySpecification)) {
+                // Curve is allowed, so we don't check key strength
+                return;
+            }
+            if (!availableEcCurves.contains(ANY_EC_CURVE)) {
+                // Curve will never be allowed by bit length check
+                throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegaleccurve", keySpecification));
+            }
+        }
         // Verify key length that it is compliant with certificate profile
         if (keyLength == -1) {
-            throw new IllegalKeyException(intres.getLocalizedMessage("createcert.unsupportedkeytype", pk.getClass().getName()));
+            throw new IllegalKeyException(intres.getLocalizedMessage("createcert.unsupportedkeytype", publicKey.getClass().getName()));
         }
         if ((keyLength < (getMinimumAvailableBitLength() - 1)) || (keyLength > (getMaximumAvailableBitLength()))) {
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeylength", Integer.valueOf(keyLength)));
@@ -2451,7 +2487,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 }
                 setAvailableKeyAlgorithmsAsList(availableKeyAlgorithms);
             }
-                        
+            if (data.get(AVAILABLEECCURVES) == null) { // v 40
+               setAvailableEcCurves(new String[]{ ANY_EC_CURVE }); 
+            }
             data.put(VERSION, new Float(LATEST_VERSION));
         }
         log.trace("<upgrade");

@@ -159,9 +159,12 @@ public abstract class AlgorithmTools {
     public static Map<String,List<String>> getNamedEcCurvesMap(final boolean hasToBeKnownByDefaultProvider) {
         final Map<String,List<String>> processedCurveNames = new HashMap<>();
         @SuppressWarnings("unchecked")
-        final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
-        while (ecNamedCurves.hasMoreElements()) {
-            final String ecNamedCurve = ecNamedCurves.nextElement();
+        final Enumeration<String> ecNamedCurvesStandard = ECNamedCurveTable.getNames();
+        while (ecNamedCurvesStandard.hasMoreElements()) {
+            final String ecNamedCurve = ecNamedCurvesStandard.nextElement();
+            if (AlgorithmConstants.BLACKLISTED_EC_CURVES.contains(ecNamedCurve)) {
+                continue;
+            }
             // Only add it if the key-length is sufficient
             try {
                 final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(ecNamedCurve);
@@ -191,7 +194,7 @@ public abstract class AlgorithmTools {
                 if (log.isTraceEnabled()) {
                     log.trace("Not adding keys that are not allowed to key list: "+e.getMessage());
                 }
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 // Ignore
                 if (log.isDebugEnabled()) {
                     log.debug(e.getMessage());

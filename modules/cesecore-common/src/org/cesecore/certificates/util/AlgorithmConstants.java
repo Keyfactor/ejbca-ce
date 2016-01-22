@@ -12,6 +12,9 @@
  *************************************************************************/ 
 package org.cesecore.certificates.util;
 
+import java.util.Arrays;
+import java.util.List;
+
 /** Constants for digital signature algorithms.
  * 
  * @version $Id$
@@ -51,5 +54,10 @@ public final class AlgorithmConstants {
     
     public static final String KEYSPECPREFIX_ECGOST3410 = "GostR3410-";
     
+    public static final List<String> BLACKLISTED_EC_CURVES = Arrays.asList(new String[]{
+            // Can't be generated with BouncyCastle 1.5.4
+            "FRP256v1",
+    });
+
     private AlgorithmConstants () {} // Not for instantiation
 }

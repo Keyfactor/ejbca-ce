@@ -780,4 +780,16 @@ public final class StringTools {
          */
         return rawHeaderValue.trim().toLowerCase().replaceAll("[^0-9a-f.,: ]", "?");
     }
+
+    /** @return the items as a String separated by the provided separator. */
+    public static String getAsStringWithSeparator(final String separator, final Collection<?> values) {
+        final StringBuilder names = new StringBuilder();
+        for (final Object value : values) {
+            if (names.length()!=0) {
+                names.append(separator);
+            }
+            names.append(value);
+        }
+        return names.toString();
+    }
 }
