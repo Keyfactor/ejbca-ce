@@ -27,13 +27,17 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -42,6 +46,7 @@ import org.junit.Test;
 public class RenewCATest extends CaTestCase {
     private static final Logger log = Logger.getLogger(RenewCATest.class);
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RenewCATest"));
+    private static boolean backupEnableIcaoCANameChangeValue = false;
 
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -49,13 +54,33 @@ public class RenewCATest extends CaTestCase {
     private final PublishingCrlSessionRemote publishingCrlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     private String newSubjectDN = "CN=NewName";
     private final String newCAName = "NewName";
     
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession
+                .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        backupEnableIcaoCANameChangeValue = globalConfiguration.getEnableIcaoCANameChange();
+        globalConfiguration.setEnableIcaoCANameChange(true);
+        globalConfigSession.saveConfiguration(internalAdmin, globalConfiguration);
+    }
+    
+    @AfterClass
+    public static void afterClass() throws Exception {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession
+                .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfiguration.setEnableIcaoCANameChange(backupEnableIcaoCANameChangeValue);
+        globalConfigSession.saveConfiguration(internalAdmin, globalConfiguration);
+    }
+    
     @Before
     public void setUp() throws Exception {
         super.setUp();
+    
         removeTestCA(newCAName);
         internalCertificateStoreSession.removeCRLs(internalAdmin, newSubjectDN);    //Make sure CRLs data are deleted where issuerDN=new Subject DN!!!
     }

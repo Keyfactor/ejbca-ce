@@ -182,6 +182,23 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</h:panelGroup>
 		</h:panelGrid>
 		
+		<%-- ICAO --%>
+		
+		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
+			<h:outputLabel for="header_icaospecificoptions" value="#{web.text.ICAOSPECIFICOPTIONS}" style="font-weight:bold; font-size:1.2em;"/>
+			<h:panelGroup id="header_icaospecificoptions"/>
+			
+			<h:panelGroup>
+				<h:outputLabel for="enableicaocanamechange" value="#{web.text.ENABLEICAOCANAMECHANGE}" styleClass="titles"/>
+				<%= ejbcawebbean.getHelpReference("/adminguide.html#Enable%20CA%20Name%20Change") %>
+			</h:panelGroup>
+			<h:panelGroup>
+				<h:selectBooleanCheckbox id="enableicaocanamechange" value="#{systemConfigMBean.currentConfig.enableIcaoCANameChange}"
+					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+				<h:outputLabel for="enableicaocanamechange" value="#{web.text.ACTIVATE}" />
+			</h:panelGroup>
+
+		</h:panelGrid>
 		
 		<%-- Approval Notifications --%>
 

@@ -484,17 +484,26 @@ Changing CA names is implemented as per <a href="http://www.icao.int/publication
 Some information can also be found in the document supplements to ICAO 9303 6th edition. At this moment this feature is NOT part of X509 standard (RFC5280). 
 </p>
 <p>
-The CA Name Change renewal process involves the following in addition to standard X509 CA Renewal:
+In order to apply CA Name Change during renewal, user needs to do the following on "Edit CA" page:
 <ul>
-<li> Renewed CA certificate will have an updated Subject DN </li>
-<li> CRLs issued by renewed CA will still contain certificates revoked before renaming </li>
-<li> If created, link certificates will have the CA Name Change extension specified with ICAO 9303 document </li>
+<li> Activiate checkbox "Use CA Name Change" and specify new Subject DN in "New Subject DN" text field
+(If options are hidden in the GUI, administrator needs to activate "Enable CA Name Change" on "System Configuration" page)</li>
+<li> Enable link certificates </li>
+<li> Renew CA by clicking on "Renew CA" button</li>
 </ul>
 </p>
 <p>
+The CA Name Change renewal process results in the following in addition to standard X509 CA renewal:
+<ul>
+<li> Renewed CA will be presented as new CA in EJBCA GUI </li>
+<li> Renewed CA certificate will have updated Subject DN</li>
+<li> CRLs issued by renewed CA will still contain certificates revoked before renaming </li>
+<li> CRL numbering will continue after the last CRL issued before renaming </li>
+<li> If created, link certificates will have the CA Name Change extension specified with ICAO 9303 document </li>
+</ul>
+</p>
 <note>CRLs checking procedure for CRLs issued by CA that has gone through Name Change process will have to be modified from standard X509 CRL checking procedure.
 More details about it can be found in ICAO 9303 7th edition part 12 in appendix chapter D1.2.3 CRL Processing.</note>
-</p>
 </subsubsection>
 
 </subsection> 
