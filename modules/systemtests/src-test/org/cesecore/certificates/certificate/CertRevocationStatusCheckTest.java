@@ -42,7 +42,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
@@ -50,7 +49,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CertificateRevocationStatusVerifier;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -70,7 +68,6 @@ public class CertRevocationStatusCheckTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(CertRevocationStatusCheckTest.class);
     
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private EndEntityManagementSessionRemote eeManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
@@ -78,8 +75,7 @@ public class CertRevocationStatusCheckTest extends CaTestCase {
     private CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
     private CrlCreateSessionRemote crlCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlCreateSessionRemote.class);
 
-    
-    private static final String CADN = "CN=CertRevocationStatusCheckTest";
+    private final String CADN = "CN=CertRevocationStatusCheckTest";
     private CA testx509ca;
 
     @Before
@@ -87,10 +83,10 @@ public class CertRevocationStatusCheckTest extends CaTestCase {
         testx509ca = CaTestUtils.createTestX509CA(CADN, null, false);
         caSession.addCA(alwaysAllowToken, testx509ca);
         X509CAInfo cainfo = (X509CAInfo) testx509ca.getCAInfo();
-        GlobalConfiguration gc = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        URL crlUrl = new URL(gc.getStandardCRLDistributionPointURINoDN() + cainfo.getSubjectDN());
-        cainfo.setDefaultCRLDistPoint(crlUrl.toString());
+        final String defaultCRLDistPoint = "http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=";
         //http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN=ManagementCA,O=EJBCA%20Sample,C=SE
+        URL crlUrl = new URL(defaultCRLDistPoint + cainfo.getSubjectDN());
+        cainfo.setDefaultCRLDistPoint(crlUrl.toString());
         caSession.editCA(alwaysAllowToken, cainfo);
 
 
