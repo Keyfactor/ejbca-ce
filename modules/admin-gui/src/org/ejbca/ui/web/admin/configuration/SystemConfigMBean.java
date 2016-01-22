@@ -86,6 +86,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private String footBanner;
         private boolean enableEndEntityProfileLimitations;
         private boolean enableKeyRecovery;
+        private boolean enableIcaoCANameChange;
         private boolean issueHardwareToken;
         private int hardTokenDataEncryptCA;
         private boolean useApprovalNotifications;
@@ -140,6 +141,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.enableCommandLine = globalConfig.getEnableCommandLineInterface();
                 this.enableCommandLineDefaultUser = globalConfig.getEnableCommandLineInterfaceDefaultUser();
                 this.publicWebCertChainOrderRootFirst = globalConfig.getPublicWebCertChainOrderRootFirst();
+                this.setEnableIcaoCANameChange(globalConfig.getEnableIcaoCANameChange());
                 
                 ArrayList<CTLogInfo> ctlogs = new ArrayList<CTLogInfo>();
                 Map<Integer, CTLogInfo> availableCTLogs = globalConfig.getCTLogs();
@@ -209,6 +211,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setCtLogs(List<CTLogInfo> ctlogs) { this.ctLogs=ctlogs; }
         public boolean getPublicWebCertChainOrderRootFirst() { return this.publicWebCertChainOrderRootFirst; }
         public void setPublicWebCertChainOrderRootFirst(boolean publicWebCertChainOrderRootFirst) { this.publicWebCertChainOrderRootFirst=publicWebCertChainOrderRootFirst; }
+        public boolean getEnableIcaoCANameChange() {return enableIcaoCANameChange;}
+        public void setEnableIcaoCANameChange(boolean enableIcaoCANameChange) {this.enableIcaoCANameChange = enableIcaoCANameChange;}
         
         // Admin Preferences
         public int getPreferedLanguage() { return this.preferedLanguage; }
@@ -219,6 +223,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setTheme(String theme) { this.theme=theme; }
         public int getEntriesPerPage() { return this.entriesPerPage; }
         public void setEntriesPerPage(int entriesPerPage) { this.entriesPerPage=entriesPerPage; }
+
+        
     }
     
     public class EKUInfo {
@@ -620,6 +626,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setEnableCommandLineInterface(currentConfig.getEnableCommandLine());
                 globalConfig.setEnableCommandLineInterfaceDefaultUser(currentConfig.getEnableCommandLineDefaultUser());
                 globalConfig.setPublicWebCertChainOrderRootFirst(currentConfig.getPublicWebCertChainOrderRootFirst());
+                globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
                 Map<Integer, CTLogInfo> ctlogsMap = new HashMap<Integer, CTLogInfo>();
                 for(CTLogInfo ctlog : currentConfig.getCtLogs()) {
                     ctlogsMap.put(ctlog.getLogId(), ctlog);

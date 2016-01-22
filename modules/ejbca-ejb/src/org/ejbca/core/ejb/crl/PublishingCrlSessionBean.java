@@ -465,7 +465,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 //if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
                 if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
                     if (log.isDebugEnabled()) {
-                        log.debug("Gathering all revocation information published by this CA since its beggining. Important only if CA has gone undergone name change");
+                        log.debug("Gathering all revocation information published by this CA since its beginning. Important only if CA has gone undergone name change");
                     }
                     Collection<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
                     Collection<RevokedCertInfo> revokedCertificatesBeforeLastCANameChange = new ArrayList<RevokedCertInfo>();

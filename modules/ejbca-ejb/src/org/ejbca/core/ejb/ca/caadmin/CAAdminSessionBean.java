@@ -2082,13 +2082,26 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             
             if(subjectDNWillBeChanged){
-                if(CertTools.getPartFromDN(newSubjectDN, "CN") == null){
-                    final String errorMessage = "Invalid DN for specified new Subject DN: " + newSubjectDN + ". Aborting renewal!";
+                GlobalConfiguration globalConfig = (GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+                if(!globalConfig.getEnableIcaoCANameChange()){
+                    final String errorMessage = "The \"Enable ICAO CA Name Change\" feature is disabled by administrator. Aborting CA renewal!";
                     log.error(errorMessage);
                     throw new IllegalArgumentException(errorMessage);
                 }
+                final String newCAName = CertTools.getPartFromDN(newSubjectDN, "CN");
+                if(newCAName == null){
+                    final String errorMessage = "Invalid DN for specified new Subject DN: " + newSubjectDN + ". Aborting CA renewal!";
+                    log.error(errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
+                }
+                try{
+                    caSession.getCA(authenticationToken, newCAName);
+                    final String errorMessage = "There is existing CA with the name = " + newCAName + ". Please delete it or pick another name. Aborting CA renewal.";
+                    log.error(errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
+                }catch(CADoesntExistsException e){/*Good*/}
                 if(crlStoreSession.getLastCRL(newSubjectDN, false) != null){
-                    final String errorMessage = "There are already stored some CRL data with issuer DN equal to specified new SubjectDN = " + newSubjectDN + ". Please delete them. Aborting renewal!";
+                    final String errorMessage = "There are already stored some CRL data with issuer DN equal to specified new SubjectDN = " + newSubjectDN + ". Please delete them. Aborting CA renewal.";
                     log.error(errorMessage);
                     throw new IllegalArgumentException(errorMessage);
                 }

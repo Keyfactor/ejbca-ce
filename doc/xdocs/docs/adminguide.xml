@@ -2157,6 +2157,19 @@ Similarly the column serialNumber column of the table KeyRecoveryData matches th
 </subsection>
 </section>
 
+<section name="ICAO Specific Options">
+<p>
+ICAO introduces some extensions and modifications to X509 standards. Those features <strong>should not</strong> be enabled for non-ICAO
+CA users since it would be possible to run some non-standardized X509 operations with unwanted results.
+</p>
+<subsection name="Enable CA Name Change">
+<p>
+Activate this checkbox to enable the CA Name Change feature. If enabled, this feature can be used during renewal on "Edit CA" page. 
+This ICAO feature is intended to be used for Certificate Signing CA (CSCAs). More information can be found in the <a href="userguide.html#CA Name Change">EJBCA user guide</a>.
+</p>
+</subsection>
+</section>
+
 <section name="Email notifications">
 <p>
 Mail settings in JBoss is created when running the 'ant deploy' or 'ant deploy-service' using the values
@@ -2200,7 +2213,7 @@ for implementation details. Enter a string like "CUSTOM:org.ejbca.MyCustomPlugin
 </ul> 
 </p>
 <p>
-You can also use substitution variable in the notification sender and recipient fields. See samples below.
+You can also use substitution variable in the notification sender and recipie/nt fields. See samples below.
 </p>
 <p>
 The Notification Events specify which status changes for a user that will trigger a notification.
