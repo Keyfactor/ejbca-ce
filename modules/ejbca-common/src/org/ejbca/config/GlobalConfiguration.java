@@ -143,6 +143,8 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final   String ENABLEKEYRECOVERY            = "enablekeyrecovery";
     private static final   String ISSUEHARDWARETOKENS          = "issuehardwaretokens";
     
+    private static final   String ENABLEICAOCANAMECHANGE       = "enableicaocanamechange";
+    
     private static final   String NUMBEROFAPPROVALSTOVIEWPUK   = "numberofapprovalstoviewpuk";
     private static final   String HARDTOKENENCRYPTCA           = "hardtokenencryptca";
     private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
@@ -200,6 +202,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
        setEnableAuthenticatedUsersOnly(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableKeyRecovery(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setIssueHardwareTokens(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
+       setEnableIcaoCANameChange(false);
     }
     
     
@@ -400,6 +403,9 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
 
     public boolean getIssueHardwareTokens() { return getBoolean(ISSUEHARDWARETOKENS, false);}
     public void setIssueHardwareTokens(final boolean value) { putBoolean(ISSUEHARDWARETOKENS, value);}
+    
+    public boolean getEnableIcaoCANameChange() { return getBoolean(ENABLEICAOCANAMECHANGE, false); }
+    public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
 
    /**
     * @return the number of required approvals to access sensitive hard token data (default 0)
@@ -591,6 +597,9 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     		if(data.get(ENABLECOMMANDLINEINTERFACEDEFAULTUSER) == null) {
     		        data.put(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, Boolean.TRUE);
     		}
+    		if(data.get(ENABLEICAOCANAMECHANGE) == null) {
+                data.put(ENABLEICAOCANAMECHANGE, Boolean.FALSE);
+        }
     		data.put(VERSION,  Float.valueOf(LATEST_VERSION));    		
     	}
     }
