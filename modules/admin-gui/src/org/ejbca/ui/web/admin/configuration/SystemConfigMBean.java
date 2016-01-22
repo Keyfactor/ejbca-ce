@@ -488,7 +488,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 }
                 
                 final String name = entry.getName().replaceFirst("^.*/([^/]+)$", "$1");
-                if (name.matches("[a-z0-9_-]+\\.xml")) {
+                if (name.matches("([a-z0-9_-]+\\.xml|replacements.properties)")) {
                     if (log.isDebugEnabled()) {
                         log.debug("Extracting zip file entry " + name + " into temporary directory");
                     }
