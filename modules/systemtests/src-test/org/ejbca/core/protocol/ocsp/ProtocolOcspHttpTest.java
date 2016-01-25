@@ -832,7 +832,7 @@ Content-Type: text/html; charset=iso-8859-1
         byte validOcspReq[] = getValidOcspRequest();
         OCSPResp response = sendRawRequestToOcsp(validOcspReq.length, validOcspReq, false);
         if (OCSPRespBuilder.SUCCESSFUL != response.getStatus()) {
-            throw new IllegalStateException("Could not send standard raw request, test cannot continue");
+            throw new IllegalStateException("Could not send standard raw request, test cannot continue. Instead of Successful (0), status was " + response.getStatus());
         }
         // Try sending a valid request and then keep sending some more data.
         byte[] buf = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE * 2];
