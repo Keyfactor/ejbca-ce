@@ -134,7 +134,7 @@ public class CmpServlet extends HttpServlet {
             } catch (NoSuchAliasException e) {
                 // The CMP alias does not exist
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-                log.info(intres.getLocalizedMessage("cmp.errornoasn1"), e);
+                log.info(intres.getLocalizedMessage("cmp.nosuchalias"), e);
                 return;
             }
             if (resp == null) { // If resp is null, it means that the dispatcher failed to process the message.
