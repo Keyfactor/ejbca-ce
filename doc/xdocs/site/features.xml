@@ -13,7 +13,8 @@
 <ul>
 <li>Multiple CAs and levels of CAs, build a complete infrastructure (or several) within one instance of EJBCA.</li>
 <li>Unlimited number of Root CAs and SubCAs. Request cross certificates and bridge certificates from other CAs and Bridge CAs. Issue cross certificates to other CAs.</li>
-<li>Get your own CA signed by public recognized CAs such as <a href="http://www.comodo.com/">Comodo</a> or <a href="http://www.t-systems.com/">T-Systems</a>.</li>
+<li>Support all common <a href="docs/architecture.html#PKI%20Architectures">PKI Architectures</a>, as well as many uncommon.</li>
+<li>Get your own CA signed by public recognized CAs such as <a href="https://www.globalsign.com/">GlobalSign</a>, <a href="http://www.t-systems.com/">T-Systems</a> or <a href="https://www.quovadisglobal.com/">QuoVadis</a>.</li>
 <li>Follows X509 and PKIX (RFC5280) standards where applicable.</li>
 <li>Supports RSA key algorithm up to 8192 bits.</li>
 <li>Supports DSA key algorithm with 1024 bits.</li>
