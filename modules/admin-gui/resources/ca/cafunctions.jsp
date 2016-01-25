@@ -281,7 +281,7 @@ function getPasswordAndSubmit(formname) {
 		</form>
 	<% } %>
 		<br />
-		<br />
+		<hr />
 	<%  number++;
 	} %>
    
