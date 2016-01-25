@@ -419,7 +419,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
 
             CMPCertificate[] extraCert = getCMPCert(ra1admincert);
             msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra1adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
-            assertNotNull(msg);
+            assertNotNull("Signing CMP message failed", msg);
             //******************************************''''''
             final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
             sig.initVerify(ra1admincert.getPublicKey());
@@ -461,7 +461,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
 
             CMPCertificate[] extraCert = getCMPCert(ra2admincert);
             msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra2adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
-            assertNotNull(msg);
+            assertNotNull("Signing CMP message failed.", msg);
             //******************************************''''''
             final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
             sig.initVerify(ra2admincert.getPublicKey());
@@ -513,7 +513,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             
         CMPCertificate[] extraCert = getCMPCert(ra2admincert);
         msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra2adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
-        assertNotNull(msg);
+        assertNotNull("Signing CMP message failed.", msg);
         //******************************************''''''
         Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
         sig.initVerify(ra2admincert.getPublicKey());
@@ -538,9 +538,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         } finally {
             asn1InputStream.close();
         }
-        assertNotNull(respObject);
+        assertNotNull("Reading CMP response failed.", respObject);
         PKIBody body = respObject.getBody();
-        assertEquals(23, body.getType());
+        assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
         String expectedErrMsg = "'CN=" + RA2_ADMIN + "' is not an authorized administrator.";
@@ -559,7 +559,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         
         extraCert = getCMPCert(ra1admincert);
         msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra1adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
-        assertNotNull(msg);
+        assertNotNull("Signing CMP message failed.", msg);
         //******************************************''''''
         sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
         sig.initVerify(ra1admincert.getPublicKey());
@@ -582,9 +582,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         } finally {
             asn1InputStream.close();
         }
-        assertNotNull(respObject);
+        assertNotNull("Reading CMP response failed.", respObject);
         body = respObject.getBody();
-        assertEquals(23, body.getType());
+        assertEquals(PKIBody.TYPE_ERROR, body.getType());
         err = (ErrorMsgContent) body.getContent();
         errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
         expectedErrMsg = "'CN=" + RA1_ADMIN + "' is not an authorized administrator.";
@@ -625,7 +625,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Sign the revocation request with RA2 Admin
             CMPCertificate[] extraCert = getCMPCert(ra2admincert);
             PKIMessage protectedMsg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra2adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
-            assertNotNull(msg);
+            assertNotNull("Signing CMP message failed.", protectedMsg);
 
             // Send the CMP request to RA1. Expected: Fail
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -643,9 +643,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             } finally {
                 asn1InputStream.close();
             }
-            assertNotNull(respObject);
+            assertNotNull("Reading CMP response failed.", respObject);
             PKIBody body = respObject.getBody();
-            assertEquals(23, body.getType());
+            assertEquals(PKIBody.TYPE_ERROR, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
             String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
             String expectedErrMsg = "'CN=" + RA2_ADMIN + "' is not an authorized administrator.";
@@ -655,7 +655,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Sign the revocation request with RA1 Admin
             extraCert = getCMPCert(ra1admincert);
             protectedMsg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra1adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
-            assertNotNull(msg);
+            assertNotNull("Signing CMP message failed.", protectedMsg);
 
             // Send the CMP request to RA1. Expected: Success
             bao = new ByteArrayOutputStream();
@@ -703,7 +703,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Sign the revocation request with RA2 Admin
             CMPCertificate[] extraCert = getCMPCert(ra2admincert);
             PKIMessage protectedMsg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra2adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
-            assertNotNull(msg);
+            assertNotNull("Signing CMP message failed", protectedMsg);
 
             // Send the CMP request to RA2. Expected: Fail
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -721,9 +721,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             } finally {
                 asn1InputStream.close();
             }
-            assertNotNull(respObject);
+            assertNotNull("Reading CMP response failed.", respObject);
             PKIBody body = respObject.getBody();
-            assertEquals(23, body.getType());
+            assertEquals(PKIBody.TYPE_ERROR, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
             String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
             String expectedErrMsg = "'CN=" + RA2_ADMIN + "' is not an authorized administrator.";
@@ -786,9 +786,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         principals.add(p);
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
         AuthenticationToken token = createTokenWithCert(name, subject, keys, _caid, eepid, cpid);
-        assertNotNull(token);
+        assertNotNull("Failed to create authentication token.", token);
         X509Certificate cert = (X509Certificate) token.getCredentials().iterator().next();
-        assertNotNull(cert);
+        assertNotNull("Failed to retrieve authentication token certificate.", cert);
         return token;
     }
 
@@ -853,7 +853,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             throw new IllegalStateException(e.getLocalizedMessage(), e);
         }
 
-        assertNotNull(certificate);
+        assertNotNull("Failed to create a test user certificate", certificate);
 
         // Add the credentials and new principal
         credentials.add(certificate);
@@ -862,7 +862,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
 
         // We cannot use the X509CertificateAuthenticationToken here, since it can only be used internally in a JVM.
         AuthenticationToken result = new TestX509CertificateAuthenticationToken(principals, credentials);
-        assertNotNull(result);
+        assertNotNull("Failed to create authentication token.", result);
         return result;
     }
     
