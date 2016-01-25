@@ -89,9 +89,9 @@ public class P11Slot {
     @Override
     public String toString() {
         if (Pkcs11SlotLabelType.SUN_FILE.equals(slotLabelType)) {
-            return "P11, Sun configuration file name: " + sunP11ConfigFileName;
+            return "PKCS#11, Sun configuration file name: " + sunP11ConfigFileName;
         }
-        return "P11 slot " + slotLabel + " using library " + sharedLibrary + ".";
+        return "PKCS#11 slot " + slotLabel + " using library " + sharedLibrary + ".";
     }
 
     /** Reset the HSM. Could be done if it has stopped working in a try to get it working again. */
@@ -127,13 +127,13 @@ public class P11Slot {
             try {
                 ((AuthProvider)provider).logout();
                 if (log.isDebugEnabled()) {
-                    log.debug("P11 session terminated for \"" + toString() + "\".");
+                    log.debug("PKCS#11 session terminated for \"" + toString() + "\".");
                 }
             } catch (LoginException e) {
-                log.warn("Not possible to logout from P11 Session. HW problems?", e);
+                log.warn("Not possible to logout from PKCS#11 Session. HW problems?", e);
             }
         } else {
-            log.warn("Not possible to logout from P11 provider '" + toString() + "'. It is not implementing '" + AuthProvider.class.getCanonicalName() + "'.");
+            log.warn("Not possible to logout from PKCS#11 provider '" + toString() + "'. It is not implementing '" + AuthProvider.class.getCanonicalName() + "'.");
         }
     }
 
@@ -202,12 +202,12 @@ public class P11Slot {
             final String slotMapKey;
             if (Pkcs11SlotLabelType.SUN_FILE.equals(slotLabelType)) {
                 if (sunP11ConfigFileName==null) {
-                    throw new IllegalStateException("Can't initialize P11 slot of type "+slotLabelType.name()+" without providing a config file.");
+                    throw new IllegalStateException("Can't initialize PKCS#11 slot of type "+slotLabelType.name()+" without providing a config file.");
                 }
                 slotMapKey = new File(sunP11ConfigFileName).getName();
             } else {
                 if (slotLabel==null || sharedLibrary==null) {
-                    throw new IllegalStateException("Can't initialize P11 slot of type "+slotLabelType.name()+" without providing library and slot label.");
+                    throw new IllegalStateException("Can't initialize PKCS#11 slot of type "+slotLabelType.name()+" without providing library and slot label.");
                 }
                 slotMapKey = friendlyName;
             }
