@@ -53,19 +53,29 @@ public class CertificateRevocationStatusVerifier {
     
     private String method;
     private String url;
+    
+    private SingleResp ocspResponse;
 
     public CertificateRevocationStatusVerifier() {
         this.method=null;
         this.url=null;
+        this.ocspResponse=null;
     }
     public CertificateRevocationStatusVerifier(final String url) {
         this.method=VERIFICATION_METHOD_CRL;
         this.url=url;
+        this.ocspResponse=null;
     }
     public CertificateRevocationStatusVerifier(final String method, final String url) {
         this.method=method;
         this.url=url;
+        this.ocspResponse=null;
     }
+    
+    public SingleResp getOCSPResponse() {
+        return this.ocspResponse;
+    }
+    
     public Boolean isCertificateRevoked(final X509Certificate cert, final X509Certificate cacert) throws IOException, OCSPException, NoSuchProviderException, OperatorCreationException, CertificateException, CRLException, CesecoreException {
 
         if((this.method == null) || (this.url == null)) {
@@ -80,25 +90,25 @@ public class CertificateRevocationStatusVerifier {
         if(StringUtils.equals(VERIFICATION_METHOD_OCSP, this.method)) {
             log.info("Using OCSP to verify the signing certificate revocation status");
             
-            SingleResp ocspResponse = null;
             OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, certSerialnumber));
             OCSPReq req = gen.build();
             // Send the request and receive a singleResponse
-            SingleResp[] singleResps = sendOCSPPost(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+            SingleResp[] singleResps = getOCSPResponse(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
             
             if(singleResps == null) {
                 log.error("Failed to verify signing certificate revocation status using OCSP");
                 return null;
             }
                 
-            ocspResponse = singleResps[0];
-            CertificateID certId = ocspResponse.getCertID();
+            SingleResp response = singleResps[0];
+            CertificateID certId = response.getCertID();
             if(!certId.getSerialNumber().equals(certSerialnumber)) {
                 log.error("Certificate serialnumber in response does not match serno in request.");
                 return null;
             }
-            CertificateStatus status = ocspResponse.getCertStatus();
+            this.ocspResponse = response;
+            CertificateStatus status = response.getCertStatus();
             if(status == null) { // null indicates 'good'
                 if(log.isDebugEnabled()) {
                     log.debug("The signing certificate is not revoked");
@@ -130,7 +140,7 @@ public class CertificateRevocationStatusVerifier {
         return true;
     }
 
-    private SingleResp[] sendOCSPPost(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException, OperatorCreationException, CertificateException {
+    private SingleResp[] getOCSPResponse(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException, OperatorCreationException, CertificateException {
         if(log.isDebugEnabled()) {
             log.debug("Sending an OCSP requst to " + this.url);
         }
@@ -180,6 +190,9 @@ public class CertificateRevocationStatusVerifier {
         //    }
         //}
         SingleResp[] singleResps = brep.getResponses();
+        if(singleResps.length==0) {
+            return null;
+        }
         return singleResps;        
     }
 
