@@ -282,6 +282,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private boolean statedumpLockdownAfterImport = false;
     
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
+    private final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
     private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
     /** Session bean for importing statedump. Will be null if statedump isn't available */
     private final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
@@ -739,21 +740,21 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     // -------------------------------------------
     
     public String getCtLogUrl() {
-        return ((CTLogInfo) ctLogs.getRowData()).getUrl();
+        return ctLogs.getRowData().getUrl();
     }
     
     public int getCtLogTimeout() {
-        return ((CTLogInfo) ctLogs.getRowData()).getTimeout();
+        return ctLogs.getRowData().getTimeout();
     }
     
     public String getCtLogPublicKeyID() {
-        return ((CTLogInfo) ctLogs.getRowData()).getLogKeyIdString();
+        return ctLogs.getRowData().getLogKeyIdString();
     }
     
     public ListDataModel<CTLogInfo> getCtLogs() {
-        if(ctLogs == null) {
+        if (ctLogs == null) {
             List<CTLogInfo> logs = getCurrentConfig().getCtLogs();
-            ctLogs = new ListDataModel<CTLogInfo>(logs);
+            ctLogs = new ListDataModel<>(logs);
         }
         return ctLogs;
     }
@@ -796,7 +797,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             super.addNonTranslatedErrorMessage(msg);
         }
 
-        if(ctlogToAdd != null) {
+        if (ctlogToAdd != null) {
             for (CTLogInfo existing : currentConfig.getCtLogs()) {
                 if (StringUtils.equals(existing.getUrl(), ctlogToAdd.getUrl())) {
                     FacesContext.getCurrentInstance()
@@ -808,23 +809,38 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             List<CTLogInfo> ctlogs = currentConfig.getCtLogs(); 
             ctlogs.add(ctlogToAdd);
             currentConfig.setCtLogs(ctlogs);
-            ctLogs = new ListDataModel<CTLogInfo>(ctlogs);
+            ctLogs = new ListDataModel<>(ctlogs);
         }
         
         saveCurrentConfig();
     }
 
     public void removeCTLog() {
-        final CTLogInfo ctlogToRemove = ((CTLogInfo) ctLogs.getRowData());
+        final CTLogInfo ctlogToRemove = ctLogs.getRowData();
+        
+        // Check if it's in use by certificate profiles
+        final List<String> usedByProfiles = new ArrayList<>();
+        final Map<Integer,String> idToName = certificateProfileSession.getCertificateProfileIdToNameMap();
+        for (Entry<Integer,CertificateProfile> entry : certificateProfileSession.getAllCertificateProfiles().entrySet()) {
+            final int certProfId = entry.getKey();
+            final CertificateProfile certProf = entry.getValue();
+            if (certProf.getEnabledCTLogs().contains(ctlogToRemove.getLogId())) {
+                usedByProfiles.add(idToName.get(certProfId));
+            }
+        }
+        
+        if (!usedByProfiles.isEmpty()) {
+            final String msg = "CT Log is still in use by the following Certificate Profiles and can't be removed: " +
+                    StringUtils.join(usedByProfiles, ", ");
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
+            return;
+        }
+        
         List<CTLogInfo> ctlogs = currentConfig.getCtLogs(); 
         ctlogs.remove(ctlogToRemove);
         currentConfig.setCtLogs(ctlogs);
-        ctLogs = new ListDataModel<CTLogInfo>(ctlogs);
+        ctLogs = new ListDataModel<>(ctlogs);
         saveCurrentConfig();
-    }
-    
-    public void uploadCTLogPublicKeyFile() {
-        
     }
     
     
