@@ -394,3 +394,99 @@ a.externalLink, a.externalLink:link, a.externalLink:visited, a.externalLink:acti
 .minitoc li{
 	color: #8ca8d0;
 	}
+	
+.DocTable {
+	margin:0px;padding:0px;
+	width:80%;
+	box-shadow: 10px 10px 5px #888888;
+	border:1px solid #000000;
+	
+	-moz-border-radius-bottomleft:0px;
+	-webkit-border-bottom-left-radius:0px;
+	border-bottom-left-radius:0px;
+	
+	-moz-border-radius-bottomright:0px;
+	-webkit-border-bottom-right-radius:0px;
+	border-bottom-right-radius:0px;
+	
+	-moz-border-radius-topright:0px;
+	-webkit-border-top-right-radius:0px;
+	border-top-right-radius:0px;
+	
+	-moz-border-radius-topleft:0px;
+	-webkit-border-top-left-radius:0px;
+	border-top-left-radius:0px;
+}.DocTable table{
+    border-collapse: collapse;
+        border-spacing: 0;
+	width:100%;
+	height:100%;
+	margin:0px;padding:0px;
+}.DocTable tr:last-child td:last-child {
+	-moz-border-radius-bottomright:0px;
+	-webkit-border-bottom-right-radius:0px;
+	border-bottom-right-radius:0px;
+}
+.DocTable table tr:first-child td:first-child {
+	-moz-border-radius-topleft:0px;
+	-webkit-border-top-left-radius:0px;
+	border-top-left-radius:0px;
+}
+.DocTable table tr:first-child td:last-child {
+	-moz-border-radius-topright:0px;
+	-webkit-border-top-right-radius:0px;
+	border-top-right-radius:0px;
+}.DocTable tr:last-child td:first-child{
+	-moz-border-radius-bottomleft:0px;
+	-webkit-border-bottom-left-radius:0px;
+	border-bottom-left-radius:0px;
+}.DocTable tr:hover td{
+	
+}
+.DocTable tr:nth-child(odd){ background-color:#fcf1d1; }
+.DocTable tr:nth-child(even){ background-color:#ffffff; }.DocTable td{
+	vertical-align:middle;
+	
+	
+	border:1px solid #000000;
+	border-width:0px 1px 1px 0px;
+	text-align:left;
+	padding:7px;
+	font-size:10px;
+	font-family:Arial;
+	font-weight:normal;
+	color:#000000;
+}.DocTable tr:last-child td{
+	border-width:0px 1px 0px 0px;
+}.DocTable tr td:last-child{
+	border-width:0px 0px 1px 0px;
+}.DocTable tr:last-child td:last-child{
+	border-width:0px 0px 0px 0px;
+}
+.DocTable tr:first-child td{
+		background:-o-linear-gradient(bottom, #98b1d5 5%, #98b1d5 100%);	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #98b1d5), color-stop(1, #98b1d5) );
+	background:-moz-linear-gradient( center top, #98b1d5 5%, #98b1d5 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#98b1d5", endColorstr="#98b1d5");	background: -o-linear-gradient(top,#98b1d5,98b1d5);
+
+	background-color:#98b1d5;
+	border:0px solid #000000;
+	text-align:center;
+	border-width:0px 0px 1px 1px;
+	font-size:14px;
+	font-family:Arial;
+	font-weight:bold;
+	color:#ffffff;
+}
+.DocTable tr:first-child:hover td{
+	background:-o-linear-gradient(bottom, #98b1d5 5%, #98b1d5 100%);	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #98b1d5), color-stop(1, #98b1d5) );
+	background:-moz-linear-gradient( center top, #98b1d5 5%, #98b1d5 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#98b1d5", endColorstr="#98b1d5");	background: -o-linear-gradient(top,#98b1d5,98b1d5);
+
+	background-color:#98b1d5;
+}
+.DocTable tr:first-child td:first-child{
+	border-width:0px 0px 1px 0px;
+}
+.DocTable tr:first-child td:last-child{
+	border-width:0px 0px 1px 1px;
+}

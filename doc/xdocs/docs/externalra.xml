@@ -448,6 +448,56 @@ cmp.backend.extra.issuerchainpath
 <p>This value can either be set to a single PEM file or to a directory containing multiple PEM files, representing one or more valid issuers of signing certificates. </p>
 </subsubsection>
 </subsection>
+<subsection name="CMP Proxy Error Messages">
+<p>The CMP Proxy will return error messages, partly as a result of problems inherent to the proxy in itself, and partly due to evaluating CMP requests directly on the proxy before passing them on. </p>
+<p>
+<div class="DocTable" >
+<table>
+  <tr>
+    <td>Error Description</td>
+    <td>Error Type</td>
+    <td>Error Code</td>
+  </tr>
+  <tr>
+    <td>The received request did not contain a DER object.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>Submitting a request with a URL that does not match an existing CMP alias</td>
+    <td>HTTP</td>
+    <td>404 Not Found</td>
+  </tr>
+  <tr>
+    <td>Sending a response over TCP failed.</td>
+    <td>HTTP</td>
+    <td>500 Internal Server Error</td>
+  </tr>
+    <tr>
+    <td>Signature/HMAC protection was required in configuration, but no protection was present.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>HMAC/Signature verification failed.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>Message signature was required, but no signing certificate was supplied.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>Message signature was required, but no certificate chains defined on proxy</td>
+    <td>Unsigned CMP</td>
+    <td>SYSTEM_UNAVAILABLE (24)</td>
+  </tr>
+</table>
+</div>
+</p>
+
+</subsection>
 </section>
 <section name="Clustering External RA">
 <p>
