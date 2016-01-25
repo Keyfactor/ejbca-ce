@@ -82,14 +82,6 @@ public class CertRevocationStatusCheckTest extends CaTestCase {
     public void setUp() throws Exception {
         testx509ca = CaTestUtils.createTestX509CA(CADN, null, false);
         caSession.addCA(alwaysAllowToken, testx509ca);
-        X509CAInfo cainfo = (X509CAInfo) testx509ca.getCAInfo();
-        final String defaultCRLDistPoint = "http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=";
-        //http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN=ManagementCA,O=EJBCA%20Sample,C=SE
-        URL crlUrl = new URL(defaultCRLDistPoint + cainfo.getSubjectDN());
-        cainfo.setDefaultCRLDistPoint(crlUrl.toString());
-        caSession.editCA(alwaysAllowToken, cainfo);
-
-
     }
     
     @After
@@ -108,6 +100,13 @@ public class CertRevocationStatusCheckTest extends CaTestCase {
 
     @Test
     public void test01VerificationWithCRL() throws Exception {
+
+        X509CAInfo cainfo = (X509CAInfo) testx509ca.getCAInfo();
+        final String defaultCRLDistPoint = "http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=";
+        //http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN=ManagementCA,O=EJBCA%20Sample,C=SE
+        URL crlUrl = new URL(defaultCRLDistPoint + cainfo.getSubjectDN());
+        cainfo.setDefaultCRLDistPoint(crlUrl.toString());
+        caSession.editCA(alwaysAllowToken, cainfo);
         
         final String username = "CertRevocationStatusCheckTestUser";
         final String userDN = "CN=" + username;
@@ -121,8 +120,6 @@ public class CertRevocationStatusCheckTest extends CaTestCase {
             X509Certificate usercert = (X509Certificate) signSession.createCertificate(alwaysAllowToken, username, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
             usercertFp = CertTools.getFingerprintAsString(usercert);
         
-            final X509CAInfo cainfo = (X509CAInfo) testx509ca.getCAInfo();
-            
             // Generate CRL
             Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, -1);
             int fullnumber = crlStoreSession.getLastCRLNumber(CADN, false);
