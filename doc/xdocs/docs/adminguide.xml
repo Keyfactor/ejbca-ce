@@ -1433,17 +1433,82 @@ See EJBCA_HOME/modules/cmpProxy/resources/README for information how to build an
 <subsection name="CMP error messages">
 <p>When an error occurs during CMP processing some different CMP error messages, or HTTP error codes can occur. Depending on at which stage the error is encountered and its type, different error messages are returned.
 Below is a non-exhaustive list of CMP error codes (don't use as definite guide, do you own testing).</p>
-<ul>
-<li>Submitting a request with a URL that does not match an existing CMP alias: HTTP 404 (not found)</li>
-<li>Trying to revoke a certificate that was already revoked: a signed CMP certRevoked error message</li>
-<li>Submitting a CMP RA message not authorized: a signed CMP notAuthorized error message</li>
-<li>Trying to revoke a non existing certificate: a signed CMP badCertId error message</li>
-<li>Trying to issue a certificate from a non existing CA: an unsigned CMP wrongAuthority error message</li>
-<li>Submitting a CMP request with bad POP: an unsigned CMP badPOP error message</li>
-<li>Submitting a CMP client mode enrollment request with wrong user/enrollment code: an unsigned CMP notAuthorized error message</li>
-<li>Internal processing error due to invalid configuration such as missing profiles: an unsigned CMP badRequest error message</li>
-<li>Other internal errors: an unsigned CMP error message with various error codes</li>
-</ul>
+<p>
+<div class="DocTable" >
+<table>
+  <tr>
+    <td>Error Description</td>
+    <td>Error Type</td>
+    <td>Error Code</td>
+  </tr>
+    <tr>
+    <td>The received request did not contain a DER object.</td>
+    <td>HTTP</td>
+    <td>400 Bad Request</td>
+  </tr>
+  <tr>
+    <td>The DER object contained in request could not be parsed to a CMP message.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>Signature verification on a nested message failed.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>Received CMP message was of an unknown type</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>Submitting a request with a URL that does not match an existing CMP alias</td>
+    <td>HTTP</td>
+    <td>404 Not Found</td>
+  </tr>
+  <tr>
+    <td>Trying to revoke a certificate that was already revoked</td>
+    <td>Signed CMP</td>
+    <td>RetRevoked</td>
+  </tr>
+  <tr>
+    <td>Submitting a CMP RA message not authorized: a signed CMP notAuthorized error message</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_MESSAGE_CHECK</td>
+  </tr>
+  <tr>
+    <td>Trying to revoke a non existing certificate: a signed CMP badCertId error message</td>
+    <td>Signed CMP</td>
+    <td>badCertId</td>
+  </tr>
+  <tr>
+    <td>Trying to issue a certificate from a non existing CA</td>
+    <td>Unsigned CMP</td>
+    <td>wrongAuthority</td>
+  </tr>
+  <tr>
+    <td>Submitting a CMP request with bad POP</td>
+    <td>Unsigned CMP</td>
+    <td>badPOP</td>
+  </tr>
+  <tr>
+    <td>Submitting a CMP client mode enrollment request with wrong user/enrollment code</td>
+    <td>Unsigned CMP</td>
+    <td>notAuthorized</td>
+  </tr>
+  <tr>
+    <td>Internal processing error due to invalid configuration such as missing profiles</td>
+    <td>Unsigned CMP</td>
+    <td>badRequest</td>
+  </tr>
+  <tr>
+    <td>Other internal errors</td>
+    <td>Unsigned CMP</td>
+    <td>Various</td>
+  </tr>
+</table>
+</div>
+</p>
 </subsection>
 
 </section>
