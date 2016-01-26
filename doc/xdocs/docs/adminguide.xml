@@ -1432,7 +1432,7 @@ See EJBCA_HOME/modules/cmpProxy/resources/README for information how to build an
 </subsection>
 <subsection name="CMP error messages">
 <p>When an error occurs during CMP processing some different CMP error messages, or HTTP error codes can occur. Depending on at which stage the error is encountered and its type, different error messages are returned.
-Below is a non-exhaustive list of CMP error codes (don't use as definite guide, do you own testing).</p>
+Below is a exhaustive list of CMP error codes (don't use as definite guide, do you own testing).</p>
 <p>
 <div class="DocTable" >
 <table>
@@ -1467,39 +1467,94 @@ Below is a non-exhaustive list of CMP error codes (don't use as definite guide, 
     <td>404 Not Found</td>
   </tr>
   <tr>
+    <td>Submitting a CMP RA message that could not be authenticated.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_MESSAGE_CHECK (1)</td>
+  </tr>
+  <tr>
     <td>Trying to revoke a certificate that was already revoked</td>
     <td>Signed CMP</td>
-    <td>RetRevoked</td>
+    <td>CERT_REVOKED (10)</td>
   </tr>
   <tr>
-    <td>Submitting a CMP RA message not authorized: a signed CMP notAuthorized error message</td>
+    <td>Trying to revoke a certificate whose revocation is is waiting for approval</td>
     <td>Unsigned CMP</td>
-    <td>BAD_MESSAGE_CHECK</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+   <tr>
+    <td>Trying to revoke a certificate from a nonexistant CA.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
   </tr>
   <tr>
-    <td>Trying to revoke a non existing certificate: a signed CMP badCertId error message</td>
+    <td>Trying to revoke a non existing certificate</td>
     <td>Signed CMP</td>
-    <td>badCertId</td>
+    <td>BAD_CERTIFICATE_ID (4)</td>
+  </tr>
+    <tr>
+    <td>Trying to revoke a certificate, but serial number or issuer were missing from request.</td>
+    <td>Signed CMP</td>
+    <td>BAD_CERTIFICATE_ID (4)</td>
   </tr>
   <tr>
-    <td>Trying to issue a certificate from a non existing CA</td>
+    <td>Revocation reason could not be parsed from CMP message</td>
     <td>Unsigned CMP</td>
-    <td>wrongAuthority</td>
+    <td>INCORRECT_DATA (7)</td>
+  </tr>
+  <tr>
+    <td>Trying to issue or request a certificate from a non existing CA</td>
+    <td>Unsigned CMP</td>
+    <td>WRONG_AUTHORITY (6)</td>
   </tr>
   <tr>
     <td>Submitting a CMP request with bad POP</td>
     <td>Unsigned CMP</td>
-    <td>badPOP</td>
+    <td>BAD_POP (9)</td>
+  </tr>
+  <tr>
+    <td>Submitting a CMP client mode enrollment request with invalid certificate extensions specified.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>Attempting a key update request without the end entity authentication module configured.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>A key update request without could not be authenticated/verified.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>A key update request was submitted without a subject DN</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>A key update request for an end entity which wasn't found in the database.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_MESSAGE_CHECK (1)</td>
+  </tr>
+  <tr>
+    <td>A key update request was submitted using the same keypair.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_MESSAGE_CHECK (1)</td>
+  </tr>
+  <tr>
+    <td>Any other failures that may have occurred during key renewal.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_MESSAGE_CHECK (1)</td>
   </tr>
   <tr>
     <td>Submitting a CMP client mode enrollment request with wrong user/enrollment code</td>
     <td>Unsigned CMP</td>
-    <td>notAuthorized</td>
+    <td>NOT_AUTHORIZED (23)</td>
   </tr>
   <tr>
     <td>Internal processing error due to invalid configuration such as missing profiles</td>
     <td>Unsigned CMP</td>
-    <td>badRequest</td>
+    <td>BAD_REQUEST (2)</td>
   </tr>
   <tr>
     <td>Other internal errors</td>

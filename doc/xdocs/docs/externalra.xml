@@ -449,7 +449,8 @@ cmp.backend.extra.issuerchainpath
 </subsubsection>
 </subsection>
 <subsection name="CMP Proxy Error Messages">
-<p>The CMP Proxy will return error messages, partly as a result of problems inherent to the proxy in itself, and partly due to evaluating CMP requests directly on the proxy before passing them on. </p>
+<p>The CMP Proxy will return error messages, partly as a result of problems inherent to the proxy in itself, and partly due to evaluating CMP requests directly on the proxy before passing them on. 
+The messages listed here are those returned by the proxy independently of the CA, as listed in the <a href="adminguide.html#CMP error messages">Admin Guide</a>.</p>
 <p>
 <div class="DocTable" >
 <table>
