@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.text.Collator;
 import java.util.Arrays;
@@ -146,6 +147,7 @@ public abstract class FileTools {
     private static class FileComp implements Comparator<File> {
     	private final Collator c = Collator.getInstance();
 
+    	@Override
     	public int compare(final File f1, final File f2) {
     		if(f1 == f2) {
     			return 0;
@@ -191,4 +193,34 @@ public abstract class FileTools {
             log.error("Could not delete directory " + file.getAbsolutePath());
         }
     }
-} 
+    
+    /**
+     * Copies the data from an input stream to an output stream. A limit on the file size is imposed.
+     * 
+     * @param input Stream to copy from.
+     * @param output Stream to copy to.
+     * @param maxBytes Throw a SizeLimitExceededException if more than this number of bytes are read.
+     * @return The number of bytes copied.
+     * @throws IOException If reading from or writing to the streams fail.
+     * @throws StreamSizeLimitExceededException If more than maxBytes are read.
+     */
+    public static long streamCopyWithLimit(final InputStream input, final OutputStream output, final long maxBytes) throws IOException, StreamSizeLimitExceededException {
+        if (maxBytes <= 0) {
+            throw new StreamSizeLimitExceededException("Size limit was reached");
+        }
+
+        final byte[] buff = new byte[16*1024];
+        long bytesCopied = 0;
+        while (true) {
+            int len = input.read(buff);
+            if (len <= 0) { break; }
+            bytesCopied += len;
+            if (bytesCopied > maxBytes) {
+                throw new StreamSizeLimitExceededException("Size limit was reached");
+            }
+            output.write(buff, 0, len);
+        }
+        
+        return bytesCopied;
+    }
+}
