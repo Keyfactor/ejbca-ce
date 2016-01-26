@@ -426,7 +426,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         assertNotNull(resp);
         assertTrue(resp.length > 0);
-        checkCmpFailMessage(resp, "Iteration count can not exceed 10000", 23, reqId, PKIFailureInfo.badMessageCheck, 
+        checkCmpFailMessage(resp, "Iteration count can not exceed 10000", 23, reqId, PKIFailureInfo.badRequest, 
                                                     PKIFailureInfo.incorrectData); // We expect a FailInfo.BAD_MESSAGE_CHECK
     }
 
