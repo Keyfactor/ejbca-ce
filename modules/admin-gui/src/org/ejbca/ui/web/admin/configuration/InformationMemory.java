@@ -415,10 +415,10 @@ public class InformationMemory implements Serializable {
 
     public Map<String, Set<String>> getRedactedAccessRules(final String endentityAccessRule) {
         if (redactedAccessRules == null) {
-            redactedAccessRules = complexAccessControlSession.getAuthorizedAvailableAccessRules(administrator,
+            redactedAccessRules = complexAccessControlSession.getAllAccessRulesRedactUnauthorizedCas(administrator,
                     globalconfiguration.getEnableEndEntityProfileLimitations(), globalconfiguration.getIssueHardwareTokens(),
                     globalconfiguration.getEnableKeyRecovery(), endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, endentityAccessRule),
-                    userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true), EjbcaConfiguration.getCustomAvailableAccessRules(), true);
+                    userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true), EjbcaConfiguration.getCustomAvailableAccessRules());
         }
         return redactedAccessRules;
     }

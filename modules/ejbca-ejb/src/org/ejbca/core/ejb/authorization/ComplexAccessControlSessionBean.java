@@ -217,13 +217,34 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     public Map<String, Set<String>> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken, boolean enableendentityprofilelimitations,
             boolean usehardtokenissuing, boolean usekeyrecovery, Collection<Integer> authorizedEndEntityProfileIds,
             Collection<Integer> authorizedUserDataSourceIds, String[] customaccessrules) {
-        return getAuthorizedAvailableAccessRules(authenticationToken, enableendentityprofilelimitations, usehardtokenissuing, usekeyrecovery,
+        return getAvailableAccessRules(authenticationToken, enableendentityprofilelimitations, usehardtokenissuing, usekeyrecovery,
                 authorizedEndEntityProfileIds, authorizedUserDataSourceIds, customaccessrules, false);
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<String, Set<String>> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken, boolean enableendentityprofilelimitations,
+    public Map<String, Set<String>> getAllAccessRulesRedactUnauthorizedCas(AuthenticationToken authenticationToken, boolean enableendentityprofilelimitations,
+            boolean usehardtokenissuing, boolean usekeyrecovery, Collection<Integer> authorizedEndEntityProfileIds,
+            Collection<Integer> authorizedUserDataSourceIds, String[] customaccessrules) {
+        return getAvailableAccessRules(authenticationToken, enableendentityprofilelimitations, usehardtokenissuing, usekeyrecovery,
+                authorizedEndEntityProfileIds, authorizedUserDataSourceIds, customaccessrules, true);
+    }
+    /**
+     * Will collect either all authorized access rules, or all access rules barring those relating to CAs (or CPs or EEPs dependent on CAs), EEPs or CPs which
+     * the current admin is authorized to, depending on the 
+     * 
+    * @param admin is the administrator calling the method.
+    * @param availableCaIds A Collection<Integer> of all CA IDs
+    * @param enableendentityprofilelimitations Include End Entity Profile access rules
+    * @param usehardtokenissuing Include Hard Token access rules
+    * @param usekeyrecovery Include Key Recovery access rules
+    * @param authorizedEndEntityProfileIds A Collection<Integer> of all authorized End Entity Profile IDs
+    * @param authorizedUserDataSourceIds A Collection<Integer> of all authorized user data sources IDs
+    * @param restrictToCaChecks set to true to return all access rules, barring those relating to CA's, EEPs or CPs which the admin doesn't have access to. 
+    * @param 
+    * @return a LinkedHashMap of strings representing the available access rules, keyed by category
+    */
+    private Map<String, Set<String>> getAvailableAccessRules(AuthenticationToken authenticationToken, boolean enableendentityprofilelimitations,
             boolean usehardtokenissuing, boolean usekeyrecovery, Collection<Integer> authorizedEndEntityProfileIds,
             Collection<Integer> authorizedUserDataSourceIds, String[] customaccessrules, boolean restrictToCaChecks) {
         if (log.isTraceEnabled()) {
