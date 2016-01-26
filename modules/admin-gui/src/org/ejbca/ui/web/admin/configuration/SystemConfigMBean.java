@@ -56,6 +56,8 @@ import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.FileTools;
+import org.cesecore.util.StreamSizeLimitExceededException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -486,6 +488,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         // Unpack the zip file
         try (final ZipInputStream zipStream = new ZipInputStream(new ByteArrayInputStream(zip))) {
             boolean empty = true;
+            long limit = 100_000_000; // Maximum total uncompressed size is 100 MB
             while (true) {
                 final ZipEntry entry = zipStream.getNextEntry();
                 if (entry == null) { break; }
@@ -504,18 +507,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                         log.debug("Ignoring empty file");
                         zipStream.closeEntry();
                         continue;
-                    } else if (entry.getSize() < 0 || (1000*entry.getCompressedSize() < entry.getSize()) && (entry.getSize() > 100_000_000)) {
-                        throw new IOException("Zip file contains a file with extreme compression factor (1000x or more) and larger than 100 MB. Aborting.");
                     }
                     
                     // Create file exclusively (don't overwrite, and don't write to special devices or operating system special files)
                     final Path filepath = Files.createFile(new File(tempdir, name).toPath());
                     try (final FileOutputStream fos = new FileOutputStream(filepath.toFile())) {
-                        final byte[] buff = new byte[16*1024];
-                        while (true) {
-                            int len = zipStream.read(buff);
-                            if (len <= 0) { break; }
-                            fos.write(buff, 0, len);
+                        try {
+                            limit -= FileTools.streamCopyWithLimit(zipStream, fos, limit);
+                        } catch (StreamSizeLimitExceededException ssle) {
+                            throw new IOException("Zip file is larger than 100 MB. Aborting.");
                         }
                     }
                     zipStream.closeEntry();
