@@ -215,7 +215,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 						if(authenticationModule == null) {
 						    String errmsg = messageVerifyer.getErrorMessage();
 						    LOG.info(errmsg);
-						    return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_MESSAGE_CHECK, errmsg);
+						    return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, errmsg);
 						}
 						
 						crmfreq.setPassword(authenticationModule.getAuthenticationString());
@@ -334,7 +334,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         if(authenticationModule == null) {
             String errmsg = messageVerifyer.getErrorMessage();
             LOG.info(errmsg);
-            return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_MESSAGE_CHECK, errmsg);
+            return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, errmsg);
         }
         
         try {

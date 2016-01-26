@@ -143,7 +143,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(msg.getMessage(), null, authenticated);
 		if(authenticationModule == null) {
 	          LOG.info(messageVerifyer.getErrorMessage());
-	          return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_MESSAGE_CHECK, messageVerifyer.getErrorMessage());
+	          return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, messageVerifyer.getErrorMessage());
 		}
 
 		// If authentication was correct, we will now try to find the certificate to revoke
