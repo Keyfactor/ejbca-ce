@@ -368,7 +368,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setCertificatePolicies(policies);
 
         setAvailableKeyAlgorithmsAsList(getAvailableKeyAlgorithmsAvailable());
-        setAvailableEcCurvesAsList(getAvailableEcCurvesAvailable());
+        setAvailableEcCurvesAsList(Arrays.asList(ANY_EC_CURVE));
         setAvailableBitLengths(DEFAULTBITLENGTHS);
 
         setUseKeyUsage(true);
@@ -1054,11 +1054,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     public void setAvailableEcCurvesAsList(final List<String> availableEcCurves) {
         data.put(AVAILABLEECCURVES, new ArrayList<>(availableEcCurves));
-    }
-    public List<String> getAvailableEcCurvesAvailable() {
-        final List<String> ret = new ArrayList<>(AlgorithmTools.getNamedEcCurvesMap(false).keySet());
-        ret.add(ANY_EC_CURVE);
-        return ret;
     }
 
 	public int[] getAvailableBitLengths() {
