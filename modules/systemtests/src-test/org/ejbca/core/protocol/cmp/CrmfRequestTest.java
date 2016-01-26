@@ -273,7 +273,7 @@ public class CrmfRequestTest extends CmpTestCase {
         resp = sendCmpHttp(barev, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, 
-                                PKIFailureInfo.badMessageCheck, PKIFailureInfo.incorrectData);
+                                PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
         log.trace("<test03CrmfHttpOkUser");
     }
 
