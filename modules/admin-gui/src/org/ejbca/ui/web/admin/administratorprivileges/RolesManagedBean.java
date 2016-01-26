@@ -121,7 +121,7 @@ public class RolesManagedBean extends BaseManagedBean {
     }
 
     /**
-     * 
+     * Returns if admin is authorized to rule, without logging "accessControlSession.isAuthorizedNoLogging"
      * @param rule
      * @param isRecursive
      * @return true if the current admin is authorized to a rule
