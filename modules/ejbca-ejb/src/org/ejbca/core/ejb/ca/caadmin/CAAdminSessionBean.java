@@ -82,7 +82,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
@@ -2095,12 +2094,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     log.error(errorMessage);
                     throw new IllegalArgumentException(errorMessage);
                 }
-                try{
-                    caSession.getCA(authenticationToken, newCAName);
+                if(caSession.existsCa(newCAName)){
                     final String errorMessage = "There is existing CA with the name = " + newCAName + ". Please delete it or pick another name. Aborting CA renewal.";
                     log.error(errorMessage);
                     throw new IllegalArgumentException(errorMessage);
-                }catch(CADoesntExistsException e){/*Good*/}
+                }
                 if(crlStoreSession.getLastCRL(newSubjectDN, false) != null){
                     final String errorMessage = "There are already stored some CRL data with issuer DN equal to specified new SubjectDN = " + newSubjectDN + ". Please delete them. Aborting CA renewal.";
                     log.error(errorMessage);
