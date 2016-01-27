@@ -82,6 +82,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
@@ -2229,18 +2230,31 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             publishingCrlSession.forceCRL(authenticationToken, caid);
             publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
             
-            //If CA has gone through Name Change, add new caid to available CAs for every profile
-            //that had the caid before the Name Change)
             if(subjectDNWillBeChanged){
+                //If CA has gone through Name Change, add new caid to available CAs for every profile
+                //that had the caid before the Name Change)
                 Map<Integer, String> allEndEntityProfileIdMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
                 for(Integer endEntityProfileId : allEndEntityProfileIdMap.keySet()){
                     EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
                     Collection<String> availCAs = endEntityProfile.getAvailableCAs();
-                    if(availCAs.contains(caidBeforeNameChange + "")){
+                    if(availCAs.contains(caidBeforeNameChange + "") &&
+                            !availCAs.contains(caid + "")){
                         availCAs.add(caid+"");
                         endEntityProfile.setAvailableCAsIDsAsStrings(availCAs);
-                        endEntityProfileSession.changeEndEntityProfile(authenticationToken, allEndEntityProfileIdMap.get(endEntityProfileId), endEntityProfile);
+                        endEntityProfileSession.changeEndEntityProfile(authenticationToken, allEndEntityProfileIdMap.get(endEntityProfileId), endEntityProfile);                            
                     }
+                }
+                
+                //If CA has gone through Name Change, clone all this CA specific access rules with new one with replaced caid for every roles.
+                for(RoleData roleData : roleAccessSession.getAllRoles()){
+                    final List<AccessRuleData> accessRulesToBeAdded = new ArrayList<AccessRuleData>();
+                    for(Map.Entry<Integer, AccessRuleData > accessRuleData: roleData.getAccessRules().entrySet()){
+                        String accessRuleName = accessRuleData.getValue().getAccessRuleName();
+                        if(accessRuleName.contains(caidBeforeNameChange + "")){
+                          accessRulesToBeAdded.add(new AccessRuleData(roleData.getRoleName(), accessRuleName.replace(caidBeforeNameChange+"", caid+""), accessRuleData.getValue().getInternalState(), accessRuleData.getValue().getRecursiveBool())); 
+                        }
+                    }
+                    roleManagementSession.addAccessRulesToRole(authenticationToken, roleData, accessRulesToBeAdded);
                 }
             }
             
