@@ -111,8 +111,8 @@ You can also use EJBCA to set up a CA independent, high performance, highly avai
 </note>
 <p>Together with sister projects (see <i><a href="complementary.html">Complementary software</a></i>) of EJBCA you can also:</p>
 <ul>
-<li>Get central trusted <a href="http://signserver.org">Time Stamps</a> for you electronically signed documents.</li>
-<li>Perform <a href="http://signserver.org">central signing of documents</a>.</li>
+<li>Get central trusted <a href="https://signserver.org">Time Stamps</a> for you electronically signed documents.</li>
+<li>Perform <a href="https://signserver.org">central signing of documents</a>.</li>
 <li>Sign electronic passport data (MRTD).</li>
 <li>Issue hard tokens (<a href="complementary.html#Hardware%20tokens">smart cards</a>) and manage the complete life cycle of cards and certificates.</li>
 <li>... and many many more ...</li>

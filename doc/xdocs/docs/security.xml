@@ -20,7 +20,7 @@ suitable for your policy, application and environment.
 <p>To have a functional EJBCA installation there are only two (or three) ports that need to be open to the outside:
 </p>
 <ul>
-<li>8080 - the public HTTP port of you application server, used for clients to access the public web for enrollment.</li>
+<li>8080 - the public HTTP port of you application server, used for clients to access the public web for information, should not be used for enrollment since it's not encrypted.</li>
 <li>8442 - the public HTTPS port (server side only SSL) of you application server, used for clients to access the public web for enrollment.</li>
 <li>8443 - the SSL protected HTTPS port used to access the Admin GUI of EJBCA. This port requires client certificate for access.</li>
 </ul>
@@ -71,7 +71,7 @@ See <a href="https://docs.jboss.org/author/display/AS7/Securing+the+Management+I
 </source>
 </subsubsection>
 <subsubsection name="Content Security Policy">
-<p>CSP is something implemented in browsers to mitigate cross site scripting attacks. See the description over at <a href="https://developer.mozilla.org/en-US/docs/Security/CSP/Introducing_Content_Security_Policy">Mozilla Developer Network</a>, 
+<p>CSP is something implemented in browsers to mitigate cross site scripting attacks. See the description over at <a href="https://developer.mozilla.org/en-US/docs/Web/Security/CSP/Introducing_Content_Security_Policy">Mozilla Developer Network</a>, 
 or <a href="http://content-security-policy.com/">Content Security Policy Reference</a>.</p>
 <p>CSP has been added to EJBCA web interfaces as of <a href="https://jira.primekey.se/browse/ECA-3519">ECA-3519</a>.</p>
 <p>You can also implement if globally if you use an Apache front end with mod_headers):</p>
@@ -108,10 +108,8 @@ See 'ejbcafirewall.sh' for an example how to configure an Iptables firewall in
 Linux for protecting EJBCA running on JBoss.
 </p>
 <p>
-See <a href="http://www.jboss.org/">JBoss documentation</a> for a list of ports used in JBoss, for information about
+See <a href="http://www.jboss.org/">JBoss documentation</a> for a list of ports used in JBoss and for information about
  security in JBOSS/EJB and for how to set up SSL with JBOSS.
-See this <a href="http://www.javaworld.com/javaworld/jw-08-2001/jw-0831-jaas_p.html">JavaWorld article</a> for more
- examples about setting up role-permissions.
 </p>
 </subsection>
 
@@ -191,7 +189,7 @@ describes what should be done:
 <p>
 Some of the passwords are used directly by EJBCA code.
 All these passwords may be configured encrypted in the same way as
-<a href="adminguide.html#Auto-activation of CA tokens">PINs used for auto activation could be encrypted</a>.
+<a href="adminguide.html#Auto-activation%20of%20Crypto%20Tokens">PINs used for auto activation could be encrypted</a>.
 </p>
 <p>
 List of these passwords in ejbca.properites :

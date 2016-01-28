@@ -43,7 +43,7 @@
 	
 	<subsection name="Java">
 	<p>
-	The <a href="http://java.sun.com/javase/7/docs/technotes/guides/security/p11guide.html">Java PKCS#11 Reference Guide</a>.
+	The <a href="http://docs.oracle.com/javase/7/docs/technotes/guides/security/p11guide.html">Java PKCS#11 Reference Guide</a>.
 	</p>
     </subsection>
     	
@@ -73,17 +73,12 @@ PKCS12 files generated from EJBCA works excellent as PGP-keys.
 
 <subsection name="Firefox Key Generation">
 <ul>
-  <li>KEYGEN - <a href="http://home.netscape.com/eng/security/comm4-keygen.html">Netscape Extension for Key Generation</a></li>
+  <li>KEYGEN - <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/keygen">Key Generation</a></li>
 </ul>
 <p>
 For Firefox to be able to verify client certificates
 the CA-certificates must have the extensions BasicConstraints and
 AuthorityKeyIdentifier. Client certificates also need AuthorityKeyIdentifier
-</p>
-<p>
-There is new key generation using javascript, generating a CRMF request:
-<br/>
-<a href="http://developer.mozilla.org/en/docs/JavaScript_crypto">JavaScript crypto</a>.
 </p>
 </subsection>
 
@@ -108,8 +103,7 @@ Microsoft Knowledge Base documents
 <ul>
 <li><a href="http://support.microsoft.com/default.aspx?scid=kb;EN-US;q281245">q281245</a> - Guidelines for Enabling Smart Card Logon with Third-Party Certification Authorities</li>
 <li><a href="http://support.microsoft.com/default.aspx?scid=kb;EN-US;q291010">q291010</a> - Requirements for Domain Controller Certificates from a Third-Party CA</li>
-<li><a href="http://www.microsoft.com/windows2000/en/server/help/default.asp?url=/windows2000/en/server/help/sag_CS_CertTemps.htm">Certificate templates</a></li>
-<li><a href="http://msdn2.microsoft.com/en-us/library/ms867026.aspx">Creating Certificate Requests Using the Certificate Enrollment Control and CryptoAPI</a></li>
+<li><a href="https://msdn.microsoft.com/en-us/library/ms867026.aspx">Creating Certificate Requests Using the Certificate Enrollment Control and CryptoAPI</a></li>
 </ul>
 </subsection>
 

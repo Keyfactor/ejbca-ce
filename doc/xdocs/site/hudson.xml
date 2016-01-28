@@ -8,7 +8,7 @@
 <body>
   <section name="Jenkins">
     <p>
-    We have a <a href="http://hudson.primekey.se/">Jenkins</a> server [1] for continuous integration of EJBCA (or <a href="https://hudson.primekey.se/">https</a> for admins).
+    We have a <a href="https://hudson.primekey.se/">Jenkins</a> server [1] for continuous integration of EJBCA.
     </p>
     <p>
     [1]: <a href="http://jenkins-ci.org/">Jenkins at jenkins-ci.org</a>.
