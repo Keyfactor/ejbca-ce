@@ -2229,8 +2229,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
             
             if(subjectDNWillBeChanged){
-                //If CA has gone through Name Change, add new caid to available CAs for every profile
+                // If CA has gone through Name Change, add new caid to available CAs for every certificate profile
                 //that had the caid before the Name Change)
+                Map<Integer, String> allCertificateProfileIdMap = certificateProfileSession.getCertificateProfileIdToNameMap();
+                for(Map.Entry<Integer, String> certificateProfileEntry : allCertificateProfileIdMap.entrySet()){
+                    CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileEntry.getKey());
+                    List<Integer> availCAs = certificateProfile.getAvailableCAs();
+                    if(availCAs.contains(caidBeforeNameChange) &&
+                            !availCAs.contains(caid)){
+                        availCAs.add(caid);
+                        certificateProfile.setAvailableCAs(availCAs);
+                        certificateProfileSession.changeCertificateProfile(authenticationToken, certificateProfileEntry.getValue(), certificateProfile);                            
+                    }
+                }
+                
+                //Like for certificate profiles we need to the same again for end entity profiles
                 Map<Integer, String> allEndEntityProfileIdMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
                 for(Integer endEntityProfileId : allEndEntityProfileIdMap.keySet()){
                     EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
