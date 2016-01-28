@@ -761,56 +761,47 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     
     public void addCTLog() {
         
-        if (currentCTLogURL == null) {
-            FacesContext.getCurrentInstance()
-                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CTLog URL is set.", null));
-            return;
-        }
-        if (!currentCTLogURL.contains("://")) {
-            FacesContext.getCurrentInstance()
-                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CTLog URL must specify a protocol: http:// or https://", null));
+        if (currentCTLogURL == null || !currentCTLogURL.contains("://")) {
+            addErrorMessage("CTLOGTAB_MISSINGPROTOCOL");
             return;
         }
         if (currentCTLogPublicKeyFile == null) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Upload of CTLog public key file failed.", null));
+            addErrorMessage("CTLOGTAB_UPLOADFAILED");
             return;
         }
         final int timeout = getCurrentCTLogTimeout();
         if (timeout < 0) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Timeout value may not be negative.", null));
+            addErrorMessage("CTLOGTAB_TIMEOUTNEGATIVE");
             return;
         }
         
-        CTLogInfo ctlogToAdd = null;
+        final CTLogInfo ctlogToAdd;
         try {
             byte[] uploadedFileBytes = currentCTLogPublicKeyFile.getBytes();
             byte[] keybytes = KeyTools.getBytesFromPublicKeyFile(uploadedFileBytes);
             ctlogToAdd = new CTLogInfo(CTLogInfo.fixUrl(currentCTLogURL), keybytes);
             ctlogToAdd.setTimeout(timeout);
         } catch (IOException e) {
-            String msg = "Cannot parse the public key file " + getCurrentCTLogPublicKeyFile().getName() + ". " + e.getLocalizedMessage();
-            log.info(msg);
-            super.addNonTranslatedErrorMessage(msg);
+            log.info("Could not parse the public key file", e);
+            addErrorMessage("CTLOGTAB_BADKEYFILE", getCurrentCTLogPublicKeyFile().getName(), e.getLocalizedMessage());
+            return;
         } catch (Exception e) {
-            String msg = "Cannot add CTLog. " + e.getLocalizedMessage();
-            log.info(msg);
-            super.addNonTranslatedErrorMessage(msg);
+            log.info("Failed to add CT Log", e);
+            addErrorMessage("CTLOGTAB_GENERICADDERROR", e.getLocalizedMessage());
+            return;
         }
 
-        if (ctlogToAdd != null) {
-            for (CTLogInfo existing : currentConfig.getCtLogs()) {
-                if (StringUtils.equals(existing.getUrl(), ctlogToAdd.getUrl())) {
-                    FacesContext.getCurrentInstance()
-                        .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "A CT Log with that URL already exists: " + existing.getUrl(), null));
-                    return;
-                }
+        for (CTLogInfo existing : currentConfig.getCtLogs()) {
+            if (StringUtils.equals(existing.getUrl(), ctlogToAdd.getUrl())) {
+                addErrorMessage("CTLOGTAB_ALREADYEXISTS", existing.getUrl());
+                return;
             }
-            
-            List<CTLogInfo> ctlogs = currentConfig.getCtLogs(); 
-            ctlogs.add(ctlogToAdd);
-            currentConfig.setCtLogs(ctlogs);
-            ctLogs = new ListDataModel<>(ctlogs);
         }
+        
+        List<CTLogInfo> ctlogs = currentConfig.getCtLogs(); 
+        ctlogs.add(ctlogToAdd);
+        currentConfig.setCtLogs(ctlogs);
+        ctLogs = new ListDataModel<>(ctlogs);
         
         saveCurrentConfig();
     }
@@ -830,9 +821,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         
         if (!usedByProfiles.isEmpty()) {
-            final String msg = "CT Log is still in use by the following Certificate Profiles and can't be removed: " +
-                    StringUtils.join(usedByProfiles, ", ");
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
+            addErrorMessage("CTLOGTAB_INUSEBYPROFILES", StringUtils.join(usedByProfiles, ", "));
             return;
         }
         

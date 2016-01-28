@@ -98,15 +98,15 @@ public class WebLanguages implements java.io.Serializable {
 
 
     /** The main method that looks up the template text in the users preferred language. */
-    public  String getText(String template){
+    public  String getText(String template, Object... params){
       String returnvalue = null;
       try{
-        returnvalue= languages[userspreferedlanguage].getProperty(template);
+        returnvalue= languages[userspreferedlanguage].getMessage(template, params);
         if(returnvalue == null){
-          returnvalue= languages[userssecondarylanguage].getProperty(template);
+          returnvalue= languages[userssecondarylanguage].getMessage(template, params);
         }
         if(returnvalue == null){
-            returnvalue= intres.getLocalizedMessage(template);
+            returnvalue= intres.getLocalizedMessage(template, params);
         }        
       }catch(java.lang.NullPointerException e){}
       if(returnvalue == null) {

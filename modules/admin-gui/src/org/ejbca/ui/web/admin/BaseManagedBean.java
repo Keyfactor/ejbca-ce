@@ -40,7 +40,7 @@ public abstract class BaseManagedBean implements Serializable{
 
     private static final long serialVersionUID = -8019234011853194880L;
     
-    private static final Map<String, Map<String, Object>> publicConstantCache = new ConcurrentHashMap<String, Map<String, Object>>();
+    private static final Map<String, Map<String, Object>> publicConstantCache = new ConcurrentHashMap<>();
 
 	protected EjbcaWebBean getEjbcaWebBean(){
 		return EjbcaJSFHelper.getBean().getEjbcaWebBean();
@@ -55,9 +55,9 @@ public abstract class BaseManagedBean implements Serializable{
         return getEjbcaWebBean().getEjb().getAccessControlSession().isAuthorizedNoLogging(getAdmin(), resources);
     }
 
-	protected void addErrorMessage(String messageResource){
+	protected void addErrorMessage(String messageResource, Object... params) {
 		FacesContext ctx = FacesContext.getCurrentInstance();
-		ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,getEjbcaWebBean().getText(messageResource, true),getEjbcaWebBean().getText(messageResource, true)));
+		ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,getEjbcaWebBean().getText(messageResource, true, params),getEjbcaWebBean().getText(messageResource, true, params)));
 	}
 
 	protected void addNonTranslatedErrorMessage(String messageResource){
@@ -65,9 +65,9 @@ public abstract class BaseManagedBean implements Serializable{
 		ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,messageResource,messageResource));
 	}
 	
-	protected void addInfoMessage(String messageResource){
+	protected void addInfoMessage(String messageResource, Object... params) {
         FacesContext ctx = FacesContext.getCurrentInstance();
-        ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO,getEjbcaWebBean().getText(messageResource, true),getEjbcaWebBean().getText(messageResource, true)));
+        ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO,getEjbcaWebBean().getText(messageResource, true, params),getEjbcaWebBean().getText(messageResource, true, params)));
     }
 
     protected void addNonTranslatedInfoMessage(String messageResource){
@@ -88,7 +88,7 @@ public abstract class BaseManagedBean implements Serializable{
 		if (result != null) {
 			return result;
 		}
-		result = new HashMap<String, Object>();
+		result = new HashMap<>();
 		Field[] publicFields = classObject.getFields();
 		for (int i = 0; i < publicFields.length; i++) {
 			Field field = publicFields[i];

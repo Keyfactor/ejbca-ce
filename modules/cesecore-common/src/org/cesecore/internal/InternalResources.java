@@ -52,7 +52,7 @@ public class InternalResources implements Serializable {
 
     protected Properties primaryResource = new Properties();
     protected Properties secondaryResource = new Properties();
-    private String[] placeHolders = null;
+    private static String[] placeHolders = null;
 
     private static final String RESOURCE_PATH = "/intresources";
     private static final String RESOURCE_NAME = "/intresources.";
@@ -201,29 +201,34 @@ public class InternalResources implements Serializable {
                 }
             }
         }
-        for (int i=0; i<params.length; i++) {
-            replaceAll(sb, i, params[i]);
-        }
-        removeUnusedPlaceHolders(sb, params.length);
+        replacePlaceholders(sb, params);
         if (log.isTraceEnabled()) {
             log.trace(key + "=" + sb.toString());
         }
         return sb;
     }
     
+    public static void replacePlaceholders(final StringBuilder sb, final Object... params) {
+        for (int i=0; i<params.length; i++) {
+            replaceAll(sb, i, params[i]);
+        }
+        removeUnusedPlaceHolders(sb, params.length);
+    }
+    
     /** @return a lazily instantiated array of place holders like "{number}". */
-    private String[] getPlaceHolders() {
+    private static String[] getPlaceHolders() {
         if (placeHolders==null) {
-            placeHolders = new String[100];
-            for (int i=0; i<placeHolders.length; i++) {
-                placeHolders[i] = new StringBuilder('{').append(i).append('}').toString();
+            final String[] arr = new String[100];
+            for (int i=0; i<arr.length; i++) {
+                arr[i] = new StringBuilder('{').append(i).append('}').toString();
             }
+            placeHolders = arr;
         }
         return placeHolders;
     }
     
     /** Replace any "{placeHolderIndex}" String that is present in the StringBuilder with 'replacementObject'. */
-    protected void replaceAll(final StringBuilder sb, final int placeHolderIndex, final Object replacementObject) {
+    private static void replaceAll(final StringBuilder sb, final int placeHolderIndex, final Object replacementObject) {
         if (sb==null) {
             log.error("No StringBuilder. Unable to create localized message.");
             return;
@@ -252,7 +257,7 @@ public class InternalResources implements Serializable {
     }
 
     /** Remove any "{number}" string that is still present in the StringBuilder where number starts with 'startPlaceHolderIndex'. */
-    protected void removeUnusedPlaceHolders(final StringBuilder sb, final int startPlaceHolderIndex) {
+    private static void removeUnusedPlaceHolders(final StringBuilder sb, final int startPlaceHolderIndex) {
         final String[] placeHolders = getPlaceHolders();
         if (startPlaceHolderIndex<0 || startPlaceHolderIndex>(placeHolders.length-1)) {
             log.error("Place holder index out of range. Unable to create localized message.");
