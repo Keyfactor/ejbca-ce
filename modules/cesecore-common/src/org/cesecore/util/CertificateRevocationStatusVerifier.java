@@ -18,7 +18,6 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.NoSuchProviderException;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
 import java.security.cert.CertificateException;
@@ -41,9 +40,15 @@ import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
-import org.cesecore.CesecoreException;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 
+/**
+ * This class is used to check whether a specific certificate is revoked or not using either 
+ * a CRL or an OCSP request.
+ * 
+ * @version $Id$
+ *
+ */
 public class CertificateRevocationStatusVerifier {
 
     public static final String VERIFICATION_METHOD_CRL = "crl";
@@ -76,10 +81,11 @@ public class CertificateRevocationStatusVerifier {
         return this.ocspResponse;
     }
     
-    public Boolean isCertificateRevoked(final X509Certificate cert, final X509Certificate cacert) throws IOException, OCSPException, NoSuchProviderException, OperatorCreationException, CertificateException, CRLException, CesecoreException {
+    public boolean isCertificateRevoked(final X509Certificate cert, final X509Certificate cacert) throws IOException, OCSPException, 
+                OperatorCreationException, CertificateException, CRLException {
 
         if((this.method == null) || (this.url == null)) {
-            throw new CesecoreException("Either the verification method or the verification URL or both of them are not set");
+            throw new IllegalArgumentException("Either the verification method or the verification URL or both of them are not set");
         }
         
         if(log.isDebugEnabled()) {
@@ -97,27 +103,20 @@ public class CertificateRevocationStatusVerifier {
             SingleResp[] singleResps = getOCSPResponse(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
             
             if(singleResps == null) {
-                log.error("Failed to verify signing certificate revocation status using OCSP");
-                return null;
+                throw new OCSPException("Failed to verify signing certificate revocation status using OCSP");
             }
                 
             SingleResp response = singleResps[0];
             CertificateID certId = response.getCertID();
             if(!certId.getSerialNumber().equals(certSerialnumber)) {
-                log.error("Certificate serialnumber in response does not match serno in request.");
-                return null;
+                throw new OCSPException("Certificate serialnumber in response does not match certificate serialnumber in request.");
             }
             this.ocspResponse = response;
             CertificateStatus status = response.getCertStatus();
-            if(status == null) { // null indicates 'good'
-                if(log.isDebugEnabled()) {
-                    log.debug("The signing certificate is not revoked");
-                }
-                return false;
-            }
             if(log.isDebugEnabled()) {
-                log.debug("The signing certificate status is: " + status.toString());
+                log.debug("The certificate status is: " + (status==null? "Good" : status.toString()));
             }
+            return status!=null;
         } else if (StringUtils.equals(VERIFICATION_METHOD_CRL, this.method)) {
             log.info("Using CRL to verify the signing certificate revocation status");
             boolean isRevoked = true;
@@ -126,21 +125,24 @@ public class CertificateRevocationStatusVerifier {
             }
             URL url = new URL(this.url);
             InputStream is = url.openStream();
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            CRL crl = (CRL)cf.generateCRL(is);
-            isRevoked = crl.isRevoked(cert);
-            if(log.isDebugEnabled()) {
-                log.debug("The signing certificate is revoked: " + isRevoked);
+            try {
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                CRL crl = (CRL)cf.generateCRL(is);
+                isRevoked = crl.isRevoked(cert);
+                if(log.isDebugEnabled()) {
+                    log.debug("The signing certificate is revoked: " + isRevoked);
+                }
+            } finally {
+                is.close();
             }
             return isRevoked;
         
         } else {
-            throw new CesecoreException("Unrecognized method to check revocation status of CMP message signing certificate: " + method);
+            throw new IllegalArgumentException("Unrecognized method to check revocation status of CMP message signing certificate: " + method);
         }
-        return true;
     }
 
-    private SingleResp[] getOCSPResponse(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException, OperatorCreationException, CertificateException {
+    private SingleResp[] getOCSPResponse(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, OperatorCreationException, CertificateException {
         if(log.isDebugEnabled()) {
             log.debug("Sending an OCSP requst to " + this.url);
         }
@@ -158,6 +160,16 @@ public class CertificateRevocationStatusVerifier {
         os.close();
         if (con.getResponseCode() != httpCode) {
             log.info("HTTP response from OCSP request was " + con.getResponseCode() + ". Expected " + httpCode );
+            
+            byte[] buff = new byte[2048];
+            InputStream errStream = con.getErrorStream();
+            try {
+                errStream.read(buff);
+            } finally {
+                errStream.close();
+            }
+            String httpError = new String(buff);
+            log.info("Received HTTP response: " + httpError);
             return null; // if it is an http error code we don't need to test any more
         }
         
