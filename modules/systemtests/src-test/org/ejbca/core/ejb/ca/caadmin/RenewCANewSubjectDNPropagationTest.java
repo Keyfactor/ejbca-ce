@@ -18,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -29,6 +30,8 @@ import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -64,13 +67,15 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
             .getRemoteSession(GlobalConfigurationSessionRemote.class);
     private static EndEntityProfileSessionRemote endEntityProfileSessionRemote = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityProfileSessionRemote.class);
+    private static CertificateProfileSessionRemote certificateProfileSessionRemote = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CertificateProfileSessionRemote.class);
     private static RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private static RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
 
     private final static String newSubjectDN = "CN=NewName";
     private final static String newCAName = "NewName";
-    private final static String testEndEntityProfile1 = "testEndEntityProfile1";
-    private final static String testEndEntityProfile2 = "testEndEntityProfile2";
+    private final static String testProfileName1 = "testEndEntityProfile1";
+    private final static String testProfileName2 = "testEndEntityProfile2";
     private final static String testRole1 = "testRole1";
     private final static String testRole2 = "testRole2";
     private final static String testRole3 = "testRole3";
@@ -106,8 +111,11 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
         removeTestCA(newCAName);
         internalCertificateStoreSession.removeCRLs(internalAdmin, newSubjectDN); //Make sure CRLs data are deleted where issuerDN=new Subject DN!!!
 
-        createTestEndEntityProfile(testEndEntityProfile1);
-        createTestEndEntityProfile(testEndEntityProfile2);
+        createTestEndEntityProfile(testProfileName1);
+        createTestEndEntityProfile(testProfileName2);
+        
+        createTestCertificateProfile(testProfileName1);
+        createTestCertificateProfile(testProfileName2);
 
         X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
         Collection<AccessRuleData> accessRules = new ArrayList<>();
@@ -143,8 +151,10 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
         roleManagementSession.remove(internalAdmin, roleAccessSessionRemote.findRole(testRole1));
         roleManagementSession.remove(internalAdmin, roleAccessSessionRemote.findRole(testRole2));
         roleManagementSession.remove(internalAdmin, roleAccessSessionRemote.findRole(testRole3));
-        endEntityProfileSessionRemote.removeEndEntityProfile(internalAdmin, testEndEntityProfile1);
-        endEntityProfileSessionRemote.removeEndEntityProfile(internalAdmin, testEndEntityProfile2);
+        endEntityProfileSessionRemote.removeEndEntityProfile(internalAdmin, testProfileName1);
+        endEntityProfileSessionRemote.removeEndEntityProfile(internalAdmin, testProfileName2);
+        certificateProfileSessionRemote.removeCertificateProfile(internalAdmin, testProfileName1);
+        certificateProfileSessionRemote.removeCertificateProfile(internalAdmin, testProfileName2);
 
         super.tearDown();
         removeTestCA(newCAName);
@@ -179,6 +189,17 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
         endEntityProfile.setAvailableCAsIDsAsStrings(availableCAIDsBeforeNameChange);
         endEntityProfileSessionRemote.addEndEntityProfile(internalAdmin, profileName, endEntityProfile);
     }
+    
+    /** Make sure that test certificate profiles have "TEST" CA among available CAs */
+    private void createTestCertificateProfile(final String profileName) throws Exception {
+        certificateProfileSessionRemote.removeCertificateProfile(internalAdmin, profileName);
+        CertificateProfile certificateProfile = new CertificateProfile();
+        List<Integer> availableCAIDsBeforeNameChange = new ArrayList<Integer>();
+        X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
+        availableCAIDsBeforeNameChange.add(info.getCAId());
+        certificateProfile.setAvailableCAs(availableCAIDsBeforeNameChange);
+        certificateProfileSessionRemote.addCertificateProfile(internalAdmin, profileName, certificateProfile);
+    }
 
     /** Helper method for getting access rule by its name */
     private AccessRuleData getAccessRuleDataSpecificToCAID(RoleData roleData, String accessRuleName) {
@@ -212,6 +233,21 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
                 }
             }
             assertTrue("End entity profiles availableCAs field doesn't seem to propagade after the CA Name Change renewal",
+                    cAHitCounter == 2 || cAHitCounter == 0);
+        }
+        
+        //Certificate profiles propagation has to add new caid to availableCAs field
+        Map<Integer, String> certificateProfileIdToNameMap = certificateProfileSessionRemote.getCertificateProfileIdToNameMap();
+        for (Integer profileIds : certificateProfileIdToNameMap.keySet()) {
+            CertificateProfile certificateProfile = certificateProfileSessionRemote.getCertificateProfile(profileIds);
+            int cAHitCounter = 0;
+            for (Integer availableCAId : certificateProfile.getAvailableCAs()) {
+                if (availableCAId == caInfoBeforeNameChange.getCAId() ||
+                        availableCAId == caInfoAfterNameChange.getCAId()) {
+                    cAHitCounter++;
+                }
+            }
+            assertTrue("Certificate profiles availableCAs field doesn't seem to propagade after the CA Name Change renewal",
                     cAHitCounter == 2 || cAHitCounter == 0);
         }
         
