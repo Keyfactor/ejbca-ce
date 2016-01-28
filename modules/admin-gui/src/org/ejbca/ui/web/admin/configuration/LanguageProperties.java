@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.cesecore.internal.InternalResources;
 
 /** Properties bag that handles "double type encoding".
  * 
@@ -35,6 +36,7 @@ public class LanguageProperties extends Properties {
 	//private static final String specialSaveChars = "=: \t\r\n\f#!";
 	private static final String whiteSpaceChars = " \t\r\n\f";
 	
+	@Override
 	public synchronized void load(InputStream inStream) throws IOException {   
 		// Try first with system default, revert to ISO-8859-1 if it bombs
 	    // Note: This is not true, we try with ISO-8859-1 and try again if it fails??
@@ -128,7 +130,7 @@ public class LanguageProperties extends Properties {
 			} 
 		}
 	} 
-	/* 
+	/**
 	 * Returns true if the given line is a line that must
 	 * be appended to the next line  
 	 */  
@@ -140,7 +142,7 @@ public class LanguageProperties extends Properties {
 		}
 		return (slashCount % 2 == 1);
 	}
-	/*
+	/**
 	 * Converts encoded \\uxxxx to unicode chars 
 	 * and changes special saved chars to their original forms 
 	 */  
@@ -192,5 +194,18 @@ public class LanguageProperties extends Properties {
 			}
 		} 
 		return outBuffer.toString();
+	}
+	/**
+	 * Gets a message string and replaces {0}, {1}, {2}... parameters in it.
+	 */
+	public String getMessage(final String key, final Object... params) {
+	    final String format = getProperty(key);
+	    if (format == null) {
+	        return null;
+	    }
+	    
+	    final StringBuilder sb = new StringBuilder(format);
+	    InternalResources.replacePlaceholders(sb, params);
+	    return sb.toString();
 	}
 }

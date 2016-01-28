@@ -611,10 +611,11 @@ public class EjbcaWebBean implements Serializable {
     /**
      * @param template the entry in the language file to get
      * @param unescape true if html entities should be unescaped (&auml; converted to the real char)
+     * @param params values of {0}, {1}, {2}... parameters
      * @return text string, possibly unescaped, or "template" if the template does not match any entry in the language files
      */
-    public String getText(String template, boolean unescape) {
-        String str = getText(template);
+    public String getText(String template, boolean unescape, Object... params) {
+        String str = adminsweblanguage.getText(template, params);
         if (unescape == true) {
             str = HTMLTools.htmlunescape(str);
             // log.debug("String after unescape: "+str);
