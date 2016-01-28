@@ -72,13 +72,13 @@
   </p>
   <p>
   <ul>
-  <li><a href="http://download.primekey.se/ejbca/smartcardlogon/EJBCA-SmartCardLogon-Guide.pdf">Introduction</a></li>
-  <li><a href="http://download.primekey.se/ejbca/smartcardlogon/EJBCA-SmartCardLogon-Guide-Windows.pdf">Windows configuration</a></li>
-  <li><a href="http://download.primekey.se/ejbca/smartcardlogon/EJBCA-SmartCardLogon-Guide-PKI.pdf">PKI configuration</a></li>
+  <li><a href="https://download.primekey.se/ejbca/smartcardlogon/EJBCA-SmartCardLogon-Guide.pdf">Introduction</a></li>
+  <li><a href="https://download.primekey.se/ejbca/smartcardlogon/EJBCA-SmartCardLogon-Guide-Windows.pdf">Windows configuration</a></li>
+  <li><a href="https://download.primekey.se/ejbca/smartcardlogon/EJBCA-SmartCardLogon-Guide-PKI.pdf">PKI configuration</a></li>
   </ul>
   </p>
   <p>
-  The scripts and profiles can be fetched <a href="http://download.primekey.se/ejbca/smartcardlogon/ReleasePackage">here</a>.
+  The scripts and profiles can be fetched <a href="https://download.primekey.se/ejbca/smartcardlogon/ReleasePackage">here</a>.
   </p>  
   
   </section>
@@ -99,7 +99,7 @@
   The migration guide goes through migrating the CA signing keys, importing the CAs to EJBCA and importing 
   issued certificates to EJBCA. The result is a setup in EJBCA that can continue operation transparently.
   <br/>
-  Download <a href="http://download.primekey.se/documents/Migrating_to_EJBCA.pdf">EJBCA migration guide</a> (pdf).
+  Download <a href="https://download.primekey.se/documents/Migrating_to_EJBCA.pdf">EJBCA migration guide</a> (pdf).
   </p>
   
   </subsection>
@@ -187,7 +187,7 @@ java org.ejbca.ui.cli.ImportMSCACertificates /path/certdump.txt "MS CA v1"
   <section name="EJBCA and Apple iOS">
   <p>
 You can enroll certificates for the iOS directly with EJBCA using SCEP. There is a SCEP profile in the iPhone that you can use for this.
-<a href="http://www.primekey.se/">PrimeKey</a> has created a detailed howto if you need this type of support. It works according to the same principals as the examples below.
+<a href="https://www.primekey.se/">PrimeKey</a> has created a detailed howto if you need this type of support. It works according to the same principals as the examples below.
 </p>
   </section>
     
@@ -477,7 +477,7 @@ Router#debug crypto pki validation
   <p>
   A really good <a href="http://www.oracle.com/technetwork/java/opensso-protect-140200.html">article</a> and description about EJBCA and OpenSSO is written by Bruno Bonfils.
   </p>
-  <p><a href="http://download.primekey.se/documents/ejbca-opensso-integration-techpaper.pdf">This paper</a> also describes easy integration between EJBCA and OpenSSO, where EJBCA is used for user provisioning.
+  <p><a href="https://download.primekey.se/documents/ejbca-opensso-integration-techpaper.pdf">This paper</a> also describes easy integration between EJBCA and OpenSSO, where EJBCA is used for user provisioning.
   </p> 
   </subsection>
   </section>

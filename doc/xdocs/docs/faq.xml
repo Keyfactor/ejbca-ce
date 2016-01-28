@@ -46,7 +46,7 @@ The JBoss CLI turns out not to be too well suited for automated deploys, so func
       <answer>
       <p>
       This is because you have not installed the "Unlimited Strength Crypto Policy Files" in the Oracle JDK.
-      See the <a href="installation.html#Quick%20start%20guide">prerequisites</a> section in the the installation guide.
+      See the <a href="installation.html#Prerequisites">prerequisites</a> section in the the installation guide.
       <br/>Even if you think you have installed them, you have not. This error is simple and unique.
       </p>
       <p>
@@ -227,20 +227,6 @@ fi
       </answer>
     </faq>
 
-    <faq id="SHA256inIE">
-     <question>
-      SHA256 certs fails integrity check in IE.
-      </question>
-      <answer>
-      <p>
-      Internet Explorer (at least IE6) does not support SHA256. Windows Vista and later should support SHA256, but not Windows XP before SP3. 
-      </p>
-      <p>
-      You can have an AdminCA using SHA1 and CAs for other purposes using SHA256. Read Microsofts <a href="http://support.microsoft.com/?scid=kb%3Ben-us%3B968730&amp;x=15&amp;y=16">support article</a> about the issue.
-      </p>
-      </answer>
-    </faq>
-
     <faq id="Unique subject DN">
      <question>
       An error that a user can not have the same Subject DN as another user appears when issuing certificates.
@@ -315,32 +301,8 @@ mysql> alter table UserData modify subjectAltName varchar(2048);
       <question>How do I configure log level in JBoss?</question>
       <answer>
         <p>
-        jboss-5.1.0.GA/server/default/conf/jboss-log4j.xml. It is a good idea to limit the log level to not include debug logs. You can do this by changing the root category towards the end of jboss-log4j.xml:
+        See the Installation guide in the JBoss section for instructions.
         </p>
-<source>
-&lt;root&gt;
-  &lt;priority value="ERROR" /&gt;
-  &lt;appender-ref ref="CONSOLE"/&gt;
-  &lt;appender-ref ref="FILE"/&gt;
-&lt;/root> 
-</source>
-<p>
-You may also choose to remove the CONSOLE logging completely.
-</p>
-<p>
-You can also add this to limit the EJBCA logging to INFO, this will enable the logging system to avoid formatting
-debug messages that will not be printed, enhancing performance some.
-</p>
-<source>
-&lt;category name="org.ejbca"&gt;
-   &lt;priority value="INFO"/&gt;
-&lt;/category&gt;
-</source>
-<p>
-You can here enable DEBUG logging for EJBCA by changing INFO to DEBUG. By doing all of the above (and playing around a little) 
-you can get nice logging with only the things you are interested in logged to the log file.
-</p>
-<p>For JBoss 6 you configure the log level in the file described in the previous FAQ entry.</p>
       </answer>
     </faq>
     
@@ -422,42 +384,6 @@ password than 7 characters. Anything longer gives an error?</question>
         </p>
       </answer>
     </faq>
-    <faq>
-      <question>Installation hangs and the https server will not work.</question>
-      <answer>
-        <p>
-		Perhaps JBOSS_HOME/server/default/conf/keystore/tomcat.jks must be executable. All scripts in 
-EJBCA_HOME/bin directory must be executable, run 'chmod u+x *.sh'. Make sure you run the 
-installation of ejbca as a user with enough privileges to write in JBOSS_HOME.
-Preferably the same user as is used to run the JBoss server.
-        </p>
-      </answer>
-    </faq>
-    <faq id="alterHypersonic">
-      <question>How do I connect to, and alter data in the built-in 'Hypersonic SQL' database.</question>
-      <answer>
-        <p>
-A : Shut down JBoss.
-Alternative 1:
-If you want to simply drop a table, go into the file JBOSS_HOME\server\default\db\hypersonic\default.script and delete the lines that creates the table, for instance to delete the table GLOBALCONFIGURATIONDATA, delete the lines :
-</p><source>
-CREATE TABLE GLOBALCONFIGURATIONDATA(CONFIGURATIONID VARCHAR NOT NULL,DATA VARBINARY,UNIQUE(CONFIGURATIONID))
-CREATE UNIQUE INDEX PK_GLOBALCONFIGURATIONDATA ON GLOBALCONFIGURATIONDATA(CONFIGURATIONID)
-</source>
-<p>
-Just for fun you can also delete all lines beginning with: INSERT GLOBALCONFIGURATIONDATA...
-</p><p>
-Alternative 2:
-Go to <a href="http://localhost:8080/jmx-console/">http://localhost:8080/jmx-console/</a>.
-Click "database=localDB,service=Hypersonic" and then startDatabaseManager: "Invoke".
-This will fire up a rudimentary database interface. Only works on the same machine though.
- </p>
- </answer>
- </faq>
-    <faq id="errorClsid">
-      <question>When enrolling for certificates with IE, the enrollment controll (clsid) is incorrect.</question>
-	  <answer><p>Microsoft changed the enrollment controll due to secrity issues. Look in 'modules/publicweb-gui/resources/enrol/apply/apply_exp.jspf' for more information.</p></answer>
-	</faq>
     <faq id="errorOCV">
       <question>I get the error "Object Class Violation : (65)" when publishing certificates in LDAP</question>
 	  <answer><p>You LDAP object class may require some fields in the DN that you have not entered. Some schemas require the DN-attribute SN for instance.</p></answer>
@@ -577,40 +503,7 @@ not just for CAs.
 	    </p>
 	  </answer>
   </faq>
-  
-  <faq id="glassfishFail1">
-  <question>Glassfish issue no. 1: ant install fails with some weird errors.</question>
-  <answer>
-  <p>
-  This issue affects Glassfishv2 Enterprise Edition (open source admin console is slightly different and doesn't have this features).
-If you are experiencing errors when doing <i>ant install</i>, do the following:
-<ul>
-<li>Open up glassfish admin console in your browser (https://&lt;host-name>:4848/)</li>
-<li>On the left hand side, expand Stand-Alone Instances node</li>
-<li>Click on the server (Admin Server)</li>
-<li>In the righ-hand broswer frame, click JNDI browsing button.</li>
-<li>You should get Jndi tree browsing window.</li>
-<li>Expand the jdbc node.</li>
-<li>Make sure that jdbc/EjbcaDS exists.</li>
-<li>If it exists, than this issue in not the cause for your “ant install” failure.</li>
-<li>If it doesn't exist, do the following:</li>
-<li>In the glassfish admin console, remove the EjbcaPool created earlier and remove data source jdbc/EjbcaDS.</li>
-<li>Start EJBCA build from scratch with ant clean etc.</li>
-</ul>
-</p>
-  </answer>  
-  </faq>
-  
-  <faq id="GlassfishFail2">
-  <question>Glassfish issue no. 2: ant install fails with some weird errors</question>
-  <answer>
-  <p>
-This issue affects both Glassfishv2 Enterprise Edition and Glasfish v2 open source edition.
-If you notice messages such as "database open for read only access", you have started glassfish with insufficient privileges. Stop the domain and restart it with privileges of the user who has full rights for glassfish.
-  </p>
-  </answer>
-  </faq>
-    
+      
   </faqsection>
 
 </document>
