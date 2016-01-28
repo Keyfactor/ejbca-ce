@@ -13,7 +13,6 @@
 package org.cesecore.certificates.certificate;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
@@ -61,6 +60,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Testing checking a certificate revocation status through both CRL and OCSP
+ * 
+ * @version $Id$
+ */
 public class CertRevocationStatusCheckTest extends CaTestCase {
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
@@ -134,7 +138,7 @@ public class CertRevocationStatusCheckTest extends CaTestCase {
             // Check usercert revocation status
             CertificateRevocationStatusVerifier verifier = new CertificateRevocationStatusVerifier(cainfo.getDefaultCRLDistPoint());
             boolean isRevoked = verifier.isCertificateRevoked(usercert, null);
-            assertFalse(isRevoked);
+            assertFalse("Certificate should not be revoled yet, but it is.", isRevoked);
             
             // Revoke usercert
             eeManagementSession.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(usercert), cainfo.getSubjectDN(), 0);
@@ -151,7 +155,7 @@ public class CertRevocationStatusCheckTest extends CaTestCase {
             
             // Check usercert revocation status
             isRevoked = verifier.isCertificateRevoked(usercert, null);
-            assertTrue(isRevoked);
+            assertTrue("Certificate should be revoked but was not.", isRevoked);
             
         } finally {
             // Remove it to clean database
@@ -186,15 +190,14 @@ public class CertRevocationStatusCheckTest extends CaTestCase {
             CertificateRevocationStatusVerifier verifier = new CertificateRevocationStatusVerifier(
                     CertificateRevocationStatusVerifier.VERIFICATION_METHOD_OCSP, baseUrl+"/"+resourceOcsp); // "http://127.0.0.1:8080/ejbca/publicweb/status/ocsp"
             Boolean isRevoked = verifier.isCertificateRevoked(usercert, (X509Certificate) testx509ca.getCACertificate());
-            assertNotNull(isRevoked);
-            assertFalse(isRevoked);
+            assertFalse("Certificate should not be revoled yet, but it is.", isRevoked);
             
             // Revoke usercert
             eeManagementSession.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(usercert), CADN, 0);
                 
             // Check usercert revocation status
             isRevoked = verifier.isCertificateRevoked(usercert, (X509Certificate) testx509ca.getCACertificate());
-            assertTrue(isRevoked);
+            assertTrue("Certificate should be revoked but was not.", isRevoked);
                 
         } finally {
             // Remove it to clean database
