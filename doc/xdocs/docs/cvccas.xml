@@ -8,7 +8,10 @@
 <body>
   <section name="Features">
     <p>
-    Using EJBCA you can set up a complete infrastructure for CVC CAs with:
+    EJBCA Enterprise has full support for Card Verifiable certificates (CVC BSI TR-03110) used by EU EAC ePassports and eIDs.
+    </p>
+    <p>
+    Using EJBCA you can set up a complete PKI infrastructure for CVC CAs with:
     <ul>
       <li>Country CVCCA</li>
       <li>Domestic DVs (document verifier)</li>
