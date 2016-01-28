@@ -21,7 +21,7 @@
 <li>Supports ECDSA key algorithm with named curves or implicitlyCA.</li>
 <li>Support multiple hash algorithms for signatures, SHA-1, SHA-2.</li>
 <li>Compliant with NSA SUITE B algorithms and certificates.</li>
-<li>Support for X.509 certificates and Card Verifiable certificates (CVC BSI TR-03110) used by EU <a href="guides.html#Using%20CVC%20CAs%20for%20EU%20EAC%20ePassports">EAC ePassports</a> and eIDs.</li> 
+<li>Support for X.509 certificates and Card Verifiable certificates (CVC BSI TR-03110) used by EU <a href="guides.html#Using%20CVC%20CAs%20for%20EU%20EAC%20ePassports%20(EJBCA%20Enterprise%20only)">EAC ePassports</a> and eIDs.</li> 
 <li>Support for Hardware Security Modules (HSMs). Built in support for Thales/nCipher, SafeNet Luna, SafeNet ProtectServer, Utimaco CryptoServer, AEP Keyper, ARX CoSign and other HSMs with a good PKCS#11 library.</li>
 <li>Individual enrollment or batch production of certificates.</li>
 <li>Issues SSL/TLS certificates that work with all common servers.</li>
@@ -41,7 +41,7 @@
 <li>Supports the Online Certificate Status Protocol (<a href="docs/architecture-ocsp.html">OCSP</a> - RFC2560, RFC6960 and RFC5019), including AIA-extension.</li>
 <li>Supports RFC4387 for distribution of CA certificates and CRLs over HTTP.</li>
 <li>Validation Authority service serving OCSP responses (RFC2560/5019), CA certificates and CRLS (RFC4387).</li>
-<li>Supports the German <a href="http://www.common-pki.org/">Common PKI</a> SigG CertHash OCSP extension.</li> 
+<li>Supports the German <a href="http://www.t7ev.org/T7-de/Common-PKI">Common PKI</a> SigG CertHash OCSP extension.</li> 
 <li>Supports <a href="docs/adminguide.html#CMP">CMP</a> (RFC4210 and RFC4211).</li>
 <li>Key recovery to store private keys for recovery for selected users and certificates.</li>
 </ul>    
@@ -49,7 +49,7 @@
   <subsection name="ePassport PKI features">
 <ul>
 <li>Support for BAC PKI, Country Signing CA (CSCA) and Document Signer (DS) certificates.</li>
-<li>Integration with <a href="http://www.signserver.org" target="signserver">SignServer</a> as Document Signer creating Security Objects (SOD).</li>
+<li>Integration with <a href="https://www.signserver.org" target="signserver">SignServer</a> as Document Signer creating Security Objects (SOD).</li>
 <li>Support for EAC PKI (EJBCA Enterprise only).</li>
 <li>Integration with PrimeKey SPOC for a Single Point of Contact between countries.</li>
 <li>Publisher for ICAO PKD, publishing DS certificates and CSCA CRLs to ICAO PKD LDAP directory.</li> 

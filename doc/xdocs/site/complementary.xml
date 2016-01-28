@@ -14,7 +14,7 @@ can be used together with PKI to even further improve your PKI experience.
 
 <subsection name="Signserver">
     <p>
-    <a href="http://www.signserver.org/">Signserver</a>
+    <a href="https://www.signserver.org/">Signserver</a>
     </p>
     <p>
     The SignServer is an application for automatic signatures called by other systems not able to connect 

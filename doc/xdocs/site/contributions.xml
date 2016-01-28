@@ -15,7 +15,7 @@
         thus removing the maintenance burden of patching EJBCA every time you upgrade.</li>
     <li>Contribute documentation. Documentation can always be improved.</li>
     <li>Contribute translations. Translations can always be improved.</li>
-    <li>Report bugs, suggest new features and improvements. You can do it all through the <a href="http://jira.primekey.se/">Issue Tracker</a>.</li>
+    <li>Report bugs, suggest new features and improvements. You can do it all through the <a href="https://jira.primekey.se/">Issue Tracker</a>.</li>
     <li>Join the EJBCA Team!</li>
     <li>Due to Common Criteria certification we can not be very generous with SVN commit access. We may get SVN access if you prove yourself, have long-term intentions and sign of on our Development Policy.</li>
     </ul>
