@@ -59,22 +59,22 @@ public class CertificateRevocationStatusVerifier {
     private String method;
     private String url;
     
-    private SingleResp ocspResponse;
+    private SingleResp ocspResponse=null;
 
-    public CertificateRevocationStatusVerifier() {
-        this.method=null;
-        this.url=null;
-        this.ocspResponse=null;
-    }
-    public CertificateRevocationStatusVerifier(final String url) {
+    /**
+     * A CertificateRevocationStatusVerifier constructor to check the revocation status of a 
+     * certificate through CRL
+     * 
+     * @param crlUrl
+     */
+    public CertificateRevocationStatusVerifier(final String crlUrl) {
         this.method=VERIFICATION_METHOD_CRL;
-        this.url=url;
-        this.ocspResponse=null;
+        this.url=crlUrl;
     }
+    
     public CertificateRevocationStatusVerifier(final String method, final String url) {
         this.method=method;
         this.url=url;
-        this.ocspResponse=null;
     }
     
     public SingleResp getOCSPResponse() {
