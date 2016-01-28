@@ -41,8 +41,7 @@ Please take a minute to thoroughly consider the security
 implications and make sure you know what you are doing when you are setting
 up a CA.
 </p><p>
-Whether running running on Linux or Windows, you should consider using multiple levels of firewalls.
-The first level of firewall could be a host based firewall such as IPTables in Linux or a similar approach on windows.
+Whether running on Linux or Windows, you should consider using multiple levels of firewalls. The first level of firewall could be a host based firewall such as IPTables in Linux, or a similar approach on Windows.
 See the Security document for information about ports that are used.
 </p>
 <p>
@@ -67,7 +66,7 @@ For example if the machine has too few cores CLI connections will mysteriously t
 Contributions to improve the automated installation on JBoss 7 / EAP 6 are welcome.
 </note>
 <p>This section provides a fast way to get installed and running for a test using Ubuntu Linux. 
-To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Installation guide</strong> below.
+To get more information about configuration options etc (there are plenty), you should follow the regular <strong>Installation guide</strong> below.
 </p><p>
 This quick start guide assumes EJBCA 6.3, JBoss 7.1.1.Final and Java 7, but other version should also be possible to use by just replacing the versions.
 We also assume installation is made in a user account with username "user". In your environment simply replace user with the username you are using.
@@ -128,7 +127,7 @@ why it will not start correctly in your environment, See the <a href="adminguide
 <li>Configure JBoss for logging, see <a href="#JBoss%207%20and%20EAP%206%20logging">JBoss 7 and EAP 6 logging</a> for instructions.</li>
 </ol>
 <p>Done!</p>
-<p>After installation <strong>do not</strong> forget to <strong>secure</strong> your installation as described in <a href="security.html#Securing JBoss">securing JBoss</a>.</p>
+<p>After installation <strong>do not forget to secure your installation</strong> as described in <a href="security.html#Securing JBoss">securing JBoss</a>.</p>
 </section>
 
 <section name="RedHat Enterprise Linux quick start">
@@ -137,7 +136,7 @@ To get more information a about configuration options etc (there are plenty), yo
 </p>
 <p>
 This quick start guide makes the same assumptions and uses the same procedures as the Ubuntu quick start guide.
-RHEL by default only installs with a 'root' account. Therefore we start by creating a user account with username "user". In your environment simply replace user with the username you are using.
+RHEL by default only installs with a 'root' account. Therefore we start by creating a user account with username "user". In your environment simply replace "user" with your own username.
 </p>
 <ol>
 <li>Install RHEL 6.4 x86_64, default config, 'Basic Server'.</li>
@@ -193,7 +192,7 @@ This will install OpenJDK and apache ant.
 
 <section name="Installation guide">
 <p>
-If you want to get started really quick, and is using Ubuntu Linux, you can follow the <a href="#Ubuntu%20quick%20start">Ubuntu or RedHat quick start</a> guide above.
+If you want to get started real quick, and you're using Ubuntu Linux, you can follow the <a href="#Ubuntu%20quick%20start">Ubuntu or RedHat quick start</a> guide above.
 This guide describes how to install on the most well supported application server JBoss AS. EJBCA might however also run on Glassfish and Weblogic, but your
 mileage may vary (see further below for details). 
 </p>
