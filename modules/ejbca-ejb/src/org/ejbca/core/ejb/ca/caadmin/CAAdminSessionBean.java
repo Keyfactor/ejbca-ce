@@ -137,7 +137,6 @@ import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.InternalKeyBindingProperty;
-import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
@@ -192,9 +191,9 @@ import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
-import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.util.CAIdTools;
 
 /**
  * Administrates and manages CAs in EJBCA system.
@@ -319,7 +318,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             caSession.removeCA(authenticationToken, currentCAId);
             caInfo.setCAId(calculatedCAId);
             updateCAIds(authenticationToken, currentCAId, calculatedCAId, caInfo.getSubjectDN());
-            rebuildExtendedServices(caInfo);
+            CAIdTools.rebuildExtendedServices(caInfo);
             try {
                 createCA(authenticationToken, caInfo);
             } catch (CAExistsException e) {
@@ -381,20 +380,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Update Certificate Profiles
         final Map<Integer,String> certProfiles = certificateProfileSession.getCertificateProfileIdToNameMap();
         for (Integer certProfId : certProfiles.keySet()) {
-            boolean changed = false;
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfId);
-            final List<Integer> availableCAs = new ArrayList<Integer>(certProfile.getAvailableCAs());
-            // The list is modified so we can't use an iterator
-            for (int i = 0; i < availableCAs.size(); i++) {
-                int value = availableCAs.get(i);
-                if (value == fromId) {
-                    availableCAs.set(i, toId);
-                    changed = true;
-                }
-            }
-            
-            if (changed) {
-                certProfile.setAvailableCAs(availableCAs);
+            if (CAIdTools.updateCAIds(certProfile, fromId, toId, toDN)) {
                 String name = certProfiles.get(certProfId);
                 if (log.isDebugEnabled()) {
                     log.debug("Changing CA Ids in Certificate Profile "+name);
@@ -406,30 +393,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Update End-Entity Profiles
         final Map<Integer,String> endEntityProfiles = endEntityProfileSession.getEndEntityProfileIdToNameMap();
         for (Integer endEntityProfId : endEntityProfiles.keySet()) {
-            boolean changed = false;
             final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfId);
-            
-            if (endEntityProfile.getDefaultCA() == fromId) {
-                endEntityProfile.setValue(EndEntityProfile.DEFAULTCA, 0, String.valueOf(toId));
-                changed = true;
-            }
-            
-            final Collection<String> original = endEntityProfile.getAvailableCAs();
-            final List<Integer> updated = new ArrayList<Integer>();
-            for (String oldvalueStr : original) {
-                int oldvalue = Integer.valueOf(oldvalueStr);
-                int newvalue;
-                if (oldvalue == fromId) {
-                    newvalue = toId;
-                    changed = true;
-                } else {
-                    newvalue = oldvalue;
-                }
-                updated.add(newvalue);
-            }
-            
-            if (changed) {
-                endEntityProfile.setAvailableCAs(updated);
+            if (CAIdTools.updateCAIds(endEntityProfile, fromId, toId, toDN)) {
                 String name = endEntityProfiles.get(endEntityProfId);
                 if (log.isDebugEnabled()) {
                     log.debug("Changing CA Ids in End Entity Profile "+name);
@@ -463,24 +428,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Update Data Sources
         final Map<Integer,String> dataSources = userDataSourceSession.getUserDataSourceIdToNameMap(authenticationToken);
         for (Integer dataSourceId : dataSources.keySet()) {
-            boolean changed = false;
             final BaseUserDataSource dataSource = userDataSourceSession.getUserDataSource(authenticationToken, dataSourceId);
-            
-            dataSource.getApplicableCAs();
-            
-            final List<Integer> applicableCAs = new ArrayList<Integer>(dataSource.getApplicableCAs());
-            // The list is modified so we can't use an iterator
-            for (int i = 0; i < applicableCAs.size(); i++) {
-                int value = applicableCAs.get(i);
-                if (value == fromId) {
-                    applicableCAs.set(i, toId);
-                    changed = true;
-                }
-            }
-            
-            
-            if (changed) {
-                dataSource.setApplicableCAs(applicableCAs);
+            if (CAIdTools.updateCAIds(dataSource, fromId, toId, toDN)) {
                 String name = dataSources.get(dataSourceId);
                 if (log.isDebugEnabled()) {
                     log.debug("Changing CA Ids in User Data Source "+name);
@@ -495,33 +444,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final Map<Integer,String> services = serviceSession.getServiceIdToNameMap();
             for (String serviceName : services.values()) {
                 final ServiceConfiguration serviceConf = serviceSession.getService(serviceName);
-                final Properties workerProps = serviceConf.getWorkerProperties();
-                final String idsToCheckStr = workerProps.getProperty(BaseWorker.PROP_CAIDSTOCHECK);
-                if (!StringUtils.isEmpty(idsToCheckStr)) {
-                    boolean changed = false;
-                    final String[] caIds = idsToCheckStr.split(";");
-                    for (int i = 0; i < caIds.length; i++) {
-                        if (Integer.parseInt(caIds[i]) == fromId) {
-                            caIds[i] = String.valueOf(toId);
-                            changed = true;
-                        }
+                if (CAIdTools.updateCAIds(serviceConf, fromId, toId, toDN)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Changing CA Ids in Service "+serviceName);
                     }
-                    
-                    if (changed) {
-                        workerProps.setProperty(BaseWorker.PROP_CAIDSTOCHECK, StringUtils.join(caIds, ';'));
-                        serviceConf.setWorkerProperties(workerProps);
-                        if (log.isDebugEnabled()) {
-                            log.debug("Changing CA Ids in Service "+serviceName);
-                        }
-                        serviceSession.changeService(authenticationToken, serviceName, serviceConf, false);
-                    }
+                    serviceSession.changeService(authenticationToken, serviceName, serviceConf, false);
                 }
             }
         }
         
         // Update Internal Key Bindings
         Map<String,Map<String,InternalKeyBindingProperty<?>>> keyBindTypes = keyBindMgmtSession.getAvailableTypesAndProperties();
-        Map<String,List<Integer>> typesKeybindings = new HashMap<String,List<Integer>>();
+        Map<String,List<Integer>> typesKeybindings = new HashMap<>();
         for (String type : keyBindTypes.keySet()) {
             typesKeybindings.put(type, keyBindMgmtSession.getInternalKeyBindingIds(authenticationToken, type));
         }
@@ -529,20 +463,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final List<Integer> keybindIds = entry.getValue();
             for (int keybindId : keybindIds) {
                 final InternalKeyBinding keybind = keyBindMgmtSession.getInternalKeyBinding(authenticationToken, keybindId);
-                boolean changed = false;
-                List<InternalKeyBindingTrustEntry> trustentries = new ArrayList<InternalKeyBindingTrustEntry>();
-                for (InternalKeyBindingTrustEntry trustentry : keybind.getTrustedCertificateReferences()) {
-                    int trustCaId = trustentry.getCaId();
-                    if (trustCaId == fromId) {
-                        trustCaId = toId;
-                        changed = true;
-                    }
-                    trustentries.add(new InternalKeyBindingTrustEntry(trustCaId, trustentry.fetchCertificateSerialNumber()));
-                }
-                
-                
-                if (changed) {
-                    keybind.setTrustedCertificateReferences(trustentries);
+                if (CAIdTools.updateCAIds(keybind, fromId, toId, toDN)) {
                     if (log.isDebugEnabled()) {
                         log.debug("Changing CA Ids in Internal Key Binding "+keybind.getName());
                     }
@@ -559,12 +480,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Update System Configuration
         GlobalConfiguration globalConfig = (GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         if (globalConfig != null) {
-            boolean changed = false;
-            if (globalConfig.getAutoEnrollCA() == fromId) {
-                globalConfig.setAutoEnrollCA(toId);
-                changed = true;
-            }
-            if (changed) {
+            if (CAIdTools.updateCAIds(globalConfig, fromId, toId, toDN)) {
                 if (log.isDebugEnabled()) {
                     log.debug("Changing CA Ids in System Configuration");
                 }
@@ -576,15 +492,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Only "Default CA" contains a reference to the Subject DN. All other fields reference the CAs by CA name.
         CmpConfiguration cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         if (cmpConfig != null) {
-            boolean changed = false;
-            for (String alias : cmpConfig.getAliasList()) {
-                final String defaultCaDN = cmpConfig.getCMPDefaultCA(alias);
-                if (defaultCaDN != null && defaultCaDN.hashCode() == fromId) {
-                    cmpConfig.setCMPDefaultCA(alias, toDN);
-                    changed = true;
-                }
-            }
-            if (changed) {
+            if (CAIdTools.updateCAIds(cmpConfig, fromId, toId, toDN)) {
                 if (log.isDebugEnabled()) {
                     log.debug("Changing CA Ids in CMP configuration");
                 }
@@ -594,37 +502,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         
         // Update Roles
         final Random random = new Random(System.nanoTime()); 
-        final String toReplace = StandardRules.CAACCESS.resource()+String.valueOf(fromId);
-        final String toReplaceSlash = toReplace+"/";
         for (RoleData role : roleAccessSession.getAllRoles()) {
             final String roleName = role.getRoleName();
-            // Look for references from user's CAs
-            final Map<Integer,AccessUserAspectData> users = new HashMap<Integer,AccessUserAspectData>(role.getAccessUsers());
-            boolean changed = false;
-            for (int id : new ArrayList<Integer>(users.keySet())) {
-                AccessUserAspectData user = users.get(id);
-                if (user.getCaId() == fromId) {
-                    user = new AccessUserAspectData(roleName, toId, user.getMatchWith(), user.getTokenType(), user.getMatchTypeAsType(), user.getMatchValue());
-                    users.put(id, user);
-                    changed = true;
-                }
-            }
-            // Look for references from access rules
-            final Map<Integer,AccessRuleData> rules = new HashMap<Integer,AccessRuleData>(role.getAccessRules());
-            for (int id : new ArrayList<Integer>(rules.keySet())) {
-                AccessRuleData rule = rules.get(id);
-                final String accessRuleName = rule.getAccessRuleName();
-                
-                if (accessRuleName.equals(toReplace) || accessRuleName.startsWith(toReplaceSlash)) {
-                    final String newName = StandardRules.CAACCESS.resource() + String.valueOf(toId) + accessRuleName.substring(toReplace.length());
-                    final int state = rule.getState();
-                    rule = new AccessRuleData(roleName, newName, rule.getInternalState(), rule.getRecursive());
-                    rule.setState(state);
-                    rules.put(id, rule);
-                    changed = true;
-                }
-            }
-            if (changed) {
+            final Map<Integer,AccessRuleData> rules = new HashMap<>(role.getAccessRules());
+            final Map<Integer,AccessUserAspectData> users = new HashMap<>(role.getAccessUsers());
+            if (CAIdTools.updateCAIds(roleName, rules, users, fromId, toId, toDN)) {
                 if (log.isDebugEnabled()) {
                     log.debug("Changing CA Ids in Role "+roleName);
                 }
@@ -650,22 +532,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final String detailsMsg = intres.getLocalizedMessage("caadmin.updatedcaid", fromId, toId, toDN);
         auditSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(toId),
                     null, null, detailsMsg);
-    }
-    
-    /**
-     * Rebuilds extended services so the Subject DN gets updated.
-     */
-    private void rebuildExtendedServices(CAInfo cainfo) {
-        final List<ExtendedCAServiceInfo> extsvcs = new ArrayList<ExtendedCAServiceInfo>();
-        final String casubjdn = cainfo.getSubjectDN();
-        for (ExtendedCAServiceInfo extsvc : cainfo.getExtendedCAServiceInfos()) {
-            if (extsvc instanceof CmsCAServiceInfo) {
-                final CmsCAServiceInfo cmssvc = (CmsCAServiceInfo) extsvc;
-                extsvc = new CmsCAServiceInfo(extsvc.getStatus(), "CN=CMSCertificate, " + casubjdn, cmssvc.getSubjectAltName(), cmssvc.getKeySpec(), cmssvc.getKeyAlgorithm());
-            }
-            extsvcs.add(extsvc);
-        }
-        cainfo.setExtendedCAServiceInfos(extsvcs);
     }
     
     @Override
@@ -1060,7 +926,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 caSession.removeCA(admin, currentCAId);
                 cainfo.setCAId(calculatedCAId);
                 updateCAIds(admin, currentCAId, calculatedCAId, cainfo.getSubjectDN());
-                rebuildExtendedServices(cainfo);
+                CAIdTools.rebuildExtendedServices(cainfo);
                 try {
                     createCA(admin, cainfo);
                 } catch (CAExistsException e) {
@@ -2022,9 +1888,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                             String.valueOf(caid), null, null, details);
                     ca.setCAToken(caToken);
                     caSession.editCA(authenticationToken, ca, true);
-                } catch (AuthorizationDeniedException e2) {
-                    throw e2;
-                } catch (CryptoTokenOfflineException e2) {
+                } catch (AuthorizationDeniedException | CryptoTokenOfflineException e2) {
                     throw e2;
                 } catch (Exception e2) {
                     throw new RuntimeException(e2);
