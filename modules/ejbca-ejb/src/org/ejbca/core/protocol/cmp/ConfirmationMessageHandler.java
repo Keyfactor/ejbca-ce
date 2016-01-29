@@ -194,9 +194,9 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
                 cadn = CertTools.stringToBCDNString(cadn);
                 cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
             } catch(CADoesntExistsException e) {
-                LOG.info("Could not find Recipient CA '" + cadn + "'.");
+                LOG.info("Could not find Recipient CA with DN '" + cadn + "'.");
                 cadn = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-                LOG.info("Trying to use CMP DefaultCA instead. DN " + cadn + "  ID " + cadn.hashCode());
+                LOG.info("Trying to use CMP DefaultCA instead. DN: '" + cadn + "', ID: " + cadn.hashCode());
                 cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
             }
         }
