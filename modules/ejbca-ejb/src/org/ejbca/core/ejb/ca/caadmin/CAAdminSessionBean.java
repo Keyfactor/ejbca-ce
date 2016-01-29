@@ -319,7 +319,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             caSession.removeCA(authenticationToken, currentCAId);
             caInfo.setCAId(calculatedCAId);
             updateCAIds(authenticationToken, currentCAId, calculatedCAId, caInfo.getSubjectDN());
-            rebuildExtendedServices(authenticationToken, caInfo);
+            rebuildExtendedServices(caInfo);
             try {
                 createCA(authenticationToken, caInfo);
             } catch (CAExistsException e) {
@@ -655,7 +655,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /**
      * Rebuilds extended services so the Subject DN gets updated.
      */
-    private void rebuildExtendedServices(final AuthenticationToken admin, CAInfo cainfo) {
+    private void rebuildExtendedServices(CAInfo cainfo) {
         final List<ExtendedCAServiceInfo> extsvcs = new ArrayList<ExtendedCAServiceInfo>();
         final String casubjdn = cainfo.getSubjectDN();
         for (ExtendedCAServiceInfo extsvc : cainfo.getExtendedCAServiceInfos()) {
@@ -1060,7 +1060,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 caSession.removeCA(admin, currentCAId);
                 cainfo.setCAId(calculatedCAId);
                 updateCAIds(admin, currentCAId, calculatedCAId, cainfo.getSubjectDN());
-                rebuildExtendedServices(admin, cainfo);
+                rebuildExtendedServices(cainfo);
                 try {
                     createCA(admin, cainfo);
                 } catch (CAExistsException e) {
@@ -1192,10 +1192,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     details.put("sequence", caToken.getKeySequence());
                     auditSession.log(EventTypes.CA_KEYGEN, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
                             String.valueOf(caid), null, null, details);
-
-                } catch (AuthorizationDeniedException e2) {
-                    throw e2;
-                } catch (CryptoTokenOfflineException e2) {
+                } catch (AuthorizationDeniedException | CryptoTokenOfflineException e2) {
                     throw e2;
                 } catch (Exception e2) {
                     throw new RuntimeException(e2);
@@ -1860,6 +1857,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             cainfo = x509cainfo;
         } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
             cainfo = new CVCCAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validity, signedby, null, null);
+        } else {
+            throw new CertificateImportException("Certificate was of an unknown type: " + caCertificate.getType());
         }
         
         cainfo.setDescription("CA created by certificate import.");
@@ -1872,6 +1871,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.info("Creating a CVC CA (process request)");
             CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
             ca = CvcCA.getInstance(cvccainfo);
+        } else {
+            throw new IllegalStateException("CAInfo object was of an unknown type: " + cainfo.getCAType());
         }
         ca.setCertificateChain(certificates);
         CAToken token = new CAToken(ca.getCAId(), new NullCryptoToken().getProperties());
