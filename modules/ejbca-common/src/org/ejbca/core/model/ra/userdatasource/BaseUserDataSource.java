@@ -58,10 +58,10 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
     public BaseUserDataSource() {
       setDescription("");	
       
-      ArrayList<Integer> applicablecas = new ArrayList<Integer>();
+      ArrayList<Integer> applicablecas = new ArrayList<>();
       setApplicableCAs(applicablecas);
       
-      HashSet<Integer> modifyableFields = new HashSet<Integer>();
+      HashSet<Integer> modifyableFields = new HashSet<>();
       for(int i=0; i< UserDataSourceVO.AVAILABLEMODIFYABLEFIELDS.length; i++){
     	  modifyableFields.add(Integer.valueOf(UserDataSourceVO.AVAILABLEMODIFYABLEFIELDS[i]));
       }

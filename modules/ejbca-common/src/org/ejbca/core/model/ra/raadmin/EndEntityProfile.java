@@ -79,7 +79,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final long serialVersionUID = -8356152324295231463L;
     
     /** Constant values for end entity profile. */
-    private static final HashMap<String, Integer> dataConstants = new HashMap<String, Integer>();
+    private static final HashMap<String, Integer> dataConstants = new HashMap<>();
 
     // Field constants, used in the map below
     public static final String USERNAME           = "USERNAME";
@@ -162,7 +162,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 	// The max value in dataConstants (we only want to do this once)
     private static final int dataConstantsMaxValue = Collections.max(dataConstants.values()).intValue();
     // The keys used when we create an empty profile (we only want to do this once)
-    private static final List<String> dataConstantsUsedInEmpty = new LinkedList<String>(dataConstants.keySet());
+    private static final List<String> dataConstantsUsedInEmpty = new LinkedList<>(dataConstants.keySet());
     static {
     	dataConstantsUsedInEmpty.remove(SENDNOTIFICATION);
     	dataConstantsUsedInEmpty.remove(DnComponents.OTHERNAME);
@@ -261,7 +261,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	log.debug("The highest number in dataConstants is: " + dataConstantsMaxValue);
         }
         // Common initialization of profile
-        final List<Integer> numberoffields = new ArrayList<Integer>(dataConstantsMaxValue);
+        final List<Integer> numberoffields = new ArrayList<>(dataConstantsMaxValue);
         Collections.fill(numberoffields, Integer.valueOf(0));
         data.put(NUMBERARRAY, numberoffields);
         data.put(SUBJECTDNFIELDORDER, new ArrayList<Integer>());
@@ -621,7 +621,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      * @return a Collection of String, where the string is an integer (never null).
      */
     public Collection<String> getAvailableCAs(){
-        final ArrayList<String> availablecaids = new ArrayList<String>();
+        final ArrayList<String> availablecaids = new ArrayList<>();
         availablecaids.addAll(Arrays.asList(getValue(AVAILCAS,0).split(SPLITCHAR)));
         return availablecaids;
     }
@@ -665,7 +665,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      * @return a Collection of String, where the string is an integer.
      */
     public Collection<String> getAvailableCertificateProfileIds() {
-        final ArrayList<String> profiles = new ArrayList<String>();
+        final ArrayList<String> profiles = new ArrayList<>();
         final String list = getValue(AVAILCERTPROFILES,0);
         if (list != null) {
             profiles.addAll(Arrays.asList(list.split(SPLITCHAR)));        	
@@ -776,7 +776,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	@SuppressWarnings("unchecked")
         List<UserNotification> l = (List<UserNotification>)data.get(USERNOTIFICATIONS);
     	if (l == null) {
-    		l = new ArrayList<UserNotification>();
+    		l = new ArrayList<>();
     	}
     	return l;
     }
@@ -1420,10 +1420,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 		}
 	}
 
+	@Override
     public Object clone() throws CloneNotSupportedException {
     	final EndEntityProfile clone = new EndEntityProfile(0);
     	// We need to make a deep copy of the hashmap here
-    	clone.data = new LinkedHashMap<Object,Object>(data.size());
+    	clone.data = new LinkedHashMap<>(data.size());
     	for (final Entry<Object,Object> entry : data.entrySet()) {
     		Object value = entry.getValue();
     		if (value instanceof ArrayList<?>) {
@@ -1436,11 +1437,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
+	@Override
     public float getLatestVersion(){
        return LATEST_VERSION;
     }
 
     /** Implementation of UpgradableDataHashMap function upgrade. */
+	@Override
     public void upgrade() {
         log.trace(">upgrade");        
     	if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
@@ -2069,19 +2072,19 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public static String[] getSubjectDNProfileFields() {
-    	return (String[])DnComponents.getDnProfileFields().toArray(new String[0]);
+    	return DnComponents.getDnProfileFields().toArray(new String[0]);
     }
 
     public static String[] getSubjectAltnameProfileFields() {
-    	return (String[])DnComponents.getAltNameFields().toArray(new String[0]);
+    	return DnComponents.getAltNameFields().toArray(new String[0]);
     }
 
     public static String[] getSubjectDirAttrProfileFields() {
-    	return (String[])DnComponents.getDirAttrFields().toArray(new String[0]);
+    	return DnComponents.getDirAttrFields().toArray(new String[0]);
     }
     
     public List<String> getNameConstraintsPermitted() {
-        List<String> ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<>();
         String value = getValue(NAMECONSTRAINTS_PERMITTED, 0);
         if (value != null && !value.trim().isEmpty()) { ret.addAll(Arrays.asList(value.split(SPLITCHAR))); }
         return ret;
@@ -2092,7 +2095,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     public List<String> getNameConstraintsExcluded() {
-        List<String> ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<>();
         String value = getValue(NAMECONSTRAINTS_EXCLUDED, 0);
         if (value != null && !value.trim().isEmpty()) { ret.addAll(Arrays.asList(value.split(SPLITCHAR))); }
         return ret;

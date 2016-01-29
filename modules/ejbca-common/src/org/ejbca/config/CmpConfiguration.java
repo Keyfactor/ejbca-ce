@@ -84,7 +84,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     // Default values
-    private static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<String>();
+    private static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<>();
     private static final String DEFAULT_DEFAULTCA = "";
     private static final String DEFAULT_OPERATION_MODE = "client";
     private static final String DEFAULT_EXTRACT_USERNAME_COMPONENT = "DN";
@@ -172,7 +172,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     // return all the key with an alias
     public static Set<String> getAllAliasKeys(String alias) {
         alias = alias + ".";
-        Set<String> keys = new LinkedHashSet<String>();
+        Set<String> keys = new LinkedHashSet<>();
         keys.add(alias + CONFIG_DEFAULTCA);
         keys.add(alias + CONFIG_RESPONSEPROTECTION);
         keys.add(alias + CONFIG_OPERATIONMODE);
@@ -555,7 +555,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     }
    
     public Collection<String> getCmpResponseProtectionList(boolean ramode) {
-        ArrayList<String> pl = new ArrayList<String>();
+        ArrayList<String> pl = new ArrayList<>();
         pl.add("signature");
         if(ramode) {
             pl.add("pbe");
@@ -699,8 +699,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         data.put(ALIAS_LIST, aliases);
     }
     
-    
-    
     /**
      * @return the configuration as a regular Properties object
      */
@@ -747,12 +745,13 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
        }
 */
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
+    @Override
     public float getLatestVersion(){
        return LATEST_VERSION;
     }
 
-    /** Implemtation of UpgradableDataHashMap function upgrade. */
-
+    /** Implementation of UpgradableDataHashMap function upgrade. */
+    @Override
     public void upgrade(){
         if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));          

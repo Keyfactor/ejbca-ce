@@ -73,7 +73,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp";
     
     // Default list of nodes in cluster
-    private static final Set<String> NODESINCLUSTER_DEFAULT      = new LinkedHashSet<String>();
+    private static final Set<String> NODESINCLUSTER_DEFAULT      = new LinkedHashSet<>();
 
     // Title of ra admin web interface.
     private static final  String   DEFAULTEJBCATITLE             = InternalConfiguration.getAppNameCapital() + " Administration";
@@ -98,7 +98,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final boolean DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST = true;
     
     // Default CT Logs
-    private static final Map<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<Integer,CTLogInfo>();
+    private static final Map<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
     /* By default the list is empty but it is possible to add logs here. 
     static {
         try {
@@ -528,7 +528,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
            Object o = data.get(NODESINCLUSTER);
            if (o != null && !(o instanceof LinkedHashSet<?>)) {
                LOG.debug("Converting GlobalConfiguration NodesInCluster from "+o.getClass().getName()+" to LinkedHashSet.");
-               ret = new LinkedHashSet<String>((Collection<String>)o);
+               ret = new LinkedHashSet<>((Collection<String>)o);
            } else {
                ret = (Set<String>)o; 
            }
@@ -560,13 +560,13 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     }
        
     public void addCTLog(CTLogInfo ctlog) {
-        HashMap<Integer,CTLogInfo> logs = new LinkedHashMap<Integer,CTLogInfo>(getCTLogs());
+        HashMap<Integer,CTLogInfo> logs = new LinkedHashMap<>(getCTLogs());
         logs.put(ctlog.getLogId(), ctlog);
         setCTLogs(logs);
     }
     
     public void removeCTLog(int ctlogId) {
-        HashMap<Integer,CTLogInfo> logs = new LinkedHashMap<Integer,CTLogInfo>(getCTLogs());
+        HashMap<Integer,CTLogInfo> logs = new LinkedHashMap<>(getCTLogs());
         logs.remove(ctlogId);
         setCTLogs(logs);
     }

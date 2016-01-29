@@ -67,7 +67,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String HARDTOKENENCPROFILENAME = "HARDTOKEN_ENC";
     public static final String HARDTOKENSIGNPROFILENAME = "HARDTOKEN_SIGN";
 
-    public static final List<String> FIXED_PROFILENAMES = new ArrayList<String>();
+    public static final List<String> FIXED_PROFILENAMES = new ArrayList<>();
     static {
         FIXED_PROFILENAMES.add(ROOTCAPROFILENAME);
         FIXED_PROFILENAMES.add(SUBCAPROFILENAME);
@@ -269,7 +269,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String OID_CARDNUMBER = "1.2.752.34.2.1";
 
     /** Constants holding the use properties for certificate extensions */
-    protected static final HashMap<String, String> useStandardCertificateExtensions = new HashMap<String, String>();
+    protected static final HashMap<String, String> useStandardCertificateExtensions = new HashMap<>();
     {
         useStandardCertificateExtensions.put(USEBASICCONSTRAINTS, Extension.basicConstraints.getId());
         useStandardCertificateExtensions.put(USEKEYUSAGE, Extension.keyUsage.getId());
@@ -364,7 +364,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setUseCertificatePolicies(false);
         setCertificatePoliciesCritical(false);
-        ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
+        ArrayList<CertificatePolicy> policies = new ArrayList<>();
         setCertificatePolicies(policies);
 
         setAvailableKeyAlgorithmsAsList(getAvailableKeyAlgorithmsAvailable());
@@ -384,7 +384,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setDocumentTypeListCritical(false);
         setDocumentTypeList(new ArrayList<String>());
 
-        ArrayList<Integer> availablecas = new ArrayList<Integer>();
+        ArrayList<Integer> availablecas = new ArrayList<>();
         availablecas.add(Integer.valueOf(ANYCA));
         setAvailableCAs(availablecas);
 
@@ -488,7 +488,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
             setKeyUsageCritical(true);
             setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<String>();
+            ArrayList<String> eku = new ArrayList<>();
             eku.add(KeyPurposeId.id_kp_clientAuth.getId());
             eku.add(KeyPurposeId.id_kp_emailProtection.getId());
             setExtendedKeyUsage(eku);
@@ -502,7 +502,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
             setKeyUsageCritical(true);
             setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<String>();
+            ArrayList<String> eku = new ArrayList<>();
             eku.add(KeyPurposeId.id_kp_OCSPSigning.getId());
             setExtendedKeyUsage(eku);
             setExtendedKeyUsageCritical(false);
@@ -518,7 +518,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
             setKeyUsageCritical(true);
             setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<String>();
+            ArrayList<String> eku = new ArrayList<>();
             eku.add(KeyPurposeId.id_kp_serverAuth.getId());
             setExtendedKeyUsage(eku);
             setExtendedKeyUsageCritical(false);
@@ -529,7 +529,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
             setKeyUsageCritical(true);
             setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<String>();
+            ArrayList<String> eku = new ArrayList<>();
             eku.add(KeyPurposeId.id_kp_clientAuth.getId());
             eku.add(KeyPurposeId.id_kp_smartcardlogon.getId());
             setExtendedKeyUsage(eku);
@@ -542,7 +542,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
             setKeyUsageCritical(true);
             setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<String>();
+            ArrayList<String> eku = new ArrayList<>();
             eku.add(KeyPurposeId.id_kp_clientAuth.getId());
             eku.add(KeyPurposeId.id_kp_emailProtection.getId());
             eku.add(KeyPurposeId.id_kp_smartcardlogon.getId());
@@ -555,7 +555,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
             setKeyUsageCritical(true);
             setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<String>();
+            ArrayList<String> eku = new ArrayList<>();
             eku.add(KeyPurposeId.id_kp_emailProtection.getId());
             setExtendedKeyUsage(eku);
             setExtendedKeyUsageCritical(false);
@@ -566,7 +566,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setKeyUsage(CertificateConstants.NONREPUDIATION, true);
             setKeyUsageCritical(true);
             setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<String>();
+            ArrayList<String> eku = new ArrayList<>();
             eku.add(KeyPurposeId.id_kp_emailProtection.getId());
             setExtendedKeyUsage(eku);
             setExtendedKeyUsageCritical(false);
@@ -1088,7 +1088,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public void setAvailableBitLengths(int[] availablebitlengths) {
-        ArrayList<Integer> availbitlengths = new ArrayList<Integer>(availablebitlengths.length);
+        ArrayList<Integer> availbitlengths = new ArrayList<>(availablebitlengths.length);
 
         for (int i = 0; i < availablebitlengths.length; i++) {
             availbitlengths.add(Integer.valueOf(availablebitlengths[i]));
@@ -1265,7 +1265,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @SuppressWarnings("unchecked")
     public ArrayList<String> getCustomDnOrder() {
         if (data.get(CUSTOMDNORDER) == null) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
         return (ArrayList<String>) data.get(CUSTOMDNORDER);
     }
@@ -1352,7 +1352,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * 
      */
     public void setSubjectDNSubSet(List<String> subjectdns) {
-        List<Integer> convertedList = new ArrayList<Integer>();
+        List<Integer> convertedList = new ArrayList<>();
         for(String value : subjectdns) {
             convertedList.add(Integer.valueOf(value));
         }
@@ -1522,7 +1522,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             return;
         }
         if (data.get(CAISSUERS) == null) {
-            List<String> caIssuers = new ArrayList<String>();
+            List<String> caIssuers = new ArrayList<>();
             caIssuers.add(caIssuer);
             this.setCaIssuers(caIssuers);
         } else {
@@ -1533,16 +1533,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @SuppressWarnings("unchecked")
     public List<String> getCaIssuers() {
         if (data.get(CAISSUERS) == null) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         } else {
             return (List<String>) data.get(CAISSUERS);
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void removeCaIssuer(String caIssuer) {
         if (data.get(CAISSUERS) != null) {
-            ((List<String>) data.get(CAISSUERS)).remove(caIssuer);
+            ((List<?>) data.get(CAISSUERS)).remove(caIssuer);
         }
     }
 
@@ -1849,7 +1848,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @SuppressWarnings("unchecked")
     public List<Integer> getUsedCertificateExtensions() {
         if (data.get(USEDCERTIFICATEEXTENSIONS) == null) {
-            return new ArrayList<Integer>();
+            return new ArrayList<>();
         }
         return (List<Integer>) data.get(USEDCERTIFICATEEXTENSIONS);
     }
@@ -1874,7 +1873,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @return List of oid Strings for standard certificate extensions that should be used
      */
     public List<String> getUsedStandardCertificateExtensions() {
-        ArrayList<String> ret = new ArrayList<String>();
+        ArrayList<String> ret = new ArrayList<>();
         Iterator<String> iter = useStandardCertificateExtensions.keySet().iterator();
         while (iter.hasNext()) {
             String s = iter.next();
@@ -2084,14 +2083,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @SuppressWarnings("unchecked")
     public Set<Integer> getEnabledCTLogs() {
         if (data.get(CTLOGS) == null) {
-            return new LinkedHashSet<Integer>();
+            return new LinkedHashSet<>();
         }
         
         return (Set<Integer>)data.get(CTLOGS);
     }
     
     public void setEnabledCTLogs(Set<Integer> logIds) {
-        data.put(CTLOGS, new LinkedHashSet<Integer>(logIds));
+        data.put(CTLOGS, new LinkedHashSet<>(logIds));
     }
     
     /**
@@ -2203,10 +2202,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
 
+    @Override
     public CertificateProfile clone() throws CloneNotSupportedException {
         final CertificateProfile clone = new CertificateProfile(0);
         // We need to make a deep copy of the hashmap here
-        clone.data = new LinkedHashMap<Object,Object>(data.size());
+        clone.data = new LinkedHashMap<>(data.size());
         for (final Entry<Object,Object> entry : data.entrySet()) {
                 Object value = entry.getValue();
                 if (value instanceof ArrayList<?>) {
@@ -2219,6 +2219,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
+    @Override
     public float getLatestVersion() {
         return LATEST_VERSION;
     }
@@ -2233,6 +2234,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Implementation of UpgradableDataHashMap function upgrade.
      */
+    @Override
     public void upgrade() {
         if (log.isTraceEnabled()) {
             log.trace(">upgrade: " + getLatestVersion() + ", " + getVersion());
@@ -2255,7 +2257,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
             }
             if (data.get(AVAILABLECAS) == null) {
-                ArrayList<Integer> availablecas = new ArrayList<Integer>();
+                ArrayList<Integer> availablecas = new ArrayList<>();
                 availablecas.add(Integer.valueOf(ANYCA));
                 data.put(AVAILABLECAS, availablecas);
             }
