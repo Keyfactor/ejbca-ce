@@ -490,6 +490,16 @@ The messages listed here are those returned by the proxy independently of the CA
     <td>BAD_REQUEST (2)</td>
   </tr>
   <tr>
+    <td>Message signature was required, but revocation check could not be performed.</td>
+    <td>Unsigned CMP</td>
+    <td>SYSTEM_UNAVAILABLE (24)</td>
+  </tr>
+  <tr>
+    <td>Message signature was required, if a cache failure occurred during revocation check.</td>
+    <td>Unsigned CMP</td>
+    <td>SYSTEM_UNAVAILABLE (24)</td>
+  </tr>
+  <tr>
     <td>Message signature was required, but no certificate chains defined on proxy</td>
     <td>Unsigned CMP</td>
     <td>SYSTEM_UNAVAILABLE (24)</td>
