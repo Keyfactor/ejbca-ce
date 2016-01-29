@@ -208,10 +208,12 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 		data.put(PINTONODES, nodes);
 	}
 
+	@Override
 	public float getLatestVersion() {
 		return LATEST_VERSION;
 	}
 
+	@Override
 	public void upgrade() {
 		if (Float.compare(LATEST_VERSION, getVersion()) > 0) {
             // New version of the class, upgrade
@@ -296,6 +298,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 		}		
 	}
 	
+	@Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Object clone() throws CloneNotSupportedException {
         ServiceConfiguration clone = new ServiceConfiguration();
