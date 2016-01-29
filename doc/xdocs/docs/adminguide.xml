@@ -1430,7 +1430,7 @@ See EJBCA_HOME/modules/cmpProxy/resources/README for information how to build an
 </ul>
 </subsubsection>
 </subsection>
-<subsection name="CMP error messages">
+<subsection name="CMP Error Messages">
 <p>When an error occurs during CMP processing some different CMP error messages, or HTTP error codes can occur. Depending on at which stage the error is encountered and its type, different error messages are returned.
 Below is a exhaustive list of CMP error codes (don't use as definite guide, do you own testing).</p>
 <p>
@@ -1467,6 +1467,11 @@ Below is a exhaustive list of CMP error codes (don't use as definite guide, do y
     <td>404 Not Found</td>
   </tr>
   <tr>
+    <td>Submitting a CMP RA message with a signing certificate which was revoked or expired.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+    <tr>
     <td>Submitting a CMP RA message that could not be authenticated.</td>
     <td>Unsigned CMP</td>
     <td>BAD_MESSAGE_CHECK (1)</td>
