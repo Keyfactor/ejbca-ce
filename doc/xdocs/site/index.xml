@@ -84,9 +84,11 @@ but if you want a serious PKI CA we recommend EJBCA. EJBCA is:
 <li>A <a href="docs/services-va.html">Validation Authority</a> (link to documentation site).</li>
 <li>An <a href="docs/architecture-ocsp.html">OCSP Responder</a> (link to documentation site).</li>
 </ul>
-<p><strong>EJBCA has everything for your trust center. Contact us for more info.</strong>
+<p><strong>EJBCA has everything for your trust center.</strong> 
+<br/>Contact us for more info, or look at the full (but never complete) <a href="features.html">features list</a>.
+<br/>
+A sampling of uses cases where you can use EJBCA to issue certificates are:
 </p>
-You can use EJBCA to issue certificates for different purposes such as:
 <ul>
 <li>Strong authentication for users accessing your intranet/extranet/internet resources.</li>
 <li>Secure communication with SSL/TLS servers and SSL/TLS clients. EJBCA is an excellent SSL PKI.</li>
@@ -95,13 +97,14 @@ You can use EJBCA to issue certificates for different purposes such as:
 <li>Signing and encrypting email (SMIME).</li>
 <li>VPN connections by issuing certificates to your VPN routers such as OpenVPN, Cisco, Juniper etc.</li>
 <li>Client VPN access with certificates in users VPN clients.</li>
+<li>Network authentication with 802.1x.</li>
 <li>Single sign-on by using a single certificate to secure logon to web applications.</li>
 <li>Creating signed documents.</li>
 <li>Mobile PKI, <a href="docs/adminguide.html#iPhone/iOS">enrolling iOS</a> etc.</li>
-<li>Secure mobile networks, i.e. <a href="http://www.3gpp.org/">3GPP</a>/LTE/4G using the <a href="docs/adminguide.html#CMP">CMP protocol</a>.</li>
+<li>Secure mobile networks, i.e. 3GPP/LTE/4G using the <a href="docs/adminguide.html#CMP">CMP protocol</a>.</li>
 <li>Counterfeit prevention by signing and pairing accessories.</li>
 <li>Internet of Things (IoT). Need some hundreds of millions of certificates fast? EJBCA will handle it.</li>
-<li>Mobile Device Management (MdM).</li>
+<li>Mobile Device Management (MdM) and Enterprise Mobility Management (EMM).</li>
 <li>Issue citizen certificates for access to government resources, used in passports etc.</li>
 <li>Create CVCAs and DVs and issue CV certificates (CVC) to Document Verifiers and Inspection Systems for EU <a href="docs/cvccas.html">EAC ePassports</a> and eIDs.</li>
 <li>... and many many more ...</li>
@@ -128,11 +131,11 @@ You can also use EJBCA to set up a CA independent, high performance, highly avai
 </section>
 <section name="Open Source PKI">
 <p>
-This PKI software is OSI Certified Open Source Software.
+This PKI software is OSI Certified Open Source Software licensed under the <em>LGPL v2.1 or later</em> license.
 OSI Certified is a certification mark of the Open Source Initiative.
 </p>
 <p>
-The source code of EJBCA is hosted on a (mostly) public <a href="https://svn.cesecore.eu/svn/ejbca/">svn</a> and all downloads include the complete source code and can be downloaded from <a href="http://sourceforge.net/projects/ejbca/">Sourceforge.net</a>.
+The source code of EJBCA Community is hosted on a (mostly) public <a href="https://svn.cesecore.eu/svn/ejbca/">svn</a> and all downloads include the complete source code and can be downloaded from <a href="http://sourceforge.net/projects/ejbca/">Sourceforge.net</a>.
 <br></br>
 If you want to contribute to EJBCA, please see <i><a href="contributions.html">Contribute to EJBCA</a></i>
 <br></br>
@@ -141,7 +144,7 @@ You can also donate to EJBCA, please see <i><a href="donations.html">Donate to E
 </section>
 
 <section name="Support and development">
-<p>Commercial support, development, integration and maintenance for EJBCA is available through <a href="https://www.primekey.se/">PrimeKey Solutions</a>. 
+<p>EJBCA Enterprise with commercial support, development, integration and maintenance is available through <a href="https://www.primekey.se/">PrimeKey Solutions</a>. 
 </p>
 </section>
 
