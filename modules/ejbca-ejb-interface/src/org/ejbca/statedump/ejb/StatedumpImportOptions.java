@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Options for statedump import. What to overwrite or not overwrite is also set in the options.
  * 
@@ -38,6 +40,7 @@ public final class StatedumpImportOptions implements Serializable {
     private final Map<StatedumpObjectKey,String> passwords = new HashMap<>();
     private final Map<String,String> entityReplacements = new HashMap<>();
     private final List<StatedumpCAIdChange> caIdChanges = new ArrayList<>();
+    private final Map<String,List<StatedumpOverride>> overrides = new HashMap<>();
     
     public StatedumpImportOptions() {
         // Does nothing
@@ -100,5 +103,24 @@ public final class StatedumpImportOptions implements Serializable {
     /** Internal method, but EJBs can't call package internal methods, so it must be public */
     public List<StatedumpCAIdChange> _getCASubjectDNChanges() {
         return caIdChanges;
+    }
+    
+    /**
+     * Adds an override of a field. See StatedumpFieldOverrider
+     */
+    public void addOverride(final String[] key, final StatedumpOverride.Type type, final Object value) {
+        final String keyStr = StringUtils.join(key, '.');
+        List<StatedumpOverride> list = overrides.get(keyStr);
+        if (list == null) {
+            list = new ArrayList<>();
+            overrides.put(keyStr, list);
+        }
+        list.add(new StatedumpOverride(type, value));
+    }
+    
+    /** Internal method, but EJBs can't call package internal methods, so it must be public */
+    public List<StatedumpOverride> _getOverrides(final String[] key) {
+        final String keyStr = StringUtils.join(key, '.');
+        return overrides.get(keyStr);
     }
 }
