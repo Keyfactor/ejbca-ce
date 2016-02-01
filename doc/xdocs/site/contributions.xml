@@ -84,10 +84,10 @@ Contributors are asked if they want to have their name and optional contact info
 <ul>
 <li>An operating system that can run Java (Linux, OSX, Windows..). Most developers use Ubuntu/Debian.</li>
 <li>Eclipse JEE edition with an additional Subversion (SVN) plugin installed.</li>
-<li>OpenJDK 7, or OracleJDK 7 (the EJBCA 6.x-branch only supports JDK 6 and 7)</li>
-<li>Apache Ant 1.8.x (with all the extras that comes with the zip from apache.org or 'ant-optional' Ubuntu package)</li>
-<li>A supported application server (JBoss AS 7.1.1.GA etc)</li>
-<li>A favorite database supported by EJBCA that is easy to work with (H2, MySQL, PostgreSQL.).</li>
+<li>OpenJDK 7, or OracleJDK 7, or later</li>
+<li>Apache Ant 1.9.x (with all the extras that comes with the zip from apache.org or 'ant-optional' Ubuntu package)</li>
+<li>A supported application server (WildFly 9, JBoss EAP, JBoss AS 7.1.1.GA, etc)</li>
+<li>A favorite database supported by EJBCA that is easy to work with (H2, MariaDB, MySQL, PostgreSQL.).</li>
 <li>A virtualization solution for testing additional combinations of application servers and databases and external OCSP responders etc.</li>
 </ul>
 <p>
@@ -101,8 +101,8 @@ What you need to know to develop EJBCA
     <li>JEE</li>
     <ul>
         <li>Enterprise JavaBeans (excluding message passing)</li>
-        <li>Java Persistence API</li>
-        <li>Java ServerPages and Java ServerFaces</li>
+        <li>Java Persistence API (JPA)</li>
+        <li>Java ServerPages and Java ServerFaces (JSP and JSF)</li>
         <li>Web Services</li>
      </ul>
     <li>Databases</li>
