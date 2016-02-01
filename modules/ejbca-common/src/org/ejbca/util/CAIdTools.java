@@ -55,7 +55,15 @@ public final class CAIdTools {
 
     /** Static class. Can't be instantiated */ 
     private CAIdTools() { }
-    
+
+    /**
+     * Updates any references to a CA's CAId and Subject DN.
+     * @param certProfile Profile object to modify.
+     * @param fromId Old CA Id to replace.
+     * @param toId New CA Id to replace with.
+     * @param toSubjectDN New CA Subject DN.
+     * @return True if the certificate profile was changed. If so it should be persisted to the database.
+     */
     public static boolean updateCAIds(final CertificateProfile certProfile, final int fromId, final int toId, final String toSubjectDN) {
         boolean changed = false;
         final List<Integer> availableCAs = new ArrayList<>(certProfile.getAvailableCAs());
@@ -72,7 +80,15 @@ public final class CAIdTools {
         }
         return changed;
     }
-    
+
+    /**
+     * Updates any references to a CA's CAId and Subject DN.
+     * @param endEntityProfile Profile object to modify.
+     * @param fromId Old CA Id to replace.
+     * @param toId New CA Id to replace with.
+     * @param toSubjectDN New CA Subject DN.
+     * @return True if the end entity profile was changed. If so it should be persisted to the database.
+     */
     public static boolean updateCAIds(final EndEntityProfile endEntityProfile, final int fromId, final int toId, final String toSubjectDN) {
         boolean changed = false;
         
@@ -101,7 +117,15 @@ public final class CAIdTools {
         
         return changed;
     }
-    
+
+    /**
+     * Updates any references to a CA's CAId and Subject DN.
+     * @param dataSource Data source object to modify.
+     * @param fromId Old CA Id to replace.
+     * @param toId New CA Id to replace with.
+     * @param toSubjectDN New CA Subject DN.
+     * @return True if the data source was changed. If so it should be persisted to the database.
+     */
     public static boolean updateCAIds(final BaseUserDataSource dataSource, final int fromId, final int toId, final String toSubjectDN) {
         boolean changed = false;
         final List<Integer> applicableCAs = new ArrayList<>(dataSource.getApplicableCAs());
@@ -118,7 +142,15 @@ public final class CAIdTools {
         }
         return changed;
     }
-    
+
+    /**
+     * Updates any references to a CA's CAId and Subject DN.
+     * @param serviceConf Service object to modify.
+     * @param fromId Old CA Id to replace.
+     * @param toId New CA Id to replace with.
+     * @param toSubjectDN New CA Subject DN.
+     * @return True if the service was changed. If so it should be persisted to the database.
+     */
     public static boolean updateCAIds(final ServiceConfiguration serviceConf, final int fromId, final int toId, final String toSubjectDN) {
         boolean changed = false;
         final Properties workerProps = serviceConf.getWorkerProperties();
@@ -138,7 +170,15 @@ public final class CAIdTools {
         }
         return changed;
     }
-    
+
+    /**
+     * Updates any references to a CA's CAId and Subject DN.
+     * @param keybind Internal key binding object to modify.
+     * @param fromId Old CA Id to replace.
+     * @param toId New CA Id to replace with.
+     * @param toSubjectDN New CA Subject DN.
+     * @return True if the key binding was changed. If so it should be persisted to the database.
+     */
     public static boolean updateCAIds(final InternalKeyBinding keybind, final int fromId, final int toId, final String toSubjectDN) {
         boolean changed = false;
         List<InternalKeyBindingTrustEntry> trustentries = new ArrayList<>();
@@ -156,6 +196,14 @@ public final class CAIdTools {
         return changed;
     }
 
+    /**
+     * Updates any references to a CA's CAId and Subject DN.
+     * @param globalConfig Global configuration object to modify.
+     * @param fromId Old CA Id to replace.
+     * @param toId New CA Id to replace with.
+     * @param toSubjectDN New CA Subject DN.
+     * @return True if the configuration was changed. If so it should be persisted to the database.
+     */
     public static boolean updateCAIds(final GlobalConfiguration globalConfig, final int fromId, final int toId, final String toSubjectDN) {
         boolean changed = false;
         if (globalConfig.getAutoEnrollCA() == fromId) {
@@ -164,7 +212,15 @@ public final class CAIdTools {
         }
         return changed;
     }
-    
+
+    /**
+     * Updates any references to a CA's CAId and Subject DN.
+     * @param cmpConfig CMP configuration object to modify.
+     * @param fromId Old CA Id to replace.
+     * @param toId New CA Id to replace with.
+     * @param toSubjectDN New CA Subject DN.
+     * @return True if the configuration changed. If so it should be persisted to the database.
+     */
     public static boolean updateCAIds(final CmpConfiguration cmpConfig, final int fromId, final int toId, final String toSubjectDN) {
         boolean changed = false;
         for (String alias : cmpConfig.getAliasList()) {
@@ -180,6 +236,7 @@ public final class CAIdTools {
     
     
     /**
+     * Updates any references to a CA's CAId and Subject DN.
      * @param roleName Name of the role. Used when creating roles to replace the old roles with.
      * @param rules Access rules of the role. Updated in place.
      * @param users Access users of the role. Updated in place.
