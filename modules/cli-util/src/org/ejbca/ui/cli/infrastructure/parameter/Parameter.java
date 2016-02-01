@@ -40,7 +40,7 @@ public class Parameter {
      * @param name What this parameter denotes. Used for documentation purposes.
      * @param mandatoryMode Defines whether this parameter is mandatory or not. 
      * @param allowStandAlone true if this parameter can be inputed without its keyword. 
-     * @param parameterMode 
+     * @param parameterMode the type of parameter, if it requires an argument, if it's a flag, or a password etc
      */
     public Parameter(String keyWord, String name, MandatoryMode mandatoryMode, StandaloneMode allowStandAlone, ParameterMode parameterMode,
             String instruction) {
