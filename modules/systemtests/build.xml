@@ -202,6 +202,7 @@
 	<target name="runone-internal" depends="build, assert-appserverrunning-ocsp">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=LoggingStressTest" unless="test.runone" />
 		<property name="test.runoneexclude" value=""/>
+		<property name="httpCmpProxyURL" value=""/>
 		<fail message="'test.runoneexclude' is not set. Example -Dtest.runoneclude=none" unless="test.runoneexclude" />
 		<fail message="'reports.dir' is not set." unless="reports.dir" />
 		<mkdir dir="${this.dir}/p12"/>
