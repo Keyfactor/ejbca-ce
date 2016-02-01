@@ -776,6 +776,9 @@ java.security.InvalidAlgorithmParameterException
         catokenoffline = true;
         errormessage = ctoe.getMessage();
         includefile="choosecapage.jspf";
+    } catch (Exception exception) {
+        errormessage = exception.getMessage();
+        includefile="choosecapage.jspf";
     }
    
  // Include page
