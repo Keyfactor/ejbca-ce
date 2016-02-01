@@ -1075,19 +1075,29 @@ key usage in the CRMF request template, this key usage will be used.
 </subsection>
 
 <subsection name="Interoperability">
-<subsubsection name="RSA jCert">
-<p>CMP has been tested using RSA jCert toolkit for initialization requests. To run this as an RA you should configure CMP 
-with:
-<ul>
-<li>CMP Operational Mode : RA Mode</li>
-<li>Allow RA Verify Proof-of-Possession : check</li>
-<li>CMP Response Protection : pbe</li>
-<li>CMP Authentication Module : HMAC</li>
-<li>CMP Authentication Parameters : your shared password</li>
-<li>and other configurations you want for your RA.</li>
-</ul>
+<subsubsection name="EJBCA cmpclient (Enterprise only)">
+<p>EJBCA Enterprise includes a java command line client for CMP. It can be used to request, renew and revoke certificates.
+</p><p>
+You can build and run the client with:
 </p>
+<source>
+ant cmpclient
+cd dist/cmpclient
+java -jar cmpclient.jar
+java -jar cmpclient.jar crmf --help
+</source>
+<p>
+An example work-flow when you have one CMP alias in RA mode (raalias), using password based authentication of the RA, and another CMP alias (clientupdate) in client mode allowing updates using certificate authentication.
+</p>
+<source>
+java -jar cmpclient.jar crmf --dn "CN=tomas" --url http://192.168.122.230:8080/cmpProxy/raalias --authparam password --reqnewkeyspec RSA2048
+openssl pkcs12 -export -inkey dest/tomas-key.pem -in /dest/tomas.pem -certfile ManagementCA.cacert.pem -name tomas -out dest/tomas.p12
+java -jar cmpclient.jar update --dn "CN=tomas" --url http://192.168.122.230:8080/cmpProxy/clientupdate --keystore dest/tomas.p12 --keystorepwd foo123 --extraCertsFriendlyName tomas --includepopo --reqnewkeyspec RSA2048
+openssl x509 -in dest/tomas.pem -text
+java -jar cmpclient.jar revoke --issuer "CN=ManagementCA,O=EJBCA Sample,C=SE" --serno 17b9a7b8ce44b3fa --url http://192.168.122.230:8080/cmpProxy/raalias --authparam password
+</source>
 </subsubsection>
+
 <subsubsection name="AET BlueX">
 <p>CMP has been tested with BlueX from <a href="http://www.aeteurope.nl/">AET Europe</a>. From EJBCA's point of view BlueX functions as an RA with the same configuration 
 options as for jCert.
@@ -1095,13 +1105,6 @@ options as for jCert.
 </subsubsection>
 <subsubsection name="Aventra">
 <p>CMP has been tested with <a href="http://aventra.fi/English/index_E.php">Aventra</a> card management system. Same configuration as above.</p>
-</subsubsection>
-<subsubsection name="Novosec BC extension">
-<p>For internal testing a modified version of the Novosec extension to BouncyCastle is used.</p>
-</subsubsection>
-<subsubsection name="Cryptlib">
-<p>CMP has been tested with <a href="http://www.cryptlib.com/">CryptLib</a>.</p>
-<p>An old test program for running CryptLib against EJBCA can be downloaded <a href="http://download.primekey.se/ejbca/tests/ejbcaCryptLibTest.zip">here</a>.</p>
 </subsubsection>
 <subsubsection name="BouncyCastle">
 <p>CMP has been tested with <a href="http://www.bouncycastle.org">BouncyCastle</a> CMP classes, available in BC 1.46 or later. Both client and RA mode should work.</p>
@@ -1333,6 +1336,25 @@ ManagementCA.cacert.pem is the CA certificate of the CA in EJBCA issuing the new
 It is possible to specify more than one vendor CA. The vendor CA names should, in this case, be separated by ';'.
 </p>
 </subsubsection>
+
+<subsubsection name="Cryptlib">
+<p>CMP has been tested with <a href="http://www.cryptlib.com/">CryptLib</a>.</p>
+<p>An old test program for running CryptLib against EJBCA can be downloaded <a href="http://download.primekey.se/ejbca/tests/ejbcaCryptLibTest.zip">here</a>.</p>
+</subsubsection>
+<subsubsection name="RSA jCert">
+<p>CMP has been tested using RSA jCert toolkit for initialization requests. To run this as an RA you should configure CMP 
+with:
+<ul>
+<li>CMP Operational Mode : RA Mode</li>
+<li>Allow RA Verify Proof-of-Possession : check</li>
+<li>CMP Response Protection : pbe</li>
+<li>CMP Authentication Module : HMAC</li>
+<li>CMP Authentication Parameters : your shared password</li>
+<li>and other configurations you want for your RA.</li>
+</ul>
+</p>
+</subsubsection>
+
 </subsection>
 <subsection name="Sample CMP workflow">
 <p>
