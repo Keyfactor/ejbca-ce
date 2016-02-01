@@ -1937,19 +1937,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         try {
             CA ca = caSession.getCAForEdit(authenticationToken, caid);
             
-            boolean subjectDNWillBeChanged = false;
-            if(newSubjectDN != null && !newSubjectDN.isEmpty()){
-                if(ca.getCAType() != CAInfo.CATYPE_X509){
-                    throw new IllegalArgumentException("CVC CA Name Change operation is not supported (Only for X509 CA)");
-                }else{
-                    subjectDNWillBeChanged = !CertTools.stringToBCDNString(newSubjectDN).equalsIgnoreCase(ca.getSubjectDN());
-                }
-            }
-            
+            boolean subjectDNWillBeChanged = newSubjectDN != null && !newSubjectDN.isEmpty();          
             if(subjectDNWillBeChanged){
                 GlobalConfiguration globalConfig = (GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
                 if(!globalConfig.getEnableIcaoCANameChange()){
                     final String errorMessage = "The \"Enable ICAO CA Name Change\" feature is disabled by administrator. Aborting CA renewal!";
+                    log.error(errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
+                }
+                if(ca.getCAType() != CAInfo.CATYPE_X509){
+                    final String errorMessage = "CVC CA Name Change operation is not supported (Only for X509 CA)";
+                    log.error(errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
+                }
+                if (CertTools.stringToBCDNString(newSubjectDN).equalsIgnoreCase(ca.getSubjectDN())){
+                    final String errorMessage = "CA Name Change operation is specified but the same name " + newSubjectDN + " is specified. Please chooese another name. Aborting CA renewal.";
                     log.error(errorMessage);
                     throw new IllegalArgumentException(errorMessage);
                 }
@@ -1959,8 +1961,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     log.error(errorMessage);
                     throw new IllegalArgumentException(errorMessage);
                 }
+                if(ca.getSubjectDN().equalsIgnoreCase(newSubjectDN)){
+                    final String errorMessage = "CA Name Change operation is specified but the same name " + newSubjectDN + " is specified. Please chooese another name. Aborting CA renewal.";
+                    log.error(errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
+                }
                 if(caSession.existsCa(newCAName)){
-                    final String errorMessage = "There is existing CA with the name = " + newCAName + ". Please delete it or pick another name. Aborting CA renewal.";
+                    final String errorMessage = "There is existing CA with the name = " + newCAName + ". Please delete it or specify another name. Aborting CA renewal.";
                     log.error(errorMessage);
                     throw new IllegalArgumentException(errorMessage);
                 }

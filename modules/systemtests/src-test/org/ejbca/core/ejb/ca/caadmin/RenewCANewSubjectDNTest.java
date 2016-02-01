@@ -198,10 +198,9 @@ public class RenewCANewSubjectDNTest extends CaTestCase {
         assertFalse("CA Info NameChanged field is true after CA renewal (No Name Change process)", newinfo1.getNameChanged());
 
         caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/false, /*customNotBefore=*/null,
-                /*createLinkCertificates=*/false, info.getSubjectDN());
-        X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
-        assertFalse("CA Info NameChanged field is true after CA name-change renewal with the same name (Name Change Renewal with the same name is "
-                + "processed like default renewal", newinfo2.getNameChanged());
+                /*createLinkCertificates=*/false, newSubjectDN);
+        X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, newCAName);
+        assertTrue("CA Info NameChanged field is false after CA Name Change Renewal", newinfo2.getNameChanged());
 
         log.trace("<testCAInfoNameChangedField()");
     }
