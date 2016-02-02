@@ -32,6 +32,7 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
+import org.ejbca.util.query.TimeMatch;
 
 /**
  * Managed bean in the actionapprovallist page.
@@ -43,10 +44,10 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 
 	private static final long serialVersionUID = 1L;
 	public static int QUERY_MAX_NUM_ROWS = 300;
-	private static String TIME_5MIN = "" + 5 * 60 * 1000;
-	private static String TIME_30MIN = "" + 30 * 60 * 1000;
-	private static String TIME_8HOURS = "" + 8 * 60 * 60 * 1000;
-	private static String ALL_STATUSES = "" + -9;
+	private static String TIME_5MIN = Integer.toString(5 * 60 * 1000);
+	private static String TIME_30MIN = Integer.toString(30 * 60 * 1000);
+	private static String TIME_8HOURS = Integer.toString(8 * 60 * 60 * 1000);
+	private static String ALL_STATUSES = Integer.toString(-9);
 	private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
 	private List<SelectItem> availableStatus;
 	private String selectedStatus;	
@@ -55,7 +56,7 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 	
 	private ApprovalDataVOViewList listData;
 
-	public ListApproveActionManagedBean() throws AuthorizationDeniedException{		      			 			 	 	
+	public ListApproveActionManagedBean() {		      			 			 	 	
 		setSelectedStatus("" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
 		setSelectedTimeSpan(TIME_30MIN);
 		list();
@@ -72,7 +73,7 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXECUTIONDENIED,getEjbcaWebBean().getText("EXECUTIONDENIED", true),""));			  
 			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_APPROVED,getEjbcaWebBean().getText("APPROVED", true),""));	
 			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_REJECTED,getEjbcaWebBean().getText("REJECTED", true),""));
-			  availableStatus.add(new SelectItem(ALL_STATUSES,getEjbcaWebBean().getText("ALL", true),""));			
+			  availableStatus.add(new SelectItem(ALL_STATUSES, getEjbcaWebBean().getText("ALL", true),""));			
 		}
 		return availableStatus;
 	}
@@ -82,13 +83,13 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 	}
 
 	public List<SelectItem> getAvailableTimeSpans() {
-		if(availableTimeSpans == null){
-		  availableTimeSpans = new ArrayList<SelectItem>();
-		  availableTimeSpans.add(new SelectItem(TIME_5MIN ,"5 " + getEjbcaWebBean().getText("MINUTES", true),""));	 
-		  availableTimeSpans.add(new SelectItem(TIME_30MIN,"30 " + getEjbcaWebBean().getText("MINUTES", true),""));
-		  availableTimeSpans.add(new SelectItem(TIME_8HOURS,"8 " + getEjbcaWebBean().getText("HOURS", true),""));	
-		  availableTimeSpans.add(new SelectItem("0",getEjbcaWebBean().getText("EVER", true),""));	
-		}
+        if (availableTimeSpans == null) {
+            availableTimeSpans = new ArrayList<SelectItem>();
+            availableTimeSpans.add(new SelectItem(TIME_5MIN, "5 " + getEjbcaWebBean().getText("MINUTES", true), ""));
+            availableTimeSpans.add(new SelectItem(TIME_30MIN, "30 " + getEjbcaWebBean().getText("MINUTES", true), ""));
+            availableTimeSpans.add(new SelectItem(TIME_8HOURS, "8 " + getEjbcaWebBean().getText("HOURS", true), ""));
+            availableTimeSpans.add(new SelectItem("0", getEjbcaWebBean().getText("EVER", true), ""));
+        }
 		return availableTimeSpans;
 	}
 
@@ -100,9 +101,16 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 		Query query = new Query(Query.TYPE_APPROVALQUERY);
 		if(selectedStatus.equals(ALL_STATUSES)){			
 			query.add(getStartDate(), new Date());			
-		}else{
+		}else if(selectedStatus.equals(Integer.toString(ApprovalDataVO.STATUS_EXPIRED))) {
+		    //Expired requests will be set as Waiting in the database. 
+		    query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL), Query.CONNECTOR_AND);
+		    query.add(TimeMatch.MATCH_WITH_EXPIRETIME, null, new Date(), Query.CONNECTOR_AND);
+            query.add(getStartDate(), new Date());
+		}else{	
 			query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, selectedStatus, Query.CONNECTOR_AND);
-			query.add(getStartDate(), new Date());
+			query.add(getStartDate(), new Date(), Query.CONNECTOR_ANDNOT);
+	        //No expired requests
+			query.add(TimeMatch.MATCH_WITH_EXPIRETIME, null, new Date());
 		}
         List<ApprovalDataVO> result = new ArrayList<ApprovalDataVO>();
 		try {

@@ -22,7 +22,6 @@ package org.ejbca.util.query;
  * A class used by Query class to build a query for ejbca log module. Inherits BasicMatch.  Main
  * function is getQueryString which returns a fragment of SQL statment.
  *
- * @author TomSelleck
  * @version $Id$
  *
  * @see org.ejbca.util.query.BasicMatch
@@ -47,9 +46,8 @@ public class ApprovalMatch extends BasicMatch {
 
 
     // Private Constants. These refer to column names in the database and are used for native SQL querying.
-    static final String[] MATCH_WITH_SQLNAMES = {"id","approvalId", "approvalType", "endEntityProfileId", "cAId"
-                                                         , "reqAdminCertIssuerDn", "reqAdminCertSn", "status", "remainingApprovals"}; // Represents the column names in approvals table.
-   
+    private static final String[] MATCH_WITH_SQLNAMES = { "id", "approvalId", "approvalType", "endEntityProfileId", "cAId", "reqAdminCertIssuerDn",
+            "reqAdminCertSn", "status", "remainingApprovals" }; // Represents the column names in approvals table.   
     
     // Public methods.
 

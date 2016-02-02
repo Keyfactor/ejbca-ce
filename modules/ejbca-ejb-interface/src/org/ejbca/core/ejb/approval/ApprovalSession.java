@@ -24,6 +24,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.util.query.IllegalQueryException;
+import org.ejbca.util.query.Query;
 
 /** Session bean to manage approval requests, i.e. add and find.
  * 
@@ -45,7 +46,7 @@ public interface ApprovalSession {
      * @throws ApprovalException
      *             if an approval already exists for this request.
      */
-    public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException;
+     void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException;
 
     /**
      * Method that goes through exists approvals in database to see if there
@@ -68,7 +69,7 @@ public interface ApprovalSession {
      *             request is multiple steps and user have already performed
      *             that step, the Exception will always be thrown.
      */
-    public int isApproved(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
+     int isApproved(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
 
     /**
      * Method that goes through exists approvals in database to see if there
@@ -94,7 +95,7 @@ public interface ApprovalSession {
      *             request is multiple steps and user have already performed
      *             that step, the Exception will always be thrown.
      */
-    public int isApproved(AuthenticationToken admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException;
+    int isApproved(AuthenticationToken admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException;
 
     /**
      * Method that marks a certain step of a a non-executable approval as done.
@@ -105,14 +106,14 @@ public interface ApprovalSession {
      * @param step in approval to mark
      * @throws ApprovalException if approvalId does not exist,
      */
-    public void markAsStepDone(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
+    void markAsStepDone(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
 
     /**
      * Method used to remove an approval from database.
      * 
      * @param id the unique id of the approvalrequest, not the same as approvalId
      */
-    public void removeApprovalRequest(AuthenticationToken admin, int id) throws ApprovalException;
+    void removeApprovalRequest(AuthenticationToken admin, int id) throws ApprovalException;
 
     /**
      * Method used to reject an approval requests.
@@ -132,14 +133,14 @@ public interface ApprovalSession {
      * 
      * 4. Runs the approval command in the end entity bean.
      */
-    public void reject(AuthenticationToken admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException,
+    void reject(AuthenticationToken admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException,
             AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException;
 
     /**
      * Method returning an approval requests with status 'waiting', 'Approved'
      * or 'Reject' returns null if no non expired exists
      */
-    public ApprovalDataVO findNonExpiredApprovalRequest(AuthenticationToken admin, int approvalId);
+    ApprovalDataVO findNonExpiredApprovalRequest(AuthenticationToken admin, int approvalId);
 
     /**
      * Method that takes an approvalId and returns all approval requests for this.
@@ -148,7 +149,7 @@ public interface ApprovalSession {
      * @param approvalId
      * @return and collection of ApprovalDataVO, empty if no approvals exists.
      */
-    public Collection<ApprovalDataVO> findApprovalDataVO(AuthenticationToken admin, int approvalId);
+    Collection<ApprovalDataVO> findApprovalDataVO(AuthenticationToken admin, int approvalId);
 
     /**
      * Method returning a list of approvals from the give query
@@ -167,7 +168,6 @@ public interface ApprovalSession {
      * @throws AuthorizationDeniedException
      * @throws IllegalQueryException
      */
-    public List<ApprovalDataVO> query(AuthenticationToken admin, org.ejbca.util.query.Query query, int index, int numberofrows,
-            java.lang.String caAuthorizationString, java.lang.String endEntityProfileAuthorizationString)
-            throws AuthorizationDeniedException, IllegalQueryException;
+    List<ApprovalDataVO> query(AuthenticationToken admin, Query query, int index, int numberofrows, String caAuthorizationString,
+            String endEntityProfileAuthorizationString) throws AuthorizationDeniedException, IllegalQueryException;
 }

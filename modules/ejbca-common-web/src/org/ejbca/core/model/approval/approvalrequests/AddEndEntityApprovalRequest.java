@@ -47,7 +47,6 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Approval Request created when trying to add an end entity.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class AddEndEntityApprovalRequest extends ApprovalRequest {
@@ -62,7 +61,8 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 	/** Constructor used in externalization only */
 	public AddEndEntityApprovalRequest() {}
 
-	public AddEndEntityApprovalRequest(EndEntityInformation userdata, boolean clearpwd, AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+    public AddEndEntityApprovalRequest(EndEntityInformation userdata, boolean clearpwd, AuthenticationToken requestAdmin, String requestSignature,
+            int numOfReqApprovals, int cAId, int endEntityProfileId) {
 		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId);
 		this.userdata = userdata;
 		this.clearpwd = clearpwd;
