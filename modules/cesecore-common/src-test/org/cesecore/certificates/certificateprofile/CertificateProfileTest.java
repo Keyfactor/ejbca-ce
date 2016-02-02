@@ -655,6 +655,9 @@ public class CertificateProfileTest {
         // Test expected failure. EC 256 bit "prime256v1" key. ECDSA ("secp256k1"), RSA 256,1024 allowed by certificate profile.
         testInvalidKeySpecsInternal(false, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_RSA},
                 new String[]{"secp256k1"}, new int[]{256,1024});
+        // Test happy path. EC 256 bit "prime256v1" key. ECDSA allowing alias for "prime256v1" ("secp256r1") by certificate profile.
+        testInvalidKeySpecsInternal(true, keyPairEc.getPublic(), new String[]{AlgorithmConstants.KEYALGORITHM_ECDSA},
+                new String[]{"secp256r1"}, new int[]{});
     }
 
     private void testInvalidKeySpecsInternal(final boolean expectedNoIllegalKeyException, final PublicKey publicKey, final String[] availableKeyAlgorithms, 

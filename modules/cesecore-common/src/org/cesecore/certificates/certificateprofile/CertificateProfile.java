@@ -2184,9 +2184,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyAlgorithm)) {
             final List<String> availableEcCurves = getAvailableEcCurvesAsList();
             final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
-            if (availableEcCurves.contains(keySpecification)) {
-                // Curve is allowed, so we don't check key strength
-                return;
+            for (final String ecNamedCurveAlias : AlgorithmTools.getEcKeySpecAliases(keySpecification)) {
+                if (availableEcCurves.contains(ecNamedCurveAlias)) {
+                    // Curve is allowed, so we don't check key strength
+                    return;
+                }
             }
             if (!availableEcCurves.contains(ANY_EC_CURVE)) {
                 // Curve will never be allowed by bit length check
