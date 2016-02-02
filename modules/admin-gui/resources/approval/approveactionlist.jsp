@@ -39,7 +39,7 @@ function viewcert(link){
 <h1><h:outputText value="#{web.text.APPROVEACTIONS}"/></h1>
 
 <h:form>
-<p align="center"><h:outputText value="#{web.text.SEARCHFORACTION}"/>  
+<p align="center"><h:outputText value="#{web.text.SEARCHFORACTION}"/>&nbsp;  
 <h:selectOneMenu id="status" value="#{listApproveActionManagedBean.selectedStatus}"> 
   <f:selectItems value="#{listApproveActionManagedBean.availableStatus}"/>
 </h:selectOneMenu>

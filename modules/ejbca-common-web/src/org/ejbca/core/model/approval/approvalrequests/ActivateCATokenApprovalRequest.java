@@ -37,7 +37,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
  * 
  * For historic reasons this class refers to "CA Tokens".
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 @Deprecated // TODO: We should replace this by adding new better requests while allowing existing persisted to work
