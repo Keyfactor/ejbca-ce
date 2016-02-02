@@ -1377,111 +1377,85 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         log.trace(">test72CreateCA()");
         log.debug("Enterprise Edition: " + enterpriseEjbBridgeSession.isRunningEnterprise());
         assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
-        
-        
-        String caname = "NewTestCAThroughWS";
-        String ctname = caname + "CryptoToken";
-        
+        final String caName = "NewTestCAThroughWS";
+        final String cryptoTokenName = caName + "CryptoToken";
         // Remove any residues from earlier test runs
-        if(caSession.existsCa(caname)) {
-            int caid = caSession.getCAInfo(intAdmin, caname).getCAId();
-            caSession.removeCA(intAdmin, caid);
+        if (caSession.existsCa(caName)) {
+            caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caName).getCAId());
         }
-        
-        Integer ctid = cryptoTokenManagementSession.getIdFromName(ctname);
-        if(ctid != null) {
-            cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
+        Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        if (cryptoTokenId != null) {
+            cryptoTokenManagementSession.deleteCryptoToken(intAdmin, cryptoTokenId.intValue());
         }
-        
         try {
-            // create cryptotoken
-            ArrayList<KeyValuePair> cryptotokenProperties = new ArrayList<KeyValuePair>();
-            KeyValuePair allowExtract = new KeyValuePair();
-            allowExtract.setKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY);
-            allowExtract.setValue(Boolean.toString(false));
-            cryptotokenProperties.add(allowExtract);
-            KeyValuePair nodefaultPwd = new KeyValuePair();
-            nodefaultPwd.setKey(SoftCryptoToken.NODEFAULTPWD);
-            nodefaultPwd.setValue(Boolean.TRUE.toString());
-            cryptotokenProperties.add(nodefaultPwd);
-            ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", true, cryptotokenProperties);
-            ctid = cryptoTokenManagementSession.getIdFromName(ctname);
-
-            // generate keys
+            // Create CryptoToken
+            final List<KeyValuePair> cryptoTokenProperties = new ArrayList<KeyValuePair>();
+            cryptoTokenProperties.add(getKeyValuePair(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.FALSE.toString()));
+            cryptoTokenProperties.add(getKeyValuePair(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString()));
+            ejbcaraws.createCryptoToken(cryptoTokenName, "SoftCryptoToken", "1234", true, cryptoTokenProperties);
+            cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+            // Generate CA key pairs
             final String decKeyAlias = CAToken.SOFTPRIVATEDECKEYALIAS;
-            ejbcaraws.generateCryptoTokenKeys(ctname, decKeyAlias, "RSA1024");
+            ejbcaraws.generateCryptoTokenKeys(cryptoTokenName, decKeyAlias, "RSA1024");
             final String signKeyAlias = CAToken.SOFTPRIVATESIGNKEYALIAS;
-            ejbcaraws.generateCryptoTokenKeys(ctname, signKeyAlias, "RSA1024");
+            ejbcaraws.generateCryptoTokenKeys(cryptoTokenName, signKeyAlias, "RSA1024");
             final String testKeyAlias = "test72CreateCATestKey";
-            ejbcaraws.generateCryptoTokenKeys(ctname, testKeyAlias, "secp256r1");
-            
-            // construct the ca token properties
-            final ArrayList<KeyValuePair> purposeKeyMapping = new ArrayList<KeyValuePair>();
-            KeyValuePair defaultSign = new KeyValuePair();
-            defaultSign.setKey(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING);
-            defaultSign.setValue(CAToken.SOFTPRIVATEDECKEYALIAS);
-            purposeKeyMapping.add(defaultSign);
-            KeyValuePair certSign = new KeyValuePair();
-            certSign.setKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING);
-            certSign.setValue(CAToken.SOFTPRIVATESIGNKEYALIAS);
-            purposeKeyMapping.add(certSign);
-            KeyValuePair crlSign = new KeyValuePair();
-            crlSign.setKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING);
-            crlSign.setValue(CAToken.SOFTPRIVATESIGNKEYALIAS);
-            purposeKeyMapping.add(crlSign);
-            KeyValuePair testKey = new KeyValuePair();
-            testKey.setKey(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING);
-            testKey.setValue(testKeyAlias);
-            purposeKeyMapping.add(testKey);
-            
+            ejbcaraws.generateCryptoTokenKeys(cryptoTokenName, testKeyAlias, "secp256r1");
+            // Construct the CAToken's properties
+            final List<KeyValuePair> purposeKeyMapping = new ArrayList<KeyValuePair>();
+            purposeKeyMapping.add(getKeyValuePair(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, decKeyAlias));
+            purposeKeyMapping.add(getKeyValuePair(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, signKeyAlias));
+            purposeKeyMapping.add(getKeyValuePair(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, signKeyAlias));
+            purposeKeyMapping.add(getKeyValuePair(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias));            
             // Try to create a CA signed by an external CA. It should fail.
             try {
-                ejbcaraws.createCA(caname, "CN="+caname, "x509", 3L, null, "SHA256WithRSA", CAInfo.SIGNEDBYEXTERNALCA, ctname, purposeKeyMapping, null);
+                ejbcaraws.createCA(caName, "CN="+caName, "x509", 3L, null, "SHA256WithRSA", CAInfo.SIGNEDBYEXTERNALCA, cryptoTokenName, purposeKeyMapping, null);
                 fail("It was possible to create a CA signed by an external CA");
-            } catch(EjbcaException_Exception e) {
-                if(!e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED.getInternalErrorCode())) {
+            } catch (EjbcaException_Exception e) {
+                if (!e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED.getInternalErrorCode())) {
                     throw e;
                 }
             }
-            
             // Try to create a CA that already exists. It should fail
-            String existingTestCA = "WSCreateCATestTestingExistingCA";
+            final String existingTestCA = "WSCreateCATestTestingExistingCA";
             CaTestCase.createTestCA(existingTestCA);
             try {
                 ejbcaraws.createCA(existingTestCA, caSession.getCAInfo(intAdmin, existingTestCA).getSubjectDN(), "x509", 3L, null, "SHA256WithRSA", 
-                        CAInfo.SELFSIGNED, ctname, purposeKeyMapping, null);
+                        CAInfo.SELFSIGNED, cryptoTokenName, purposeKeyMapping, null);
                 fail("It was possible to create a CA even though the CA already exists");
-            } catch(EjbcaException_Exception e) {
-                if(!e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.CA_ALREADY_EXISTS.getInternalErrorCode())) {
+            } catch (EjbcaException_Exception e) {
+                if (!e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.CA_ALREADY_EXISTS.getInternalErrorCode())) {
                     throw e;
                 }
                 caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, existingTestCA).getCAId());
             }
-            
             // Try to create a CA. It should succeed (Happy path test)
-            ejbcaraws.createCA(caname, "CN="+caname, "x509", 3L, null, "SHA256WithRSA", CAInfo.SELFSIGNED, ctname, purposeKeyMapping, null);
-            
+            ejbcaraws.createCA(caName, "CN="+caName, "x509", 3L, null, "SHA256WithRSA", CAInfo.SELFSIGNED, cryptoTokenName, purposeKeyMapping, null);
             // Verify the new CA's parameters
-            CAInfo cainfo = caSession.getCAInfo(intAdmin, caname);
-            assertNotNull(cainfo);
-            assertEquals(caname, cainfo.getName());
-            assertEquals("CN=" + caname, cainfo.getSubjectDN());
-            assertEquals(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, cainfo.getCertificateProfileId());
-            assertEquals(CAInfo.SELFSIGNED, cainfo.getSignedBy());
-            assertEquals(CAInfo.CATYPE_X509, cainfo.getCAType());
-
+            final CAInfo caInfo = caSession.getCAInfo(intAdmin, caName);
+            assertNotNull(caInfo);
+            assertEquals(caName, caInfo.getName());
+            assertEquals("CN=" + caName, caInfo.getSubjectDN());
+            assertEquals(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, caInfo.getCertificateProfileId());
+            assertEquals(CAInfo.SELFSIGNED, caInfo.getSignedBy());
+            assertEquals(CAInfo.CATYPE_X509, caInfo.getCAType());
         } finally {
-            if(caSession.existsCa(caname)) {
-                int caid = caSession.getCAInfo(intAdmin, caname).getCAId();
-                caSession.removeCA(intAdmin, caid);
+            if (caSession.existsCa(caName)) {
+                caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caName).getCAId());
             }
-            
-            ctid = cryptoTokenManagementSession.getIdFromName(ctname);
-            if(ctid != null) {
-                cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
+            cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+            if (cryptoTokenId != null) {
+                cryptoTokenManagementSession.deleteCryptoToken(intAdmin, cryptoTokenId.intValue());
             }
         }
         log.trace("<test72CreateCA()");
+    }
+
+    private KeyValuePair getKeyValuePair(final String key, final String value) {
+        final KeyValuePair keyValuePair = new KeyValuePair();
+        keyValuePair.setKey(key);
+        keyValuePair.setValue(value);
+        return keyValuePair;
     }
 
     @Test
