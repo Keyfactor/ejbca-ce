@@ -451,10 +451,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      * Function that returns the number of one kind of field in the profile.
      *
      */
-    protected int getNumberOfField(final String parameter){
+    public int getNumberOfField(final String parameter){
     	return getNumberOfField(getParameterNumber(parameter));
     }
-    private int getNumberOfField(final int parameter){
+    public int getNumberOfField(final int parameter){
     	final ArrayList<Integer> arr = checkAndUpgradeWithNewFields(parameter);
     	return arr.get(parameter).intValue();
     }
