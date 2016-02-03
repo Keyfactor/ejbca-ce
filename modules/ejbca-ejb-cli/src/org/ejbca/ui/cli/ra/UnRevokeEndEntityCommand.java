@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.ra;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +24,7 @@ import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -102,7 +104,7 @@ public class UnRevokeEndEntityCommand extends BaseRaCommand {
             boolean foundCertificateOnHold = false;
             // Find all user certs
             List<CertificateDataWrapper> certificates = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
-                    .getCertificateDataByUsername(username);
+                    .getCertificateDataByUsername(username, true, Arrays.asList(CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION, CertificateConstants.CERT_ARCHIVED));
             if (certificates != null) {
                 for (CertificateDataWrapper certWrapper : certificates) {
                     Certificate cert = certWrapper.getCertificate();

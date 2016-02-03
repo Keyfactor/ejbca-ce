@@ -598,7 +598,7 @@ public class RAInterfaceBean implements Serializable {
     }
 
     public void loadCertificates(final String username) {
-        loadTokenCertificates(certificatesession.getCertificateDataByUsername(username));
+        loadTokenCertificates(certificatesession.getCertificateDataByUsername(username, false, null));
     }
 
     public void loadTokenCertificates(final String tokensn) {

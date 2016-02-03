@@ -280,10 +280,12 @@ public interface CertificateStoreSession {
      * Finds certificate(s) with meta data for a given username.
      * 
      * @param username the username of the certificate(s) that will be retrieved
+     * @param excludeExpired true if expired certificates should be excluded
+     * @param excludedStatuses a list of statuses to exclude in the query or null to return all
      * @return List of wrapped CertificateData and Base64CertData ordered by
      *         expire date, with last expire date first, or empty list if none found.
      */
-    List<CertificateDataWrapper> getCertificateDataByUsername(String username);
+    List<CertificateDataWrapper> getCertificateDataByUsername(String username, boolean excludeExpired, List<Integer> excludedStatuses);
     
     /**
      * Finds certificate(s) for a given username and status.

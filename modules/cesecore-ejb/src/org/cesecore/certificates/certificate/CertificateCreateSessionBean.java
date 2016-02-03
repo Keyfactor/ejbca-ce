@@ -22,6 +22,7 @@ import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -83,7 +84,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -385,17 +385,16 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             
             // Before storing the new certificate, check if single active certificate constraint is active, and if so let's revoke all active and unexpired certificates
             if (certProfile.isSingleActiveCertificateConstraint()) {
-                final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(endEntityInformation.getUsername());
+                // Only get not yet expired certificates with status CERT_ACTIVE, CERT_NOTIFIEDABOUTEXPIRATION, CERT_REVOKED
+                final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(endEntityInformation.getUsername(), true, Arrays.asList(
+                    CertificateConstants.CERT_ARCHIVED, CertificateConstants.CERT_INACTIVE, CertificateConstants.CERT_ROLLOVERPENDING, CertificateConstants.CERT_UNASSIGNED));
                 for (final CertificateDataWrapper cdw : cdws) {
-                    // Authorization to the CA was already checked at the head of this method, so no need to do so now
-                    if((cdw.getCertificateData().getStatus() == CertificateConstants.CERT_ACTIVE
-                            || cdw.getCertificateData().getStatus() == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION
-                            || (cdw.getCertificateData().getStatus() == CertificateConstants.CERT_REVOKED 
-                                && cdw.getCertificateData().getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)
-                        ) && cdw.getCertificateData().getExpireDate() > System.currentTimeMillis()) {
-                        //Only revoke active certificates
-                    certificateStoreSession.setRevokeStatusNoAuth(admin, cdw.getCertificateData(), new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+                    final CertificateData certificateData = cdw.getCertificateData();
+                    if (certificateData.getStatus() == CertificateConstants.CERT_REVOKED && certificateData.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
+                        continue;
                     }
+                    // Authorization to the CA was already checked at the head of this method, so no need to do so now
+                    certificateStoreSession.setRevokeStatusNoAuth(admin, certificateData, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
                 }
             }
             

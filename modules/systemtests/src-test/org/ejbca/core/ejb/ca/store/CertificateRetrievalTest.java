@@ -441,7 +441,7 @@ public class CertificateRetrievalTest {
             Collection<Certificate> certcollection = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, caSession.getCAInfo(admin, caid).getSubjectDN()));
             assertNotNull("failed to list certs", certcollection);
             
-            final List<CertificateDataWrapper> certDataWrappers = certificateStoreSession.getCertificateDataByUsername(username);
+            final List<CertificateDataWrapper> certDataWrappers = certificateStoreSession.getCertificateDataByUsername(username, false, null);
             assertNotNull("failed to list certs", certDataWrappers);
             assertEquals("failed to list certs", 1, certDataWrappers.size());
             assertEquals("cert has wrong username", username, certDataWrappers.get(0).getCertificateData().getUsername());
