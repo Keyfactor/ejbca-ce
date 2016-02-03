@@ -85,6 +85,7 @@
 					<include name="modules/cesecore-ejb/src-test/**/${test.runone}.java" />
 					<include name="modules/cesecore-ejb-interface/src-test/**/${test.runone}.java" />
 					<include name="modules/cesecore-entity/src-test/**/${test.runone}.java" />
+					<include name="modules/cmpProxy/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -129,8 +130,14 @@
     	<condition property="module" value="modules/cesecore-entity">
     		<matches string="${test-fullname}" pattern="^modules/cesecore-entity/.*$"/>
     	</condition>
+        <condition property="module" value="modules/cmpProxy">
+            <matches string="${test-fullname}" pattern="^modules/cmpProxy/.*$"/>
+        </condition>
+        <condition property="test-buildfile" value="build-http.xml" else="build.xml">
+            <matches string="${test-fullname}" pattern="^modules/cmpProxy/.*$"/>
+        </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
-    	<ant antfile="build.xml" dir="${module}" target="runone" />
+    	<ant antfile="${test-buildfile}" dir="${module}" target="runone" />
 		<antcall target="createreport"/>
     </target>
 
