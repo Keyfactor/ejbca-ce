@@ -1941,40 +1941,40 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if(subjectDNWillBeChanged){
                 GlobalConfiguration globalConfig = (GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
                 if(!globalConfig.getEnableIcaoCANameChange()){
-                    final String errorMessage = "The \"Enable ICAO CA Name Change\" feature is disabled by administrator. Aborting CA renewal!";
+                    final String errorMessage = "The \"Enable ICAO CA Name Change\" feature is disabled by administrator. Aborting CA Name Change renewal!";
                     log.error(errorMessage);
-                    throw new IllegalArgumentException(errorMessage);
+                    throw new IllegalStateException(errorMessage);
                 }
                 if(ca.getCAType() != CAInfo.CATYPE_X509){
                     final String errorMessage = "CVC CA Name Change operation is not supported (Only for X509 CA)";
                     log.error(errorMessage);
-                    throw new IllegalArgumentException(errorMessage);
+                    throw new IllegalStateException(errorMessage);
                 }
                 if (CertTools.stringToBCDNString(newSubjectDN).equalsIgnoreCase(ca.getSubjectDN())){
-                    final String errorMessage = "CA Name Change operation is specified but the same name " + newSubjectDN + " is specified. Please chooese another name. Aborting CA renewal.";
+                    final String errorMessage = "CA Name Change operation is specified but the same name " + newSubjectDN + " is specified. Please choose another name. Aborting CA Name Change renewal.";
                     log.error(errorMessage);
-                    throw new IllegalArgumentException(errorMessage);
+                    throw new IllegalStateException(errorMessage);
                 }
                 final String newCAName = CertTools.getPartFromDN(newSubjectDN, "CN");
                 if(newCAName == null){
-                    final String errorMessage = "Invalid DN for specified new Subject DN: " + newSubjectDN + ". Aborting CA renewal!";
+                    final String errorMessage = "Invalid DN for specified new Subject DN: " + newSubjectDN + ". Aborting CA Name Change renewal!";
                     log.error(errorMessage);
-                    throw new IllegalArgumentException(errorMessage);
-                }
-                if(ca.getSubjectDN().equalsIgnoreCase(newSubjectDN)){
-                    final String errorMessage = "CA Name Change operation is specified but the same name " + newSubjectDN + " is specified. Please chooese another name. Aborting CA renewal.";
-                    log.error(errorMessage);
-                    throw new IllegalArgumentException(errorMessage);
+                    throw new IllegalStateException(errorMessage);
                 }
                 if(caSession.existsCa(newCAName)){
-                    final String errorMessage = "There is existing CA with the name = " + newCAName + ". Please delete it or specify another name. Aborting CA renewal.";
+                    final String errorMessage = "There is existing CA with the name = " + newCAName + ". Please delete it or specify another name. Aborting CA Name Change renewal.";
                     log.error(errorMessage);
-                    throw new IllegalArgumentException(errorMessage);
+                    throw new IllegalStateException(errorMessage);
                 }
                 if(crlStoreSession.getLastCRL(newSubjectDN, false) != null){
-                    final String errorMessage = "There are already stored some CRL data with issuer DN equal to specified new SubjectDN = " + newSubjectDN + ". Please delete them. Aborting CA renewal.";
+                    final String errorMessage = "There are already stored some CRL data with issuer DN equal to specified new SubjectDN = " + newSubjectDN + ". Please delete them. Aborting CA Name Change renewal.";
                     log.error(errorMessage);
-                    throw new IllegalArgumentException(errorMessage);
+                    throw new IllegalStateException(errorMessage);
+                }
+                if(ca.getSignedBy() != CAInfo.SELFSIGNED){
+                    final String errorMessage = "CA name change operation is not supported for self-signed CA";
+                    log.error(errorMessage);
+                    throw new IllegalStateException(errorMessage);
                 }
                 log.info("CA Name Change (Subject DN change) has been triggered from: " + ca.getSubjectDN() + " to " + newSubjectDN);
             }
@@ -1990,14 +1990,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new NotSupportedException("Directly renewing a CA signed by external can not be done");
             }
             
-            //Not supporting CA name change for externally signed CA
-            if(ca.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA && subjectDNWillBeChanged){
-                throw new IllegalStateException("CA name change operation is not supported for externally signed CA");
-            }
-            //Not supporting CA name change for not self-signed CA
-            if(ca.getSignedBy() != CAInfo.SELFSIGNED && subjectDNWillBeChanged){
-                throw new IllegalStateException("CA name change operation is not supported for self-signed CA");
-            }
             final CAToken caToken = ca.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
             cryptoToken.testKeyPair(nextSignKeyAlias);
