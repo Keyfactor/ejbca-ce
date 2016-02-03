@@ -63,6 +63,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
@@ -1438,8 +1439,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"));
             }
         }
-        // Revoke all certs, one at the time
-        final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(username);
+        // Revoke all non-expired and not revoked certs, one at the time
+        final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(username, true, Arrays.asList(CertificateConstants.CERT_ARCHIVED, CertificateConstants.CERT_REVOKED));
         for (final CertificateDataWrapper cdw : cdws) {
             try {
                 final Certificate certificate = cdw.getCertificate();

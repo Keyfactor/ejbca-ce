@@ -68,24 +68,23 @@ public class GetEndEntityCertificateCommand extends BaseRaCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-            final String username = parameters.get(USERNAME_KEY);
-            final Collection<CertificateDataWrapper> wrappers = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getCertificateDataByUsername(username);
-            if (wrappers != null) {
-                final Collection<Certificate> certs = new ArrayList<Certificate>();
-                for (CertificateDataWrapper wrapper : wrappers) {
-                    certs.add(wrapper.getCertificate());
-                }
-            	try {
-                    getLogger().info(new String(CertTools.getPemFromCertificateChain(certs)));
-                    return CommandResult.SUCCESS;
-                } catch (CertificateEncodingException e) {
-                   throw new IllegalStateException("Newly retrieved certificate could not be parsed", e);
-                }
-            } else {
-            	getLogger().info("End Entity with username '" + username + "' does not exist.");
-            	 return CommandResult.FUNCTIONAL_FAILURE;
+        final String username = parameters.get(USERNAME_KEY);
+        final Collection<CertificateDataWrapper> wrappers = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getCertificateDataByUsername(username, false, null);
+        if (wrappers != null) {
+            final Collection<Certificate> certs = new ArrayList<Certificate>();
+            for (CertificateDataWrapper wrapper : wrappers) {
+                certs.add(wrapper.getCertificate());
             }
-
+            try {
+                getLogger().info(new String(CertTools.getPemFromCertificateChain(certs)));
+                return CommandResult.SUCCESS;
+            } catch (CertificateEncodingException e) {
+                throw new IllegalStateException("Newly retrieved certificate could not be parsed", e);
+            }
+        } else {
+            getLogger().info("End Entity with username '" + username + "' does not exist.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
     }
     
     @Override

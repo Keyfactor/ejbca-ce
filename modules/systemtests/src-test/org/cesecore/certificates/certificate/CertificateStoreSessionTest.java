@@ -766,7 +766,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             // Creates limited certificate entry, with ACTIVE status this time.
             internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, caid, issuerDn, subjectDn, username, serialNumber, CertificateConstants.CERT_ACTIVE, null, -1, cafp);
             
-            final Collection<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(username);
+            final Collection<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(username, false, null);
             assertEquals("Should get list of 1 certificate data wrapper", 1, cdws.size());
             final CertificateDataWrapper cdw = cdws.iterator().next();
             assertEquals("Should get the certificate.", subjectDn, cdw.getCertificateData().getSubjectDN());
