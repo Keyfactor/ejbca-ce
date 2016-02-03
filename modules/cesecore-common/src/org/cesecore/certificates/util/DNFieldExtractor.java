@@ -15,6 +15,7 @@ package org.cesecore.certificates.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
 import org.apache.log4j.Logger;
@@ -108,7 +109,7 @@ public class DNFieldExtractor implements java.io.Serializable {
      *            DOCUMENT ME!
      */
     public DNFieldExtractor(final String dn, final int type) {
-        dnfields = new HashMap<Integer, String>();
+        dnfields = new HashMap<>();
         setDN(dn, type);
     }
 
@@ -117,13 +118,27 @@ public class DNFieldExtractor implements java.io.Serializable {
      */
     public static Integer[] getUseFields(final int type) {
         if (type == DNFieldExtractor.TYPE_SUBJECTDN) {
-            return (Integer[]) DnComponents.getDnDnIds().toArray(new Integer[0]);
+            return DnComponents.getDnDnIds().toArray(new Integer[0]);
         } else if (type == DNFieldExtractor.TYPE_SUBJECTALTNAME) {
-            return (Integer[]) DnComponents.getAltNameDnIds().toArray(new Integer[0]);
+            return DnComponents.getAltNameDnIds().toArray(new Integer[0]);
         } else if (type == DNFieldExtractor.TYPE_SUBJECTDIRATTR) {
-            return (Integer[]) DnComponents.getDirAttrDnIds().toArray(new Integer[0]);
+            return DnComponents.getDirAttrDnIds().toArray(new Integer[0]);
         } else {
             return new Integer[0];
+        }
+    }
+    
+    /**
+     * Returns the valid components for the given DN type (Subject DN, Subject Alternative Name or Subject Directory Attributes)
+     * @param dnType DNFieldExtractor.TYPE_&ast;
+     * @return List of valid components from DnComponents.&ast;
+     */
+    public static List<String> getValidFieldComponents(final int dnType) {
+        switch (dnType) {
+        case DNFieldExtractor.TYPE_SUBJECTDN: return DnComponents.getDnProfileFields();
+        case DNFieldExtractor.TYPE_SUBJECTALTNAME: return DnComponents.getAltNameFields();
+        case DNFieldExtractor.TYPE_SUBJECTDIRATTR: return DnComponents.getDirAttrFields();
+        default: throw new IllegalStateException("Invalid DN type");
         }
     }
 
@@ -159,15 +174,15 @@ public class DNFieldExtractor implements java.io.Serializable {
         } else if (type == TYPE_SUBJECTDIRATTR) {
             ids = DnComponents.getDirAttrDnIds();
         } else {
-            ids = new ArrayList<Integer>();
+            ids = new ArrayList<>();
         }
-        fieldnumbers = new HashMap<Integer, Integer>();
+        fieldnumbers = new HashMap<>();
         for(Integer id : ids) {
             fieldnumbers.put(id, 0);
         }
 
         if ((dn != null) && !dn.equalsIgnoreCase("null")) {
-            dnfields = new HashMap<Integer, String>();
+            dnfields = new HashMap<>();
             try {
                 final String[] dnexploded = LDAPDN.explodeDN(dn, false);
                 for (int i = 0; i < dnexploded.length; i++) {
@@ -250,7 +265,7 @@ public class DNFieldExtractor implements java.io.Serializable {
      *         DNFieldExtractor.DC and 1 was passed. Returns an empty String "", if no such field with the number exists.
      */
     public String getField(final int field, final int number) {
-        String returnval = (String) dnfields.get(Integer.valueOf((field * BOUNDRARY) + number));
+        String returnval = dnfields.get(Integer.valueOf((field * BOUNDRARY) + number));
 
         if (returnval == null) {
             returnval = "";
@@ -302,7 +317,7 @@ public class DNFieldExtractor implements java.io.Serializable {
      * @return number of componenets available for a fiels, for example 1 if DN is "dc=primekey" and 2 if DN is "dc=primekey,dc=com"
      */
     public int getNumberOfFields(final int field) {
-        Integer ret = (Integer) fieldnumbers.get(Integer.valueOf(field));
+        Integer ret = fieldnumbers.get(Integer.valueOf(field));
         if (ret == null) {
             log.error("Not finding fieldnumber value for " + field);
             ret = Integer.valueOf(0);
