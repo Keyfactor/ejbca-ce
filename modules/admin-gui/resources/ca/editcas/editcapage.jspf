@@ -239,7 +239,6 @@ function viewcacert(){
   
   <% } if(editca && !isexternal){ %>
 function confirmrenewal(){
-    
   return confirm("<%= ejbcawebbean.getText("AREYOUSURERENEWCA",true) %>") && checkallfields();     
 }
 
@@ -328,11 +327,21 @@ function checkallfields(){
       illegalfields++;
       if(jumpTo == '') { jumpTo = '<%=TEXTFIELD_DELTACRLPERIOD%>'; }
     }
-    if((document.ca.<%= TEXTFIELD_NEWSUBJECTDN %>.value.indexOf("=")==-1)){
-		alert("<%= ejbcawebbean.getText("SUBJECTDNINVALID")%>");
-		illegalfields++;
-		if(jumpTo == '') { jumpTo = '<%=TEXTFIELD_NEWSUBJECTDN%>'; }
-    }
+    <% if(editca && globalconfiguration.getEnableIcaoCANameChange() ){%>
+	    var caNameChange     =  document.ca.<%=CHECKBOX_CANAMECHANGE%>;
+	    if(caNameChange.checked && !checkfieldforcompletednchars("document.ca.<%=TEXTFIELD_NEWSUBJECTDN%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText("CERT_SUBJECTDN") %>"))
+	        illegalfields++;
+	    if(caNameChange.checked && document.ca.<%= TEXTFIELD_NEWSUBJECTDN %>.value.match(/(cn){1}\s*=+/i)==null){//Just check if Common Name exists in the DN
+			alert("<%= ejbcawebbean.getText("NEWSUBJECTDNINVALID")%>");
+			illegalfields++;
+			if(jumpTo == '') { jumpTo = '<%=ID_NEWSUBJECTDN%>'; }
+	    }
+	    if(caNameChange.checked && document.ca.<%= TEXTFIELD_NEWSUBJECTDN %>.value == "<%= cainfo.getSubjectDN() %>"){
+			alert("<%= ejbcawebbean.getText("NEWSUBJECTDNSAMEASCURRENT")%>");
+			illegalfields++;
+			if(jumpTo == '') { jumpTo = '<%=ID_NEWSUBJECTDN%>'; }
+	    }
+	<% } %>
     <%
     } %> 
      if(jumpTo != '') {
@@ -1634,7 +1643,7 @@ function toggleCANameChange(){
                             </select>
                         </td>
                     </tr>
-                    <% if (catype==CAInfo.CATYPE_X509 && globalconfiguration.getEnableIcaoCANameChange()) { 
+                    <% if (catype==CAInfo.CATYPE_X509 && cainfo.getSignedBy() == CAInfo.SELFSIGNED && globalconfiguration.getEnableIcaoCANameChange()) { 
                         		String newCAName = cainfo.getSubjectDN();%>
                         <tr id="Row<%=row%2%>"> 
 					        <td width="50%" align="left"> 
