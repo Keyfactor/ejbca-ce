@@ -466,9 +466,6 @@ java.security.InvalidAlgorithmParameterException
                 final String newSubjectDn = requestMap.get(TEXTFIELD_NEWSUBJECTDN);
                 try {
                 	if(cANameChange && newSubjectDn != null && !newSubjectDn.isEmpty()){
-                		if(newSubjectDn.indexOf('=') == -1){
-                			throw new ParameterException(ejbcawebbean.getText("SUBJECTDNINVALID"));
-                		}
                 		carenewed = cadatahandler.renewAndRenameCA(caid, nextSignKeyAlias, createLinkCertificate, newSubjectDn);
                 	}else{
                     	carenewed = cadatahandler.renewCA(caid, nextSignKeyAlias, createLinkCertificate);
@@ -777,6 +774,9 @@ java.security.InvalidAlgorithmParameterException
         errormessage = ctoe.getMessage();
         includefile="choosecapage.jspf";
     } catch (Exception exception) {
+    	while(exception.getCause() != null){
+    		exception = (Exception)exception.getCause();
+    	}
         errormessage = exception.getMessage();
         includefile="choosecapage.jspf";
     }
