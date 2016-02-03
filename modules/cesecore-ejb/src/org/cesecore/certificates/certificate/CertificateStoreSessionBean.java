@@ -764,10 +764,37 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         return ret;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public List<CertificateDataWrapper> getCertificateDataByUsername(String username) {
+    public List<CertificateDataWrapper> getCertificateDataByUsername(String username, boolean excludeExpired, List<Integer> excludedStatuses) {
         final List<CertificateDataWrapper> ret = new ArrayList<CertificateDataWrapper>();
-        final List<CertificateData> certificateDatas = CertificateData.findByUsernameOrdered(entityManager, username);
+        final List<CertificateData> certificateDatas;
+        if (excludeExpired) {
+            if (excludedStatuses==null || excludedStatuses.isEmpty()) {
+                final Query query = entityManager
+                        .createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND a.expireDate>=:afterExpireDate ORDER BY a.expireDate DESC, a.serialNumber DESC");
+                query.setParameter("username", username);
+                query.setParameter("afterExpireDate", System.currentTimeMillis());
+                certificateDatas = query.getResultList();
+            } else {
+                final Query query = entityManager
+                        .createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND a.status NOT IN (:statusExcluded) AND a.expireDate>=:afterExpireDate ORDER BY a.expireDate DESC, a.serialNumber DESC");
+                query.setParameter("username", username);
+                query.setParameter("statusExcluded", excludedStatuses);
+                query.setParameter("afterExpireDate", System.currentTimeMillis());
+                certificateDatas = query.getResultList();
+            }
+        } else {
+            if (excludedStatuses==null || excludedStatuses.isEmpty()) {
+                certificateDatas = CertificateData.findByUsernameOrdered(entityManager, username);
+            } else {
+                final Query query = entityManager
+                        .createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND a.status NOT IN (:statusExcluded) ORDER BY a.expireDate DESC, a.serialNumber DESC");
+                query.setParameter("username", username);
+                query.setParameter("statusExcluded", excludedStatuses);
+                certificateDatas = query.getResultList();
+            }
+        }
         for (final CertificateData certificateData : certificateDatas) {
             if (CesecoreConfiguration.useBase64CertTable()) {
                 ret.add(new CertificateDataWrapper(certificateData, Base64CertData.findByFingerprint(entityManager, certificateData.getFingerprint())));
