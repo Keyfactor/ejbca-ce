@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.icao.ICAOObjectIdentifiers;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CANameChangeRenewalException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -230,5 +231,45 @@ public class RenewCANewSubjectDNTest extends CaTestCase {
                 crlFullNumberAfterForceCRL == Math.max(crlFullNumberAfterRenaming, crlDeltaNumberAfterRenaming) + 1);
         
         log.trace("<testFullCRLNumberingAfterRenewNewSubjectDN()");
+    }
+    
+    @Test
+    public void testNewCANameNotSameAsCurrent() throws Exception{
+        log.trace(">testNewCANotSameAsCurrent()");
+        X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
+
+        try {
+            caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/false, /*customNotBefore=*/null,
+                    /*createLinkCertificates=*/true, "CN=TEST");
+            assertTrue("CANameChangeRenewalException is not thrown for CA-new-name-same-as-current error", true);
+        } catch (CANameChangeRenewalException e) {
+            //Good
+        } catch (Exception e){
+            assertTrue("The exception " + e.getMessage() + " is thrown instead of the CANameChangeRenewalException is not thrown for CA-new-name-same-as-current error", true);
+        }
+        
+        log.trace("<testNewCANotSameAsCurrent()");
+    }
+    
+    @Test
+    public void testNewCANameDoesNotExist() throws Exception{
+        log.trace(">testNewCANameDoesNotExist()");
+        X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
+
+        String cAName = "testNewCANameDoesNotExist";
+        createTestCA(cAName);
+        try {
+            caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/false, /*customNotBefore=*/null,
+                    /*createLinkCertificates=*/true, "CN=testNewCANameDoesNotExist");
+            assertTrue("CANameChangeRenewalException is not thrown for CA-new-name-already-exists error", true);
+        } catch (CANameChangeRenewalException e) {
+            //Good
+        } catch (Exception e){
+            assertTrue("The exception " + e.getMessage() + " is thrown instead of the CANameChangeRenewalException is not thrown for CA-new-name-already-exists error", true);
+        } finally {
+            removeTestCA(cAName);
+        }
+        
+        log.trace("<testNewCANameDoesNotExist()");
     }
 }
