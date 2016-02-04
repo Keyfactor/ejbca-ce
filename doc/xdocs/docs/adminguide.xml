@@ -966,7 +966,7 @@ ASN1Sequence extraAdminCertSeq = (ASN1Sequence)dIn.readObject();
 X509CertificateStructure extraCert = new X509CertificateStructure(ASN1Sequence.getInstance(extraAdminCertSeq));
 crmfMsg.addExtraCert(extraCert);
 
-final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), BouncyCastleProvider.PROVIDER_NAME);
+final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), BouncyCastleProvider.PROVIDER_NAME);
 sig.initSign(eekeys.getPrivate());
 sig.update(crmfMsg.getProtectedBytes());
 byte[] eeSignature = sig.sign();
@@ -983,7 +983,7 @@ PKIBody myPKIBody = new PKIBody(crmfMsg, 20); // NestedMessageContent
 PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
 //Signing myPKIMessage
 KeyPair raKeys = getRAKeys();
-final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), BouncyCastleProvider.PROVIDER_NAME);
+final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), BouncyCastleProvider.PROVIDER_NAME);
 sig.initSign(rakeys.getPrivate());
 sig.update(myPKIMessage.getProtectedBytes());
 byte[] eeSignature = sig.sign();
