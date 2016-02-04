@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -73,6 +72,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -146,6 +146,8 @@ public class ApprovalSessionTest extends CaTestCase {
 
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(
             SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final ConfigurationSessionRemote configurationProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private final AuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             ApprovalSessionTest.class.getSimpleName()));
@@ -293,6 +295,9 @@ public class ApprovalSessionTest extends CaTestCase {
     @Test
     public void testAddApprovalRequest() throws Exception {
 
+        String originalValidity = configurationProxySession.getProperty("approval.defaultrequestvalidity");
+        configurationProxySession.updateProperty("approval.defaultrequestvalidity", "1");
+        
         DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
         Certificate cert = nonExecutableRequest.getRequestAdminCert();
         assertEquals(CertTools.getIssuerDN(reqadmincert), CertTools.getIssuerDN(cert));
@@ -312,7 +317,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
             ApprovalDataVO next = result.iterator().next();
             cleanUpList.add(next.getId());
-            assertEquals("Status = " + next.getStatus(), ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, next.getStatus());
+            assertEquals("Status was expired and not waiting.", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, next.getStatus());
             assertEquals(caid, next.getCAId());
             assertEquals(SecConst.EMPTY_ENDENTITYPROFILE, next.getEndEntityProfileiId());
             assertEquals(CertTools.getIssuerDN(reqadmincert), next.getReqadmincertissuerdn());
@@ -322,15 +327,14 @@ public class ApprovalSessionTest extends CaTestCase {
             assertEquals(0, next.getApprovals().size());
             assertFalse(next.getApprovalRequest().isExecutable());
             assertEquals(2, next.getRemainingApprovals());
-
+            Thread.sleep(1000);
             // Test that the request expires as it should
-            Thread.sleep(5000);
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
 
             next = (ApprovalDataVO) result.iterator().next();
             cleanUpList.add(next.getId());
-            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXPIRED);
+            assertEquals("Status was not expired.", ApprovalDataVO.STATUS_EXPIRED, next.getStatus());
 
             // Test to add the same action twice
             approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
@@ -339,9 +343,9 @@ public class ApprovalSessionTest extends CaTestCase {
                 fail("It shouldn't be possible to add two identical requests.");
             } catch (ApprovalException e) {
             }
+            Thread.sleep(1000);
 
             // Then after one of them have expired
-            Thread.sleep(5000);
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             ApprovalDataVO expired = (ApprovalDataVO) result.iterator().next();
 
@@ -364,90 +368,99 @@ public class ApprovalSessionTest extends CaTestCase {
             for (Integer next : cleanUpList) {
                 approvalSessionRemote.removeApprovalRequest(admin1, next);
             }
+            configurationProxySession.updateProperty("approval.defaultrequestvalidity", originalValidity);
         }
     }
 
     @Test
     public void testApprove() throws Exception {
+        String originalRequestValidity = configurationProxySession.getProperty("approval.defaultrequestvalidity");
+        String originalApprovalValidity = configurationProxySession.getProperty("approval.defaultapprovalvalidity");
 
-        DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
-        removeApprovalId = nonExecutableRequest.generateApprovalId();
-        approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
-
-        Approval approval1 = new Approval("ap1test");
-        approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
-
-        Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        assertTrue(result.size() == 1);
-
-        ApprovalDataVO next = result.iterator().next();
-        assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
-        assertTrue(next.getRemainingApprovals() == 1);
-
-        Approval approvalAgain = new Approval("apAgaintest");
+        configurationProxySession.updateProperty("approval.defaultrequestvalidity", "1");
+        configurationProxySession.updateProperty("approval.defaultapprovalvalidity", "1");
         try {
-            approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approvalAgain);
-            fail("The same admin shouldn't be able to approve a request twice");
-        } catch (AdminAlreadyApprovedRequestException e) {
+            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
+            removeApprovalId = nonExecutableRequest.generateApprovalId();
+            approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
+
+            Approval approval1 = new Approval("ap1test");
+            approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
+
+            Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+            assertTrue(result.size() == 1);
+
+            ApprovalDataVO next = result.iterator().next();
+            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
+            assertTrue(next.getRemainingApprovals() == 1);
+
+            Approval approvalAgain = new Approval("apAgaintest");
+            try {
+                approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approvalAgain);
+                fail("The same admin shouldn't be able to approve a request twice");
+            } catch (AdminAlreadyApprovedRequestException e) {
+            }
+
+            Approval approval2 = new Approval("ap2test");
+            approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
+
+            result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+            assertTrue(result.size() == 1);
+
+            next = (ApprovalDataVO) result.iterator().next();
+            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_APPROVED);
+            assertTrue(next.getRemainingApprovals() == 0);
+
+            // Test that the approval expires as it should
+            Thread.sleep(1001);
+            result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+            assertTrue(result.size() == 1);
+
+            next = (ApprovalDataVO) result.iterator().next();
+            assertEquals("Status was not expired.", ApprovalDataVO.STATUS_EXPIRED, next.getStatus());
+
+            approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+
+            // Test using an executable Dummy, different behaviour
+            DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, true);
+            approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
+
+            approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
+            approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
+
+            result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
+            assertTrue(result.size() == 1);
+            next = (ApprovalDataVO) result.iterator().next();
+            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXECUTED);
+
+            // Make sure that the approval still have status executed after expiration
+            Thread.sleep(1000);
+            result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
+            assertTrue(result.size() == 1);
+
+            next = (ApprovalDataVO) result.iterator().next();
+            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXECUTED);
+
+            approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+
+            // Test to request and to approve with the same admin
+            nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
+            approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
+            Approval approvalUsingReqAdmin = new Approval("approvalUsingReqAdmin");
+            try {
+                approvalExecutionSessionRemote.approve(reqadmin, nonExecutableRequest.generateApprovalId(), approvalUsingReqAdmin);
+                fail("Request admin shouln't be able to approve their own request");
+            } catch (AdminAlreadyApprovedRequestException e) {
+            }
+            result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
+            assertTrue(result.size() == 1);
+            next = (ApprovalDataVO) result.iterator().next();
+            approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+        } finally {
+            configurationProxySession.updateProperty("approval.defaultrequestvalidity", originalRequestValidity);
+            configurationProxySession.updateProperty("approval.defaultapprovalvalidity", originalApprovalValidity);
+
         }
-
-        Approval approval2 = new Approval("ap2test");
-        approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
-
-        result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        assertTrue(result.size() == 1);
-
-        next = (ApprovalDataVO) result.iterator().next();
-        assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_APPROVED);
-        assertTrue(next.getRemainingApprovals() == 0);
-
-        // Test that the approval exipres as it should
-        Thread.sleep(5000);
-        result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        assertTrue(result.size() == 1);
-
-        next = (ApprovalDataVO) result.iterator().next();
-        assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXPIRED);
-
-        approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
-
-        // Test using an executable Dummy, different behaviour
-        DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, true);
-        approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
-
-        approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
-        approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
-
-        result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
-        assertTrue(result.size() == 1);
-        next = (ApprovalDataVO) result.iterator().next();
-        assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXECUTED);
-
-        // Make sure that the approval still have status executed after
-        // exiration
-        Thread.sleep(5000);
-        result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
-        assertTrue(result.size() == 1);
-
-        next = (ApprovalDataVO) result.iterator().next();
-        assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXECUTED);
-
-        approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
-
-        // Test to request and to approve with the same admin
-        nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
-        approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
-        Approval approvalUsingReqAdmin = new Approval("approvalUsingReqAdmin");
-        try {
-            approvalExecutionSessionRemote.approve(reqadmin, nonExecutableRequest.generateApprovalId(), approvalUsingReqAdmin);
-            fail("Request admin shouln't be able to approve their own request");
-        } catch (AdminAlreadyApprovedRequestException e) {
-        }
-        result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
-        assertTrue(result.size() == 1);
-        next = (ApprovalDataVO) result.iterator().next();
-        approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
-
     }
 
     @Test
@@ -500,103 +513,119 @@ public class ApprovalSessionTest extends CaTestCase {
     @Test
     public void testReject() throws Exception {
         log.trace(">testReject()");
-        DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
-        removeApprovalId = nonExecutableRequest.generateApprovalId();
-        approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
-
-        Approval approval1 = new Approval("ap1test");
-        approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
-
-        Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        ApprovalDataVO next = result.iterator().next();
-        assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
-        assertTrue(next.getRemainingApprovals() == 1);
-
-        Approval rejection = new Approval("rejectiontest");
-        approvalSessionRemote.reject(admin2, nonExecutableRequest.generateApprovalId(), rejection);
-        result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        next = (ApprovalDataVO) result.iterator().next();
-        assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_REJECTED);
-        assertTrue(next.getRemainingApprovals() == 0);
-
-        approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
-
-        nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
-        approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
-
-        rejection = new Approval("rejectiontest2");
-        approvalSessionRemote.reject(admin1, nonExecutableRequest.generateApprovalId(), rejection);
-        result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        next = (ApprovalDataVO) result.iterator().next();
-        assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_REJECTED);
-        assertTrue(next.getRemainingApprovals() == 0);
-
-        // Try to approve a rejected request
+        String originalApprovalValidity = configurationProxySession.getProperty("approval.defaultapprovalvalidity");
+        configurationProxySession.updateProperty("approval.defaultapprovalvalidity", "1");
         try {
-            approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval1);
-            fail("It shouldn't be possible to approve a rejected request");
-        } catch (ApprovalException e) {
-            log.info("ApprovalException: " + e.getErrorCode() + ". " + e.getMessage());
-        } catch (EjbcaException e) {
-            log.info("EjbcaException: " + e.getErrorCode() + ". " + e.getMessage());
-        }
 
-        // Test that the approval exipres as it should
-        Thread.sleep(5000);
-        result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        assertTrue(result.size() == 1);
+            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
+            removeApprovalId = nonExecutableRequest.generateApprovalId();
+            approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
 
-        next = (ApprovalDataVO) result.iterator().next();
-        assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXPIRED);
+            Approval approval1 = new Approval("ap1test");
+            approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
 
-        // Try to reject an expired request
-        try {
+            Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+            ApprovalDataVO next = result.iterator().next();
+            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
+            assertTrue(next.getRemainingApprovals() == 1);
+
+            Approval rejection = new Approval("rejectiontest");
             approvalSessionRemote.reject(admin2, nonExecutableRequest.generateApprovalId(), rejection);
-            fail("It shouln't be possible to reject and expired request");
-        } catch (ApprovalException e) {
-        }
+            result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+            next = (ApprovalDataVO) result.iterator().next();
+            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_REJECTED);
+            assertTrue(next.getRemainingApprovals() == 0);
 
-        approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+            approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+
+            nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
+            approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
+
+            rejection = new Approval("rejectiontest2");
+            approvalSessionRemote.reject(admin1, nonExecutableRequest.generateApprovalId(), rejection);
+            result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+            next = (ApprovalDataVO) result.iterator().next();
+            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_REJECTED);
+            assertTrue(next.getRemainingApprovals() == 0);
+
+            // Try to approve a rejected request
+            try {
+                approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval1);
+                fail("It shouldn't be possible to approve a rejected request");
+            } catch (ApprovalException e) {
+                log.info("ApprovalException: " + e.getErrorCode() + ". " + e.getMessage());
+            } catch (EjbcaException e) {
+                log.info("EjbcaException: " + e.getErrorCode() + ". " + e.getMessage());
+            }
+
+            // Test that the approval exipres as it should
+            Thread.sleep(1000);
+            result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+            assertTrue(result.size() == 1);
+
+            next = (ApprovalDataVO) result.iterator().next();
+            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXPIRED);
+
+            // Try to reject an expired request
+            try {
+                approvalSessionRemote.reject(admin2, nonExecutableRequest.generateApprovalId(), rejection);
+                fail("It shouln't be possible to reject and expired request");
+            } catch (ApprovalException e) {
+            }
+
+            approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+        } finally {
+            configurationProxySession.updateProperty("approval.defaultapprovalvalidity", originalApprovalValidity);
+        }
         log.trace("<testReject()");
     }
 
     @Test
     public void testIsApproved() throws Exception {
-        DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
-        removeApprovalId = nonExecutableRequest.generateApprovalId();
-        approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
-
-        int status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
-        assertTrue(status == 2);
-
-        Approval approval1 = new Approval("ap1test");
-        approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
-
-        status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
-        assertTrue(status == 1);
-
-        Approval approval2 = new Approval("ap2test");
-        approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
-
-        status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
-        assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
-
-        // Test that the approval exipres as it should
-        Thread.sleep(5000);
-
+        String originalApprovalValidity = configurationProxySession.getProperty("approval.defaultapprovalvalidity");
+        configurationProxySession.updateProperty("approval.defaultapprovalvalidity", "1");
         try {
+
+            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
+            removeApprovalId = nonExecutableRequest.generateApprovalId();
+            approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
+
+            int status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
+            assertTrue(status == 2);
+
+            Approval approval1 = new Approval("ap1test");
+            approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
+
             status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
-            fail("A ApprovalRequestExpiredException should be thrown here");
-        } catch (ApprovalRequestExpiredException e) {
+            assertTrue(status == 1);
+
+            Approval approval2 = new Approval("ap2test");
+            approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
+
+            status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
+            assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
+
+            // Test that the approval expires as it should
+            Thread.sleep(1000);
+
+            try {
+                status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
+                fail("A ApprovalRequestExpiredException should be thrown here");
+            } catch (ApprovalRequestExpiredException e) {
+            }
+
+            status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
+            assertTrue(status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED);
+
+            Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+            ApprovalDataVO next = result.iterator().next();
+
+            approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+        } finally {
+            configurationProxySession.updateProperty("approval.defaultapprovalvalidity", originalApprovalValidity);
+
         }
-
-        status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
-        assertTrue(status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED);
-
-        Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        ApprovalDataVO next = result.iterator().next();
-
-        approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+        
 
     }
 
@@ -661,25 +690,27 @@ public class ApprovalSessionTest extends CaTestCase {
 
     @Test
     public void testFindNonExpiredApprovalRequest() throws Exception {
-        DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
-        removeApprovalId = nonExecutableRequest.generateApprovalId();
+        String originalValidity = configurationProxySession.getProperty("approval.defaultrequestvalidity");
+        configurationProxySession.updateProperty("approval.defaultrequestvalidity", "1");
+        try {
+            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
+            removeApprovalId = nonExecutableRequest.generateApprovalId();
 
-        approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
+            approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
+            Thread.sleep(1000);
+            // Then after one of them have expired
+            approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
 
-        // Then after one of them have expired
-        Thread.sleep(5000);
+            ApprovalDataVO result = approvalSessionRemote.findNonExpiredApprovalRequest(admin1, nonExecutableRequest.generateApprovalId());
+            assertNotNull(result);
+            assertTrue(result.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
 
-        approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
-
-        ApprovalDataVO result = approvalSessionRemote.findNonExpiredApprovalRequest(admin1, nonExecutableRequest.generateApprovalId());
-        assertNotNull(result);
-        assertTrue(result.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
-
-        Collection<ApprovalDataVO> all = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        Iterator<ApprovalDataVO> iter = all.iterator();
-        while (iter.hasNext()) {
-            ApprovalDataVO next = iter.next();
-            approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+            Collection<ApprovalDataVO> all = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+            for (ApprovalDataVO next : all) {
+                approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+            }
+        } finally {
+            configurationProxySession.updateProperty("approval.defaultrequestvalidity", originalValidity);
         }
 
     }
@@ -691,15 +722,13 @@ public class ApprovalSessionTest extends CaTestCase {
         DummyApprovalRequest req1 = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
         DummyApprovalRequest req2 = new DummyApprovalRequest(admin1, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
         DummyApprovalRequest req3 = new DummyApprovalRequest(admin2, null, 3, 2, false);
-        DummyApprovalRequest expiredRequest = new DummyApprovalRequest(admin3, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, 0);
 
         approvalSessionRemote.addApprovalRequest(admin1, req1);
         approvalSessionRemote.addApprovalRequest(admin1, req2);
         approvalSessionRemote.addApprovalRequest(admin1, req3);
-        approvalSessionRemote.addApprovalRequest(admin1, expiredRequest);
 
         try {
-            // Make som queries
+            // Make some queries
             Query q1 = new Query(Query.TYPE_APPROVALQUERY);
             q1.add(ApprovalMatch.MATCH_WITH_APPROVALTYPE, BasicMatch.MATCH_TYPE_EQUALS, "" + req1.getApprovalType());
 
@@ -718,30 +747,41 @@ public class ApprovalSessionTest extends CaTestCase {
             q2.add(ApprovalMatch.MATCH_WITH_REQUESTADMINCERTSERIALNUMBER, BasicMatch.MATCH_TYPE_EQUALS, reqadmincert.getSerialNumber().toString(16));
 
             result = approvalSessionRemote.query(admin1, q1, 1, 3, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
-            assertTrue("Result size " + result.size(), result.size() >= 1 && result.size() <= 3);
-            
-            Query expiredQuery = new Query(Query.TYPE_APPROVALQUERY);
-            expiredQuery.add(ApprovalMatch.MATCH_WITH_APPROVALTYPE, BasicMatch.MATCH_TYPE_EQUALS, "" + expiredRequest.getApprovalType());
-            expiredQuery.add(TimeMatch.MATCH_WITH_EXPIRETIME, null, new Date(), Query.CONNECTOR_AND);
-            result = approvalSessionRemote.query(admin1, expiredQuery, 1, 3, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
-            assertEquals("Single expired query was not returned.", 1, result.size() );
-
-
+            assertTrue("Result size " + result.size(), result.size() >= 1 && result.size() <= 3);           
         } finally {
             // Remove the requests
             int id1 = ((ApprovalDataVO) approvalSessionRemote.findApprovalDataVO(admin1, req1.generateApprovalId()).iterator().next()).getId();
             int id2 = ((ApprovalDataVO) approvalSessionRemote.findApprovalDataVO(admin1, req2.generateApprovalId()).iterator().next()).getId();
             int id3 = ((ApprovalDataVO) approvalSessionRemote.findApprovalDataVO(admin1, req3.generateApprovalId()).iterator().next()).getId();
-            int expiredRequestId = ((ApprovalDataVO) approvalSessionRemote.findApprovalDataVO(admin1, expiredRequest.generateApprovalId()).iterator()
-                    .next()).getId();
+
             approvalSessionRemote.removeApprovalRequest(admin1, id1);
             approvalSessionRemote.removeApprovalRequest(admin1, id2);
             approvalSessionRemote.removeApprovalRequest(admin1, id3);
-            approvalSessionRemote.removeApprovalRequest(admin1, expiredRequestId);
-
         }
     }
 
+    @Test
+    public void testExpiredQuery() throws Exception {
+        String originalValidity = configurationProxySession.getProperty("approval.defaultrequestvalidity");
+        configurationProxySession.updateProperty("approval.defaultrequestvalidity", "0");
+        // Add a few requests
+        DummyApprovalRequest expiredRequest = new DummyApprovalRequest(admin3, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
+        approvalSessionRemote.addApprovalRequest(admin1, expiredRequest);
+        try {            
+            Query expiredQuery = new Query(Query.TYPE_APPROVALQUERY);
+            expiredQuery.add(ApprovalMatch.MATCH_WITH_APPROVALTYPE, BasicMatch.MATCH_TYPE_EQUALS, "" + expiredRequest.getApprovalType(), Query.CONNECTOR_AND);
+            expiredQuery.add(TimeMatch.MATCH_WITH_EXPIRETIME, null, new Date());
+            List<ApprovalDataVO> result = approvalSessionRemote.query(admin1, expiredQuery, 0, 3, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
+            assertTrue("At least one expired query was not returned.", result.size() > 0);
+        } finally {
+            // Remove the requests
+            int expiredRequestId = ((ApprovalDataVO) approvalSessionRemote.findApprovalDataVO(admin1, expiredRequest.generateApprovalId()).iterator()
+                    .next()).getId();
+            approvalSessionRemote.removeApprovalRequest(admin1, expiredRequestId);
+            configurationProxySession.updateProperty("approval.defaultrequestvalidity", originalValidity);
+        }
+    }
+    
     @Test
     public void testApprovalsWithExternalAdmins() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
             InvalidKeyException, CertificateEncodingException, SignatureException, IllegalStateException, ApprovalRequestExpiredException,

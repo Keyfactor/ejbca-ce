@@ -38,10 +38,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	private static final int LATEST_VERSION = 1;
 	private static final int NUM_OF_REQUIRED_APPROVALS = 2;
 	
-	private static final int DEFAULT_REQUEST_VALIDITY = 60*1000;
-
 	private boolean executable = false;
-	private final int requestValidity;
 	
     /**
      * Main constructor of an approval request
@@ -55,14 +52,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, boolean executable) {
 		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId);	
 		this.executable = executable;
-        requestValidity = DEFAULT_REQUEST_VALIDITY;
 	}  
-	
-	   public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, boolean executable, int requestValidity) {
-	        super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId); 
-	        this.executable = executable;
-	        this.requestValidity = requestValidity;
-	    }  
 	
     /**
      * Main constructor of an approval request with step functionality
@@ -70,12 +60,10 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, int steps, boolean executable) {
 		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, steps);	
 		this.executable = executable;
-        requestValidity = DEFAULT_REQUEST_VALIDITY;
 	} 
 	
     /** Constuctor used in externaliziation only */
     public DummyApprovalRequest() {
-        requestValidity = DEFAULT_REQUEST_VALIDITY;
     }
     
 	/**
@@ -124,26 +112,6 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	@Override
 	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin){
 		return null;
-	}
-
-	/**
-	 * Should return the time in millisecond that the request should be valid
-	 * or Long.MAX_VALUE if it should never expire
-	 * 
-	 * Returns 4 s (For testscripts only. usually 30 minutes or something)
-	 */
-	public long getRequestValidity(){
-		return requestValidity;
-	}
-	
-	/**
-	 * Should return the time in second that the approval should be valid
-	 * or Long.MAX_VALUE if it should never expire
-	 * 
-	 * Returns 4 s (For testscripts only. usually 30 minutes or something)
-	 */
-	public long getApprovalValidity(){
-		return 4 * 1000;
 	}
 
 	/**

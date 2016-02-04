@@ -157,7 +157,8 @@ public interface ApprovalSession {
      * @param admin
      * @param query should be a Query object containing ApprovalMatch and
      *            TimeMatch
-     * @param index where the ResultSet should start.
+     * @param index where the ResultSet should start
+     * @param numberofrows maximum number of rows 
      * @param caAuthorizationString
      *            a list of authorized CA Ids in the form 'cAId=... OR cAId=...'
      * @param endEntityProfileAuthorizationString
