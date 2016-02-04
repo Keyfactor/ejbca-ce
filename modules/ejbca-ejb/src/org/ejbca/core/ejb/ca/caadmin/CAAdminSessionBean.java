@@ -2147,6 +2147,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             auditSession.log(EjbcaEventTypes.CA_RENEWED, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
                     String.valueOf(caid), null, null, detailsMsg);
             throw e;
+        } catch (CANameChangeRenewalException e) {
+            final String detailsMsg = intres.getLocalizedMessage("caadmin.errorrenewca", Integer.valueOf(caid));
+            auditSession.log(EjbcaEventTypes.CA_RENEWED, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
+                    String.valueOf(caid), null, null, detailsMsg);
+            throw e;
         } catch (Exception e) {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.errorrenewca", Integer.valueOf(caid));
             auditSession.log(EjbcaEventTypes.CA_RENEWED, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),

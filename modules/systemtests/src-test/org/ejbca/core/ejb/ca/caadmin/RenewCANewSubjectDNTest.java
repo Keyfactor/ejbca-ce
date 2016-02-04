@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -241,11 +242,11 @@ public class RenewCANewSubjectDNTest extends CaTestCase {
         try {
             caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/false, /*customNotBefore=*/null,
                     /*createLinkCertificates=*/true, "CN=TEST");
-            assertTrue("CANameChangeRenewalException is not thrown for CA-new-name-same-as-current error", true);
+            fail("CANameChangeRenewalException is not thrown for CA-new-name-same-as-current error");
         } catch (CANameChangeRenewalException e) {
             //Good
         } catch (Exception e){
-            assertTrue("The exception " + e.getMessage() + " is thrown instead of the CANameChangeRenewalException is not thrown for CA-new-name-same-as-current error", true);
+            fail("The exception " + e.getMessage() + " is thrown instead of the CANameChangeRenewalException for CA-new-name-same-as-current error");
         }
         
         log.trace("<testNewCANotSameAsCurrent()");
@@ -261,11 +262,11 @@ public class RenewCANewSubjectDNTest extends CaTestCase {
         try {
             caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/false, /*customNotBefore=*/null,
                     /*createLinkCertificates=*/true, "CN=testNewCANameDoesNotExist");
-            assertTrue("CANameChangeRenewalException is not thrown for CA-new-name-already-exists error", true);
+            fail("CANameChangeRenewalException is not thrown for CA-new-name-already-exists error");
         } catch (CANameChangeRenewalException e) {
             //Good
         } catch (Exception e){
-            assertTrue("The exception " + e.getMessage() + " is thrown instead of the CANameChangeRenewalException is not thrown for CA-new-name-already-exists error", true);
+            fail("The exception " + e.getMessage() + " is thrown instead of the CANameChangeRenewalException for CA-new-name-already-exists error");
         } finally {
             removeTestCA(cAName);
         }
