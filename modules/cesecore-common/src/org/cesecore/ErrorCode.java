@@ -86,6 +86,7 @@ public class ErrorCode implements Serializable {
     private static final String _BAD_CERTIFICATE_PROFILE_TYPE = "BAD_CERTIFICATE_PROFILE_TYPE"; // when using a cert/endentity profile of the wrong type
     private static final String _ROLE_DOES_NOT_EXIST = "ROLE_DOES_NOT_EXIST"; // When trying to find a role that does not exist
     private static final String _BAD_REQUEST_SIGNATURE = "BAD_REQUEST_SIGNATURE"; // Failure to verify request signature.
+    private static final String _CA_NAME_CHANGE_RENEWAL_ERROR = "CA_NAME_CHANGE_RENEWAL_ERROR"; // CA Name Change Renewal could not be completed 
 
     /** Default constructor. */
     private ErrorCode() {}
@@ -188,6 +189,7 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode ROLE_DOES_NOT_EXIST = new ErrorCode(_ROLE_DOES_NOT_EXIST);
     /** Failure to verify request signature. */
     public static final ErrorCode BAD_REQUEST_SIGNATURE = new ErrorCode(_BAD_REQUEST_SIGNATURE);
+    public static final ErrorCode CA_NAME_CHANGE_RENEWAL_ERROR = new ErrorCode(_CA_NAME_CHANGE_RENEWAL_ERROR);
 
     /** Get the internal error code. */
     public String getInternalErrorCode() {

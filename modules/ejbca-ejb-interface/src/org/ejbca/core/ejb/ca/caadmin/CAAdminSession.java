@@ -31,6 +31,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CANameChangeRenewalException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
@@ -216,7 +217,7 @@ public interface CAAdminSession {
      *            with the next keys signed by the current keys. 
      * @throws AuthorizationDeniedException 
      * @throws CryptoTokenOfflineException 
-     * @throws CryptoTokenAuthenticationFailedException 
+     * @throws CryptoTokenAuthenticationFailedException
      */
     void renewCA(AuthenticationToken administrator, int caid, String nextSignKeyAlias, Date customNotBefore, boolean createLinkCertificate)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
@@ -254,7 +255,7 @@ public interface CAAdminSession {
      *            For CVC CAs this is ignored and the link certificate is always generated.
      * @throws AuthorizationDeniedException if admin was not authorized to this CA
      * @throws CADoesntExistsException if CA with ID caid didn't exist.
-     * @throws CryptoTokenOfflineException 
+     * @throws CryptoTokenOfflineException
      */
     void renewCA(AuthenticationToken admin, int caid, boolean regenerateKeys, Date customNotBefore, boolean createLinkCertificate)
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
@@ -281,14 +282,15 @@ public interface CAAdminSession {
      *            generates an additional certificate stored in the CA object
      *            with the new keys signed by the current keys.
      *            For CVC CAs this is ignored and the link certificate is always generated.
-     * @param newCAName 
-     *            new CA name and SubjectDN/IssuerDN of CA certificate
+     * @param newSubjectDN 
+     *            new SubjectDN/IssuerDN of CA certificate (new CA Name will be Common Name value)
      * @throws AuthorizationDeniedException if admin was not authorized to this CA
      * @throws CADoesntExistsException if CA with ID caid didn't exist.
      * @throws CryptoTokenOfflineException 
+     * @throws CANameChangeRenewalException 
      */
-    void renewCANewSubjectDn(AuthenticationToken admin, int caid, boolean regenerateKeys, Date customNotBefore, boolean createLinkCertificate, String newCAName)
-            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
+    void renewCANewSubjectDn(AuthenticationToken admin, int caid, boolean regenerateKeys, Date customNotBefore, boolean createLinkCertificate, String newSubjectDN)
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException;
     
     /**
      * Renews an existing CA certificate using the requested keys or by generating new keys. After renewal CA certificate will have
@@ -312,14 +314,15 @@ public interface CAAdminSession {
      *            generates an additional certificate stored in the CA object
      *            with the new keys signed by the current keys.
      *            For CVC CAs this is ignored and the link certificate is always generated.
-     * @param newCAName 
-     *            new CA name and SubjectDN/IssuerDN of CA certificate
+     * @param newSubjectDN 
+     *            new SubjectDN/IssuerDN of CA certificate (new CA Name will be Common Name value)
      * @throws AuthorizationDeniedException if admin was not authorized to this CA
      * @throws CADoesntExistsException if CA with ID caid didn't exist.
      * @throws CryptoTokenOfflineException 
+     * @throws CANameChangeRenewalException 
      */
-    void renewCANewSubjectDn(AuthenticationToken admin, int caid, String nextSignKeyAlias, Date customNotBefore, boolean createLinkCertificate, String newCAName)
-            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
+    void renewCANewSubjectDn(AuthenticationToken admin, int caid, String nextSignKeyAlias, Date customNotBefore, boolean createLinkCertificate, String newSubjectDN)
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException;
 
     /**
      * Method that revokes the CA. After this is all certificates created by

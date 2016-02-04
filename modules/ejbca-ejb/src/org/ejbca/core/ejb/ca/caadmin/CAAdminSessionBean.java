@@ -90,6 +90,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CANameChangeRenewalException;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CvcCA;
@@ -1858,11 +1859,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void renewCA(AuthenticationToken authenticationToken, int caid, boolean regenerateKeys, Date customNotBefore,
             final boolean createLinkCertificate) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
-        renewCAInternal(authenticationToken, caid, regenerateKeys, customNotBefore, createLinkCertificate, /*newSubjectDN=*/null);
+        try {
+            renewCAInternal(authenticationToken, caid, regenerateKeys, customNotBefore, createLinkCertificate, /*newSubjectDN=*/null);
+        } catch (CANameChangeRenewalException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private void renewCAInternal(AuthenticationToken authenticationToken, int caid, boolean regenerateKeys, Date customNotBefore,
-            final boolean createLinkCertificate, String newSubjectDn) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
+            final boolean createLinkCertificate, String newSubjectDn) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException {
         final CA ca = caSession.getCAForEdit(authenticationToken, caid);
         final CAToken caToken = ca.getCAToken();
         final Properties oldProperties = caToken.getProperties();
@@ -1904,23 +1909,27 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void renewCA(final AuthenticationToken authenticationToken, final int caid, final String nextSignKeyAlias, Date customNotBefore,
             final boolean createLinkCertificate) throws AuthorizationDeniedException, CryptoTokenOfflineException {
-        renewCAInternal(authenticationToken, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, /*newSubjectDN=*/null);
+        try {
+            renewCAInternal(authenticationToken, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, /*newSubjectDN=*/null);
+        } catch (CANameChangeRenewalException e) {
+            throw new IllegalStateException(e);
+        }
     }
     
     @Override
     public void renewCANewSubjectDn(AuthenticationToken admin, int caid, boolean regenerateKeys, Date customNotBefore, final boolean createLinkCertificate, String newSubjectDn)
-            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException{
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException{
         renewCAInternal(admin, caid, regenerateKeys, customNotBefore, createLinkCertificate, newSubjectDn);
     }
     
     @Override
     public void renewCANewSubjectDn(AuthenticationToken admin, int caid, final String nextSignKeyAlias, Date customNotBefore, final boolean createLinkCertificate, String newSubjectDn)
-            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException{
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException{
         renewCAInternal(admin, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, newSubjectDn);
     }
 
     private void renewCAInternal(final AuthenticationToken authenticationToken, int caid, final String nextSignKeyAlias, Date customNotBefore,
-            final boolean createLinkCertificate, String newSubjectDN) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+            final boolean createLinkCertificate, String newSubjectDN) throws AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException {
         if (log.isTraceEnabled()) {
             log.trace(">CAAdminSession, renewCA(), caid=" + caid);
         }
@@ -1937,6 +1946,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         try {
             CA ca = caSession.getCAForEdit(authenticationToken, caid);
             
+            String newCAName = null;
             boolean subjectDNWillBeChanged = newSubjectDN != null && !newSubjectDN.isEmpty();          
             if(subjectDNWillBeChanged){
                 GlobalConfiguration globalConfig = (GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
@@ -1951,20 +1961,20 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     throw new IllegalStateException(errorMessage);
                 }
                 if (CertTools.stringToBCDNString(newSubjectDN).equalsIgnoreCase(ca.getSubjectDN())){
-                    final String errorMessage = "CA Name Change operation is specified but the same name " + newSubjectDN + " is specified. Please choose another name. Aborting CA Name Change renewal.";
+                    final String errorMessage = "New Subject DN " + newSubjectDN + " is the same as current. Please choose another name. Aborting CA Name Change renewal.";
                     log.error(errorMessage);
-                    throw new IllegalStateException(errorMessage);
+                    throw new CANameChangeRenewalException(errorMessage);
                 }
-                final String newCAName = CertTools.getPartFromDN(newSubjectDN, "CN");
+                newCAName = CertTools.getPartFromDN(newSubjectDN, "CN");
                 if(newCAName == null){
-                    final String errorMessage = "Invalid DN for specified new Subject DN: " + newSubjectDN + ". Aborting CA Name Change renewal!";
+                    final String errorMessage = "New Subject DN " + newSubjectDN + " does not have Common Name or it is invalid. Aborting CA Name Change renewal!";
                     log.error(errorMessage);
-                    throw new IllegalStateException(errorMessage);
+                    throw new CANameChangeRenewalException(errorMessage);
                 }
                 if(caSession.existsCa(newCAName)){
-                    final String errorMessage = "There is existing CA with the name = " + newCAName + ". Please delete it or specify another name. Aborting CA Name Change renewal.";
+                    final String errorMessage = "There is existing CA with the name = " + newCAName + ". Please delete it or specify another Subject DN. Aborting CA Name Change renewal.";
                     log.error(errorMessage);
-                    throw new IllegalStateException(errorMessage);
+                    throw new CANameChangeRenewalException(errorMessage);
                 }
                 if(crlStoreSession.getLastCRL(newSubjectDN, false) != null){
                     final String errorMessage = "There are already stored some CRL data with issuer DN equal to specified new SubjectDN = " + newSubjectDN + ". Please delete them. Aborting CA Name Change renewal.";
@@ -2016,12 +2026,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (ca.getSignedBy() == CAInfo.SELFSIGNED) {
                 if(subjectDNWillBeChanged){
                     ca.setSubjectDN(newSubjectDN);
-                    String cn = CertTools.getPartFromDN(newSubjectDN, "CN");
-                    if(cn == null){
-                        log.info("Missing CN in new Subject DN: " + newSubjectDN);
-                        throw new Exception("Missing CN in new Subject DN: " + newSubjectDN);
-                    }
-                    ca.setName(cn); // let's use CN value for new CA name
+                    ca.setName(newCAName); // use CN value for new CA name
                     ca.setCAId(0);  //set it to 0, because we want to new id to be generated based on newSubjectDn
                     ((X509CA)ca).setNameChanged(true);
                 }
