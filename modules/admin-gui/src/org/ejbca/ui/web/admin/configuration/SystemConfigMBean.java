@@ -443,6 +443,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private void importStatedump(final File path, final boolean lockdown) throws IOException, AuthorizationDeniedException {
         final StatedumpImportOptions options = new StatedumpImportOptions();
         options.setLocation(path);
+        // Since we currently don't give the user any option to upload an overrides file, we look for an overrides file in the .zip file
+        options.setOverridesFile(new File(path, "overrides.properties"));
         options.setMergeCryptoTokens(true);
         
         StatedumpImportResult result = statedumpSession.performDryRun(getAdmin(), options);
