@@ -89,13 +89,16 @@ public class CmpPbeVerifyer {
 	
 	/**
 	 * 
-	 * @param raAuthenticationSecret
-	 * @return
+	 * @param raAuthenticationSecret the HMAC PBE password that should be used to verify the CMP message protection
+	 * @return true if the given password was correct
 	 * @throws InvalidKeyException if the iterator count for this verifier was set higher than 10000, or if the key was not compatible with this MAC
 	 * @throws NoSuchAlgorithmException if the algorithm for the Owf or the MAC weren't found
 	 */
 	public boolean verify(String raAuthenticationSecret) throws  InvalidKeyException, NoSuchAlgorithmException {
-		lastUsedRaSecret = raAuthenticationSecret;
+	    if (raAuthenticationSecret == null) {
+            throw new IllegalArgumentException("RA authentication secret is null.");
+	    }
+	    lastUsedRaSecret = raAuthenticationSecret;
 		boolean ret = false;
 		// Verify the PasswordBased protection of the message
 		if (!pAlg.getAlgorithm().equals(CMPObjectIdentifiers.passwordBasedMac)) {
