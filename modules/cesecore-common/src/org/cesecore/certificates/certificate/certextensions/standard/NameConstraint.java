@@ -162,7 +162,7 @@ public class NameConstraint extends StandardCertificateExtension {
      * 
      * @throws CertificateExtensionException if the string can not be parsed.
      */
-    private static String parseNameConstraintEntry(String str) throws CertificateExtensionException {
+    public static String parseNameConstraintEntry(String str) throws CertificateExtensionException {
         if (str.matches("^([0-9]+\\.){3,3}([0-9]+)/[0-9]+$") ||
             str.matches("^[0-9a-fA-F]{0,4}:[0-9a-fA-F]{0,4}:[0-9a-fA-F:]*/[0-9]+$")) {
             // IPv4 or IPv6 address
@@ -195,13 +195,14 @@ public class NameConstraint extends StandardCertificateExtension {
             // DNS name (it can start with a ".", this means "all subdomains")
             return "dNSName:"+str;
         } else if (str.matches("^[^=,]*@[a-zA-Z0-9_.\\[\\]:-]+$")) {
+            String email = str;
             // RFC 822 Name (i.e. e-mail)
             if (str.startsWith("@")) {
                 // In EJBCA, rfc822Names without a user part start with @ to distinguish them from domain names.
                 // This is not the case in the encoded form.
-                str = str.substring(1);
+                email = email.substring(1);
             }
-            return "rfc822Name:"+str;
+            return "rfc822Name:"+email;
         } else if (str.contains("=")) {
             // Directory name
             return "directoryName:" + new X500Name(CeSecoreNameStyle.INSTANCE, str).toString();
@@ -215,7 +216,7 @@ public class NameConstraint extends StandardCertificateExtension {
      * @see parseNameConstraintEntry
      */
     public static List<String> parseNameConstraintsList(String input) throws CertificateExtensionException {
-        List<String> encodedNames = new ArrayList<String>();
+        List<String> encodedNames = new ArrayList<>();
         if (input != null) {
             String[] pieces = input.split("\n");
             for (String piece : pieces) {
@@ -231,7 +232,7 @@ public class NameConstraint extends StandardCertificateExtension {
     /**
      * Formats an encoded name constraint from parseNameConstraintEntry into human-readable form.
      */
-    private static String formatNameConstraintEntry(String encoded) {
+    public static String formatNameConstraintEntry(String encoded) {
         if (encoded == null) {
             return "";
         }
