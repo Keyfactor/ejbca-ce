@@ -24,7 +24,6 @@
 		<path refid="lib.batik.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path location="${mod.cesecore-entity.lib}"/>
-		<path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.edition-specific-interface.lib}"/>
 		<path location="${mod.edition-specific-ejb.lib}"/>

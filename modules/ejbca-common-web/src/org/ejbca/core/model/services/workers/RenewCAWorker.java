@@ -37,8 +37,6 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
 public class RenewCAWorker extends BaseWorker {
 
 	private static final Logger log = Logger.getLogger(RenewCAWorker.class);
-    /** Internal localization of logs and errors */
-	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();	
 
 	/** Flag is keys should be regenerated or not */
 	public static final String PROP_RENEWKEYS           = "worker.renewkeys";
@@ -85,8 +83,7 @@ public class RenewCAWorker extends BaseWorker {
 					    }
 					}
 				} else {
-					String msg = intres.getLocalizedMessage("services.errorworker.errornoca", caid, caname);
-					log.error(msg);
+					log.error(InternalEjbcaResources.getInstance().getLocalizedMessage("services.errorworker.errornoca", caid, caname));
 				}
 			} catch (CADoesntExistsException e) {
 				log.error("Error renewing CA: ", e);

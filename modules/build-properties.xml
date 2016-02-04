@@ -262,16 +262,18 @@
 	</path>
 	
 	<path id="lib.json.classpath"><fileset dir="${ejbca.home}/lib/ct" includes="json-simple-*.jar"/></path>
-	
+
+	<path id="lib.cesecore-common.classpath"><fileset file="${mod.cesecore-common.lib}"/></path>
+
 	<path id="lib.ejbca-common.classpath">
-    	<pathelement location="${ejbca.home}/lib/cert-cvc-1.4.4.jar"/>
-    	<pathelement location="${mod.ejbca-common.lib}"/>
+		<path refid="lib.cert-cvc.classpath"/>
+		<path refid="lib.cesecore-common.classpath"/>
+    	<path location="${mod.ejbca-common.lib}"/>
 	</path>
 
 	<path id="lib.ejbca-common-web.classpath">
     	<path refid="lib.ejbca-common.classpath"/>
     	<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
-		<pathelement location="${mod.cesecore-common.lib}"/>
 		<pathelement location="${mod.cesecore-ejb-interface.lib}"/>
     	<pathelement location="${mod.ejbca-common-web.lib}"/>
 	</path>

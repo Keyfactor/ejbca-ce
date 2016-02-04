@@ -29,7 +29,11 @@
 		<attribute name="interface" />
 		<element name="buildservicemanifest" implicit="yes" />
 		<sequential>
-			<antcall target="buildservicemanifestbuilder" inheritall="false" inheritrefs="false"/> 
+			<antcall target="buildservicemanifestbuilder" inheritall="false" inheritrefs="false"/>
+			<!-- Enable to see full classpath provided to this call
+			<pathconvert property="buildservicemanifestbuilder.debug.class.path" refid="@{classpath}"/>
+			<echo message="buildservicemanifestbuilder classpath: @{classpath} = ${buildservicemanifestbuilder.debug.class.path}"/>
+			-->
 			<java classname="org.primekey.anttools.ServiceManifestBuilder" fork="true" failonerror="true" >
 				<classpath>
 					<path refid="@{classpath}" />

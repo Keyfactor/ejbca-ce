@@ -43,8 +43,6 @@ import org.ejbca.core.model.services.actions.MailActionInfo;
 public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
     private static final Logger log = Logger.getLogger(CertificateExpirationNotifierWorker.class);
-    /** Internal localization of logs and errors */
-    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     private CertificateStoreSessionLocal certificateStoreSession;
     private transient List<Integer> certificateProfileIds;
@@ -77,12 +75,10 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                 try {
                     caInfo = caSession.getCAInfo(getAdmin(), caid);
                 } catch (CADoesntExistsException e) {
-                    String msg = intres.getLocalizedMessage("services.errorworker.errornoca", caid, null);
-                    log.info(msg);
+                    log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.errorworker.errornoca", caid, null));
                     continue;
                 } catch (AuthorizationDeniedException e) {
-                    String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", caid, "CAId");
-                    log.info(msg);
+                    log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("authorization.notuathorizedtoresource", caid, "CAId"));
                     continue;
                 }
                 String cadn = caInfo.getSubjectDN();
@@ -147,8 +143,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                         if (userData != null) {
                             if (isSendToEndUsers()) {
                                 if (userData.getEmail() == null || userData.getEmail().trim().equals("")) {
-                                    String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", username);
-                                    log.info(msg);
+                                    log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.errorworker.errornoemail", username));
                                 } else {
                                     // Populate end user message
                                     log.debug("Adding to email queue for user: " + userData.getEmail());

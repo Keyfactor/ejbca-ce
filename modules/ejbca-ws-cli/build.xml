@@ -22,9 +22,8 @@
 		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
-                <path location="${mod.cesecore-entity.lib}"/>
-                <path location="${mod.cesecore-common.lib}"/>
-                <path location="${mod.cesecore-ejb-interface.lib}"/>
+		<path location="${mod.cesecore-entity.lib}"/>
+		<path location="${mod.cesecore-ejb-interface.lib}"/>
 	</path>
 
 	<path id="compile-withws.classpath">
@@ -38,9 +37,6 @@
     	    </path>
     		<map from="${mod.ejbca-ws-cli.dist}/" to=""/>
     	</pathconvert>
-    	<copy todir="${build.dir}">
-    		<fileset dir="${ejbca.home}/src" includes="intresources/*resources.*.properties"/>
-    	</copy>
     	<jar destfile="${mod.ejbca-ws-cli.lib}">
             <manifest>
     			<attribute name="Class-path" value="${ejbca-ws-cli.dependencies} ./" />

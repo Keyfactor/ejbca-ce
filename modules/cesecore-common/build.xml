@@ -61,6 +61,14 @@
 			<fileset dir="${cesecore-common.dir}/build" includes="META-INF/**/*"/>
 			<fileset dir="${cesecore-common.dir}/build/classes/" excludes="**/*.java"/>
 			<fileset dir="${cesecore-common.dir}/src/" excludes="**/*.java"/>
+			<fileset dir="${ejbca.home}/src/java">
+				<include name="defaultvalues.properties"/>
+				<include name="dncomponents.properties"/>
+				<include name="profilemappings.properties"/>
+	            <include name="profilemappings_enterprise.properties"/>
+				<include name="certextensions.properties"/> <!-- Used only for upgrade to 6.4.0, file can be dropped in future editions -->
+			</fileset>
+			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
 		</jar>
 	</target>
 

@@ -244,8 +244,6 @@
 		<available property="database.driver.available" classname="${database.driver}" classpathref="jdbc-jars.classpath"/>
     	<fail unless="database.driver.available" message="Driver class (${database.driver}) from database.properties can not be found in ${jdbc.driver.dir}."/>
     	-->
-        <copy file="${defaultvalues.properties.file}" tofile="${build-cli.dir}/defaultvalues.properties"/>
-		<copy todir="${build-cli.dir}" failonerror="true"><fileset dir="${ejbca.home}/src" includes="intresources/**"/></copy>
         <javac destdir="${build-cli.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-cli.classpath">
         	<include name="org/ejbca/database/**/*.java"/>
