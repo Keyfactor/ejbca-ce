@@ -287,7 +287,8 @@ public interface CAAdminSession {
      * @throws AuthorizationDeniedException if admin was not authorized to this CA
      * @throws CADoesntExistsException if CA with ID caid didn't exist.
      * @throws CryptoTokenOfflineException 
-     * @throws CANameChangeRenewalException 
+     * @throws CANameChangeRenewalException if the specified newSubjectDN is not valid for some reason
+     * (same as the current one, does not contain the Common Name or CA Name already exists under this name)
      */
     void renewCANewSubjectDn(AuthenticationToken admin, int caid, boolean regenerateKeys, Date customNotBefore, boolean createLinkCertificate, String newSubjectDN)
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException;
@@ -319,7 +320,8 @@ public interface CAAdminSession {
      * @throws AuthorizationDeniedException if admin was not authorized to this CA
      * @throws CADoesntExistsException if CA with ID caid didn't exist.
      * @throws CryptoTokenOfflineException 
-     * @throws CANameChangeRenewalException 
+     * @throws CANameChangeRenewalException if the specified newSubjectDN is not valid for some reason
+     * (same as the current one, does not contain the Common Name or CA Name already exists under this name) 
      */
     void renewCANewSubjectDn(AuthenticationToken admin, int caid, String nextSignKeyAlias, Date customNotBefore, boolean createLinkCertificate, String newSubjectDN)
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException;

@@ -13,7 +13,6 @@
 package org.cesecore.certificates.ca;
 
 import javax.ejb.ApplicationException;
-import javax.xml.ws.WebFault;
 
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
@@ -24,7 +23,6 @@ import org.cesecore.ErrorCode;
  *
  * @version $Id: CADoesntExistsException.java 17625 2013-09-20 07:12:06Z netmackan $
  */
-@WebFault
 @ApplicationException(rollback=true)
 public class CANameChangeRenewalException extends CesecoreException {
     
