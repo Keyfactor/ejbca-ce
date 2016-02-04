@@ -143,7 +143,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
 	 * @throws ApprovalException 
 	 */
 	private void approve(final ApprovalData approvalData, final Approval approval) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, ApprovalException {
-		if(approvalData.haveRequestOrApprovalExpired()){
+		if(approvalData.hasRequestOrApprovalExpired()){
 			throw new ApprovalRequestExpiredException();
 		}
 		if(approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL){

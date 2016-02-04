@@ -197,13 +197,13 @@ s	 */
 	public void setRequestdate(long requestDate) { this.requestDate = requestDate; }
 
 	/**
-	 * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
+	 * Date the request for action or the approval action will expire, Long.MAX_VALUE 
 	 * means that the request/approval never expires
 	 */
 	//@Column
 	public long getExpiredate() { return expireDate; }
 	/**
-	 * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
+	 * Date the request for action or the approval action will expire, Long.MAX_VALUE 
 	 * means that the request/approval never expires
 	 */
 	public void setExpiredate(long expireDate) { this.expireDate = expireDate; }
@@ -228,11 +228,13 @@ s	 */
 	@Override
 	public void setRowProtection(final String rowProtection) { this.rowProtection = rowProtection; }
 
-	@Transient public Date getRequestDate() {
+	@Transient 
+	public Date getRequestDate() {
 		return new Date(getRequestdate());
 	}
 
-	@Transient public Date getExpireDate() {
+	@Transient 
+	public Date getExpireDate() {
 		return new Date(getExpiredate());
 	}
 
@@ -245,10 +247,10 @@ s	 */
 
 	/**
 	 * Method that checks if the request or approval have expired
-	 * The status is set to expired of it as
+	 * The status is set to expired if it is
 	 * @return true of the request or approval have expired
 	 */
-	public boolean haveRequestOrApprovalExpired() {
+	public boolean hasRequestOrApprovalExpired() {
 		final Date currentDate = new Date();
 		boolean retval = false;
 		if(currentDate.after(getExpireDate())){

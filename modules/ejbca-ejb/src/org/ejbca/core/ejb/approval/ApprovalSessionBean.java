@@ -350,9 +350,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         if (log.isDebugEnabled()) {
         	log.debug("Found number of approvalIdNonExpired: " + result.size());
         }
-        Iterator<ApprovalData> iter = result.iterator();
-        while (iter.hasNext()) {
-            ApprovalData next = iter.next();
+        for (ApprovalData next : result) {
             ApprovalDataVO data = getApprovalDataVO(next);
             if (data.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL || data.getStatus() == ApprovalDataVO.STATUS_APPROVED
                     || data.getStatus() == ApprovalDataVO.STATUS_REJECTED) {
@@ -368,9 +366,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         log.trace(">findApprovalDataVO");
         ArrayList<ApprovalDataVO> retval = new ArrayList<ApprovalDataVO>();
         Collection<ApprovalData> result = ApprovalData.findByApprovalId(entityManager, approvalId);
-        Iterator<ApprovalData> iter = result.iterator();
-        while (iter.hasNext()) {
-            ApprovalData adl = iter.next();
+        for (ApprovalData adl : result) {
             retval.add(getApprovalDataVO(adl));
         }
         log.trace("<findApprovalDataVO");
@@ -511,7 +507,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * Method that rejects an approval. After someone have rejected the request no-one else can approve it
      */
     private void reject(final ApprovalData approvalData, final Approval approval) throws ApprovalRequestExpiredException, ApprovalException {
-        if (approvalData.haveRequestOrApprovalExpired()) {
+        if (approvalData.hasRequestOrApprovalExpired()) {
             throw new ApprovalRequestExpiredException();
         }
         if (approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
@@ -565,7 +561,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         if (getApprovalRequest(approvalData).isStepDone(step)) {
             return ApprovalDataVO.STATUS_EXPIRED;
         }
-        if (approvalData.haveRequestOrApprovalExpired()) {
+        if (approvalData.hasRequestOrApprovalExpired()) {
             if (approvalData.getStatus() != ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED && approvalData.getStatus() != ApprovalDataVO.STATUS_EXECUTED
                     && approvalData.getStatus() != ApprovalDataVO.STATUS_EXECUTIONDENIED
                     && approvalData.getStatus() != ApprovalDataVO.STATUS_EXECUTIONFAILED) {
@@ -607,7 +603,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     @Override
     public ApprovalDataVO getApprovalDataVO(ApprovalData approvalData) {
-        approvalData.haveRequestOrApprovalExpired();
+        approvalData.hasRequestOrApprovalExpired();
         return new ApprovalDataVO(approvalData.getId(), approvalData.getApprovalid(), approvalData.getApprovaltype(),
                 approvalData.getEndentityprofileid(), approvalData.getCaid(), approvalData.getReqadmincertissuerdn(),
                 approvalData.getReqadmincertsn(), approvalData.getStatus(), getApprovals(approvalData), getApprovalRequest(approvalData),
