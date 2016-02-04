@@ -25,6 +25,7 @@ import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.ejbca.config.CmpConfiguration;
@@ -233,7 +234,22 @@ public final class CAIdTools {
         return changed;
     }
 
-    
+    /**
+     * Updates any references to a CA's CAId and Subject DN.
+     * @param ocspConfig OCSP configuration object to modify.
+     * @param fromId Old CA Id to replace.
+     * @param toId New CA Id to replace with.
+     * @param toSubjectDN New CA Subject DN.
+     * @return True if the configuration was changed. If so it should be persisted to the database.
+     */
+    public static boolean updateCAIds(final GlobalOcspConfiguration ocspConfig, final int fromId, final int toId, final String toSubjectDN) {
+        boolean changed = false;
+        if (ocspConfig.getOcspDefaultResponderReference().hashCode() == fromId) {
+            ocspConfig.setOcspDefaultResponderReference(toSubjectDN);
+            changed = true;
+        }
+        return changed;
+    }
     
     /**
      * Updates any references to a CA's CAId and Subject DN.
