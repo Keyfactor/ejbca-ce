@@ -54,17 +54,17 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
 
     public static final String GLOBAL_CONFIGURATION_ID = "0";
 
-    // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Profile definitions.
+    // Path added to baseurl used as default value in CRLDistributionPointURI field in Certificate Profile definitions.
     private static final  String   DEFAULTCRLDISTURIPATH  = "publicweb/webdist/certdist?cmd=crl&issuer=";
 
-    // Path added to baseurl used as default vaule in DeltaCRLDistributionPointURI field in Certificate Profile definitions.
+    // Path added to baseurl used as default value in DeltaCRLDistributionPointURI field in Certificate Profile definitions.
     private static final  String   DEFAULTDELTACRLDISTURIPATH  = "publicweb/webdist/certdist?cmd=deltacrl&issuer=";
 
-    // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Profile definitions.
+    // Path added to baseurl used as default value in CRLDistributionPointURI field in Certificate Profile definitions.
     private static final  String   DEFAULTCRLDISTURIPATHDN  = "CN=TestCA,O=AnaTom,C=SE";
 
 
-    // Path added to baseurl used as default vaule in OCSP Service Locator URI field in Certificate Profile definitions.
+    // Path added to baseurl used as default value in OCSP Service Locator URI field in Certificate Profile definitions.
 	private static final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "publicweb/status/ocsp";
 
     // Default name of headbanner in web interface.
