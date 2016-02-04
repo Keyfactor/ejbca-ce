@@ -36,6 +36,15 @@ key lengths will be preselected during the upgrade. If you allow 1024 bits, both
 request tokens using any allowed key algorithm from the public web, requesting a DSA 1024 keystore will be allowed compared to earlier when only RSA
 was available over this interface.
 
+For those running the CMP Proxy, the following values have changed names in cmpProxy.properties:
+From:											To:
+cmp.backend.extra.caservicecertpath				cmp.backend.caservicecertpath
+cmp.backend.extra.issuerchainpath				cmp.backend.issuerchainpath
+cmp.backend.extra.keystorepath					cmp.backend.keystorepath
+cmp.backend.extra.keystorepwd					cmp.backend.keystorepwd
+
+The old values will continue to function for the time being, but will get dropped at a future date.
+
 From EJBCA 6.4.0 to EJBCA 6.4.2
 -------------------------------
 EJBCA 6.4.2 adds a couple of additional rules to any existing Auditors introduced since 6.4.0, as well as their analogs (i.e. an admin with edit
