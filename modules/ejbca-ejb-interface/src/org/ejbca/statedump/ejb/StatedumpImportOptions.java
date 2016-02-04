@@ -35,6 +35,7 @@ public final class StatedumpImportOptions implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private File location;
+    private File overridesFile;
     private boolean merge;
     private final Map<StatedumpObjectKey,StatedumpResolution> resolutions = new HashMap<>();
     private final Map<StatedumpObjectKey,String> passwords = new HashMap<>();
@@ -53,6 +54,15 @@ public final class StatedumpImportOptions implements Serializable {
     
     public File getLocation() {
         return location;
+    }
+    
+    /** Sets the file to read overrides from. By default, no overrides are read. */
+    public void setOverridesFile(final File overridesFile) {
+        this.overridesFile = overridesFile;
+    }
+    
+    public File getOverridesFile() {
+        return overridesFile;
     }
     
     public void setMergeCryptoTokens(final boolean merge) {
