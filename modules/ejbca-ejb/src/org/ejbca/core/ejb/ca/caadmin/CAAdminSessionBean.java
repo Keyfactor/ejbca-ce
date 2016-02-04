@@ -1972,7 +1972,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     throw new CANameChangeRenewalException(errorMessage);
                 }
                 if(caSession.existsCa(newCAName)){
-                    final String errorMessage = "There is existing CA with the name = " + newCAName + ". Please delete it or specify another Subject DN. Aborting CA Name Change renewal.";
+                    final String errorMessage = "There already exists CA with the name = " + newCAName + ". Please delete it or specify another Subject DN. Aborting CA Name Change renewal.";
                     log.error(errorMessage);
                     throw new CANameChangeRenewalException(errorMessage);
                 }
