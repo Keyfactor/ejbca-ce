@@ -31,8 +31,6 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
 public class CRLUpdateWorker extends BaseWorker {
 
     private static final Logger log = Logger.getLogger(CRLUpdateWorker.class);	
-    /** Internal localization of logs and errors */
-    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     /** Semaphore that tries to make sure that this CRL creation job does not run several times on the same machine.
      * Since CRL generation can sometimes take a lot of time, this is needed.
@@ -64,8 +62,7 @@ public class CRLUpdateWorker extends BaseWorker {
 				running = false;
 			}			
 		} else {
-    		String msg = intres.getLocalizedMessage("services.alreadyrunninginvm", CRLUpdateWorker.class.getName());            	
-			log.info(msg);
+			log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.alreadyrunninginvm", CRLUpdateWorker.class.getName()));
 		}
 	}
 }

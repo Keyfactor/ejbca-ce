@@ -227,10 +227,8 @@
         </target>
         
         <target name="-copy-cesecore-common">
-            <!-- Filter cesecore-common.jar -->
-            <jar destfile="${ejbca.home}/modules/dist/cesecore-common.jar">
-                <zipfileset src="${ejbca.home}/modules/cesecore-common/dist/cesecore-common.jar" excludes="defaultvalues.properties,profilemappings.properties,profilemappings_enterprise.properties"/>
-            </jar>
+        	<copy file="${ejbca.home}/modules/cesecore-common/dist/cesecore-common.jar" todir="${ejbca.home}/modules/dist/"/>
+        	<copy file="${ejbca.home}/modules/cesecore-common/dist/cesecore-common.jar" todir="${ejbca.home}/dist/"/>
         </target>
         
         <target name="-copy-cesecore-ejb">
