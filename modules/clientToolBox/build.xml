@@ -43,18 +43,7 @@
 			</manifest>
 			<fileset dir="${build.dir}"/>
 			<fileset dir="${intresources.dir}"/>
-			<fileset dir="${ejbca.home}/src">
-				<include name="intresources/**"/>
-			</fileset>
-			<fileset dir="${ejbca.home}">
-				<include name="conf/*.properties"/>
-			</fileset>
-			<fileset dir="${ejbca.home}/src/java">
-				<include name="dncomponents.properties"/>
-				<include name="profilemappings.properties"/>
-				<include name="profilemappings_enterprise.properties"/>
-				<include name="defaultvalues.properties"/>
-			</fileset>
+			<fileset dir="${ejbca.home}" includes="conf/*.properties"/>
 		</jar>
 	</target>
 

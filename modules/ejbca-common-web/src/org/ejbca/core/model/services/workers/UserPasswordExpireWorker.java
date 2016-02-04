@@ -41,8 +41,6 @@ import org.ejbca.core.model.services.actions.MailActionInfo;
 public class UserPasswordExpireWorker extends EmailSendingWorker {
 
     private static final Logger log = Logger.getLogger(UserPasswordExpireWorker.class);
-    /** Internal localization of logs and errors */
-    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     /**
      * Worker that makes a query to the Certificate Store about expiring
@@ -68,8 +66,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
             	endEntityManagementSession.changeUser(getAdmin(), endEntityInformation, false);
                 if (isSendToEndUsers()) {
                 	if (endEntityInformation.getEmail() == null || endEntityInformation.getEmail().trim().equals("")) {
-                		String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", endEntityInformation.getUsername());
-                		log.info(msg);
+                		log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.errorworker.errornoemail", endEntityInformation.getUsername()));
                 	} else {
                 		// Populate end user message
                 		String message = new UserNotificationParamGen(endEntityInformation).interpolate(getEndUserMessage());

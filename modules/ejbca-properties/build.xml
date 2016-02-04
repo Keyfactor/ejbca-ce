@@ -12,7 +12,6 @@
 	
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="internalresources.base.dir" location="${ejbca.home}/src"/>
 
     <target name="build-jar" description="Build this module">
     	<copy todir="${build.dir}" file="${ejbca.home}/src/internal.properties">
@@ -20,14 +19,13 @@
     			<replacestring from="#datasource.jndi-name-prefix=" to="datasource.jndi-name-prefix=${datasource.jndi-name-prefix}"/>
     		</filterchain>
     	</copy>
-		<!-- We deliberately do not include defaultvalues.properties in ejbca-properties.jar because it is included in ejbca-common.jar -->    	
+		<!-- We deliberately do not include defaultvalues.properties in ejbca-properties.jar because it is included in cesecore-common.jar -->    	
     	<dirname file="${mod.ejbca-properties.lib}" property="mod.ejbca-properties.lib.dir"/>
     	<mkdir dir="${mod.ejbca-properties.lib.dir}" />
         <jar destfile="${mod.ejbca-properties.lib}">
         	<fileset dir="${build.dir}"/>
             <fileset dir="${ejbca.home}" includes="conf/**/*.properties" excludes="conf/plugins/* conf/batchtool.properties"/>
             <fileset dir="${ejbca.home}/src/upgrade"/>
-            <fileset dir="${internalresources.base.dir}" includes="*resources/*.properties"/>
         </jar>
     </target>
     

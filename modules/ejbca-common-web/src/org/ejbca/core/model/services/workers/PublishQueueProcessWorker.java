@@ -33,9 +33,6 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 
     private static final Logger log = Logger.getLogger(PublishQueueProcessWorker.class);
 
-    /** Internal localization of logs and errors */
-    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-
     public static final String PROP_PUBLISHER_IDS = "publisherids";
 
     /**
@@ -90,8 +87,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                 }
             }
         } else {
-            String msg = intres.getLocalizedMessage("services.alreadyrunninginvm", PublishQueueProcessWorker.class.getName());
-            log.info(msg);
+            log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.alreadyrunninginvm", PublishQueueProcessWorker.class.getName()));
         }
         log.trace("<work");
     }
