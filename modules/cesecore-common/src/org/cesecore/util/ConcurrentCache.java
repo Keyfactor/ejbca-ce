@@ -131,7 +131,7 @@ public final class ConcurrentCache<K,V> {
     
     public static final long NO_LIMIT = -1L;
     
-    /** @see setEnabled */
+    /** @see #setEnabled */
     private volatile boolean enabled = true;
     
     /** @see setMaxEntries */
@@ -225,7 +225,7 @@ public final class ConcurrentCache<K,V> {
         // Return cached result from other thread, or null on failure
         entry = cache.get(key);
         if (log.isDebugEnabled()) {
-            log.debug("Got "+entry.value+" after waiting for cache");
+            log.debug("Got "+entry != null ? entry.value : "null" + " after waiting for cache");
             log.trace("<ConcurrentCacheMap.openCacheEntry");
         }
         return entry != null ? new Entry(key, entry) : null;
