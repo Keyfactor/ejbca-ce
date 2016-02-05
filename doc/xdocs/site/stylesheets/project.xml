@@ -31,30 +31,24 @@
 
             <menu name="Other resources">
                 <item name="Guides"                href="/guides.html"/>
-                <item name="Changelog"            href="https://jira.primekey.se/browse/ECA?report=com.atlassian.jira.plugin.system.project:changelog-panel"/>
-                <item name="References"           href="/references.html"/>
-                <item name="Release cycle"        href="/releasecycle.html"/>
-                <item name="Database schema"      href="/library/index.html"/>
                 <item name="Blog"      href="http://blog.ejbca.org/"/>
-            </menu>
-
-            <menu name="Older releases">
-                <item name="Older releases"     href="/older_releases/"/>
+                <item name="Release cycle"        href="/releasecycle.html"/>
+                <item name="References"           href="/references.html"/>
+                <item name="Changelog"            href="https://jira.primekey.se/browse/ECA?report=com.atlassian.jira.plugin.system.project:changelog-panel"/>
+                <item name="Database schema"      href="/library/index.html"/>
+                <item name="Issue Tracker"          href="http://jira.primekey.se/"/>
+                <item name="SVN Repository"      href="/repository.html"/>
+                <item name="Jenkins CI" href="/hudson.html"/>
             </menu>
 
             <menu name="Contributing">
                 <item name="Contribute to EJBCA"     href="/contributions.html"/>
                 <item name="Contributors"          href="/contributors.html"/>
-                <item name="Issue Tracker"          href="http://jira.primekey.se/"/>
-                <item name="SVN Repository"      href="/repository.html"/>
-            </menu>
-
-            <menu name="Donate">
                 <item name="Donate to EJBCA"     href="/donations.html"/>
             </menu>
 
-            <menu name="Continous integration">
-                <item name="Jenkins" href="/hudson.html"/>
+            <menu name="Older releases">
+                <item name="Older releases"     href="/older_releases/"/>
             </menu>
 
         </menusection>
