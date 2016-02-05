@@ -783,13 +783,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (excludeExpired) {
             if (excludedStatuses==null || excludedStatuses.isEmpty()) {
                 final Query query = entityManager
-                        .createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND a.expireDate>=:afterExpireDate ORDER BY a.expireDate DESC, a.serialNumber DESC");
+                        .createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND (a.expireDate>=:afterExpireDate OR a.expireDate=0) ORDER BY a.expireDate DESC, a.serialNumber DESC");
                 query.setParameter("username", username);
                 query.setParameter("afterExpireDate", System.currentTimeMillis());
                 certificateDatas = query.getResultList();
             } else {
                 final Query query = entityManager
-                        .createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND a.status NOT IN (:statusExcluded) AND a.expireDate>=:afterExpireDate ORDER BY a.expireDate DESC, a.serialNumber DESC");
+                        .createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND a.status NOT IN (:statusExcluded) AND (a.expireDate>=:afterExpireDate OR a.expireDate=0) ORDER BY a.expireDate DESC, a.serialNumber DESC");
                 query.setParameter("username", username);
                 query.setParameter("statusExcluded", excludedStatuses);
                 query.setParameter("afterExpireDate", System.currentTimeMillis());
