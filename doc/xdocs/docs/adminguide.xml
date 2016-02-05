@@ -1525,6 +1525,11 @@ Below is a exhaustive list of CMP error codes (don't use as definite guide, do y
     <td>BAD_REQUEST (2)</td>
   </tr>
   <tr>
+    <td>Submitting a CMP client mode enrollment request with invalid enrollment code.</td>
+    <td>Unsigned CMP</td>
+    <td>NOT_AUTHORIZED (23)</td>
+  </tr>
+  <tr>
     <td>Attempting a key update request without the end entity authentication module configured.</td>
     <td>Unsigned CMP</td>
     <td>BAD_REQUEST (2)</td>
@@ -1673,6 +1678,11 @@ The messages listed here are those returned by the proxy independently of the CA
     <td>Message signature was required, but no certificate chains defined on proxy</td>
     <td>Unsigned CMP</td>
     <td>SYSTEM_UNAVAILABLE (24)</td>
+  </tr>
+  <tr>
+    <td>Message signature was required, but signer certificate was revoked.</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
   </tr>
 </table>
 </div>
