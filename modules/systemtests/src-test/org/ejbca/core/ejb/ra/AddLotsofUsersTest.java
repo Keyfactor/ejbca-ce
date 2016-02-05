@@ -25,12 +25,13 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.EndEntityManagementConstants;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +49,7 @@ public class AddLotsofUsersTest extends CaTestCase {
     
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
@@ -111,7 +113,8 @@ public class AddLotsofUsersTest extends CaTestCase {
     public void test02FindAllBatchUsersByStatusWithLimit() {
         log.trace(">test02FindAllBatchUsersByStatusWithLimit()");
     	List<EndEntityInformation> endEntityInformations = endEntityManagementSession.findAllBatchUsersByStatusWithLimit(EndEntityConstants.STATUS_NEW);
-    	assertEquals("Did not returned the maximum hardcoded limit in query.", EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT, endEntityInformations.size());
+    	GlobalCesecoreConfiguration globalConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+    	assertEquals("Did not returned the maximum hardcoded limit in query.", globalConfiguration.getMaximumQueryCount(), endEntityInformations.size());
         log.trace("<test02FindAllBatchUsersByStatusWithLimit()");
     }
 }

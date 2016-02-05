@@ -1034,11 +1034,6 @@ public class CertificateData extends ProtectedData implements Serializable {
         return revokedCertInfos;
     }
     
-    /** @return return the query results as a List of maximum 500 elements. */
-    public static List<CertificateData> findByExpireDateWithLimit(EntityManager entityManager, long expireDate) {
-        return findByExpireDateWithLimit(entityManager, expireDate, CertificateConstants.MAXIMUM_QUERY_ROWCOUNT);
-    }
-
     /** @return return the query results as a List. */
     @SuppressWarnings("unchecked")
     public static List<CertificateData> findByExpireDateWithLimit(EntityManager entityManager, long expireDate, int maxNumberOfResults) {
@@ -1051,11 +1046,6 @@ public class CertificateData extends ProtectedData implements Serializable {
         return query.getResultList();
     }
     
-    /** @return return the query results as a List of maximum 500 elements. */
-    public static List<CertificateData> findByExpireDateAndIssuerWithLimit(EntityManager entityManager, long expireDate, String issuerDN) {
-        return findByExpireDateAndIssuerWithLimit(entityManager, expireDate, issuerDN, CertificateConstants.MAXIMUM_QUERY_ROWCOUNT);
-    }
-
     /** @return return the query results as a List. */
     @SuppressWarnings("unchecked")
     public static List<CertificateData> findByExpireDateAndIssuerWithLimit(EntityManager entityManager, long expireDate, String issuerDN, int maxNumberOfResults) {
@@ -1067,11 +1057,6 @@ public class CertificateData extends ProtectedData implements Serializable {
         query.setParameter("issuerDN", issuerDN);
         query.setMaxResults(maxNumberOfResults);
         return query.getResultList();
-    }
-    
-    /** @return return the query results as a List of maximum 500 elements. */
-    public static List<CertificateData> findByExpireDateAndTypeWithLimit(EntityManager entityManager, long expireDate, int certificateType) {
-        return findByExpireDateAndTypeWithLimit(entityManager, expireDate, certificateType, CertificateConstants.MAXIMUM_QUERY_ROWCOUNT);
     }
     
     /** @return return the query results as a List. */
@@ -1088,7 +1073,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
     
     @SuppressWarnings("unchecked")
-    public static List<String> findUsernamesByExpireTimeWithLimit(EntityManager entityManager, long minExpireTime, long maxExpireTime) {
+    public static List<String> findUsernamesByExpireTimeWithLimit(EntityManager entityManager, long minExpireTime, long maxExpireTime, int maxResults) {
         // TODO: Would it be more effective to drop the NOT NULL of this query and remove it from the result?
         final Query query = entityManager
                 .createQuery("SELECT DISTINCT a.username FROM CertificateData a WHERE a.expireDate>=:minExpireTime AND a.expireDate<:maxExpireTime AND (a.status=:status1 OR a.status=:status2) AND a.username IS NOT NULL");
@@ -1096,7 +1081,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         query.setParameter("maxExpireTime", maxExpireTime);
         query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
         query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
-        query.setMaxResults(CertificateConstants.MAXIMUM_QUERY_ROWCOUNT);
+        query.setMaxResults(maxResults);
         return query.getResultList();
     }
 

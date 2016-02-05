@@ -31,9 +31,6 @@ package org.cesecore.certificates.certificateprofile;
  */
 public final class CertificateProfileConstants {
     
-    /** Constant used to determine the size of the result from SQL select queries */
-    public static final int MAXIMUM_QUERY_ROWCOUNT = 500; 
-
     // Certificate profiles.
 
     /** Used when no certificate profile id value is available */

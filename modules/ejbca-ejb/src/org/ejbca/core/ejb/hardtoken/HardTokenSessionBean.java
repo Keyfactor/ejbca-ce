@@ -56,6 +56,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.RoleData;
@@ -90,7 +91,6 @@ import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
-import org.ejbca.core.model.ra.EndEntityManagementConstants;
 
 /**
  * Stores data used by web server clients. Uses JNDI name for datasource as
@@ -741,13 +741,13 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             log.trace(">addHardToken(tokensn : " + tokensn + ")");
         }
         final String bcdn = CertTools.stringToBCDNString(significantissuerdn);
-        final org.ejbca.core.ejb.hardtoken.HardTokenData data = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
+        final HardTokenData data = HardTokenData.findByTokenSN(entityManager, tokensn);
         if ( data!=null ) {
             String msg = intres.getLocalizedMessage("hardtoken.tokenexists", tokensn);
             log.info(msg);
             throw new HardTokenExistsException("Hard token with serial number '" + tokensn+ "' does exist.");
         }
-        entityManager.persist(new org.ejbca.core.ejb.hardtoken.HardTokenData(tokensn, username, new java.util.Date(), new java.util.Date(),
+        entityManager.persist(new HardTokenData(tokensn, username, new java.util.Date(), new java.util.Date(),
                 tokentype, bcdn, setHardToken(admin, ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getHardTokenEncryptCA(),
                         hardtokendata)));
         if (certificates != null) {
@@ -771,7 +771,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (log.isTraceEnabled()) {
             log.trace(">changeHardToken(tokensn : " + tokensn + ")");
         }
-        final org.ejbca.core.ejb.hardtoken.HardTokenData htd = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
+        final HardTokenData htd = HardTokenData.findByTokenSN(entityManager, tokensn);
         if ( htd==null ) {
             String msg = intres.getLocalizedMessage("hardtoken.errorchangetoken", tokensn);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -799,7 +799,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             log.trace(">removeHardToken(tokensn : " + tokensn + ")");
         }
 
-        org.ejbca.core.ejb.hardtoken.HardTokenData htd = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
+        HardTokenData htd = HardTokenData.findByTokenSN(entityManager, tokensn);
         if (htd == null) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremovetoken", tokensn);
             log.info(msg);
@@ -832,7 +832,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             log.trace(">existsHardToken(tokensn : " + tokensn + ")");
         }
         boolean ret = false;
-        if (org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn) != null) {
+        if (HardTokenData.findByTokenSN(entityManager, tokensn) != null) {
             ret = true;
         }
         log.trace("<existsHardToken(): "+ret);
@@ -845,7 +845,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             log.trace(">getHardToken(tokensn :" + tokensn + ")");
         }
         HardTokenInformation returnval = null;
-        org.ejbca.core.ejb.hardtoken.HardTokenData htd = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
+        HardTokenData htd = HardTokenData.findByTokenSN(entityManager, tokensn);
         if (htd != null) {
             // Find Copyof
             String copyof = null;
@@ -893,8 +893,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             log.trace("<getHardToken(username :" + username + ")");
         }
         final ArrayList<HardTokenInformation> returnval = new ArrayList<HardTokenInformation>();
-        final Collection<org.ejbca.core.ejb.hardtoken.HardTokenData> result = org.ejbca.core.ejb.hardtoken.HardTokenData.findByUsername(entityManager, username);
-        for (org.ejbca.core.ejb.hardtoken.HardTokenData htd : result) {
+        final Collection<HardTokenData> result = HardTokenData.findByUsername(entityManager, username);
+        for (HardTokenData htd : result) {
             // Find Copyof
             String copyof = null;
             HardTokenPropertyData htpd = HardTokenPropertyData.findByProperty(entityManager, htd.getTokenSN(), HardTokenPropertyData.PROPERTY_COPYOF);
@@ -937,7 +937,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     @Override
     public Collection<String> matchHardTokenByTokenSerialNumber(String searchpattern) {
         log.trace(">findHardTokenByTokenSerialNumber()");
-        return org.ejbca.core.ejb.hardtoken.HardTokenData.findUsernamesByHardTokenSerialNumber(entityManager, searchpattern, EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT);
+        GlobalCesecoreConfiguration globalConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        return HardTokenData.findUsernamesByHardTokenSerialNumber(entityManager, searchpattern, globalConfiguration.getMaximumQueryCount());
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -1159,9 +1160,9 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     private HardToken getHardToken(AuthenticationToken admin, int encryptcaid, boolean includePUK, Map<?, ?> data) {
         HardToken returnval = null;
 
-        if (data.get(org.ejbca.core.ejb.hardtoken.HardTokenData.ENCRYPTEDDATA) != null) {
+        if (data.get(HardTokenData.ENCRYPTEDDATA) != null) {
             // Data in encrypted, decrypt
-            byte[] encdata = (byte[]) data.get(org.ejbca.core.ejb.hardtoken.HardTokenData.ENCRYPTEDDATA);
+            byte[] encdata = (byte[]) data.get(HardTokenData.ENCRYPTEDDATA);
 
             HardTokenEncryptCAServiceRequest request = new HardTokenEncryptCAServiceRequest(HardTokenEncryptCAServiceRequest.COMMAND_DECRYPTDATA, encdata);
             try {
@@ -1213,7 +1214,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                         .toByteArray());
                 HardTokenEncryptCAServiceResponse response = (HardTokenEncryptCAServiceResponse) caAdminSession.extendedService(admin, encryptcaid, request);
                 LinkedHashMap<String,byte[]> data = new LinkedHashMap<String,byte[]>();
-                data.put(org.ejbca.core.ejb.hardtoken.HardTokenData.ENCRYPTEDDATA, response.getData());
+                data.put(HardTokenData.ENCRYPTEDDATA, response.getData());
                 retval = data;
             } catch (Exception e) {
                 throw new EJBException(e);

@@ -13,39 +13,42 @@
 package org.cesecore.config;
 
 import org.cesecore.configuration.ConfigurationBase;
-import org.cesecore.util.CertTools;
 
 /**
+ * Handles global CESeCore configuration values. 
+ * 
  * @version $Id$
  *
  */
-public class GlobalOcspConfiguration extends ConfigurationBase {
+public class GlobalCesecoreConfiguration extends ConfigurationBase {
 
-    public static final String OCSP_CONFIGURATION_ID = "OCSP";
-   
     private static final long serialVersionUID = 1L;
-
-    private static final String DEFAULT_OCSP_RESPONDER_REFERENCE = "defaultOcspResponderReference";
+    public static final String CESECORE_CONFIGURATION_ID = "GLOBAL_CESECORE_CONFIGURATION";
     
-    public String getOcspDefaultResponderReference() {
-        return CertTools.stringToBCDNString((String) data.get(DEFAULT_OCSP_RESPONDER_REFERENCE));
-    }
-    
-    public void setOcspDefaultResponderReference(String reference) {
-        data.put(DEFAULT_OCSP_RESPONDER_REFERENCE, reference);
-    }
-    
+    private static final String MAXIMUM_QUERY_COUNT_KEY = "maximum.query.count";
     
     @Override
     public void upgrade() {
-        if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
-            data.put(VERSION,  Float.valueOf(LATEST_VERSION));          
-        }
+
     }
 
     @Override
     public String getConfigurationId() {
-        return OCSP_CONFIGURATION_ID;
+        return CESECORE_CONFIGURATION_ID;
+    }
+    
+    /** @return the maximum size of the result from SQL select queries */
+    public int getMaximumQueryCount() {
+        Object num = data.get(MAXIMUM_QUERY_COUNT_KEY);
+        if(num == null){
+            return 500;
+        } else {
+            return ((Integer) num).intValue();
+        }
+    }
+    
+    public void setMaximumQueryCount(int maximumQueryCount){ 
+        data.put(MAXIMUM_QUERY_COUNT_KEY, Integer.valueOf(maximumQueryCount));
     }
 
 }

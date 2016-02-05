@@ -192,7 +192,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final   String IECSSFILENAMEPOSTFIX  =  "iecssfilenamepostfix";
     
     private static final String PUBLICWEBCERTCHAINORDEROOTFIRST = "publicwebcertchainorderrootfirst";
-        
+            
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
@@ -406,16 +406,15 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     
     public boolean getEnableIcaoCANameChange() { return getBoolean(ENABLEICAOCANAMECHANGE, false); }
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
-
+    
    /**
     * @return the number of required approvals to access sensitive hard token data (default 0)
     */
-    public   int getNumberOfApprovalsToViewPUK(){
+    public int getNumberOfApprovalsToViewPUK(){
     	Object num = data.get(NUMBEROFAPPROVALSTOVIEWPUK);
         if(num == null){
         	return 0;
-        }
-    	
+        }  	
     	return ((Integer) num).intValue();
     }
     

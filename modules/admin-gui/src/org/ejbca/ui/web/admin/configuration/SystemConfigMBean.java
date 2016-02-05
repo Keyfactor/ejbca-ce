@@ -55,6 +55,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StreamSizeLimitExceededException;
@@ -114,8 +115,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private String theme;
         private int entriesPerPage;
         
+        //Database preferences
+        private int maximumQueryCount;
         
-        private GuiInfo(GlobalConfiguration globalConfig, AdminPreference adminPreference) {
+        
+        private GuiInfo(GlobalConfiguration globalConfig, GlobalCesecoreConfiguration globalCesecoreConfiguration, AdminPreference adminPreference) {
             if(globalConfig == null) {
                 globalConfig = getEjbcaWebBean().getGlobalConfiguration();
             }
@@ -160,6 +164,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.secondaryLanguage = adminPreference.getSecondaryLanguage();
                 this.theme = adminPreference.getTheme();
                 this.entriesPerPage = adminPreference.getEntriesPerPage();
+                
+                this.maximumQueryCount = globalCesecoreConfiguration.getMaximumQueryCount();
             } catch (CADoesntExistsException e) {
                 log.error(e.getLocalizedMessage(), e);
             } catch (Exception e) {
@@ -225,6 +231,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setTheme(String theme) { this.theme=theme; }
         public int getEntriesPerPage() { return this.entriesPerPage; }
         public void setEntriesPerPage(int entriesPerPage) { this.entriesPerPage=entriesPerPage; }
+        
+        public int getMaximumQueryCount() { return maximumQueryCount; }
+        public void setMaximumQueryCount(int maximumQueryCount) { this.maximumQueryCount = maximumQueryCount; }
 
         
     }
@@ -269,6 +278,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     
     private String selectedTab = null;
     private GlobalConfiguration globalConfig = null;
+    private GlobalCesecoreConfiguration globalCesecoreConfiguration = null;
     private AdminPreference adminPreference = null;
     private GuiInfo currentConfig = null;
     private ListDataModel<String> nodesInCluster = null;
@@ -294,6 +304,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         super();
     }
     
+    public GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
+        if (globalCesecoreConfiguration == null) {
+            globalCesecoreConfiguration = (GlobalCesecoreConfiguration) getEjbcaWebBean().getEjb().getGlobalConfigurationSession()
+                    .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        }
+        return globalCesecoreConfiguration;
+    }
+    
     public GlobalConfiguration getGlobalConfiguration() {
         if(globalConfig == null) {
             globalConfig = getEjbcaWebBean().getGlobalConfiguration();
@@ -312,7 +330,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public GuiInfo getCurrentConfig() {
         if(this.currentConfig == null) {
             try {
-                this.currentConfig = new GuiInfo(getGlobalConfiguration(), getAdminPreference());
+                this.currentConfig = new GuiInfo(getGlobalConfiguration(), getGlobalCesecoreConfiguration(), getAdminPreference());
             } catch (Exception e) {
                 String msg = "Cannot read Administrator Preferences.";
                 log.info(msg + e.getLocalizedMessage());
@@ -637,12 +655,17 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setCTLogs(ctlogsMap);
 
                 getEjbcaWebBean().saveGlobalConfiguration(globalConfig);
-            } catch (Exception e) {
+                
+                globalCesecoreConfiguration.setMaximumQueryCount(currentConfig.getMaximumQueryCount());
+                getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCesecoreConfiguration);
+             
+                
+            } catch (AuthorizationDeniedException e) {
                 String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
             }
-            
+        
             try {
                 adminPreference.setPreferedLanguage(currentConfig.getPreferedLanguage());
                 adminPreference.setSecondaryLanguage(currentConfig.getSecondaryLanguage());
@@ -650,7 +673,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 adminPreference.setEntriesPerPage(currentConfig.getEntriesPerPage());
                 
                 getEjbcaWebBean().saveDefaultAdminPreference(adminPreference);
-            } catch (Exception e) {
+            } catch (AuthorizationDeniedException e) {
                 String msg = "Cannot save Administrator Preferences. " + e.getLocalizedMessage();
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);

@@ -376,6 +376,20 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</h:panelGroup>
 		</h:panelGrid>
 	
+		<%-- Database Configuration --%>
+		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
+			<h:outputLabel for="header_databaseconfiguration" value="#{web.text.DATABASE_CONFIGURATION}" style="font-weight: bold; font-size:1.2em;"/>
+			<h:panelGroup id="header_databaseconfiguration"/>
+			
+			<h:panelGroup>
+				<h:outputLabel for="maximumQueryCount" value="#{web.text.MAXIMUM_QUERY_COUNT}" styleClass="titles"/>
+				<br/>
+				<h:outputText value="#{web.text.MAXIMUM_QUERY_COUNT_HELP}" styleClass="help"/>
+			</h:panelGroup>
+			<h:inputText id="maximumQueryCount" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.currentConfig.maximumQueryCount}"
+				 size="20" title="#{web.text.FORMAT_INTEGER}"/>
+			
+		</h:panelGrid>
 	
 		<%-- Command Line Interface --%>
 

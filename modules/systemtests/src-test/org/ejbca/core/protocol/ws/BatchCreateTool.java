@@ -55,6 +55,7 @@ import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNu
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyPairWrapper;
@@ -77,7 +78,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
-import org.ejbca.core.model.ra.EndEntityManagementConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.batch.BatchToolProperties;
 import org.ejbca.util.keystore.P12toPEM;
@@ -92,8 +92,11 @@ public abstract class BatchCreateTool {
 
     private static final Logger log = Logger.getLogger(BatchCreateTool.class);
     private static final BatchToolProperties props = new BatchToolProperties(log);
-    private static final boolean useKeyRecovery = ((GlobalConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(
-            GlobalConfigurationSessionRemote.class).getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
+    private static final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private static final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+    private static final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
+            .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+    private static final boolean useKeyRecovery = globalConfiguration.getEnableKeyRecovery();
 
     /**
      * Creates keystore-files for all users with status NEW in the local
@@ -144,7 +147,7 @@ public abstract class BatchCreateTool {
             int failcount = 0;
             int successcount = 0;
             if (result.size() > 0) {
-                if (result.size() < EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT) {
+                if (result.size() < globalCesecoreConfiguration.getMaximumQueryCount()) {
                     stopnow = true;
                 }
                 String failedusers = "";

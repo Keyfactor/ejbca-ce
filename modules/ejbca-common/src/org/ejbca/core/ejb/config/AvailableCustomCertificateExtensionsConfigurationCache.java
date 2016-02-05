@@ -16,9 +16,9 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.ConfigurationCache;
-import org.ejbca.config.EjbcaConfiguration;
 
 /**
  * Class Holding cache variable for available custom certificate extensions configuration.
@@ -40,7 +40,7 @@ public class AvailableCustomCertificateExtensionsConfigurationCache implements C
 
     @Override
     public boolean needsUpdate() {
-        return cache==null || lastUpdateTime + EjbcaConfiguration.getCacheGlobalConfigurationTime() < System.currentTimeMillis();
+        return cache==null || lastUpdateTime + CesecoreConfiguration.getCacheGlobalConfigurationTime() < System.currentTimeMillis();
     }
 
     @Override

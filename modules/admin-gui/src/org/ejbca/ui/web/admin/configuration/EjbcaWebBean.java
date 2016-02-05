@@ -739,7 +739,7 @@ public class EjbcaWebBean implements Serializable {
         return caSession.getAllCaIds().size() == getAuthorizedCAIds().size();
     }
 
-    public void changeAdminPreference(AdminPreference ap) throws IOException, AdminDoesntExistException {
+    public void changeAdminPreference(AdminPreference ap) throws AdminDoesntExistException {
         currentadminpreference = ap;
         adminspreferences.changeAdminPreference(certificatefingerprint, ap);
         adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage(),
@@ -750,7 +750,7 @@ public class EjbcaWebBean implements Serializable {
         return adminspreferences.getDefaultAdminPreference();
     }
 
-    public void saveDefaultAdminPreference(AdminPreference dap) throws AuthorizationDeniedException, IOException {
+    public void saveDefaultAdminPreference(AdminPreference dap) throws AuthorizationDeniedException {
         adminspreferences.saveDefaultAdminPreference(dap);
 
         // Reload preferences

@@ -66,7 +66,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.OcspConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.KeyTools;
@@ -95,6 +97,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     private AccessControlSessionLocal accessSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
     // Myself needs to be looked up in postConstruct
@@ -126,6 +130,10 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         } else {
             log.info("Not initing CaCertificateCache reload timers, there are already some.");
         }
+    }
+    
+    private GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
+        return (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
     }
 
     @Override
@@ -514,7 +522,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
         // First make expiretime in well know format
         log.debug("Looking for certs that expire before: " + expireTime);
-        List<CertificateData> coll = CertificateData.findByExpireDateWithLimit(entityManager, expireTime.getTime());
+        List<CertificateData> coll = CertificateData.findByExpireDateWithLimit(entityManager, expireTime.getTime(),
+                getGlobalCesecoreConfiguration().getMaximumQueryCount());
         if (log.isDebugEnabled()) {
             log.debug("Found " + coll.size() + " certificates that expire before " + expireTime);
         }
@@ -560,7 +569,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if(log.isDebugEnabled()) {
             log.debug("Looking for certs that expire before: " + expireTime);
         }
-        List<CertificateData> coll = CertificateData.findByExpireDateAndIssuerWithLimit(entityManager, expireTime.getTime(), issuerDN);
+        List<CertificateData> coll = CertificateData.findByExpireDateAndIssuerWithLimit(entityManager, expireTime.getTime(), issuerDN, getGlobalCesecoreConfiguration().getMaximumQueryCount());
         if (log.isDebugEnabled()) {
             log.debug("Found " + coll.size() + " certificates that expire before " + expireTime + " and issuerDN " + issuerDN);
         }
@@ -604,7 +613,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if(log.isDebugEnabled()) {
             log.debug("Looking for certs that expire before " + expireTime + " and of type " + certificateType);
         }
-        List<CertificateData> coll = CertificateData.findByExpireDateAndTypeWithLimit(entityManager, expireTime.getTime(), certificateType);
+        List<CertificateData> coll = CertificateData.findByExpireDateAndTypeWithLimit(entityManager, expireTime.getTime(), certificateType,
+                getGlobalCesecoreConfiguration().getMaximumQueryCount());
         if (log.isDebugEnabled()) {
             log.debug("Found " + coll.size() + " certificates that expire before " + expireTime + " and of type " + certificateType);
         }
@@ -645,7 +655,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesByExpireTimeWithLimit: " + expiretime);
         }
-        return CertificateData.findUsernamesByExpireTimeWithLimit(entityManager, new Date().getTime(), expiretime.getTime());
+        return CertificateData.findUsernamesByExpireTimeWithLimit(entityManager, new Date().getTime(), expiretime.getTime(),
+                getGlobalCesecoreConfiguration().getMaximumQueryCount());
     }
 
     @Override

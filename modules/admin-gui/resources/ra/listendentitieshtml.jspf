@@ -203,7 +203,7 @@ function confirmrevocation(){
       <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"ONLYAUTHORIZEDENDENTITIESCHANG\") %>"/></div>
   <% } %>
   <% if(largeresult){ %>
-     <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"TOLARGERESULT\")  + \" \" + RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
+     <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"TOLARGERESULT\")  + \" \" + rabean.getMaximumQueryRowCount()
                                              + \" \" + ejbcawebbean.getText(\"ROWSWILLBEDISPLAYED\") %>"/></div>
   <% } 
   if(!blank){ %>

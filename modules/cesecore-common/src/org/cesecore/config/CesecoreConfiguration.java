@@ -184,6 +184,13 @@ public final class CesecoreConfiguration {
     public static long getCacheAuthorizationTime() {
         return getLongValue("authorization.cachetime", 30000L, "milliseconds to cache authorization");
     }
+    
+    /**
+     * Parameter to specify if retrieving GlobalConfiguration (in GlobalConfigurationSessionBean) should be cached, and in that case for how long.
+     */
+    public static long getCacheGlobalConfigurationTime() {
+        return getLongValue("globalconfiguration.cachetime", 30000L, "milliseconds to cache authorization");       
+    }
 
     private static long getLongValue(final String propertyName, final long defaultValue, final String unit) {
         final String value = ConfigurationHolder.getString(propertyName);

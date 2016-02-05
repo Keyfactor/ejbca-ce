@@ -297,8 +297,7 @@ public interface EndEntityManagementSession {
      * @param endentityprofilestring is a string placed in the where clause of
      *            SQL query indication which endentityprofiles the
      *            administrator is authorized to view.
-     * @param numberofrows the number of rows to fetch, use 0 for default
-     *            EndEntityConstants.MAXIMUM_QUERY_ROWCOUNT
+     * @param numberofrows the number of rows to fetch, use 0 for the maximum query count define in the global configuration.
      * @param endentityAccessRule The end entity access rule that is necessary 
      *            to execute the query
      * @return a collection of EndEntityInformation.
@@ -399,8 +398,7 @@ public interface EndEntityManagementSession {
     Collection<EndEntityInformation> findAllUsersByCaId(AuthenticationToken admin, int caid);
 
     /**
-     * Finds all batch users with a specified status and returns the first
-     * EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT.
+     * Finds all batch users with a specified status. Limited by the maximum query count define in the global configuration.
      * 
      * @param status the status, from 'UserData'.
      * @return all EndEntityInformation objects or an empty list

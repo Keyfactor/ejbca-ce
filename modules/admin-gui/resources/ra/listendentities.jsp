@@ -763,7 +763,7 @@
     }
 
     if(users != null)
-      if(rabean.getResultSize() >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
+      if(rabean.getResultSize() >= rabean.getMaximumQueryRowCount()) 
         largeresult = true; 
 
 %>

@@ -16,10 +16,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.ConfigurationCache;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.config.GlobalConfiguration;
 
@@ -50,7 +50,7 @@ public final class GlobalConfigurationCache implements ConfigurationCache {
 
 	@Override
 	public boolean needsUpdate() {
-        if (globalconfigurationCache != null && lastupdatetime + EjbcaConfiguration.getCacheGlobalConfigurationTime() > System.currentTimeMillis()) {
+        if (globalconfigurationCache != null && lastupdatetime + CesecoreConfiguration.getCacheGlobalConfigurationTime() > System.currentTimeMillis()) {
         	return false;
         }
         return true;
