@@ -228,11 +228,9 @@
 			Search ejbca.org on Google:<br>
 			<form id="searchForm" target="_blank" onsubmit="q.value = query.value + ' site:ejbca.org'" action="https://www.google.com/search" method="get">
 				<input name="q" type="hidden">
-				<span style="white-space: nowrap">
-				<div style="height: 18px">
+				<span style="height: 18px; white-space: nowrap">
 				<input name="query" id="searchBox" maxlength="255">
 				<input type="submit" value="Google">
-				</div>
 				</span>
 			</form>
       		</div>
