@@ -132,7 +132,7 @@ public class CertificateRevocationStatusVerifier {
                 CRL crl = (CRL)cf.generateCRL(is);
                 isRevoked = crl.isRevoked(cert);
                 if(log.isDebugEnabled()) {
-                    log.debug("The signing certificate is revoked: " + isRevoked);
+                    log.debug("The signing certificate is revoked in CRL: " + isRevoked);
                 }
             } finally {
                 is.close();
@@ -162,7 +162,6 @@ public class CertificateRevocationStatusVerifier {
         os.close();
         if (con.getResponseCode() != httpCode) {
             log.info("HTTP response from OCSP request was " + con.getResponseCode() + ". Expected " + httpCode );
-            
             byte[] buff = new byte[2048];
             InputStream errStream = con.getErrorStream();
             try {
@@ -179,19 +178,19 @@ public class CertificateRevocationStatusVerifier {
         OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
         if (respCode != 0) {
             if(response.getResponseObject() != null) {
-                log.error("According to RFC 2560, responseBytes are not set on error.");    
+                log.warn("According to RFC 2560, responseBytes are not set on error, but we got some.");    
             }
             return null; // it messes up testing of invalid signatures... but is needed for the unsuccessful responses
         }
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        if(brep==null) {
-            log.info("Cannot extract OCSP response object. OCSP response status: " + response.getStatus());
+        if (brep==null) {
+            log.warn("Cannot extract OCSP response object. OCSP response status: " + response.getStatus());
             return null;
         }
         X509CertificateHolder[] chain = brep.getCerts();
         boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
         if(!verify) {
-            log.error("OCSP response signature was not valid");
+            log.warn("OCSP response signature was not valid");
             return null;
         }
         // Check nonce (if we sent one)
