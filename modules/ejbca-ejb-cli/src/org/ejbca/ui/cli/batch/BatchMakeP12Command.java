@@ -34,6 +34,7 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.keys.util.KeyTools;
@@ -50,7 +51,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
-import org.ejbca.core.model.ra.EndEntityManagementConstants;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -536,8 +536,11 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
             int failcount = 0;
             int successcount = 0;
 
+            final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+            final GlobalCesecoreConfiguration globalConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            
             if (result.size() > 0) {
-                if (result.size() < EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT) {
+                if (result.size() < globalConfiguration.getMaximumQueryCount()) {
                     stopnow = true;
                 }
                 String failedusers = "";

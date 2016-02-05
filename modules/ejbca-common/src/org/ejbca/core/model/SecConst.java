@@ -84,11 +84,7 @@ public final class SecConst {
      * Constants used in the SignSessionBean indicating the userdata defined CA should be used.
      */
     public static final int CAID_USEUSERDEFINED = 0;
-
-    /** Constant used to determine the size of the result from SQL select queries */
-    public static final int MAXIMUM_QUERY_ROWCOUNT = 500; 
-    
-    
+        
     /**
      * Default key lengths. Users are allowed to choose from these key lengths when
      * lookup of available bit lengths fails. 

@@ -15,10 +15,10 @@ package org.ejbca.core.ejb.config;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.ConfigurationCache;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.EjbcaConfiguration;
 
 /**
  * Class Holding cache variable for cmp configuration. Needed because EJB spec does not allow volatile, non-final 
@@ -47,7 +47,7 @@ public final class CMPConfigurationCache implements ConfigurationCache {
 
     @Override
     public boolean needsUpdate() {
-        if (cmpconfigurationCache != null && lastupdatetime + EjbcaConfiguration.getCacheGlobalConfigurationTime() > System.currentTimeMillis()) {
+        if (cmpconfigurationCache != null && lastupdatetime + CesecoreConfiguration.getCacheGlobalConfigurationTime() > System.currentTimeMillis()) {
             return false;
         }
         return true;

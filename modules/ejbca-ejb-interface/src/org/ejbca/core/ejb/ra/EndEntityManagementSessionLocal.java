@@ -33,7 +33,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 public interface EndEntityManagementSessionLocal extends EndEntityManagementSession {
 
     /**
-     * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
+     * Finds all users, limited by the maximum query count defined in the global configuration.
      * 
      * @return Collection of EndEntityInformation
      */

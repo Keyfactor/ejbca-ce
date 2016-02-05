@@ -15,9 +15,9 @@ package org.ejbca.core.ejb.config;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.ConfigurationCache;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
 
 /**
@@ -47,7 +47,7 @@ public final class ScepConfigurationCache implements ConfigurationCache  {
 
     @Override
     public boolean needsUpdate() {
-        if (scepConfigurationCache != null && lastupdatetime + EjbcaConfiguration.getCacheGlobalConfigurationTime() > System.currentTimeMillis()) {
+        if (scepConfigurationCache != null && lastupdatetime + CesecoreConfiguration.getCacheGlobalConfigurationTime() > System.currentTimeMillis()) {
             return false;
         }
         return true;
