@@ -15,9 +15,9 @@ package org.ejbca.core.ejb.config;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.ConfigurationCache;
-import org.ejbca.config.EjbcaConfiguration;
 
 /**
  * Cache of upgrade configuration.
@@ -38,7 +38,7 @@ public class GlobalUpgradeConfigurationCache implements ConfigurationCache {
 
     @Override
     public boolean needsUpdate() {
-        if (configurationCache != null && lastupdatetime + EjbcaConfiguration.getCacheGlobalConfigurationTime() > System.currentTimeMillis()) {
+        if (configurationCache != null && lastupdatetime + CesecoreConfiguration.getCacheGlobalConfigurationTime() > System.currentTimeMillis()) {
             return false;
         }
         return true;

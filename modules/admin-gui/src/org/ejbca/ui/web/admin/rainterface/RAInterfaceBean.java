@@ -59,6 +59,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
@@ -79,7 +81,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.EndEntityManagementConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -104,8 +105,6 @@ public class RAInterfaceBean implements Serializable {
 	private static Logger log = Logger.getLogger(RAInterfaceBean.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-
-    public static final int MAXIMUM_QUERY_ROWCOUNT = EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT;
     
     public static final String[] tokentexts = SecConst.TOKENTEXTS;
     public static final int[]    tokenids   = SecConst.TOKENIDS;
@@ -118,13 +117,14 @@ public class RAInterfaceBean implements Serializable {
 	private CaSessionLocal caSession;
     private CertificateProfileSession certificateProfileSession;
     private CertificateStoreSession certificatesession;
+    private ComplexAccessControlSessionLocal complexAccessControlSession;
     private EndEntityAccessSessionLocal endEntityAccessSession;
+    private EndEntityManagementSessionLocal endEntityManagementSession;
     private EndEntityProfileSessionLocal endEntityProfileSession;
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     private HardTokenSessionLocal hardtokensession;
     private KeyRecoverySession keyrecoverysession;
-    private EndEntityManagementSessionLocal endEntityManagementSession;
     private UserDataSourceSession userdatasourcesession;
-    private ComplexAccessControlSessionLocal complexAccessControlSession;
     
     private UsersView usersView;
     private CertificateView[]                  certificates;
@@ -166,7 +166,7 @@ public class RAInterfaceBean implements Serializable {
     		certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
     		this.endEntityAccessSession = ejbLocalHelper.getEndEntityAccessSession();
     		complexAccessControlSession = ejbLocalHelper.getComplexAccessControlSession();
-
+    		globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
     		initialized =true;
     	} else {
     		log.debug("=initialize(): already initialized");
@@ -433,7 +433,7 @@ public class RAInterfaceBean implements Serializable {
     	Collection<String> usernames = certificatesession.findUsernamesByExpireTimeWithLimit(finddate);
     	if (!usernames.isEmpty()) {
     		Iterator<String> i = usernames.iterator();
-    		while (i.hasNext() && userlist.size() <= EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT +1 ) {
+    		while (i.hasNext() && userlist.size() <= getMaximumQueryRowCount()+1 ) {
     			EndEntityInformation user = null;
     			try {
     				user = endEntityAccessSession.findUser(administrator, (String) i.next());
@@ -704,6 +704,13 @@ public class RAInterfaceBean implements Serializable {
         }
     }
 
+    /** @return the maximum size of the result from SQL select queries */
+    public int getMaximumQueryRowCount() {
+        GlobalCesecoreConfiguration globalConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        return globalConfiguration.getMaximumQueryCount();
+    }
+    
     public int getNumberOfCertificates() {
     	int returnval=0;
     	if (certificates != null) {
@@ -1074,10 +1081,11 @@ public class RAInterfaceBean implements Serializable {
             } catch(IOException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Error parsing certificate profile data: "+e.getMessage());
-                }
+                }               
                 return null;
+            } finally {
+                decoder.close();
             }
-            decoder.close();
             eprofile.loadData(data);
 
             // Translate cert profile ids that have changed after import

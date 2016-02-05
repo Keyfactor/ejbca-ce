@@ -78,6 +78,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CeSecoreNameStyle;
@@ -117,7 +118,6 @@ import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.EndEntityInformationFiller;
-import org.ejbca.core.model.ra.EndEntityManagementConstants;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.FieldValidator;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -187,6 +187,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     /** Gets the Global Configuration from ra admin session bean */
     private GlobalConfiguration getGlobalConfiguration() {
         return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+    }
+    
+    private GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
+        return (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
     }
 
     private boolean authorizedToCA(final AuthenticationToken admin, final int caid) {
@@ -1749,7 +1753,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (log.isTraceEnabled()) {
             log.trace(">findAllUsersByStatusWithLimit()");
         }
-        final List<UserData> userDataList = UserData.findAllBatchUsersByStatus(entityManager, status, EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT);
+        final List<UserData> userDataList = UserData.findAllBatchUsersByStatus(entityManager, status, getGlobalCesecoreConfiguration().getMaximumQueryCount());
         final List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>(userDataList.size());
         for (UserData ud : userDataList) {
             EndEntityInformation endEntityInformation = ud.toEndEntityInformation();
@@ -1793,7 +1797,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * Help function used to retrieve user information. A query parameter of null indicates all users. If caauthorizationstring or
      * endentityprofilestring are null then the method will retrieve the information itself.
      * 
-     * @param numberofrows the number of rows to fetch, use 0 for default EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT
+     * @param numberofrows the number of rows to fetch, use 0 for the value defined in GlobalConfiguration 
      */
     private Collection<EndEntityInformation> query(final AuthenticationToken admin, final Query query, final boolean withlimit, final String caauthorizationstr,
             final String endentityprofilestr, final int numberofrows, final String endentityAccessRule) throws IllegalQueryException {
@@ -1804,7 +1808,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final String caauthorizationstring = StringTools.strip(caauthorizationstr);
         final String endentityprofilestring = StringTools.strip(endentityprofilestr);
         final ArrayList<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>();
-        int fetchsize = EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT;
+        int fetchsize = getGlobalCesecoreConfiguration().getMaximumQueryCount();
 
         if (numberofrows != 0) {
             fetchsize = numberofrows;

@@ -58,8 +58,7 @@ public interface EndEntityManagementProxySessionRemote {
      * @param endentityprofilestring is a string placed in the where clause of
      *            SQL query indication which endentityprofiles the
      *            administrator is authorized to view.
-     * @param numberofrows the number of rows to fetch, use 0 for default
-     *            EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT
+     * @param numberofrows the number of rows to fetch, use 0 for value from the global configuration. 
      * @param endentityAccessRule The end entity access rule that is necessary 
      *            to execute the query
      * @return a collection of EndEntityInformation.

@@ -25,15 +25,12 @@ package org.cesecore.certificates.certificate;
  * types. Constants for Token Types Token type is constructed of integer constants since only one
  * token type can be generated.
  *
- * Base on EJBCA (SecConst) version: SecConst.java 9321 2010-06-30 12:49:32Z jeklund
+ * Based on EJBCA (SecConst) version: SecConst.java 9321 2010-06-30 12:49:32Z jeklund
  * 
  * @version $Id$
  */
 public final class CertificateConstants {
     
-    /** Constant used to determine the size of the result from SQL select queries */
-    public static final int MAXIMUM_QUERY_ROWCOUNT = 500;
-
     /**
      * Prevents creation of new class
      */

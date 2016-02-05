@@ -196,20 +196,6 @@ public final class EjbcaConfiguration {
         return time;
     }
 
-    /**
-     * Parameter to specify if retrieving GlobalConfiguration (in GlobalConfigurationSessionBean) should be cached, and in that case for how long.
-     */
-    public static long getCacheGlobalConfigurationTime() {
-        long time = 30000; // cache 30 seconds is the default
-        try {
-            time = Long.valueOf(EjbcaConfigurationHolder.getString("globalconfiguration.cachetime"));
-        } catch (NumberFormatException e) {
-            log.error("Invalid value in globalconfiguration.cachetime, must be decimal number (milliseconds to cache global configuration): "
-                    + e.getMessage());
-        }
-        return time;
-    }
-
     /** Custom Available Access Rules. */
     public static String[] getCustomAvailableAccessRules() {
     	return StringUtils.split(EjbcaConfigurationHolder.getString("ejbca.customavailableaccessrules"), ';');

@@ -28,7 +28,6 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * An class interpreting the language properties files. I contains one method getText that returns
  * the presented text in the users preferred language.
  *
- * @author  Philip Vendil
  * @version $Id$
  */
 public class WebLanguages implements java.io.Serializable {
@@ -42,7 +41,7 @@ public class WebLanguages implements java.io.Serializable {
     /** Constructor used to load static content. An instance must be declared with this constructor before
      *  any WebLanguage object can be used. */
     /** Special constructor used by Ejbca web bean */
-    private void init(ServletContext servletContext, GlobalConfiguration globalconfiguration) throws IOException {
+    private void init(ServletContext servletContext, GlobalConfiguration globalconfiguration) {
         if(languages == null){
             // Get available languages.
             availablelanguages=null;
@@ -71,14 +70,19 @@ public class WebLanguages implements java.io.Serializable {
                 } else {
                     is = this.getClass().getResourceAsStream(propsfile);                	
                 }
-                if(is==null) {
-                    //if not available as stream, try it as a file
-                    is = new FileInputStream("/tmp"+propsfile);
+                try {
+                    if (is == null) {
+                        //if not available as stream, try it as a file
+                        is = new FileInputStream("/tmp" + propsfile);
+                    }
+                    if (log.isDebugEnabled()) {
+                        log.debug("Loading language from file: " + propsfile);
+                    }
+                    languages[i].load(is);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Properties file " + propsfile + " could not be read.", e);
                 }
-                if (log.isDebugEnabled()) {
-                	log.debug("Loading language from file: "+propsfile);
-                }
-                languages[i].load(is);
+               
             }
             // Get languages English and native names
             languagesenglishnames = new String[availablelanguages.length];
@@ -90,7 +94,7 @@ public class WebLanguages implements java.io.Serializable {
         }
     }
 
-    public WebLanguages(ServletContext servletContext, GlobalConfiguration globalconfiguration, int preferedlang, int secondarylang) throws IOException {
+    public WebLanguages(ServletContext servletContext, GlobalConfiguration globalconfiguration, int preferedlang, int secondarylang) {
         init(servletContext, globalconfiguration);
         this.userspreferedlanguage=preferedlang;
         this.userssecondarylanguage=secondarylang;
