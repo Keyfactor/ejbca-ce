@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -39,7 +37,6 @@ public final class StatedumpImportOptions implements Serializable {
     private boolean merge;
     private final Map<StatedumpObjectKey,StatedumpResolution> resolutions = new HashMap<>();
     private final Map<StatedumpObjectKey,String> passwords = new HashMap<>();
-    private final Map<String,String> entityReplacements = new HashMap<>();
     private final List<StatedumpCAIdChange> caIdChanges = new ArrayList<>();
     private final Map<String,List<StatedumpOverride>> overrides = new HashMap<>();
     
@@ -89,15 +86,6 @@ public final class StatedumpImportOptions implements Serializable {
     /** Internal method, but EJBs can't call package internal methods, so it must be public */
     public String _lookupPassword(final StatedumpObjectKey key) {
         return passwords.get(key);
-    }
-    
-    public void addEntityReplacement(final String entity, final String replacementText) {
-        entityReplacements.put(entity, replacementText);
-    }
-    
-    /** Internal method, but EJBs can't call package internal methods, so it must be public */
-    public Set<Entry<String,String>> _getEntityReplacements() {
-        return entityReplacements.entrySet();
     }
     
     /**
