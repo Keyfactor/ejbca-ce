@@ -155,6 +155,21 @@ public class DNFieldExtractor implements java.io.Serializable {
     }
 
     /**
+     * Looks up a DN Id (for use with DnComponents functions etc.) from a DN component.
+     * @param field Component, e.g. "CN". Not case sensitive.
+     * @param dnType DN type, e.g. DNFieldExtractor.TYPE_SUBJECTDN
+     * @return DN Id, or null if no such component exists for the given DN type.
+     */
+    public static Integer getDnIdFromComponent(final String dnComponent, final int dnType) {
+        switch (dnType) {
+        case DNFieldExtractor.TYPE_SUBJECTDN: return DnComponents.getDnIdFromDnName(dnComponent);
+        case DNFieldExtractor.TYPE_SUBJECTALTNAME: return DnComponents.getDnIdFromAltName(dnComponent);
+        case DNFieldExtractor.TYPE_SUBJECTDIRATTR: DnComponents.getDnIdFromDirAttr(dnComponent);
+        default: throw new IllegalStateException("Invalid DN type");
+        }
+    }
+
+    /**
      * Fills the dnfields variable with dn (or altname or subject dir attrs) numerical ids and the value of the components 
      * (i.e. the value of CN). Also populates fieldnumbers with number of occurances in dn
      * 
