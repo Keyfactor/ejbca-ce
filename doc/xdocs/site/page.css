@@ -4,8 +4,9 @@ html {
 	padding: 0px;
 }
 body, ul, li, p {
-	font-family: verdana, arial, helvetica, sans-serif; 
-	font-size: small;
+	font-family: arial, sans-serif;
+		font-size: 1em;
+		   line-height: 20px;
 }
 body { 
 	color: #333; 
@@ -17,10 +18,10 @@ ul {
 	list-style-type:square;
 }
 li {
-	line-height: 16px;
+	line-height: 20px;
 }	
 p { 
-   line-height: 120%;
+   line-height: 125%;
    margin: .5em 4em 1em 0; 
    text-align: justify;
 }
@@ -32,19 +33,14 @@ a {
 a:link { color:#015a9c; text-decoration: none;} 
 a:visited { color:#2170ab}
 
-#services { 
-	white-space: nowrap;
-	padding: 20px 0 0 90px;
-	font-size : 110%;}
-#services a:link { color:#da5c05} 
-#services a:visited { color:#8ca8d0} 
-#services a:hover { color:#da5c05}
-
 #toppic { padding-left:210px;}
 
-#twitter p {
-   text-align: left;
+div #twitter {
+   text-align: top;
+   font-size:50%;
+   color:red;
 }
+#news{padding:1em; background-color:#f0f0f0;}
 
 .pagetitle{
 	color:#005a9b;
@@ -73,14 +69,14 @@ acronym {
     float: left;
     background-color: #ffffff;
     margin: 0px;
-    width: 250px;
+    width: 260px;
     height: 100%;
 }
 
 .menu {
-    font-size : 90%;
+    font-size : 100%;
     padding: 3px 8px 5px 3px;
-    border-left: 1px solid #ddd;
+    /*!border-left: 1px solid #ddd;*/
 }
 
 .menu a { font-weight:normal; font-style: normal; color: #5e87bb; text-decoration : none; }
@@ -89,20 +85,18 @@ acronym {
 .menu a:hover { text-decoration: underline; }
 .menu ul { margin: 0px 0px 0px 20px; padding: 0px; }
 .menu li  {  list-style-type: none; font-weight : normal ; color:#5e87bb; }
-.menu ul ul li .sel { padding: 0 0 0 10px;  font-style:italic; text-decoration: underline; font-weight: bold;}
+.menu ul ul li .sel { padding: 0 0 4px 0px;  font-style:italic; text-decoration: underline; font-weight: bold;}
 .menu ul ul li  { list-style-type: disc; font-weight : normal; color: #015a9c;}
 
 .menuheader {
 
-	font-family: arial, helvetica, sans-serif;
+	font-family: arial, sans-serif;
 	font-size: 120%;
 	font-weight: bold;
 	letter-spacing: 1px;
-	border-bottom: 1px dashed #688B9A;
 	border-bottom: 1px dashed #8ca8d0;
-
-	margin-top: 8px;
-	margin-bottom: 5px;
+	margin-top: 10px;
+	margin-bottom: 7px;
 	padding: 2px;
 	padding-left: 0px;
 	color: #015a9c;
@@ -111,7 +105,7 @@ acronym {
 .sel {
 }
 
-.tab { font-size : 85%; border: 0; background-color: #294563;}
+.tab { font-size : 100%; border: 0; background-color: #294563;}
 .tab a:link {   text-decoration: none;  }
 .tab a:visited { text-decoration: none; color: #2A4A6D; }
 .tab a:visited { text-decoration: none; color: #8ca8d0; }
@@ -130,44 +124,44 @@ table .title { background-color: #FFFFFF; width:100%; border: 0px; }
 .content {
     padding: 5px 5px 5px 10px;
 }
-.date{ font-size:0.8em; font-weight:bold;}
+.date{ font-size:0.7em; font-weight:bold;}
 
-.content .ForrestTable { width: 100%; background-color: #7099C5; color: #ffffff; font-size : 90%;}
+.content .ForrestTable { width: 100%; background-color: #7099C5; color: #ffffff; font-size : 100%;}
 .content .ForrestTable caption { text-align: left; color: black; font-weight: bold; }
 .content .ForrestTable th { text-align: center; }
 .content .ForrestTable td { background-color: #f4f2f2; color: black; }
 
-.content .externals { width: 80%; background-color: #7099C5; color: #ffffff; font-size : 90%;}
+.content .externals { width: 80%; background-color: #7099C5; color: #ffffff; font-size : 100%;}
 .content .externals caption { text-align: left; color: black; font-weight: bold; }
 .content .externals th { width: 120px; text-align: right; }
 .content .externals td { background-color: #f0f0ff; color: black; }
 
 .frame {
   border-radius: 5px;
-  border: solid #8ca8d0 1px;
-    border: solid #e8e8e8 1px;
-  margin: 1em 4em 0 0;
-    margin: 0 1em 0 0;
+  border: solid #e8e8e8 1px;
+  margin: 0 1em 0 0;
+	    margin: 0;
   padding: 0;
+  background-color: #f0f0ff; 
 }
-.frame .banner {
-	padding: 0;
-	margin: .4em 0 1em 0;
-	border: 1px solid #8ca8d0;
-	}
 div.frame{
 	padding: 0;
 	margin: .3em 0 0 0;
-		margin: .4em 1em 0 0;
+		margin: .4em 0 0 0;
 	}
 .frame .label {
-  background: #8ca8d0;
+	    background: #a6a6a6;
+		background: #51983d;
+		background: #fbb22a;
+	    background: #015a9c; 
+ background: #8ca8d0;
+
   border-radius: 3px 3px 0 0;
   color: white;
   font-weight: bold;
   padding: 8px 10px;
 }
-.label a { font-weight:bold; font-style: normal; color: #015a9c; text-decoration : none; }
+.label a { font-size:large; font-weight:bold; font-style: normal; color: #015a9c; text-decoration : none; }
 .label a:link {   }
 .label a:visited { color: #015a9c;}
 .label a:hover { text-decoration: underline; }
@@ -178,7 +172,6 @@ div.frame{
   background: #f0f0f0;
   color: black;
   line-height: 120%;
-  font-size: 90%;
 }
 .frame .content hr{
 	display: block;
@@ -208,13 +201,14 @@ div.frame{
 .highlight { background-color: yellow; }
 
 
-.dtdElement { width: 100%;	font-size: 90%; background-color : #ffffff; }
+.dtdElement { width: 100%;	font-size: 100%; background-color : #ffffff; }
 
 .dtdTag {    color: #990000; text-transform : uppercase;  font-style : normal;  font-size : 120%;  font-weight : bold; }
 
 
 h1, h2, h3, h4, h5, h6 {
 	font-family: geneva, verdana, sans-serif;
+		font-family: sans-serif;
     font-weight: bold;
     margin: 1em 0 1em;
     padding-bottom: 1px;
@@ -233,12 +227,13 @@ h2 {
 
 h3 { 
     font-family: "new york", georgia, serif;
-    font-size: 175%;
+		font-family: arial, sans-serif;
+    font-size: 200%;
     font-weight: bold;
     letter-spacing: 1px;
     margin: 1em 3em 0em 0;
     padding: 0;
-    color: #015a9c;
+    /*color: #015a9c;*/
 
 }
 
