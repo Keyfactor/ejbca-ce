@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -149,41 +150,55 @@ public class DnComponents {
     public static final String COUNTRYOFCITIZENSHIP = "COUNTRYOFCITIZENSHIP";
     public static final String COUNTRYOFRESIDENCE = "COUNTRYOFRESIDENCE";
 
-    private static HashMap<String, Integer> dnNameIdMap = new HashMap<String, Integer>();
-    private static HashMap<String, Integer> profileNameIdMap = new HashMap<String, Integer>();
-    private static HashMap<Integer, String> dnIdToProfileNameMap = new HashMap<Integer, String>();
-    private static HashMap<Integer, Integer> dnIdToProfileIdMap = new HashMap<Integer, Integer>();
-    private static HashMap<Integer, Integer> profileIdToDnIdMap = new HashMap<Integer, Integer>();
-    private static HashMap<Integer, String> dnErrorTextMap = new HashMap<Integer, String>();
-    private static HashMap<String, String> profileNameLanguageMap = new HashMap<String, String>();
-    private static HashMap<Integer, String> profileIdLanguageMap = new HashMap<Integer, String>();
-    private static HashMap<Integer, String> dnIdErrorMap = new HashMap<Integer, String>();
-    private static HashMap<Integer, String> dnIdToExtractorFieldMap = new HashMap<Integer, String>();
-    private static HashMap<Integer, String> altNameIdToExtractorFieldMap = new HashMap<Integer, String>();
-    private static HashMap<Integer, String> dirAttrIdToExtractorFieldMap = new HashMap<Integer, String>();
-    private static ArrayList<String> dnProfileFields = new ArrayList<String>();
-    private static final TreeSet<String> dnProfileFieldsHashSet = new TreeSet<String>();
-    private static ArrayList<String> dnLanguageTexts = new ArrayList<String>();
-    private static ArrayList<Integer> dnDnIds = new ArrayList<Integer>();
-    private static ArrayList<String> altNameFields = new ArrayList<String>();
-    private static final TreeSet<String> altNameFieldsHashSet = new TreeSet<String>();
-    private static ArrayList<String> altNameLanguageTexts = new ArrayList<String>();
-    private static ArrayList<Integer> altNameDnIds = new ArrayList<Integer>();
-    private static ArrayList<String> dirAttrFields = new ArrayList<String>();
-    private static final TreeSet<String> dirAttrFieldsHashSet = new TreeSet<String>();
-    private static ArrayList<String> dirAttrLanguageTexts = new ArrayList<String>();
-    private static ArrayList<Integer> dirAttrDnIds = new ArrayList<Integer>();
-    private static ArrayList<String> dnExtractorFields = new ArrayList<String>();
-    private static ArrayList<String> altNameExtractorFields = new ArrayList<String>();
-    private static ArrayList<String> dirAttrExtractorFields = new ArrayList<String>();
+    private static HashMap<String, Integer> dnNameToIdMap = new HashMap<>();
+    private static HashMap<String, Integer> altNameToIdMap = new HashMap<>();
+    private static HashMap<String, Integer> dirAttrToIdMap = new HashMap<>();
+    private static HashMap<String, Integer> profileNameIdMap = new HashMap<>();
+    private static HashMap<Integer, String> dnIdToProfileNameMap = new HashMap<>();
+    private static HashMap<Integer, Integer> dnIdToProfileIdMap = new HashMap<>();
+    private static HashMap<Integer, Integer> profileIdToDnIdMap = new HashMap<>();
+    private static HashMap<Integer, String> dnErrorTextMap = new HashMap<>();
+    private static HashMap<String, String> profileNameLanguageMap = new HashMap<>();
+    private static HashMap<Integer, String> profileIdLanguageMap = new HashMap<>();
+    private static HashMap<Integer, String> dnIdErrorMap = new HashMap<>();
+    private static HashMap<Integer, String> dnIdToExtractorFieldMap = new HashMap<>();
+    private static HashMap<Integer, String> altNameIdToExtractorFieldMap = new HashMap<>();
+    private static HashMap<Integer, String> dirAttrIdToExtractorFieldMap = new HashMap<>();
+    private static ArrayList<String> dnProfileFields = new ArrayList<>();
+    private static final TreeSet<String> dnProfileFieldsHashSet = new TreeSet<>();
+    private static ArrayList<String> dnLanguageTexts = new ArrayList<>();
+    private static ArrayList<Integer> dnDnIds = new ArrayList<>();
+    private static ArrayList<String> altNameFields = new ArrayList<>();
+    private static final TreeSet<String> altNameFieldsHashSet = new TreeSet<>();
+    private static ArrayList<String> altNameLanguageTexts = new ArrayList<>();
+    private static ArrayList<Integer> altNameDnIds = new ArrayList<>();
+    private static ArrayList<String> dirAttrFields = new ArrayList<>();
+    private static final TreeSet<String> dirAttrFieldsHashSet = new TreeSet<>();
+    private static ArrayList<String> dirAttrLanguageTexts = new ArrayList<>();
+    private static ArrayList<Integer> dirAttrDnIds = new ArrayList<>();
+    private static ArrayList<String> dnExtractorFields = new ArrayList<>();
+    private static ArrayList<String> altNameExtractorFields = new ArrayList<>();
+    private static ArrayList<String> dirAttrExtractorFields = new ArrayList<>();
 
     // Load values from a properties file, if it exists
     static {
         DnComponents.load();
     }
+    
+    public static Integer getDnIdFromDnName(final String dnName) {
+        return dnNameToIdMap.get(dnName.toUpperCase(Locale.ROOT));
+    }
+    
+    public static Integer getDnIdFromAltName(final String altName) {
+        return altNameToIdMap.get(altName.toUpperCase(Locale.ROOT));
+    }
+    
+    public static Integer getDnIdFromDirAttr(final String dirAttr) {
+        return dirAttrToIdMap.get(dirAttr.toUpperCase(Locale.ROOT));
+    }
 
     public static ASN1ObjectIdentifier getOid(String o) {
-        return oids.get(o.toLowerCase());
+        return oids.get(o.toLowerCase(Locale.ROOT));
     }
 
     public static ArrayList<String> getDnProfileFields() {
@@ -411,7 +426,6 @@ public class DnComponents {
                                 profileids.add(profileid);
                             }
                             // Fill maps
-                            dnNameIdMap.put(dnname, dnid);
                             profileNameIdMap.put(profilename, profileid);
                             dnIdToProfileNameMap.put(dnid, profilename);
                             dnIdToProfileIdMap.put(dnid, profileid);
@@ -421,6 +435,7 @@ public class DnComponents {
                             profileNameLanguageMap.put(profilename, langstr);
                             profileIdLanguageMap.put(profileid, langstr);
                             if (type.equals("DN")) {
+                                dnNameToIdMap.put(dnname, dnid);
                                 dnProfileFields.add(profilename);
                                 dnProfileFieldsHashSet.add(profilename);
                                 dnLanguageTexts.add(langstr);
@@ -429,6 +444,7 @@ public class DnComponents {
                                 dnIdToExtractorFieldMap.put(dnid, dnname + "=");
                             }
                             if (type.equals("ALTNAME")) {
+                                altNameToIdMap.put(dnname, dnid);
                                 altNameFields.add(dnname);
                                 altNameFieldsHashSet.add(dnname);
                                 altNameLanguageTexts.add(langstr);
@@ -437,6 +453,7 @@ public class DnComponents {
                                 altNameIdToExtractorFieldMap.put(dnid, dnname + "=");
                             }
                             if (type.equals("DIRATTR")) {
+                                dirAttrToIdMap.put(dnname, dnid);
                                 dirAttrFields.add(dnname);
                                 dirAttrFieldsHashSet.add(dnname);
                                 dirAttrLanguageTexts.add(langstr);
@@ -498,7 +515,7 @@ public class DnComponents {
                     if (!line.startsWith("#")) { // # is a comment line
                         splits = StringUtils.split(line, '=');
                         if ((splits != null) && (splits.length > 1)) {
-                            String name = splits[0].toLowerCase();
+                            String name = splits[0].toLowerCase(Locale.ROOT);
                             ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(splits[1]);
                             map.put(name, oid);
                         }
