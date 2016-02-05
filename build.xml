@@ -779,16 +779,15 @@
         <!-- <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> -->
 		<property name="basezipfile" value="ejbca_${edition}_${ejbca.zipversion}"/>
 		<zip destfile="../${basezipfile}.zip">
-		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700"> 
+		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700" > 
 		    	<include name="**/**" />
 		    	<exclude name="**/CVS/**" />
+		    	<exclude name="bin/backup/**" />
 		    	<exclude name="tmp/**" />
 		    	<exclude name="dist/**" />
-		    	<exclude name="bin/META_INF/**" />
 		    	<exclude name="out/**" />
 		    	<exclude name="p12*/**" />
 		    	<exclude name="hwtoken/**" />
-		        <exclude name="vaHardTokenClasses/**" />
 		    	<exclude name="**/*.class" />
 		    	<exclude name=".classpath" />
 		    	<exclude name=".project" />
@@ -805,6 +804,7 @@
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
+		    	<exclude name="bin/backup/**" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700">
 		    	<include name="conf/extendedkeyusage.properties" />		    	
