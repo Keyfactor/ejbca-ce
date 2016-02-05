@@ -27,8 +27,10 @@ import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -42,6 +44,9 @@ import javax.ejb.EJBTransactionRolledbackException;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.CertIOException;
+import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -770,6 +775,8 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             assertEquals("Should get list of 1 certificate data wrapper", 1, cdws.size());
             final CertificateDataWrapper cdw = cdws.iterator().next();
             assertEquals("Should get the certificate.", subjectDn, cdw.getCertificateData().getSubjectDN());
+            final Collection<CertificateDataWrapper> cdws2 = certificateStoreSession.getCertificateDataByUsername(username, true, null);
+            assertEquals("Should get list of 1 certificate data wrapper (since we have no expire date for limited entires, excluding expired cert should not matter)", 1, cdws2.size());
             
             // Even if the end entity doesn't exist, and there's no certificate in the database, it should still work.
             final Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsernameAndStatus(username, CertificateConstants.CERT_ACTIVE);
@@ -778,7 +785,70 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             internalCertStoreSession.removeCertificate(serialNumber);
         }
     }
-	
+
+    @Test
+    public void testGetCertificateDataByUsername() throws AuthorizationDeniedException, CertificateParsingException, OperatorCreationException, CertIOException, InvalidAlgorithmParameterException {
+        final String TEST_NAME = Thread.currentThread().getStackTrace()[1].getMethodName();
+        log.trace(">" + TEST_NAME);
+        final String USERNAME = TEST_NAME + "_user";
+        final long now = System.currentTimeMillis();
+        final Date date10sAgo = new Date(now-10000L);
+        final Date date2sAgo = new Date(now-2000L);
+        final Date date1hFromNow = new Date(now+3600000L);
+        final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        // Generate self signed certificates
+        final X509Certificate x509Certificate1 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date1hFromNow, null, keyPair.getPrivate(), keyPair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final String fingerprint1 = CertTools.getFingerprintAsString(x509Certificate1);
+        final X509Certificate x509Certificate2 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date2sAgo, null, keyPair.getPrivate(), keyPair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final String fingerprint2 = CertTools.getFingerprintAsString(x509Certificate2);
+        final X509Certificate x509Certificate3 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date1hFromNow, null, keyPair.getPrivate(), keyPair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final String fingerprint3 = CertTools.getFingerprintAsString(x509Certificate3);
+        final X509Certificate x509Certificate4 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date1hFromNow, null, keyPair.getPrivate(), keyPair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final String fingerprint4 = CertTools.getFingerprintAsString(x509Certificate4);
+        try {
+            // Persists self signed certificates
+            internalCertStoreSession.storeCertificateNoAuth(alwaysAllowToken, x509Certificate1, USERNAME, fingerprint1, CertificateConstants.CERT_ACTIVE,
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+            internalCertStoreSession.storeCertificateNoAuth(alwaysAllowToken, x509Certificate2, USERNAME, fingerprint2, CertificateConstants.CERT_ARCHIVED,
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+            internalCertStoreSession.storeCertificateNoAuth(alwaysAllowToken, x509Certificate3, USERNAME, fingerprint3, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION,
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+            internalCertStoreSession.storeCertificateNoAuth(alwaysAllowToken, x509Certificate4, USERNAME, fingerprint4, CertificateConstants.CERT_REVOKED,
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+            // Check that the expected certificate are returned
+            final List<CertificateDataWrapper> cdws1 = certificateStoreSession.getCertificateDataByUsername(USERNAME, false, null);
+            assertTrue("Unfiltered result did not return all certificates for user.", isCertificatePresentInList(cdws1, fingerprint1, fingerprint2, fingerprint3, fingerprint4));
+            final List<CertificateDataWrapper> cdws2 = certificateStoreSession.getCertificateDataByUsername(USERNAME, false, Arrays.asList(CertificateConstants.CERT_ACTIVE,
+                    CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION));
+            assertTrue("Expected active certificate to not be returned", isCertificatePresentInList(cdws2, fingerprint2, fingerprint4));
+            final List<CertificateDataWrapper> cdws3 = certificateStoreSession.getCertificateDataByUsername(USERNAME, true, null);
+            assertTrue("Expected expired certificate to not be returned", isCertificatePresentInList(cdws3, fingerprint1, fingerprint3, fingerprint4));
+            final List<CertificateDataWrapper> cdws4 = certificateStoreSession.getCertificateDataByUsername(USERNAME, true, Arrays.asList(CertificateConstants.CERT_REVOKED));
+            assertTrue("Expected expired and revoked certificate to not be returned", isCertificatePresentInList(cdws4, fingerprint1, fingerprint3));
+        } finally {
+            // Clean up
+            internalCertStoreSession.removeCertificate(fingerprint1);
+            internalCertStoreSession.removeCertificate(fingerprint2);
+            internalCertStoreSession.removeCertificate(fingerprint3);
+            internalCertStoreSession.removeCertificate(fingerprint4);
+        }
+        log.trace("<" + TEST_NAME);
+    }
+    private boolean isCertificatePresentInList(final List<CertificateDataWrapper> cdws, final String...expectedFingerprints) {
+        final List<String> expectedFingerprintsList = Arrays.asList(expectedFingerprints);
+        for (CertificateDataWrapper cdw  : cdws) {
+            if (!expectedFingerprintsList.contains(cdw.getCertificateData().getFingerprint())) {
+                log.debug("Certificate with status " + cdw.getCertificateData().getStatus() + " is missing! # of returned entries: " + cdws.size());
+                return false;
+            }
+        }
+        return cdws.size()==expectedFingerprints.length;
+    }
+
 	// Commented out code.
 	// Keep it here, because it can be nice to have as a reference how this can be done.
 	// Commented out though, since the issue is fixed and the method not available anymore.

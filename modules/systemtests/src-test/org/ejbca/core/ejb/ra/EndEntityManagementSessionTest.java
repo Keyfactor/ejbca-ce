@@ -25,6 +25,7 @@ import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -36,6 +37,8 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -51,6 +54,8 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -830,6 +835,73 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         } finally {
             if (fingerprint!=null) {
                 internalCertStoreSession.removeCertificate(fingerprint);
+            }
+        }
+    }
+
+    /** Test revocation of an end entity. */
+    @Test
+    public void testRevokeEndEntity() throws Exception {
+        final String TEST_NAME = Thread.currentThread().getStackTrace()[1].getMethodName();
+        final String USERNAME = TEST_NAME + "A";
+        endEntityManagementSession.addUser(admin, USERNAME, pwd, "C=SE, O=PrimeKey, CN=" + USERNAME, null, null, true,
+                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+        usernames.add(USERNAME);
+        final long now = System.currentTimeMillis();
+        final Date date10sAgo = new Date(now-10000L);
+        final Date date2sAgo = new Date(now-2000L);
+        final Date date1hFromNow = new Date(now+3600000L);
+        final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        // Generate self signed certificates
+        final X509Certificate x509Certificate1 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date1hFromNow, null, keyPair.getPrivate(), keyPair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final String fingerprint1 = CertTools.getFingerprintAsString(x509Certificate1);
+        final X509Certificate x509Certificate2 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date2sAgo, null, keyPair.getPrivate(), keyPair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final String fingerprint2 = CertTools.getFingerprintAsString(x509Certificate2);
+        final X509Certificate x509Certificate3 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date1hFromNow, null, keyPair.getPrivate(), keyPair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final String fingerprint3 = CertTools.getFingerprintAsString(x509Certificate3);
+        final X509Certificate x509Certificate4 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date1hFromNow, null, keyPair.getPrivate(), keyPair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final String fingerprint4 = CertTools.getFingerprintAsString(x509Certificate4);
+        final X509Certificate x509Certificate5 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date2sAgo, null, keyPair.getPrivate(), keyPair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final String fingerprint5 = CertTools.getFingerprintAsString(x509Certificate5);
+        final X509Certificate x509Certificate6 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date1hFromNow, null, keyPair.getPrivate(), keyPair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final String fingerprint6 = CertTools.getFingerprintAsString(x509Certificate6);
+        try {
+            // Persists self signed certificates
+            internalCertStoreSession.storeCertificateNoAuth(admin, x509Certificate1, USERNAME, fingerprint1, CertificateConstants.CERT_ACTIVE,
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+            internalCertStoreSession.storeCertificateNoAuth(admin, x509Certificate2, USERNAME, fingerprint2, CertificateConstants.CERT_ARCHIVED,
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+            internalCertStoreSession.storeCertificateNoAuth(admin, x509Certificate3, USERNAME, fingerprint3, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION,
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+            internalCertStoreSession.storeCertificateNoAuth(admin, x509Certificate4, USERNAME, fingerprint4, CertificateConstants.CERT_REVOKED,
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+            // A certificate that has expired, but status has not been changed to ARCHIVED by the CRL worker
+            internalCertStoreSession.storeCertificateNoAuth(admin, x509Certificate5, USERNAME, fingerprint5, CertificateConstants.CERT_ACTIVE,
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+            // Artificial test vector where certificate has not expired, but the status is still set to archived
+            internalCertStoreSession.storeCertificateNoAuth(admin, x509Certificate6, USERNAME, fingerprint5, CertificateConstants.CERT_ARCHIVED,
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+            // Revoke user
+            endEntityManagementSession.revokeUser(admin, USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            // Get all certificate except the revoked ones
+            final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(USERNAME, false, Arrays.asList(CertificateConstants.CERT_REVOKED));
+            assertEquals("Expected that revokeUser call would not touch ARCHIVED or expired certificates.", 3, cdws.size());
+            final List<String> remainingFingerprints = Arrays.asList(cdws.get(0).getCertificateData().getFingerprint(), cdws.get(1).getCertificateData().getFingerprint(),
+                    cdws.get(2).getCertificateData().getFingerprint());
+            assertTrue("Expected archived and expired certificate to not be revoked.", remainingFingerprints.contains(fingerprint2));
+            assertTrue("Expected active and expired certificate to not be revoked.", remainingFingerprints.contains(fingerprint5));
+            assertTrue("Expected archived and non-expired certificate to not be revoked.", remainingFingerprints.contains(fingerprint6));
+        } finally {
+            // Clean up
+            final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(USERNAME, false, null);
+            for (final CertificateDataWrapper cdw : cdws) {
+                internalCertStoreSession.removeCertificate(cdw.getCertificateData().getFingerprint());
             }
         }
     }

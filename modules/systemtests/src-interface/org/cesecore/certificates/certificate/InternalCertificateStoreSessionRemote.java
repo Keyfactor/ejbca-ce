@@ -120,4 +120,7 @@ public interface InternalCertificateStoreSessionRemote {
     Base64CertData getBase64CertData(String fingerprint);
 
     void removeCRLs(AuthenticationToken admin, String issuerDN) throws AuthorizationDeniedException;
+
+    /** @see org.cesecore.certificates.certificate.CertificateStoreSessionLocal#storeCertificateNoAuth(AuthenticationToken, Certificate, String, String, int, int, int, String, long) */
+    CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type, int certificateProfileId, String tag, long updateTime);
 }

@@ -233,6 +233,11 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     }
 
     @Override
+    public CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type, int certificateProfileId, String tag, long updateTime) {
+        return certStore.storeCertificateNoAuth(adminForLogging, incert, username, cafp, status, type, certificateProfileId, tag, updateTime);
+    }
+
+    @Override
     public CertificateData getCertificateData(final String fingerprint) {
         final Query query = this.entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint=:fingerprint");
         query.setParameter("fingerprint", fingerprint);
