@@ -95,7 +95,9 @@ public class CertificateRevocationStatusVerifier {
     
         if(StringUtils.equals(VERIFICATION_METHOD_OCSP, this.method)) {
             log.info("Using OCSP to verify the signing certificate revocation status");
-            
+            if(log.isDebugEnabled()) {
+                log.debug("Using OCSP URL: " + this.url);
+            }            
             OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, certSerialnumber));
             OCSPReq req = gen.build();
