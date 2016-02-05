@@ -92,6 +92,12 @@ public class DnComponentsTest {
         
         assertEquals("CN=",DnComponents.getDnExtractorFieldFromDnId(2));
         assertEquals("C=",DnComponents.getDnExtractorFieldFromDnId(13));
+        
+        assertEquals(2, (int)DnComponents.getDnIdFromDnName("CN"));
+        assertEquals(17, (int)DnComponents.getDnIdFromAltName("RFC822NAME"));
+        assertEquals(17, (int)DnComponents.getDnIdFromAltName("rfc822name")); // should be case insensitive
+        assertEquals(31, (int)DnComponents.getDnIdFromDirAttr("COUNTRYOFRESIDENCE"));
+        assertEquals(null, DnComponents.getDnIdFromDirAttr("nonexistent123"));
     }
 
     @Test
