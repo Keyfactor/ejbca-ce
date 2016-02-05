@@ -23,7 +23,7 @@ import org.cesecore.configuration.ConfigurationBase;
 public class GlobalCesecoreConfiguration extends ConfigurationBase {
 
     private static final long serialVersionUID = 1L;
-    public static final String CESECORE_CONFIGURATION_ID = "GLOBAL_CESECORE_CONFIGURATION";
+    public static final String CESECORE_CONFIGURATION_ID = "CESECORE_CONFIGURATION";
     
     private static final String MAXIMUM_QUERY_COUNT_KEY = "maximum.query.count";
     
