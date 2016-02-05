@@ -418,11 +418,20 @@ wether using HTTP backend of External RA backend. Example command, using cmpforo
 <subsection name="Security Options">
 <p>
 Using the External RA, the CA works in the same was as if a client connects directly, which means you can use client or RA mode etc.
-See CMP documentation for full information about that.
+See the <a href="adminguide.html#CMP">CMP documentation</a> for full information about that.
 You can use whitelisting and signed external RA messages to further limit capabilities of the external RA host itself.
 </p>
+<p>To sign and encrypt external RA messages use the options to configure keystores in cmpProxy.properties:
+</p>
+<source>
+cmp.backend.keystorepath
+cmp.backend.keystorepwd
+cmp.backend.caservicecertpath
+cmp.backend.issuerchainpath
+</source>
 </subsection>
 </section>
+
 <section name="Clustering External RA">
 <p>
 You can have several External RA servers, in order to provide high availability, or increased performance. There are generally two waysto cluster External RA: 
