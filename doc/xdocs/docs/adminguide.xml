@@ -864,7 +864,7 @@ done or all alternatives fail.
 <subsection name="CMP Response Message">
 <p>
 When a CMP request is successfull, EJBCA returns a protected CMP response message. The protection type of the response message can also be configered in the 
-Adminb GUI under "CMP Configuration".
+Admin GUI under "CMP Configuration".
 EJBCA supports two types of response message protection: 'pbe' and 'signature'.
 </p>
 <p>If a CMP request fails, EJBCA returns an unprotected, unencrypted CMP error message.</p>
@@ -1367,7 +1367,7 @@ A typical PKI work-flow using CMP involves enroling a device with a certificate 
 <li>Renew with a new certificate for the new key pair, authenticated using the old key pair and certificate</li>
 </ol>
 <p>
-The above steps can be simulated in reality using the <i>openssl</i> and <i>cmpforopenssl</i> client.
+The above steps can be simulated in reality using the <i>openssl</i> and <i>cmpforopenssl</i> client, but also using the EJBCA <a href="adminguide.html#Interoperability">cmpclient</a>.
 <br/>This works with a default cmpalias (named cmp) configured with parameters: 
 </p>
 <source>
@@ -1591,22 +1591,21 @@ See EJBCA_HOME/modules/cmpProxy/resources/README for information how to build an
 <li><a href="externalra.html#CMP%20Proxy%20using%20External%20RA">External RA connection</a>. The CMP proxy creates an external RA msg in an external RA database, which the CA polls. When the CA stores a return message in the external RA database, this is picked up by the CMP proxy and returned to the client.</li>
 </ul>
 </subsubsection>
-</subsection>
-<subsection name="CMP Proxy Message Protection">
-<p>The same options for verifying message contents exist on the External RA as on the CA: Password MAC and Signatures. These can be activated in 
-<i>cmpProxy.properties</i>. CMP message headers only allow one form of protection per message, so activating both modes will allow messages to use
-either form. Rejected messages will never pass the External RA, but will rejected in the same form as if they had been rejected from the CA. 
+
+<subsubsection name="CMP Proxy Message Validation">
+<p>The CMP proxy have options for verifying CMP message protection in the proxy, before passing the message to the CA. Password based MAC and Signature protection can be verifies. 
+These validations can be activated in <i>cmpProxy.properties</i>. CMP message headers only allow one form of protection per message, so activating both modes will allow messages to use
+either form. Rejected messages will never pass the CMP Proxy, but will rejected in the same form as if they had been rejected from the CA. 
 </p>
-<subsubsection name="Password MAC">
+<u>Password based MAC</u>
 <p>Password based MAC verification can be activated by setting the following value to true in <i>cmpProxy.properties</i>:</p>
 <source>
 cmp.backend.hmacPasswordValidationRequired=true
 </source>
 <p>In addition to this, KeyId/password pairs need to be defined, where they KeyID is the name of the CA and the password is the <i>CMP RA Authentication Secret</i> for that CA.</p>
 <source>cmp.backend.hmacPassword.keylist=[ca1:foo][ca2:bar]</source>
-</subsubsection>
 
-<subsubsection name="Signature">
+<u>Signature</u>
 <p>This form can be activated by setting the following value:
 </p>
 <source>
@@ -1618,12 +1617,12 @@ cmp.backend.issuerchainpath
 </source>
 <p>This value can either be set to a single PEM file or to a directory containing multiple PEM files, representing one or more valid issuers of signing certificates. </p>
 </subsubsection>
-</subsection>
-<subsection name="CMP Proxy Error Messages">
+
+<subsubsection name="CMP Proxy Error Messages">
 <p>The CMP Proxy will return error messages, partly as a result of problems inherent to the proxy in itself, and partly due to evaluating CMP requests directly on the proxy before passing them on. 
-The messages listed here are those returned by the proxy independently of the CA, as listed in the <a href="adminguide.html#CMP error messages">above</a>.</p>
+The messages listed here are those returned by the proxy independently of the CA, as listed in the <a href="adminguide.html#CMP%20Error%20Messages">above</a>.</p>
 <p>
-<div class="DocTable" >
+<div class="DocTable">
 <table>
   <tr>
     <td>Error Description</td>
@@ -1678,9 +1677,8 @@ The messages listed here are those returned by the proxy independently of the CA
 </table>
 </div>
 </p>
-
+</subsubsection>
 </subsection>
-
 
 </section>
 
