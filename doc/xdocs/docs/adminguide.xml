@@ -326,12 +326,12 @@ Command line interface and CRL Update service will generate delta CRLs if 'Delta
 
 </section>
 
-<section name="Scep">
+<section name="SCEP">
 <p>
-<i>SCEP requires the 'Unlimited Strength Jurisdiction Policy Files' to be installed in the JDK if running Oracle's JDK.
-The policy files can be found at the same place as the JDK download. Further information on this can be found in 
-the Oracle documentation on the JCE.</i>
-</p><p>
+SCEP is a protocol commonly used by network equipment to enroll for certificates. It is also used by MdM and EMM solutions to enroll certificates on 
+behalf of devices such as mobiles. SCEP is specified in a <a href="https://tools.ietf.org/id/draft-nourse-scep-23.txt">draft by IEFT</a>.
+</p>
+<p>
 There are some compatibility issues with SCEP, one being whether the CA certificate should be returned in an SCEP enrollment
 response or not. The CA certificate is optional, but some clients such as the  Cisco VPN client to require it while others, such as Juniper's, 
 prohibit it. EJBCA has this option configurable.
@@ -751,7 +751,7 @@ CA Certificate
 
 <section name="CMP">
 <p>
-CMP (RFC4210) is a very complex protocol, which EJBCA does implement some parts of.
+CMP (<a href="https://www.ietf.org/rfc/rfc4210.txt">RFC4210</a>) is a very complex protocol, which EJBCA does implement some parts of.
 <br/> 
 The following CMP messages are supported:
 <ul>
