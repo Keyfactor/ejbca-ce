@@ -383,6 +383,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			
 			<h:panelGroup>
 				<h:outputLabel for="maximumQueryCount" value="#{web.text.MAXIMUM_QUERY_COUNT}" styleClass="titles"/>
+				<%= ejbcawebbean.getHelpReference("/adminguide.html#Limiting%20Database%20Query%20Size") %>
 				<br/>
 				<h:outputText value="#{web.text.MAXIMUM_QUERY_COUNT_HELP}" styleClass="help"/>
 			</h:panelGroup>

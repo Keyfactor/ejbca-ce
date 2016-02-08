@@ -6602,8 +6602,25 @@ $ openssl dgst -sha1 -verify p12/pem/releasesigner-Pub.pem -signature ../ejbca_x
 Verified OK
 </source>
 </section>
-
+<section name="Clearing System Caches">
+<p>This button is located under <i>System Configuration</i> and is used to clear the cache on all the nodes in this cluster. In order for this to work, 
+the operation system should be configured to map the names of the nodes to their IP addresses (i.e. DNS or hosts file). The configuration should be done on all 
+the nodes in the cluster. See also <a href="#Maximizing%20performance">maximizing performance</a> for information about caching.
+<br/>
+Pressing this button sends a http request to the ClearCacheServlet on all the nodes in the "Nodes in Cluster" list and clears the following caches: 
+Global Configuration Cache, CMP Configurations Cache, SCEP Configuration Cache, End Entity Profile Cache, Certificate Profile Cache, Authorization Cache, CA Cache, 
+CryptoToken Cache, Publisher Cache, Internal KeyBinding Cache, OCSP Signer Cache, OCSP Extensions Cache, CT Caches and Certificate Store Cache.
+</p>
+<note>
+After clearing the cache, if not excluded, all CryptoTokens that are manually activated will go off-line
+</note>
+<p>
+Only other nodes that are in the "Nodes in Cluster" list are allowed to call the ClearCacheServlet. Authorization is based on caller's IP address. On startup of 
+EJBCA each node adds its hostname to the "Nodes in Cluster" list. The list can also be manually edited on the System Configuration page.
+</p>
+</section>
 <section name="Maximizing performance">
+<subsection name="General Performance Tips">
 <p>Normally in a PKI extreme performance is not really an issue. A default installation of EJBCA can easily issue tenths of certificates per second, 
 which is more than enough even for very large installations. 
 For OCSP it is more important, but OCSP is also more light weight so the default performance there is hundreds of requests per second. </p>
@@ -6620,6 +6637,7 @@ configuration items that can maximize performance of EJBCA to issue more than 10
 <li>Use the native JBoss connectors for http and https. This can give an additional 10%.</li>
 <li>If you have a lot of certificates (>100M) it might be a good idea to use a separate table for the storage of the encoded certificates. See the database.useSeparateCertificateTable property in ./conf/database.properties.sample</li>
 </ul>
+</subsection>
 <subsection name="Throw away CA">
 <p>EJBCA can be configured to function as a <i>Throw Away CA</i>. In this mode EJBCA simply functions as a high speed certificate factory, issuing certificates but not storing 
 any trace of them in the local database.</p>
@@ -6636,24 +6654,22 @@ Using EJBCA in <i>Throw Away CA</i>-mode curtails some functionality, foremost t
 <li>Minimal storage requirements. Since no issued certificates are stored in the database only EJBCA configuration needs storage.</li>
 </ul>
 </subsection>
-<subsection name="Clear All Caches">
-<p>This button is located under <i>System Configuration</i> and is used to clear the cache on all the nodes in this cluster. In order for this to work, 
-the operation system should be configured to map the names of the nodes to their IP addresses (i.e. DNS or hosts file). The configuration should be done on all 
-the nodes in the cluster. See also <a href="#Maximizing%20performance">maximizing performance</a> for information about caching.
-<br/>
-Pressing this button sends a http request to the ClearCacheServlet on all the nodes in the "Nodes in Cluster" list and clears the following caches: 
-Global Configuration Cache, CMP Configurations Cache, SCEP Configuration Cache, End Entity Profile Cache, Certificate Profile Cache, Authorization Cache, CA Cache, 
-CryptoToken Cache, Publisher Cache, Internal KeyBinding Cache, OCSP Signer Cache, OCSP Extensions Cache, CT Caches and Certificate Store Cache.
-</p>
-<note>
-After clearing the cache, if not excluded, all CryptoTokens that are manually activated will go off-line
-</note>
+<subsection name="Limiting Database Query Size">
 <p>
-Only other nodes that are in the "Nodes in Cluster" list are allowed to call the ClearCacheServlet. Authorization is based on caller's IP address. On startup of 
-EJBCA each node adds its hostname to the "Nodes in Cluster" list. The list can also be manually edited on the System Configuration page.
+Certain types of queries can, whether intentionally or not, generate massive amounts of results. In order to not clog up the database driver, EJBCA has a default maximum value of 
+500 results for certain tables, which affects the following data sets:
+</p>
+<ul>
+<li>Certificates</li>
+<li>End Entities</li>
+<li>Hard Token Usernames</li>
+</ul>
+<p>
+Should one want to lower or raise the query limit, one may do so under <i>System Configuration</i>. For safety, there is still a hard upper limit of 25,000 entries. 
 </p>
 </subsection>
 </section>
+
 
 </body>
 </document>
