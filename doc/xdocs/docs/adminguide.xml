@@ -6632,7 +6632,7 @@ configuration items that can maximize performance of EJBCA to issue more than 10
 <li>Configure Log4j to log only to file, not console, and use only INFO or ERROR logging, not DEBUG. This can give a small improvement.</li>
 <li>Disable use of CertReqHistory in CA configuration. This removes a database insert and gives a big boost.</li>
 <li>Disable finishUser in CA configuration. Verify that this is ok first by reading the documentation for this feature. This can save a database read and update.</li>
-<li>Enable all caches in cache.properties. If you cache indefinately you can use the cli command 'bin/ejbca.sh clearcache' if configuration changes are made. This can give a small improvement. See also info about the <a href="#Clear%20All%20Caches">clear all caches button</a>.</li>
+<li>Enable all caches in cache.properties. If you cache indefinately you can use the cli command 'bin/ejbca.sh clearcache' if configuration changes are made. This can give a small improvement. See also info about the <a href="#Clearing%20System%20Caches">clear all caches button</a>.</li>
 <li>Do not enforce any uniqueness (keys, DN, Subject DN SerialNumber) in CA configuration. This will ensure no extra selects are made and can give a small improvement.</li>
 <li>Minimize the number of indexes in the database, only use the ones that are absolutely needed. This makes inserts in the database a bit faster and can give additonal 10%.</li>
 <li>Use the native JBoss connectors for http and https. This can give an additional 10%.</li>

@@ -360,7 +360,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 
 			<h:panelGroup>
 				<h:outputLabel for="clearAllCaches" value="#{web.text.CLEARALLCACHES}" styleClass="titles"/>
-				<%= ejbcawebbean.getHelpReference("/adminguide.html#Clear%20All%20Caches") %>
+				<%= ejbcawebbean.getHelpReference("/adminguide.html#Clearing%20System%20Caches") %>
 				<br/>
 				<h:outputText value="#{web.text.CLEARALLCACHES_HELP1}" styleClass="help"/>			
 				<br/>
