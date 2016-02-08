@@ -339,7 +339,7 @@ The CMP Proxy is the module installed on the external RA server.
  <li>Unpack an Apache Tomcat server, or a JBoss server.</li>
  <li>Setup a message database on the external RA server.</li>
  <li>Configure the database datasource in the application server (see below for Tomcat example).</li>
- <li>Make sure the correct database JDBC connector JAR is installed in the application server on the external RA server. (i.e. copy mariadb-java-client-1.1.5.jar to apache-tomcat-7.0.25/lib/)</li>
+ <li>Make sure the correct database JDBC connector JAR is installed in the application server on the external RA server. (i.e. copy mariadb-java-client-1.2.0.jar to apache-tomcat-7.0.67/lib/)</li>
  <li>Configure the external RA backend and datasource in EJBCA_HOME/modules/cmpProxy/resources/properties/cmpProxy.properties (if using default datasource name only cmp.backend.protocol needs to be set).</li>
  <li>Configure logging level in modules/cmpProxy/resources/properties/log4j.xml.</li>
  <li>Run 'ant cmpHttpProxy' to build the CMP Proxy (to dist/cmpHttpProxy) and copy the war file to the deploy directory of the application server.</li>
@@ -358,7 +358,7 @@ The CMP Proxy is the module installed on the external RA server.
   username="ejbca" 
   password="ejbca" 
   driverClassName="org.mariadb.jdbc.Driver" 
-  url="jdbc:mysql://ca-host:3306/messages"
+  url="jdbc:mysql://database-host:3306/messages"
   /&gt;
 </source>    
 <p>You need to edit username, password and URL.</p>
@@ -373,13 +373,17 @@ The CMP Proxy is the module installed on the external RA server.
 <subsection name="Configuration message polling from EJBCA">
 <p>
 <ol>
- <li>On the CA host, configure conf/externalra.properties to deploy a new DataSouce for the message database
+ <li>On the CA host, configure conf/externalra.properties to enable External RA service and to deploy a new DataSouce for the message database,
  and re-deploy EJBCA.</li>
  <li>Configure a new worker for this new DataSource (as described in previous sections).</li>
  <li>Configure CMP aliases, as you would using direct CMP communication.</li>
- <li>Configure a new worker for this new DataSource and keystore (as described in previous sections). 
- <ul><li>For an extra layer of security, Uuse white-listing described in the service configuration section to only allow org.ejbca.extra.db.CMPRequest.</li></ul></li>
  <li>Make sure a database JDBC connector JAR is installed in the local application server for the external RA message database.</li>
+ <li>Configure a new worker for this new DataSource. 
+ <ul>
+   <li>Optional: If message signing and encryption is required create and configure keystores for this.</li>
+   <li>Optional: For an extra layer of security, Use white-listing described in the service configuration section to only allow org.ejbca.extra.db.CMPRequest.</li>
+ </ul>
+ </li>
 </ol>
 Sample service properties:
 </p>
