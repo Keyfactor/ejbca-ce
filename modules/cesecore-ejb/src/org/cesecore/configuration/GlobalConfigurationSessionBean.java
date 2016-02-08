@@ -125,7 +125,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         ConfigurationBase result;
         try {
             if (log.isTraceEnabled()) {
-                log.trace(">loadConfiguration()");
+                log.trace(">loadConfiguration(): "+configID);
             }
             // Only do the actual SQL query if we might update the configuration
             // due to cache time anyhow
