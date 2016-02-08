@@ -125,7 +125,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         ConfigurationBase result;
         try {
             if (log.isTraceEnabled()) {
-                log.trace(">loadConfiguration(): "+configID);
+                log.trace(">loadConfiguration()");
             }
             // Only do the actual SQL query if we might update the configuration
             // due to cache time anyhow
@@ -133,7 +133,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 result = GlobalConfigurationCacheHolder.INSTANCE.getConfiguration(configID);
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("Reading Configuration");
+                    log.debug("Reading Configuration: "+configID);
                 }
                 GlobalConfigurationData gcdata = findByConfigurationId(configID);
                 if (gcdata != null) {
