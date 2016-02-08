@@ -50,7 +50,7 @@
 	</h:panelGroup>
 
 	<h:panelGroup>
-		<h:outputText value="#{web.text.SELECTWORKER}"/><f:verbatim> </f:verbatim><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Services%20Framework") %></h:outputText>
+		<h:outputText value="#{web.text.SELECTWORKER}"/><f:verbatim> </f:verbatim><%= ejbcawebbean.getHelpReference("/adminguide.html#Services%20Framework") %>
 	</h:panelGroup>
 	<h:panelGroup style="white-space: nowrap;">
 		<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedWorker}"
