@@ -17,7 +17,7 @@ import java.util.Collection;
 
 /**
  * Class representing an Worker Type, should be registered in the 
- * ServiceTypesManager. Should be inherited by all worker managed beans.
+ * ServiceTypeManager. Should be inherited by all worker managed beans.
  * 
  * Defines which actions and interval that are compatible with this worker
  *
