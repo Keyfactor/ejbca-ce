@@ -88,8 +88,16 @@ public class CertificateRevocationStatusVerifier {
         return this.httpErrResponse;
     }
     
+    /**
+     * 
+     * @param cert The certificate whose status will be checked
+     * @param cacert The certificate of the issuer of the certificate to be checked
+     * @return
+     * @throws CRLException When there is a problem with generating or reading the CRL
+     * @throws OCSPException When failed to create the OCSP request or failed to parse or read the OCSP response
+     */
     public boolean isCertificateRevoked(final X509Certificate cert, final X509Certificate cacert) throws 
-                CRLException, OCSPException, CertificateException {
+                CRLException, OCSPException {
 
         if((this.method == null) || (this.url == null)) {
             throw new IllegalArgumentException("Either the verification method or the verification URL or both of them are not set");
@@ -155,7 +163,7 @@ public class CertificateRevocationStatusVerifier {
                 if(log.isDebugEnabled()) {
                     log.debug("The signing certificate is revoked in CRL: " + isRevoked);
                 }
-            } catch(IOException e) {
+            } catch(IOException | CertificateException e) {
                 throw new CRLException("Unable to read CRL from " + this.url, e);
             }
             return isRevoked;
