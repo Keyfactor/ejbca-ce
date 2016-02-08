@@ -56,6 +56,7 @@ import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StreamSizeLimitExceededException;
@@ -660,11 +661,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCesecoreConfiguration);
              
                 
-            } catch (AuthorizationDeniedException e) {
+            } catch (AuthorizationDeniedException | InvalidConfigurationException e) {
                 String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
-            }
+            } 
         
             try {
                 adminPreference.setPreferedLanguage(currentConfig.getPreferedLanguage());

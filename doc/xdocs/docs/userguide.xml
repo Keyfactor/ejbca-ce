@@ -2538,7 +2538,7 @@ If you are using soft keystores for the CAs this is all that is needed. If you a
 HSM as well. How this backup and restore is done depends on the HSM you are using. Consult the documentation for your HSM.
 </p>
 </subsection>
-<subsection name="SSL certificate expire">
+<subsection name="SSL Certificate Expiration">
 <p>
 The SSL certificate used for SSL in JBoss is stored in APPSRV_HOME/server/default/conf/keystore.jks.
 The default validity time for the SSL certificate is two years. When this expire, you must generate a new one. 

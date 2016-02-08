@@ -762,9 +762,11 @@
       availablestatustexts=tempstringarray; 
     }
 
-    if(users != null)
-      if(rabean.getResultSize() >= rabean.getMaximumQueryRowCount()) 
+    if(users != null) {
+      if(rabean.getResultSize() >= rabean.getMaximumQueryRowCount()) {
         largeresult = true; 
+      }
+    }
 
 %>
 

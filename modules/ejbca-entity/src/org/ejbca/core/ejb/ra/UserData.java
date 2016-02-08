@@ -639,15 +639,6 @@ public class UserData extends ProtectedData implements Serializable {
         return query.getResultList();
     }
 
-    /** @return return the query results as a List. */
-    @SuppressWarnings("unchecked")
-    public static List<UserData> findAllBatchUsersByStatus(EntityManager entityManager, int status, int maximumQueryRowcount) {
-        final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.status=:status AND (clearPassword IS NOT NULL)");
-        query.setParameter("status", status);
-        query.setMaxResults(maximumQueryRowcount);
-        return query.getResultList();
-    }
-
     /** @return return a List<UserData> with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
     @SuppressWarnings("unchecked")
     public static List<UserData> findNewOrKeyrecByHardTokenIssuerId(EntityManager entityManager, int hardTokenIssuerId, int maxResults) {
@@ -685,16 +676,6 @@ public class UserData extends ProtectedData implements Serializable {
         final Query query = entityManager.createQuery("SELECT a.subjectEmail FROM UserData a WHERE a.username=:username");
         query.setParameter("username", username);
         return (String) QueryResultWrapper.getSingleResult(query);
-    }
-
-    /** @return return a List<UserData> matching the custom query. */
-    @SuppressWarnings("unchecked")
-    public static List<UserData> findByCustomQuery(EntityManager entityManager, String customQuery, int maxResults) {
-        final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE " + customQuery);
-        if (maxResults > 0) {
-            query.setMaxResults(maxResults);
-        }
-        return query.getResultList();
     }
 
     /** @return return a count of UserDatas with the specified End Entity Profile. */
