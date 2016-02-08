@@ -336,6 +336,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setAllowDNOverride(false);
         setAllowDNOverrideByEndEntityInformation(false);
+        setAllowBackdatedRevocation(false);
+        setUseCertificateStorage(true);
+        setStoreCertificateData(true);
 
         setUseBasicConstraints(true);
         setBasicConstraintsCritical(true);
@@ -370,6 +373,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAvailableKeyAlgorithmsAsList(getAvailableKeyAlgorithmsAvailable());
         setAvailableEcCurvesAsList(Arrays.asList(ANY_EC_CURVE));
         setAvailableBitLengths(DEFAULTBITLENGTHS);
+        setSignatureAlgorithm(null);
 
         setUseKeyUsage(true);
         setKeyUsage(new boolean[9]);
@@ -393,6 +397,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setUseOcspNoCheck(false);
 
         setUseLdapDnOrder(true);
+        setUseCustomDnOrder(false);
 
         setUseMicrosoftTemplate(false);
         setMicrosoftTemplate("");
@@ -425,8 +430,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setUseQCCustomString(false);
         setQCCustomStringOid(null);
         setQCCustomStringText(null);
+        
+        setUseCertificateTransparencyInCerts(false);
+        setUseCertificateTransparencyInOCSP(false);
+        setUseCertificateTransparencyInPublishers(false);
 
         setUseSubjectDirAttributes(false);
+        setUseNameConstraints(false);
         setUseAuthorityInformationAccess(false);
         setCaIssuers(new ArrayList<String>());
         setUseDefaultOCSPServiceLocator(false);
