@@ -327,7 +327,7 @@ public class ApprovalSessionTest extends CaTestCase {
             assertEquals(0, next.getApprovals().size());
             assertFalse(next.getApprovalRequest().isExecutable());
             assertEquals(2, next.getRemainingApprovals());
-            Thread.sleep(1000);
+            Thread.sleep(1100);
             // Test that the request expires as it should
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
@@ -343,7 +343,7 @@ public class ApprovalSessionTest extends CaTestCase {
                 fail("It shouldn't be possible to add two identical requests.");
             } catch (ApprovalException e) {
             }
-            Thread.sleep(1000);
+            Thread.sleep(1100);
 
             // Then after one of them have expired
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
@@ -412,7 +412,7 @@ public class ApprovalSessionTest extends CaTestCase {
             assertTrue(next.getRemainingApprovals() == 0);
 
             // Test that the approval expires as it should
-            Thread.sleep(1001);
+            Thread.sleep(1100);
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
 
@@ -434,7 +434,7 @@ public class ApprovalSessionTest extends CaTestCase {
             assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXECUTED);
 
             // Make sure that the approval still have status executed after expiration
-            Thread.sleep(1000);
+            Thread.sleep(1100);
             result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
 
@@ -559,7 +559,7 @@ public class ApprovalSessionTest extends CaTestCase {
             }
 
             // Test that the approval exipres as it should
-            Thread.sleep(1000);
+            Thread.sleep(1100);
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
 
@@ -606,7 +606,7 @@ public class ApprovalSessionTest extends CaTestCase {
             assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
 
             // Test that the approval expires as it should
-            Thread.sleep(1000);
+            Thread.sleep(1100);
 
             try {
                 status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
@@ -697,7 +697,7 @@ public class ApprovalSessionTest extends CaTestCase {
             removeApprovalId = nonExecutableRequest.generateApprovalId();
 
             approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
-            Thread.sleep(1000);
+            Thread.sleep(1100);
             // Then after one of them have expired
             approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
 
