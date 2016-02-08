@@ -792,7 +792,6 @@
 		    	<exclude name=".classpath" />
 		    	<exclude name=".project" />
 		    	<exclude name=".settings/**" />
-		    	<exclude name="**/.cvsignore" />
 		    	<exclude name="**/ejbca.properties" />
 		    	<exclude name="conf/*.properties" />
 		    	<exclude name="conf/logdevices/*.properties" />
