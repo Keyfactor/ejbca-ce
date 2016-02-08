@@ -13,6 +13,7 @@
 package org.cesecore.config;
 
 import org.cesecore.configuration.ConfigurationBase;
+import org.cesecore.internal.InternalResources;
 
 /**
  * Handles global CESeCore configuration values. 
@@ -21,8 +22,14 @@ import org.cesecore.configuration.ConfigurationBase;
  *
  */
 public class GlobalCesecoreConfiguration extends ConfigurationBase {
-
+    
     private static final long serialVersionUID = 1L;
+    
+    private static final InternalResources intres = InternalResources.getInstance();
+    
+    /** A fixed maximum value to ensure that  */
+    private static final int FIXED_MAXIMUM_QUERY_COUNT = 25_000;
+    
     public static final String CESECORE_CONFIGURATION_ID = "CESECORE_CONFIGURATION";
     
     private static final String MAXIMUM_QUERY_COUNT_KEY = "maximum.query.count";
@@ -47,7 +54,19 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase {
         }
     }
     
-    public void setMaximumQueryCount(int maximumQueryCount){ 
+    /**
+     * Set's the maximum query count
+     * 
+     * @param maximumQueryCount the maximum query count
+     * @throws InvalidConfigurationException if value was negative or above the limit set by {@link GlobalCesecoreConfiguration#MAXIMUM_QUERY_COUNT_KEY}
+     */
+    public void setMaximumQueryCount(int maximumQueryCount) throws InvalidConfigurationException{ 
+        if(maximumQueryCount > FIXED_MAXIMUM_QUERY_COUNT) {
+            throw new InvalidConfigurationException(intres.getLocalizedMessage("globalconfig.error.querysizetoolarge", maximumQueryCount, FIXED_MAXIMUM_QUERY_COUNT));
+        }
+        if(maximumQueryCount < 1) {
+            throw new InvalidConfigurationException(intres.getLocalizedMessage("globalconfig.error.querysizetoolow"));
+        }
         data.put(MAXIMUM_QUERY_COUNT_KEY, Integer.valueOf(maximumQueryCount));
     }
 
