@@ -164,7 +164,17 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 }
             }
             if (success) {
-                getEjbcaWebBean().getEjb().getCertificateProfileSession().changeCertificateProfile(getAdmin(), getSelectedCertProfileName(), getCertificateProfile());
+                // Remove the added defaults if they were never used
+                final CertificateProfile certificateProfile = getCertificateProfile();
+                if (!certificateProfile.getUseCRLDistributionPoint() || certificateProfile.getUseDefaultCRLDistributionPoint()) {
+                    certificateProfile.setCRLDistributionPointURI("");
+                    certificateProfile.setCRLIssuer("");
+                }
+                if (!certificateProfile.getUseFreshestCRL() || certificateProfile.getUseCADefinedFreshestCRL()) {
+                    certificateProfile.setFreshestCRLURI("");
+                }
+                // Modify the profile
+                getEjbcaWebBean().getEjb().getCertificateProfileSession().changeCertificateProfile(getAdmin(), getSelectedCertProfileName(), certificateProfile);
                 getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
                 addInfoMessage("CERTIFICATEPROFILESAVED");
                 reset();
