@@ -6214,7 +6214,7 @@ Dynamic data is the data that is changed during daily operations. All dynamic da
 <li>Admin and SSL keystores (ejbca/p12).</li>
 </ol>
 </ul>
-
+<!-- 160208: Commented out backup and restore documentation, since we since 6.5.0 don't ship it with the zip
 <subsection name="Backup and Restore CLI">
 <p>EJBCA provides a command line interface (CLI) for backup and restore operations. This is a simple CLI that shows the principles and the data that needs to be backed up.
 The CLI provides integrity protected backup, with verification during restore. This is often needed, in some form, in certified (CWA, Common Criteria, etc) installations.
@@ -6235,6 +6235,7 @@ cd bin/backup
 ./restore.sh
 </source>
 </subsection>
+ -->
 </section>
 
 <section name="High Availability (HA), a.k.a Clustering">
