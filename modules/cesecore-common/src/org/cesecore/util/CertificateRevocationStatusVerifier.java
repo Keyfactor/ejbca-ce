@@ -18,8 +18,10 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -60,6 +62,7 @@ public class CertificateRevocationStatusVerifier {
     private String url;
     
     private SingleResp ocspResponse=null;
+    private String httpErrResponse = "";
 
     /**
      * A CertificateRevocationStatusVerifier constructor to check the revocation status of a 
@@ -81,8 +84,12 @@ public class CertificateRevocationStatusVerifier {
         return this.ocspResponse;
     }
     
-    public boolean isCertificateRevoked(final X509Certificate cert, final X509Certificate cacert) throws IOException, OCSPException, 
-                OperatorCreationException, CertificateException, CRLException {
+    public String getHttpErrorContent() {
+        return this.httpErrResponse;
+    }
+    
+    public boolean isCertificateRevoked(final X509Certificate cert, final X509Certificate cacert) throws 
+                CRLException, OCSPException, CertificateException {
 
         if((this.method == null) || (this.url == null)) {
             throw new IllegalArgumentException("Either the verification method or the verification URL or both of them are not set");
@@ -98,14 +105,24 @@ public class CertificateRevocationStatusVerifier {
             if(log.isDebugEnabled()) {
                 log.debug("Using OCSP URL: " + this.url);
             }            
-            OCSPReqBuilder gen = new OCSPReqBuilder();
-            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, certSerialnumber));
-            OCSPReq req = gen.build();
+
+            OCSPReq req = null;
+            try {
+                req = getOcspRequest(cacert, certSerialnumber);
+            } catch (CertificateEncodingException | OCSPException e) {
+                throw new OCSPException("Failed to create OCSP request", e);
+            }
+            
             // Send the request and receive a singleResponse
-            SingleResp[] singleResps = getOCSPResponse(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+            SingleResp[] singleResps = null; 
+            try {
+                singleResps = getOCSPResponse(req.getEncoded(), OCSPRespBuilder.SUCCESSFUL, 200);
+            } catch (OperatorCreationException | CertificateException | IOException e) {
+                throw new OCSPException("Failed to parse or verify OCSP response", e);
+            }
             
             if(singleResps == null) {
-                throw new OCSPException("Failed to verify signing certificate revocation status using OCSP");
+                throw new OCSPException("Failed to verify certificate revocation status using OCSP. Received HTTP Error: " + getHttpErrorContent());
             }
                 
             SingleResp response = singleResps[0];
@@ -125,17 +142,21 @@ public class CertificateRevocationStatusVerifier {
             if(log.isDebugEnabled()) {
                 log.debug("Using CRL URL: " + this.url);
             }
-            URL url = new URL(this.url);
-            InputStream is = url.openStream();
+            
+            URLConnection con = null;
             try {
+                URL url = new URL(this.url);
+                con = url.openConnection();
+                InputStream is = con.getInputStream();
                 CertificateFactory cf = CertificateFactory.getInstance("X.509");
                 CRL crl = (CRL)cf.generateCRL(is);
+                is.close();
                 isRevoked = crl.isRevoked(cert);
                 if(log.isDebugEnabled()) {
                     log.debug("The signing certificate is revoked in CRL: " + isRevoked);
                 }
-            } finally {
-                is.close();
+            } catch(IOException e) {
+                throw new CRLException("Unable to read CRL from " + this.url, e);
             }
             return isRevoked;
         
@@ -143,40 +164,64 @@ public class CertificateRevocationStatusVerifier {
             throw new IllegalArgumentException("Unrecognized method to check revocation status of CMP message signing certificate: " + method);
         }
     }
+    
+    private OCSPReq getOcspRequest(X509Certificate cacert, BigInteger certSerialnumber) throws CertificateEncodingException, OCSPException {
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, certSerialnumber));
+        return gen.build();
+    }
 
-    private SingleResp[] getOCSPResponse(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, OperatorCreationException, CertificateException {
+    /**
+     * 
+     * @param ocspPackage The OCSP package to send
+     * @param expectedOcspRespCode The expected OCSP response code
+     * @param expectedHttpRespCode The expected HTTP response code
+     * @return
+     * @throws OCSPException When failed to parse  or verify the OCSP response
+     * @throws OperatorCreationException When failed to parse  or verify the OCSP response
+     * @throws CertificateException When failed to parse  or verify the OCSP response
+     */
+    private SingleResp[] getOCSPResponse(byte[] ocspPackage, int expectedOcspRespCode, int expectedHttpRespCode) throws OCSPException, OperatorCreationException, CertificateException {
         if(log.isDebugEnabled()) {
             log.debug("Sending an OCSP requst to " + this.url);
         }
         
-        final URL url = new URL(this.url);
-        HttpURLConnection con = (HttpURLConnection)url.openConnection();
-        // we are going to do a POST
-        con.setDoOutput(true);
-        con.setRequestMethod("POST");
+        OCSPResp response = null;
+        HttpURLConnection con = null;
+        try {
+            final URL url = new URL(this.url);
+            con = (HttpURLConnection)url.openConnection();
+            // we are going to do a POST
+            con.setDoOutput(true);
+            con.setRequestMethod("POST");
 
-        // POST it
-        con.setRequestProperty("Content-Type", "application/ocsp-request");
-        OutputStream os = con.getOutputStream();
-        os.write(ocspPackage);
-        os.close();
-        if (con.getResponseCode() != httpCode) {
-            log.info("HTTP response from OCSP request was " + con.getResponseCode() + ". Expected " + httpCode );
-            byte[] buff = new byte[2048];
-            InputStream errStream = con.getErrorStream();
-            try {
-                errStream.read(buff);
-            } finally {
-                errStream.close();
+            // POST it
+            con.setRequestProperty("Content-Type", "application/ocsp-request");
+            OutputStream os = con.getOutputStream();
+            os.write(ocspPackage);
+            os.close();
+        
+        
+            final int httpRespCode = ((HttpURLConnection)con).getResponseCode();
+            if (httpRespCode != expectedHttpRespCode) {
+                log.info("HTTP response from OCSP request was " + httpRespCode + ". Expected " + expectedHttpRespCode );
+                setContentOfErrorStream(con.getErrorStream());
+                return null; // if it is an http error code we don't need to test any more
             }
-            String httpError = new String(buff);
-            log.info("Received HTTP response: " + httpError);
-            return null; // if it is an http error code we don't need to test any more
+
+            InputStream is = con.getInputStream();
+            response = new OCSPResp(IOUtils.toByteArray(is));
+            is.close();
+        
+        } catch(IOException e) {
+            log.info("Unable to get an OCSP response");
+            if(con != null) {
+                setContentOfErrorStream(con.getErrorStream());
+            }
+            return null;
         }
         
-        // Some appserver (Weblogic) responds with "application/ocsp-response; charset=UTF-8"
-        OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
-        if (respCode != 0) {
+        if (expectedOcspRespCode != 0) {
             if(response.getResponseObject() != null) {
                 log.warn("According to RFC 2560, responseBytes are not set on error, but we got some.");    
             }
@@ -207,6 +252,17 @@ public class CertificateRevocationStatusVerifier {
             return null;
         }
         return singleResps;        
+    }
+    
+    private void setContentOfErrorStream(final InputStream httpErrorStream) {
+        try {
+            String res = IOUtils.toString(httpErrorStream);
+            httpErrorStream.close();
+            if(!StringUtils.isEmpty(res)) {
+                this.httpErrResponse = res;
+            }
+            
+        } catch(IOException ex) {}
     }
 
 }
