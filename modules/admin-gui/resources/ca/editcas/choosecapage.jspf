@@ -5,6 +5,21 @@
 
 
 <body>
+<script type="text/javascript">
+<!--
+function confirmcadeletion() {
+    var caName = "";
+    var selected = document.editcas.<%=SELECT_CAS%>.selectedIndex;
+    if (selected == -1) {
+        return false;
+    }
+    // Extract CA Name without ", (Active)" string
+    caName = document.editcas.<%=SELECT_CAS%>.options[selected].text.replace(/, \([^()]+\)$/, '');
+    // We can't pass parameters from Javascript to Java, so we pass in {X} as the CA name, which we replace with Javascript
+    return confirm('<%= ejbcawebbean.getText("AREYOUSURETODELETECA", true, "{X}") %>'.replace('{X}', caName));
+}
+//-->
+</script>
 
 <h1><%= ejbcawebbean.getText("MANAGECAS") %></h1>
 
@@ -133,7 +148,7 @@
             <% }  %> 
              <% if(ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.CAREMOVE.resource())) {  %>
             <td width="25%" align="left">
-              <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURETODELETECA", true) %>');" name="<%= BUTTON_DELETE_CA %>" value="<%= ejbcawebbean.getText("DELETECA") %>">
+              <input class=buttonstyle type="submit" onClick="return confirmcadeletion()" name="<%= BUTTON_DELETE_CA %>" value="<%= ejbcawebbean.getText("DELETECA") %>">
             </td> 
              <% } %>  
               <% if(ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.CAADD.resource())) {  %>    
