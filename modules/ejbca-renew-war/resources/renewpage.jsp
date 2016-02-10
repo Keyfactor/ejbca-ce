@@ -1,5 +1,3 @@
-<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-
 <%@ include file="header.jsp" %>
 
 <h1 class="title">Request Browser Certificate Renewal</h1>
