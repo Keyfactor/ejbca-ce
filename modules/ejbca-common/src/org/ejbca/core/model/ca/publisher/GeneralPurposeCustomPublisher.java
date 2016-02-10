@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -338,11 +339,18 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
             tempFileName = tempFile.getCanonicalPath();
             String[] cmdcommand = (externalCommand).split("\\s");
             additionalArguments.add(0, tempFileName);
-            for(int i = 0; i < additionalArguments.size(); i++) {
-                String argument = additionalArguments.get(i);
-                //Add quotes to encapsulate argument. 
-                if(!argument.startsWith("\"") && !argument.endsWith("\"")) {
-                    additionalArguments.set(i, "\"" + argument + "\"");
+            if (SystemUtils.IS_OS_WINDOWS) {
+                /*
+                 * Hack needed for Windows, where Runtime.exec won't consistently encapsulate arguments, leading to arguments
+                 * containing spaces (such as Subject DNs) sometimes being parsed as multiple arguments. Bash, on the other hand,
+                 * won't parse quote surrounded arguments. 
+                 */
+                for (int i = 0; i < additionalArguments.size(); i++) {
+                    String argument = additionalArguments.get(i);
+                    //Add quotes to encapsulate argument. 
+                    if (!argument.startsWith("\"") && !argument.endsWith("\"")) {
+                        additionalArguments.set(i, "\"" + argument + "\"");
+                    }
                 }
             }
             String[] cmdargs = (String[]) additionalArguments.toArray(new String[additionalArguments.size()]);
