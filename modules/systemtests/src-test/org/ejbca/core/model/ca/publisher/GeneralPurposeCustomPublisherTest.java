@@ -43,6 +43,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
+ * This is a system test, due to it being OS dependent.
+ * 
  * 
  * @version $Id$
  * 
