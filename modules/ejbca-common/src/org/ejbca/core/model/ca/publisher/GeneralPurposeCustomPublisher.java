@@ -338,7 +338,13 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
             tempFileName = tempFile.getCanonicalPath();
             String[] cmdcommand = (externalCommand).split("\\s");
             additionalArguments.add(0, tempFileName);
-
+            for(int i = 0; i < additionalArguments.size(); i++) {
+                String argument = additionalArguments.get(i);
+                //Add quotes to encapsulate argument. 
+                if(!argument.startsWith("\"") && !argument.endsWith("\"")) {
+                    additionalArguments.set(i, "\"" + argument + "\"");
+                }
+            }
             String[] cmdargs = (String[]) additionalArguments.toArray(new String[additionalArguments.size()]);
             String[] cmdarray = new String[cmdcommand.length + cmdargs.length];
             System.arraycopy(cmdcommand, 0, cmdarray, 0, cmdcommand.length);
