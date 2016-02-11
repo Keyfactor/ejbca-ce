@@ -837,6 +837,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             Set<RoleData> viewCaRoles = new HashSet<RoleData>(roleMgmtSession.getAuthorizedRoles(AccessRulesConstants.REGULAR_ACTIVATECA, false));
             viewCaRoles.addAll(roleMgmtSession.getAuthorizedRoles(StandardRules.CAFUNCTIONALITY.resource(), true));
             for (RoleData role : viewCaRoles) {
+                //Skip if superadmin 
+                if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
+                    continue;
+                }
+                //Find 
                 AccessRuleData newRule = new AccessRuleData(role.getRoleName(), StandardRules.CAVIEW.resource(), AccessRuleState.RULE_ACCEPT, false);
                 if (!role.getAccessRules().containsValue(newRule)) {
                     addAccessRulesToRole(role, Arrays.asList(newRule));
@@ -845,6 +850,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // Next, any roles with access to /ca_functionality/edit_certificate_profiles should have be given access to /ca_functionality/view_certificate_profiles
             List<RoleData> certificateProfileRoles = roleMgmtSession.getAuthorizedRoles(StandardRules.CERTIFICATEPROFILEEDIT.resource(), false);
             for (RoleData role : certificateProfileRoles) {
+              //Skip if superadmin 
+                if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
+                    continue;
+                }
+                //Find 
                 AccessRuleData newRule = new AccessRuleData(role.getRoleName(), StandardRules.CERTIFICATEPROFILEVIEW.resource(), AccessRuleState.RULE_ACCEPT, false);
                 if (!role.getAccessRules().containsValue(newRule)) {
                 addAccessRulesToRole(role,
@@ -854,6 +864,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // Any roles with access to /ca_functionality/edit_publisher should be given /ca_functionality/view_publisher
             List<RoleData> publisherRoles = roleMgmtSession.getAuthorizedRoles(AccessRulesConstants.REGULAR_EDITPUBLISHER, false);
             for (RoleData role : publisherRoles) {
+                //Skip if superadmin 
+                if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
+                    continue;
+                }
+                //Find 
                 AccessRuleData newRule = new AccessRuleData(role.getRoleName(), AccessRulesConstants.REGULAR_VIEWPUBLISHER, AccessRuleState.RULE_ACCEPT, false);
                 if (!role.getAccessRules().containsValue(newRule)) {
                 addAccessRulesToRole(role,
@@ -863,6 +878,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // Any roles with access to /ra_functionality/edit_end_entity_profiles should be given /ra_functionality/view_end_entity_profiles
             List<RoleData> endEntityProfileRoles = roleMgmtSession.getAuthorizedRoles(AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, false);
             for (RoleData role : endEntityProfileRoles) {
+              //Skip if superadmin 
+                if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
+                    continue;
+                }
+                //Find 
                 AccessRuleData newRule = new AccessRuleData(role.getRoleName(), AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, AccessRuleState.RULE_ACCEPT, false);
                 if (!role.getAccessRules().containsValue(newRule)) {
                 addAccessRulesToRole(role,
@@ -872,6 +892,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // Any roles with access to "/" should be given /services/edit, /services/view and /peer/view (+recursive)
             List<RoleData> rootAccessRoles = roleMgmtSession.getAuthorizedRoles(StandardRules.ROLE_ROOT.resource(), false);
             for (RoleData role : rootAccessRoles) {
+              //Skip if superadmin 
+                if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
+                    continue;
+                }
+                //Find 
                 ArrayList<AccessRuleData> accessRulesList = new ArrayList<AccessRuleData>();
                 AccessRuleData servicesEdit = new AccessRuleData(role.getRoleName(), AccessRulesConstants.SERVICES_EDIT, AccessRuleState.RULE_ACCEPT,
                         false);
@@ -893,6 +918,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // Any roles with access to /internalkeybinding should be given /internalkeybinding/view (+recursive)
             List<RoleData> keybindingProfileRoles = roleMgmtSession.getAuthorizedRoles(InternalKeyBindingRules.BASE.resource(), false);
             for (RoleData role : keybindingProfileRoles) {
+                //Skip if superadmin 
+                if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
+                    continue;
+                }
+                //Find 
                 AccessRuleData newRule = new AccessRuleData(role.getRoleName(), InternalKeyBindingRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true);
                 if (!role.getAccessRules().containsValue(newRule)) {
                 addAccessRulesToRole(role,
