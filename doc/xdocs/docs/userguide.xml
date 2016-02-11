@@ -1122,7 +1122,7 @@ Normally the values specified in the fixed certificate profiles are good for the
 </p>
 <p>
 You can define your own extended key usages very simply. In the 'Extended Key Usages' tab in the 'System Configuration' page in the Admin web, 
-add your custom extended key usage's OIDs and readable name. After adding the new key usage, it can be chosen in the 'Edit Certificate Profile' page.
+add your custom extended key usage's OIDs and readable name. After adding the new key usage, it can be chosen in the 'Edit Certificate Profile' page. See also the <a href="adminguide.html#Extended%20Key%20Usages">Admin Guide</a>.
 </p>
 </subsubsection>
 
