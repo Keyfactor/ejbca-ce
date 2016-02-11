@@ -335,6 +335,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastUpgradedToVersion("6.4.2");
         }
+        if (isLesserThan(oldVersion, "6.5")) {
+            try {
+                upgradeSession.migrateDatabase650();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("6.5");
+        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -1292,12 +1300,33 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         return newpolicies;
     }
+    
+    /**
+     * EJBCA 6.5.0:
+     * 
+     * 1.   Locks down Statedump in the GUI. It should only be used with new installations. 
+     * 
+     * @throws UpgradeFailedException if upgrade fails (rolls back)
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase650() throws UpgradeFailedException {
+        try {
+            final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            globalConfig.setStatedumpLockedDown(true);
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException("AlwaysAllowLocalAuthenticationToken should not have been denied authorization");
+        }
+        log.error("(This is not an error) Completed upgrade procedure to 6.5.0");
+    }
 
     /** 
      * Checks if the column cAId column exists in AdminGroupData
      * 
      * @return true or false if the column exists or not
      */
+    @Override
     public boolean checkColumnExists500() {
 		// Try to find out if rowVersion exists and upgrade the PublisherQueueData in that case
 		// This is needed since PublisherQueueData is a rather new table so it may have been created when the server started 
