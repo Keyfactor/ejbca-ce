@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -42,6 +43,7 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRuleTemplate;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.DefaultRoles;
@@ -212,6 +214,33 @@ public class UpgradeSessionBeanTest {
        } finally {
            roleManagementSession.remove(alwaysAllowtoken, sysConfigRoleName);
            roleManagementSession.remove(alwaysAllowtoken, caAdmRoleName);
+       }
+   }
+   
+   /** Tests that upgrading from pre-6.5.0 disables statedump in the GUI */
+   @SuppressWarnings("unchecked")
+   @Test
+   public void testUpgradeTo650StatedumpLockdown() throws AuthorizationDeniedException {
+       final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+       
+       // Remove lockdown property which is new in 6.5
+       final Object configBackup = globalConfig.saveData();
+       final Map<Object,Object> data = (Map<Object,Object>) globalConfig.saveData(); // get another copy
+       data.remove("statedump_lockdown");
+       globalConfig.loadData(data);
+       assertFalse("Statedump should NOT be locked down in the default state", globalConfig.getStatedumpLockedDown());
+       globalConfigSession.saveConfiguration(alwaysAllowtoken, globalConfig);
+       try {
+           // Perform upgrade
+           upgradeSession.upgrade(null, "6.4.2", false);
+           
+           // Check state after upgrade
+           final GlobalConfiguration updatedConfig = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+           assertTrue("Statedump should be locked down after upgrade", updatedConfig.getStatedumpLockedDown());
+       } finally {
+           // Restore backup
+           globalConfig.loadData(configBackup);
+           globalConfigSession.saveConfiguration(alwaysAllowtoken, globalConfig);
        }
    }
    
