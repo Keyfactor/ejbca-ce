@@ -891,7 +891,7 @@ ant deploy-keystore
 /subsystem=undertow/server=default-server/http-listener=default:remove
 /system-property=org.apache.catalina.connector.URI_ENCODING:remove
 /system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:remove
-/interface=http:remove"
+/interface=http:remove
 /interface=httpspub:remove
 /interface=httpspriv:remove
 :reload
