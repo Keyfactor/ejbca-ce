@@ -27,7 +27,9 @@ import java.io.InputStream;
 public class SecurityFilterInputStream extends FilterInputStream{
 
     private long len = 0;
-    private long maxBytes = 0xFFFFF;
+    private long maxBytes = defaultMaxBytes;
+    
+    public static final long defaultMaxBytes = 0xFFFFF;
     
     public SecurityFilterInputStream(InputStream inputStream){
         super(inputStream);

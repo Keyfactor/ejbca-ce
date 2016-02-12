@@ -66,6 +66,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.resource.spi.SecurityException;
+
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -1426,7 +1428,7 @@ public abstract class CertTools {
         if (provider == null) {
             prov = BouncyCastleProvider.PROVIDER_NAME;
         }
-          
+        
         if(returnType.equals(X509Certificate.class)) {
             ret = (T) parseX509Certificate(prov, cert);
         } else if(returnType.equals(CardVerifiableCertificate.class)) {
@@ -1458,9 +1460,9 @@ public abstract class CertTools {
         final CertificateFactory cf = CertTools.getCertificateFactory(provider);
         X509Certificate result;
         try {
-           result = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert));      
+           result = (X509Certificate) cf.generateCertificate(new SecurityFilterInputStream(new ByteArrayInputStream(cert)));      
         } catch (CertificateException e) {
-            throw new CertificateParsingException("Could not parse byte array as X509Certificate.", e);
+            throw new CertificateParsingException("Could not parse byte array as X509Certificate." + e.getCause().getMessage(), e);
         }
         if(result != null) {
             return result;
