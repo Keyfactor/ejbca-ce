@@ -168,8 +168,7 @@ org.cesecore.keybind.InternalKeyBindingRules
    // RA FUNCTIONS
 %>
 <%
-    // If authorized to use the ra then display related links. 
-      if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.VIEW_END_ENTITY)){ 
+      if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_CREATEENDENTITY)){ 
          if(!raheaderprinted){
            out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
            raheaderprinted=true;
@@ -177,7 +176,6 @@ org.cesecore.keybind.InternalKeyBindingRules
 				<li><a href="<%= RA_ADDENDENTITYLINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_ADDENDENTITY") %></a></li>
 <% } %>
 <%
-    // If authorized to edit the ra profiles then display related links.
       if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES)){            
          if(!raheaderprinted){
            out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
@@ -186,7 +184,6 @@ org.cesecore.keybind.InternalKeyBindingRules
 				<li><a href="<%= RA_EDITPROFILESLINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_ENDENTITYPROFILES") %></a></li>
 <% } %>
 <%
-    // If authorized to use the ra then display related links. 
       if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITY)){ 
             if(!raheaderprinted){
               out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
@@ -194,9 +191,7 @@ org.cesecore.keybind.InternalKeyBindingRules
             }  %>
 				<li><a href="<%= RA_LISTENDENTITIESLINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SEARCHENDENTITIES") %></a></li>
 <% } %>
-
 <%
-   // If authorized to edit the ra user data sources then display related links.
      if(ejbcawebbean.isAuthorizedNoLogSilent(RAEDITUSERDATASOURCES_RESOURCE)){ 
          if(!raheaderprinted){
              out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+ "</strong><ul>");
