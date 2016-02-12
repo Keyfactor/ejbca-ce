@@ -2006,7 +2006,7 @@ public class CertToolsTest {
             byteArrayOutputStream = new ByteArrayOutputStream();
             SecurityFilterInputStreamTest.prepareExploitStream(byteArrayOutputStream, 0x1FFFFF);  // 0x1FFFFF just simulates exploit stream
 
-            CertTools.getCertsFromPEM(new SecurityFilterInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray())), X509Certificate.class);
+            CertTools.getCertsFromPEM(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), X509Certificate.class);
             fail("No Java heap error happened for StringBuilder exploit (MaxHeap = " + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB) and"
                     + " SecurityFilterInputStream hasn't limited the size of input stream during testPreventingHeapOverflowDuringGetCertsFromPEM");
         } catch (SecurityException e) {
@@ -2023,6 +2023,38 @@ public class CertToolsTest {
         }
         
         log.trace("<testPreventingHeapOverflowDuringGetCertsFromPEM()");
+    }
+    
+    /**
+     * Tests preventing heap overflow during getCertsFromByteArray for X509Certificate.class
+     */
+    @Test
+    public void testPreventingHeapOverflowDuringGetCertsFromByteArray() throws Exception {
+        log.trace(">testPreventingHeapOverflowDuringgetCertsFromByteArray()");
+        
+        ObjectInputStream objectInputStream = null;
+        ByteArrayOutputStream byteArrayOutputStream = null;
+        try {
+            byteArrayOutputStream = new ByteArrayOutputStream();
+            SecurityFilterInputStreamTest.prepareExploitStream(byteArrayOutputStream, 0x1FFFFF);  // 0x1FFFFF just simulates exploit stream
+
+            CertTools.getCertfromByteArray(byteArrayOutputStream.toByteArray(), X509Certificate.class);
+            fail("No Java heap error happened for StringBuilder exploit (MaxHeap = " + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB) and"
+                    + " SecurityFilterInputStream hasn't limited the size of input stream during testPreventingHeapOverflowDuringgetCertsFromByteArray");
+        } catch (CertificateParsingException e) { //It seems that BC provider while generating certificate wraps RuntimeException into CertificateException (which CertTools wraps into CertificateParsingException...)
+            //Good
+        } catch (Exception e){
+            fail("Unexpected exception: " + e.getMessage() + " during testPreventingHeapOverflowDuringgetCertsFromByteArray");
+        }finally {
+            if (byteArrayOutputStream != null) {
+                byteArrayOutputStream.close();
+            }
+            if (objectInputStream != null) {
+                objectInputStream.close();
+            }
+        }
+        
+        log.trace("<testPreventingHeapOverflowDuringgetCertsFromByteArray()");
     }
 
     private void checkNCException(X509Certificate cacert, X500Name subjectDNName, GeneralName subjectAltName, String message) {
