@@ -1992,6 +1992,38 @@ public class CertToolsTest {
         String dn = CertTools.getSubjectDN(cert);
         assertEquals("JurisdictionCountry=BR,STREET=Avenida Paraiba,BusinessCategory=Private Organization,CN=morenarosagroup.com,SN=\\#CNPJ:15.095.271/0001-45,OU=Morena Rosa Group,O=Morena Rosa Industria e Comercio de Confeccoes S.A.,L=Cianorte,ST=Parana,C=BR", dn);
     }
+    
+    /**
+     * Tests preventing heap overflow during getCertsFromPEM()
+     */
+    @Test
+    public void testPreventingHeapOverflowDuringGetCertsFromPEM() throws Exception {
+        log.trace(">testPreventingHeapOverflowDuringGetCertsFromPEM()");
+        
+        ObjectInputStream objectInputStream = null;
+        ByteArrayOutputStream byteArrayOutputStream = null;
+        try {
+            byteArrayOutputStream = new ByteArrayOutputStream();
+            SecurityFilterInputStreamTest.prepareExploitStream(byteArrayOutputStream, 0x1FFFFF);  // 0x1FFFFF just simulates exploit stream
+
+            CertTools.getCertsFromPEM(new SecurityFilterInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray())), X509Certificate.class);
+            fail("No Java heap error happened for StringBuilder exploit (MaxHeap = " + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB) and"
+                    + " SecurityFilterInputStream hasn't limited the size of input stream during testPreventingHeapOverflowDuringGetCertsFromPEM");
+        } catch (SecurityException e) {
+            //Good
+        } catch (Exception e){
+            fail("Unexpected exception: " + e.getMessage() + " during testPreventingHeapOverflowDuringGetCertsFromPEM");
+        }finally {
+            if (byteArrayOutputStream != null) {
+                byteArrayOutputStream.close();
+            }
+            if (objectInputStream != null) {
+                objectInputStream.close();
+            }
+        }
+        
+        log.trace("<testPreventingHeapOverflowDuringGetCertsFromPEM()");
+    }
 
     private void checkNCException(X509Certificate cacert, X500Name subjectDNName, GeneralName subjectAltName, String message) {
         try {
