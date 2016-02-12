@@ -1231,7 +1231,7 @@ public abstract class CertTools {
         PrintStream opstr = null;
         try {
             try {
-                bufRdr = new BufferedReader(new InputStreamReader(certstream));
+                bufRdr = new BufferedReader(new InputStreamReader(new SecurityFilterInputStream(certstream)));
                 while (bufRdr.ready()) {
                     ostr = new ByteArrayOutputStream();
                     opstr = new PrintStream(ostr);
