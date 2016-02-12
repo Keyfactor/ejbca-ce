@@ -33,6 +33,7 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
 
     private Collection<String> acceptedClassNames;
     private int maxObjects = 1;
+    private boolean enabledMaxObjects = true;
     private int objCount = 0;
 
     public LookAheadObjectInputStream(InputStream inputStream) throws IOException {
@@ -90,7 +91,7 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
      */
     @Override
     protected Object resolveObject(Object obj) throws IOException {
-        if (++objCount > maxObjects){
+        if (enabledMaxObjects && ++objCount > maxObjects){
             throw new SecurityException("Attempt to deserialize too many objects from stream. Limit is " + maxObjects);
         }
         Object object = super.resolveObject(obj);
@@ -105,6 +106,7 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
         Class<?> resolvedClass = super.resolveClass(desc); //can be an array
         Class<?> resolvedClassType = resolvedClass.isArray() ? resolvedClass.getComponentType() : resolvedClass;
         if (resolvedClassType.equals(String.class) ||
+            resolvedClassType.isPrimitive() ||
             Boolean.class.isAssignableFrom(resolvedClassType) ||
             Number.class.isAssignableFrom(resolvedClassType) ||
             Character.class.isAssignableFrom(resolvedClassType) ||
@@ -112,6 +114,22 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
             return resolvedClass;
         }
         throw new SecurityException("Unauthorized deserialization attempt for type: " + desc);
+    }
+
+    /**
+     * @return true if checking for max objects is enabled, false otherwise
+     */
+    public boolean isEnabledMaxObjects() {
+        return enabledMaxObjects;
+    }
+
+    /** Enable or disable checking for max objects that can be read.
+     *  This method will also reset internal counter for read objects.
+     * @param enabledMaxObjects true or false
+     */
+    public void setEnabledMaxObjects(boolean enabledMaxObjects) {
+        objCount = 0;
+        this.enabledMaxObjects = enabledMaxObjects;
     }
 
 }
