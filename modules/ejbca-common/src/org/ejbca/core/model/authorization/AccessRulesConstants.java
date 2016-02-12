@@ -103,6 +103,7 @@ public abstract class AccessRulesConstants {
     public static final String[] STANDARDREGULARACCESSRULES = {StandardRules.CAFUNCTIONALITY.resource(), 
                                                            REGULAR_CABASICFUNCTIONS,
                                                            REGULAR_ACTIVATECA,
+                                                           StandardRules.CAEDIT.resource(),
                                                            StandardRules.CARENEW.resource(),
                                                            StandardRules.CAVIEW.resource(),
                                                            REGULAR_VIEWCERTIFICATE, 
