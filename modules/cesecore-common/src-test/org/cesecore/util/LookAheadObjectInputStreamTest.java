@@ -12,7 +12,8 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -69,6 +71,18 @@ public class LookAheadObjectInputStreamTest {
         public int getData(){
             return data;
         }
+    }
+    
+    private static abstract class GoodAbstractClass implements Serializable {
+        private static final long serialVersionUID = 2L;
+    }
+    
+    private static class GoodExtendedClass extends GoodAbstractClass{
+        private static final long serialVersionUID = 5L;
+    }
+    
+    private static class GoodExtendedExtendedClass extends GoodExtendedClass{
+        private static final long serialVersionUID = 6L;
     }
     
     /**
@@ -323,6 +337,37 @@ public class LookAheadObjectInputStreamTest {
             }
         }
         log.trace("<testDeserializingPrimitiveTypes");
+    }
+    
+    /**
+     * Test deserializing subclass
+     */
+    @Test
+    public void testDeserializingExtendedClasses() throws Exception {
+        log.trace(">testDeserializingExtendedClasses");
+        LookAheadObjectInputStream lookAheadObjectInputStream = null;
+        try {
+            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+            ObjectOutputStream o = new ObjectOutputStream(buf);
+            o.writeObject(new GoodExtendedClass());
+            o.writeObject(new GoodExtendedExtendedClass());
+            o.close();
+            lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
+            lookAheadObjectInputStream.setAcceptedClassNames(Arrays.asList(GoodAbstractClass.class.getName()));
+            lookAheadObjectInputStream.setEnabledMaxObjects(false);
+            lookAheadObjectInputStream.setEnabledSubclassing(true);
+            @SuppressWarnings("unused")
+            GoodExtendedClass goodExtendedClass = (GoodExtendedClass)lookAheadObjectInputStream.readObject();
+            @SuppressWarnings("unused")
+            GoodExtendedExtendedClass goodExtendedExtendedClass = (GoodExtendedExtendedClass)lookAheadObjectInputStream.readObject();
+        } catch (Exception e){
+            fail("Unexpected exception: " + e.getMessage() + " during testDeserializingExtendedClasses");
+        } finally{
+            if(lookAheadObjectInputStream != null){
+                lookAheadObjectInputStream.close();
+            }
+        }
+        log.trace("<testDeserializingExtendedClasses");
     }
 
 }
