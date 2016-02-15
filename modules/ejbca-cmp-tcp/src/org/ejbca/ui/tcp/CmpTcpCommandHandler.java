@@ -20,7 +20,7 @@ import java.security.cert.CertificateEncodingException;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -49,6 +49,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		return ejb;
 	}
 	
+    @Override
 	public void gotConnected(final ClientHandler handler) throws SocketTimeoutException, IOException {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("CMP connection opened: "+handler.getHostAddress());
@@ -57,14 +58,17 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		handler.setDataMode(DataMode.BINARY, DataType.OUT);
 	}
 
+    @Override
 	public void lostConnection(final ClientHandler handler) throws IOException {
 		LOG.debug("Connection lost: "+handler.getHostAddress());
 	}
 
+    @Override
 	public void closingConnection(final ClientHandler handler) throws IOException {
 		LOG.debug("Connection closed: "+handler.getHostAddress());
 	}
 
+    @Override
 	public void handleBinary(final ClientHandler handler, final byte command[])	throws SocketTimeoutException, IOException {
 		LOG.info(INTRES.getLocalizedMessage("cmp.receivedmsg", handler.getHostAddress()));
 		long startTime = System.currentTimeMillis();
@@ -73,7 +77,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 			handler.closeConnection();
 		} else {
 			// We must use an administrator with rights to create users
-			final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpTcp: "+handler.getHostAddress()));
+            final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("CmpTcp", handler.getHostAddress()));
 			final ResponseMessage resp;
 			try {
 				 resp = getEjb().getCmpMessageDispatcherSession().dispatch(administrator, cmpTcpMessage.message, "tcp");

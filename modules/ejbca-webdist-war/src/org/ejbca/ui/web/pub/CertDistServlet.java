@@ -45,7 +45,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
@@ -130,6 +130,7 @@ public class CertDistServlet extends HttpServlet {
      * @throws IOException input/output error
      * @throws ServletException error
      */
+    @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res)
         throws IOException, ServletException {
         log.trace(">doPost()");
@@ -146,13 +147,14 @@ public class CertDistServlet extends HttpServlet {
 	 * @throws IOException input/output error
 	 * @throws ServletException error
 	 */
+    @Override
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doGet()");
 
         String command;
         // Keep this for logging.
         String remoteAddr = req.getRemoteAddr();
-		final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("PublicWeb: "+remoteAddr));
+        final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new PublicWebPrincipal(remoteAddr));
 
         RequestHelper.setDefaultCharacterEncoding(req);
         String issuerdn = null; 
@@ -505,7 +507,7 @@ public class CertDistServlet extends HttpServlet {
             RequestHelper.sendNewB64File(Base64.encode(pkcs7, true), res, filename, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
         } else if (StringUtils.equals(format, "chain")) {
             int issuerCAId = CertTools.getIssuerDN(certcert).hashCode();
-            LinkedList<Certificate> chain = new LinkedList<Certificate>(signSession.getCertificateChain(issuerCAId));
+            LinkedList<Certificate> chain = new LinkedList<>(signSession.getCertificateChain(issuerCAId));
             chain.addFirst(certcert);
             byte[] chainbytes = CertTools.getPemFromCertificateChain(chain);
             RequestHelper.sendNewB64File(chainbytes, res, filename, "", ""); // chain includes begin/end already
@@ -518,10 +520,10 @@ public class CertDistServlet extends HttpServlet {
 	private Certificate[] getCertificateChain(int caid, String issuerdn) {
 		Certificate[] chain;
 		if(caid != 0) {
-		    chain = (Certificate[]) signSession.getCertificateChain(caid).toArray(new Certificate[0]);
+		    chain = signSession.getCertificateChain(caid).toArray(new Certificate[0]);
 		}
 		else {
-		    chain = (Certificate[]) signSession.getCertificateChain(issuerdn.hashCode()).toArray(new Certificate[0]);
+		    chain = signSession.getCertificateChain(issuerdn.hashCode()).toArray(new Certificate[0]);
 		}
 		return chain;
 	}

@@ -35,7 +35,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -91,6 +91,7 @@ public class AutoEnrollServlet extends HttpServlet {
 	@EJB
 	private GlobalConfigurationSessionLocal globalConfigurationSession;
 	
+    @Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		try {
@@ -104,11 +105,12 @@ public class AutoEnrollServlet extends HttpServlet {
 	/**
 	 * Recievies the request.
 	 */
+    @Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	    log.trace(">doPost");
 	    try {
 
-	        AuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AutoEnrollServlet: "+request.getRemoteAddr()));
+	        AuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new PublicWebPrincipal("AutoEnrollServlet", request.getRemoteAddr()));
 	        //Admin internalAdmin = Admin.getInternalAdmin();
 	        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 	        // Make sure we allow use of this Servlet
@@ -276,6 +278,7 @@ public class AutoEnrollServlet extends HttpServlet {
 		log.trace("<doPost");
 	}
 
+    @Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		log.trace(">doGet");
 		doPost(request, response);

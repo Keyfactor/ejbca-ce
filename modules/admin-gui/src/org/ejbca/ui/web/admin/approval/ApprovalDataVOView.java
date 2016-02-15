@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.approval;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -31,6 +32,8 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicWebPrincipal;
+import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -141,7 +144,8 @@ public class ApprovalDataVOView implements Serializable {
         if (!initialized) {
             return "DummyAdmin";
         }
-        Certificate cert = data.getApprovalRequest().getRequestAdminCert();
+        final Certificate cert = data.getApprovalRequest().getRequestAdminCert();
+        final AuthenticationToken reqAdmin = data.getApprovalRequest().getRequestAdmin();
         if (cert != null) {
             String dn = CertTools.getSubjectDN(cert);
             String o = CertTools.getPartFromDN(dn, "O");
@@ -152,7 +156,21 @@ public class ApprovalDataVOView implements Serializable {
             }
             retval = CertTools.getPartFromDN(dn, "CN") + o;
         } else {
-            retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("CLITOOL", true);
+            retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("CLITOOL", true); // Assume CLI if not match
+            if (reqAdmin != null) {
+                for (Principal principal : reqAdmin.getPrincipals()) {
+                    if (principal instanceof PublicWebPrincipal) {
+                        // Mostly self-registration
+                        final String ipAddress = ((PublicWebPrincipal) principal).getClientIPAddress();
+                        retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PUBLICWEB", true) + ": " + ipAddress;
+                        break;
+                    } else if (principal instanceof WebPrincipal) {
+                        // Other things, such as CMP, etc. We probably shouldn't ever get here, unless something is miss-configured.
+                        retval = principal.getName(); // e.g. "NameOfServlet: 198.51.100.123"
+                        break;
+                    }
+                }
+            }
         }
         log.debug("getRequestAdminName " + retval);
         return retval;
@@ -164,18 +182,17 @@ public class ApprovalDataVOView implements Serializable {
         }
         FacesContext context = FacesContext.getCurrentInstance();
         Application app = context.getApplication();
-        ApproveActionManagedBean value = (ApproveActionManagedBean) app.evaluateExpressionGet(context, "#{approvalActionManagedBean}",
-                ApproveActionManagedBean.class);
-        return (String) value.getStatusText().get(Integer.valueOf(data.getStatus()));
+        ApproveActionManagedBean value = app.evaluateExpressionGet(context, "#{approvalActionManagedBean}", ApproveActionManagedBean.class);
+        return value.getStatusText().get(Integer.valueOf(data.getStatus()));
     }
 
     public ApprovalDataVO getApproveActionDataVO() {
         if (!initialized) {
             try {
             	X509Certificate certificate = CertTools.getCertfromByteArray(ApprovalDataVOView.dummycert, X509Certificate.class);
-                Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+                Set<X509Certificate> credentials = new HashSet<>();
                 credentials.add(certificate);
-                Set<X500Principal> principals = new HashSet<X500Principal>();
+                Set<X500Principal> principals = new HashSet<>();
                 principals.add(certificate.getSubjectX500Principal());
                 AuthenticationToken token = new X509CertificateAuthenticationToken(principals, credentials);
                 DummyApprovalRequest req = new DummyApprovalRequest(token, null, ApprovalDataVO.ANY_ENDENTITYPROFILE, ApprovalDataVO.ANY_CA, false);

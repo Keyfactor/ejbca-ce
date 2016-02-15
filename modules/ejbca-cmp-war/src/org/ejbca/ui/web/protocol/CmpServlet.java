@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -60,6 +60,7 @@ public class CmpServlet extends HttpServlet {
      * @throws IOException input/output error
      * @throws ServletException if the post could not be handled
      */
+    @Override
     public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
         if (log.isTraceEnabled()) {
             log.trace(">doPost()");
@@ -107,6 +108,7 @@ public class CmpServlet extends HttpServlet {
      * @throws IOException input/output error
      * @throws ServletException if the post could not be handled
      */
+    @Override
     public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws java.io.IOException, ServletException {
         if (log.isTraceEnabled()) {
             log.trace(">doGet()");
@@ -125,7 +127,7 @@ public class CmpServlet extends HttpServlet {
             final ResponseMessage resp;
             try {
                 // We must use an administrator with rights to create users
-                final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpServlet: "+remoteAddr));
+                final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("CmpServlet", remoteAddr));
                 resp = cmpMessageDispatcherLocal.dispatch(admin, ba, alias);
             } catch (IOException e) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
