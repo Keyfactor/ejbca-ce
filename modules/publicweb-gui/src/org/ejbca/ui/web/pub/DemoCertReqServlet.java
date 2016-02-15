@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
@@ -104,6 +104,7 @@ public class DemoCertReqServlet extends HttpServlet {
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
 
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         try {
@@ -137,10 +138,11 @@ public class DemoCertReqServlet extends HttpServlet {
      * 
      * PublicKey's encoded-format has to be RSA X.509.
      */
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         ServletDebug debug = new ServletDebug(request, response);
 
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("DemoCertReqServlet: "+request.getRemoteAddr()));
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new PublicWebPrincipal("DemoCertReqServlet", request.getRemoteAddr()));
         RequestHelper.setDefaultCharacterEncoding(request);
 
         String dn = null;
@@ -323,6 +325,7 @@ public class DemoCertReqServlet extends HttpServlet {
         }
     }
 
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         log.trace(">doGet()");
         response.setHeader("Allow", "POST");

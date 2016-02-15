@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -70,6 +70,7 @@ public class RenewServlet extends HttpServlet {
      * @param config servlet configuration
      * @throws ServletException on error
      */
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         // Install BouncyCastle provider
@@ -78,7 +79,7 @@ public class RenewServlet extends HttpServlet {
 
     public void doRequest(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
     	
-		AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RenewServlet: "+request.getRemoteAddr()));
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("RenewServlet", request.getRemoteAddr()));
     	
     	// SSL client authentication
     	Object o = request.getAttribute("javax.servlet.request.X509Certificate");
