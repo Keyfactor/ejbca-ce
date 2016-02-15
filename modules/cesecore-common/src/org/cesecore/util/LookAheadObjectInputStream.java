@@ -16,14 +16,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Set;
+import java.util.TreeSet;
 
 /** Can be used instead of ObjectInputStream to safely deserialize(readObject) unverified serialized java object. 
  * 
  * Simple usage:
  * LookAheadObjectInputStream lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(someByteArray);
- * lookAheadObjectInputStream.setAcceptedClassNames(Arrays.asList(X509Certificate.class.getName()));
+ * lookAheadObjectInputStream.setAcceptedClassNames(Arrays.asList(X509Certificate.class.getName());
  * lookAheadObjectInputStream.setMaxObjects(1);
  * X509Certificate certificate = (X509Certificate) lookAheadObjectInputStream.readObject(); //If serialized object is not of the type X509Certificate SecurityException will be thrown
  * 
@@ -31,7 +32,8 @@ import java.util.Collection;
  */
 public class LookAheadObjectInputStream extends ObjectInputStream {
 
-    private Collection<String> acceptedClassNames;
+    private Set<String> acceptedClassNames = new TreeSet<String>();
+    private boolean enabledSubclassing = false;
     private int maxObjects = 1;
     private boolean enabledMaxObjects = true;
     private int objCount = 0;
@@ -41,9 +43,32 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
         enableResolveObject(true);
     }
 
+    /**
+     * @return set of accepted class names etc. classes that are allowed to be
+     *          read from this ObjectInputStream. This set can be modified with:
+     *          @see LookAheadObjectInputStream#setAcceptedClassNames(Set<String> acceptedClassNames)
+     */
     public Collection<String> getAcceptedClassNames() {
         return acceptedClassNames;
     }
+    
+    /**
+     * @return true if class should be accepted if it extends super class directly or indirectly
+     *          that is listed in accepted class names, false otherwise.
+     */
+    public boolean isEnabledSubclassing() {
+        return enabledSubclassing;
+    }
+
+    /**
+     * @param enabledSubclassing
+     *      True if class should be accepted if it extends super class directly or indirectly
+     *      that is listed in accepted class names, false otherwise.
+     */
+    public void setEnabledSubclassing(boolean enabledSubclassing) {
+        this.enabledSubclassing = enabledSubclassing;
+    }
+    
 
     /**
      * Set accepted class names that can be deserialized using this LookAheadObjectInputStream.
@@ -53,17 +78,7 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
      *      Collection of class names that will be accepted for deserializing readObject. Default: null
      */
     public void setAcceptedClassNames(Collection<String> acceptedClassNames) {
-        this.acceptedClassNames = acceptedClassNames;
-    }
-
-    /**
-     * Set accepted class name that can be deserialized using this LookAheadObjectInputStream.
-     * @param acceptedClassName
-     *      class name that will be accepted for deserialization. Default: null
-     * @see LookAheadObjectInputStream#setAcceptedClassNames(Collection<String> acceptedClassNames)
-     */
-    public void setAcceptedClassName(String acceptedClassName) {
-        setAcceptedClassNames(Arrays.asList(acceptedClassName));
+        this.acceptedClassNames = new TreeSet<String>(acceptedClassNames);
     }
 
     /**
@@ -109,9 +124,20 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
             resolvedClassType.isPrimitive() ||
             Boolean.class.isAssignableFrom(resolvedClassType) ||
             Number.class.isAssignableFrom(resolvedClassType) ||
-            Character.class.isAssignableFrom(resolvedClassType) ||
-            acceptedClassNames != null && acceptedClassNames.contains(resolvedClassType.getName())) {
-            return resolvedClass;
+            Character.class.isAssignableFrom(resolvedClassType)){
+            return resolvedClass; 
+        }else if(acceptedClassNames != null && !acceptedClassNames.isEmpty()){
+            if(acceptedClassNames.contains(resolvedClassType.getName())){
+                return resolvedClass;
+            }else if(enabledSubclassing){
+                Class<?> superclass = resolvedClassType.getSuperclass();
+                while(superclass != null){
+                    if(acceptedClassNames.contains(superclass.getName())){
+                        return resolvedClass;
+                    }
+                    superclass = superclass.getSuperclass();
+                }
+            }
         }
         throw new SecurityException("Unauthorized deserialization attempt for type: " + desc);
     }
