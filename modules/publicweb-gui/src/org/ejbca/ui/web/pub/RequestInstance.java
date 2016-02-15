@@ -37,6 +37,7 @@ import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -296,7 +297,7 @@ public class RequestInstance {
 				classid = getParameter("classid");
 			}
 
-			final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RequestInstance: "+request.getRemoteAddr()));
+            final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new PublicWebPrincipal("RequestInstance", request.getRemoteAddr()));
 
 			RequestHelper helper = new RequestHelper(administrator, debug);
 
@@ -651,7 +652,7 @@ public class RequestInstance {
             List<FileItem> items = upload.parseRequest(request);
 			Iterator<FileItem> iter = items.iterator();
 			while (iter.hasNext()) {
-				FileItem item = (FileItem) iter.next();
+                FileItem item = iter.next();
 				if (item.isFormField()) {
 					params.put(item.getFieldName(), item.getString());
 				} else {

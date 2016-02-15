@@ -30,7 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -75,9 +75,9 @@ public class ApplyBean implements Serializable {
     public void initialize(HttpServletRequest request)
         throws Exception {
         if (!initialized) {
-        	administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Public Web: "+request.getRemoteAddr()));
-        	ejbLocalHelper = new EjbLocalHelper();
-        	browser = detectBrowser(request);
+            administrator = new AlwaysAllowLocalAuthenticationToken(new PublicWebPrincipal(request.getRemoteAddr()));
+            ejbLocalHelper = new EjbLocalHelper();
+            browser = detectBrowser(request);
             initialized = true;
         }
     }
