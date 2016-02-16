@@ -459,7 +459,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         
         ArrayList<String> urls = new ArrayList<String>();
         
-        if(StringUtils.isNotEmpty(this.crlUrl)) {
+        if(this.crlUrl!=null) {
             urls.add(this.crlUrl);
         }
         
