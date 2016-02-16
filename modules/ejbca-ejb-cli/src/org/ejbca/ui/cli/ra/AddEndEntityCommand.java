@@ -101,7 +101,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
                 "DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc. " + "\nAn LDAP escaped DN is for example:\n"
                         + "DN: CN=Tomas Gustavsson, O=PrimeKey Solutions, C=SE\n"
                         + "LDAP escaped DN: CN=Tomas Gustavsson\\, O=PrimeKey Solutions\\, C=SE"));
-        registerParameter(new Parameter(CA_NAME_KEY, "Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "CA issuing this End Entity."));
         registerParameter(new Parameter(SUBJECT_ALT_NAME_KEY, "Subject Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>,"
