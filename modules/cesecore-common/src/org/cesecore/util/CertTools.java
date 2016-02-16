@@ -66,8 +66,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.resource.spi.SecurityException;
-
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -2774,7 +2772,7 @@ public abstract class CertTools {
     }
 
     /**
-     * Return the CRL distribution point URL from a certificate.
+     * Return the first CRL distribution point URL from a certificate.
      */
     public static URL getCrlDistributionPoint(Certificate certificate) throws CertificateParsingException {
         if (certificate instanceof X509Certificate) {
@@ -2804,6 +2802,39 @@ public abstract class CertTools {
         }
         return null;
     }
+
+    /**
+     * Return a list of CRL distribution points from a certificate.
+     */
+    public static Collection<String> getCrlDistributionPoints(Certificate certificate) throws CertificateParsingException {
+        ArrayList<String> cdps = new ArrayList<String>();
+        if (certificate instanceof X509Certificate) {
+            X509Certificate x509cert = (X509Certificate) certificate;
+            try {
+                ASN1Primitive obj = getExtensionValue(x509cert, Extension.cRLDistributionPoints.getId());
+                if (obj == null) {
+                    return null;
+                }
+                ASN1Sequence crlDistributionPoints = (ASN1Sequence) obj;
+                for (int i = 0; i < crlDistributionPoints.size(); i++) {
+                    ASN1Sequence distributionPoint = (ASN1Sequence) crlDistributionPoints.getObjectAt(i);
+                    for (int j = 0; j < distributionPoint.size(); j++) {
+                        ASN1TaggedObject tagged = (ASN1TaggedObject) distributionPoint.getObjectAt(j);
+                        if (tagged.getTagNo() == 0) {
+                            String url = getStringFromGeneralNames(tagged.getObject());
+                            cdps.add(url);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error parsing CrlDistributionPoint", e);
+                throw new CertificateParsingException(e.toString());
+            }
+        }
+        return cdps;
+    }
+
+    
 
     /**
      * This utility method extracts the Authority Information Access Extention's URLs
