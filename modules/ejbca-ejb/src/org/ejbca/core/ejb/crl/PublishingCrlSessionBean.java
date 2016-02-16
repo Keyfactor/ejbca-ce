@@ -464,9 +464,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 
                 //if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
                 if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
-                    if (log.isDebugEnabled()) {
-                        log.debug("Gathering all revocation information published by this CA since its beginning. Important only if CA has gone undergone name change");
-                    }
+                    log.info("The CA with SubjectDN " + ca.getSubjectDN() + " has been gone through ICAO Name Change. Collecting all revocation information published by this CA with previous names has started.");
                     Collection<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
                     Collection<RevokedCertInfo> revokedCertificatesBeforeLastCANameChange = new ArrayList<RevokedCertInfo>();
                     if(renewedCertificateChain != null){
@@ -474,11 +472,8 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                         differentSubjectDNs.add(caCertSubjectDN);
                         for(Certificate renewedCertificate : renewedCertificateChain){
                             String renewedCertificateSubjectDN = CertTools.getSubjectDN(renewedCertificate);
-                            
                             if(!differentSubjectDNs.contains(renewedCertificateSubjectDN)){
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Collecting revocation information for " + renewedCertificateSubjectDN + " and merging them with ones for " + caCertSubjectDN);
-                                }
+                                log.info("Collecting revocation information for " + renewedCertificateSubjectDN + " and merging them with ones for " + caCertSubjectDN);
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
                                 Collection<RevokedCertInfo> revokedCertInfo = certificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, -1);
                                 for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
