@@ -40,15 +40,15 @@ NOW ON TO THE HOWTO!
 
 Troubleshooting database problems:
 ---------------------------------
-* Have you (ejbca automatically does it) configured a <database-ds.xml> in JBOSS_HOME/server/default/deploy?
-  Configuration is done in conf/database.properties.
-* Do you have the correct username/password configured in <database-ds.xml>?
-  Configuration is done in conf/database.properties.
-* Is the JDBC driver installed in JBOSS_HOME/server/default/lib?
+* Have you configured a database correctly in JBoss?
+  Configuration is done in conf/database.properties to set EJBCA to the correct database.
+* Do you have the correct username/password configured for your database?
+  Configuration is done in JBoss (taken from conf/database.properties if you have EJBCA do it for you).
+* Is the JDBC driver installed in JBoss?
 * Does you database accept incoming connection from the network, not only localhost or vice versa?
 * Do you have a firewall blocking connections to the database?
 * Can you connect to the database from another machine?
-* Use ip-address instead of hostname in <database-ds.xml> (DNS problems?)
+* Use ip-address instead of hostname in data source configuration in JBoss (DNS problems?)
 
 
 Configuring EJBCA
@@ -61,12 +61,6 @@ Configuring EJBCA
 2. On JBoss: Use 'ant deploy-datasource', it will configure automatically all deployment descriptors according to the
    database/jndi-name you chose before.
 
-   On JBoss 5, iIt will also copy ejbca-ds.xml to ${jboss.home}/server/default/deploy.
-   This file defines your database configuration such as the driver, url, username, password.
-   All other parameters are optional, so don't bother with them unless you know what you're doing.
-   Of course this ejbca-ds.xml should define the jndi-name as 'EjbcaDS' (or whatever name you chose
-   in the previous step)
-
    If something is wrong, you should see it in the logs of your application server
 
 The database mapping for EJBCA is defined in modules/ejbca-entity/resources/orm-{mode}-{database}.xml.
@@ -76,27 +70,16 @@ A database table create script can be created for your database by issuing "ant 
 Configuring JBoss
 -----------------
 
-NOTE: If you are using the default database HSQLDB: Nothing should be done, just install
-JBoss and run. To remove an old installation, shut down JBoss and delete the
-<jboss-home>/default/data/hypersonic/ directory.
-
-The following is only if you want to replace the default database with another for EJBCA.
-
-The description given here is for JBoss 5.1.0. Consider consulting the official JBoss documentation.
-
-Database configuration files in JBoss are located in the
-<jboss-home>/server/default/deploy. EJBCA automatically deploys a new datasource
-definition file in JBoss, so you don't have to do anything with that.
+Instructions how to configure JBoss are in the Installation guide. Start there.
 
 1. Install and setup the database your database.
 
 2. Create a database for EJBCA (that is obviously the one you defined in conf/database.properties)
 Check your database documentation for more info (I know it is boring).
 
-3. Put the JDBC driver for the database in <jboss-home>/server/default/lib/ (or replace default if you are running 
-   another JBoss target, perhaps all?).
+3. Configure JBoss with the correct JDBC driver.
 
-4. DONE! Start JBoss. Run tests with 'ant test:run'.
+4. Install EJBCA (see Installation Guide)
    Use your favorite database graphic editor to look at the beautiful database tables.
 
 Hardening
@@ -104,7 +87,7 @@ Hardening
 When using logging you probably do not want an attacker to be able to remove log posts, therefore you should limit the
 table rights on AuditRecordData.
 
-MySQL specifics
+MySQL and MariaDB specifics
 ---------------
 EJBCA have been tested with MySQL 5.x and MariaDB 5.x.
 
@@ -166,7 +149,7 @@ EJBCA have been tested with PostgreSQL 8.x and 9.x.
 
 JDBC driver: 
 For v8.x the 8.4 driver works fine.
-For v9.x the 9.1 driver works fine.
+For v9.x the 9.1-9.4 driver works fine.
 
 Download JDBC driver for PostgreSQL from http://jdbc.postgresql.org/.
 
@@ -184,6 +167,7 @@ Then you may have to mess around a lot to be able to connect to the database as 
 for example change in pg_hba.conf to not use ident for logins to the local database,
 so you can actually connect locally as the ejbca user.
 
+Create a backup with 'pg_dump -U ejbca ejbca > ejbca.sql'
 
 Oracle specifics
 ----------------
