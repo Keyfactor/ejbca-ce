@@ -42,6 +42,12 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.CertificateID;
@@ -172,9 +178,10 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             }
             
             BigInteger certSerialnumber = CertTools.getSerialNumber(cert);
+            String nonce = CertTools.getFingerprintAsString(cert)+System.currentTimeMillis();
             OCSPReq req = null;
             try {
-                req = getOcspRequest(cacert, certSerialnumber);
+                req = getOcspRequest(cacert, certSerialnumber, nonce);
             } catch (CertificateEncodingException | OCSPException e) {
                 if(log.isDebugEnabled()) {
                     log.debug("Failed to create OCSP request. " + e.getLocalizedMessage());
@@ -187,7 +194,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             // Send the request and receive a singleResponse
             SingleResp[] singleResps = null; 
             try {
-                singleResps = getOCSPResponse(ocspurl, req.getEncoded(), OCSPRespBuilder.SUCCESSFUL, 200);
+                singleResps = getOCSPResponse(ocspurl, req.getEncoded(), nonce, OCSPRespBuilder.SUCCESSFUL, 200);
             } catch (OperatorCreationException | CertificateException | IOException | OCSPException  e) {
                 if(log.isDebugEnabled()) {
                     log.debug("Failed to parse or verify OCSP response. " + e.getLocalizedMessage());
@@ -283,16 +290,22 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
      * @throws CertificateEncodingException
      * @throws OCSPException
      */
-    private OCSPReq getOcspRequest(Certificate cacert, BigInteger certSerialnumber) throws CertificateEncodingException, OCSPException {
+    private OCSPReq getOcspRequest(Certificate cacert, BigInteger certSerialnumber, final String nonce) throws CertificateEncodingException, OCSPException {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate) cacert, certSerialnumber));
+        
+        Extension[] extensions = new Extension[1];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(nonce.getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+
         return gen.build();
     }
 
     /**
      * Sends an OCSP request and returns the OCSP response
      */
-    private SingleResp[] getOCSPResponse(final String ocspurl, byte[] ocspPackage, int expectedOcspRespCode, int expectedHttpRespCode) throws OCSPException, OperatorCreationException, CertificateException {
+    private SingleResp[] getOCSPResponse(final String ocspurl, final byte[] ocspPackage, final String nonce, int expectedOcspRespCode, int expectedHttpRespCode) 
+            throws OCSPException, OperatorCreationException, CertificateException {
         if(log.isDebugEnabled()) {
             log.debug("Sending an OCSP requst to " + ocspurl);
         }
@@ -349,15 +362,37 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             log.warn("OCSP response signature was not valid");
             return null;
         }
-        // Check nonce (if we sent one)
-        //if (nonce != null) {
-        //    byte[] noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
-        //    if(noncerep != null) {
-        //        ASN1InputStream ain = new ASN1InputStream(noncerep);
-        //        ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
-        //        ain.close();
-        //    }
-        //}
+
+        // Check the nonce
+        byte[] noncerep;
+        try {
+            noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
+        } catch (IOException e) {
+            if(log.isDebugEnabled()) {
+                log.debug("Failed to read extension from OCSP response. " + e.getLocalizedMessage());
+            }
+            return null;
+        }
+        if(noncerep == null) {
+            log.warn("Sent an OCSP request containing a nonce, but the OCSP response does not contain a nonce");
+            return null;
+        }
+        
+        try {
+            ASN1InputStream ain = new ASN1InputStream(noncerep);
+            ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
+            ain.close();
+            if(!StringUtils.equals(nonce, new String(oct.getOctets()))) {
+                log.warn("The nonce in the OCSP request and the OCSP response do not match");
+                return null;
+            }
+        } catch (IOException e) {
+            if(log.isDebugEnabled()) {
+                log.debug("Failed to read extension from OCSP response. " + e.getLocalizedMessage());
+            }
+            return null;
+        }
+        
         SingleResp[] singleResps = brep.getResponses();
         if(singleResps.length==0) {
             return null;
