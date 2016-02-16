@@ -35,6 +35,7 @@ import java.security.cert.PKIXCertPathChecker;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -125,7 +126,10 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
 
     @Override
     public Set<String> getSupportedExtensions() {
-        return null;
+        ArrayList<String> exts = new ArrayList<String>();
+        exts.add(Extension.cRLDistributionPoints.getId());
+        exts.add(Extension.authorityInfoAccess.getId());
+        return new HashSet<String>(exts);
     }
     
     /**
@@ -168,9 +172,9 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         
         clearResult();
         
-        String ocspurl = getOcspUrl(cert);
+        ArrayList<String> ocspurls = getOcspUrls(cert);
 
-        if(StringUtils.isNotEmpty(ocspurl)) {
+        if(!ocspurls.isEmpty()) {
             Certificate cacert = getCaCert(cert);
             if(cacert == null) {
                 log.error("No issuer CA certificate was found. An issuer CA certificate is needed to create an OCSP request");
@@ -191,49 +195,48 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
                 
             }
             
-            // Send the request and receive a singleResponse
-            SingleResp[] singleResps = null; 
-            try {
-                singleResps = getOCSPResponse(ocspurl, req.getEncoded(), nonce, OCSPRespBuilder.SUCCESSFUL, 200);
-            } catch (OperatorCreationException | CertificateException | IOException | OCSPException  e) {
-                if(log.isDebugEnabled()) {
-                    log.debug("Failed to parse or verify OCSP response. " + e.getLocalizedMessage());
+            SingleResp ocspResp = null;
+            for(String url : ocspurls) {
+                ocspResp = getOCSPResponse(url, req, cert, nonce, OCSPRespBuilder.SUCCESSFUL, 200);
+                if(ocspResp != null) {
+                    log.info("Obtained OCSP response from " + url);
+                    break;
+                } else {
+                    if(log.isDebugEnabled()) {
+                        log.debug("Failed to obtain an OCSP reponse from " + url);
+                    }
                 }
-                fallBackToCrl(cert);
-                return;
             }
             
-            if(singleResps == null) {
+            if(ocspResp==null) {
                 if(log.isDebugEnabled()) {
-                    log.debug("Failed to verify certificate revocation status using OCSP.");
+                    log.debug("Failed to check certificate revocation status using OCSP. Falling back to check using CRL");
                 }
                 fallBackToCrl(cert);
-                return;
-            }
+            } else {
+                this.ocspResponse = ocspResp;
+                CertificateStatus status = ocspResp.getCertStatus();
+                if(log.isDebugEnabled()) {
+                    log.debug("The certificate status is: " + (status==null? "Good" : status.toString()));
+                }
+                if(status != null) {
+                    this.isCertificateRevoked = true;
+                    throw new CertPathValidatorException("Certificate with serialnumber " + CertTools.getSerialNumberAsString(cert) + " was revoked");
+                }
                 
-            SingleResp response = singleResps[0];
-            CertificateID certId = response.getCertID();
-            if(!certId.getSerialNumber().equals(certSerialnumber)) {
-                if(log.isDebugEnabled()) {
-                    log.debug("Certificate serialnumber in response does not match certificate serialnumber in request.");
+                if(unresolvedCritExts != null) {
+                    unresolvedCritExts.remove(Extension.authorityInfoAccess.getId());
                 }
-                fallBackToCrl(cert);
-                return;
             }
-            this.ocspResponse = response;
-            CertificateStatus status = response.getCertStatus();
-            if(log.isDebugEnabled()) {
-                log.debug("The certificate status is: " + (status==null? "Good" : status.toString()));
-            }
-            if(status != null) {
-                this.isCertificateRevoked = true;
-                throw new CertPathValidatorException("Certificate with serialnumber " + CertTools.getSerialNumberAsString(cert) + " was revoked");
-            }
+
         } else {
             fallBackToCrl(cert);
+            
+            if(unresolvedCritExts != null) {
+                unresolvedCritExts.remove(Extension.cRLDistributionPoints.getId());
+            }
         }
 
-        
     }
     
     /**
@@ -242,14 +245,10 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
      * @throws CertPathValidatorException
      */
     private void fallBackToCrl(final Certificate cert) throws CertPathValidatorException {
-        if(log.isDebugEnabled()) {
-            log.debug("Failed to check certificate revocation status using OCSP. Falling back to check using CRL");
-        }
-
         ArrayList<String> crlUrls = getCrlUrl(cert);
         if(crlUrls.isEmpty()) {
             final String errmsg = "Failed to verify certificate status using the fallback CRL method. Could not find a CRL URL"; 
-            log.error(errmsg);
+            log.info(errmsg);
             throw new CertPathValidatorException(errmsg);
         }
         if(log.isDebugEnabled()) {
@@ -301,15 +300,20 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         return gen.build();
     }
 
+    
+    
     /**
-     * Sends an OCSP request and returns the OCSP response
+     * Sends an OCSP request, gets a response and verifies the response as much as possible before returning it to the caller.
+     * 
+     * @return The OCSP response, or null of no correct response could be obtained.
      */
-    private SingleResp[] getOCSPResponse(final String ocspurl, final byte[] ocspPackage, final String nonce, int expectedOcspRespCode, int expectedHttpRespCode) 
-            throws OCSPException, OperatorCreationException, CertificateException {
+    private SingleResp getOCSPResponse(final String ocspurl, final OCSPReq ocspRequest, final Certificate cert, final String nonce, int expectedOcspRespCode, int expectedHttpRespCode) {
         if(log.isDebugEnabled()) {
-            log.debug("Sending an OCSP requst to " + ocspurl);
+            log.debug("Sending OCSP request to " + ocspurl + " regarding certificate with SubjectDN: " + CertTools.getSubjectDN(cert) 
+                        + " - IssuerDN: " + CertTools.getIssuerDN(cert));
         }
         
+        //----------------------- Open connection and send the request --------------//
         OCSPResp response = null;
         HttpURLConnection con = null;
         try {
@@ -322,7 +326,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             // POST it
             con.setRequestProperty("Content-Type", "application/ocsp-request");
             OutputStream os = con.getOutputStream();
-            os.write(ocspPackage);
+            os.write(ocspRequest.getEncoded());
             os.close();
         
         
@@ -338,32 +342,44 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             is.close();
         
         } catch(IOException e) {
-            log.info("Unable to get an OCSP response");
+            log.info("Unable to get an OCSP response. " + e.getLocalizedMessage());
             if(con != null) {
                 handleContentOfErrorStream(con.getErrorStream());
             }
             return null;
         }
         
-        if (expectedOcspRespCode != 0) {
-            if(response.getResponseObject() != null) {
+        
+        
+        // ------------ Verify the response signature --------------//
+        BasicOCSPResp brep = null;
+        try {
+            brep = (BasicOCSPResp) response.getResponseObject();
+
+            if ((expectedOcspRespCode != OCSPRespBuilder.SUCCESSFUL) && (brep!=null)) {
                 log.warn("According to RFC 2560, responseBytes are not set on error, but we got some.");    
+                return null; // it messes up testing of invalid signatures... but is needed for the unsuccessful responses
             }
-            return null; // it messes up testing of invalid signatures... but is needed for the unsuccessful responses
-        }
-        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        if (brep==null) {
-            log.warn("Cannot extract OCSP response object. OCSP response status: " + response.getStatus());
-            return null;
-        }
-        X509CertificateHolder[] chain = brep.getCerts();
-        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
-        if(!verify) {
-            log.warn("OCSP response signature was not valid");
+        
+            if (brep==null) {
+                log.warn("Cannot extract OCSP response object. OCSP response status: " + response.getStatus());
+                return null;
+            }
+        
+            X509CertificateHolder[] chain = brep.getCerts();
+            boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
+            if(!verify) {
+                log.warn("OCSP response signature was not valid");
+                return null;
+            }
+        } catch (OCSPException | OperatorCreationException | CertificateException e) {
+            if(log.isDebugEnabled()) {
+                log.debug("Failed to obtain or verify OCSP response. " + e.getLocalizedMessage());
+            }
             return null;
         }
 
-        // Check the nonce
+        // ------------- Verify the nonce ---------------//
         byte[] noncerep;
         try {
             noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
@@ -393,11 +409,27 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             return null;
         }
         
+        
+        // ------------ Extract the single response and verify that it concerns a cert with the right serialnumber ----//
         SingleResp[] singleResps = brep.getResponses();
-        if(singleResps.length==0) {
+        if((singleResps==null) || (singleResps.length==0)) {
+            if(log.isDebugEnabled()) {
+                log.debug("The OCSP response object contained no responses.");
+            }
             return null;
         }
-        return singleResps;        
+        
+        SingleResp singleResponse = singleResps[0];
+        CertificateID certId = singleResponse.getCertID();
+        if(!certId.getSerialNumber().equals(CertTools.getSerialNumber(cert))) {
+            if(log.isDebugEnabled()) {
+                log.debug("Certificate serialnumber in response does not match certificate serialnumber in request.");
+            }
+            return null;
+        }
+        
+        // ------------ Return the sigle response ---------------//
+        return singleResponse;        
     }
     
     /**
@@ -412,16 +444,17 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         } catch(IOException ex) {}
     }
     
-    private String getOcspUrl(Certificate cert) {
-        String ocspurl = this.ocspUrl;
-        
-        if(StringUtils.isEmpty(ocspurl)) {
-            try {
-                ocspurl = CertTools.getAuthorityInformationAccessOcspUrl(cert);
-            } catch (CertificateParsingException e) {}
+    private ArrayList<String> getOcspUrls(Certificate cert) {
+        ArrayList<String> urls = new ArrayList<String>();
+        if(this.ocspUrl != null) {
+            urls.add(this.ocspUrl);
         }
         
-        return ocspurl;
+        try {
+            urls.addAll(CertTools.getAuthorityInformationAccessOcspUrls((X509Certificate)cert));
+        } catch (CertificateParsingException e) {}
+        
+        return urls;
     }
     
     private ArrayList<String> getCrlUrl(final Certificate cert) {

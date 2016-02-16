@@ -2872,7 +2872,7 @@ public abstract class CertTools {
     }
 
     /**
-     * Returns OCSP URL that is inside AuthorityInformationAccess extension, or null.
+     * Returns the first OCSP URL that is inside AuthorityInformationAccess extension, or null.
      * 
      * @param cert is the certificate to parse
      * @throws CertificateParsingException
@@ -2912,7 +2912,40 @@ public abstract class CertTools {
         }
         return ret;
     }
-
+    
+    
+    /** @return all OCSP URL that is inside AuthorityInformationAccess extension or an empty list */
+    public static List<String> getAuthorityInformationAccessOcspUrls(X509Certificate x509cert) throws CertificateParsingException {
+        final List<String> urls = new ArrayList<>();
+        try {
+            final ASN1Primitive obj = getExtensionValue(x509cert, Extension.authorityInfoAccess.getId());
+            if (obj != null) {
+                final AccessDescription[] accessDescriptions = AuthorityInformationAccess.getInstance(obj).getAccessDescriptions();
+                if (accessDescriptions != null) {
+                    for (final AccessDescription accessDescription : accessDescriptions) {
+                        if (accessDescription.getAccessMethod().equals(X509ObjectIdentifiers.ocspAccessMethod)) {
+                            final GeneralName generalName = accessDescription.getAccessLocation();
+                            if (generalName.getTagNo() == GeneralName.uniformResourceIdentifier) {
+                                // After encoding in a cert, it is tagged an extra time...
+                                ASN1Primitive gnobj = generalName.toASN1Primitive();
+                                if (gnobj instanceof ASN1TaggedObject) {
+                                    gnobj = ASN1TaggedObject.getInstance(gnobj).getObject();
+                                }
+                                final DERIA5String str = DERIA5String.getInstance(gnobj);
+                                urls.add(str.getString());
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error parsing AuthorityInformationAccess", e);
+            throw new CertificateParsingException(e.toString());
+        }
+        return urls;
+    }
+    
+    
     /** @return PrivateKeyUsagePeriod extension from a certificate */
     public static PrivateKeyUsagePeriod getPrivateKeyUsagePeriod(final X509Certificate cert) {
         PrivateKeyUsagePeriod res = null;
