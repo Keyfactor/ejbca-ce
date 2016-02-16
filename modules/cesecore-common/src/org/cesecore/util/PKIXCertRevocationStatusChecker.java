@@ -209,9 +209,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             }
             
             if(ocspResp==null) {
-                if(log.isDebugEnabled()) {
-                    log.debug("Failed to check certificate revocation status using OCSP. Falling back to check using CRL");
-                }
+                log.info("Failed to check certificate revocation status using OCSP. Falling back to check using CRL");
                 fallBackToCrl(cert);
             } else {
                 this.ocspResponse = ocspResp;
