@@ -1495,7 +1495,7 @@ public abstract class CertTools {
     }
     
     /**
-     * @param returnType the type of Certificate to be returned. Certificate can be used if certificate type is unknown.
+     * @param returnType the type of Certificate to be returned, for example X509Certificate.class. Certificate.class can be used if certificate type is unknown.
      * 
      * @throws CertificateParsingException if the byte array does not contain a proper certificate.
      */
