@@ -1483,6 +1483,7 @@ if (!editerrors.isEmpty()) {
       </td>
       <td width="40%" valign="top" align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"ALLOWEDREQUESTS\") %>" />
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Number%20of%20allowed%20requests") %>
       </td>
       <td width="50%"> 
         <% used = profiledata.getUse(EndEntityProfile.ALLOWEDREQUESTS,0); 
@@ -1520,7 +1521,7 @@ if (!editerrors.isEmpty()) {
       </td>
       <td width="40%" valign="top" align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"KEYRECOVERABLE\") %>" />
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20recovery") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20Recovery") %>
       </td>
       <td width="50%"> 
         <% used = profiledata.getUse(EndEntityProfile.KEYRECOVERABLE,0); %>
