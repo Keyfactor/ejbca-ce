@@ -41,6 +41,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -254,7 +255,6 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             CertificateProfile cp = certProfileSession.getCertificateProfile(certprofileID);
             cp.setUseAuthorityInformationAccess(true);
             cp.setOCSPServiceLocatorURI(baseUrl+"/"+resourceOcsp);
-            //cp.setCRLIssuer(cainfo.getSubjectDN());
             certProfileSession.changeCertificateProfile(alwaysAllowToken, certprofileName, cp);
             
             // create a user and issue it a certificate
@@ -603,6 +603,137 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             eeManagementSession.revokeAndDeleteUser(alwaysAllowToken, username, ReasonFlags.unused);
         }
     }
+    
+    /**
+     * 1. Create a test certificate containing CRLDistributionPoints extension containing a URL to the right CRL
+     * 2. Generate a CRL
+     * 3. Check the revocation status of the test certificate. Expected: certificate not revoked
+     * 4. Revoke the test certificate
+     * 5. Generate a new CRL
+     * 6. Check the revocation status of the test certificate. Expected: error massage that the certificate is revoked
+     */
+    @Test
+    public void test07VerificationWithMultipleCRLs() throws Exception {
+
+        final String testca2SubjectDN = "CN=SecondTestCA";
+        if(caSession.existsCa(testca2SubjectDN)) {
+            caSession.removeCA(alwaysAllowToken, testca2SubjectDN.hashCode());
+        }
+        X509CA testca2 = CaTestUtils.createTestX509CA(testca2SubjectDN, null, false);
+        caSession.addCA(alwaysAllowToken, testca2);
+        
+        final String defaultCRLDistPoint = "http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=";
+        
+        final String username = "CertRevocationStatusCheckTestUser";
+        final String userDN = "CN=" + username;
+        String usercertFp="";
+        String crlFp1="", crlFp2="", testca2CrlFp1="";
+        
+        try {
+            
+            
+            CertificateProfile cp = certProfileSession.getCertificateProfile(certprofileID);
+            cp.setUseCRLDistributionPoint(true);
+            cp.setCRLDistributionPointURI(defaultCRLDistPoint+testca2SubjectDN+";"+defaultCRLDistPoint+CADN);
+            cp.setCRLIssuer(CADN);
+            certProfileSession.changeCertificateProfile(alwaysAllowToken, certprofileName, cp);
+            
+            // create a user and issue it a certificate
+            createUser(username, userDN, testx509ca.getCAId(), eeprofileID, certprofileID);
+            final KeyPair userkeys = KeyTools.genKeys("1024", "RSA");
+            X509Certificate usercert = (X509Certificate) signSession.createCertificate(alwaysAllowToken, username, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
+            usercertFp = CertTools.getFingerprintAsString(usercert);
+            
+            
+            // Generate CRL for the "real" CA
+            Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, -1);
+            int fullnumber = crlStoreSession.getLastCRLNumber(CADN, false);
+            int deltanumber = crlStoreSession.getLastCRLNumber(CADN, true);
+            // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
+            int nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
+            crlCreateSession.generateAndStoreCRL(alwaysAllowToken, testx509ca, revcerts, -1, nextCrlNumber);
+            // We should now have a CRL generated
+            byte[] crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            crlFp1 = CertTools.getFingerprintAsString(crl);
+            
+            // Check usercert revocation status
+            PKIXCertRevocationStatusChecker checker = new PKIXCertRevocationStatusChecker(null, null, null, null);
+            try {
+                checker.check(usercert, null);
+            } catch (CertPathValidatorException e) {
+                fail("The certificate is not revoked and should have passed the check but it did not.");
+            }
+            assertNull("The check was performed using CRL, so there should not be an OCSP response to grab", checker.getOCSPResponse());
+            Collection<CRL> crls = checker.getcrls();
+            assertFalse("The check was performed using CRL, so there should be at least one CRL to grab", crls.isEmpty());
+            assertEquals(1, crls.size());
+            
+            
+            
+            
+            // Generate CRL for the second testCA
+            revcerts = certStoreSession.listRevokedCertInfo(testca2SubjectDN, -1);
+            fullnumber = crlStoreSession.getLastCRLNumber(testca2SubjectDN, false);
+            deltanumber = crlStoreSession.getLastCRLNumber(testca2SubjectDN, true);
+            // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
+            nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
+            crlCreateSession.generateAndStoreCRL(alwaysAllowToken, testca2, revcerts, -1, nextCrlNumber);
+            // We should now have a CRL generated
+            crl = crlStoreSession.getLastCRL(testca2SubjectDN, false);
+            testca2CrlFp1 = CertTools.getFingerprintAsString(crl);
+            
+            
+            // Check the revocation status again. There should be 2 URL now
+            try {
+                checker.check(usercert, null);
+            } catch (CertPathValidatorException e) {
+                fail("The certificate is not revoked and should have passed the check but it did not.");
+            }
+            assertNull("The check was performed using CRL, so there should not be an OCSP response to grab", checker.getOCSPResponse());
+            crls = checker.getcrls();
+            assertFalse("The check was performed using CRL, so there should be at least one CRL to grab", crls.isEmpty());
+            assertEquals(2, crls.size());
+            
+            
+            // Revoke usercert
+            eeManagementSession.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(usercert), CADN, 0);
+            
+            // Generate a new CRL. It should contain usercert
+            revcerts = certStoreSession.listRevokedCertInfo(CADN, -1);
+            fullnumber = crlStoreSession.getLastCRLNumber(CADN, false);
+            deltanumber = crlStoreSession.getLastCRLNumber(CADN, true);
+            // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
+            nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
+            crlCreateSession.generateAndStoreCRL(alwaysAllowToken, testx509ca, revcerts, -1, nextCrlNumber);
+            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            crlFp2 = CertTools.getFingerprintAsString(crl);
+            
+            // Check usercert revocation status
+            try {
+                checker.check(usercert, null);
+                fail("The certificate is now revoked and should not have passed the check but it did.");
+            } catch (CertPathValidatorException e) { 
+                String expectedMsg = "Certificate with serialnumber " + CertTools.getSerialNumberAsString(usercert) + " was revoked";
+                assertEquals(expectedMsg, e.getLocalizedMessage());
+            }
+            assertNull("The check was performed using CRL, so there should not be an OCSP response to grab", checker.getOCSPResponse());
+            crls = checker.getcrls();
+            assertFalse("The check was performed using CRL, so there should be at least one CRL to grab", crls.isEmpty());
+            assertEquals(2, crls.size());
+            
+        } finally {
+            // Remove it to clean database
+            internalCertStoreSession.removeCRL(alwaysAllowToken, crlFp1);
+            internalCertStoreSession.removeCRL(alwaysAllowToken, crlFp2);
+            internalCertStoreSession.removeCRL(alwaysAllowToken, testca2CrlFp1);
+            internalCertStoreSession.removeCertificate(usercertFp);
+            eeManagementSession.revokeAndDeleteUser(alwaysAllowToken, username, ReasonFlags.unused);
+            
+            caSession.removeCA(alwaysAllowToken, testca2.getCAId());
+            internalCertStoreSession.removeCertificate(testca2.getCACertificate());
+        }
+    }
+
 
     
     private void createUser(final String username, final String dn, final int caid, final int eepid, final int cpid) throws AuthorizationDeniedException,
