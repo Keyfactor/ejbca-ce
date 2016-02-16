@@ -360,7 +360,6 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
     @Test
     public void test04VerificationWithCRLFromCertExtension() throws Exception {
 
-        X509CAInfo cainfo = (X509CAInfo) testx509ca.getCAInfo();
         final String defaultCRLDistPoint = "http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=";
         
         final String username = "CertRevocationStatusCheckTestUser";
@@ -373,8 +372,8 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             
             CertificateProfile cp = certProfileSession.getCertificateProfile(certprofileID);
             cp.setUseCRLDistributionPoint(true);
-            cp.setCRLDistributionPointURI(defaultCRLDistPoint+cainfo.getSubjectDN()+";"+"http://aveen.se");
-            cp.setCRLIssuer(cainfo.getSubjectDN());
+            cp.setCRLDistributionPointURI(defaultCRLDistPoint+CADN);
+            cp.setCRLIssuer(CADN);
             certProfileSession.changeCertificateProfile(alwaysAllowToken, certprofileName, cp);
             
             // create a user and issue it a certificate
@@ -409,7 +408,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             
             
             // Revoke usercert
-            eeManagementSession.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(usercert), cainfo.getSubjectDN(), 0);
+            eeManagementSession.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(usercert), CADN, 0);
             
             // Generate a new CRL. It should contain usercert
             revcerts = certStoreSession.listRevokedCertInfo(CADN, -1);
