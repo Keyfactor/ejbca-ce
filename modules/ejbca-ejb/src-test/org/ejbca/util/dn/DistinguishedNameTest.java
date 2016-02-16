@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.naming.ldap.Rdn;
 
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.util.CertTools;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -64,12 +65,14 @@ public class DistinguishedNameTest {
     @Test
     public void testMergeDnWithoutOverride() throws Exception {
 
-        final String EXPECTED_DN = "cn=David Galichet,o=Fimasys,email=dgalichet@fimasys.fr,"
-            + "g=M,email=david.galichet@fimasys.fr,ou=Linagora Secu,email=dgalichet@linagora.com,l=Paris";
+        // final String EXPECTED_DN = "cn=David Galichet,o=Fimasys,email=dgalichet@fimasys.fr,"
+        //    + "g=M,email=david.galichet@fimasys.fr,ou=Linagora Secu,email=dgalichet@linagora.com,l=Paris";
+        final String EXPECTED_DN = "E=dgalichet@linagora.com,E=david.galichet@fimasys.fr,E=dgalichet@fimasys.fr,CN=David Galichet,OU=Linagora Secu,O=Fimasys,L=Paris";
         dn = createNewDN();
         DistinguishedName newDn = dn.mergeDN(otherDn, false, null);
-
-        assertEquals(EXPECTED_DN, newDn.toString());
+        // newDn.toString returns different order of things depending on JVM used, in JDK7 and JDK8 the last email and l are switched
+        //assertEquals(EXPECTED_DN, newDn.toString());
+        assertEquals(EXPECTED_DN, CertTools.stringToBCDNString(newDn.toString()));
     }
 
     /**
@@ -79,13 +82,15 @@ public class DistinguishedNameTest {
     @Test
    public void testMergeDnWithOverride() throws Exception {
 
-        final String EXPECTED_DN = "cn=David Galichet,o=Linagora,email=dgalichet@linagora.fr,"
-            + "g=M,email=david.galichet@linagora.com,ou=Linagora Secu,email=dgalichet@linagora.com,l=Paris";
-
+        //final String EXPECTED_DN = "cn=David Galichet,o=Linagora,email=dgalichet@linagora.fr,"
+        //    + "g=M,email=david.galichet@linagora.com,ou=Linagora Secu,email=dgalichet@linagora.com,l=Paris";
+        final String EXPECTED_DN = "E=dgalichet@linagora.com,E=david.galichet@linagora.com,E=dgalichet@linagora.fr,CN=David Galichet,OU=Linagora Secu,O=Linagora,L=Paris";
+        
         dn = createNewDN();
         DistinguishedName newDn = dn.mergeDN(otherDn, true, null);
-
-        assertEquals(EXPECTED_DN, newDn.toString());
+        // newDn.toString returns different order of things depending on JVM used, in JDK7 and JDK8 the last email and l are switched
+        //assertEquals(EXPECTED_DN, newDn.toString());
+        assertEquals(EXPECTED_DN, CertTools.stringToBCDNString(newDn.toString()));
     }
 
     /**

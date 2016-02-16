@@ -110,7 +110,9 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
-        PublicKey pk = cert.getPublicKey();
+        // We need to convert to BC to avoid differences between JDK7 and JDK8, and supported curves
+        X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+        PublicKey pk = bccert.getPublicKey();
         checkECKey(pk);
         try {
             X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
@@ -191,7 +193,9 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, ECDSA_USERNAME, "foo123", selfcert);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
-        PublicKey pk = cert.getPublicKey();
+        // We need to convert to BC to avoid differences between JDK7 and JDK8, and supported curves
+        X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+        PublicKey pk = bccert.getPublicKey();
         checkECKey(pk);
         X509Certificate ecdsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_CA_NAME).getCertificateChain().toArray()[0];
         try {
@@ -261,12 +265,16 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, ecDsaImplicitCaUserName, "foo123", selfcert);
             assertNotNull("Misslyckades skapa cert", cert);
             log.debug("Cert=" + cert.toString());
-            PublicKey pk = cert.getPublicKey();
+            // We need to convert to BC to avoid differences between JDK7 and JDK8, and supported curves
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
             checkECKey(pk);
             X509Certificate ecdsaimplicitlycacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_IMPLICIT_CA_NAME)
                     .getCertificateChain().toArray()[0];
+            // We need to convert to BC to avoid differences between JDK7 and JDK8, and supported curves
+            X509Certificate bcecdsaimplicitlycacacert = CertTools.getCertfromByteArray(ecdsaimplicitlycacacert.getEncoded(), X509Certificate.class);
             try {
-                cert.verify(ecdsaimplicitlycacacert.getPublicKey());
+                bccert.verify(bcecdsaimplicitlycacacert.getPublicKey());
             } catch (Exception e) {
                 fail("Verify failed: " + e.getMessage());
             }
