@@ -16,7 +16,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URL;
@@ -24,6 +23,7 @@ import java.security.KeyPair;
 import java.security.cert.CRL;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -206,7 +206,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             }
             SingleResp ocspResp1 = checker.getOCSPResponse();
             assertNotNull("The check should have been performed using OCSP, so there should be an OCSP response to fetch", ocspResp1);
-            assertTrue("The check should have been performed using OCSP, so there should not be CRLs to fetch", checker.getcrls().isEmpty());
+            assertNull("The check should have been performed using OCSP, so there should not be CRLs to fetch", checker.getcrl());
             
 
             // Revoke usercert
@@ -223,7 +223,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             SingleResp ocspResp2 = checker.getOCSPResponse();
             assertNotNull("The check should have been performed using OCSP, so there should be an OCSP response to fetch", ocspResp2);
             assertFalse("The OCSP response from the first and second check should not be equals", ocspResp1.equals(ocspResp2));
-            assertTrue("The check should have been performed using OCSP, so there should not be CRLs to fetch", checker.getcrls().isEmpty());
+            assertNull("The check should have been performed using OCSP, so there should not be CRLs to fetch", checker.getcrl());
                 
         } finally {
             // Remove it to clean database
@@ -265,7 +265,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
                
             
             // Check usercert revocation status
-            PKIXCertRevocationStatusChecker checker = new PKIXCertRevocationStatusChecker(null, null, (X509Certificate) testx509ca.getCACertificate(), null);
+            PKIXCertRevocationStatusChecker checker = new PKIXCertRevocationStatusChecker((X509Certificate) testx509ca.getCACertificate(), null);
             try {
                 checker.check(usercert, null);
             } catch (CertPathValidatorException e) {
@@ -273,7 +273,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             }
             SingleResp ocspResp1 = checker.getOCSPResponse();
             assertNotNull("The check should have been performed using OCSP, so there should be an OCSP response to fetch", ocspResp1);
-            assertTrue("The check should have been performed using OCSP, so there should not be CRLs to fetch", checker.getcrls().isEmpty());
+            assertNull("The check should have been performed using OCSP, so there should not be CRLs to fetch", checker.getcrl());
 
             // Revoke usercert
             eeManagementSession.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(usercert), CADN, 0);
@@ -289,7 +289,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             SingleResp ocspResp2 = checker.getOCSPResponse();
             assertNotNull("The check should have been performed using OCSP, so there should be an OCSP response to fetch", ocspResp2);
             assertFalse("The OCSP response from the first and second check should not be equals", ocspResp1.equals(ocspResp2));
-            assertTrue("The check should have been performed using OCSP, so there should not be CRLs to fetch", checker.getcrls().isEmpty());
+            assertNull("The check should have been performed using OCSP, so there should not be CRLs to fetch", checker.getcrl());
                 
         } finally {
             // Remove it to clean database
@@ -310,19 +310,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
         final String userDN = "CN=" + username;
         String usercertFp="";
         
-        String baseUrl = "http://127.0.0.1:8080/ejbca";
-        String resourceOcsp = "publicweb/status/ocsp";
-        OcspJunitHelper helper = new OcspJunitHelper(baseUrl, resourceOcsp);
-        helper.reloadKeys();
-        
         try {
-            
-            CertificateProfile cp = certProfileSession.getCertificateProfile(certprofileID);
-            cp.setUseAuthorityInformationAccess(true);
-            cp.setOCSPServiceLocatorURI(baseUrl+"/"+resourceOcsp);
-            //cp.setCRLIssuer(cainfo.getSubjectDN());
-            certProfileSession.changeCertificateProfile(alwaysAllowToken, certprofileName, cp);
-            
             // create a user and issue it a certificate
             createUser(username, userDN, testx509ca.getCAId(), eeprofileID, certprofileID);
             final KeyPair userkeys = KeyTools.genKeys("1024", "RSA");
@@ -331,16 +319,16 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
                
             
             // Check usercert revocation status
-            PKIXCertRevocationStatusChecker checker = new PKIXCertRevocationStatusChecker(null, null, null, null);
+            PKIXCertRevocationStatusChecker checker = new PKIXCertRevocationStatusChecker(null, null);
             try {
                 checker.check(usercert, null);
                 fail("The check should not have been performed because the input parameters were not satisfactory. Inspite of that, the check was successful.");
             } catch (CertPathValidatorException e) {
-                final String expectedMsg = "Failed to verify certificate status using the fallback CRL method. Could not find a CRL URL";
+                final String expectedMsg = "No issuer CA certificate was found. An issuer CA certificate is needed to create an OCSP request and to get the right CRL";
                 assertEquals(expectedMsg, e.getLocalizedMessage());
             }
             assertNull("The check should not have been performed using OCSP, so there should not be an OCSP response to grab", checker.getOCSPResponse());
-            assertTrue("The check should not have been performed using CRL, so there should not be a CRL to grab", checker.getcrls().isEmpty());
+            assertNull("The check should not have been performed using CRL, so there should not be a CRL to grab", checker.getcrl());
 
         } finally {
             // Remove it to clean database
@@ -395,17 +383,15 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             crlFp1 = CertTools.getFingerprintAsString(crl);
             
             // Check usercert revocation status
-            PKIXCertRevocationStatusChecker checker = new PKIXCertRevocationStatusChecker(null, null, null, null);
+            PKIXCertRevocationStatusChecker checker = new PKIXCertRevocationStatusChecker((X509Certificate) testx509ca.getCACertificate(), null);
             try {
                 checker.check(usercert, null);
             } catch (CertPathValidatorException e) {
                 fail("The certificate is not revoked and should have passed the check but it did not.");
             }
             assertNull("The check was performed using CRL, so there should not be an OCSP response to grab", checker.getOCSPResponse());
-            Collection<CRL> crls1 = checker.getcrls();
-            assertFalse("The check was performed using CRL, so there should be at least one CRL to grab", crls1.isEmpty());
-            CRL crl1 = crls1.iterator().next();
-            
+            CRL crl1 = checker.getcrl();
+            assertNotNull("The check was performed using CRL, so there should be a CRL to grab", crl1);
             
             // Revoke usercert
             eeManagementSession.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(usercert), CADN, 0);
@@ -429,9 +415,8 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
                 assertEquals(expectedMsg, e.getLocalizedMessage());
             }
             assertNull("The check was performed using CRL, so there should not be an OCSP response to grab", checker.getOCSPResponse());
-            Collection<CRL> crls2 = checker.getcrls();
-            assertFalse("The check was performed using CRL, so there should be at least one CRL to grab", crls2.isEmpty());
-            CRL crl2 = crls2.iterator().next();
+            CRL crl2 = checker.getcrl();
+            assertNotNull("The check was performed using CRL, so there should be a CRL to grab", crl2);
             assertFalse("The CRLs from the first and second check should not be the same", crl1.equals(crl2));
             
         } finally {
@@ -499,10 +484,8 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
                 fail("The certificate is not revoked and should have passed the check but it did not.");
             }
             assertNull("The check was performed using CRL, so there should not be an OCSP response to grab", checker.getOCSPResponse());
-            Collection<CRL> crls1 = checker.getcrls();
-            assertFalse("The check was performed using CRL, so there should be at least one CRL to grab", crls1.isEmpty());
-            CRL crl1 = crls1.iterator().next();
-            
+            CRL crl1 = checker.getcrl();
+            assertNotNull("The check was performed using CRL, so there should be a CRL to grab", crl1);
             
             // Revoke usercert
             eeManagementSession.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(usercert), cainfo.getSubjectDN(), 0);
@@ -526,9 +509,8 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
                 assertEquals(expectedMsg, e.getLocalizedMessage());
             }
             assertNull("The check was performed using CRL, so there should not be an OCSP response to grab", checker.getOCSPResponse());
-            Collection<CRL> crls2 = checker.getcrls();
-            assertFalse("The check was performed using CRL, so there should be at least one CRL to grab", crls2.isEmpty());
-            CRL crl2 = crls2.iterator().next();
+            CRL crl2 = checker.getcrl();
+            assertNotNull("The check was performed using CRL, so there should be a CRL to grab", crl2);
             assertFalse("The CRLs from the first and second check should not be the same", crl1.equals(crl2));
         } finally {
             // Remove it to clean database
@@ -538,7 +520,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             eeManagementSession.revokeAndDeleteUser(alwaysAllowToken, username, ReasonFlags.unused);
         }
     }
-    
+
     /**
      * 1. Create a test certificate containing neither AuthorityInformationAccess not CRLDistributionPoints extensions
      * 2. Create a PKIXCertRevocationStatusChecker object not specifying any URLS
@@ -546,13 +528,6 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
      */
     @Test
     public void test06VerificationWithNoLinks() throws Exception {
-
-        X509CAInfo cainfo = (X509CAInfo) testx509ca.getCAInfo();
-        final String defaultCRLDistPoint = "http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=";
-        //http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN=ManagementCA,O=EJBCA%20Sample,C=SE
-        URL crlUrl = new URL(defaultCRLDistPoint + cainfo.getSubjectDN());
-        cainfo.setDefaultCRLDistPoint(crlUrl.toString());
-        caSession.editCA(alwaysAllowToken, cainfo);
         
         ArrayList<X509Certificate> caCertChain = new ArrayList<X509Certificate>();
         caCertChain.add((X509Certificate)testx509ca.getCACertificate());
@@ -583,7 +558,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             crlFp1 = CertTools.getFingerprintAsString(crl);
             
             // Check usercert revocation status
-            PKIXCertRevocationStatusChecker checker = new PKIXCertRevocationStatusChecker(null, null, null, caCertChain);
+            PKIXCertRevocationStatusChecker checker = new PKIXCertRevocationStatusChecker("", "", null, caCertChain);
 
             try {
                 checker.check(usercert, null);
@@ -593,7 +568,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
                 assertEquals(expectedMsg, e.getLocalizedMessage());
             }
             assertNull("The check should not have been performed using OCSP, so there should not be an OCSP response to grab", checker.getOCSPResponse());
-            assertTrue("The check should not have been performed using CRL, so there should not be a CRL to grab", checker.getcrls().isEmpty());
+            assertNull("The check should not have been performed using CRL, so there should not be a CRL to grab", checker.getcrl());
             
         } finally {
             // Remove it to clean database
@@ -648,18 +623,16 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             crlFp1 = CertTools.getFingerprintAsString(crl);
             
             // Check usercert revocation status
-            PKIXCertRevocationStatusChecker checker = new PKIXCertRevocationStatusChecker(null, null, null, null);
+            PKIXCertRevocationStatusChecker checker = new PKIXCertRevocationStatusChecker((X509Certificate) testx509ca.getCACertificate(), null);
             try {
                 checker.check(usercert, null);
             } catch (CertPathValidatorException e) {
                 fail("The certificate is not revoked and should have passed the check but it did not.");
             }
             assertNull("The check was performed using CRL, so there should not be an OCSP response to grab", checker.getOCSPResponse());
-            Collection<CRL> crls = checker.getcrls();
-            assertFalse("The check was performed using CRL, so there should be at least one CRL to grab", crls.isEmpty());
-            assertEquals(1, crls.size());
-            
-            
+            CRL testx509caCrl = checker.getcrl();
+            assertNotNull("The check was performed using CRL, so there should be at least one CRL to grab", testx509caCrl);
+            assertEquals(CADN, CertTools.getIssuerDN((X509CRL)testx509caCrl));
             
             
             // Generate CRL for the second testCA
@@ -681,9 +654,9 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
                 fail("The certificate is not revoked and should have passed the check but it did not.");
             }
             assertNull("The check was performed using CRL, so there should not be an OCSP response to grab", checker.getOCSPResponse());
-            crls = checker.getcrls();
-            assertFalse("The check was performed using CRL, so there should be at least one CRL to grab", crls.isEmpty());
-            assertEquals(2, crls.size());
+            testx509caCrl = checker.getcrl();
+            assertNotNull("The check was performed using CRL, so there should be at least one CRL to grab", testx509caCrl);
+            assertEquals(CADN, CertTools.getIssuerDN((X509CRL)testx509caCrl));
             
             
             // Revoke usercert
@@ -708,9 +681,9 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
                 assertEquals(expectedMsg, e.getLocalizedMessage());
             }
             assertNull("The check was performed using CRL, so there should not be an OCSP response to grab", checker.getOCSPResponse());
-            crls = checker.getcrls();
-            assertFalse("The check was performed using CRL, so there should be at least one CRL to grab", crls.isEmpty());
-            assertEquals(2, crls.size());
+            testx509caCrl = checker.getcrl();
+            assertNotNull("The check was performed using CRL, so there should be at least one CRL to grab", testx509caCrl);
+            assertEquals(CADN, CertTools.getIssuerDN((X509CRL)testx509caCrl));
             
         } finally {
             // Remove it to clean database
