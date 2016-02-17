@@ -602,15 +602,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             eeManagementSession.revokeAndDeleteUser(alwaysAllowToken, username, ReasonFlags.unused);
         }
     }
-    
-    /**
-     * 1. Create a test certificate containing CRLDistributionPoints extension containing a URL to the right CRL
-     * 2. Generate a CRL
-     * 3. Check the revocation status of the test certificate. Expected: certificate not revoked
-     * 4. Revoke the test certificate
-     * 5. Generate a new CRL
-     * 6. Check the revocation status of the test certificate. Expected: error massage that the certificate is revoked
-     */
+
     @Test
     public void test07VerificationWithMultipleCRLs() throws Exception {
 
