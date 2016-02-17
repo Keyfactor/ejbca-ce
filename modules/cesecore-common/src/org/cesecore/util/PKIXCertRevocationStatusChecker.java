@@ -444,7 +444,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
     
     private ArrayList<String> getOcspUrls(Certificate cert) {
         ArrayList<String> urls = new ArrayList<String>();
-        if(this.ocspUrl != null) {
+        if(StringUtils.isNotEmpty(this.ocspUrl)) {
             urls.add(this.ocspUrl);
         }
         
@@ -459,7 +459,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         
         ArrayList<String> urls = new ArrayList<String>();
         
-        if(this.crlUrl!=null) {
+        if(StringUtils.isNotEmpty(this.crlUrl)) {
             urls.add(this.crlUrl);
         }
         
