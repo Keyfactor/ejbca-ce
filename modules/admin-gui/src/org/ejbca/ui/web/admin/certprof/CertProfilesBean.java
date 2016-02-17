@@ -562,7 +562,6 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 continue;
             }
 
-            certificateProfile.setAvailableCAs(getEjbcaWebBean().getInformationMemory().getAuthorizedCAIds());
             getEjbcaWebBean().getEjb().getCertificateProfileSession().addCertificateProfile(getAdmin(), profilename, certificateProfile);
             getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
             importedFiles += filename + ", ";
