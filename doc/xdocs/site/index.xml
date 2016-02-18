@@ -9,15 +9,14 @@
 <body>
   <section name="">
 
-<div id="welcome">        
 <div class="frame">
 <div class="label">
       EJBCA release news &amp; other marvels
 </div>
 <div id="news">
     <!--TWITTER WIDGET-->
-<div class="frame note" id="twitter" style="border:0; float:left; margin:1em 2em 1em 0;">
-<a class="twitter-timeline" href="https://twitter.com/primekeyPKI" data-widget-id="344774465936306176" width="260" height="275" data-dnt="true">Tweets by @primekeyPKI</a>
+<div id="twitter">
+<a class="twitter-timeline" href="https://twitter.com/primekeyPKI" data-widget-id="344774465936306176" width="260" height="295" data-dnt="true">Tweets by @primekeyPKI</a>
 <script type="text/javascript">
 !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
 </script>
@@ -42,30 +41,29 @@
   </div>
 </div>
 </div> 
-</div>
 
   </section>
 
 <section name="EJBCA PKI CA">
 <p>
 EJBCA<sup>&#174;</sup> is a PKI Certificate Authority software, built using Java (JEE) technology. 
-EJBCA is a robust, flexible, high performance, scalable, platform independent, and component based CA to be used 
-stand-alone or integrated with other applications.
+Robust, flexible, high performance, scalable, platform independent, and component based, EJBCA can be used stand-alone or integrated with other applications.
 </p>
 <p>
-Being an extremely scalable and flexible PKI CA, EJBCA is suitable to build a complete PKI infrastructure for large enterprises and organizations.
-If you only want to issue a few single certificates for testing, there are probably options that will get you started quicker, 
-but if you want a serious PKI CA we recommend EJBCA. EJBCA is:
+Being extremely scalable and flexible, EJBCA is suitable to build a complete PKI infrastructure for any large enterprise or organization. If you only want to 
+issue a few single certificates for testing, there are probably other options that will get you started quicker, but if you want a serious Certificate Authority 
+to manage your Public Key Infrastructure, we recommend EJBCA. 
+<br/>Investigate the links below to understand more what EJBCA really is.
 </p>
 <ul>
 <li>A <a href="docs/installation.html">Certificate Authority</a> (link to documentation site).</li>
 <li>A <a href="docs/services-va.html">Validation Authority</a> (link to documentation site).</li>
 <li>An <a href="docs/architecture-ocsp.html">OCSP Responder</a> (link to documentation site).</li>
 </ul>
-<p><strong>EJBCA has everything for your trust center.</strong> 
-<br/>Contact us for more info, or look at the full (but never complete) <a href="features.html">features list</a>.
-<br/>
-A sampling of uses cases where you can use EJBCA to issue certificates are:
+<p><strong>EJBCA has everything for your trust center.</strong> Contact us for more info, or look at the full (but never complete) <a href="features.html">features list</a>.</p>
+<subsection name="Certificate issuance">
+<p>
+Some uses cases where EJBCA can help you to issue certificates are:
 </p>
 <ul>
 <li>Strong authentication for users accessing your intranet/extranet/internet resources.</li>
@@ -87,10 +85,11 @@ A sampling of uses cases where you can use EJBCA to issue certificates are:
 <li>Create CVCAs and DVs and issue CV certificates (CVC) to Document Verifiers and Inspection Systems for EU <a href="docs/cvccas.html">EAC ePassports</a> and eIDs.</li>
 <li>... and many many more ...</li>
 </ul>
+</subsection>
 <note>
 You can also use EJBCA to set up a CA independent, high performance, highly available OCSP responder service.
 </note>
-<p>Together with sister projects (see <i><a href="complementary.html">Complementary software</a></i>) of EJBCA you can also:</p>
+<p style="margin-top:1em;">Together with sister projects (see <i><a href="complementary.html">Complementary software</a></i>) of EJBCA you can also:</p>
 <ul>
 <li>Get central trusted <a href="https://signserver.org">Time Stamps</a> for you electronically signed documents.</li>
 <li>Perform <a href="https://signserver.org">central signing of documents</a>.</li>

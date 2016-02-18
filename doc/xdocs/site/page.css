@@ -5,8 +5,7 @@ html {
 }
 body, ul, li, p {
 	font-family: arial, sans-serif;
-		font-size: 1em;
-		   line-height: 20px;
+		font-size: 100%;
 }
 body { 
 	color: #333; 
@@ -18,12 +17,11 @@ ul {
 	list-style-type:square;
 }
 li {
-	line-height: 20px;
+	line-height: 130%;
 }	
 p { 
-   line-height: 125%;
-   margin: .5em 4em 1em 0; 
-   text-align: justify;
+   margin: .2em 2em .5em 0; 
+   text-align: left;
 }
 
 a {
@@ -32,19 +30,18 @@ a {
 
 a:link { color:#015a9c; text-decoration: none;} 
 a:visited { color:#2170ab}
+a:hover { text-decoration: underline;}
 
-#toppic { padding-left:210px;}
+#news{margin:0 0 0em 0; padding:.8em; background-color:#f0f0f0; min-height:300px;}
 
 div #twitter {
-   text-align: top;
-   font-size:50%;
-   color:red;
+   float:left;
+   margin:0 1em 1em 0;
 }
-#news{padding:1em; background-color:#f0f0f0;}
 
-.pagetitle{
-	color:#005a9b;
-	}
+/**possible to dispose of? **/
+
+#toppic { padding-left:210px;}
 #promotion {
 	padding:0;
 	margin:0;
@@ -55,11 +52,15 @@ div #twitter {
 		vertical-align:top;
 		}
 .marg{padding-left:13px;}
-.marg2{padding:0 0 .5em 0;}	
+.marg2{padding:0 0 .5em 0;}
+.pagetitle{
+	color:#005a9b;
+	}
 	
 div.right {
 	float: left;
 }
+/** end of dispose ?**/
 
 acronym {
 	border-bottom: none;
@@ -74,9 +75,8 @@ acronym {
 }
 
 .menu {
-    font-size : 100%;
+    font-size : 120%;
     padding: 3px 8px 5px 3px;
-    /*!border-left: 1px solid #ddd;*/
 }
 
 .menu a { font-weight:normal; font-style: normal; color: #5e87bb; text-decoration : none; }
@@ -89,9 +89,8 @@ acronym {
 .menu ul ul li  { list-style-type: disc; font-weight : normal; color: #015a9c;}
 
 .menuheader {
-
-	font-family: arial, sans-serif;
-	font-size: 120%;
+    white-space: nowrap;
+	font-size: 1.2em;
 	font-weight: bold;
 	letter-spacing: 1px;
 	border-bottom: 1px dashed #8ca8d0;
@@ -112,7 +111,7 @@ acronym {
 .tab a:hover { color: #000066; text-decoration: underline; }
 
 table .title { background-color: #FFFFFF; width:100%; border: 0px; }
-.dida { font-size: 80%; }
+.dida { font-size: 0.8em; }
 
 .pre { white-space: pre;}
 .nowrap { white-space: nowrap;}
@@ -122,8 +121,9 @@ table .title { background-color: #FFFFFF; width:100%; border: 0px; }
 }
 
 .content {
-    padding: 5px 5px 5px 10px;
+    padding: 5px 5px 7px 10px;
 }
+
 .date{ font-size:0.7em; font-weight:bold;}
 
 .content .ForrestTable { width: 100%; background-color: #7099C5; color: #ffffff; font-size : 100%;}
@@ -131,7 +131,7 @@ table .title { background-color: #FFFFFF; width:100%; border: 0px; }
 .content .ForrestTable th { text-align: center; }
 .content .ForrestTable td { background-color: #f4f2f2; color: black; }
 
-.content .externals { width: 80%; background-color: #7099C5; color: #ffffff; font-size : 100%;}
+.content .externals { width: 80%; background-color: #7099C5; color: #ffffff; font-size: 100%;}
 .content .externals caption { text-align: left; color: black; font-weight: bold; }
 .content .externals th { width: 120px; text-align: right; }
 .content .externals td { background-color: #f0f0ff; color: black; }
@@ -139,36 +139,30 @@ table .title { background-color: #FFFFFF; width:100%; border: 0px; }
 .frame {
   border-radius: 5px;
   border: solid #e8e8e8 1px;
-  margin: 0 1em 0 0;
-	    margin: 0;
+  margin: 0;
   padding: 0;
-  background-color: #f0f0ff; 
+  background-color: #f0f0f0; 
 }
 div.frame{
 	padding: 0;
-	margin: .3em 0 0 0;
-		margin: .4em 0 0 0;
+	margin: 0;
 	}
 .frame .label {
-	    background: #a6a6a6;
-		background: #51983d;
-		background: #fbb22a;
-	    background: #015a9c; 
- background: #8ca8d0;
-
+  background: #8ca8d0;
   border-radius: 3px 3px 0 0;
   color: white;
+  font-size:1.3em;
   font-weight: bold;
   padding: 8px 10px;
 }
-.label a { font-size:large; font-weight:bold; font-style: normal; color: #015a9c; text-decoration : none; }
+.label a { font-size:1.1em; font-weight:bold; font-style: normal; color: #015a9c; text-decoration : none; }
 .label a:link {   }
 .label a:visited { color: #015a9c;}
 .label a:hover { text-decoration: underline; }
 
 .frame .content {
   border-radius: 5px;
-  padding: 5px 10px;
+  padding: .5em 1em;
   background: #f0f0f0;
   color: black;
   line-height: 120%;
@@ -203,44 +197,41 @@ div.frame{
 
 .dtdElement { width: 100%;	font-size: 100%; background-color : #ffffff; }
 
-.dtdTag {    color: #990000; text-transform : uppercase;  font-style : normal;  font-size : 120%;  font-weight : bold; }
+.dtdTag {    color: #990000; text-transform : uppercase;  font-style : normal;  font-size : 1.2em;  font-weight : bold; }
 
 
 h1, h2, h3, h4, h5, h6 {
-	font-family: geneva, verdana, sans-serif;
-		font-family: sans-serif;
+	font-family: arial, sans-serif;
     font-weight: bold;
     margin: 1em 0 1em;
     padding-bottom: 1px;
 }
 
 h1 {
-    font-size: 160%;
+    font-size: 1.6em;
     color: #333333;
     margin-top: 0em;    
 }
 h2 {
-    font-size: 110%;
+    font-size:  1.1em;
     color: #333333;
     margin-top: 0em;
 }	
 
 h3 { 
-    font-family: "new york", georgia, serif;
-		font-family: arial, sans-serif;
-    font-size: 200%;
-    font-weight: bold;
+    font-size: 2em;
     letter-spacing: 1px;
-    margin: 1em 3em 0em 0;
+    margin: .5em 3em 0 0;
     padding: 0;
     /*color: #015a9c;*/
 
 }
 
 h4 {
-    font-size: 90%;
+    font-size: .9em;
+	font-size: 1.2em;
     font-style: italic;
-    font-weight: normal;
+    font-weight: bold;
     border-bottom: 1px dashed #8ca8d0;
 }
 
@@ -280,13 +271,13 @@ h4 {
     background-color: #CFDCED;
     padding: 2px 6px;
     margin: 0px 0px 0px 0px;
-    font-size: 90%;
+    font-size:.9em;
     border-bottom: 2px solid #4C6C8F;
 }
 
 .copyright {
     font-family: arial,helvetica,sanserif;
-    font-size: 90%;
+    font-size: .9em;
     background-color: #F1F1F1;
     clear: both;
     text-align: left;
@@ -310,29 +301,28 @@ h4 {
     border-bottom: 1px solid #294563;
 }
 
-.logobar {
-    background-color: #f4f2f2;    
-	    background-color: #f0f0f0;  
-    color: #000000;
-    font-size: 14pt;
-    font-style: italic;
-    margin: 0px 0px;
+.logobar {  
+	background-color: #f0f0f0;
+    margin: 0;
     border-bottom: 1px solid #ddd;
     padding: 4pt 0px 0pt 15pt;
+	padding: .5em 0 0 1.5em;
 }
 
 .searchcaption {
     font-family: Tahoma;
-    font-size: 8pt;
+    font-size: 100%;
+	line-height:150%;
     font-style: normal;
     margin: 0px;
     float: left;
     text-align: left;
-    padding: 5px 0 0 108px;
+    padding: 5px 0 1.5em 108px;
 }
 
 #searchBox {
     width: 235px;
+	height:120%;
 }
 #searchForm {
     margin: 0px;
