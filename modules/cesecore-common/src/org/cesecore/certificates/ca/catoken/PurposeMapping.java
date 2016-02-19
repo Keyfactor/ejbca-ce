@@ -110,7 +110,7 @@ public final class PurposeMapping {
     public String getAlias(final int purpose) {
         String s;
         try {
-            s = (String)map.get(Integer.valueOf(purpose));
+            s = map.get(Integer.valueOf(purpose));
         } catch(Exception e) {
             s = null;
         }
@@ -132,7 +132,7 @@ public final class PurposeMapping {
     public String getPurposeProperty(final int purpose) {
         String s;
         try {
-            s = (String)keymap.get(Integer.valueOf(purpose));
+            s = keymap.get(Integer.valueOf(purpose));
         } catch(Exception e) {
             s = null;
         }
@@ -152,15 +152,31 @@ public final class PurposeMapping {
      * @return String[] with key aliases
      */
     public String[] getAliases() {
-        Set<String> set = new HashSet<String>();
-        set.addAll(map.values());
-        if(defaultKeyS != null){
+        final Set<String> set = new HashSet<String>(map.values());
+        if (defaultKeyS != null) {
           set.add(defaultKeyS);
         }
-        return (String[])set.toArray(new String[set.size()]);
+        return set.toArray(new String[set.size()]);
     }
     
     public String toString() {
     	return map.toString();
+    }
+    
+    /** @return true if the provided alias is mapped exactly once */
+    public boolean isAliasMappedForSinglePurpose(final String alias) {
+        if (alias==null) {
+            return false;
+        }
+        boolean mappedOnce = false;
+        for (final int keyPupose : CATokenConstants.ALL_KEY_PURPOSES) {
+            if (alias.equals(getAlias(keyPupose))) {
+                if (mappedOnce) {
+                    return false;
+                }
+                mappedOnce = true;
+            }
+        }
+        return mappedOnce;
     }
 }

@@ -119,8 +119,10 @@ public class CAToken extends UpgradeableDataHashMap {
         try {
         	if (keyStrings != null) {
         		final String aliases[] = keyStrings.getAliases();
+        		final String aliasCertSignKeyPrevious = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
+                final String aliasCertSignKeyNext = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
                 final String aliasTestKey = getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST);
-        		int i = 0;
+        		int foundKeys = 0;
                 // Loop that checks  if there all key aliases have keys
         		if (cryptoToken!=null) {
                     final HashMap<String, PrivateKey> aliasMap = new HashMap<String, PrivateKey>();
@@ -138,11 +140,25 @@ public class CAToken extends UpgradeableDataHashMap {
                             }
                         }
                         if (privateKey==null) {
-                            if (log.isDebugEnabled()) {
-                                log.debug("Missing private key for alias: "+alias);
+                            // We don't consider it critical if currently unused certificate signing keys has been deleted (as long as it isn't mapped for any other purposes)
+                            if (alias.equals(aliasCertSignKeyPrevious) && keyStrings.isAliasMappedForSinglePurpose(aliasCertSignKeyPrevious)) {
+                                foundKeys++;
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Missing private key for alias: "+alias + " (Not treated as an error, since it is only mapped as the previous CA signing key.)");
+                                }
+                            } else if (alias.equals(aliasCertSignKeyNext) && keyStrings.isAliasMappedForSinglePurpose(aliasCertSignKeyNext)) {
+                                    foundKeys++;
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("Missing private key for alias: "+alias + " (Not treated as an error, since it is only mapped as the next CA signing key.)");
+                                    }
+                            } else {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Missing private key for alias: "+alias);
+                                }
                             }
+                        } else {
+                            foundKeys++;
                         }
-                        i++;
                         if (alias.equals(aliasTestKey)) {
                             PublicKey publicKey;
                             try {
@@ -168,7 +184,7 @@ public class CAToken extends UpgradeableDataHashMap {
                         }
                     }
         		}
-                if (i < aliases.length) {
+                if (foundKeys < aliases.length) {
         			if (log.isDebugEnabled()) {
         				StringBuilder builder = new StringBuilder();
         				for (int j = 0; j < aliases.length; j++) {
