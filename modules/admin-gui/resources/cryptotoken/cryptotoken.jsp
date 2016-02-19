@@ -78,9 +78,9 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:outputLabel for="currentCryptoTokenActive" value="#{web.text.CRYPTOTOKEN_ACTIVE}" rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}"/>
 		<h:selectBooleanCheckbox id="currentCryptoTokenActive" value="#{cryptoTokenMBean.currentCryptoToken.active}" disabled="true" rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}"/>
 		<h:outputLabel for="currentCryptoTokenSecret1" value="#{web.text.CRYPTOTOKEN_PIN}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-    	<h:inputSecret id="currentCryptoTokenSecret1" value="#{cryptoTokenMBean.currentCryptoToken.secret1}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" size="20" title="#{web.text.CRYPTOTOKEN_PIN}"/>
+    	<h:inputSecret id="currentCryptoTokenSecret1" value="#{cryptoTokenMBean.currentCryptoToken.secret1}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" size="20" autocomplete="off" title="#{web.text.CRYPTOTOKEN_PIN}"/>
 		<h:outputLabel for="currentCryptoTokenSecret2" value="#{web.text.CRYPTOTOKEN_PIN_REPEAT}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-    	<h:inputSecret id="currentCryptoTokenSecret2" value="#{cryptoTokenMBean.currentCryptoToken.secret2}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" size="20" title="#{web.text.CRYPTOTOKEN_PIN}"/>
+    	<h:inputSecret id="currentCryptoTokenSecret2" value="#{cryptoTokenMBean.currentCryptoToken.secret2}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" size="20" autocomplete="off" title="#{web.text.CRYPTOTOKEN_PIN}"/>
 		<h:outputLabel for="currentCryptoTokenAutoActivate" value="#{web.text.CRYPTOTOKEN_AUTO}"/>
 		<h:panelGroup>
 			<h:selectBooleanCheckbox id="currentCryptoTokenAutoActivate" value="#{cryptoTokenMBean.currentCryptoToken.autoActivate}"
