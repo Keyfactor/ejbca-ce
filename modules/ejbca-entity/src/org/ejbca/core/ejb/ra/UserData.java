@@ -711,10 +711,10 @@ public class UserData extends ProtectedData implements Serializable {
     public static List<String> findSubjectDNsByCaIdAndNotUsername(final EntityManager entityManager, final int caId, final String username,
             final String serialnumber) {
         final Query query = entityManager
-                .createQuery("SELECT a.subjectDN FROM UserData a WHERE a.caId=:caId AND a.username!=:username AND a.subjectDN LIKE '%SN="
-                        + serialnumber + "%'");
+                .createQuery("SELECT a.subjectDN FROM UserData a WHERE a.caId=:caId AND a.username!=:username AND a.subjectDN LIKE :serial");
         query.setParameter("caId", caId);
         query.setParameter("username", username);
+        query.setParameter("serial", "%SN="+ serialnumber + "%");
         return query.getResultList();
     }
 }
