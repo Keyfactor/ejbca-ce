@@ -108,8 +108,8 @@
 #healthcheck.catokensigntest=false
 
 # Parameter to specify if a connection test should be performed on each publisher.
-# Default: true 
-#healthcheck.publisherconnections=true
+# Default: false
+#healthcheck.publisherconnections=false
 
 # Parameter to specify location of file containing information about maintenance
 # Use this file to specify weather to include node in healthcheck or report as down for maintenance, 
