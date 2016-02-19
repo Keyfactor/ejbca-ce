@@ -104,7 +104,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 			</h:panelGroup>
    			</f:facet>
 			<h:panelGroup rendered="#{!cryptoTokenGuiInfo.active && cryptoTokenGuiInfo.allowedActivation}">
-				<h:inputSecret size="16" title="#{web.text.CRYPTOTOKEN_PIN}" value="#{cryptoTokenGuiInfo.authenticationCode}" onkeypress="preventSubmitOnEnter(this,event)"/>
+				<h:inputSecret size="16" title="#{web.text.CRYPTOTOKEN_PIN}" value="#{cryptoTokenGuiInfo.authenticationCode}" autocomplete="off" onkeypress="preventSubmitOnEnter(this,event)"/>
 				<h:commandButton value="#{web.text.CRYPTOTOKEN_ACTIVATE}" action="#{cryptoTokenMBean.activateCryptoToken}"/>
 			</h:panelGroup>
 			<h:panelGroup rendered="#{cryptoTokenGuiInfo.active && cryptoTokenGuiInfo.allowedDeactivation}">

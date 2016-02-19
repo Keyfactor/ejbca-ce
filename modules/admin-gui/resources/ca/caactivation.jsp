@@ -100,7 +100,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 	</h:dataTable>
 	<h:panelGrid columns="3">
 		<h:outputLabel rendered="#{cAActivationMBean.activationCodeShown}" for="authCode" value="#{web.text.ACTIVATECAS_ACTCODE}:"/>
-		<h:inputSecret rendered="#{cAActivationMBean.activationCodeShown}" id="authCode" value="#{cAActivationMBean.authenticationCode}"/>
+		<h:inputSecret rendered="#{cAActivationMBean.activationCodeShown}" id="authCode" autocomplete="off" value="#{cAActivationMBean.authenticationCode}"/>
 		<h:commandButton action="#{cAActivationMBean.applyChanges}" value="#{web.text.APPLY}" rendered="#{cAActivationMBean.authorizedToBasicFunctions }" />
 	</h:panelGrid>
 	</h:form>
