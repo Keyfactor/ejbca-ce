@@ -16,7 +16,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -24,15 +26,26 @@ import java.util.TreeSet;
  * 
  * Simple usage:
  * LookAheadObjectInputStream lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(someByteArray);
- * lookAheadObjectInputStream.setAcceptedClassNames(Arrays.asList(X509Certificate.class.getName());
+ * Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<Class<? extends Serializable>>(3);
+            acceptedClasses.add(X509Certificate.class);
+            lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
  * lookAheadObjectInputStream.setMaxObjects(1);
  * X509Certificate certificate = (X509Certificate) lookAheadObjectInputStream.readObject(); //If serialized object is not of the type X509Certificate SecurityException will be thrown
  * 
  * @see LookAheadObjectInputStreamTest for more examples
+ * 
+ * @version $Id: LookAheadObjectInputStream.java 22806 2016-02-19 18:58:27Z marko $
  */
 public class LookAheadObjectInputStream extends ObjectInputStream {
 
-    private Set<String> acceptedClassNames = new TreeSet<String>();
+    static class ClassNameComparator implements Comparator<Class<?>>{
+        @Override
+        public int compare(Class<?> o1, Class<?> o2) {
+            return o1.getName().compareTo(o2.getName());
+        }
+    }
+    private Set<Class<?>> acceptedClasses = new TreeSet<Class<?>>(new ClassNameComparator());
+    
     private boolean enabledSubclassing = false;
     private int maxObjects = 1;
     private boolean enabledMaxObjects = true;
@@ -44,14 +57,13 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
     }
 
     /**
-     * @return set of accepted class names etc. classes that are allowed to be
-     *          read from this ObjectInputStream. This set can be modified with:
-     *          @see LookAheadObjectInputStream#setAcceptedClassNames(Set<String> acceptedClassNames)
+     * @return set of accepted classes etc. Classes that are allowed to be read from this ObjectInputStream. This set can be modified with:
+     *  @see LookAheadObjectInputStream#setAcceptedClassNames(Set<Class<?>> acceptedClassNames)
      */
-    public Collection<String> getAcceptedClassNames() {
-        return acceptedClassNames;
+    public Collection<Class<?>> getAcceptedClasses() {
+        return acceptedClasses;
     }
-    
+
     /**
      * @return true if class should be accepted if it extends super class directly or indirectly
      *          that is listed in accepted class names, false otherwise.
@@ -68,17 +80,17 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
     public void setEnabledSubclassing(boolean enabledSubclassing) {
         this.enabledSubclassing = enabledSubclassing;
     }
-    
 
     /**
-     * Set accepted class names that can be deserialized using this LookAheadObjectInputStream.
+     * Set accepted classes that can be deserialized using this LookAheadObjectInputStream.
      * Primitive types (boolean, char, int,...), their wrappers (Boolean, Character, Integer,...) and String class
      * are always accepted. All other classes have to be specified with setAcceptedClassName*
-     * @param acceptedClassNames
+     * @param acceptedClasses
      *      Collection of class names that will be accepted for deserializing readObject. Default: null
      */
-    public void setAcceptedClassNames(Collection<String> acceptedClassNames) {
-        this.acceptedClassNames = new TreeSet<String>(acceptedClassNames);
+    public void setAcceptedClasses(Collection<Class<? extends Serializable>> acceptedClasses) {
+        this.acceptedClasses = new TreeSet<Class<?>>(new ClassNameComparator());
+        this.acceptedClasses.addAll(acceptedClasses);
     }
 
     /**
@@ -106,7 +118,7 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
      */
     @Override
     protected Object resolveObject(Object obj) throws IOException {
-        if (enabledMaxObjects && ++objCount > maxObjects){
+        if (enabledMaxObjects && ++objCount > maxObjects) {
             throw new SecurityException("Attempt to deserialize too many objects from stream. Limit is " + maxObjects);
         }
         Object object = super.resolveObject(obj);
@@ -114,25 +126,27 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
     }
 
     /**
-     * Overriding resolveClass to check Class type of serialized object before deserializing readObject.
+     * Overrides resolveClass to check Class type of serialized object before deserializing readObject.
+     * @throws SecurityException if serialized object is not one of following:
+     *      1) a String
+     *      2) a java primitive data type or its corresponding class wrapper
+     *      3) in the list of accepted classes
+     *      4) extends class from the list of accepted classes (if enabledSubclassing==true) 
      */
     @Override
     protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
         Class<?> resolvedClass = super.resolveClass(desc); //can be an array
         Class<?> resolvedClassType = resolvedClass.isArray() ? resolvedClass.getComponentType() : resolvedClass;
-        if (resolvedClassType.equals(String.class) ||
-            resolvedClassType.isPrimitive() ||
-            Boolean.class.isAssignableFrom(resolvedClassType) ||
-            Number.class.isAssignableFrom(resolvedClassType) ||
-            Character.class.isAssignableFrom(resolvedClassType)){
-            return resolvedClass; 
-        }else if(acceptedClassNames != null && !acceptedClassNames.isEmpty()){
-            if(acceptedClassNames.contains(resolvedClassType.getName())){
+        if (resolvedClassType.equals(String.class) || resolvedClassType.isPrimitive() || Boolean.class.isAssignableFrom(resolvedClassType)
+                || Number.class.isAssignableFrom(resolvedClassType) || Character.class.isAssignableFrom(resolvedClassType)) {
+            return resolvedClass;
+        } else if (acceptedClasses != null && !acceptedClasses.isEmpty()) {
+            if (acceptedClasses.contains(resolvedClassType)) {
                 return resolvedClass;
-            }else if(enabledSubclassing){
+            } else if (enabledSubclassing) {
                 Class<?> superclass = resolvedClassType.getSuperclass();
-                while(superclass != null){
-                    if(acceptedClassNames.contains(superclass.getName())){
+                while (superclass != null) {
+                    if (acceptedClasses.contains(superclass)) {
                         return resolvedClass;
                     }
                     superclass = superclass.getSuperclass();

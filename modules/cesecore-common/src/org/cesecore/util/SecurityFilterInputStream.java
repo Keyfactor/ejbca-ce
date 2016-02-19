@@ -23,13 +23,15 @@ import java.io.InputStream;
  * objectInputStream.readObject(); //If serialized object have more than 256 bytes, SecurityException will be thrown
  * 
  * @see SecurityFilterInputStreamTest for more examples
+ * 
+ * @version $Id: SecurityFilterInputStream.java 22806 2016-02-19 18:58:27Z marko $
  */
 public class SecurityFilterInputStream extends FilterInputStream{
 
     private long len = 0;
-    private long maxBytes = defaultMaxBytes;
+    private long maxBytes = DEFAULT_MAX_BYTES;
     
-    public static final long defaultMaxBytes = 0xFFFFF;
+    public static final long DEFAULT_MAX_BYTES = 0xFFFFF;
     
     public SecurityFilterInputStream(InputStream inputStream){
         super(inputStream);

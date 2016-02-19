@@ -24,6 +24,11 @@ import java.io.OutputStream;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
+/** Tests SecurityFilterInputStream class that can be used to prevent java heap-overflow during
+ * reading from input stream
+ * 
+ * @version $Id: SecurityFilterInputStreamTest.java 22806 2016-02-19 18:58:27Z marko $
+ */
 public class SecurityFilterInputStreamTest {
 
     private static final Logger log = Logger.getLogger(SecurityFilterInputStreamTest.class);
@@ -75,17 +80,18 @@ public class SecurityFilterInputStreamTest {
         ByteArrayOutputStream byteArrayOutputStream = null;
         try {
             byteArrayOutputStream = new ByteArrayOutputStream();
-            prepareExploitStream(byteArrayOutputStream, 0x1FFFFF);  // 0x1FFFFF just simulates exploit stream
+            prepareExploitStream(byteArrayOutputStream, 0x1FFFFF); // 0x1FFFFF just simulates exploit stream
 
-            objectInputStream = new ObjectInputStream(new SecurityFilterInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), 0xFFFFF));
+            objectInputStream = new ObjectInputStream(
+                    new SecurityFilterInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), 0xFFFFF));
             objectInputStream.readObject(); //would throw Java heap error if SecurityFilterInputStream is not applied
-            fail("No Java heap error happened for StringBuilder exploit (MaxHeap = " + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB) and"
+            fail("No Java heap error happened for StringBuilder exploit (MaxHeap = " + Runtime.getRuntime().maxMemory() / (1024 * 1024) + "MB) and"
                     + " SecurityFilterInputStream hasn't limited the size of input stream during testPreventingTheStringBuilderExploit");
         } catch (SecurityException e) {
             //Good
-        } catch (Exception e){
+        } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testPreventingTheStringBuilderExploit");
-        }finally {
+        } finally {
             if (byteArrayOutputStream != null) {
                 byteArrayOutputStream.close();
             }
@@ -95,7 +101,7 @@ public class SecurityFilterInputStreamTest {
         }
         log.trace("<testPreventingTheStringBuilderExploit");
     }
-    
+
     /**
      * Test if good input stream (size < SecurityFilterInputStream.maxBytes) can be filtered
      */
@@ -106,13 +112,14 @@ public class SecurityFilterInputStreamTest {
         ByteArrayOutputStream byteArrayOutputStream = null;
         try {
             byteArrayOutputStream = new ByteArrayOutputStream();
-            prepareExploitStream(byteArrayOutputStream, 0xFFFF);  // 0xFFFF simulates safe stream 
+            prepareExploitStream(byteArrayOutputStream, 0xFFFF); // 0xFFFF simulates safe stream 
 
-            objectInputStream = new ObjectInputStream(new SecurityFilterInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), 0xFFFFF));
+            objectInputStream = new ObjectInputStream(
+                    new SecurityFilterInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), 0xFFFFF));
             objectInputStream.readObject();
-        } catch (Exception e){
+        } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testAcceptedSizeInputStream");
-        }finally {
+        } finally {
             if (byteArrayOutputStream != null) {
                 byteArrayOutputStream.close();
             }
