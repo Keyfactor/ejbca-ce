@@ -6272,7 +6272,7 @@ The following configuration parameters may be set to configure authorization and
 <li>healthcheck.dbquery, default: 'select 1' - Parameter indicating the string that should be used to do a minimal check that the database is working.</li>
 <li>healthcheck.authorizedips, default: '127.0.0.1' - Specifies which remote IPs that may call this healthcheck servlet. Use ';' between multiple IPs.</li>
 <li>healthcheck.catokensigntest; default: 'false' - if the check of CA tokens should actually perform a signature test on the CA token, or it should only see if the token status is active.</li>
-<li>healthcheck.publisherconnections, default: 'false' - Defines if test connections agains all configured publisers should be performed.</li>
+<li>healthcheck.publisherconnections, default: 'false' - Defines if a connections test to all configured publisers should be performed.</li>
 </ul>
 <p>By editing a maintenance file on the server, you can make the service return an error message stating that the server is down for mainenance.
 This is very useful in a cluster when you can take cluster nodes in and out of rotation by editing a simple text file.

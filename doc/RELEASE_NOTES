@@ -5,6 +5,9 @@ A couple of error messages for CMP was changed.
 - When submitting a request with a URL that does not match an existing CMP alias, now a HTTP 404 (not found) is returned instead of a CMP badRequest error message.
 - When trying to revoke a certificate that was already revoked, now a CMP certRevoked error message is returned instead of a CMP badRequest error message.
 
+The property healthcheck.publisherconnections was documented as defaulting to false, but actually defaulted to true. This has now been
+corrected to default to false.
+
 EJBCA 6.4.2
 -----------
 This maintenance release contains 4 bug fixes and improvements. Below is a selection of the most noteworthy. Upgrading to this 
