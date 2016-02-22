@@ -110,7 +110,7 @@ public class LookAheadObjectInputStreamTest {
             lookAheadObjectInputStream.setAcceptedClasses(Arrays.asList(GoodClass1.class, GoodClass2.class));
             lookAheadObjectInputStream.setMaxObjects(1);
             GoodClass2 goodClass = (GoodClass2) lookAheadObjectInputStream.readObject();
-            assertTrue("Data corrupted during testDeserializingAcceptedJavaObject", goodClass.getData() == 2);
+            assertEquals("Data corrupted during testDeserializingAcceptedJavaObject", goodClass.getData(), 2);
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testDeserializingAcceptedJavaObject");
         } finally {
@@ -201,7 +201,7 @@ public class LookAheadObjectInputStreamTest {
             acceptedClasses.add(GoodClass2.class);
             lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
             GoodClass2[] deserialized = (GoodClass2[]) lookAheadObjectInputStream.readObject();
-            assertTrue("Data corrupted during testDeserializingAcceptedJavaObjectArray", deserialized.length == 3);
+            assertEquals("Data corrupted during testDeserializingAcceptedJavaObjectArray", deserialized.length, 3);
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testDeserializingAcceptedJavaObjectArray");
         } finally {
