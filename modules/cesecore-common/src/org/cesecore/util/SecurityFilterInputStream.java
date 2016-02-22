@@ -37,7 +37,7 @@ public class SecurityFilterInputStream extends FilterInputStream{
         super(inputStream);
     }
     
-    public SecurityFilterInputStream(InputStream inputStream, int maxBytes){
+    public SecurityFilterInputStream(InputStream inputStream, long maxBytes){
         super(inputStream);
         this.maxBytes = maxBytes;
     }
