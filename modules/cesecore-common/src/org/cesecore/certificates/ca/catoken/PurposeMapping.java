@@ -45,7 +45,7 @@ public final class PurposeMapping {
     
     final private Map<Integer, String> map;
     final private Map<Integer, String> keymap;
-    final private String defaultKeyS;
+    final private String defaultKeyAlias;
     
     /** 
      * Key string properties with entries consisting of one of the fixed key strings mapping to a key alias. The key alias is user defined.
@@ -68,9 +68,9 @@ public final class PurposeMapping {
     	/** Map of keypurpose integer (CATokenConstants.CAKEYPURPOSE_CERTSIGN) and key purpose string (CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING)
     	 * for the properties defined in Properties */
     	keymap = new Hashtable<Integer, String>();
-    	String tmpS = null;
+    	String defaultKeyAliasTmp = null;
     	if (properties != null) {
-    		tmpS = properties.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING);
+    		defaultKeyAliasTmp = properties.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING);
     		addKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING,
     				CATokenConstants.CAKEYPURPOSE_CERTSIGN,
     				properties);
@@ -93,14 +93,16 @@ public final class PurposeMapping {
     				CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT,
     				properties);    		
     	}
-    	defaultKeyS = tmpS!=null ? tmpS.trim() : null;
+    	defaultKeyAlias = defaultKeyAliasTmp!=null ? defaultKeyAliasTmp.trim() : null;
     } 
-    private void addKey(final String keyS, final int keyI, final Properties properties) {
-        String value = properties.getProperty(keyS);
-        if ( value!=null && value.length()>0 ) {
-            value = value.trim();
-            map.put(Integer.valueOf(keyI), value);
-            keymap.put(Integer.valueOf(keyI), keyS);
+    private void addKey(final String keyPurposeString, final int purpose, final Properties properties) {
+        String alias = properties.getProperty(keyPurposeString);
+        if (alias!=null) {
+            alias = alias.trim();
+            if (!alias.isEmpty()) {
+                map.put(Integer.valueOf(purpose), alias);
+                keymap.put(Integer.valueOf(purpose), keyPurposeString);
+            }
         }
     }
     /** Returns which key alias string is used for a certain key purpose. 
@@ -108,19 +110,19 @@ public final class PurposeMapping {
      * or null be returned. null is returned if no CAKEYPURPOSE_CERTSIGN_STRING (certSignKey) property was specified by the user.
      */ 
     public String getAlias(final int purpose) {
-        String s;
+        String alias;
         try {
-            s = map.get(Integer.valueOf(purpose));
-        } catch(Exception e) {
-            s = null;
+            alias = map.get(Integer.valueOf(purpose));
+        } catch (Exception e) {
+            alias = null;
         }
-        if ( s!=null && s.length()>0 ) {
-            return s;
+        if (alias!=null && !alias.isEmpty()) {
+            return alias;
         }
         // Special handling of these two key purposes, because if they do not exist, very strange things can happen 
         // if we claim that our "defaultKey" is the previous or next signing key, when it in fact is not.
-        if ((purpose != CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS) && (purpose != CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)) {
-        	return defaultKeyS;
+        if (purpose != CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS && purpose != CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT) {
+        	return defaultKeyAlias;
         }
         return null;
     }
@@ -152,9 +154,9 @@ public final class PurposeMapping {
      * @return String[] with key aliases
      */
     public String[] getAliases() {
-        final Set<String> set = new HashSet<String>(map.values());
-        if (defaultKeyS != null) {
-          set.add(defaultKeyS);
+        final Set<String> set = new HashSet<>(map.values());
+        if (defaultKeyAlias != null) {
+            set.add(defaultKeyAlias);
         }
         return set.toArray(new String[set.size()]);
     }
