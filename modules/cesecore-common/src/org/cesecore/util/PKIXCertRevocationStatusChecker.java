@@ -327,9 +327,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             final CertificateFactory cf = CertificateFactory.getInstance("X.509");
             crl = cf.generateCRL(is);
             is.close();
-            if(log.isDebugEnabled()) {
-                log.debug("Downloaded CRL from " + url);
-            }
+            log.info("Downloaded CRL from " + url);
         } catch(IOException | CertificateException | CRLException e) {
             if(log.isDebugEnabled()) {
                 log.debug("Fetching CRL from " + crlurl + " failed. " + e.getLocalizedMessage());
