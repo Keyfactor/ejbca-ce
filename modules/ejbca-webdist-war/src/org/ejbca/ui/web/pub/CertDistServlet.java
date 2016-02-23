@@ -95,7 +95,8 @@ public class CertDistServlet extends HttpServlet {
     private static final String COMMAND_DELTACRL = "deltacrl"; 
     private static final String COMMAND_REVOKED = "revoked";
     private static final String COMMAND_EECERT = "eecert";
-    private static final String COMMAND_CERT = "lastcert";
+    private static final String COMMAND_CERTBYFP = "certbyfp";
+    private static final String COMMAND_LASTCERT = "lastcert";
     private static final String COMMAND_LISTCERT = "listcerts";
     private static final String COMMAND_NSCACERT = "nscacert";
     private static final String COMMAND_IECACERT = "iecacert";
@@ -103,6 +104,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String COMMAND_CACHAIN = "cachain";
     
     private static final String SUBJECT_PROPERTY = "subject";
+    private static final String FINGERPRINT_PROPERTY = "fingerprint";
 	private static final String CAID_PROPERTY = "caid";
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String SERNO_PROPERTY = "serno";
@@ -264,7 +266,33 @@ public class CertDistServlet extends HttpServlet {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting End Entity certificate, CA to create PKCS7 does not exist, or can not create PKCS7.");
                 return;
             }
-        } else if (command.equalsIgnoreCase(COMMAND_CERT) || command.equalsIgnoreCase(COMMAND_LISTCERT)) {
+        } else if (command.equalsIgnoreCase(COMMAND_CERTBYFP)) {
+            String fp = req.getParameter(FINGERPRINT_PROPERTY);
+            if (fp == null) {
+                log.debug("Bad request, no 'fp' arg to 'certbyfp' command.");
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=certbyfp?fingerprint=<fingerprint>.");
+                return;
+            }
+            try {
+                final Certificate cert = storesession.findCertificateByFingerprint(fp);
+                if (cert == null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("No certificate found for requested fingerprint. '" + fp + "'.");
+                    }
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND, "No certificate found for requested subject DN.");
+                } else {
+                    final String dn = CertTools.getSubjectDN(cert);
+                    sendEndEntityCert(administrator, req, res, format, cert);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Sent latest certificate for '" + dn + "' to client at " + remoteAddr);
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("Error getting certificate with fingerprint '"+fp+"' for "+remoteAddr+": ", e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting certificate.");
+                return;
+            }
+        } else if (command.equalsIgnoreCase(COMMAND_LASTCERT) || command.equalsIgnoreCase(COMMAND_LISTCERT)) {
             // HttpServetRequets.getParameter URLDecodes the value for you
             // No need to do it manually, that will cause problems with + characters
         	String dn = req.getParameter(SUBJECT_PROPERTY);
@@ -277,7 +305,7 @@ public class CertDistServlet extends HttpServlet {
                 log.debug("Looking for certificates for '"+dn+"'.");
                 Collection<Certificate> certcoll = storesession.findCertificatesBySubject(dn);
                 Object[] certs = certcoll.toArray();
-                if (command.equalsIgnoreCase(COMMAND_CERT)) {
+                if (command.equalsIgnoreCase(COMMAND_LASTCERT)) {
                     long maxdate = 0;
                     int latestcertno = -1;
                     for (int i=0;i<certs.length;i++) {
