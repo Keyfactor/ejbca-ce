@@ -192,6 +192,7 @@ public class CAToken extends UpgradeableDataHashMap {
         				}
         				log.debug("Not enough keys for the key aliases: "+builder.toString());
         			}
+                    ret = CryptoToken.STATUS_OFFLINE;
         		}
         	}
         } catch (CryptoTokenOfflineException e) {
