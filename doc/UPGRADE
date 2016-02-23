@@ -12,7 +12,7 @@ software. See doc/RELEASE_NOTES for info about such upgrades.
 If you use the patch file to upgrade use a command like:
 - Have old version of ejbca unzipped to directory ejbca.
 - Go to directory ejbca and apply patch with:
-- patch --strip=0 -u < ../patch-396_397.txt
+- patch --strip=0 -u < ../patch-6_4_2_6_5_0.txt
 (change name of patch file depending on which version you are upgrading)
 
 After this you must do:
@@ -31,10 +31,24 @@ INSERT and DELETE. The SQL executed by database upgrades code is available in
 
 From EJBCA 6.4.2 to EJBCA 6.5.0
 -------------------------------
+
+Upgrading to 6.5.0 involves the following changes:
+	1. Key algorithm constraints in certificate profiles
+	2. Configuration changes in CMP Proxy
+	3. Database maximum query count
+	4. CMP error message
+	5. healthcheck.publisherconnections property
+	
+These changes are documented at length below:
+
+	1. Key algorithm constraints in certificate profiles
+
 EJBCA 6.5.0 allows configuration of key algorithm constraints in certificate profiles and by default any type compatible with the current allowed
 key lengths will be preselected during the upgrade. If you allow 1024 bits, both RSA and DSA will be allowed and since it is now possible to
 request tokens using any allowed key algorithm from the public web, requesting a DSA 1024 keystore will be allowed compared to earlier when only RSA
 was available over this interface.
+
+	2. Configuration changes in CMP Proxy
 
 For those running the CMP Proxy, the following values have changed names in cmpProxy.properties:
 From:											To:
@@ -42,11 +56,23 @@ cmp.backend.extra.caservicecertpath				cmp.backend.caservicecertpath
 cmp.backend.extra.issuerchainpath				cmp.backend.issuerchainpath
 cmp.backend.extra.keystorepath					cmp.backend.keystorepath
 cmp.backend.extra.keystorepwd					cmp.backend.keystorepwd
-
 The old values will continue to function for the time being, but will get dropped at a future date.
 
-The maximum query count (maximum number of object retrievale from the database in a single request), previously several predefine constants, can now 
+	3. Database maximum query count
+	
+The maximum query count (maximum number of object retrieval from the database in a single request), previously several predefine constants, can now 
 be set from the web UI (in the Systems Configuration screen).  
+
+	4. CMP error message
+	
+A couple of error messages for CMP have been changed. 
+- When submitting a request with a URL that does not match an existing CMP alias, a HTTP 404 (not found) is returned instead of a CMP badRequest error message.
+- When trying to revoke a certificate that has already been revoked, a CMP certRevoked error message is returned instead of a CMP badRequest error message.
+
+	5. healthcheck.publisherconnections property
+
+The property healthcheck.publisherconnections was documented as defaulting to false, but actually defaulted to true. This has now been
+corrected to default to false.
 
 From EJBCA 6.4.0 to EJBCA 6.4.2
 -------------------------------
