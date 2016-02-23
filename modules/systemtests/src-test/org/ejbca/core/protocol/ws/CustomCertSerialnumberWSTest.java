@@ -232,12 +232,12 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
             this.endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_USER3, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {} // NOPMD: do nothing
 		try {
-	        super.cleanUpAdmins(this.wsadminRoleName);
+	        super.cleanUpAdmins(wsadminRoleName);
         } catch (Exception e) {} // NOPMD: do nothing
     }
 
     @Override
 	public String getRoleName() {
-        return this.wsadminRoleName+"Mgmt";
+        return wsadminRoleName+"Mgmt";
     }
 }
