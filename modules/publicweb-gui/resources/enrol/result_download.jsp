@@ -25,9 +25,9 @@ finder.lookupCertificateInfo(request.getParameter("issuer"), request.getParamete
     </c:when>
 </c:choose>
 <c:url var="header_redirect_url" value="../publicweb/webdist/certdist" scope="request">
-    <c:param name="cmd" value="lastcert"/>
+    <c:param name="cmd" value="certbyfp"/>
     <c:param name="installtobrowser" value="${installtobrowser}"/>
-    <c:param name="subject" value="${finder.subjectDN}"/>
+    <c:param name="fingerprint" value="${finder.fingerprint}"/>
     <c:param name="format" value="${format}"/>
     <c:param name="hidemenu" value="${param.hidemenu}"/>
 </c:url>
