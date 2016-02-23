@@ -65,6 +65,7 @@ public class CertificateFinderBean {
     private String issuerDN;
     private String subjectDN;
     private String serialNumber;
+    private String fingerprint;
 
 	/**
 	 * Empty default constructor.
@@ -108,7 +109,7 @@ public class CertificateFinderBean {
 			log.trace(">getCACertificateChain() currentCA = " + mCurrentCA);
 		}
 		// Make a collection of CertificateGuiInfo instead of the real certificate
-		ArrayList<CertificateGuiInfo> ret = new ArrayList<CertificateGuiInfo>();
+		ArrayList<CertificateGuiInfo> ret = new ArrayList<>();
         Collection<Certificate> certs = mSignSession.getCertificateChain(mCurrentCA);
         for (Certificate cert : certs) {
             ret.add(new CertificateGuiInfo(cert));
@@ -131,7 +132,7 @@ public class CertificateFinderBean {
 			if ( certs==null || certs.isEmpty() ) {
 				return "";
 			}
-			final Certificate cert = (Certificate)certs.iterator().next();
+			final Certificate cert = certs.iterator().next();
 			ret = CertTools.getSubjectDN(cert);
 		
 		return ret;
@@ -219,6 +220,7 @@ public class CertificateFinderBean {
             this.issuerDN = CertTools.getIssuerDN(cert);
             this.subjectDN = CertTools.getSubjectDN(cert);
             this.serialNumber = CertTools.getSerialNumberAsString(cert);
+            this.fingerprint = CertTools.getFingerprintAsString(cert);
         }
     }
     
@@ -239,7 +241,7 @@ public class CertificateFinderBean {
     }
 
     /**
-     * @return the Subject DN string of the current certificate URL-encoded using the current 
+     * @return the Subject DN string of the current certificate URL-encoded using the current configured character set
      * @see lookupCertificateInfo(String, String)
      */
     public String getSubjectDNEncoded() {
@@ -252,6 +254,14 @@ public class CertificateFinderBean {
      */
     public String getSerialNumber() {
         return serialNumber;
+    }
+    
+    /**
+     * @return the fingerprint string of the current certificate.
+     * @see lookupCertificateInfo(String, String)
+     */
+    public String getFingerprint() {
+        return fingerprint;
     }
 
     /** @return the param as it's URL encoded counterpart, taking the configured encoding into account. */
