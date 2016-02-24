@@ -110,7 +110,7 @@ public class LookAheadObjectInputStreamTest {
             lookAheadObjectInputStream.setAcceptedClasses(Arrays.asList(GoodClass1.class, GoodClass2.class));
             lookAheadObjectInputStream.setMaxObjects(1);
             GoodClass2 goodClass = (GoodClass2) lookAheadObjectInputStream.readObject();
-            assertEquals("Data corrupted during testDeserializingAcceptedJavaObject", goodClass.getData(), 2);
+            assertEquals("Data corrupted during testDeserializingAcceptedJavaObject", 2, goodClass.getData());
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testDeserializingAcceptedJavaObject");
         } finally {
@@ -201,7 +201,7 @@ public class LookAheadObjectInputStreamTest {
             acceptedClasses.add(GoodClass2.class);
             lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
             GoodClass2[] deserialized = (GoodClass2[]) lookAheadObjectInputStream.readObject();
-            assertEquals("Data corrupted during testDeserializingAcceptedJavaObjectArray", deserialized.length, 3);
+            assertEquals("Data corrupted during testDeserializingAcceptedJavaObjectArray", 3, deserialized.length);
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testDeserializingAcceptedJavaObjectArray");
         } finally {
@@ -360,35 +360,30 @@ public class LookAheadObjectInputStreamTest {
             lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
             lookAheadObjectInputStream.setEnabledMaxObjects(false);
 
-            assertEquals("Data 0 corrupted during testDeserializingPrimitiveTypes", (byte) lookAheadObjectInputStream.readObject(), (byte) 0);
-            assertEquals("Data 1 corrupted during testDeserializingPrimitiveTypes", (short) lookAheadObjectInputStream.readObject(), (short) 1);
-            assertEquals("Data 2 corrupted during testDeserializingPrimitiveTypes", (int) lookAheadObjectInputStream.readObject(), (int) 2);
-            assertEquals("Data 3 corrupted during testDeserializingPrimitiveTypes", (long) lookAheadObjectInputStream.readObject(), (long) 3);
-            assertEquals("Data 4 corrupted during testDeserializingPrimitiveTypes", (float) lookAheadObjectInputStream.readObject(), (float) 4, 0);
-            assertEquals("Data 5 corrupted during testDeserializingPrimitiveTypes", (double) lookAheadObjectInputStream.readObject(), (double) 5, 0);
-            assertEquals("Data 6 corrupted during testDeserializingPrimitiveTypes", ((Byte) lookAheadObjectInputStream.readObject()).byteValue(), 6);
-            assertEquals("Data 7 corrupted during testDeserializingPrimitiveTypes", ((Short) lookAheadObjectInputStream.readObject()).shortValue(),
-                    7);
-            assertEquals("Data 8 corrupted during testDeserializingPrimitiveTypes", ((Integer) lookAheadObjectInputStream.readObject()).intValue(),
-                    8);
-            assertEquals("Data 9 corrupted during testDeserializingPrimitiveTypes", ((Long) lookAheadObjectInputStream.readObject()).longValue(), 9);
-            assertEquals("Data 10 corrupted during testDeserializingPrimitiveTypes", ((Float) lookAheadObjectInputStream.readObject()).floatValue(),
-                    10, 0);
-            assertEquals("Data 11 corrupted during testDeserializingPrimitiveTypes", ((Double) lookAheadObjectInputStream.readObject()).doubleValue(),
-                    11, 0);
-            assertEquals("Data 12 corrupted during testDeserializingPrimitiveTypes", (boolean) lookAheadObjectInputStream.readObject(), false);
-            assertEquals("Data 13 corrupted during testDeserializingPrimitiveTypes",
-                    ((Boolean) lookAheadObjectInputStream.readObject()).booleanValue(), true);
-            assertEquals("Data 14 corrupted during testDeserializingPrimitiveTypes", (char) lookAheadObjectInputStream.readObject(), 'c');
-            assertEquals("Data 15 corrupted during testDeserializingPrimitiveTypes",
-                    ((String) lookAheadObjectInputStream.readObject()), "String");
-            assertEquals("Data 16 corrupted during testDeserializingPrimitiveTypes", ((byte[]) lookAheadObjectInputStream.readObject()).length, 1);
-            assertEquals("Data 17 corrupted during testDeserializingPrimitiveTypes", ((short[]) lookAheadObjectInputStream.readObject()).length, 1);
-            assertEquals("Data 18 corrupted during testDeserializingPrimitiveTypes", ((int[]) lookAheadObjectInputStream.readObject()).length, 1);
-            assertEquals("Data 19 corrupted during testDeserializingPrimitiveTypes", ((long[]) lookAheadObjectInputStream.readObject()).length, 1);
-            assertEquals("Data 20 corrupted during testDeserializingPrimitiveTypes", ((float[]) lookAheadObjectInputStream.readObject()).length, 1);
-            assertEquals("Data 21 corrupted during testDeserializingPrimitiveTypes", ((double[]) lookAheadObjectInputStream.readObject()).length, 1);
-            assertEquals("Data 22 corrupted during testDeserializingPrimitiveTypes", ((boolean[]) lookAheadObjectInputStream.readObject()).length, 1);
+            assertEquals("Data 0 corrupted during testDeserializingPrimitiveTypes", (byte) 0, (byte) lookAheadObjectInputStream.readObject());
+            assertEquals("Data 1 corrupted during testDeserializingPrimitiveTypes", (short) 1, (short) lookAheadObjectInputStream.readObject());
+            assertEquals("Data 2 corrupted during testDeserializingPrimitiveTypes", (int) 2, (int) lookAheadObjectInputStream.readObject());
+            assertEquals("Data 3 corrupted during testDeserializingPrimitiveTypes", (long) 3, (long) lookAheadObjectInputStream.readObject());
+            assertEquals("Data 4 corrupted during testDeserializingPrimitiveTypes", (float) 4, (float) lookAheadObjectInputStream.readObject(), 0);
+            assertEquals("Data 5 corrupted during testDeserializingPrimitiveTypes", (double) 5, (double) lookAheadObjectInputStream.readObject(), 0);
+            assertEquals("Data 6 corrupted during testDeserializingPrimitiveTypes", 6, ((Byte) lookAheadObjectInputStream.readObject()).byteValue());
+            assertEquals("Data 7 corrupted during testDeserializingPrimitiveTypes", 7, ((Short) lookAheadObjectInputStream.readObject()).shortValue());
+            assertEquals("Data 8 corrupted during testDeserializingPrimitiveTypes", 8, ((Integer) lookAheadObjectInputStream.readObject()).intValue());
+            assertEquals("Data 9 corrupted during testDeserializingPrimitiveTypes", 9, ((Long) lookAheadObjectInputStream.readObject()).longValue());
+            assertEquals("Data 10 corrupted during testDeserializingPrimitiveTypes", 10, ((Float) lookAheadObjectInputStream.readObject()).floatValue(), 0);
+            assertEquals("Data 11 corrupted during testDeserializingPrimitiveTypes", 11, ((Double) lookAheadObjectInputStream.readObject()).doubleValue(), 0);
+            assertEquals("Data 12 corrupted during testDeserializingPrimitiveTypes", false, (boolean) lookAheadObjectInputStream.readObject());
+            assertEquals("Data 13 corrupted during testDeserializingPrimitiveTypes", true, ((Boolean) lookAheadObjectInputStream.readObject()).booleanValue());
+            assertEquals("Data 14 corrupted during testDeserializingPrimitiveTypes", 'c', (char) lookAheadObjectInputStream.readObject());
+            assertEquals("Data 15 corrupted during testDeserializingPrimitiveTypes", "String", 
+                    ((String) lookAheadObjectInputStream.readObject()));
+            assertEquals("Data 16 corrupted during testDeserializingPrimitiveTypes", 1, ((byte[]) lookAheadObjectInputStream.readObject()).length);
+            assertEquals("Data 17 corrupted during testDeserializingPrimitiveTypes", 1, ((short[]) lookAheadObjectInputStream.readObject()).length);
+            assertEquals("Data 18 corrupted during testDeserializingPrimitiveTypes", 1, ((int[]) lookAheadObjectInputStream.readObject()).length);
+            assertEquals("Data 19 corrupted during testDeserializingPrimitiveTypes", 1, ((long[]) lookAheadObjectInputStream.readObject()).length);
+            assertEquals("Data 20 corrupted during testDeserializingPrimitiveTypes", 1, ((float[]) lookAheadObjectInputStream.readObject()).length);
+            assertEquals("Data 21 corrupted during testDeserializingPrimitiveTypes", 1, ((double[]) lookAheadObjectInputStream.readObject()).length);
+            assertEquals("Data 22 corrupted during testDeserializingPrimitiveTypes", 1, ((boolean[]) lookAheadObjectInputStream.readObject()).length);
 
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testDeserializingPrimitiveTypes");
