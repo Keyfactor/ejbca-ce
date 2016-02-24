@@ -40,7 +40,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
@@ -537,14 +536,11 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             return issuerCert;
         }
         
-        if((this.caCerts==null) || (this.caCerts.isEmpty())) { // no CA specified
+        if(this.caCerts==null) { // no CA specified
             return null;
         }
-        
-        Iterator<X509Certificate> caChainItr = caCerts.iterator();
-        X509Certificate cacert = null;
-        while(caChainItr.hasNext()) {
-            cacert = caChainItr.next();
+
+        for(final X509Certificate cacert : this.caCerts) {
             if(isIssuerCA(targetCert, cacert)) {
                 return cacert;
             }
