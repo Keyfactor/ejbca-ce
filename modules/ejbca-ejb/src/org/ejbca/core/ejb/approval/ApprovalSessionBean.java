@@ -229,7 +229,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             // Check that the approver isn't the same as requested the action.
             AuthenticationToken requester = getRequestAuthenticationToken(adl);
             if (admin.equals(requester)) {
-                String msg = intres.getLocalizedMessage("approval.alreadyapproved", approvalId);
+                String msg = intres.getLocalizedMessage("approval.error.cannotapproveownrequest", approvalId);
                 log.info(msg);
                 throw new AdminAlreadyApprovedRequestException(msg);
             }
@@ -237,7 +237,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         // Check that his admin has not approved this this request before
         for (Approval next : data.getApprovals()) {
             if (next.getAdmin().equals(admin)) {
-                String msg = intres.getLocalizedMessage("approval.alreadyapproved", approvalId);
+                String msg = intres.getLocalizedMessage("approval.error.alreadyapproved", approvalId);
                 log.info(msg);
                 throw new AdminAlreadyApprovedRequestException(msg);
             }

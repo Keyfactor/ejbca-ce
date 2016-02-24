@@ -68,7 +68,6 @@ import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -81,6 +80,7 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
@@ -554,9 +554,7 @@ public class ApprovalSessionTest extends CaTestCase {
                 fail("It shouldn't be possible to approve a rejected request");
             } catch (ApprovalException e) {
                 log.info("ApprovalException: " + e.getErrorCode() + ". " + e.getMessage());
-            } catch (EjbcaException e) {
-                log.info("EjbcaException: " + e.getErrorCode() + ". " + e.getMessage());
-            }
+            } 
 
             // Test that the approval exipres as it should
             Thread.sleep(1100);
@@ -785,7 +783,7 @@ public class ApprovalSessionTest extends CaTestCase {
     @Test
     public void testApprovalsWithExternalAdmins() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
             InvalidKeyException, CertificateEncodingException, SignatureException, IllegalStateException, ApprovalRequestExpiredException,
-            ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, EjbcaException {
+            ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, SelfApprovalException, ApprovalException {
         log.trace(">testApprovalsWithExternalAdmins()");
         DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
         removeApprovalId = nonExecutableRequest.generateApprovalId();
