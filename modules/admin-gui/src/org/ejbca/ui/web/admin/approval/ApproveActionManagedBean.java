@@ -21,7 +21,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -29,6 +28,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -123,11 +123,9 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     		addErrorMessage("AUTHORIZATIONDENIED");
     	} catch (ApprovalException e) {
     		addErrorMessage("ERRORHAPPENDWHENAPPROVING");
-    	} catch (AdminAlreadyApprovedRequestException e) {
-    		addErrorMessage("ADMINALREADYPROCESSED");
-    	} catch (EjbcaException e) {
-    		addErrorMessage(e.getErrorCode() + e.getMessage());
-    	}
+    	} catch (AdminAlreadyApprovedRequestException | SelfApprovalException e) {
+    		addErrorMessage(e.getMessage());
+    	} 
     	return "approveaction";
     }
 
@@ -144,7 +142,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     	} catch (ApprovalException e) {
     		addErrorMessage("ERRORHAPPENDWHENAPPROVING");
     	} catch (AdminAlreadyApprovedRequestException e) {
-    		addErrorMessage("ADMINALREADYPROCESSED");
+    		addErrorMessage(e.getMessage());
     	}
     	return "approveaction";
     }

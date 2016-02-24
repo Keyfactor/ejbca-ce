@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -13,16 +13,41 @@
 package org.ejbca.core.model.approval;
 
 /**
- * Exception thrown  to show that an administrator has already approved a request.
+ * Thrown to show that the administrator performing an approval was the same as the one originally requesting the action. 
  * 
  * @version $Id$
+ *
  */
-public class AdminAlreadyApprovedRequestException extends Exception {
+public class SelfApprovalException extends Exception {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public AdminAlreadyApprovedRequestException(String message) {
-		super(message);
-	}
+    /**
+     * 
+     */
+    public SelfApprovalException() {
+    }
+
+    /**
+     * @param message
+     */
+    public SelfApprovalException(String message) {
+        super(message);
+    }
+
+    /**
+     * @param cause
+     */
+    public SelfApprovalException(Throwable cause) {
+        super(cause);
+    }
+
+    /**
+     * @param message
+     * @param cause
+     */
+    public SelfApprovalException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }

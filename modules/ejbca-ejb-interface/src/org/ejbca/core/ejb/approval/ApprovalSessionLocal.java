@@ -25,6 +25,7 @@ import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
+import org.ejbca.core.model.approval.SelfApprovalException;
 
 /**
  * Local interface for ApprovalSession.
@@ -35,7 +36,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
     /**
      * Method used to reject an approval requests.
      * 
-     * It does the follwing 1. checks if the approval with the status waiting
+     * It does the following 1. checks if the approval with the status waiting
      * exists, throws an ApprovalRequestDoesntExistException otherwise
      * 
      * 2. check if the administrator is authorized using the follwing rules: 2.1
@@ -60,8 +61,9 @@ public interface ApprovalSessionLocal extends ApprovalSession {
      * @param admin the administrator that tries to approve the action
      * @param adl the action that the administrator tries to approve
      * @throws AdminAlreadyApprovedRequestException if the admin has already approved the action before
+     * @throws SelfApprovalException if the administrator performing the approval is the same as the one requesting the original action. 
      */
-	void checkExecutionPossibility(AuthenticationToken admin, ApprovalData adl) throws AdminAlreadyApprovedRequestException;
+	void checkExecutionPossibility(AuthenticationToken admin, ApprovalData adl) throws AdminAlreadyApprovedRequestException, SelfApprovalException;
 
 	/** Method that returns the approval data value object. */
 	ApprovalDataVO getApprovalDataVO(ApprovalData adl);
