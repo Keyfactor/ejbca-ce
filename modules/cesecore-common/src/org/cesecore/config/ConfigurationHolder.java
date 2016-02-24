@@ -82,10 +82,7 @@ public final class ConfigurationHolder {
             // read cesecore.properties, from config file built into jar, and see if we allow configuration by external files
             boolean allowexternal = false;
             try {
-                URL url = ClassLoader.getSystemClassLoader().getResource("conf" + File.separator + CONFIG_FILES[0]);
-                if(url == null ){
-                    url = ClassLoader.getSystemClassLoader().getResource(CONFIG_FILES[0]);
-                }
+                final URL url = ConfigurationHolder.class.getResource("/conf/"+CONFIG_FILES[0]);
                 if (url != null) {
                     final PropertiesConfiguration pc = new PropertiesConfiguration(url);
                     allowexternal = "true".equalsIgnoreCase(pc.getString(CONFIGALLOWEXTERNAL, "false"));
@@ -103,38 +100,27 @@ public final class ConfigurationHolder {
                 log.info("Added system properties to configuration source (java -Dfoo.prop=bar).");
 
                 // Override with file in "application server home directory"/conf, this is prio 2
-                for (String filename : CONFIG_FILES) {
-                   
-                    URL url = ClassLoader.getSystemClassLoader().getResource("conf" + File.separator + filename);
-                    if (url == null) {
-                        url = ClassLoader.getSystemClassLoader().getResource(filename);
-                    }
-                    if (url == null) {
-                        log.error("File " + filename + " was not found.");
-                    } else {
-                        try {
-                            final PropertiesConfiguration pc = new PropertiesConfiguration(url);
-                            pc.setReloadingStrategy(new FileChangedReloadingStrategy());
-                            config.addConfiguration(pc);
-                            log.info("Added file to configuration source: " + url.getPath());
-                        } catch (ConfigurationException e) {
-
-                            log.error("Failed to load configuration from file " + url.getPath());
-
-                        }
+                for (int i = 0; i < CONFIG_FILES.length; i++) {
+                    File f = null;
+                    try {
+                        f = new File("conf" + File.separator + CONFIG_FILES[i]);
+                        final PropertiesConfiguration pc = new PropertiesConfiguration(f);
+                        pc.setReloadingStrategy(new FileChangedReloadingStrategy());
+                        config.addConfiguration(pc);
+                        log.info("Added file to configuration source: " + f.getAbsolutePath());
+                    } catch (ConfigurationException e) {
+                        log.error("Failed to load configuration from file " + f.getAbsolutePath());
                     }
                 }
                 // Override with file in "/etc/cesecore/conf/, this is prio 3
-                for (String filename : CONFIG_FILES) {
+                for (int i = 0; i < CONFIG_FILES.length; i++) {
                     File f = null;
                     try {
-                        f = new File("/etc/cesecore/conf/" + filename);
-                        if (f.exists()) {
-                            final PropertiesConfiguration pc = new PropertiesConfiguration(f);
-                            pc.setReloadingStrategy(new FileChangedReloadingStrategy());
-                            config.addConfiguration(pc);
-                            log.info("Added file to configuration source: " + f.getAbsolutePath());
-                        }
+                        f = new File("/etc/cesecore/conf/" + CONFIG_FILES[i]);
+                        final PropertiesConfiguration pc = new PropertiesConfiguration(f);
+                        pc.setReloadingStrategy(new FileChangedReloadingStrategy());
+                        config.addConfiguration(pc);
+                        log.info("Added file to configuration source: " + f.getAbsolutePath());
                     } catch (ConfigurationException e) {
                         log.error("Failed to load configuration from file " + f.getAbsolutePath());
                     }
