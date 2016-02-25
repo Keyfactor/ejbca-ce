@@ -27,6 +27,9 @@ import org.cesecore.roles.RoleNotFoundException;
  */
 @Local
 public interface UpgradeSessionLocal  extends UpgradeSession{
+    
+    /** Performs operations before the upgrade, and can handle fresh installations specially */
+    void performPreUpgrade(final boolean isFreshInstallation);
 
 	/** Perform upgrades that can run side by side with older EJBCA versions. */
 	boolean performUpgrade();
@@ -69,6 +72,4 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     void migrateDatabase640() throws UpgradeFailedException;	
     /** For internal user from UpgradeSessionBean only! */
     void migrateDatabase642() throws UpgradeFailedException;
-    /** For internal user from UpgradeSessionBean only! */
-    void migrateDatabase650() throws UpgradeFailedException;    
 }

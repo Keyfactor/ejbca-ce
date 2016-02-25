@@ -40,8 +40,10 @@ public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSe
      * initializes the authorization module, if no roles or CAs exists in the system. This is done during startup 
      * so that we can use the CLI after this to install and configure the system further.
      * This method only performs any operation of RoleData and CAData both have no entries. 
+     * 
+     * @return true if initialization was done. This also means that this is a fresh installation of EJBCA.
      */
-    void initializeAuthorizationModule();
+    boolean initializeAuthorizationModule();
     
     /**
      * Method to check if an end entity profile exists in any end entity profile
