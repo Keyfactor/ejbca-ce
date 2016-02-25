@@ -268,9 +268,9 @@ public class CertDistServlet extends HttpServlet {
             }
         } else if (command.equalsIgnoreCase(COMMAND_CERTBYFP)) {
             String fp = req.getParameter(FINGERPRINT_PROPERTY);
-            if (fp == null) {
+            if (fp == null || fp.trim().isEmpty()) {
                 log.debug("Bad request, no 'fp' arg to 'certbyfp' command.");
-                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=certbyfp?fingerprint=<fingerprint>.");
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command="+COMMAND_CERTBYFP+"?"+FINGERPRINT_PROPERTY+"=<fingerprint>.");
                 return;
             }
             try {
@@ -279,7 +279,7 @@ public class CertDistServlet extends HttpServlet {
                     if (log.isDebugEnabled()) {
                         log.debug("No certificate found for requested fingerprint. '" + fp + "'.");
                     }
-                    res.sendError(HttpServletResponse.SC_NOT_FOUND, "No certificate found for requested subject DN.");
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND, "No certificate found for requested fingerprint.");
                 } else {
                     final String dn = CertTools.getSubjectDN(cert);
                     sendEndEntityCert(administrator, req, res, format, cert);
