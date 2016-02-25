@@ -284,7 +284,7 @@ public class CertDistServlet extends HttpServlet {
                     final String dn = CertTools.getSubjectDN(cert);
                     sendEndEntityCert(administrator, req, res, format, cert);
                     if (log.isDebugEnabled()) {
-                        log.debug("Sent latest certificate for '" + dn + "' to client at " + remoteAddr);
+                        log.debug("Sent certificate with fingerprint '" + fp + "' (and Subject DN '" + dn + "') to client at " + remoteAddr);
                     }
                 }
             } catch (Exception e) {
