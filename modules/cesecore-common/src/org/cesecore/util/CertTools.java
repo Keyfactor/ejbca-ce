@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
@@ -2772,63 +2773,76 @@ public abstract class CertTools {
     }
 
     /**
-     * Return the first CRL distribution point URL from a certificate.
+     * Return the first CRL distribution points. The CRL distributions points are URL specified in the certificate extension 
+     * CRLDistributionPoints with OID 2.5.29.31.
+     * 
+     * The CRLDistributionPoints extension contains a sequece of DistributionPoint, which has the following structure:
+     * 
+     *              DistributionPoint ::= SEQUENCE {
+     *                   distributionPoint  [0] DistributionPointName OPTIONAL,
+     *                   reasons            [1] ReasonFlags OPTIONAL,
+     *                   cRLIssuer          [2] GeneralNames OPTIONAL
+     *               }
+     *               
+     * This method extracts "distributionPoint" (tag 0) from the first DistributionPoint included in the extension. No other 
+     * tags are read.
+     * 
+     * @param certificate
+     * @return A URL, or null if no CRL distribution points were found
+     * @throws CertificateParsingException if failed to created URL object
      */
-    public static URL getCrlDistributionPoint(Certificate certificate) throws CertificateParsingException {
-        if (certificate instanceof X509Certificate) {
-            X509Certificate x509cert = (X509Certificate) certificate;
-            try {
-                ASN1Primitive obj = getExtensionValue(x509cert, Extension.cRLDistributionPoints.getId());
-                if (obj == null) {
-                    return null;
+    public static URL getCrlDistributionPoint(final Certificate certificate) throws CertificateParsingException {
+        if(certificate instanceof X509Certificate) {
+            final X509Certificate x509cert = (X509Certificate) certificate;
+            final Collection<String> cdps = getCrlDistributionPoints(x509cert);
+            if(!cdps.isEmpty()) {
+                try {
+                    return new URL(cdps.iterator().next());
+                } catch (MalformedURLException e) {
+                    log.error("Error creating URL object. " + e.getLocalizedMessage());
+                    throw new CertificateParsingException(e.toString());
                 }
-                ASN1Sequence crlDistributionPoints = (ASN1Sequence) obj;
-                for (int i = 0; i < crlDistributionPoints.size(); i++) {
-                    ASN1Sequence distributionPoint = (ASN1Sequence) crlDistributionPoints.getObjectAt(i);
-                    for (int j = 0; j < distributionPoint.size(); j++) {
-                        ASN1TaggedObject tagged = (ASN1TaggedObject) distributionPoint.getObjectAt(j);
-                        if (tagged.getTagNo() == 0) {
-                            String url = getStringFromGeneralNames(tagged.getObject());
-                            if (url != null) {
-                                return new URL(url);
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                log.error("Error parsing CrlDistributionPoint", e);
-                throw new CertificateParsingException(e.toString());
             }
         }
         return null;
     }
-
+    
     /**
-     * Return a list of CRL distribution points from a certificate.
+     * Return a list of CRL distribution points. The CRL distributions points are URL specified in the certificate extension 
+     * CRLDistributionPoints with OID 2.5.29.31.
+     * 
+     * The CRLDistributionPoints extension contains a sequece of DistributionPoint, which has the following structure:
+     * 
+     *              DistributionPoint ::= SEQUENCE {
+     *                   distributionPoint  [0] DistributionPointName OPTIONAL,
+     *                   reasons            [1] ReasonFlags OPTIONAL,
+     *                   cRLIssuer          [2] GeneralNames OPTIONAL
+     *               }
+     *               
+     * This method extracts "distributionPoint" (tag 0) from every DistributionPoint included in the extension. No other 
+     * tags are read.
+     * 
+     * @param certificate
+     * @return A list of URLs
      */
-    public static Collection<String> getCrlDistributionPoints(Certificate certificate) throws CertificateParsingException {
+    public static Collection<String> getCrlDistributionPoints(final X509Certificate x509cert) {
         ArrayList<String> cdps = new ArrayList<String>();
-        if (certificate instanceof X509Certificate) {
-            X509Certificate x509cert = (X509Certificate) certificate;
-            try {
-                ASN1Primitive obj = getExtensionValue(x509cert, Extension.cRLDistributionPoints.getId());
-                if (obj == null) {
-                    return null;
-                }
-                ASN1Sequence crlDistributionPoints = (ASN1Sequence) obj;
-                for (int i = 0; i < crlDistributionPoints.size(); i++) {
-                    ASN1Sequence distributionPoint = (ASN1Sequence) crlDistributionPoints.getObjectAt(i);
-                    for (int j = 0; j < distributionPoint.size(); j++) {
-                        ASN1TaggedObject tagged = (ASN1TaggedObject) distributionPoint.getObjectAt(j);
-                        if (tagged.getTagNo() == 0) {
-                            String url = getStringFromGeneralNames(tagged.getObject());
-                            cdps.add(url);
-                        }
+        final ASN1Primitive obj = getExtensionValue(x509cert, Extension.cRLDistributionPoints.getId());
+        if (obj == null) {
+            return cdps;
+        }
+            
+        final ASN1Sequence crlDistributionPoints = (ASN1Sequence) obj;
+        for (int i = 0; i < crlDistributionPoints.size(); i++) {
+            ASN1Sequence distributionPoint = (ASN1Sequence) crlDistributionPoints.getObjectAt(i);
+            for (int j = 0; j < distributionPoint.size(); j++) {
+                ASN1TaggedObject tagged = (ASN1TaggedObject) distributionPoint.getObjectAt(j);
+                if (tagged.getTagNo() == 0) {
+                    String url = getStringFromGeneralNames(tagged.getObject());
+                    if(url!=null) {
+                        cdps.add(url);
                     }
                 }
-            } catch (Exception e) {
-                log.error("Error parsing CrlDistributionPoint", e);
-                throw new CertificateParsingException(e.toString());
             }
         }
         return cdps;
@@ -2875,49 +2889,22 @@ public abstract class CertTools {
      * Returns the first OCSP URL that is inside AuthorityInformationAccess extension, or null.
      * 
      * @param cert is the certificate to parse
-     * @throws CertificateParsingException
      */
-    public static String getAuthorityInformationAccessOcspUrl(Certificate cert) throws CertificateParsingException {
-        String ret = null;
-        if (cert instanceof X509Certificate) {
-            X509Certificate x509cert = (X509Certificate) cert;
-            try {
-                ASN1Primitive obj = getExtensionValue(x509cert, Extension.authorityInfoAccess.getId());
-                if (obj == null) {
-                    return null;
-                }
-                AuthorityInformationAccess aia = AuthorityInformationAccess.getInstance(obj);
-                AccessDescription[] ad = aia.getAccessDescriptions();
-                if ((ad != null) && (ad.length > 0)) {
-                    for (int i = 0; i < ad.length; i++) {
-                        if (ad[i].getAccessMethod().equals(X509ObjectIdentifiers.ocspAccessMethod)) {
-                            GeneralName gn = ad[i].getAccessLocation();
-                            if (gn.getTagNo() == GeneralName.uniformResourceIdentifier) {
-                                // After encoding in a cert, it is tagged an extra time...
-                                ASN1Primitive gnobj = gn.toASN1Primitive();
-                                if (gnobj instanceof ASN1TaggedObject) {
-                                    gnobj = ASN1TaggedObject.getInstance(gnobj).getObject();
-                                }
-                                final DERIA5String str = DERIA5String.getInstance(gnobj);
-                                ret = str.getString();
-                                break; // no need to go on any further, we got a value
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                log.error("Error parsing AuthorityInformationAccess", e);
-                throw new CertificateParsingException(e.toString());
-            }
+    public static String getAuthorityInformationAccessOcspUrl(Certificate cert) {
+        Collection<String> urls = getAuthorityInformationAccessOcspUrls(cert);
+        if(!urls.isEmpty()) {
+            return urls.iterator().next();
         }
-        return ret;
+        return null;
     }
     
-    
-    /** @return all OCSP URL that is inside AuthorityInformationAccess extension or an empty list */
-    public static List<String> getAuthorityInformationAccessOcspUrls(X509Certificate x509cert) throws CertificateParsingException {
+    /**
+     * @return all OCSP URL that is inside AuthorityInformationAccess extension or an empty list
+     */
+    public static List<String> getAuthorityInformationAccessOcspUrls(Certificate cert) {
         final List<String> urls = new ArrayList<>();
-        try {
+        if(cert instanceof X509Certificate) {
+            X509Certificate x509cert = (X509Certificate) cert;
             final ASN1Primitive obj = getExtensionValue(x509cert, Extension.authorityInfoAccess.getId());
             if (obj != null) {
                 final AccessDescription[] accessDescriptions = AuthorityInformationAccess.getInstance(obj).getAccessDescriptions();
@@ -2938,9 +2925,6 @@ public abstract class CertTools {
                     }
                 }
             }
-        } catch (Exception e) {
-            log.error("Error parsing AuthorityInformationAccess", e);
-            throw new CertificateParsingException(e.toString());
         }
         return urls;
     }

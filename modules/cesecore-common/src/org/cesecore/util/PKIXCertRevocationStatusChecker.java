@@ -30,7 +30,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.PKIXCertPathChecker;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
@@ -504,9 +503,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             urls.add(this.ocspUrl);
         }
         
-        try {
-            urls.addAll(CertTools.getAuthorityInformationAccessOcspUrls((X509Certificate)cert));
-        } catch (CertificateParsingException e) {}
+        urls.addAll(CertTools.getAuthorityInformationAccessOcspUrls((X509Certificate)cert));
         
         return urls;
     }
@@ -519,14 +516,8 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             urls.add(this.crlUrl);
         }
         
-        ArrayList<String> crlUrlFromExtension = null;
-        try {
-            crlUrlFromExtension = (ArrayList<String>) CertTools.getCrlDistributionPoints(cert); 
-        } catch (CertificateParsingException e1) { }
-        
-        if(crlUrlFromExtension != null) {
-            urls.addAll(crlUrlFromExtension);
-        }
+        ArrayList<String> crlUrlFromExtension = (ArrayList<String>) CertTools.getCrlDistributionPoints((X509Certificate)cert); 
+        urls.addAll(crlUrlFromExtension);
         
         return urls; 
     }
