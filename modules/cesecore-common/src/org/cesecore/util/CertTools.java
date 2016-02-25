@@ -2789,19 +2789,13 @@ public abstract class CertTools {
      * 
      * @param certificate
      * @return A URL, or null if no CRL distribution points were found
-     * @throws CertificateParsingException if failed to created URL object
      */
-    public static URL getCrlDistributionPoint(final Certificate certificate) throws CertificateParsingException {
+    public static URL getCrlDistributionPoint(final Certificate certificate) {
         if(certificate instanceof X509Certificate) {
             final X509Certificate x509cert = (X509Certificate) certificate;
-            final Collection<String> cdps = getCrlDistributionPoints(x509cert);
+            final Collection<URL> cdps = getCrlDistributionPoints(x509cert, true);
             if(!cdps.isEmpty()) {
-                try {
-                    return new URL(cdps.iterator().next());
-                } catch (MalformedURLException e) {
-                    log.error("Error creating URL object. " + e.getLocalizedMessage());
-                    throw new CertificateParsingException(e.toString());
-                }
+                return cdps.iterator().next();
             }
         }
         return null;
@@ -2825,8 +2819,12 @@ public abstract class CertTools {
      * @param x509cert
      * @return A list of URLs
      */
-    public static Collection<String> getCrlDistributionPoints(final X509Certificate x509cert) {
-        ArrayList<String> cdps = new ArrayList<String>();
+    public static Collection<URL> getCrlDistributionPoints(final X509Certificate x509cert) {
+        return getCrlDistributionPoints(x509cert, false);
+    }
+    
+    private static Collection<URL> getCrlDistributionPoints(final X509Certificate x509cert, final boolean onlyfirst) {
+        ArrayList<URL> cdps = new ArrayList<URL>();
         final ASN1Primitive obj = getExtensionValue(x509cert, Extension.cRLDistributionPoints.getId());
         if (obj == null) {
             return cdps;
@@ -2840,7 +2838,16 @@ public abstract class CertTools {
                 if (tagged.getTagNo() == 0) {
                     String url = getStringFromGeneralNames(tagged.getObject());
                     if(url!=null) {
-                        cdps.add(url);
+                        try {
+                            cdps.add(new URL(url));
+                        } catch (MalformedURLException e) {
+                            if(log.isDebugEnabled()) {
+                                log.debug("Error parsing '" + url + "' as a URL. " + e.getLocalizedMessage());
+                            }
+                        }
+                    }
+                    if(onlyfirst) {
+                        return cdps; // returning only the first URL
                     }
                 }
             }
@@ -2902,6 +2909,13 @@ public abstract class CertTools {
      * @return all OCSP URL that is inside AuthorityInformationAccess extension or an empty list
      */
     public static List<String> getAuthorityInformationAccessOcspUrls(Certificate cert) {
+        return getAuthorityInformationAccessOcspUrls(cert, false);
+    }
+    
+    /**
+     * @return all OCSP URL that is inside AuthorityInformationAccess extension or an empty list
+     */
+    private static List<String> getAuthorityInformationAccessOcspUrls(Certificate cert, final boolean onlyfirst) {
         final List<String> urls = new ArrayList<>();
         if(cert instanceof X509Certificate) {
             X509Certificate x509cert = (X509Certificate) cert;
@@ -2919,7 +2933,12 @@ public abstract class CertTools {
                                     gnobj = ASN1TaggedObject.getInstance(gnobj).getObject();
                                 }
                                 final DERIA5String str = DERIA5String.getInstance(gnobj);
-                                urls.add(str.getString());
+                                if(str != null) {
+                                    urls.add(str.getString());
+                                }
+                                if(onlyfirst) {
+                                    return urls; // returning only the first URL
+                                }
                             }
                         }
                     }
