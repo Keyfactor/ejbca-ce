@@ -1,3 +1,158 @@
+EJBCA 6.5.0, 2016-02-29
+---
+Bug
+    [ECA-2841] - Document Password Limitation in manuals and sample files. 
+    [ECA-3600] - The /ca_functionality/edit_ca is missing from advanced Access Rules
+    [ECA-3859] - E-mail doesn't work in usernamemapping in self-registration 
+    [ECA-4262] - Name constraints encoding incorrect in a certain case
+    [ECA-4310] - Certificate profile key length restriction ignored when creating CA
+    [ECA-4478] - Display "Base64 log ids" when listing CT logs
+    [ECA-4518] - Cloning a fixed hard token certificate profile leads to GUI bug
+    [ECA-4535] - ArrayIndexOutOfBounds when upgrading EJBCA 4 installations
+    [ECA-4546] - Regression: Approvals page ignores 'Expired' status
+    [ECA-4551] - Implement non-partitioned CRLs that will work with name-changed CSCA
+    [ECA-4579] - GUI: Some spaces added in original values in End Entity profile
+    [ECA-4582] - Regression: Edit end entity profile notifications bug
+    [ECA-4584] - GUI: Display problem of Extended Key Usages, in View Certificates
+    [ECA-4587] - Regression: test20MaliciousOcspRequest hangs forever on everything but Wildfly8
+    [ECA-4588] - "Renew Browser Certificate"-link in Public Web broken
+    [ECA-4602] - CMP: EEC authmodule - Checking for CA authorization does not work
+    [ECA-4613] - Don't allow deletion of CT logs that are still in use by a Certificate Profile
+    [ECA-4616] - Regression: EJBCA WS CLI shows a lot of warnings
+    [ECA-4623] - Handle CertificateCreateException with null ErrorCode in public web
+    [ECA-4626] - Duplicate DN values fail in the Self-Registration forms
+    [ECA-4627] - Security Hardening
+    [ECA-4628] - GUI: CA Structure & CRLs usability
+    [ECA-4631] - Security Issue
+    [ECA-4634] - The check whether Subject Directory Attributes fulfill profile always fails in Self-Registration
+    [ECA-4644] - Fix the jbosslogsigning target 
+    [ECA-4656] - NPE on system configuration page if no other page has been loaded before it
+    [ECA-4662] - Test CrmfRAPbeRequestTest does not clean up correctly
+    [ECA-4663] - Regression: Standard superadmin shows up as 'Custom' in Basic Access Rules View
+    [ECA-4664] - CompressedCollection silently allows add() after closeForWrite()
+    [ECA-4666] - CmpTestCase can't be run against CmpProxy
+    [ECA-4669] - Revoking/Republishing certificate by selecting its serial number from audit log outputs NPE
+    [ECA-4671] - Possible infinite recursion, leading to OOM in intresources
+    [ECA-4677] - Audit log: Only show valid conditions for each search column
+    [ECA-4683] - Trying to view deleted end entity gives NPE
+    [ECA-4686] - Approval requests from Self Registration appear to originate from CLI 
+    [ECA-4694] - CMP: EEC authmodule - Checking for CA authorization still does not work
+    [ECA-4700] - Fix bugs related to Auditor role 
+    [ECA-4707] - PeerInternalKeyBindingUpdaterWorker should check status of CA's CryptoToken before trying renewal
+    [ECA-4709] - NPE when trying to display remote IKB where remote cert is not present on CA
+    [ECA-4714] - Security issue
+    [ECA-4718] - Regression: EndEntityManagementSessionTest.test07MergeWithWS fails on the community release 
+    [ECA-4719] - ocsp.reqsigncertrevcachetime not defined in defaultvalues.properties
+    [ECA-4721] - Certificate Transparency tab in System Configuration shows up in Community Edition
+    [ECA-4733] - Security hardening of new Statedump GUI
+    [ECA-4736] - Handle changed Subject DN in statedump files
+    [ECA-4738] - Missing properties in cesecore-common library
+    [ECA-4740] - CmpProxyServlet doesn't calculate process time correctly
+    [ECA-4745] - Certificate Profile: Don't save values of disabled fields to make audit easier
+    [ECA-4747] - Imported certificate profile does not include AvailableCAs in the GUI
+    [ECA-4752] - Possible NPE in ConcurrentCache when using DEBUG logging 
+    [ECA-4754] - ejbca.org index page broken in chromium
+    [ECA-4757] - Help reference not visible in services page
+    [ECA-4762] - RA Administrators (Pre-defined role template) privileges are missing 
+    [ECA-4765] - GeneralPurposeCustomPublisher doesn't surround command arguments with quotes.
+    [ECA-4812] - Healthcheck of CAs get key count wrong and checks for previousCertSignKey
+    [ECA-4814] - SQL error in schema for Postgres databases
+    [ECA-4815] - Fix some JUnit test failures in JDK8
+    [ECA-4824] - Information leak in debug log
+    [ECA-4830] - Minor security hardening
+    [ECA-4832] - Security issue
+    [ECA-4839] - Certificate download redirect does not work with non-ASCII characters in the Subject DN
+    [ECA-4841] - Regression: Events are not shown in the 'View Log'
+    [ECA-4843] - Regression: ConfigurationHolder can no longer read built in properties
+    [ECA-4847] - Don't lock down statedump in fresh installations
+
+Improvement
+    [ECA-659] - Add restriction for key algorithm in certificate profiles
+    [ECA-1910] - CAs in alphabetic order in the CA Structure & CRLs page
+    [ECA-3204] - Re-factoring of P11Slot
+    [ECA-3780] - Split and kill the src-directory
+    [ECA-3929] - Improve rendering of crypto tokens on the CA Activation page. 
+    [ECA-4075] - Document that naming in IS end entities should not be changed
+    [ECA-4237] - Peer connections should send full client certificate chain
+    [ECA-4274] - Eliminate redundant images from docs
+    [ECA-4393] - Reduce number of errors from the OCSP signing cache about expired CAs
+    [ECA-4401] - Can not read private key with alias containing åäö from keystore
+    [ECA-4403] - Parallel CT log submission
+    [ECA-4404] - TLS session re-use for CT submission
+    [ECA-4481] - Cache revocation status of request signers in OCSP responder
+    [ECA-4482] - Make new transaction log variable for ISSUER_NAME and REQ_NAME in original order
+    [ECA-4543] - Implement CSCA "CA Name Change" feature from ICAO 9303 7th part 12
+    [ECA-4552] - Allow statedump to merge existing CryptoTokens
+    [ECA-4562] - Make sure that there is only one set of code handling HSM keys.
+    [ECA-4563] - CMP: ResponseStatus in CmpErrorResponseMessage is not used and should be removed
+    [ECA-4564] - CMP: return message SYSTEM_UNAVAILABLE when profiles can not be read/found in RA mode
+    [ECA-4570] - Document validation error messages returned by CMP Proxy
+    [ECA-4574] - GUI: System Configuration sub-section order
+    [ECA-4575] - GUI: Better CryptoToken alias default value
+    [ECA-4576] - Several SAN DNSname in EMPTY profile
+    [ECA-4577] - GUI: SHA-256 by default in CA creation form
+    [ECA-4583] - GUI: CryptoToken page usability (private key export)
+    [ECA-4595] - GUI: CA creation form usability
+    [ECA-4598] - Make SecConst.MAXIMUM_QUERY_ROWCOUNT into a configurable value
+    [ECA-4599] - EndEntityManagementSessionBean.revokeCert needlessly tries to revoke all certificates
+    [ECA-4601] - Don't require "/ct/v1" in CT log URL
+    [ECA-4607] - Allow CT Log public keys to be uploaded in DER format
+    [ECA-4620] - Security issue
+    [ECA-4629] - General code improvement
+    [ECA-4633] - New RSA key sizes for the Extended Services in CAs
+    [ECA-4638] - Minor improvements to CT Logs timeouts
+    [ECA-4643] - Remove Dependency checker test. 
+    [ECA-4648] - Better configuration default values for languages
+    [ECA-4668] - Proactive public web security hardening
+    [ECA-4672] - Change CMP errors codes, missing aliases and already revoked
+    [ECA-4674] - Proactive web security hardening
+    [ECA-4676] - Allow CMP Proxy server to use multiple CA keychains 
+    [ECA-4696] - Add path to SafeNet Luna Client 6.1 to default PKCS11 libraries
+    [ECA-4697] - Add path to SoftHSM to default PKCS11 libraries 
+    [ECA-4699] - Replace deprecated references CertTools methods
+    [ECA-4701] - Update XStream and limit classes that can be deserialized by Statedump
+    [ECA-4703] - Use newer BC pattern in CertTools to get rid of some warnings
+    [ECA-4704] - Upgrade BouncyCastle to 1.54
+    [ECA-4712] - Remove BaseCryptoToken.extractKey(String, String, String)
+    [ECA-4720] - Document that the site search uses Google
+    [ECA-4726] - Make "CA Name Change" configurable through Global Configuration
+    [ECA-4734] - Document getAuthorizedAvailableAccessRules better
+    [ECA-4737] - Combine the efforts of ECA-4566 and ECA-4568
+    [ECA-4742] - Clarify error message when admin certificate does not belong to a user
+    [ECA-4748] - cmpclient: Use SHA256 as signature algorithm
+    [ECA-4773] - Lock down statedump when upgrading
+    [ECA-4775] - Improve statedump CLI lockdown handling
+    [ECA-4827] - Default healthcheck.publisherconnections to 'false' as documented in the admin guide
+    [ECA-4845] - Improve error messages for approvals.
+    
+New Feature
+    [ECA-4164] - Support for importing DER-encoded CA certificate file via CLI command "ca importcacert"
+    [ECA-4177] - DER-encoded format as output option during enrollment via CSR
+    [ECA-4319] - Include information in key binding CSR when creating from CLI 
+    [ECA-4474] - Prefix/override support for statedump during import
+    [ECA-4504] - Make sure that a signature algorithm supported by the HSM is used when the algorithm is not specified.
+    [ECA-4508] - Ability to define custom order of DN in issued certificates
+    [ECA-4561] - Add restriction for EC curve names in certificate profiles
+    [ECA-4566] - Add signature validation of signed requests in CmpProxy
+    [ECA-4567] - Add HMAC PBE validation of signed requests in CmpProxy
+    [ECA-4568] - Revocation checking of signature certificates in CMP Proxy
+    [ECA-4569] - Separate library for certificate path validation
+    [ECA-4600] - Add a CMP client for test purposes
+    [ECA-4608] - Add Bull HSM default options for GUI access
+    [ECA-4609] - GUI: Display the SHA-256 certificate fingerprint
+    [ECA-4640] - GUI enabled statedump import of uploaded file
+    [ECA-4641] - GUI enabled statedump import of bundled file
+    [ECA-4698] - Add generics to CertTools.getCertfromByteArray methods
+    [ECA-4761] - CA name should be displayed in the delete CA prompt
+
+Task
+    [ECA-4138] - Write complete system tests for ClientToolBox
+    [ECA-4497] - Remove .cvsignore files from SVN repository
+    [ECA-4498] - Remove the CESeCore backup/restore scripts from the release zips
+    [ECA-4618] - CMSIncrementalMode is deprecated in Java 8 and should be removed from our config
+    [ECA-4717] - Add systemd sample configuration for RHEL/CentOD
+    [ECA-4730] - Remove old install guides from doc/howto
+
 EJBCA 6.4.2, 2015-12-29
 ---
 Bug
