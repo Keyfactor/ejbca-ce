@@ -13,7 +13,7 @@
 package org.ejbca.core.model.approval;
 
 /**
- * Thrown to show that the administrator performing an approval was the same as the one originally requesting the action. 
+ * Thrown to show that the administrator performing an action was the same as the one originally requesting the action. 
  * 
  * @version $Id$
  *
