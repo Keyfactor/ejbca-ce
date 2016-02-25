@@ -2822,7 +2822,7 @@ public abstract class CertTools {
      * This method extracts "distributionPoint" (tag 0) from every DistributionPoint included in the extension. No other 
      * tags are read.
      * 
-     * @param certificate
+     * @param x509cert
      * @return A list of URLs
      */
     public static Collection<String> getCrlDistributionPoints(final X509Certificate x509cert) {
