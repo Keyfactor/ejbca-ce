@@ -28,6 +28,7 @@ import javax.persistence.Query;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.AuditLogEntry;
+import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -97,9 +98,11 @@ public class EjbcaAuditorSessionBean implements EjbcaAuditorSessionLocal {
         Set<Integer> authorizedCaIds = new HashSet<>(caSession.getAuthorizedCaIds(token));
         List<AuditLogEntry> resultList = new ArrayList<>();
         for(AuditLogEntry auditLogEntry : (List<AuditLogEntry>) query.getResultList()) {
-            if(!StringUtils.isEmpty(auditLogEntry.getCustomId())) {
-                if(!authorizedCaIds.contains(Integer.valueOf(auditLogEntry.getCustomId()))) {
-                    continue;
+            if (auditLogEntry.getModuleTypeValue().equals(ModuleTypes.CA)) {
+                if (!StringUtils.isEmpty(auditLogEntry.getCustomId())) {
+                    if (!authorizedCaIds.contains(Integer.valueOf(auditLogEntry.getCustomId()))) {
+                        continue;
+                    }
                 }
             }
             resultList.add(auditLogEntry);
