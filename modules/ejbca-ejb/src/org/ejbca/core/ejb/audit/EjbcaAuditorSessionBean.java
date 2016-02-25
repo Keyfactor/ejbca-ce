@@ -98,7 +98,10 @@ public class EjbcaAuditorSessionBean implements EjbcaAuditorSessionLocal {
         Set<Integer> authorizedCaIds = new HashSet<>(caSession.getAuthorizedCaIds(token));
         List<AuditLogEntry> resultList = new ArrayList<>();
         for(AuditLogEntry auditLogEntry : (List<AuditLogEntry>) query.getResultList()) {
-            if (auditLogEntry.getModuleTypeValue().equals(ModuleTypes.CA)) {
+            //The following values may leak CA Ids. 
+            if ( auditLogEntry.getModuleTypeValue().equals(ModuleTypes.CA)
+                 || auditLogEntry.getModuleTypeValue().equals(ModuleTypes.CERTIFICATE)
+                 || auditLogEntry.getModuleTypeValue().equals(ModuleTypes.CRL)) {
                 if (!StringUtils.isEmpty(auditLogEntry.getCustomId())) {
                     if (!authorizedCaIds.contains(Integer.valueOf(auditLogEntry.getCustomId()))) {
                         continue;
