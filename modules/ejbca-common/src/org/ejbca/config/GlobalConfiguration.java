@@ -571,7 +571,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     }
     
     public boolean getStatedumpLockedDown() {
-        return getBoolean(STATEDUMP_LOCKDOWN, false);
+        return getBoolean(STATEDUMP_LOCKDOWN, true);
     }
     
     public void setStatedumpLockedDown(final boolean value) {

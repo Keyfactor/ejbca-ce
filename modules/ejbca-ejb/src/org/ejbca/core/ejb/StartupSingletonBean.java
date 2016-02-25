@@ -185,7 +185,7 @@ public class StartupSingletonBean {
         }
 
         // Make a log row that EJBCA is starting
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", iMsg);
         logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), null, getHostName(), null, details);               
 
@@ -199,7 +199,7 @@ public class StartupSingletonBean {
             if (!checkForProtectedAudit(authenticationToken, loggerIds)) {
                 // Make a log row that no integrity protected device is configured
                 final String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("startservices.noprotectedauditdevices");
-                final Map<String, Object> logdetails = new LinkedHashMap<String, Object>();
+                final Map<String, Object> logdetails = new LinkedHashMap<>();
                 logdetails.put("msg", msg);
                 logSession.log(EventTypes.LOG_MANAGEMENT_CHANGE, EventStatus.VOID, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, authenticationToken.toString(), null, null, null, logdetails);                
             }
@@ -207,7 +207,7 @@ public class StartupSingletonBean {
 
         // Initialize authorization system, if not done already
         log.trace(">init ComplexAccessControlSession to check for initial root role");
-        complexAccessControlSession.initializeAuthorizationModule();
+        final boolean isFreshInstallation = complexAccessControlSession.initializeAuthorizationModule();
 
         log.trace(">init calling ServiceSession.load");
         try {
@@ -275,6 +275,7 @@ public class StartupSingletonBean {
             log.error("Failure during match value initialization", e);
         }
         // Perform (automatic) upgrades, if needed
+        upgradeSession.performPreUpgrade(isFreshInstallation);
         upgradeSession.performUpgrade();
         // Start key reload timer
         ocspResponseGeneratorSession.initTimers();
@@ -315,10 +316,10 @@ public class StartupSingletonBean {
         // This is admin-gui and does not have access to that class
         final String integrityProtectedName = "IntegrityProtectedDevice";
         for (Iterator<String> iterator = loggerIds.iterator(); iterator.hasNext();) {
-            final String id = (String) iterator.next();
+            final String id = iterator.next();
             if (integrityProtectedName.equals(id)) {
                 // Make a log row that integrity protected device is configured
-                final Map<String, Object> logdetails = new LinkedHashMap<String, Object>();
+                final Map<String, Object> logdetails = new LinkedHashMap<>();
                 try {
                     // Use reflection to get the ProtectedDataConfiguration and make some calls to it.
                     // This is needed since ProtectedDataConfiguration may not be available during compile time, or runtime

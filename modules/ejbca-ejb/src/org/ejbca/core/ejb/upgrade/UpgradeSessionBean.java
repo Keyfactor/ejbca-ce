@@ -210,6 +210,21 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private GlobalUpgradeConfiguration getGlobalUpgradeConfiguration() {
         return (GlobalUpgradeConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
     }
+    
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
+    public void performPreUpgrade(final boolean isFreshInstallation) {
+        try {
+            if (isFreshInstallation) {
+                // Unlock statedump in new installations
+                final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+                globalConfig.setStatedumpLockedDown(false);
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig);
+            }
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException("AlwaysAllowLocalAuthenticationToken should not have been denied authorization");
+        }
+    }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
@@ -334,14 +349,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
             setLastUpgradedToVersion("6.4.2");
-        }
-        if (isLesserThan(oldVersion, "6.5")) {
-            try {
-                upgradeSession.migrateDatabase650();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.5");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -1329,26 +1336,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
         }
         return newpolicies;
-    }
-    
-    /**
-     * EJBCA 6.5.0:
-     * 
-     * 1.   Locks down Statedump in the GUI. It should only be used with new installations. 
-     * 
-     * @throws UpgradeFailedException if upgrade fails (rolls back)
-     */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    @Override
-    public void migrateDatabase650() throws UpgradeFailedException {
-        try {
-            final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-            globalConfig.setStatedumpLockedDown(true);
-            globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig);
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException("AlwaysAllowLocalAuthenticationToken should not have been denied authorization");
-        }
-        log.error("(This is not an error) Completed upgrade procedure to 6.5.0");
     }
 
     /** 
