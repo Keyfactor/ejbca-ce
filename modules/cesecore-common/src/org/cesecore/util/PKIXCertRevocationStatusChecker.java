@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.InvalidKeyException;
@@ -240,7 +241,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
      * @throws CertPathValidatorException
      */
     private void fallBackToCrl(final Certificate cert, final String issuerDN) throws CertPathValidatorException {
-        final ArrayList<String> crlUrls = getCrlUrl(cert);
+        final ArrayList<URL> crlUrls = getCrlUrl(cert);
         if(crlUrls.isEmpty()) {
             final String errmsg = "Failed to verify certificate status using the fallback CRL method. Could not find a CRL URL"; 
             log.info(errmsg);
@@ -251,7 +252,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         }
         
         CRL crl = null;
-        for(String url : crlUrls) {
+        for(URL url : crlUrls) {
             crl = getCRL(url);
             if(crl != null) {
                 if(isCorrectCRL(crl, issuerDN)) {
@@ -316,10 +317,9 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         return false;
     }
     
-    private CRL getCRL(final String crlurl) {
+    private CRL getCRL(final URL url) {
         CRL crl = null;
         try {
-            final URL url = new URL(crlurl);
             final URLConnection con = url.openConnection();
             final InputStream is = con.getInputStream();
             final CertificateFactory cf = CertificateFactory.getInstance("X.509");
@@ -328,7 +328,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             log.info("Downloaded CRL from " + url);
         } catch(IOException | CertificateException | CRLException e) {
             if(log.isDebugEnabled()) {
-                log.debug("Fetching CRL from " + crlurl + " failed. " + e.getLocalizedMessage());
+                log.debug("Fetching CRL from " + url.toString() + " failed. " + e.getLocalizedMessage());
             }
         }
         return crl;
@@ -508,15 +508,21 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         return urls;
     }
     
-    private ArrayList<String> getCrlUrl(final Certificate cert) {
+    private ArrayList<URL> getCrlUrl(final Certificate cert) {
         
-        ArrayList<String> urls = new ArrayList<String>();
+        ArrayList<URL> urls = new ArrayList<URL>();
         
         if(StringUtils.isNotEmpty(this.crlUrl)) {
-            urls.add(this.crlUrl);
+            try {
+                urls.add(new URL(this.crlUrl));
+            } catch (MalformedURLException e) {
+                if(log.isDebugEnabled()) {
+                    log.debug("Failed to parse '" + this.crlUrl + "' as a URL. " + e.getLocalizedMessage());
+                }
+            }
         }
         
-        ArrayList<String> crlUrlFromExtension = (ArrayList<String>) CertTools.getCrlDistributionPoints((X509Certificate)cert); 
+        Collection<URL> crlUrlFromExtension = CertTools.getCrlDistributionPoints((X509Certificate)cert); 
         urls.addAll(crlUrlFromExtension);
         
         return urls; 
