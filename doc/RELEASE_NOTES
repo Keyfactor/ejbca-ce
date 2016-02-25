@@ -2,7 +2,7 @@ EJBCA 6.5.0
 -----------
 Primekey Solutions is very pleased to release EJBCA 6.5.0 into the wild. This release has primarily focused on tuning up the UI and responding 
 to security developments in the Java EE world in the last few months. We've shifted plenty of focus to QA during this period, so this version is the most 
-stable we've released yet. All in all, we've fixed xyz new features, bugs and improvements. 
+stable we've released yet. All in all, we've fixed 145 new features, bugs and improvements. 
 
 Administration UI:
 	- Certificate profiles can now be set to restrict key algorithms, curves (for EC) and key length.
