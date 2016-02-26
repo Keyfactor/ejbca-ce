@@ -32,7 +32,7 @@
 		<path refid="lib.commons-codec.classpath"/>
 	</path>
 
-	<target name="jar">
+	<target name="jar" depends="cesecore-entity">
 		<mkdir dir="${cesecore-ejb-interface.dir}/build/classes"/>
 		<javac srcdir="${cesecore-ejb-interface.dir}/src" destdir="${cesecore-ejb-interface.dir}/build/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<classpath refid="compile.classpath"/>
