@@ -217,31 +217,16 @@ public class UpgradeSessionBeanTest {
        }
    }
    
-   /** Tests that upgrading from pre-6.5.0 disables statedump in the GUI */
+   /** Basic test that Statedump defaults to being disabled. The actual upgrade is to be tested manually in ECAQA-82 */
    @SuppressWarnings("unchecked")
    @Test
-   public void testUpgradeTo650StatedumpLockdown() throws AuthorizationDeniedException {
+   public void testStatedumpLockdown() {
        final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
        
-       // Remove lockdown property which is new in 6.5
-       final Object configBackup = globalConfig.saveData();
-       final Map<Object,Object> data = (Map<Object,Object>) globalConfig.saveData(); // get another copy
+       final Map<Object,Object> data = (Map<Object,Object>) globalConfig.saveData(); // returns a copy that we can modify
        data.remove("statedump_lockdown");
        globalConfig.loadData(data);
-       assertFalse("Statedump should NOT be locked down in the default state", globalConfig.getStatedumpLockedDown());
-       globalConfigSession.saveConfiguration(alwaysAllowtoken, globalConfig);
-       try {
-           // Perform upgrade
-           upgradeSession.upgrade(null, "6.4.2", false);
-           
-           // Check state after upgrade
-           final GlobalConfiguration updatedConfig = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-           assertTrue("Statedump should be locked down after upgrade", updatedConfig.getStatedumpLockedDown());
-       } finally {
-           // Restore backup
-           globalConfig.loadData(configBackup);
-           globalConfigSession.saveConfiguration(alwaysAllowtoken, globalConfig);
-       }
+       assertTrue("Statedump should be locked down in the default state", globalConfig.getStatedumpLockedDown());
    }
    
    @Test
