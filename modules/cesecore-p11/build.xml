@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="cesecore-p11" basedir="../.." default="build">
+<project name="cesecore-p11" basedir="../.." default="jar">
 	<property environment="env" />
 	<dirname property="cesecore-p11.dir" file="${ant.file.cesecore-p11}"/>
 
@@ -11,7 +11,7 @@
 
 	<available classname="sun.security.pkcs11.SunPKCS11" property="SunPKCS11.present"/>
 
-	<target name="build" if="SunPKCS11.present" description="Build sun p11 extra jar">
+	<target name="jar" if="SunPKCS11.present" description="Build sun p11 extra jar">
 		<mkdir dir="${build.dir}" />
 		<javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<src path="${src.dir}"/>

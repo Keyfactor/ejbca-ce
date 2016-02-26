@@ -194,7 +194,7 @@
 	</target>
 
 	<target name="cesecore-p11" description="Build the Sun P11 extension">
-			<ant antfile="${mod.cesecore-p11.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+			<ant antfile="${mod.cesecore-p11.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
     <target name="cesecore-common" depends="-build-cesecore-common, -copy-cesecore-common"/>
