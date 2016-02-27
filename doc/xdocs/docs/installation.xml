@@ -854,7 +854,7 @@ ant deploy-keystore
 :reload
 </source>
 <p>If you are using OCSP GET requests, setting URI encoding and allowing encoding for Query and backslash above is needed.</p>
-<note>WildFy will most likely get confused at this step, and will need a restart with ":shutdown(restart=true)".</note>
+<note>WildFly will most likely get confused at this step, and will need a restart with ":shutdown(restart=true)".</note>
 </subsubsection>
 
 <subsubsection name="Optional: Enable AJP connector">
@@ -935,7 +935,7 @@ ant deploy-keystore
 :reload
 </source>
 <p>If you are using OCSP GET requests, setting URI encoding and allowing encoding for Query and backslash above is needed.</p>
-<note>WildFy will most likely get confused at this step, and will need a restart with ":shutdown(restart=true)".</note>
+<note>WildFly will most likely get confused at this step, and will need a restart with ":shutdown(restart=true)".</note>
 </subsubsection>
 
 </subsection>
