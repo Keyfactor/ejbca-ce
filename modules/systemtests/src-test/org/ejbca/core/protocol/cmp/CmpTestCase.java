@@ -305,7 +305,7 @@ public abstract class CmpTestCase extends CaTestCase {
         byte[] bytes = keys.getPublic().getEncoded();
         ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
         ASN1InputStream dIn = new ASN1InputStream(bIn);
-        SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
+        SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence) dIn.readObject());
         dIn.close();
         myCertTemplate.setPublicKey(keyInfo);
         // If we did not pass any extensions as parameter, we will create some of our own, standard ones
@@ -496,7 +496,7 @@ public abstract class CmpTestCase extends CaTestCase {
         ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
         ASN1InputStream dIn = new ASN1InputStream(bIn);
         try {
-            SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
+            SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence) dIn.readObject()); 
             myCertTemplate.setPublicKey(keyInfo);
         } finally {
             dIn.close();

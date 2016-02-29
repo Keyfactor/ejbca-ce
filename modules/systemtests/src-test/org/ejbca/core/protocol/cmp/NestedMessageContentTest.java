@@ -633,7 +633,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
         ASN1InputStream         dIn = new ASN1InputStream(bIn);
         try {
-        SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence)dIn.readObject());
+        SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence)dIn.readObject());
         myCertTemplate.setPublicKey(keyInfo);
         // If we did not pass any extensions as parameter, we will create some of our own, standard ones
         } finally {

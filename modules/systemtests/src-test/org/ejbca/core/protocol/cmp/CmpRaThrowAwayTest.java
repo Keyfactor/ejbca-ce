@@ -36,6 +36,7 @@ import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -54,6 +55,7 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -302,8 +304,8 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         certTemplate.setSubject(subjectX500Name);
         final byte[] bytes = keyPair.getPublic().getEncoded();
         final ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
-        final org.bouncycastle.asn1.ASN1InputStream asn1InputStream = new org.bouncycastle.asn1.ASN1InputStream(bIn);
-        final org.bouncycastle.asn1.x509.SubjectPublicKeyInfo keyInfo = new org.bouncycastle.asn1.x509.SubjectPublicKeyInfo((org.bouncycastle.asn1.ASN1Sequence)asn1InputStream.readObject());
+        final ASN1InputStream asn1InputStream = new org.bouncycastle.asn1.ASN1InputStream(bIn);
+        final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence) asn1InputStream.readObject());
         asn1InputStream.close();
         certTemplate.setPublicKey(keyInfo);
         // Request a custom certificate serial number

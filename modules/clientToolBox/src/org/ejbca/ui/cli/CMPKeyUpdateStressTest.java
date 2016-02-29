@@ -168,7 +168,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			final byte[] bytes = this.newKeyPair.getPublic().getEncoded();
 			final ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
 			final ASN1InputStream dIn = new ASN1InputStream(bIn);
-			final SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
+			final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence) dIn.readObject());
 			dIn.close();
 			myCertTemplate.setPublicKey(keyInfo);
 			return new CertRequest(4, myCertTemplate.build(), null);
