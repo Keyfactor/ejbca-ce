@@ -1223,6 +1223,7 @@ function toggleCANameChange(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
          <%= ejbcawebbean.getText("CRLDISTPOINTONCRL") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Issuing%20Distribution%20Point%20on%20CRLs") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL %>" onClick="checkusefield('<%=CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL %>', '<%=CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
