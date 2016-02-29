@@ -38,6 +38,7 @@ public final class StatedumpImportOptions implements Serializable {
     private final Map<StatedumpObjectKey,StatedumpResolution> resolutions = new HashMap<>();
     private final Map<StatedumpObjectKey,String> passwords = new HashMap<>();
     private final List<StatedumpCAIdChange> caIdChanges = new ArrayList<>();
+    private final Map<Integer,Integer> cryptoTokenIdChanges = new HashMap<>();
     private final Map<String,List<StatedumpOverride>> overrides = new HashMap<>();
     
     public StatedumpImportOptions() {
@@ -101,6 +102,18 @@ public final class StatedumpImportOptions implements Serializable {
     /** Internal method, but EJBs can't call package internal methods, so it must be public */
     public List<StatedumpCAIdChange> _getCASubjectDNChanges() {
         return caIdChanges;
+    }
+    
+    /**
+     * Adds a translation of a CryptoToken Id.
+     */
+    public void addCryptoTokenIdChange(final int fromId, final int toId) {
+        cryptoTokenIdChanges.put(fromId, toId);
+    }
+    
+    /** Internal method, but EJBs can't call package internal methods, so it must be public */
+    public Map<Integer,Integer> _getCryptoTokenIdChanges() {
+        return cryptoTokenIdChanges;
     }
     
     /**
