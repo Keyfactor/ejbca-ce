@@ -443,6 +443,12 @@ Name constraints are only checked for the types of constraints that are specifie
 </p>
 </subsubsection>
 
+<subsubsection name="Issuing Distribution Point on CRLs">
+<p>Enabling Issuing Distribution Point on CRLs will put the default CRL Dist. Point (the first of there are several) in an Issuing Distribution Point extension in generated CRLs.
+According to RFC5280 this CRL extension MUST be critical. If you however notice that your CRLs are rejected, you can still choose to have this extension non-critical.
+</p>
+</subsubsection>
+
 <subsubsection name="CRL Period">
 <p>
 There are four settings in CA configuration dictating the times when CRL generation is done:
@@ -1048,14 +1054,14 @@ You could then put them together as:
 
 <subsubsection name="CRL Issuer">
 <p>
-According to <a href="http://www.ietf.org/rfc/rfc3280.txt">RFC3280</a> a CRL issuer is:
+According to <a href="http://www.ietf.org/rfc/rfc5280.txt">RFC5280</a> a CRL issuer is:
 </p>
 <source>
 An optional system to which a CA delegates the publication of certificate revocation lists;
 </source>
 <p>
 The contents of the field in the profile is a DN, like "CN=CRLIssuerForManagementCA,O=foo,C=SE".
-You have to build the actual CRL Issuer software yourself.
+You have to build the actual CRL Issuer software yourself. If set, and the certificate profiles includes it, the CRL Issuer is included in the CRL Distribution point in issued certificates.
 </p>
 </subsubsection>
 
