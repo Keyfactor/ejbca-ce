@@ -948,7 +948,7 @@ public class X509CA extends CA implements Serializable {
 
         SubjectPublicKeyInfo pkinfo;
         try {
-            pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
+            pkinfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
         } catch (IOException e) {
             throw new IllegalStateException("Caught unexpected IOException.", e);
         }

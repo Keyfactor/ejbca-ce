@@ -182,8 +182,7 @@ public class ExtraAlgorithmsPKCS12Test {
             ais.close();
         }
         
-        SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo(spkiAsn1);
-        
+        SubjectPublicKeyInfo spki = SubjectPublicKeyInfo.getInstance(spkiAsn1);        
         
         // Start building the certificate
         X509v3CertificateBuilder certbuild = new X509v3CertificateBuilder(issuer, new BigInteger(serno).abs(), firstDate, lastDate, subject, spki);

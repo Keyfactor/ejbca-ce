@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -221,7 +222,7 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(certificate.getPublicKey().getEncoded()));
         try {
             try {
-                SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) asn1InputStream.readObject());
+                SubjectPublicKeyInfo spki = SubjectPublicKeyInfo.getInstance((ASN1Sequence) asn1InputStream.readObject());
                 X509ExtensionUtils utils = new X509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
                 SubjectKeyIdentifier ski = utils.createSubjectKeyIdentifier(spki);
                 return new String(Hex.encode(ski.getKeyIdentifier()));

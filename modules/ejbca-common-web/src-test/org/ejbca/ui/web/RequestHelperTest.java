@@ -103,7 +103,7 @@ public class RequestHelperTest {
         Certificate caCert = CertTools.genSelfCert("CN=foo", 365, null, caKeys.getPrivate(), caKeys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
         KeyPair replyKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(replyKeys.getPublic().getEncoded()));
+        final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence) ASN1Primitive.fromByteArray(replyKeys.getPublic().getEncoded()));
         String signedCertDn = "CN=signedcert";
         byte[] serno = new byte[8];
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");

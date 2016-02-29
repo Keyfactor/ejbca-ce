@@ -1275,7 +1275,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         if (!useAuthInfoSender && publicKeyMacPassword==null) {
             crmb.setSubject(new X500Name(userDN));
         }
-        final SubjectPublicKeyInfo subjectPublicKeyInfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
+        final SubjectPublicKeyInfo subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
         crmb.setPublicKey(subjectPublicKeyInfo);
         crmb.addExtension(new ASN1ObjectIdentifier(extensionOid), false, new DEROctetString(extensionContent.getBytes()));
         if (useProofOfPossession) {
