@@ -160,7 +160,7 @@ public final class KeyTools {
         try {
             keygen = KeyPairGenerator.getInstance(keyAlg, BouncyCastleProvider.PROVIDER_NAME);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Algorithm " + keyAlg + "was not recognized.", e);
+            throw new IllegalStateException("Algorithm " + keyAlg + " was not recognized.", e);
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
         }

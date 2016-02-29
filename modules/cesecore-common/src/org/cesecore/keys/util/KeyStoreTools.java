@@ -297,7 +297,7 @@ public class KeyStoreTools {
         try {
             kpg = KeyPairGenerator.getInstance("DSA", this.providerName);
         } catch (NoSuchAlgorithmException e) {
-           throw new IllegalStateException("Algorithm " + "DSA" + "was not recognized.", e);
+           throw new IllegalStateException("Algorithm " + "DSA" + " was not recognized.", e);
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
         }
