@@ -74,6 +74,7 @@
 		<ant antfile="${mod.cerstore.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.crlstore.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.renew-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.ms-autoenroll.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.scep-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.webdist-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.appserver-ext.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
@@ -443,6 +444,10 @@
 
 	<target name="renew-war" depends="ejbca-common-web" description="Build the Renew WAR">
 		<ant antfile="${mod.renew-war.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	</target>
+
+	<target name="msautoenroll-war" depends="ejbca-common-web" description="Build the MS autoenroll WAR">
+		<ant antfile="${mod.ms-autoenroll.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
 	<target name="scep-war" depends="ejbca-common-web" description="Build the SCEP WAR">
