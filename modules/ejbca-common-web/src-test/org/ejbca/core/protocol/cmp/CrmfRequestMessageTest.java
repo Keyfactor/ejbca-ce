@@ -167,7 +167,7 @@ public class CrmfRequestMessageTest {
         ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
         ASN1InputStream         dIn = new ASN1InputStream(bIn);
         try {
-            SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
+            SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence) dIn.readObject());
             myCertTemplate.setPublicKey(keyInfo);
         } finally {
             dIn.close();

@@ -85,7 +85,7 @@ public class OcspExtensionsTest {
         random.setSeed(new Date().getTime());
         random.nextBytes(serno);
         KeyPair certificateKeyPair = KeyTools.genKeys("1024", "RSA");
-        final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(certificateKeyPair.getPublic()
+        final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence) ASN1Primitive.fromByteArray(certificateKeyPair.getPublic()
                 .getEncoded()));
         final String certDn = "CN=TEST,SN=4711";
         X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(certDn, false), new BigInteger(serno).abs(),

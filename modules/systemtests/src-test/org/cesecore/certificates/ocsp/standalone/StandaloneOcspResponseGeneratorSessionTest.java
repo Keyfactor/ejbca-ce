@@ -449,8 +449,8 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             random.setSeed(new Date().getTime());
             random.nextBytes(serno);
             KeyPair certificateKeyPair = KeyTools.genKeys("1024", "RSA");
-            final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(certificateKeyPair
-                    .getPublic().getEncoded()));
+            final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo
+                    .getInstance((ASN1Sequence) ASN1Primitive.fromByteArray(certificateKeyPair.getPublic().getEncoded()));
             X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(externalCaSubjectDn, false),
                     new BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX500Name(externalSubjectDn, false), pkinfo);
             final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").setProvider(
@@ -524,8 +524,8 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 random.setSeed(new Date().getTime());
                 random.nextBytes(serno);
                 KeyPair certificateKeyPair = KeyTools.genKeys("1024", "RSA");
-                final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(certificateKeyPair
-                        .getPublic().getEncoded()));
+                final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo
+                        .getInstance((ASN1Sequence) ASN1Primitive.fromByteArray(certificateKeyPair.getPublic().getEncoded()));
                 X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(externalCaSubjectDn, false),
                         new BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX500Name(externalSubjectDn, false), pkinfo);
                 final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").setProvider(
@@ -596,8 +596,8 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 random.setSeed(new Date().getTime());
                 random.nextBytes(serno);
                 KeyPair certificateKeyPair = KeyTools.genKeys("1024", "RSA");
-                final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(certificateKeyPair
-                        .getPublic().getEncoded()));
+                final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo
+                        .getInstance((ASN1Sequence) ASN1Primitive.fromByteArray(certificateKeyPair.getPublic().getEncoded()));                     
                 X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(externalCaSubjectDn, false),
                         new BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX500Name(externalSubjectDn, false), pkinfo);
                 final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").setProvider(

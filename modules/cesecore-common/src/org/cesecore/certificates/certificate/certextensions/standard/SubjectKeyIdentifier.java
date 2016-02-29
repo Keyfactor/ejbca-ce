@@ -51,7 +51,9 @@ public class SubjectKeyIdentifier extends StandardCertificateExtension {
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
         SubjectPublicKeyInfo spki;
         try {
-            spki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(userPublicKey.getEncoded())).readObject());
+            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(userPublicKey.getEncoded()));
+            spki = SubjectPublicKeyInfo.getInstance((ASN1Sequence) asn1InputStream.readObject());
+            asn1InputStream.close();
         } catch (IOException e) {
             throw new CertificateExtensionException("IOException parsing user public key: " + e.getMessage(), e);
         }
