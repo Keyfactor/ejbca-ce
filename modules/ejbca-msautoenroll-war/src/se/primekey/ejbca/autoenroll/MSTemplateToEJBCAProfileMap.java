@@ -22,48 +22,39 @@ import java.util.Enumeration;
 import java.util.Properties;
 import javax.servlet.ServletContext;
 
-public class MSTemplateToEJBCAProfileMap extends Properties
-{
+public class MSTemplateToEJBCAProfileMap extends Properties {
 
-    public MSTemplateToEJBCAProfileMap()
-    {
+    public MSTemplateToEJBCAProfileMap() {
     }
-    
+
     // TODO What should the name be?
     private static final String strFileName = "MSTemplateToEJBCAProfile.conf";
 
     // Originally used a relative path but in that case
     // "." relative means something like
     // /Applications/apache-tomcat-6.0.32/bin/MSTemplateToEJBCAProfile.conf
-    private InputStream getMapFile(ServletContext context)
-    {
+    private InputStream getMapFile(ServletContext context) {
         return context.getResourceAsStream("/WEB-INF/" + strFileName);
     }
 
     // Note that there is no corresponding store method because this file
     // should be read-only with respect to this application.
-    boolean load(ServletContext context)
-    {
+    boolean load(ServletContext context) {
         boolean rc = false;
-        try
-        {
-//            String strFileName = getPropertiesFileName(context);
-//            File file = new File(strFileName);
-//            System.out.println(file.getAbsolutePath());
-//            System.out.println(file.getCanonicalPath());
+        try {
+            //            String strFileName = getPropertiesFileName(context);
+            //            File file = new File(strFileName);
+            //            System.out.println(file.getAbsolutePath());
+            //            System.out.println(file.getCanonicalPath());
             InputStream in = getMapFile(context);
             super.load(in);
             in.close();
 
             rc = true;
-        }
-        catch (FileNotFoundException ex)
-        {
+        } catch (FileNotFoundException ex) {
             // Probably should be created first time app is run, so exception here is not a problem as long as reasonable defaults are set.
             ex.printStackTrace();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -72,14 +63,12 @@ public class MSTemplateToEJBCAProfileMap extends Properties
 
     // For debugging:
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder sb = new StringBuilder();
 
         sb.append("MSTemplateToEJBCAMap:");
         Enumeration<Object> templates = keys();
-        while (templates.hasMoreElements())
-        {
+        while (templates.hasMoreElements()) {
             String elem = (String) templates.nextElement();
             sb.append("\n\t").append(elem).append(" = ").append(getProperty(elem));
         }
