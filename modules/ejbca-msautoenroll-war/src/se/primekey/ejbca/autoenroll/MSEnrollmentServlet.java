@@ -37,12 +37,11 @@ import javax.servlet.http.HttpSession;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
@@ -52,6 +51,7 @@ import org.ejbca.core.protocol.ws.common.CertificateHelper;
 // TODO Review this code to see what is read-only data that should be loaded only once (e.g., the OID map file, the template to profile map). 
 public class MSEnrollmentServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
     private static boolean debug = false;
     private static boolean debug2 = true;
 
@@ -76,25 +76,25 @@ public class MSEnrollmentServlet extends HttpServlet {
 
                 HttpSession session = request.getSession();
 
-                Enumeration attrs = session.getAttributeNames();
+                Enumeration<String> attrs = session.getAttributeNames();
                 while (attrs.hasMoreElements()) {
-                    String attr = (String) attrs.nextElement();
+                    String attr = attrs.nextElement();
                     System.out.println("Attr: [" + attr + "], Value: [" + session.getAttribute(attr) + ", ID:" + session.getId());
                 }
 
                 System.out.println("<\nHeaders:\n");
 
-                Enumeration enumHeaderNames = request.getHeaderNames();
+                Enumeration<String> enumHeaderNames = request.getHeaderNames();
                 while (enumHeaderNames.hasMoreElements()) {
-                    String str = (String) enumHeaderNames.nextElement();
+                    String str = enumHeaderNames.nextElement();
                     System.out.println(str + ": " + request.getHeader(str));
                 }
 
                 System.out.println("\nParameters:\n");
 
-                Enumeration enumParameters = request.getParameterNames();
+                Enumeration<String> enumParameters = request.getParameterNames();
                 while (enumParameters.hasMoreElements()) {
-                    String str = (String) enumParameters.nextElement();
+                    String str = enumParameters.nextElement();
                     System.out.println(str + ": " + request.getParameter(str));
                 }
 
@@ -131,9 +131,9 @@ public class MSEnrollmentServlet extends HttpServlet {
             out.println("<br>Headers:<br><br>");
             System.out.println("<\nHeaders:\n");
 
-            Enumeration enumHeaderNames = request.getHeaderNames();
+            Enumeration<String> enumHeaderNames = request.getHeaderNames();
             while (enumHeaderNames.hasMoreElements()) {
-                String str = (String) enumHeaderNames.nextElement();
+                String str = enumHeaderNames.nextElement();
                 out.println(str + ": " + request.getHeader(str) + "<br>");
                 System.out.println(str + ": " + request.getHeader(str));
             }
@@ -141,9 +141,9 @@ public class MSEnrollmentServlet extends HttpServlet {
             out.println("<br>Parameters:<br><br>");
             System.out.println("\nParameters:\n");
 
-            Enumeration enumParameters = request.getParameterNames();
+            Enumeration<String> enumParameters = request.getParameterNames();
             while (enumParameters.hasMoreElements()) {
-                String str = (String) enumParameters.nextElement();
+                String str = enumParameters.nextElement();
                 out.println(str + ": " + request.getParameter(str) + "<br>");
                 System.out.println(str + ": " + request.getParameter(str));
             }
@@ -288,17 +288,17 @@ public class MSEnrollmentServlet extends HttpServlet {
 
             final PKCS10CertificationRequest pkcs10CertReq = new PKCS10CertificationRequest(Base64.decode(pkcs10request));
             //          System.out.println("Verified: " + pkcs10CertReq.verify());
-            CertificationRequestInfo certificationRequestInfo = pkcs10CertReq.getCertificationRequestInfo();
-            X500Name subject = certificationRequestInfo.getSubject();
+            X500Name subject = pkcs10CertReq.getSubject();
             System.out.println("Subject = [" + subject + "]");
 
             final ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(pkcs10CertReq.getEncoded()));
             final ASN1Primitive obj = ais.readObject();
+            ais.close();
             String dumpAsString = ASN1Dump.dumpAsString(obj, true);
             System.out.println(dumpAsString);
 
             PKCS10Info pkcs10Info = new PKCS10Info();
-            ASN1.dump((ASN1Object) obj.toASN1Object(), pkcs10Info, true);
+            ASN1.dump((ASN1Object) obj, pkcs10Info, true);
             System.out.println(pkcs10Info);
 
             /**
@@ -326,10 +326,10 @@ public class MSEnrollmentServlet extends HttpServlet {
             System.out.println("Certificate Profile to use: " + certificateProfileName);
 
             //            X500Name subjectName = p10.getSubjectName();
-            X500Name subjectName = certificationRequestInfo.getSubject();
+            X500Name subjectName = pkcs10CertReq.getSubject();
             System.out.println("p10 subject name [" + subjectName.toString() + "]");
             //            System.out.println("p10 attributes [" + p10.getAttributes().toString() + "]");
-            System.out.println("p10 attributes [" + certificationRequestInfo.getAttributes().toString() + "]");
+            System.out.println("p10 attributes [" + pkcs10CertReq.getAttributes().toString() + "]");
 
             PKCS10RequestMessage msg = new PKCS10RequestMessage(Base64.decode(pkcs10request));
             // This returns a string in a format supported by user1.setSubjectAltName(strSubjectName);
@@ -347,7 +347,7 @@ public class MSEnrollmentServlet extends HttpServlet {
             //            String requestDN = msg.getRequestDN();
             //            System.out.println("req DN: " + requestDN);
             Extensions requestExtensions = msg.getRequestExtensions();
-            System.out.println("req extensions: " + requestExtensions.toASN1Object());
+            System.out.println("req extensions: " + requestExtensions.toASN1Primitive());
             //            ASN1.dump((ASN1Object) requestExtensions.toASN1Object(), pkcs10Info, true);
 
             /** 
@@ -559,7 +559,7 @@ public class MSEnrollmentServlet extends HttpServlet {
                 // Currently, a dummy value (copied from a successful request to an MS CA) is used.
                 // Information on ActivityId: http://msdn.microsoft.com/en-us/library/cc485806(v=prot.10).aspx
                 // It has something to do with activity tracing (and the Windows Event Viewer?).
-                String activityId = findTagValue("ActivityId", contents);
+             //   String activityId = findTagValue("ActivityId", contents);
                 //                System.out.println("activityId: [" + activityId + "]");
                 sbOut.append(
                         "<ActivityId CorrelationId=\"1a764189-0ec7-4dd8-b26d-1d5ecfd66fae\" xmlns=\"http://schemas.microsoft.com/2004/09/ServiceModel/Diagnostics\">00000000-0000-0000-0000-000000000000</ActivityId>");
@@ -630,45 +630,45 @@ public class MSEnrollmentServlet extends HttpServlet {
 
             //            Logger.getLogger(MSEnrollmentServlet.class.getName()).log(Level.SEVERE, null, ex);
 
-            if (false) {
-                // This is the way it is documented as the format to return a failure;
-                // however, useful information explaining the problem does not appear in the Windows Client.
-
-                // 4.1.4.2 Server Fault Response
-
-                // Clear buffer
-                sbOut = new StringBuilder();
-
-                sbOut.append("<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:a=\"http://www.w3.org/2005/08/addressing\">");
-                sbOut.append("<s:Header>");
-                sbOut.append(
-                        "<a:Action s:mustUnderstand=\"1\">http://schemas.microsoft.com/net/2005/12/windowscommunicationfoundation/dispatcher/fault</a:Action>");
-                sbOut.append("<a:RelatesTo>").append(relatesTo).append("</a:RelatesTo>");
-                sbOut.append(
-                        "<ActivityId CorrelationId=\"4f0e4425-4883-41c1-b704-771135d18f84\" xmlns=\"http://schemas.microsoft.com/2004/09/ServiceModel/Diagnostics\">eda7e63d-0c42-455d-9c4f-47ab85803a50</ActivityId>");
-                sbOut.append("</s:Header>");
-                sbOut.append("<s:Body>");
-                sbOut.append("<s:Fault>");
-                sbOut.append("<s:Code>");
-                sbOut.append("<s:Value>s:Receiver</s:Value>");
-                sbOut.append("<s:Subcode>");
-                sbOut.append(
-                        "<s:Value xmlns:a=\"http://schemas.microsoft.com/net/2005/12/windowscommunicationfoundation/dispatcher\">a:InternalServiceFault</s:Value>");
-                sbOut.append("</s:Subcode>");
-                sbOut.append("</s:Code>");
-                sbOut.append("<s:Reason>");
-                /**
-                 * TODO: Include stack trace as well as exception message?
-                 * Or some additional information (time stamp?) that will help pinpoint info in server log?
-                 */
-                sbOut.append("<s:Text xml:lang=\"en-US\">The server was unable to process the request due to an internal error: ")
-                        .append(ex.toString()).append("</s:Text>");
-                sbOut.append("</s:Reason>");
-                sbOut.append("</s:Fault>");
-                sbOut.append("</s:Body>");
-                sbOut.append("</s:Envelope>");
-            } else {
-                // Use the response format with deliberately missing or incorrect fields so that Windows client can display a more meaningful message than
+//            if (false) {
+//                // This is the way it is documented as the format to return a failure;
+//                // however, useful information explaining the problem does not appear in the Windows Client.
+//
+//                // 4.1.4.2 Server Fault Response
+//
+//                // Clear buffer
+//                sbOut = new StringBuilder();
+//
+//                sbOut.append("<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:a=\"http://www.w3.org/2005/08/addressing\">");
+//                sbOut.append("<s:Header>");
+//                sbOut.append(
+//                        "<a:Action s:mustUnderstand=\"1\">http://schemas.microsoft.com/net/2005/12/windowscommunicationfoundation/dispatcher/fault</a:Action>");
+//                sbOut.append("<a:RelatesTo>").append(relatesTo).append("</a:RelatesTo>");
+//                sbOut.append(
+//                        "<ActivityId CorrelationId=\"4f0e4425-4883-41c1-b704-771135d18f84\" xmlns=\"http://schemas.microsoft.com/2004/09/ServiceModel/Diagnostics\">eda7e63d-0c42-455d-9c4f-47ab85803a50</ActivityId>");
+//                sbOut.append("</s:Header>");
+//                sbOut.append("<s:Body>");
+//                sbOut.append("<s:Fault>");
+//                sbOut.append("<s:Code>");
+//                sbOut.append("<s:Value>s:Receiver</s:Value>");
+//                sbOut.append("<s:Subcode>");
+//                sbOut.append(
+//                        "<s:Value xmlns:a=\"http://schemas.microsoft.com/net/2005/12/windowscommunicationfoundation/dispatcher\">a:InternalServiceFault</s:Value>");
+//                sbOut.append("</s:Subcode>");
+//                sbOut.append("</s:Code>");
+//                sbOut.append("<s:Reason>");
+//                /**
+//                 * TODO: Include stack trace as well as exception message?
+//                 * Or some additional information (time stamp?) that will help pinpoint info in server log?
+//                 */
+//                sbOut.append("<s:Text xml:lang=\"en-US\">The server was unable to process the request due to an internal error: ")
+//                        .append(ex.toString()).append("</s:Text>");
+//                sbOut.append("</s:Reason>");
+//                sbOut.append("</s:Fault>");
+//                sbOut.append("</s:Body>");
+//                sbOut.append("</s:Envelope>");
+//            } else {
+//                // Use the response format with deliberately missing or incorrect fields so that Windows client can display a more meaningful message than
                 // that produced by the above soap fault format.
                 // Otherwise, tracing has to be enabled on the client and Event Viewer has to be waded through in order to find any meaningful error messages.
 
@@ -715,7 +715,7 @@ public class MSEnrollmentServlet extends HttpServlet {
                 sbOut.append("</RequestSecurityTokenResponseCollection>");
                 sbOut.append("</s:Body>");
                 sbOut.append("</s:Envelope>");
-            }
+        //    }
 
             if (debug2) {
                 System.out.println("*** Enrollment failure ***");

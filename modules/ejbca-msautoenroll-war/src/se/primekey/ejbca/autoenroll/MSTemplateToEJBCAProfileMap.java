@@ -11,7 +11,6 @@
 package se.primekey.ejbca.autoenroll;
 
 /**
- * @author Daniel Horn, SiO2 Corp.
  *
  * @version $Id$
  */
@@ -23,6 +22,8 @@ import java.util.Properties;
 import javax.servlet.ServletContext;
 
 public class MSTemplateToEJBCAProfileMap extends Properties {
+
+    private static final long serialVersionUID = 1L;
 
     public MSTemplateToEJBCAProfileMap() {
     }

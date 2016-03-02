@@ -36,7 +36,6 @@ import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 
 /**
- * @author Daniel Horn, SiO2 Corp.
  * 
  * @version $Id$
 */
@@ -299,12 +298,12 @@ public class WebServiceConnection {
             // "https://ejbca.course:8443/ejbca/ejbcaws/ejbcaws?wsdl";
             String urlstr0 = properties.getUrlWebService();
             assert (urlstr0.startsWith("https:"));
-            int index = urlstr0.indexOf(":", 6);
-            int indexSlash = urlstr0.indexOf("/", index);
+            //int index = urlstr0.indexOf(":", 6);
+            //int indexSlash = urlstr0.indexOf("/", index);
             // TODO Replace this with new url string built using URL class.
-            String urlstr = "http:" + urlstr0.substring(6, index + 1) + "8080"
+           //String urlstr = "http:" + urlstr0.substring(6, index + 1) + "8080"
             //			String urlstr = "http:" + urlstr0.substring(6, index + 1) + "8442"
-                    + urlstr0.substring(indexSlash);
+             //       + urlstr0.substring(indexSlash);
 
             String strTrustedKeyStore = properties.getTrustedKeyStoreStr();
 
