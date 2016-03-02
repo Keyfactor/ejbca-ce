@@ -725,6 +725,149 @@ In EJBCA 6.0.4 <a href="https://jira.primekey.se/browse/ECA-3371">ECA-3371</a> s
 
 </subsection>
 
+<subsection name="WildFly 10">
+<p>EJBCA 6.x compiles, deploys and runs with WildFly 10 (release following 6.3.1.1).</p>
+<p>For WildFly deploy and install does not automagically configure the Application server for you, instead we supply configuration instructions for the Application server for you to follow.</p>
+
+<subsubsection name="Add database driver">
+<p>Add MariaDB database driver by hot-deploying it into the Ddeployment directory. This will be picked up by WildFly and deployed so we can create a datasource straight away.
+You can use a generic name, without version number, in order to get a generic 'driver-name' for the data source command.
+</p>
+<source>
+>cp mariadb-java-client-1.2.0.jar wildfly_home/standalone/deployments/mariadb-java-client.jar
+</source>
+</subsubsection>
+
+<subsubsection name="Increase allowed memory usage">
+<p>By default, only 512MiB of heap and 256MiB perm gen space is allowed. Edit wildfly_home/bin/standalone.conf to increase this to a more suitable value, e.g. </p>
+<source>
+   JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MaxPermSize=384m -Djava.net.preferIPv4Stack=true"
+</source>
+</subsubsection>
+
+<subsubsection name="Add datasource">
+<p>Add data source for EJBCA to use.</p>
+<p>Start JBoss and run two commands in JBoss CLI.</p>
+<source>
+> wildfly_home/bin/jboss-cli.sh -c
+> data-source add --name=ejbcads --driver-name="mariadb-java-client.jar" --connection-url="jdbc:mysql://127.0.0.1:3306/ejbca" --jndi-name="java:/EjbcaDS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="ejbca" --password="ejbca" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"
+> :reload
+</source>
+</subsubsection>
+
+<subsubsection name="Configure WildFly Remoting">
+<p>EJBCA needs to use JBoss Remoting for the EJBCA CLI to work. We configure it to use a separate port (start by removing any old configuration if it exists).</p>
+<source>
+/subsystem=remoting/http-connector=http-remoting-connector:remove
+/subsystem=remoting/http-connector=http-remoting-connector:add(connector-ref="remoting",security-realm="ApplicationRealm")
+/socket-binding-group=standard-sockets/socket-binding=remoting:add(port="4447")
+/subsystem=undertow/server=default-server/http-listener=remoting:add(socket-binding=remoting)
+:reload
+</source>
+</subsubsection>
+
+<subsubsection name="Configure logging">
+<p>Configure logging in JBoss, to be able to dynamically change logging (DEBUG enabled in this example).</p>
+<source>
+/subsystem=logging/logger=org.ejbca:add
+/subsystem=logging/logger=org.ejbca:write-attribute(name=level, value=DEBUG)
+/subsystem=logging/logger=org.cesecore:add
+/subsystem=logging/logger=org.cesecore:write-attribute(name=level, value=DEBUG)
+</source>
+</subsubsection>
+
+<subsubsection name="Remove existing TLS and HTTP configuration">
+<p>Run the following commands in JBoss CLI to remove existing TLS and HTTP configuration (just to be safe).</p>
+<source>
+/subsystem=undertow/server=default-server/http-listener=default:remove
+/socket-binding-group=standard-sockets/socket-binding=http:remove:reload
+</source>
+<p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
+</subsubsection>
+
+<subsubsection name="Deploy EJBCA">
+<p>Finally build and deploy the EJBCA (application ear file) to WildFly, without touching any WildFly configuration, by running the following EJBCA command.</p>
+<p>Run the following commands at the regular command prompt in EJBCA_HOME.</p>
+<source>
+ant clean deployear
+</source>
+</subsubsection>
+
+<subsubsection name="Run install">
+<p>Run installation part of EJBCA creating the initial Management CA (for TLS and Super administrator), as well as TLS and Superadmin keystores.</p>
+<note>If you are moving an existing installation that already have TLS keystores available, this step is not needed.</note>
+<p></p>
+<source>
+ant runinstall
+</source>
+</subsubsection>
+
+<subsubsection name="Deploy TLS keystores to WildFly">
+<p>After the install, TLS keystores have been created. Run this command to copy them to wildfly_home/standarlone/config/keystore.</p>
+<source>
+ant deploy-keystore
+</source>
+</subsubsection>
+
+<subsubsection name="Configure TLS">
+<p>The run the following commands in JBoss CLI (jboss-cli.sh -c) to configure TLS.</p>
+<p>Add interfaces:</p>
+<source>
+/interface=http:add(inet-address="0.0.0.0")
+/interface=httpspub:add(inet-address="0.0.0.0")
+/interface=httpspriv:add(inet-address="0.0.0.0")
+/socket-binding-group=standard-sockets/socket-binding=http:add(port="8080",interface="http")
+/subsystem=undertow/server=default-server/http-listener=http:add(socket-binding=http)
+/subsystem=undertow/server=default-server/http-listener=http:write-attribute(name=redirect-socket, value="httpspriv")
+:reload
+</source>
+<p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p>
+<p>Configure identities and socket bindings:</p>
+<p>Update the keystore alias to match httpsserver.hostname in web.properties.  Also, update the keystore-password for keystore.jks to match httpsserver.password and the keystore-password for truststore.jks to match java.truststore in web.properties.</p>
+<source>
+/core-service=management/security-realm=SSLRealm:add()
+/core-service=management/security-realm=SSLRealm/server-identity=ssl:add(keystore-path="${jboss.server.config.dir}/keystore/keystore.jks", keystore-password="serverpwd", alias="prod-ica1")
+/core-service=management/security-realm=SSLRealm/authentication=truststore:add(keystore-path="${jboss.server.config.dir}/keystore/truststore.jks", keystore-password="changeit")
+/socket-binding-group=standard-sockets/socket-binding=httpspriv:add(port="8443",interface="httpspriv")
+/socket-binding-group=standard-sockets/socket-binding=httpspub:add(port="8442", interface="httpspub")
+:reload
+</source>
+<p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
+<source>
+/subsystem=undertow/server=default-server/https-listener=httpspriv:add(socket-binding=httpspriv, security-realm="SSLRealm", verify-client=REQUIRED)
+/subsystem=undertow/server=default-server/https-listener=httpspub:add(socket-binding=httpspub, security-realm="SSLRealm")
+:reload
+</source>
+<p>Finalize Wildfly configurations</p>
+<source>
+/system-property=org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH:add(value=true)
+/system-property=org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH:add(value=true)
+/system-property=org.apache.catalina.connector.URI_ENCODING:add(value="UTF-8")
+/system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:add(value=true)
+/subsystem=webservices:write-attribute(name=wsdl-host, value=jbossws.undefined.host)
+/subsystem=webservices:write-attribute(name=modify-wsdl-address, value=true)
+:reload
+</source>
+<p>If you are using OCSP GET requests, setting URI encoding and allowing encoding for Query and backslash above is needed.</p>
+<note>WildFly will most likely get confused at this step, and will need a restart with ":shutdown(restart=true)".</note>
+</subsubsection>
+
+<subsubsection name="Optional: Enable AJP connector">
+<p>Only needed if you run an Apache front-end in front of WildFly.</p>
+<source>
+/subsystem=undertow/server=default-server/ajp-listener=ajp-listener:add(socket-binding=ajp, scheme=https, enabled=true)
+</source>
+</subsubsection>
+
+<subsubsection name="Optional: Add support for PKCS#11 (HSMs)">
+<p>If you need support for PKCS#11 (HSMs), you need to modify modules/system/layers/base/sun/jdk/main/module.xml and add:</p>
+<source>
+&lt;path name="sun/security/pkcs11/wrapper"/&gt;
+</source>
+</subsubsection>
+
+</subsection>
+
 <subsection name="WildFly 8">
 <p>EJBCA 6.x compiles, deploys and runs with WildFly 8 and WildFly 9 (release following 6.3.1.1).</p>
 <p>For WildFly deploy and install does not automagically configure the Application server for you, instead we supply configuration instructions for the Application server for you to follow.</p>
