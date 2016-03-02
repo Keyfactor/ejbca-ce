@@ -16,26 +16,34 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.GeneralSecurityException;
 import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.Store;
+import org.bouncycastle.util.StoreException;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.util.CertTools;
 
+/**
+ * 
+ * @version $Id$
+ *
+ */
 public class PKCS7ResponseDecoder {
 
     Certificate[] ee_certs;
 
-    public PKCS7ResponseDecoder(byte[] pkcs7fromejbca) throws SignatureException, CMSException, IOException, GeneralSecurityException {
+    public PKCS7ResponseDecoder(byte[] pkcs7fromejbca) throws SignatureException, CMSException, IOException, CertificateException, StoreException {
         CMSSignedData csd = new CMSSignedData(pkcs7fromejbca);
-        Store certs = csd.getCertificates();
+        @SuppressWarnings("unchecked")
+        Store<X509CertificateHolder> certs = csd.getCertificates();
         ee_certs = CertTools.convertToX509CertificateArray(certs.getMatches(null));
         //ee_certs = certs.getCertificates(null).toArray(new Certificate[0]);
         if (ee_certs.length == 0) {
@@ -81,6 +89,7 @@ public class PKCS7ResponseDecoder {
                 }
                 input.append(line);
             }
+            br.close();
             System.out.println("[" + input + "]");
             byte[] pkcs7bytes = Base64.decode(input.toString());
 
@@ -98,7 +107,7 @@ public class PKCS7ResponseDecoder {
                 fis.close();
                 System.out.println("File '" + argc[1] + "' written");
             }
-        } catch (Exception e) {
+        } catch (IOException | SignatureException | StoreException | CMSException | CertificateException e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
             System.exit(-3);

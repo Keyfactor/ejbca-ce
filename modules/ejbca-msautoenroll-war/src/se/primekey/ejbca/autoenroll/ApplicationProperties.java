@@ -11,7 +11,6 @@
 package se.primekey.ejbca.autoenroll;
 
 /**
- * @author Daniel Horn, SiO2 Corp.
  * 
  * @version $Id$
 */
@@ -23,6 +22,8 @@ import javax.servlet.ServletContext;
 
 public class ApplicationProperties extends Properties {
 
+    private static final long serialVersionUID = 1L;
+    
     private String urlWebService = ""; // eg, "https://ejbca.course:8443/ejbca/ejbcaws/ejbcaws?wsdl"
     // TODO These are stored as plain text.  They should be encrypted or obfuscated in some fashion.
     private String strKeyStore = ""; // "/Users/danielhorn/Downloads/test1.jks";
