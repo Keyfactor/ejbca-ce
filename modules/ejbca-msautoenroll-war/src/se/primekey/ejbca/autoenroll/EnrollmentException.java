@@ -11,12 +11,13 @@
 package se.primekey.ejbca.autoenroll;
 
 /**
- * @author Daniel Horn, SiO2 Corp.
  * 
  * @version $Id$
-*/
+ */
 public class EnrollmentException extends Exception
 {
+    private static final long serialVersionUID = 1L;
+
     public EnrollmentException(String string)
     {
         super(string);

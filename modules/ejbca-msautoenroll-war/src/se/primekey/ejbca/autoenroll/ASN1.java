@@ -11,27 +11,27 @@
 package se.primekey.ejbca.autoenroll;
 
 /**
- * @author Daniel Horn, SiO2 Corp.
  * 
  * @version $Id$
 */
 import java.util.Enumeration;
+
+import org.bouncycastle.asn1.ASN1Boolean;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERBoolean;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.util.ASN1Dump;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.asn1.x509.X509Extensions;
 
 public class ASN1 {
     static String dump(ASN1Object asn1obj, PKCS10Info info, boolean bPrintToSysOut) {
@@ -52,7 +52,8 @@ public class ASN1 {
             if (bPrintToSysOut)
                 System.out.println(sb.toString() + asn1set.getClass().getName() + ": " + asn1set.toString());
             String strOidInSet = null;
-            Enumeration objects = asn1set.getObjects();
+            @SuppressWarnings("unchecked")
+            Enumeration<Object> objects = asn1set.getObjects();
             while (objects.hasMoreElements()) {
                 Object nextElement = objects.nextElement();
                 if (nextElement instanceof ASN1Object) {
@@ -71,7 +72,8 @@ public class ASN1 {
             //            if (bPrintToSysOut) System.out.println(sb.toString() + asn1seq.getClass().getName() + ": " + asn1seq.toString());
             if (bPrintToSysOut)
                 System.out.println(sb.toString() + asn1seq.getClass().getName());
-            Enumeration objects = asn1seq.getObjects();
+            @SuppressWarnings("unchecked")
+            Enumeration<Object> objects = asn1seq.getObjects();
             String strOidInSeq = null;
             while (objects.hasMoreElements()) {
                 Object nextElement = objects.nextElement();
@@ -99,7 +101,7 @@ public class ASN1 {
                         sb.toString() + asn1obj.getClass().getName() + ": [" + octetString.getOctets().length + "]: " + octetString.toString());
 
             if (null != strOid) {
-                if (0 == strOid.compareTo(X509Extensions.KeyUsage.getId())) // Key Usage
+                if (0 == strOid.compareTo(Extension.keyUsage.getId())) // Key Usage
                 {
                     /**
                      * TODO Is this correct?
@@ -111,7 +113,7 @@ public class ASN1 {
                     String strTemp = OctetStringToKeyUsageString(val);
                     if (bPrintToSysOut)
                         System.out.println(sb.toString() + strTemp);
-                } else if (0 == strOid.compareTo(X509Extensions.ExtendedKeyUsage.getId())) // Extended Key Usage
+                } else if (0 == strOid.compareTo(Extension.extendedKeyUsage.getId())) // Extended Key Usage 
                 {
                     try {
                         //                        if (bPrintToSysOut) System.out.println(sb.toString() + ASN1Dump.dumpAsString(octetString, true));
@@ -159,8 +161,8 @@ public class ASN1 {
                         System.out.println(decodeSequence(octetString, sb.toString()));
                 }
             }
-        } else if (asn1obj instanceof DERObjectIdentifier) {
-            DERObjectIdentifier objIdent = (DERObjectIdentifier) asn1obj;
+        } else if (asn1obj instanceof ASN1ObjectIdentifier) {
+            ASN1ObjectIdentifier objIdent = (ASN1ObjectIdentifier) asn1obj;
             String name = OidMap.getOidName(objIdent.toString());
             if (null != name) {
                 if (bPrintToSysOut)
@@ -170,7 +172,7 @@ public class ASN1 {
                 if (bPrintToSysOut)
                     System.out.println(sb.toString() + objIdent + " : " + objIdent.getClass().getName());
             }
-        } else if ((asn1obj instanceof DERBoolean) || (asn1obj instanceof DERInteger) || (asn1obj instanceof DERNull)) {
+        } else if ((asn1obj instanceof ASN1Boolean) || (asn1obj instanceof ASN1Integer) || (asn1obj instanceof DERNull)) {
             if (bPrintToSysOut)
                 System.out.println(sb.toString() + asn1obj + " : " + asn1obj.getClass().getName());
         } else if (asn1obj instanceof DERUTF8String) {
