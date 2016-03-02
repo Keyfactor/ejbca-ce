@@ -15,7 +15,6 @@ package org.ejbca.core.protocol.cmp.authentication;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
