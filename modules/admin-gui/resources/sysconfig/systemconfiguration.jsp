@@ -428,7 +428,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</h:panelGroup>
 			<h:panelGroup>
 				<h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.saveCurrentConfig}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}"rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
+				<h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
 			</h:panelGroup>
 		</h:panelGrid>
 	</h:form>
