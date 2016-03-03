@@ -162,6 +162,7 @@ public class RevokedCertInfo implements Serializable {
         this.reason = reason;
     }
 
+    @Override
     public String toString() {
         return this.userCertificate == null ? "null" : new BigInteger(userCertificate).toString();
     }
@@ -171,7 +172,11 @@ public class RevokedCertInfo implements Serializable {
      * @return true if the certificate has been revoked, otherwise false.
      */
     public boolean isRevoked() {
-    	return this.reason != NOT_REVOKED;
+    	return isRevoked(reason);
+    }
+    
+    public static boolean isRevoked(int revocationReason) {
+        return revocationReason != NOT_REVOKED && revocationReason != REVOCATION_REASON_REMOVEFROMCRL;
     }
     
     /**
