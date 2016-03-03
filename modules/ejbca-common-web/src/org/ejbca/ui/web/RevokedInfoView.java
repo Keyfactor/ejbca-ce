@@ -88,8 +88,4 @@ public class RevokedInfoView implements Serializable {
     public boolean isRevoked(){
     	return this.revokedcertinfo.isRevoked();
     }
-    
-    public boolean isUnrevoked() {
-        return this.revokedcertinfo.revocationReason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL;
-    }
 }
