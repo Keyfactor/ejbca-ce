@@ -396,10 +396,6 @@ public class CertificateView implements Serializable {
     public boolean isRevoked(){
         return revokedinfo != null && revokedinfo.isRevoked();     
     }
-    
-    public boolean isUnrevoked(){
-        return revokedinfo != null  && revokedinfo.isUnrevoked();
-    }
 
     public String getRevocationReason(){
         String returnval = null;
