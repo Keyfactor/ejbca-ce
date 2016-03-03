@@ -1552,13 +1552,13 @@ public abstract class CertTools {
             signerCert.checkValidity();
         } catch (CertificateExpiredException e) {
             if (log.isDebugEnabled()) {
-                log.debug(intres.getLocalizedMessage("ocsp.errorcerthasexpired", signerCert.getSerialNumber(), signerCert.getIssuerDN()));
+                log.debug(intres.getLocalizedMessage("ocsp.errorcerthasexpired", signerCert.getSerialNumber().toString(16), signerCert.getIssuerDN()));
             }
             return false;
         } catch (CertificateNotYetValidException e) {
             if (log.isDebugEnabled()) {
 
-                log.debug(intres.getLocalizedMessage("ocsp.errornotyetvalid", signerCert.getSerialNumber(), signerCert.getIssuerDN()));
+                log.debug(intres.getLocalizedMessage("ocsp.errornotyetvalid", signerCert.getSerialNumber().toString(16), signerCert.getIssuerDN()));
             }
             return false;
         }
@@ -1571,7 +1571,7 @@ public abstract class CertTools {
             signerCert.checkValidity(warnDate);
         } catch (CertificateExpiredException e) {
             if (log.isDebugEnabled()) {
-                log.debug(intres.getLocalizedMessage("ocsp.warncertwillexpire", signerCert.getSerialNumber(), signerCert.getIssuerDN(),
+                log.debug(intres.getLocalizedMessage("ocsp.warncertwillexpire", signerCert.getSerialNumber().toString(16), signerCert.getIssuerDN(),
                         signerCert.getNotAfter()));
             }
         } catch (CertificateNotYetValidException e) {
