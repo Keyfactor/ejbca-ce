@@ -429,6 +429,7 @@
     	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("ISSUANCEREVOCATIONREASON") %></td>
 	     <td>
 	     <% if(revstatus == RevokedCertInfo.NOT_REVOKED) {%><%= ejbcawebbean.getText("ACTIVE") %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {%><%= ejbcawebbean.getText("REACTIVATED_REMOVEFROMCRL") %><%}%>
 	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {%><%= ejbcawebbean.getText("SUSPENDED") %>: <%= ejbcawebbean.getText("REV_CERTIFICATEHOLD")  %><%}%>
 	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_UNSPECIFIED")  %><%}%>
 	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_KEYCOMPROMISE")  %><%}%>

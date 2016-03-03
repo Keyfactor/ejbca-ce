@@ -1427,7 +1427,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             assertAuthorizedToEndEntityProfile(admin, userData.getEndEntityProfileId(), AccessRulesConstants.REVOKE_END_ENTITY, caid);
         }
 
-        if ((userData.getStatus() == EndEntityConstants.STATUS_REVOKED) && ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL)) ){
+        if ((userData.getStatus() == EndEntityConstants.STATUS_REVOKED) && !RevokedCertInfo.isRevoked(reason)) {
             final String msg = intres.getLocalizedMessage("ra.errorinvalidrevokereason", userData.getUsername(), reason);
             log.info(msg);
             throw new AlreadyRevokedException(msg);
@@ -1560,7 +1560,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         }
         // Check that unrevocation is not done on anything that can not be unrevoked
-        if (reason == RevokedCertInfo.NOT_REVOKED || reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
+        if (!RevokedCertInfo.isRevoked(reason)) {
             if (certificateData.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
                 final String msg = intres.getLocalizedMessage("ra.errorunrevokenotonhold", issuerdn, certserno.toString(16));
                 log.info(msg);

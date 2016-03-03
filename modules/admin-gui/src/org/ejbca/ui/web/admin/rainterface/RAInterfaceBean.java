@@ -56,6 +56,8 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.crl.CRLInfo;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -118,6 +120,7 @@ public class RAInterfaceBean implements Serializable {
     private CertificateProfileSession certificateProfileSession;
     private CertificateStoreSession certificatesession;
     private ComplexAccessControlSessionLocal complexAccessControlSession;
+    private CrlStoreSessionLocal crlStoreSession;
     private EndEntityAccessSessionLocal endEntityAccessSession;
     private EndEntityManagementSessionLocal endEntityManagementSession;
     private EndEntityProfileSessionLocal endEntityProfileSession;
@@ -157,6 +160,7 @@ public class RAInterfaceBean implements Serializable {
     		endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
     		certificatesession = ejbLocalHelper.getCertificateStoreSession();
     		caSession = ejbLocalHelper.getCaSession();
+    		crlStoreSession = ejbLocalHelper.getCrlStoreSession();
     		authorizationsession = ejbLocalHelper.getAccessControlSession();
     		endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
     		this.profiles = new EndEntityProfileDataHandler(administrator, endEntityProfileSession, informationmemory);
@@ -291,7 +295,21 @@ public class RAInterfaceBean implements Serializable {
      */
     public boolean unrevokeCert(BigInteger serno, String issuerdn, String username) throws ApprovalException, WaitingForApprovalException {
     	// Method needed because it is used as an ApprovalOveradableClassName
-    	return revokeCert(serno, issuerdn, username, RevokedCertInfo.NOT_REVOKED);
+    	return revokeCert(serno, issuerdn, username, RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+    }
+    
+    /**
+     * Checks if a certificate with revocation reason REVOCATION_REASON_REMOVEFROMCRL is still on the latest Base CRL
+     * @param issuerDN Issuing CA's subject DN
+     * @param unrevokeDate The date when the certificate was revoked.
+     * @return true if it's still on the latest Base CRL
+     */
+    public boolean isUnrevokedCertOnStillBaseCRL(final String issuerDN, final Date unrevokeDate) {
+        final CRLInfo baseCrlInfo = crlStoreSession.getLastCRLInfo(issuerDN, false);
+        if (baseCrlInfo == null) {
+            return false; // No Base CRL, so Delta CRLs can't exist yet
+        }
+        return unrevokeDate.after(baseCrlInfo.getCreateDate()); // unrevoked after last Base CRL was generated 
     }
 
     public boolean renameUser(final String currentUsername, final String newUsername) throws AuthorizationDeniedException, EndEntityExistsException {
@@ -379,13 +397,13 @@ public class RAInterfaceBean implements Serializable {
     /** Method to find all users in database */
     public UserView[] filterByTokenSN(String tokensn, int index,int size) {
     	UserView[] returnval = null;
-    	ArrayList<EndEntityInformation> userlist = new ArrayList<EndEntityInformation>();
+    	ArrayList<EndEntityInformation> userlist = new ArrayList<>();
     	Collection<String> usernames = hardtokensession.matchHardTokenByTokenSerialNumber(tokensn);
     	Iterator<String> iter = usernames.iterator();
     	while (iter.hasNext()) {
     		EndEntityInformation user = null;
     		try {
-    			user = endEntityAccessSession.findUser(administrator, (String) iter.next());
+    			user = endEntityAccessSession.findUser(administrator, iter.next());
     		} catch(AuthorizationDeniedException e) {}
     		if (user!=null) {
     			userlist.add(user);
@@ -400,7 +418,7 @@ public class RAInterfaceBean implements Serializable {
     public UserView[] filterByCertificateSerialNumber(final String serialnumber, final int index, final int size) throws NumberFormatException {
     	final BigInteger serno = new BigInteger(StringTools.stripWhitespace(serialnumber), 16);
     	final List<CertificateDataWrapper> cdws = certificatesession.getCertificateDataBySerno(serno);
-    	final List<EndEntityInformation> userlist = new ArrayList<EndEntityInformation>();
+    	final List<EndEntityInformation> userlist = new ArrayList<>();
     	for (final CertificateDataWrapper next : cdws) {
     	    final CertificateData certdata = next.getCertificateData();
     	    try {
@@ -424,7 +442,7 @@ public class RAInterfaceBean implements Serializable {
 
     /** Method that lists all users with certificate's that expires within given days. */
     public UserView[] filterByExpiringCertificates(String days, int index, int size) throws NumberFormatException {
-    	ArrayList<EndEntityInformation> userlist = new ArrayList<EndEntityInformation>();
+    	ArrayList<EndEntityInformation> userlist = new ArrayList<>();
     	UserView[] returnval = null;
     	long d = Long.parseLong(days);
     	Date finddate = new Date();
@@ -436,7 +454,7 @@ public class RAInterfaceBean implements Serializable {
     		while (i.hasNext() && userlist.size() <= getMaximumQueryRowCount()+1 ) {
     			EndEntityInformation user = null;
     			try {
-    				user = endEntityAccessSession.findUser(administrator, (String) i.next());
+    				user = endEntityAccessSession.findUser(administrator, i.next());
     				if (user != null) {
     					userlist.add(user);
     				}
@@ -532,11 +550,11 @@ public class RAInterfaceBean implements Serializable {
     	return this.userdatasourcesession.getUserDataSourceId(administrator, sourcename);
     }
 
-    public EndEntityProfile getEndEntityProfile(String name) throws AuthorizationDeniedException {
+    public EndEntityProfile getEndEntityProfile(String name) {
     	return profiles.getEndEntityProfile(name);
     }
 
-    public EndEntityProfile getEndEntityProfile(int id) throws AuthorizationDeniedException {
+    public EndEntityProfile getEndEntityProfile(int id) {
     	return profiles.getEndEntityProfile(id);
     }
 
@@ -801,7 +819,7 @@ public class RAInterfaceBean implements Serializable {
         if(certprofilenames == null) {
             return new String[0];
         }
-        return (String[]) certprofilenames.toArray(dummy);
+        return certprofilenames.toArray(dummy);
     }
 
     public int getCertificateProfileId(String certificateprofilename) {
@@ -1091,7 +1109,7 @@ public class RAInterfaceBean implements Serializable {
             // Translate cert profile ids that have changed after import
             String availableCertProfiles = "";
             String defaultCertProfile = eprofile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
-            for (String currentCertProfile : (Collection<String>) eprofile.getAvailableCertificateProfileIds()) {
+            for (String currentCertProfile : eprofile.getAvailableCertificateProfileIds()) {
                 Integer currentCertProfileId = Integer.parseInt(currentCertProfile);
 
                 if (certificateProfileSession.getCertificateProfile(currentCertProfileId) != null

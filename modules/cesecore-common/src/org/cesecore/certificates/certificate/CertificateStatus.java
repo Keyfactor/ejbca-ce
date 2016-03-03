@@ -28,9 +28,9 @@ public class CertificateStatus implements Serializable {
 
     private static final long serialVersionUID = 1515679904853388419L;
 	
-    public final static CertificateStatus REVOKED = new CertificateStatus("REVOKED", CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-    public final static CertificateStatus OK = new CertificateStatus("OK", CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-    public final static CertificateStatus NOT_AVAILABLE = new CertificateStatus("NOT_AVAILABLE", CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+    public final static CertificateStatus REVOKED = new CertificateStatus("REVOKED", -1L, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+    public final static CertificateStatus OK = new CertificateStatus("OK", -1L, RevokedCertInfo.NOT_REVOKED, CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+    public final static CertificateStatus NOT_AVAILABLE = new CertificateStatus("NOT_AVAILABLE", -1L, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
 
     private final String name;
     public final Date revocationDate;
@@ -38,25 +38,28 @@ public class CertificateStatus implements Serializable {
     public final int revocationReason;
     public final int certificateProfileId;
     
-    public CertificateStatus(String name, int certProfileId) {
+    public CertificateStatus(String name, long date, int reason, int certProfileId ) {
         this.name = name;
-        this.revocationDate = new Date(-1L);
-        this.revocationReason = RevokedCertInfo.NOT_REVOKED;
-        this.certificateProfileId = certProfileId;
-    }
-    public CertificateStatus( long date, int reason, int certProfileId ) {
-        this.name = CertificateStatus.REVOKED.name;
         this.revocationDate = new Date(date);
         this.revocationReason = reason;
         this.certificateProfileId = certProfileId;
     }
+    
+    @Override
     public String toString() {
         return this.name;
     }
+    
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof CertificateStatus && this.equals((CertificateStatus)obj);
     }
+    
     public boolean equals(CertificateStatus obj) {
         return this.name.equals(obj.toString());
+    }
+    
+    public boolean isRevoked() {
+        return revocationReason != RevokedCertInfo.NOT_REVOKED && revocationReason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL;
     }
 }

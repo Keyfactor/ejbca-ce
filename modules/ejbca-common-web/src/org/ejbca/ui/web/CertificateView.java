@@ -37,6 +37,7 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatusHelper;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.cert.QCStatementExtension;
@@ -304,7 +305,7 @@ public class CertificateView implements Serializable {
             } catch (CertificateParsingException e) {}
         }
         if (extendedkeyusage == null) {
-            extendedkeyusage = new ArrayList<String>();
+            extendedkeyusage = new ArrayList<>();
         }
         final String[] returnval = new String[extendedkeyusage.size()];
         for (int i=0; i<extendedkeyusage.size(); i++) {
@@ -394,6 +395,10 @@ public class CertificateView implements Serializable {
 
     public boolean isRevoked(){
         return revokedinfo != null && revokedinfo.isRevoked();     
+    }
+    
+    public boolean isUnrevoked(){
+        return revokedinfo != null  && revokedinfo.isUnrevoked();
     }
 
     public String getRevocationReason(){

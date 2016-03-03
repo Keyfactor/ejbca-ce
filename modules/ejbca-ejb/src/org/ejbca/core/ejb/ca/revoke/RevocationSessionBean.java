@@ -89,15 +89,14 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     @Override
     public void revokeCertificate(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Collection<Integer> publishers, Date revocationDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
     	final boolean waschanged = certificateStoreSession.setRevokeStatus(admin, cdw, revocationDate, reason);
-    	// Publish the revocation if it was actually performed
+    	// Only publish the revocation if it was actually performed
     	if (waschanged) {
     	    // Since storeSession.findCertificateInfo uses a native query, it does not pick up changes made above
     	    // that is part if the transaction in the EntityManager, so we need to get the object from the EntityManager.
     	    final CertificateData certificateData = cdw.getCertificateData();
     	    final String username = certificateData.getUsername();
     	    final String password = null;
-    		// Only publish the revocation if it was actually performed
-    		if (reason==RevokedCertInfo.NOT_REVOKED || reason==RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
+    		if (!RevokedCertInfo.isRevoked(reason)) {
     			// unrevocation, -1L as revocationDate
     		    final boolean published = publisherSession.storeCertificate(admin, publishers, cdw, password, userDataDN, null);
         		if (published) {
@@ -106,7 +105,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         		    final String serialNumber = certificateData.getSerialNumberHex();
             		// If it is not possible, only log error but continue the operation of not revoking the certificate
         			final String msg = "Unrevoked cert:" + serialNumber + " reason: " + reason + " Could not be republished.";
-        			final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        			final Map<String, Object> details = new LinkedHashMap<>();
                 	details.put("msg", msg);
                 	final int caid = certificateData.getIssuerDN().hashCode();
                 	auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);

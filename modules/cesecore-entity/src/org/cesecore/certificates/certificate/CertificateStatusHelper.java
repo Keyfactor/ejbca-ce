@@ -35,25 +35,26 @@ public abstract class CertificateStatusHelper {
         if (certificateData == null) {
             return CertificateStatus.NOT_AVAILABLE;
         }
-        final int pId;
+        final int certProfileId;
         {
             final Integer tmp = certificateData.getCertificateProfileId();
-            pId = tmp != null ? tmp.intValue() : CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
+            certProfileId = tmp != null ? tmp.intValue() : CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
         }
         final int status = certificateData.getStatus();
+        final int revReason = certificateData.getRevocationReason();
+        final long revDate = certificateData.getRevocationDate();
         if (status == CertificateConstants.CERT_REVOKED) {
-            return new CertificateStatus(certificateData.getRevocationDate(), certificateData.getRevocationReason(), pId);
+            return new CertificateStatus(CertificateStatus.REVOKED.toString(), revDate, revReason, certProfileId);
         }
         if (status != CertificateConstants.CERT_ARCHIVED) {
-            return new CertificateStatus(CertificateStatus.OK.toString(), pId);
+            return new CertificateStatus(CertificateStatus.OK.toString(), revDate, revReason, certProfileId);
         }
         // If the certificate have status ARCHIVED, BUT revocationReason is REMOVEFROMCRL or NOTREVOKED, the certificate is OK
         // Otherwise it is a revoked certificate that has been archived and we must return REVOKED
-        final int revReason = certificateData.getRevocationReason(); // Read revocationReason from database if we really need to..
         if (revReason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL || revReason == RevokedCertInfo.NOT_REVOKED) {
-            return new CertificateStatus(CertificateStatus.OK.toString(), pId);
+            return new CertificateStatus(CertificateStatus.OK.toString(), revDate, revReason, certProfileId);
         }
-        return new CertificateStatus(certificateData.getRevocationDate(), revReason, pId);
+        return new CertificateStatus(CertificateStatus.REVOKED.toString(), revDate, revReason, certProfileId);
     }
 
 

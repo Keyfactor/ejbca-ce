@@ -15,6 +15,7 @@ package org.cesecore.certificates.crl;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
@@ -22,8 +23,10 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.CRLException;
+import java.security.cert.CRLReason;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
+import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,7 +63,6 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaTestSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
@@ -68,9 +70,16 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -97,6 +106,7 @@ public class CrlCreateSessionTest {
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CaTestSessionRemote caTestSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private final CrlCreateSessionRemote crlCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlCreateSessionRemote.class);
     private final CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
     private final CryptoTokenManagementSessionRemote cryptoTokenMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -187,6 +197,74 @@ public class CrlCreateSessionTest {
         assertEquals(number1 + 2, num2.intValue());
     }
     
+    @Test
+    public void testRemoveFromCRL() throws Exception {
+        int caid = caSession.getCAInfo(authenticationToken, className).getCAId();
+        CA ca = caTestSessionRemote.getCA(authenticationToken, caid);
+        X509CAInfo cainfo = (X509CAInfo) ca.getCAInfo();
+        cainfo.setDeltaCRLPeriod(1); // Issue very often..
+        caSession.editCA(authenticationToken, cainfo);
+        
+        internalCertificateStoreSession.removeCertificatesBySubject("CN=testremovefromcrl");
+        try {
+            // Generate a certificate in on hold state
+            final EndEntityInformation userdata = new EndEntityInformation();
+            userdata.setUsername("testremovefromcrl"); // not acutally created
+            userdata.setPassword("foo123");
+            userdata.setType(EndEntityTypes.ENDUSER.toEndEntityType());
+            userdata.setCAId(caid);
+            userdata.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            userdata.setStatus(EndEntityConstants.STATUS_NEW);
+            userdata.setDN("CN=testremovefromcrl");
+            final PublicKey pubkey = KeyTools.genKeys("1024", "RSA").getPublic();
+            final RequestMessage req = new SimpleRequestMessage(pubkey, "testremovefromcrl", "foo123");
+            final Certificate cert = certificateCreateSession.createCertificate(authenticationToken, userdata, req, X509ResponseMessage.class, null).getCertificate();
+            certificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            
+            // Base CRL should have the revoked certificate in the revoked state
+            forceCRL(authenticationToken, ca);
+            X509CRLEntry crlEntry = fetchCRLEntry(cainfo, cert, false);
+            assertNotNull("Revoked certificate should be on CRL", crlEntry);
+            assertEquals("Wrong revocation status on Base CRL", CRLReason.CERTIFICATE_HOLD, crlEntry.getRevocationReason());
+            
+            // Unrevoke the certificate
+            certificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
+            
+            // Delta CRL should now have the certificate in status "removeFromCrl"
+            forceDeltaCRL(authenticationToken, ca);
+            crlEntry = fetchCRLEntry(cainfo, cert, true);
+            assertNotNull("Unrevoked certificate should be on Delta CRL", crlEntry);
+            assertEquals("Wrong revocation status on Delta CRL", CRLReason.REMOVE_FROM_CRL, crlEntry.getRevocationReason());
+            
+            // Generate a new Delta CRL. The certificate should still be there with removeFromCRL status
+            forceDeltaCRL(authenticationToken, ca);
+            crlEntry = fetchCRLEntry(cainfo, cert, true);
+            assertNotNull("Unrevoked certificate should be on Delta CRL", crlEntry);
+            assertEquals("Wrong revocation status on Delta CRL", CRLReason.REMOVE_FROM_CRL, crlEntry.getRevocationReason());
+            
+            // Generate a new Base CRL. The certificate should not be included.
+            forceCRL(authenticationToken, ca);
+            crlEntry = fetchCRLEntry(cainfo, cert, false);
+            assertNull("Revoked certificate should have been removed after generating a new Base CRL", crlEntry);
+            
+            // Generate a new Delta CRL. The certificate should not be included.
+            forceDeltaCRL(authenticationToken, ca);
+            crlEntry = fetchCRLEntry(cainfo, cert, true);
+            assertNull("Revoked certificate should no longer be included on Delta CRL after generating a new Base CRL", crlEntry);
+            
+            // Revoke the certificate again, and unrevoke it directly
+            certificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            certificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
+            
+            // Generate a new Base CRL. Unrevoked certificates should not appear on Base CRLs 
+            forceCRL(authenticationToken, ca);
+            crlEntry = fetchCRLEntry(cainfo, cert, false);
+            assertNull("Unrevoked (removeFromCRL) certificates should never appears on Base CRLs", crlEntry);
+        } finally {
+            internalCertificateStoreSession.removeCertificatesBySubject("CN=testremovefromcrl");
+        }
+    }
+    
     /**
      * Tests issuing a CRL from a CA with a SKID that is not generated with SHA1.
      * The CRL is checked to contain the correct AKID value.
@@ -235,7 +313,7 @@ public class CrlCreateSessionTest {
             
             // Replace sub CA certificate with a sub CA cert containing the test AKID
             subcainfo = (X509CAInfo)caSession.getCAInfo(authenticationToken, subcaname);
-            List<Certificate> certificatechain = new ArrayList<Certificate>();
+            List<Certificate> certificatechain = new ArrayList<>();
             certificatechain.add(subcacert);
             certificatechain.add(rootcacert);
             subcainfo.setCertificateChain(certificatechain);
@@ -300,13 +378,13 @@ public class CrlCreateSessionTest {
         ASN1InputStream octAis = new ASN1InputStream(new ByteArrayInputStream(akidExtBytes));
         DEROctetString oct = (DEROctetString) (octAis.readObject());
         ASN1InputStream keyidAis = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
-        AuthorityKeyIdentifier akid = AuthorityKeyIdentifier.getInstance((ASN1Sequence) keyidAis.readObject());
+        AuthorityKeyIdentifier akid = AuthorityKeyIdentifier.getInstance(keyidAis.readObject());
         keyidAis.close();
         octAis.close();
         assertArrayEquals("Incorrect Authority Key Id in CRL.", TEST_AKID, akid.getKeyIdentifier());
     }
     
-    private void forceDeltaCRL(AuthenticationToken admin, CA ca) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException, CRLException {
+    private void forceDeltaCRL(AuthenticationToken admin, CA ca) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CRLException {
         final CRLInfo crlInfo = crlStoreSession.getLastCRLInfo(ca.getSubjectDN(), false);
         // if no full CRL has been generated we can't create a delta CRL
         if (crlInfo != null) {
@@ -317,7 +395,7 @@ public class CrlCreateSessionTest {
         } 
     }
     
-    private String forceCRL(AuthenticationToken admin, CA ca) throws CAOfflineException, CryptoTokenOfflineException,
+    private String forceCRL(AuthenticationToken admin, CA ca) throws CryptoTokenOfflineException,
             AuthorizationDeniedException {
         if (ca == null) {
             throw new EJBException("No CA specified.");
@@ -371,7 +449,7 @@ public class CrlCreateSessionTest {
     }
     
     private byte[] internalCreateDeltaCRL(AuthenticationToken admin, CA ca, int baseCrlNumber, long baseCrlCreateTime)
-            throws CryptoTokenOfflineException, CAOfflineException, AuthorizationDeniedException, CRLException {
+            throws CryptoTokenOfflineException, AuthorizationDeniedException, CRLException {
         byte[] crlBytes = null;
         CAInfo cainfo = ca.getCAInfo();
         final String caCertSubjectDN;
@@ -392,7 +470,7 @@ public class CrlCreateSessionTest {
             log.debug("Found " + revcertinfos.size() + " revoked certificates.");
         }
         // Go through them and create a CRL, at the same time archive expired certificates
-        ArrayList<RevokedCertInfo> certs = new ArrayList<RevokedCertInfo>();
+        ArrayList<RevokedCertInfo> certs = new ArrayList<>();
         Iterator<RevokedCertInfo> iter = revcertinfos.iterator();
         while (iter.hasNext()) {
             RevokedCertInfo ci = iter.next();
@@ -415,6 +493,12 @@ public class CrlCreateSessionTest {
         }
 
         return crlBytes;
+    }
+    
+    private X509CRLEntry fetchCRLEntry(final CAInfo cainfo, final Certificate cert, final boolean deltaCRL) throws CRLException {
+        final byte[] crlBytes = crlStoreSession.getLastCRL(cainfo.getSubjectDN(), deltaCRL);
+        final X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
+        return crl.getRevokedCertificate(CertTools.getSerialNumber(cert));
     }
 
 }

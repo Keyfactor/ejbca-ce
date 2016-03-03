@@ -48,6 +48,7 @@ public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IA
      * @throws IllegalAdminCommandException Error in command args
      * @throws ErrorAdminCommandException Error running command
      */
+    @Override
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {   
             if(args.length != 3){
@@ -70,7 +71,11 @@ public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IA
             		if(status.getReason() == RevokedCertInfo.NOT_REVOKED){
             			getPrintStream().println("  Status        : NOT REVOKED");
             		}else{
-            			getPrintStream().println("  Status        : REVOKED");
+            		    if (status.getReason() == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
+            		        getPrintStream().println("  Status        : NOT REVOKED (reactivated)");
+            		    } else {
+            		        getPrintStream().println("  Status        : REVOKED");
+            		    }
             			getPrintStream().println("  Reason        : " + getRevokeReason(status.getReason()));
             			getPrintStream().println("  Date          : " + status.getRevocationDate().toString());
             		}
@@ -94,6 +99,7 @@ public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IA
 		return certsn;
 	}
 
+	@Override
 	protected void usage() {
 		getPrintStream().println("Command used check the status of certificate");
 		getPrintStream().println("Usage : checkrevocationstatus <issuerdn> <certificatesn (HEX)>  \n\n");
