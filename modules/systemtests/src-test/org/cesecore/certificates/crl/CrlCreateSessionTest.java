@@ -221,14 +221,21 @@ public class CrlCreateSessionTest {
             final Certificate cert = certificateCreateSession.createCertificate(authenticationToken, userdata, req, X509ResponseMessage.class, null).getCertificate();
             certificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             
+            Thread.sleep(1000);
+            
             // Base CRL should have the revoked certificate in the revoked state
             forceCRL(authenticationToken, ca);
             X509CRLEntry crlEntry = fetchCRLEntry(cainfo, cert, false);
             assertNotNull("Revoked certificate should be on CRL", crlEntry);
             assertEquals("Wrong revocation status on Base CRL", CRLReason.CERTIFICATE_HOLD, crlEntry.getRevocationReason());
             
+            // We need to sleep because the revocation date and CRL generation date are compared
+            Thread.sleep(1000);
+            
             // Unrevoke the certificate
             certificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
+            
+            Thread.sleep(1000);
             
             // Delta CRL should now have the certificate in status "removeFromCrl"
             forceDeltaCRL(authenticationToken, ca);
@@ -239,10 +246,9 @@ public class CrlCreateSessionTest {
             // Generate a new Delta CRL. The certificate should still be there with removeFromCRL status
             forceDeltaCRL(authenticationToken, ca);
             crlEntry = fetchCRLEntry(cainfo, cert, true);
-            assertNotNull("Unrevoked certificate should be on Delta CRL", crlEntry);
+            assertNotNull("Unrevoked certificate should still be on Delta CRL", crlEntry);
             assertEquals("Wrong revocation status on Delta CRL", CRLReason.REMOVE_FROM_CRL, crlEntry.getRevocationReason());
             
-            // We need to sleep because the revocation date and CRL generation date are compared
             Thread.sleep(1000);
             
             // Generate a new Base CRL. The certificate should not be included.
