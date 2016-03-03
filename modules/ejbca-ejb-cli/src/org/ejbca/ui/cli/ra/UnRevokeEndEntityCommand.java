@@ -114,7 +114,7 @@ public class UnRevokeEndEntityCommand extends BaseRaCommand {
                         foundCertificateOnHold = true;
                         try {
                             endEntityManagementSession.revokeCert(getAuthenticationToken(), serialNumber, issuerDN.toString(),
-                                    RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+                                    RevokedCertInfo.NOT_REVOKED);
                         } catch (AlreadyRevokedException e) {
                             getLogger().error("ERROR: The end entity was already reactivated while the request executed.");
                         } catch (ApprovalException e) {

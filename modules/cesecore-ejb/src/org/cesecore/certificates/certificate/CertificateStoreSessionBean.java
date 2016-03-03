@@ -1066,7 +1066,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             certificateData.setStatus(status);
             certificateData.setRevocationDate(revokeDate);
             certificateData.setUpdateTime(now.getTime());
-            certificateData.setRevocationReason(RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+            certificateData.setRevocationReason(reason);
             
             final String msg = INTRES.getLocalizedMessage("store.unrevokedcert", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDN(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<String, Object>();

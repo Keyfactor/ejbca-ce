@@ -616,8 +616,6 @@ function confirmrepublish(){
                     if (reason != null) {
                     	out.write(ejbcawebbean.getText(reason));
                     }
-                  } else if (certificatedata.isUnrevoked() && rabean.isUnrevokedCertOnStillBaseCRL(certificatedata.getIssuerDN(), certificatedata.getRevocationDate())) {
-                    out.write(ejbcawebbean.getText("REACTIVATED_REMOVEFROMCRL"));
                   } else {
                     out.write(ejbcawebbean.getText("NO"));
                   } %>

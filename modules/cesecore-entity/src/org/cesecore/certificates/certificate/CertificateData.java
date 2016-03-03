@@ -990,13 +990,13 @@ public class CertificateData extends ProtectedData implements Serializable {
         if (lastbasecrldate > 0) {
             query = entityManager.createNativeQuery(
                     "SELECT a.fingerprint, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason FROM CertificateData a WHERE "
-                            + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR (a.status=:status2 AND a.revocationReason=:revocationReason))",
+                            + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)",
                     "RevokedCertInfoSubset");
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("revocationDate", lastbasecrldate);
             query.setParameter("status1", CertificateConstants.CERT_REVOKED);
-            query.setParameter("status2", CertificateConstants.CERT_ACTIVE);
-            query.setParameter("revocationReason", RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+            query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
+            query.setParameter("status3", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION); // could happen if a cert is re-activated just before expiration
         } else {
             query = entityManager.createNativeQuery(
                     "SELECT a.fingerprint, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason FROM CertificateData a WHERE "
@@ -1025,7 +1025,10 @@ public class CertificateData extends ProtectedData implements Serializable {
                 final byte[] serialNumber = new BigInteger((String)current[1]).toByteArray();
                 final long expireDate = ValueExtractor.extractLongValue(current[2]);
                 final long revocationDate = ValueExtractor.extractLongValue(current[3]);
-                final int revocationReason = ValueExtractor.extractIntValue(current[4]);
+                int revocationReason = ValueExtractor.extractIntValue(current[4]);
+                if (revocationReason == -1) {
+                    revocationReason = RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL;
+                }
                 revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
             }
             firstResult += maxResults;
