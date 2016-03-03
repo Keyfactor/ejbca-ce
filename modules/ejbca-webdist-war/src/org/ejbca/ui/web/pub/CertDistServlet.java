@@ -52,7 +52,6 @@ import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -477,7 +476,7 @@ public class CertDistServlet extends HttpServlet {
                 res.setContentType("text/html");
                 printHtmlHeader("Check revocation", pout);
                 if (revinfo != null) {
-                    if (revinfo.revocationReason == RevokedCertInfo.NOT_REVOKED) {
+                    if (!revinfo.isRevoked()) {
                         pout.println("<h1>NOT REVOKED</h1>");
                         pout.println("Certificate with issuer '"+HTMLTools.htmlescape(dn)+"' and serial number '"+HTMLTools.htmlescape(serno)+"' is NOT revoked.");
                     } else {
