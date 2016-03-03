@@ -295,21 +295,7 @@ public class RAInterfaceBean implements Serializable {
      */
     public boolean unrevokeCert(BigInteger serno, String issuerdn, String username) throws ApprovalException, WaitingForApprovalException {
     	// Method needed because it is used as an ApprovalOveradableClassName
-    	return revokeCert(serno, issuerdn, username, RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
-    }
-    
-    /**
-     * Checks if a certificate with revocation reason REVOCATION_REASON_REMOVEFROMCRL is still on the latest Base CRL
-     * @param issuerDN Issuing CA's subject DN
-     * @param unrevokeDate The date when the certificate was revoked.
-     * @return true if it's still on the latest Base CRL
-     */
-    public boolean isUnrevokedCertOnStillBaseCRL(final String issuerDN, final Date unrevokeDate) {
-        final CRLInfo baseCrlInfo = crlStoreSession.getLastCRLInfo(issuerDN, false);
-        if (baseCrlInfo == null) {
-            return false; // No Base CRL, so Delta CRLs can't exist yet
-        }
-        return unrevokeDate.after(baseCrlInfo.getCreateDate()); // unrevoked after last Base CRL was generated 
+    	return revokeCert(serno, issuerdn, username, RevokedCertInfo.NOT_REVOKED);
     }
 
     public boolean renameUser(final String currentUsername, final String newUsername) throws AuthorizationDeniedException, EndEntityExistsException {
