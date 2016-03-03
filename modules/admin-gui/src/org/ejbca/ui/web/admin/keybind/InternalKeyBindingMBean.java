@@ -224,7 +224,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     ////    
 
     private String selectedInternalKeyBindingType = null;
-    private ListDataModel internalKeyBindingGuiList = null;
+    private ListDataModel<GuiInfo> internalKeyBindingGuiList = null;
     private Integer uploadTarget = null;
     private UploadedFile uploadToTargetFile;
     private String defaultResponderTarget;
@@ -387,7 +387,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     /** @return list of gui representations for all the InternalKeyBindings of the current type*/
-    public ListDataModel getInternalKeyBindingGuiList() {
+    public ListDataModel<GuiInfo> getInternalKeyBindingGuiList() {
         if (internalKeyBindingGuiList == null) {
             // Get the current type of tokens we operate on
             final String internalKeyBindingType = getSelectedInternalKeyBindingType();
@@ -469,7 +469,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     }
                 });
             }
-            internalKeyBindingGuiList = new ListDataModel(internalKeyBindingList);
+            internalKeyBindingGuiList = new ListDataModel<GuiInfo>(internalKeyBindingList);
         }
         // View the list will purge the view cache
         flushSingleViewCache();
@@ -631,7 +631,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private String currentKeyPairAlias = null;
     private String currentSignatureAlgorithm = null;
     private String currentNextKeyPairAlias = null;
-    private ListDataModel<InternalKeyBindingProperty<Serializable>> internalKeyBindingPropertyList = null;
+    private ListDataModel<InternalKeyBindingProperty<? extends Serializable>> internalKeyBindingPropertyList = null;
     private boolean inEditMode = false;
     private Integer currentCertificateAuthority = null;
     private String currentCertificateSerialNumber = null;
@@ -701,7 +701,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             getAvailableCryptoTokens();
             getAvailableKeyPairAliases();
             getAvailableSignatureAlgorithms();
-            internalKeyBindingPropertyList = new ListDataModel(new ArrayList<InternalKeyBindingProperty<? extends Serializable>>(internalKeyBindingSession.getAvailableTypesAndProperties()
+            internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<InternalKeyBindingProperty<? extends Serializable>>(internalKeyBindingSession.getAvailableTypesAndProperties()
                     .get(getSelectedInternalKeyBindingType()).values()));
         } else {
             // Load existing
@@ -719,7 +719,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
             currentSignatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
             currentNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
-            internalKeyBindingPropertyList = new ListDataModel(new ArrayList<InternalKeyBindingProperty<? extends Serializable>>(internalKeyBinding
+            internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<InternalKeyBindingProperty<? extends Serializable>>(internalKeyBinding
                     .getCopyOfProperties().values()));
             trustedCertificates = null;
         }
@@ -1102,7 +1102,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     /** @return a list of the current InteralKeyBinding's properties */
-    public ListDataModel<InternalKeyBindingProperty<Serializable>>getInternalKeyBindingPropertyList() {
+    public ListDataModel<InternalKeyBindingProperty<? extends Serializable>> getInternalKeyBindingPropertyList() {
         return internalKeyBindingPropertyList;
     }
 
