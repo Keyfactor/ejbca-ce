@@ -71,11 +71,7 @@ public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IA
             		if(status.getReason() == RevokedCertInfo.NOT_REVOKED){
             			getPrintStream().println("  Status        : NOT REVOKED");
             		}else{
-            		    if (status.getReason() == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
-            		        getPrintStream().println("  Status        : NOT REVOKED (reactivated)");
-            		    } else {
-            		        getPrintStream().println("  Status        : REVOKED");
-            		    }
+            			getPrintStream().println("  Status        : REVOKED");
             			getPrintStream().println("  Reason        : " + getRevokeReason(status.getReason()));
             			getPrintStream().println("  Date          : " + status.getRevocationDate().toString());
             		}
