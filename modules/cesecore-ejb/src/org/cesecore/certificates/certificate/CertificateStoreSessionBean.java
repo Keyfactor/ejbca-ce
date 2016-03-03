@@ -1064,9 +1064,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             // Only allow unrevocation if the certificate is revoked and the revocation reason is CERTIFICATE_HOLD
             int status = CertificateConstants.CERT_ACTIVE;
             certificateData.setStatus(status);
-            certificateData.setRevocationDate(revokeDate);
+            certificateData.setRevocationDate(null);
             certificateData.setUpdateTime(now.getTime());
-            certificateData.setRevocationReason(reason);
+            certificateData.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             
             final String msg = INTRES.getLocalizedMessage("store.unrevokedcert", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDN(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
