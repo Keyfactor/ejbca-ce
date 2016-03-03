@@ -242,6 +242,9 @@ public class CrlCreateSessionTest {
             assertNotNull("Unrevoked certificate should be on Delta CRL", crlEntry);
             assertEquals("Wrong revocation status on Delta CRL", CRLReason.REMOVE_FROM_CRL, crlEntry.getRevocationReason());
             
+            // We need to sleep because the revocation date and CRL generation date are compared
+            Thread.sleep(1000);
+            
             // Generate a new Base CRL. The certificate should not be included.
             forceCRL(authenticationToken, ca);
             crlEntry = fetchCRLEntry(cainfo, cert, false);
