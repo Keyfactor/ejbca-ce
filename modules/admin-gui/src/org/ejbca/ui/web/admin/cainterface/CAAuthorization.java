@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -107,7 +108,12 @@ public class CAAuthorization implements Serializable {
     }
     
     public TreeMap<String, Integer> getAllCANames() {
-        allcanames = new TreeMap<String, Integer>();
+        allcanames = new TreeMap<String, Integer>(new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {              
+                return o1.compareToIgnoreCase(o2);
+            }
+        });
         HashMap<Integer, String> idtonamemap = this.caSession.getCAIdToNameMap();
         for (Integer id : idtonamemap.keySet()) {
             allcanames.put(idtonamemap.get(id), id);

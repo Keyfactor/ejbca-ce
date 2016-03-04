@@ -199,7 +199,7 @@ public class RolesManagedBean extends BaseManagedBean {
     }
 
     /** @return a List of (SelectItem<String, String>) authorized CA */
-    public List<SelectItem> getAvailableCaIds() {
+    public List<SelectItem> getAvailableCas() {
         List<SelectItem> list = new ArrayList<SelectItem>();
         Collection<Integer> availableCAs = getBasicRuleSet().getAvailableCAs(); // All the CAs (and no 'All' flag)
         Map<String, Integer> cas = getEjbcaWebBean().getInformationMemory().getAllCANames();
@@ -512,10 +512,10 @@ public class RolesManagedBean extends BaseManagedBean {
 
     /** @return the available cas as a Collection<SelectItem> */
     public Collection<SelectItem> getAvailableCasAndAll() {
-        Collection<SelectItem> cas = getAvailableCaIds();
+        List<SelectItem> cas = getAvailableCas();
 
         if (getAuthorizationDataHandler().isAuthorizedNoLog(getAdmin(), StandardRules.CAACCESSBASE.resource())) {
-            cas.add(new SelectItem(String.valueOf(BasicAccessRuleSet.CA_ALL), getEjbcaWebBean().getText("ALL")));
+            cas.add(0, new SelectItem(String.valueOf(BasicAccessRuleSet.CA_ALL), getEjbcaWebBean().getText("ALL")));
         }
 
         return cas;
