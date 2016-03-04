@@ -37,6 +37,8 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.crl.CRLInfo;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
@@ -66,6 +68,8 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
+    private CrlStoreSessionLocal crlStoreSession;
+    @EJB
     private PublisherSessionLocal publisherSession;
 
     /** Internal localization of logs and errors */
@@ -88,7 +92,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void revokeCertificate(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Collection<Integer> publishers, Date revocationDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
-    	final boolean waschanged = certificateStoreSession.setRevokeStatus(admin, cdw, revocationDate, reason);
+    	final boolean waschanged = certificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(cdw, revocationDate, reason), reason);
     	// Only publish the revocation if it was actually performed
     	if (waschanged) {
     	    // Since storeSession.findCertificateInfo uses a native query, it does not pick up changes made above
@@ -115,6 +119,22 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 publisherSession.storeCertificate(admin, publishers, cdw, password, userDataDN, null);
     		}
     	}
+    }
+
+    /** @return revocationDate as is, or null if unrevoking a certificate that's not on a base CRL in on hold state. */
+    private Date getRevocationDate(final CertificateDataWrapper cdw, final Date revocationDate, final int reason) {
+        if (revocationDate == null || (reason != RevokedCertInfo.NOT_REVOKED && reason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) ||
+                (cdw.getCertificateData().getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)) {
+            return revocationDate; // return unmodified
+        }
+        
+        final String issuerDN = cdw.getCertificateData().getIssuerDN();
+        final CRLInfo baseCrlInfo = crlStoreSession.getLastCRLInfo(issuerDN, false);
+        if (baseCrlInfo == null || baseCrlInfo.getCreateDate().before(revocationDate)) { // if not on base CRL
+            return null;
+        } else {
+            return revocationDate;
+        }
     }
     
 }

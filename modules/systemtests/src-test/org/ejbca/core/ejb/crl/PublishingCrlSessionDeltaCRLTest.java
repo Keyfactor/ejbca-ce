@@ -62,6 +62,7 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -92,6 +93,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
     private PublishingCrlSessionRemote publishingCrlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
 
     private static KeyPair keys;
     
@@ -254,6 +256,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
                 }
             } // If no revoked certificates exist at all, this test passed...
 
+            Thread.sleep(1000);
             certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             // Sleep 1 second so we don't issue the next CRL at the exact same time
             // as the revocation
@@ -278,7 +281,8 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             assertTrue(found);
 
             // Unrevoke the certificate that we just revoked
-            certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
+            // The revokeCertificate method will set the revocation date so the CRL generation code knows if it should be in the state "removeFromCRL" or not
+            revocationSession.revokeCertificate(roleMgmgToken, cert, null, RevokedCertInfo.NOT_REVOKED, null);
             // Create a new Delta CRL again...
             assertTrue(publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS NOT present in the new CRL.
