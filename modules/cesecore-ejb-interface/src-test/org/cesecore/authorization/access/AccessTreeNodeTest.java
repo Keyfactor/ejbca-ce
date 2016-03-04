@@ -153,7 +153,7 @@ public class AccessTreeNodeTest {
 
         rootNode.addAccessRule("/", acceptRule, role);
 
-        assertTrue(rootNode.isAuthorized(authenticationToken, "/"));
+        assertTrue(rootNode.isAuthorized(authenticationToken, "/", false));
 
         EasyMock.verify(authenticationToken, acceptRule, role, accessUser);
     }
@@ -208,7 +208,7 @@ public class AccessTreeNodeTest {
         rootNode.addAccessRule("/", acceptRule, role);
         rootNode.addAccessRule("/", declineRule, role);
 
-        assertFalse(rootNode.isAuthorized(authenticationToken, "/"));
+        assertFalse(rootNode.isAuthorized(authenticationToken, "/", false));
 
         EasyMock.verify(acceptRule, declineRule, upnUser, countryUser, authenticationToken, role);
     }
@@ -223,7 +223,7 @@ public class AccessTreeNodeTest {
         AuthenticationToken authenticationToken = EasyMock.createMock(AuthenticationToken.class);
         EasyMock.expect(authenticationToken.getDefaultMatchValue()).andReturn(X500PrincipalAccessMatchValue.NONE);
         EasyMock.replay(authenticationToken);
-        assertFalse(rootNode.isAuthorized(authenticationToken, resourcePath));
+        assertFalse(rootNode.isAuthorized(authenticationToken, resourcePath, false));
         EasyMock.verify(authenticationToken);
     }
 
@@ -266,9 +266,9 @@ public class AccessTreeNodeTest {
         rootNode.addAccessRule("/parent", denied, role);
 
         // In spite of an accept recursive, we should get denied for /parent
-        assertFalse(rootNode.isAuthorized(authenticationToken, "/parent"));
+        assertFalse(rootNode.isAuthorized(authenticationToken, "/parent", false));
         // Same for child
-        assertFalse(rootNode.isAuthorized(authenticationToken, "/parent/child"));
+        assertFalse(rootNode.isAuthorized(authenticationToken, "/parent/child", false));
 
         EasyMock.verify(authenticationToken, role, acceptRecursive, denied, accessUser);
     }
@@ -316,7 +316,7 @@ public class AccessTreeNodeTest {
 
         rootNode.addAccessRule("/", unknownRule, role);
 
-        assertTrue(rootNode.isAuthorized(authenticationToken, resourcePath));// ));
+        assertTrue(rootNode.isAuthorized(authenticationToken, resourcePath, false));
         EasyMock.verify(role, unknownRule, denyRule, upnUser, upnUser1, role, role1);
     }
     
@@ -367,7 +367,7 @@ public class AccessTreeNodeTest {
 
         // Now add a new role with a simple decline rule, The AlwaysAllowToken should still accept this
         rootNode.addAccessRule(resourcePath, denyRule, role1);
-        assertTrue(rootNode.isAuthorized(authenticationToken, resourcePath));
+        assertTrue(rootNode.isAuthorized(authenticationToken, resourcePath, false));
         EasyMock.verify(role, acceptRule, denyRule, upnUser, upnUser1, role, role1);
     }
 
@@ -407,7 +407,7 @@ public class AccessTreeNodeTest {
         rootNode.addAccessRule("/", accessRule, role);
 
         // Having encountered an ACCEPT_RECURSIVE, we should return true even if the path doesn't exist.
-        assertTrue(rootNode.isAuthorized(authenticationToken, resourcePath));
+        assertTrue(rootNode.isAuthorized(authenticationToken, resourcePath, false));
 
         EasyMock.verify(authenticationToken, role, accessRule);
     }
@@ -451,7 +451,7 @@ public class AccessTreeNodeTest {
         rootNode.addAccessRule("/parent", unknown, role);
 
         // Having encountered an ACCEPT_RECURSIVE, we should return true even if the path doesn't exist.
-        assertTrue(rootNode.isAuthorized(authenticationToken, "/parent"));
+        assertTrue(rootNode.isAuthorized(authenticationToken, "/parent", false));
 
         EasyMock.verify(authenticationToken, role, acceptRecursive, unknown, accessUser);
     }

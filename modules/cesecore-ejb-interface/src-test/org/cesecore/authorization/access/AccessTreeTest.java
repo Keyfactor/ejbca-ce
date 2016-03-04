@@ -78,7 +78,7 @@ public class AccessTreeTest {
         Field rootNodeField = accessTree.getClass().getDeclaredField("rootNode");
         rootNodeField.setAccessible(true);
         rootNodeField.set(accessTree, rootNode);    
-        accessTree.isAuthorized(authenticationToken, "fancypants");
+        accessTree.isAuthorized(authenticationToken, "fancypants", false);
         EasyMock.verify(rootNode);
     }
 
