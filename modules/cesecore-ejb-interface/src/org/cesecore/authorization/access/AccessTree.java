@@ -48,22 +48,6 @@ public class AccessTree {
         }
         rootNode = newRootnode; // Replace the old access rules with the new ones
     }
-
-    /**
-     * A method to check the authenticated user is authorized to view the given resource
-     * 
-     * Will by default accept recursive and non-recursive accept values. 
-     * 
-     * @param authenticationToken
-     *            A token from a successfully performed authentication.
-     * @param resource
-     *            The resource to check authorization for.
-     * @return True if authorization is granted.
-     * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
-     */
-    public boolean isAuthorized(AuthenticationToken authenticationToken, String resource) throws AuthenticationFailedException {
-       return isAuthorized(authenticationToken, resource, false);
-    }
     
     /**
      * A method to check the authenticated user is authorized to view the given resource

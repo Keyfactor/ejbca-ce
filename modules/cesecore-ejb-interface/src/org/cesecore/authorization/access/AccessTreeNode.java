@@ -78,42 +78,22 @@ public class AccessTreeNode {
         this.roleRulePairs = new ArrayList<AbstractMap.SimpleEntry<RoleData, AccessRuleData>>();
         this.leafs = new HashMap<String, AccessTreeNode>();
     }
-
-    /**
-     * Entrance method.
-     * 
-     * Will by default accept recursive and non-recursive accept values. 
-     * 
-     * @param role
-     *            Role to check access for.
-     * @param resourcePath
-     *            Resource to investigate
-     * @return True if role is authorized to resource.
-     * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
-     */
-    public boolean isAuthorized(final AuthenticationToken authenticationToken, final String resourcePath)
-            throws AuthenticationFailedException {
-        return isAuthorizedRecursive(authenticationToken, resourcePath, AccessTreeState.STATE_UNKNOWN, false);
-
-    }
     
     /**
      * Entrance method.
      * 
-     * TODO: Unit test this method.
      * 
      * @param role
      *            Role to check access for.
      * @param resourcePath
      *            Resource to investigate
      * @param requireRecursive true if only accept recursive values should be accepted. 
-     * @return True if role is authorized to resource.
+     * @return true if role is authorized to resource.
      * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
     public boolean isAuthorized(final AuthenticationToken authenticationToken, final String resourcePath, final boolean requireRecursive)
             throws AuthenticationFailedException {
         return isAuthorizedRecursive(authenticationToken, resourcePath, AccessTreeState.STATE_UNKNOWN, requireRecursive);
-
     }
 
     /**
@@ -126,7 +106,7 @@ public class AccessTreeNode {
      * @param legacyState
      *            The best state yet encountered.
      * @param requireRecursive true if only accept recursive values should be accepted
-     * @return True of role is authorized to resource.
+     * @return true of role is authorized to resource.
      * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
     private boolean isAuthorizedRecursive(final AuthenticationToken authenticationToken, final String resourcePath, AccessTreeState legacyState,
@@ -237,9 +217,11 @@ public class AccessTreeNode {
         }
     }
 
-    /** Finds the user aspect matching with the highest priority for the authentication token
+    /** 
+     * Finds the user aspect matching with the highest priority for the authentication token
      * and return the AccessTreeState for the rule with the highest priority.
      * Important if the UserAspect matches more than one rule.
+     * 
      * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
     private AccessTreeState findPreferredRule(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
