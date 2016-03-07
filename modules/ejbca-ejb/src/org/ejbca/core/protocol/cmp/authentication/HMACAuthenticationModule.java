@@ -317,7 +317,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
      * Returns the certificate template specified in the request impeded in msg.
      * 
      * @param msg
-     * @return the certificate template imbeded in msg. Null if no such template was found.
+     * @return the certificate template embedded in msg. Null if no such template was found.
      */
     private CertTemplate getCertTemplate(final PKIMessage msg) {
         final int tagnr = msg.getBody().getType();
