@@ -80,7 +80,7 @@
 				<h:panelGroup >
 					<h:outputText value="#{web.text.CA}" /><br />
 					<h:selectOneMenu id="caId" value="#{rolesManagedBean.matchCaId}" rendered="#{rolesManagedBean.authorizedToEdit}">
-						<f:selectItems value="#{rolesManagedBean.availableCaIds}" />
+						<f:selectItems value="#{rolesManagedBean.availableCas}" />
 					</h:selectOneMenu>
 					<h:outputText value="<br/>&nbsp;" escape="false" rendered="#{!rolesManagedBean.authorizedToEdit}"/>
 				</h:panelGroup>
