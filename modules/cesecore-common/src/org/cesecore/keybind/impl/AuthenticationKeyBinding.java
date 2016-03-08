@@ -79,7 +79,7 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
     @Override
     public void assertCertificateCompatability(Certificate certificate, final AvailableExtendedKeyUsagesConfiguration ekuConfig) throws CertificateImportException {
         if (!isClientSSLCertificate(certificate, ekuConfig)) {
-            throw new CertificateImportException("Not a vlid Client SSL authentication certificate.");
+            throw new CertificateImportException("Not a valid Client SSL authentication certificate.");
         }
     }
 
