@@ -64,6 +64,7 @@
     <property name="mod.peerconnector-common.lib" location="${mod.dist.path}/peerconnector-common.jar" />
     <property name="mod.peerconnector-ejb.lib" location="${mod.dist.path}/peerconnector-ejb.jar" />
 	<property name="mod.peerconnector-interface.lib" location="${mod.dist.path}/peerconnector-interface.jar" />
+    <property name="mod.peerconnector-ra.lib" location="${mod.dist.path}/peerconnector-ra.jar" />
     <property name="mod.peerconnector-rar.lib" location="${mod.dist.path}/peerconnector.rar" />
     <property name="mod.peerconnector-war.lib" location="${mod.dist.path}/peerconnector.war" />
     <property name="mod.peerconnector-publ.lib" location="${mod.dist.path}/peerconnector-publ.jar" />
