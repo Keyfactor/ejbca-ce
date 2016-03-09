@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
+ version: $Id$
+ -->
+<web-app version="3.0" id="admingui"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                        http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+
+    <description><![CDATA[EJBCA Administration web]]></description>
+
+    <!-- Set to "Development" for debugging.
+        "Production" also implies javax.faces.FACELETS_REFRESH_PERIOD=-1 which means pages are never recompiled.
+        TODO: Set automatically when ejbca.productionmode=false
+    -->
+    <context-param>
+        <param-name>javax.faces.PROJECT_STAGE</param-name>
+        <param-value>Production</param-value>
+    </context-param>
+
+    <filter>
+        <filter-name>ProxiedAuthenticationFilter</filter-name>
+        <filter-class>org.ejbca.ui.web.admin.ProxiedAuthenticationFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>ProxiedAuthenticationFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <!-- Tomahawk filter for file uploads. Should be replaced by h:inputFile pattern when we can use JSF2.2. -->
+    <filter>
+        <filter-name>extensionsFilter</filter-name>
+        <filter-class>org.apache.myfaces.webapp.filter.ExtensionsFilter</filter-class>
+        <init-param>
+            <description>Maximum size of uploads</description>
+            <param-name>uploadMaxFileSize</param-name>
+            <param-value>101k</param-value>
+        </init-param>
+        <init-param>
+            <description>Maximum size of uploads before using disk</description>
+            <param-name>uploadThresholdSize</param-name>
+            <param-value>100k</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>extensionsFilter</filter-name>
+        <url-pattern>*.jsf</url-pattern>
+    </filter-mapping>
+
+    <!-- Clickjack Filter from OWASP adding X-FRAME-OPTIONS header to pages to prevent including 
+         our pages in other frames. https://www.owasp.org/index.php/Clickjacking_Protection_for_Java_EE -->
+	<filter>
+		<filter-name>ClickjackFilterDeny</filter-name>
+		<filter-class>org.owasp.filters.ClickjackFilter</filter-class>
+		<init-param>
+			<param-name>mode</param-name>
+			<param-value>DENY</param-value>
+		</init-param>
+	</filter>
+
+	<filter>
+		<filter-name>ClickjackFilterSameOrigin</filter-name>
+		<filter-class>org.owasp.filters.ClickjackFilter</filter-class>
+		<init-param>
+			<param-name>mode</param-name>
+			<param-value>SAMEORIGIN</param-value>
+		</init-param>
+	</filter>
+
+    <!--  use the Deny version to prevent anyone, including yourself, from framing the page
+          Since we are using frames in adminweb, we don't use deny.
+	<filter-mapping> 
+		<filter-name>ClickjackFilterDeny</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+    -->
+
+	<!-- use the SameOrigin version to allow your application to frame, but nobody else -->
+	<filter-mapping> 
+		<filter-name>ClickjackFilterSameOrigin</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>ContentSecurityPolicyFilter</filter-name>
+		<filter-class>org.owasp.filters.ContentSecurityPolicyFilter</filter-class>
+		<init-param>
+		    <param-name>unsafeeval</param-name>
+		    <param-value>yes</param-value>
+		</init-param>
+	</filter>
+	
+	<filter-mapping> 
+		<filter-name>ContentSecurityPolicyFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	 
+   <servlet>
+      <servlet-name>Faces Servlet</servlet-name>
+      <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+      <load-on-startup>1</load-on-startup>
+   </servlet>
+    
+   <servlet-mapping>
+      <servlet-name>Faces Servlet</servlet-name>
+      <url-pattern>*.jsf</url-pattern>
+   </servlet-mapping>
+ 
+    <session-config>
+        <session-timeout>30</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+        </cookie-config>
+    </session-config>
+
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>restricted methods</web-resource-name>
+            <url-pattern>/*</url-pattern>
+            <http-method>PUT</http-method>
+            <http-method>DELETE</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+        </web-resource-collection>
+        <auth-constraint />
+    </security-constraint> 
+
+   <!--
+   <!ELEMENT mime-mapping (extension, mime-type)>
+   -->
+
+   <!--
+   <!ELEMENT error-page ((error-code | exception-type), location)>
+   -->
+
+   <!--
+   <!ELEMENT security-constraint (display-name?, web-resource-collection+, auth-constraint?, user-data-constraint?)>
+   <!ELEMENT web-resource-collection (web-resource-name, description?, url-pattern*, http-method*)>
+   <!ELEMENT web-resource-name (#PCDATA)>
+   <!ELEMENT url-pattern (#PCDATA)>
+   <!ELEMENT http-method (#PCDATA)>
+   <!ELEMENT user-data-constraint (description?, transport-guarantee)>
+   <!ELEMENT transport-guarantee (#PCDATA)>
+
+   <!ELEMENT login-config (auth-method?, realm-name?, form-login-config?)>
+   <!ELEMENT auth-method (#PCDATA)>
+   <!ELEMENT realm-name (#PCDATA)>
+   <!ELEMENT form-login-config (form-login-page, form-error-page)>
+   <!ELEMENT form-login-page (#PCDATA)>
+   <!ELEMENT form-error-page (#PCDATA)>
+   -->
+
+    <ejb-local-ref>
+        <description>An EJB that can provide references to all other SSBs to avoid this kind of declarations</description>
+        <ejb-ref-name>EjbBridgeSession</ejb-ref-name>
+        <local>org.ejbca.core.ejb.EjbBridgeSessionLocal</local>
+        <ejb-link>EjbBridgeSessionBean</ejb-link>
+    </ejb-local-ref>
+    <ejb-local-ref>
+        <description>An EJB that can provide references to all enterprise edition SSBs to avoid this kind of declarations</description>
+        <ejb-ref-name>EnterpriseEditionEjbBridgeSession</ejb-ref-name>
+        <local>org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal</local>
+        <ejb-link>EnterpriseEditionEjbBridgeSessionBean</ejb-link>
+    </ejb-local-ref>
+</web-app>
