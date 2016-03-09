@@ -84,6 +84,7 @@
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.buildtools.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.ra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<antcall target="cmpproxyclean"/>
 		<antcall target="validationtoolclean"/>
 		<antcall target="statedumpclean"/>
@@ -413,6 +414,10 @@
 	<target name="admin-gui" depends="ejbca-common-web" description="Build the EJBCA Admin GUI WAR">
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
+	
+	<target name="ra-gui" depends="ejbca-common-web" description="Build the EJBCA RA GUI WAR">
+		<ant antfile="${mod.ra-gui.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	</target>
 
 	<target name="publicweb-gui" depends="ejbca-common-web" description="Build the EJBCA Public Web GUI WAR">
 		<ant antfile="${mod.publicweb-gui.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
@@ -485,7 +490,9 @@
 	</target>
 	
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-db-cli"/>
-	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, admin-gui, ejbca-ws, externalra-service, ejbca-cmp-tcp, ejbca.clients, systemtests.build.libs, ct, certsafe, va-ejbca-war, certstore-war, crlstore-war"/>
+	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, 
+					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, admin-gui, ra-gui, ejbca-ws, externalra-service, ejbca-cmp-tcp, ejbca.clients, 
+					systemtests.build.libs, ct, certsafe, va-ejbca-war, certstore-war, crlstore-war"/>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">
 		<ant antfile="${mod.ct.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>

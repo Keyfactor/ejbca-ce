@@ -150,6 +150,8 @@
 	<property name="mod.va-publisher.lib"  location="${mod.dist.path}/va-publisher.jar"/>
 	<property name="mod.systemtest-interface.lib" location="${mod.dist.path}/systemtests-interfaces.jar" />
 	<property name="mod.systemtest-ejb.lib" location="${mod.dist.path}/systemtests-ejb.jar" />
+	<property name="mod.ra-gui.path" location="${mod.path}/ra-gui" />
+	<property name="mod.ra-gui.war" location="${mod.dist.path}/ra-gui.war" />
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
