@@ -919,7 +919,7 @@ public class EjbcaWebBean implements Serializable {
         // Invalidate local GUI cache
         initialized = false;
         if (failedHosts.length() > 0) {
-            throw new CacheClearException("Failed to clear cache on hosts (" + failedHosts.toString() + "), but succeeded on (" + succeededHost.toString()
+            throw new CacheClearException("Failed to clear cache on hosts (" + failedHosts.toString().substring(1) + "), but succeeded on (" + succeededHost.toString().substring(1)
                     + ").");
         }
         if (log.isTraceEnabled()) {
