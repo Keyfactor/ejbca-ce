@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ra-gui" default="build">
+    <description>
+            Build file for the Resgistration Authority GUI
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.ra-gui}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
+
+	<path id="compile.classpath">
+		<path refid="lib.ejbca-common-web.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.jsf.classpath"/>
+		<path refid="lib.tomahawk.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-fileupload.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-io.classpath"/>
+		<path refid="lib.jee.classpath"/>
+	</path>
+	
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+    	<delete file="${mod.ra-gui.war}" />
+    </target>
+	
+    <target name="build" description="Build the RA WAR" depends="compile">
+    	<copy file="${resources.dir}/WEB-INF/web.xml" tofile="${build.dir}/WEB-INF/web.xml"/>
+        <war destfile="${mod.ra-gui.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml">
+        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.14.jar"/>
+        	<fileset dir="${resources.dir}" excludes="languages/*"/>
+        </war>
+    </target>
+
+    <target name="compile" depends="with.clover">
+    	<mkdir dir="${build.dir}/WEB-INF/classes"/>
+        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
+        	classpathref="compile.classpath"/>
+    </target>
+	
+</project>

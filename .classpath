@@ -66,6 +66,7 @@
 	<classpathentry kind="src" path="modules/peerconnector/src-test"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-war"/>
 	<classpathentry kind="src" path="modules/publicweb-gui/src"/>
+	<classpathentry kind="src" path="modules/ra-gui/src"/>
 	<classpathentry kind="src" path="modules/statedump/src-cli"/>
 	<classpathentry kind="src" path="modules/statedump/src-common"/>
 	<classpathentry kind="src" path="modules/statedump/src-ejb"/>

@@ -499,6 +499,7 @@
                 <include name="peerconnector.rar" />
                 <include name="peerconnector.war" />
                 <include name="peerconnector-ejb.jar" />
+                <include name="ra-gui.war" />
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="externalra-service.jar" />
@@ -1126,6 +1127,11 @@ SHA-256 checksum: ${cesecorebinSHA256}
     <target name="adminweb.war">
     	<ant dir="modules" target="admin-gui" />
     </target>
+	
+    <target name="raweb.war">
+    	<ant dir="modules" target="ra-gui" />
+    </target>
+
 
     <target name="publicweb.war">
     	<ant dir="modules" target="publicweb-gui" />
