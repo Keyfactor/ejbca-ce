@@ -519,6 +519,7 @@
         		<include name="edition-specific-interface.jar" />
         		<include name="edition-specific-ejb.jar" />
         		<include name="statedump-common.jar" />
+                <include name="peerconnector-ra.jar" />
                 <include name="peerconnector-publ.jar" />
                 <include name="peerconnector-interface.jar" />
                 <include name="peerconnector-common.jar" />

@@ -62,6 +62,7 @@
 	<classpathentry kind="src" path="modules/peerconnector/src-ejb"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-interface"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-publ"/>
+	<classpathentry kind="src" path="modules/peerconnector/src-ra"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-rar"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-test"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-war"/>
