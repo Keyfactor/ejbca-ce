@@ -15,7 +15,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
  * Class used to integrate the old jsp framework with the new JSF one.
  * Contains methods for such things as language, themes ext
  * 
- * @author Philip Vendil
  * $Id$
  */
 public class EjbcaJSFHelper {

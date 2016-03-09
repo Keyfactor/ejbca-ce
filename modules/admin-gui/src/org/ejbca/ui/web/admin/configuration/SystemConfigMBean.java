@@ -398,9 +398,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         boolean execludeActiveCryptoTokens = getExcludeActiveCryptoTokensFromClearCaches();
         try {
             getEjbcaWebBean().clearClusterCache(execludeActiveCryptoTokens);
-        } catch (Exception e) {
-            String msg = "Cannot clear caches.";
-            log.info(msg + e.getLocalizedMessage());
+        } catch (CacheClearException e) {
+            String msg = "Cannot clear caches: " + e.getLocalizedMessage();
+            log.info(msg);
             super.addNonTranslatedErrorMessage(msg);
         }
     }

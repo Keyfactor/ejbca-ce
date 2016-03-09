@@ -885,7 +885,7 @@ public class EjbcaWebBean implements Serializable {
         throw new IllegalArgumentException("Parameter " + parameter + " not found among valid options.");
     }
 
-    public void clearClusterCache(boolean excludeActiveCryptoTokens) throws Exception {
+    public void clearClusterCache(boolean excludeActiveCryptoTokens) throws CacheClearException {
         if (log.isTraceEnabled()) {
             log.trace(">clearClusterCache");
         }
@@ -893,29 +893,33 @@ public class EjbcaWebBean implements Serializable {
         final StringBuilder failedHosts = new StringBuilder();
         final StringBuilder succeededHost = new StringBuilder();
         for (final String host : nodes) {
-            if (host != null) {
-                if (checkHost(host, excludeActiveCryptoTokens)) {
-                    succeededHost.append(' ').append(host);
-                } else {
-                    if (isLocalHost(host)) {
-                        // If we are trying to clear the cache on this instance and failed,
-                        // we give it another chance using 127.0.0.1 (which is allowed by default)
-                        log.info("Failed to clear cache on local node using '" + host + "'. Will try with 'localhost'.");
-                        if (checkHost("localhost", excludeActiveCryptoTokens)) {
-                            succeededHost.append(' ').append(host);
+            try {
+                if (host != null) {
+                    if (checkHost(host, excludeActiveCryptoTokens)) {
+                        succeededHost.append(' ').append(host);
+                    } else {
+                        if (isLocalHost(host)) {
+                            // If we are trying to clear the cache on this instance and failed,
+                            // we give it another chance using 127.0.0.1 (which is allowed by default)
+                            log.info("Failed to clear cache on local node using '" + host + "'. Will try with 'localhost'.");
+                            if (checkHost("localhost", excludeActiveCryptoTokens)) {
+                                succeededHost.append(' ').append(host);
+                            } else {
+                                failedHosts.append(' ').append(host);
+                            }
                         } else {
                             failedHosts.append(' ').append(host);
                         }
-                    } else {
-                        failedHosts.append(' ').append(host);
                     }
                 }
+            } catch (IOException e) {
+                failedHosts.append(' ').append(host);
             }
         }
         // Invalidate local GUI cache
         initialized = false;
         if (failedHosts.length() > 0) {
-            throw new Exception("Failed to clear cache on hosts (" + failedHosts.toString() + "), but succeeded on (" + succeededHost.toString()
+            throw new CacheClearException("Failed to clear cache on hosts (" + failedHosts.toString() + "), but succeeded on (" + succeededHost.toString()
                     + ").");
         }
         if (log.isTraceEnabled()) {
@@ -923,7 +927,9 @@ public class EjbcaWebBean implements Serializable {
         }
     }
 
-    /** Perform HTTP connection to the cluster nodes clear-cache Servlet */
+    /** Perform HTTP connection to the cluster nodes clear-cache Servlet 
+     * @throws IOException if any of the external hosts couldn't be contacted
+     */
     private boolean checkHost(String hostname, boolean excludeActiveCryptoTokens) throws IOException {
         // get http port of remote host, this requires that all cluster nodes uses the same public htt port
         final int pubport = WebConfiguration.getPublicHttpPort();
