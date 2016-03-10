@@ -1074,8 +1074,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             try {
                 setUserStatus(admin, data1, EndEntityConstants.STATUS_GENERATED);
             } catch (AuthorizationDeniedException e) {
-                log.error("Authorization was denied for an AlwaysAllowLocalAuthenticationToken", e);
+                throw new IllegalStateException("Always allow token was denied authorization.", e);
             }
+  
         }
         if (log.isTraceEnabled()) {
             log.trace("<decRequestCounter(" + username + "): " + counter);
@@ -1163,16 +1164,20 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Check authorization
         final int caid = data.getCaId();
-        assertAuthorizedToCA(admin, caid);
         if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
             assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, caid);
         }
         setUserStatus(admin, data, status);
     }
-
-    private void setUserStatus(final AuthenticationToken admin, final UserData data1, final int status) throws AuthorizationDeniedException,
-             ApprovalException, WaitingForApprovalException {
+    
+    /**
+     * 
+     * @throws AuthorizationDeniedException if admin was not authorized to the CA that owns the end entity
+     */
+    private void setUserStatus(final AuthenticationToken admin, final UserData data1, final int status)
+            throws ApprovalException, WaitingForApprovalException, AuthorizationDeniedException {
         final int caid = data1.getCaId();
+        assertAuthorizedToCA(admin, caid);
         final String username = data1.getUsername();
         final int endEntityProfileId = data1.getEndEntityProfileId();
         // Check if approvals is required.
@@ -1422,7 +1427,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new FinderException("Could not find user " + username);
         }
         final int caid = userData.getCaId();
-        assertAuthorizedToCA(admin, caid);
         if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
             assertAuthorizedToEndEntityProfile(admin, userData.getEndEntityProfileId(), AccessRulesConstants.REVOKE_END_ENTITY, caid);
         }
@@ -2087,7 +2091,15 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             ret = keyRecoverySession.markAsRecoverable(admin, certificate, endEntityProfileId);
         }
         try {
-            setUserStatus(admin, username, EndEntityConstants.STATUS_KEYRECOVERY);
+            final UserData data = UserData.findByUsername(entityManager, username);
+            if (data == null) {
+                log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+                // This exception message is used to not leak information to the user
+                final String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+                log.info(msg);
+                throw new FinderException(msg);
+            }
+            setUserStatus(admin, data, EndEntityConstants.STATUS_KEYRECOVERY);            
         } catch (FinderException e) {
             ret = false;
             log.info("prepareForKeyRecovery: No such user: " + username);
