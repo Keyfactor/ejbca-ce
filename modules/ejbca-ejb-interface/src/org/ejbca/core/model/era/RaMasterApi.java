@@ -22,14 +22,19 @@ import org.ejbca.core.EjbcaException;
  */
 public interface RaMasterApi {
 
+    /** @return true if the implementation if the interface is available and usable. */
     boolean isBackendAvailable();
 
+    @Deprecated // PoC. Remove when we have real functions to invoke.
     String testCall(AuthenticationToken authenticationToken, String argument1, int argument2) throws AuthorizationDeniedException, EjbcaException;
 
+    @Deprecated // PoC. Remove when we have real functions to invoke.
     String testCallPreferLocal(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException;
 
+    @Deprecated // PoC. Remove when we have real functions to invoke.
     List<String> testCallMerge(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException;
 
+    @Deprecated // PoC. Remove when we have real functions to invoke.
     String testCallPreferCache(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException;
 
 
