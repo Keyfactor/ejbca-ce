@@ -335,6 +335,7 @@ public class KeyRecoveryTest extends CaTestCase {
         } finally {
             internalCertStoreSession.removeCertificate(fp1);
             endEntityManagementSession.deleteUser(internalAdmin, user);
+            keyRecoverySession.removeKeyRecoveryData(internalAdmin, cert1);
         }
 
     }
