@@ -15,6 +15,7 @@ package org.cesecore.keybind.impl;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 public class ClientX509TrustManager implements X509TrustManager {
 
     private List<Collection<X509Certificate> > trustedCertificatesChains = null;
+    private List<X509Certificate> firstEncounteredServerCertificateChain = null;
     
     public ClientX509TrustManager(final List< Collection<X509Certificate>> trustedCertificates) {
         if (trustedCertificates!=null) {
@@ -56,6 +58,7 @@ public class ClientX509TrustManager implements X509TrustManager {
     @Override
     public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         X509Certificate cert = chain[0];
+        firstEncounteredServerCertificateChain = new ArrayList<>(Arrays.asList(chain));
         // Validate the certificate and require a critical EKU extensions (if present) to contain the purpose "serverAuth"
         if(!CertTools.verifyWithTrustedCertificates(cert, trustedCertificatesChains, new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_serverAuth.getId()))) {
             String subjectdn = CertTools.getSubjectDN(cert);
@@ -86,4 +89,8 @@ public class ClientX509TrustManager implements X509TrustManager {
         return acceptedIssuers.toArray(new X509Certificate[0]);
     }
 
+    /** @return the first encountered server side certificate chain that this class has been asked to verify or null if none has been encountered yet. */
+    public List<X509Certificate> getFirstEncounteredServerCertificateChain() {
+        return firstEncounteredServerCertificateChain;
+    }
 }
