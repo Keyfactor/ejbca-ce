@@ -780,7 +780,8 @@ You can use a generic name, without version number, in order to get a generic 'd
 <p>Run the following commands in JBoss CLI to remove existing TLS and HTTP configuration (just to be safe).</p>
 <source>
 /subsystem=undertow/server=default-server/http-listener=default:remove
-/socket-binding-group=standard-sockets/socket-binding=http:remove:reload
+/socket-binding-group=standard-sockets/socket-binding=http:remove
+:reload
 </source>
 <p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
 </subsubsection>
