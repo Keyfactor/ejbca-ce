@@ -56,7 +56,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     public static final String   RCPT_CUSTOM    = "CUSTOM";
 
     public static final String EVENTS_EDITUSER = EndEntityConstants.STATUS_NEW+";"+EndEntityConstants.STATUS_KEYRECOVERY+";"+EndEntityConstants.STATUS_INITIALIZED;
-    public static final String EVENTS_USERENROL = String.valueOf(EndEntityConstants.STATUS_GENERATED);
+    public static final String EVENTS_USERENROLL = String.valueOf(EndEntityConstants.STATUS_GENERATED);
     
     // protected in order to upgrade in EndEntityProfile.upgrade()
     // Use private for new fields.

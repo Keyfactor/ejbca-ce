@@ -1362,7 +1362,7 @@ A typical PKI work-flow using CMP involves enroling a device with a certificate 
 </p>
 <ol>
 <li>Generate a key pair</li>
-<li>Initial enrolment of client certificate using a one-time enrolment code</li>
+<li>Initial enrollment of client certificate using a one-time enrollment code</li>
 <li>Generate a new key pair</li>
 <li>Renew with a new certificate for the new key pair, authenticated using the old key pair and certificate</li>
 </ol>
@@ -1381,8 +1381,8 @@ Extract Username Component : CN
 $ ./openssl genrsa -out certs/cl_key.pem 2048 
 </source>
 
-<p>2. Initial enrolment:
-<br/>Before inital enrolment you add a new End Entity in EJBCA, in this example with username cmptest and subject DN 'CN=cmptest', and enrolment code 'CMP-pwd'.</p>
+<p>2. Initial enrollment:
+<br/>Before initial enrollment you add a new End Entity in EJBCA, in this example with user name cmptest and subject DN 'CN=cmptest', and enrollment code 'CMP-pwd'.</p>
 <source>
 $ ./openssl cmp -cmd ir \
            -server ejbca-server:8080 \
