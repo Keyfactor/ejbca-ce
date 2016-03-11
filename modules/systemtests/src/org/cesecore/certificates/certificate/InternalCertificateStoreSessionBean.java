@@ -260,4 +260,37 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
         }
         return results.get(0);
     }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
+        // authorization is handled by setRevokeStatus(admin, certificate, reason, userDataDN);
+        final CertificateDataWrapper cdw = certStore.getCertificateDataByIssuerAndSerno(issuerdn, serno);
+        if (cdw == null) {
+            String msg = INTRES.getLocalizedMessage("store.errorfindcertserno", null, serno);
+            log.info(msg);
+            throw new CertificateRevokeException(msg);
+        }
+        return certStore.setRevokeStatus(admin, cdw, revokedDate, reason);
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
+        // Must be authorized to CA in order to change status is certificates issued by the CA
+        if (certificate == null) {
+            throw new IllegalArgumentException("Passed certificate may not be null.");
+        }
+        final int caid = CertTools.getIssuerDN(certificate).hashCode();
+        authorizedToCA(admin, caid);
+        final String fingerprint = CertTools.getFingerprintAsString(certificate);
+        final CertificateData certificateData = CertificateData.findByFingerprint(entityManager, fingerprint);
+        if (certificateData == null) {
+            final String serialNumber = CertTools.getSerialNumberAsString(certificate);
+            String msg = INTRES.getLocalizedMessage("store.errorfindcertfp", fingerprint, serialNumber);
+            log.info(msg);
+            throw new CertificateRevokeException(msg);
+        }
+        return certStore.setRevokeStatusNoAuth(admin, certificateData, revokedDate, reason);
+    }
 }

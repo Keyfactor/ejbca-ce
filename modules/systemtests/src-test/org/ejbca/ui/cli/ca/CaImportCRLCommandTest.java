@@ -160,7 +160,7 @@ public class CaImportCRLCommandTest {
             info = certStoreSession.getCertificateInfo(fingerprint);
             assertEquals("Cert should not be revoked", info.getStatus(), CertificateConstants.CERT_ACTIVE);
             // Now revoke the certificate, create a new CRL and import it, nothing should happen still
-            certStoreSession.setRevokeStatus(admin, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            internalCertStoreSession.setRevokeStatus(admin, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             caCreateCrlCommand.execute(CACREATECRL_ARGS);
             caGetCrlCommand.execute(CAGETCRL_ARGS);
             caImportCrlCommand.execute(CAIMPORTCRL_STRICT_ARGS);
@@ -170,7 +170,7 @@ public class CaImportCRLCommandTest {
             assertEquals("Cert should be revoked", info.getStatus(), CertificateConstants.CERT_REVOKED);
             assertEquals("Revocation reasonn should be on hold", info.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             // Now unrevoke the certificate and import the CRL, it should be revoked again
-            certStoreSession.setRevokeStatus(admin, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
+            internalCertStoreSession.setRevokeStatus(admin, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
             info = certStoreSession.getCertificateInfo(fingerprint);
             assertEquals("Cert should not be revoked", info.getStatus(), CertificateConstants.CERT_ACTIVE);
             // Strict will do it

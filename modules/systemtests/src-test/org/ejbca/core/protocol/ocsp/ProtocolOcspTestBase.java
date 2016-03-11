@@ -438,8 +438,8 @@ public abstract class ProtocolOcspTestBase {
             InvalidAlgorithmParameterException, CreateException, AuthorizationDeniedException, CustomCertificateSerialNumberException, IllegalKeyException,
             CADoesntExistsException, CertificateCreateException, CesecoreException, CertificateExtensionException {
         CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
-        CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-        
+        InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(ProtocolOcspTestBase.class.getSimpleName());
         KeyPair invalidCertKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         // Issue a certificate in EJBCA for the public key
@@ -452,7 +452,7 @@ public abstract class ProtocolOcspTestBase {
       
         X509Certificate revokedCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, revokedUser,
                 req, X509ResponseMessage.class, null)).getCertificate());
-        certificateStoreSession.setRevokeStatus(authenticationToken, revokedCert, new Date(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, revokedCert, new Date(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         
         @SuppressWarnings("unused")
         X509Certificate activeCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, revokedUser,

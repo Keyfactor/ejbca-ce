@@ -85,6 +85,34 @@ public interface InternalCertificateStoreSessionRemote {
      */
     boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException;
     
+    /**
+     * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
+     *
+     * @param admin      AuthenticationToken performing the operation
+     * @param issuerdn   Issuer of certificate to be removed.
+     * @param serno      the serno of certificate to revoke.
+     * @param revokeDate when it was revoked
+     * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
+     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
+     * @throws CertificaterevokeException (rollback) if certificate does not exist
+     * @throws AuthorizationDeniedException (rollback)
+     */
+    boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
+    
+    /**
+     * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
+     *
+     * @param admin      AuthenticationToken performing the operation
+     * @param certificate the certificate to revoke or activate.
+     * @param revokeDate when it was revoked
+     * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
+     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
+     * @throws CertificaterevokeException (rollback) if certificate does not exist
+     * @throws AuthorizationDeniedException (rollback)
+     */
+    boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, int reason)
+        throws CertificateRevokeException, AuthorizationDeniedException;
+    
     /** Setting unique serno check to OK, i.e. force EJBCA to believe we have a unique issuerDN/SerialNo index in the database
      */
     void setUniqueSernoIndexTrue();

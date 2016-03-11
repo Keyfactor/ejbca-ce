@@ -929,7 +929,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             //Fourth certificate. Should be revoked but on hold. 
             responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntity, req,
                     X509ResponseMessage.class, signSession.fetchCertGenParams());
-            certificateStoreSession.setRevokeStatus(alwaysAllowToken, responseMessage.getCertificate(), new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            internalCertStoreSession.setRevokeStatus(alwaysAllowToken, responseMessage.getCertificate(), new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             onhold = CertTools.getSerialNumber(responseMessage.getCertificate());
             
             //Update the profile with the new constraint
