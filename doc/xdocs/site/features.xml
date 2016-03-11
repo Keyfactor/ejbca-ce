@@ -57,7 +57,7 @@
   </subsection>  
   <subsection name="Integration features">
 <ul>
-<li>Built on the JEE 5 (EJB 3.0) specification.</li>
+<li>Built on the JEE 6 specification.</li>
 <li>Flexible, component based architecture.</li>
 <li>Run standalone or integrated in any JEE application.</li>
 <li>External Validation Authority and OCSP responder also works with any other CA than EJBCA and support large scale OCSP deployments.</li>
