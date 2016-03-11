@@ -141,7 +141,7 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
             }
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("No existing certificate exists. Performing normal enrolment with password authentication");
+                log.debug("No existing certificate exists. Performing normal enrollment with password authentication");
             }
             return signSession.createCertificate(authenticationToken, reqmsg, ScepResponseMessage.class, null);
         }
