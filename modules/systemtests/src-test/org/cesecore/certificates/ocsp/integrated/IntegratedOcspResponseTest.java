@@ -461,7 +461,7 @@ public class IntegratedOcspResponseTest {
         OCSPReq req = gen.build();
 
         // Now revoke the ocspCertificate
-        certificateStoreSession.setRevokeStatus(internalAdmin, ocspCertificate, new Date(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        internalCertificateStoreSession.setRevokeStatus(internalAdmin, ocspCertificate, new Date(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
