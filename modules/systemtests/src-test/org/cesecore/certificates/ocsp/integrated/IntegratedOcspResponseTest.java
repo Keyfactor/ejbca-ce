@@ -249,23 +249,40 @@ public class IntegratedOcspResponseTest {
     /**
      * Tests creating an OCSP response using the root CA cert.
      * Tests using both SHA1, SHA256 and SHA224 CertID. SHA1 and SHA256 should work, while SHA224 should give an error.
+     * Tests that OCSP Nonce with more than 32 bytes are not allowed.
      */
     @Test
     public void testGetOcspResponseSanity() throws Exception {
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-        // An OCSP request
-        OCSPReqBuilder gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
-        Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
-        gen.setRequestExtensions(new Extensions(extensions));
-        OCSPReq req = gen.build();
 
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         // Create the audit logger for this transaction.
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+
+        // An OCSP request
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
+        Extension[] extensions = new Extension[1];
+        
+        // Use a nonce with more than 32 bytes to see if we reject it. We should not allow too long nonces due to the possibility of using 
+        // this as a chosen-prefix attack on hash collisions.
+        // https://groups.google.com/forum/#!topic/mozilla.dev.security.policy/x3TOIJL7MGw
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("0123456789012345678901234567890123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        OCSPReq reqnonce = gen.build();
+        
+        byte[] errResponseBytes = ocspResponseGeneratorSession.getOcspResponse(reqnonce.getEncoded(), null, "", null, null, auditLogger, transactionLogger)
+                .getOcspResponse();
+        assertNotNull("OCSP responder replied null", errResponseBytes);
+        OCSPResp errResponse = new OCSPResp(errResponseBytes);
+        assertEquals("Response status not 1 (malformed request).", 1, errResponse.getStatus());
+                
+        // Go on now with a nonce that is not too long
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        OCSPReq req = gen.build();
         byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger)
                 .getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
