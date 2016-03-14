@@ -18,12 +18,14 @@ import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -143,22 +145,31 @@ public class SecureXMLDecoder implements AutoCloseable {
     
     /** Reads an object, array or (boxed) elementary type value. */
     private Object readValue() throws XmlPullParserException, IOException {
+        return readValue(true);
+    }
+    
+    /** Reads an object, array or (boxed) elementary type value. */
+    private Object readValue(boolean disallowTextAfterElement) throws XmlPullParserException, IOException {
         final String tag = parser.getName();
         final Object value;
         // Read the element contents depending on the type
         switch (tag) {
         case "string":
-            value = readText();
+            value = readString();
             break;
         case "boolean":
             value = Boolean.valueOf(readText());
             break;
         case "char":
-            String charValue = readText();
-            if (charValue.length() != 1) {
-                throw new IOException(errorMessage("Invalid length of <char> value."));
+            final String charCode = parser.getAttributeValue(null, "code");
+            final String charValue = readText();
+            if (charCode != null) {
+                value = (char) Integer.parseInt(charCode.substring(1));
+            } else if (charValue.length() == 1) {
+                value = charValue.charAt(0);
+            } else {
+                throw new IOException(errorMessage("Invalid length of <char> value, and no \"code\" attribute present."));
             }
-            value = charValue.charAt(0);
             break;
         case "byte":
             value = Byte.valueOf(readText());
@@ -223,14 +234,36 @@ public class SecureXMLDecoder implements AutoCloseable {
             case "java.util.concurrent.ConcurrentHashMap":
                 value = parseMap(new ConcurrentHashMap<>());
                 break;
+            case "org.cesecore.util.Base64PutHashMap":
+            case "org.ejbca.util.Base64PutHashMap": // old class name, lets upgrade to new one
+                value = parseMap(new Base64PutHashMap());
+                break;
+            case "org.cesecore.util.Base64GetHashMap":
+            case "org.ejbca.util.Base64GetHashMap": // old class name, lets upgrade to new one
+                @SuppressWarnings("unchecked")
+                Map<Object,Object> b64getmap = new Base64GetHashMap();
+                value = parseMap(b64getmap);
+                break;
             case "java.util.Collections":
                 value = parseSpecialCollection(method);
                 method = null; // value has been used, don't report error
                 break;
+            case "java.util.Date":
+                long dateLongValue = (long)readValue();
+                value = new Date(dateLongValue);
+                break;
+            case "java.util.Properties":
+                // Default values (the argument to the constructor) aren't preserved during serialization by XMLEncoder
+                value = parseMap(new Properties());
+                break;
             default:
+                /*
+                 * We need to add support for plain Java objects that don't need special treatment. In EJBCA we need at least
+                 * org.cesecore.certificates.certificateprofile.CertificatePolicy and org.cesecore.keybind.InternalKeyBindingTrustEntry.
+                 * For these classes we need to construct an instance and then call the getters and setters. See ECA-4916.
+                 */
                 throw new IOException(errorMessage("Deserialization of class \"" + className + "\" not supported or not allowed."));
             }
-            
             if (method != null) {
                 throw new IOException(errorMessage("Method attribute on object element of class \"" + className + "\" is not supported or not allowed."));
             }
@@ -246,7 +279,9 @@ public class SecureXMLDecoder implements AutoCloseable {
         }
         
         expectEndTag(tag);
-        parser.nextTag();
+        if (disallowTextAfterElement) {
+            parser.nextTag();
+        }
         return value;
     }
     
@@ -271,6 +306,30 @@ public class SecureXMLDecoder implements AutoCloseable {
             text = "";
         }
         return text;
+    }
+    
+    /**
+     * Reads a string, possibly containing &lt;char code="#xxx"/&gt; escapes.
+     */
+    private String readString() throws XmlPullParserException, IOException {
+        final StringBuilder sb = new StringBuilder();
+        while (true) {
+            int eventType = parser.next();
+            if (eventType == XmlPullParser.TEXT) {
+                sb.append(parser.getText());
+            } else if (eventType == XmlPullParser.START_TAG) {
+                Object charvalue = readValue(false);
+                if (!(charvalue instanceof Character)) {
+                    throw new IOException(errorMessage("Unexpected object element inside java string element"));
+                }
+                sb.append((char)charvalue);
+            } else if (eventType == XmlPullParser.END_TAG) {
+                break;
+            } else {
+                throw new IOException(errorMessage("Unexpected XML token in Java string element"));
+            }
+        }
+        return sb.toString();
     }
     
     /** Checks if the next item is an <int> start tag */
