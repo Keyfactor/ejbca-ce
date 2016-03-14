@@ -16,6 +16,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -46,7 +47,6 @@ import org.junit.Test;
  * Functional tests for AccessControlSessionBean
  * 
  * @version $Id$
- * 
  */
 public class AccessControlSessionBeanTest extends RoleUsingTestCase {
 
@@ -140,7 +140,87 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, roleName);
         }
     }
-    
+
+    @Test
+    public void testNestedIsAuthorized() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+        // Let's set up a role and a nice resource tree to play with.
+        final String roleNameClients = "Dragon";
+        final String roleNameViaRaServer = "LonelyMountainRaServer";
+        final String roleNameViaProxyServer = "MiddleEarthProxyServer";
+        try {
+            final RoleData roleClients = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameClients);      
+            final RoleData roleViaRaServer = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameViaRaServer);      
+            final RoleData roleViaProxyServer = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameViaProxyServer);      
+            final String issuerDnClients = "CN="+roleNameClients;
+            final String issuerViaRaServer = "CN="+roleNameViaRaServer;
+            final String issuerViaProxyServer = "CN="+roleNameViaProxyServer;
+            final int caIdClients = issuerDnClients.hashCode();
+            final int caIdViaRaServer = issuerViaRaServer.hashCode();
+            final int caIdViaProxyServer = issuerViaProxyServer.hashCode();
+            final X509CertificateAuthenticationToken authenticationTokenClient = (X509CertificateAuthenticationToken) createAuthenticationToken(issuerDnClients);
+            final X509CertificateAuthenticationToken authenticationTokenRaServer = (X509CertificateAuthenticationToken) createAuthenticationToken(issuerViaRaServer);
+            final X509CertificateAuthenticationToken authenticationTokenProxyServer = (X509CertificateAuthenticationToken) createAuthenticationToken(issuerViaProxyServer);
+            final List<AccessUserAspectData> accessUsersClients = new ArrayList<>(Arrays.asList(new AccessUserAspectData[] { new AccessUserAspectData(
+                    roleClients.getRoleName(), caIdClients, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, roleNameClients)}));
+            final List<AccessUserAspectData> accessUsersViaRaServer = new ArrayList<>(Arrays.asList(new AccessUserAspectData[] { new AccessUserAspectData(
+                    roleViaRaServer.getRoleName(), caIdViaRaServer, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, roleNameViaRaServer)}));
+            final List<AccessUserAspectData> accessUsersViaProxyServer = new ArrayList<>(Arrays.asList(new AccessUserAspectData[] { new AccessUserAspectData(
+                    roleViaProxyServer.getRoleName(), caIdViaProxyServer, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, roleNameViaProxyServer)}));
+            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, roleClients, accessUsersClients);          
+            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, roleViaRaServer, accessUsersViaRaServer);          
+            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, roleViaProxyServer, accessUsersViaProxyServer);          
+            // Give the access to do anything
+            final List<AccessRuleData> accessRulesClients = new ArrayList<AccessRuleData>(Arrays.asList(new AccessRuleData[]{
+                    new AccessRuleData(roleClients.getRoleName(), StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true)
+            }));
+            // Limit anything from the RA server access to a few rules
+            final List<AccessRuleData> accessRulesViaRaServer = new ArrayList<AccessRuleData>(Arrays.asList(new AccessRuleData[]{
+                    new AccessRuleData(roleClients.getRoleName(), "/sleepongold", AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(roleClients.getRoleName(), "/hunt/dwarfs", AccessRuleState.RULE_ACCEPT, false)
+            }));
+            final List<AccessRuleData> accessRulesViaProxyServer = new ArrayList<AccessRuleData>(Arrays.asList(new AccessRuleData[]{
+                    new AccessRuleData(roleClients.getRoleName(), "/beshotbyarrow", AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(roleClients.getRoleName(), "/hunt", AccessRuleState.RULE_ACCEPT, true)
+            }));
+            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, roleClients, accessRulesClients);            
+            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, roleViaRaServer, accessRulesViaRaServer);            
+            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, roleViaProxyServer, accessRulesViaProxyServer);            
+            // Direct access by almighty client should allow anything
+            assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, StandardRules.ROLE_ROOT.resource()));
+            assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/beshotbyarrow"));
+            assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/hunt/dwarfs"));
+            assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/hunt/elfs"));
+            assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/sleepongold"));
+            // Direct access by RA server
+            assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, StandardRules.ROLE_ROOT.resource()));
+            assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, "/beshotbyarrow"));
+            assertTrue(accessControlSession.isAuthorized(authenticationTokenRaServer, "/hunt/dwarfs"));
+            assertTrue(accessControlSession.isAuthorized(authenticationTokenRaServer, "/sleepongold"));
+            // Direct access by Proxy server
+            assertFalse(accessControlSession.isAuthorized(authenticationTokenProxyServer, StandardRules.ROLE_ROOT.resource()));
+            assertTrue(accessControlSession.isAuthorized(authenticationTokenProxyServer, "/beshotbyarrow"));
+            assertTrue(accessControlSession.isAuthorized(authenticationTokenProxyServer, "/hunt/elfs"));
+            // Access by RA server via Proxy server
+            authenticationTokenRaServer.appendNestedAuthenticationToken(authenticationTokenProxyServer);
+            assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, StandardRules.ROLE_ROOT.resource()));
+            assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, "/beshotbyarrow"));
+            assertTrue(accessControlSession.isAuthorized(authenticationTokenRaServer, "/hunt/dwarfs"));
+            assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, "/sleepongold"));
+            assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, "/hunt/elfs"));
+            // Access by Client via RA server via Proxy server
+            authenticationTokenClient.appendNestedAuthenticationToken(authenticationTokenRaServer);
+            assertFalse(accessControlSession.isAuthorized(authenticationTokenClient, StandardRules.ROLE_ROOT.resource()));
+            assertFalse(accessControlSession.isAuthorized(authenticationTokenClient, "/beshotbyarrow"));
+            assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/hunt/dwarfs"));
+            assertFalse(accessControlSession.isAuthorized(authenticationTokenClient, "/hunt/elfs"));
+            assertFalse(accessControlSession.isAuthorized(authenticationTokenClient, "/sleepongold"));
+        } finally {
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, roleNameClients);
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, roleNameViaRaServer);
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, roleNameViaProxyServer);
+        }
+    }
+
     /**
      * This test tests that authentication tokens only match the types aspects they were created from.
      * @throws AuthorizationDeniedException 
