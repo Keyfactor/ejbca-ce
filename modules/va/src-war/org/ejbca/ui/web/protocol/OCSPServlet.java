@@ -302,7 +302,7 @@ public class OCSPServlet extends HttpServlet {
 
     /**
      * RFC 2560 does not specify how cache headers should be used, but RFC 5019 does. Therefore we will only
-     * add the headers if the requirements of RFC 5019 is fulfilled: A GET-request, a single embedded reponse,
+     * add the headers if the requirements of RFC 5019 is fulfilled: A GET-request, a single embedded response,
      * the response contains a nextUpdate and no nonce is present.
      * @param maxAge is the margin to Expire when using max-age in milliseconds 
      * @throws org.bouncycastle.cert.ocsp.OCSPException 
