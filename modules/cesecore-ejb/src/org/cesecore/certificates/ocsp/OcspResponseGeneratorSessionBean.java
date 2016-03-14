@@ -70,6 +70,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
@@ -129,6 +130,7 @@ import org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.certificates.ocsp.exception.CryptoProviderException;
+import org.cesecore.certificates.ocsp.exception.IllegalNonceException;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
@@ -1339,7 +1341,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 try {
                     responseExtensions.put(extendedRevokedOID, new Extension(extendedRevokedOID, false, DERNull.INSTANCE.getEncoded() ));
                 } catch (IOException e) {
-                    throw new IllegalStateException("Could not get encodig from DERNull.", e);
+                    throw new IllegalStateException("Could not get encoding from DERNull.", e);
                 }
             }
             if (ocspSigningCacheEntry != null) {
@@ -1403,7 +1405,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
             }
-        } catch (InvalidAlgorithmException e) {
+        } catch (InvalidAlgorithmException|IllegalNonceException e) {
             if (transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
@@ -1503,13 +1505,22 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      * 
      * @param req OCSPReq
      * @return a HashMap, can be empty but not null
+     * @throws IllegalNonceException if Nonce is larger than 32 bytes
      */
-    private Map<ASN1ObjectIdentifier, Extension> getStandardResponseExtensions(OCSPReq req) {
+    private Map<ASN1ObjectIdentifier, Extension> getStandardResponseExtensions(OCSPReq req) throws IllegalNonceException {
         HashMap<ASN1ObjectIdentifier, Extension> result = new HashMap<ASN1ObjectIdentifier, Extension>();
         if (req.hasExtensions()) {
             // Table of extensions to include in the response
+            // OCSP Nonce, if included in the request, the response must include the same according to RFC6960
             Extension ext = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
             if (null != ext) {
+                ASN1OctetString noncestr = ext.getExtnValue();
+                // Limit Nonce to 32 bytes to avoid chosen-prefix attack on hash collisions.
+                // See https://groups.google.com/forum/#!topic/mozilla.dev.security.policy/x3TOIJL7MGw
+                if ( (noncestr != null) && (noncestr.getOctets() != null) && (noncestr.getOctets().length > 32) ) {
+                    log.info("Received OCSP request with Nonce larger than 32 bytes, rejecting.");
+                    throw new IllegalNonceException("Nonce too large");
+                }
                 result.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
             }
         }
