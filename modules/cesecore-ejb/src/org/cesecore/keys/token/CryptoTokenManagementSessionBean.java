@@ -329,7 +329,10 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     @Override
     public boolean isCryptoTokenStatusActive(int cryptoTokenId) {
-        final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
+        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+        if (cryptoToken == null) {
+            return false;
+        }
         return cryptoToken.getTokenStatus() == CryptoToken.STATUS_ACTIVE;
     }
 

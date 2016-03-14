@@ -36,7 +36,7 @@ public interface CryptoTokenManagementSessionLocal extends CryptoTokenManagement
      * Checks if a crypto token is active. 
      * 
      * @param cryptoTokenId the ID of the crypto token
-     * @return true of it is active.
+     * @return true if it is active and exists.
      */
     boolean isCryptoTokenStatusActive(int cryptoTokenId);
 }
