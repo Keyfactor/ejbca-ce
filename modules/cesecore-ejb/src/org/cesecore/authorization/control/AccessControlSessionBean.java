@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.cesecore.authorization.control;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -28,6 +30,7 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.NestableAuthenticationToken;
 import org.cesecore.authorization.cache.AccessTreeCache;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.internal.InternalResources;
@@ -74,8 +77,22 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
      */
     private static volatile AccessTreeCache accessTreeCache;
 
-    private boolean isAuthorized(final AuthenticationToken authenticationToken, final boolean doLogging, final boolean requireRecursive,
-            final String... resources) {
+    private boolean isAuthorized(final AuthenticationToken authenticationToken, final boolean doLogging, final boolean requireRecursive, final String... resources) {
+        if (authenticationToken!=null && authenticationToken instanceof NestableAuthenticationToken) {
+            final List<NestableAuthenticationToken> nestedAuthenticatonTokens = ((NestableAuthenticationToken)authenticationToken).getNestedAuthenticationTokens();
+            // Start with the closest AuthenticatonToken (that this server has performed authentication for and hence the authentication can be trusted more)
+            Collections.reverse(nestedAuthenticatonTokens);
+            for (final NestableAuthenticationToken nestableAuthenticationToken : nestedAuthenticatonTokens) {
+                if (!isAuthorizedSingleToken(nestableAuthenticationToken, doLogging, requireRecursive, resources)) {
+                    return false;
+                }
+            }
+        }
+        // Finally, check the most outer AuthenticationToken
+        return isAuthorizedSingleToken(authenticationToken, doLogging, requireRecursive, resources);
+    }
+
+    private boolean isAuthorizedSingleToken(final AuthenticationToken authenticationToken, final boolean doLogging, final boolean requireRecursive, final String... resources) {
         try {
             Map<String, Object> details = null;
             if (doLogging) {
