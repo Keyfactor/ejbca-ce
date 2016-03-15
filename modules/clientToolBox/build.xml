@@ -26,6 +26,7 @@
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-common.lib}"/>
 		<path location="${mod.ejbca-common-web.lib}"/>
+		<path location="${mod.ejbca-ws.lib}"/>
 		<path location="${mod.ejbca-ws-client.lib}"/>
 	</path>
 
