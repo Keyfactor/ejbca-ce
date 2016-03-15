@@ -48,7 +48,7 @@ public class ListCAs extends HttpServlet {
         response.setDateHeader ("EXPIRES", 0);
         StringBuffer out = new StringBuffer ("<html><body><h3>List CAs</h3>");
         AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(this.getClass().getSimpleName() + ": "+request.getRemoteAddr()));
-        for (String ca : caSession.getAvailableCANames(admin)) {
+        for (String ca : caSession.getAuthorizedCaNames(admin)) {
         	out.append("<br>").append(ca);
         }
         out.append("</body></html>");
