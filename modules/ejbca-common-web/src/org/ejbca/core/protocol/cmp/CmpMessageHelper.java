@@ -386,7 +386,7 @@ public class CmpMessageHelper {
         }
         CmpErrorResponseMessage resp = new CmpErrorResponseMessage();
         resp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
-        // Sender nonce is optional and might now always be included
+        // Sender nonce is optional and might not always be included
         if (pkiHeader.getSenderNonce() != null) {
             resp.setRecipientNonce(new String(Base64.encode(pkiHeader.getSenderNonce().getOctets())));
         }
