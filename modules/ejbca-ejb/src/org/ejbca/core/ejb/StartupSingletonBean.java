@@ -47,6 +47,7 @@ import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicAccessMatchValue;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
@@ -271,6 +272,7 @@ public class StartupSingletonBean {
         try {
             Class.forName(X500PrincipalAccessMatchValue.class.getName());
             Class.forName(CliUserAccessMatchValue.class.getName());
+            Class.forName(PublicAccessMatchValue.class.getName());
         } catch (ClassNotFoundException e) {
             log.error("Failure during match value initialization", e);
         }
