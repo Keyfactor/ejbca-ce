@@ -878,11 +878,11 @@ function toggleCANameChange(){
         <% if (editca && !isUninitialized) { %>
               <span class="dn"><c:out value="<%= cainfo.getSubjectDN() %>"/></span>
         <% } else if (editca && isUninitialized) { %>  
-             <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="<%= cainfo.getSubjectDN() %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>" 
+             <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="<c:out value="<%= cainfo.getSubjectDN() %>"/>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>" 
              	<%= (hasEditRights ? "" : "disabled") %> >
           <% } else { %>
         <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=xxxxSignerCertificate," string that is added for services. */ %>
-        <input type="obligatory" name="<%=TEXTFIELD_SUBJECTDN%>" id="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="CN=<%= caname %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>"
+        <input type="obligatory" name="<%=TEXTFIELD_SUBJECTDN%>" id="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="CN=<c:out value="<%= caname %>"/>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>"
         	<%= (hasEditRights ? "" : "disabled") %> >
         <% } %>
       </td>
@@ -939,8 +939,8 @@ function toggleCANameChange(){
                      if (entryId == cainfo.getCAId()) { continue; }
                      %>
                      <option value="<%= entryId %>" <% if(cainfo.getSignedBy() == entryId) { %>selected <% } %> > 
-                         <%= nameOfCa.toString() %>
-                     </option>  
+                         <c:out value="<%= nameOfCa.toString() %>"/>
+                     </option>
                 <% } %> 
             </select>
          <% } else { %>
@@ -948,7 +948,7 @@ function toggleCANameChange(){
                 <option value="<%= CAInfo.SELFSIGNED%>" selected><%= ejbcawebbean.getText("SELFSIGNED") %></option>  
                 <option value="<%= CAInfo.SIGNEDBYEXTERNALCA%>"><%= ejbcawebbean.getText("EXTERNALCA") %></option>  
                 <% for (final Object nameOfCa : casigners.keySet()) { %>
-                     <option value="<%= casigners.get(nameOfCa.toString())%>"><%= nameOfCa.toString() %></option>  
+                     <option value="<%= casigners.get(nameOfCa.toString())%>"><c:out value="<%= nameOfCa.toString() %>"/></option>  
                 <% } %> 
             </select>
         <%  } %> 
