@@ -68,6 +68,17 @@ public class MyPublisher implements ICustomPublisher{
 	public void testConnection() throws PublisherConnectionException {
         log.debug("MyPublisher, Testing connection");			
 	}
-	
+
+	@Override
+	public boolean willPublishCertificate(int status, int revocationReason) {
+            log.debug("MyPublisher, willPublishCertificate with status " + status + " and revocation reason " + revocationReason);
+            return true;
+	}
+
+	@Override
+	public boolean isReadOnly() {
+            return false;
+	}
+
 }
 
