@@ -141,6 +141,10 @@
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
         <location>/viewexpired.xhtml</location>
     </error-page>
+    <error-page> ...This is actually a HTTP 500 as well..
+        <exception-type>org.ejbca.core.model.era.RaMasterBackendUnavailableException</exception-type>
+        <location>/serviceunavailable.xhtml</location>
+    </error-page>
     <error-page>
         <error-code>500</error-code>
         <location>/error.xhtml</location>
