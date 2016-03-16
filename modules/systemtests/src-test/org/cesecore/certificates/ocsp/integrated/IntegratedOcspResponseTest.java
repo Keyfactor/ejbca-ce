@@ -277,7 +277,7 @@ public class IntegratedOcspResponseTest {
                 .getOcspResponse();
         assertNotNull("OCSP responder replied null", errResponseBytes);
         OCSPResp errResponse = new OCSPResp(errResponseBytes);
-        assertEquals("Response status not 1 (malformed request).", 1, errResponse.getStatus());
+        assertEquals("Response status not 6 (unauthorized).", OCSPRespBuilder.UNAUTHORIZED, errResponse.getStatus());
                 
         // Go on now with a nonce that is not too long
         extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
@@ -288,7 +288,7 @@ public class IntegratedOcspResponseTest {
         assertNotNull("OCSP responder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(responseBytes);
-        assertEquals("Response status not zero.", 0, response.getStatus());
+        assertEquals("Response status not zero (ok).", OCSPRespBuilder.SUCCESSFUL, response.getStatus());
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
         assertTrue("OCSP response was not signed correctly.",
                 basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
