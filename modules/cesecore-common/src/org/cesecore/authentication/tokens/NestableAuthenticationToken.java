@@ -68,4 +68,13 @@ public abstract class NestableAuthenticationToken extends LocalJvmOnlyAuthentica
             current = current.nestedAuthenticationToken;
         }
     }
+
+    /** Returns information of the entity this authentication token belongs to. */
+    @Override
+    public String toString() {
+        if (nestedAuthenticationToken!=null) {
+            return " [via] " + nestedAuthenticationToken.toString();
+        }
+        return "";
+    }
 }
