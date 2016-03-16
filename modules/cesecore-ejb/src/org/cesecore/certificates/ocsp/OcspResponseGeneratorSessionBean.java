@@ -1387,7 +1387,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.SIG_REQUIRED);
             }
-        } catch (SignRequestSignatureException e) {
+        } catch (SignRequestSignatureException|IllegalNonceException e) {
             if (transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
@@ -1405,7 +1405,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
             }
-        } catch (InvalidAlgorithmException|IllegalNonceException e) {
+        } catch (InvalidAlgorithmException e) {
             if (transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
