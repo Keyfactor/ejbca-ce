@@ -15,13 +15,13 @@
 
  version: $Id$
  -->
-<web-app version="3.0" id="admingui"
+<web-app version="3.0" id="ra-gui"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xmlns="http://java.sun.com/xml/ns/javaee"
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
                         http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
-    <description><![CDATA[EJBCA Administration web]]></description>
+    <description><![CDATA[EJBCA RA GUI]]></description>
 
     <!-- Set to "Development" for debugging.
         "Production" also implies javax.faces.FACELETS_REFRESH_PERIOD=-1 which means pages are never recompiled.
@@ -32,14 +32,6 @@
         <param-value>Production</param-value>
     </context-param>
 
-    <filter>
-        <filter-name>ProxiedAuthenticationFilter</filter-name>
-        <filter-class>org.ejbca.ui.web.admin.ProxiedAuthenticationFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>ProxiedAuthenticationFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
     <!-- Tomahawk filter for file uploads. Should be replaced by h:inputFile pattern when we can use JSF2.2. -->
     <filter>
         <filter-name>extensionsFilter</filter-name>
@@ -102,7 +94,6 @@
 		    <param-value>yes</param-value>
 		</init-param>
 	</filter>
-	
 	<filter-mapping> 
 		<filter-name>ContentSecurityPolicyFilter</filter-name>
 		<url-pattern>/*</url-pattern>
@@ -113,10 +104,9 @@
       <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
       <load-on-startup>1</load-on-startup>
    </servlet>
-    
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
-      <url-pattern>*.jsf</url-pattern>
+      <url-pattern>*.xhtml</url-pattern>
    </servlet-mapping>
  
     <session-config>
@@ -127,7 +117,7 @@
     </session-config>
 
     <welcome-file-list>
-        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>index.xhtml</welcome-file>
     </welcome-file-list>
 
     <security-constraint>
@@ -146,9 +136,20 @@
    <!ELEMENT mime-mapping (extension, mime-type)>
    -->
 
-   <!--
-   <!ELEMENT error-page ((error-code | exception-type), location)>
-   -->
+<!-- TODO: Nice non-scary error handling.
+    <error-page>
+        <exception-type>javax.faces.application.ViewExpiredException</exception-type>
+        <location>/viewexpired.xhtml</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/error.xhtml</location>
+    </error-page>
+    <error-page>
+        <exception-type>java.lang.Throwable</exception-type>
+        <location>/error.xhtml</location>
+    </error-page>
+ -->
 
    <!--
    <!ELEMENT security-constraint (display-name?, web-resource-collection+, auth-constraint?, user-data-constraint?)>
@@ -166,7 +167,7 @@
    <!ELEMENT form-login-page (#PCDATA)>
    <!ELEMENT form-error-page (#PCDATA)>
    -->
-
+<!--
     <ejb-local-ref>
         <description>An EJB that can provide references to all other SSBs to avoid this kind of declarations</description>
         <ejb-ref-name>EjbBridgeSession</ejb-ref-name>
@@ -179,4 +180,5 @@
         <local>org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal</local>
         <ejb-link>EnterpriseEditionEjbBridgeSessionBean</ejb-link>
     </ejb-local-ref>
+-->
 </web-app>
