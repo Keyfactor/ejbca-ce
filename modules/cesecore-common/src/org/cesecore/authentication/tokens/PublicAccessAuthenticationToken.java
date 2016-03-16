@@ -81,7 +81,7 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
     /** Returns information of the entity this authentication token belongs to. */
     @Override
     public String toString() {
-        return principal.getName();
+        return principal.getName() + super.toString();
     }
 
     @Override

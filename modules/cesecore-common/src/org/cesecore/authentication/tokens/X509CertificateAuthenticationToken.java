@@ -254,7 +254,7 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
     /** Returns user information of the user this authentication token belongs to. */
     @Override
     public String toString() {
-    	return CertTools.getSubjectDN(certificate);
+    	return CertTools.getSubjectDN(certificate) + super.toString();
     }
 
     @Override
