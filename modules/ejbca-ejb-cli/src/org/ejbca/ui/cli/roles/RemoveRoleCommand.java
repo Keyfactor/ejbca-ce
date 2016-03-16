@@ -38,7 +38,7 @@ public class RemoveRoleCommand extends BaseRolesCommand {
 
     {
         registerParameter(new Parameter(ROLE_NAME_KEY, "Role Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Role to add admin to."));
+                "Role to remove."));
     }
 
     @Override
