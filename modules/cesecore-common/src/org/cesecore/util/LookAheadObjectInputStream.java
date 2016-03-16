@@ -18,15 +18,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /** Can be used instead of ObjectInputStream to safely deserialize(readObject) unverified serialized java object. 
  * 
  * Simple usage:
  * LookAheadObjectInputStream lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(someByteArray);
- * Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<Class<? extends Serializable>>(3);
+ * HashSet<Class<? extends Serializable>> acceptedClasses = new HashSet<Class<? extends Serializable>>(3);
             acceptedClasses.add(X509Certificate.class);
             lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
  * lookAheadObjectInputStream.setMaxObjects(1);
@@ -38,13 +37,7 @@ import java.util.TreeSet;
  */
 public class LookAheadObjectInputStream extends ObjectInputStream {
 
-    static class ClassNameComparator implements Comparator<Class<?>>{
-        @Override
-        public int compare(Class<?> o1, Class<?> o2) {
-            return o1.getName().compareTo(o2.getName());
-        }
-    }
-    private Set<Class<?>> acceptedClasses = new TreeSet<Class<?>>(new ClassNameComparator());
+    private Set<Class<? extends Serializable>> acceptedClasses = null;
     
     private boolean enabledSubclassing = false;
     private int maxObjects = 1;
@@ -60,7 +53,7 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
      * @return set of accepted classes etc. Classes that are allowed to be read from this ObjectInputStream. This set can be modified with:
      *  @see LookAheadObjectInputStream#setAcceptedClassNames(Set<Class<?>> acceptedClassNames)
      */
-    public Collection<Class<?>> getAcceptedClasses() {
+    public Collection<Class<? extends Serializable>> getAcceptedClasses() {
         return acceptedClasses;
     }
 
@@ -88,9 +81,21 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
      * @param acceptedClasses
      *      Collection of class names that will be accepted for deserializing readObject. Default: null
      */
-    public void setAcceptedClasses(Collection<Class<? extends Serializable>> acceptedClasses) {
-        this.acceptedClasses = new TreeSet<Class<?>>(new ClassNameComparator());
-        this.acceptedClasses.addAll(acceptedClasses);
+    public void setAcceptedClasses(final HashSet<Class<? extends Serializable>> acceptedClasses) {
+        this.acceptedClasses = acceptedClasses;
+    }
+
+    /**
+     * NOTE: If you want to re-use the same Set of accepted classes, you should use {@link #setAcceptedClasses(HashSet)}
+     * 
+     * Set accepted classes that can be deserialized using this LookAheadObjectInputStream.
+     * Primitive types (boolean, char, int,...), their wrappers (Boolean, Character, Integer,...) and String class
+     * are always accepted. All other classes have to be specified with setAcceptedClassName*
+     * @param acceptedClasses
+     *      Collection of class names that will be accepted for deserializing readObject. Default: null
+     */
+    public void setAcceptedClasses(final Collection<Class<? extends Serializable>> acceptedClasses) {
+        this.acceptedClasses = new HashSet<Class<? extends Serializable>>(acceptedClasses);
     }
 
     /**
