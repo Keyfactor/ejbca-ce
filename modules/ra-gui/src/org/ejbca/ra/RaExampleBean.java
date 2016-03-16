@@ -18,6 +18,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.EjbcaException;
 
@@ -31,7 +32,7 @@ import org.ejbca.core.EjbcaException;
 public class RaExampleBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(RaExampleBean.class);
+    private static final Logger log = Logger.getLogger(RaExampleBean.class);
     
     @ManagedProperty(value="#{raMasterApiBean}")
     private RaMasterApiBean raMasterApiBean;
@@ -52,8 +53,10 @@ public class RaExampleBean implements Serializable {
 
     public void testAction() {
         try {
+            final long timeBefore = System.currentTimeMillis();
             final String result = raMasterApiBean.testCall(raAuthenticationBean.getAuthenticationToken(), value, 12345);
-            raLocaleBean.addMessageInfo("somefunction_testok", result);
+            final long timeAfter = System.currentTimeMillis();
+            raLocaleBean.addMessageInfo("somefunction_testok", result, timeAfter-timeBefore);
         } catch (AuthorizationDeniedException | EjbcaException e) {
             raLocaleBean.addMessageError("somefunction_testfail", e.getMessage());
         }

@@ -37,14 +37,10 @@ public class LookAheadObjectInputStreamTest {
     private static final Logger log = Logger.getLogger(LookAheadObjectInputStreamTest.class);
 
     @Before
-    public void setup() throws Exception {
-
-    }
+    public void setup() throws Exception {}
 
     @After
-    public void tearDown() throws Exception {
-
-    }
+    public void tearDown() throws Exception {}
 
     private static class ExploitClass implements Serializable {
         private static final long serialVersionUID = 1L;
