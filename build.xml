@@ -428,6 +428,13 @@
 			replacement-web-uri="peerconnector.war"
 			replacement-context-root="/ejbca/peer"
 		/>
+		<war-replacement-in-module
+			replacement-tag="!--@ra-gui.war@-->"
+			replacement-file="${eardd.src}/META-INF/application.xml"
+			replacement-enabled="true"
+			replacement-web-uri="ra-gui.war"
+			replacement-context-root="/ejbca/ra"
+		/>
 		<antcall target="va_replacings_in_application.xml">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
 		</antcall>

@@ -1,5 +1,3 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!--
 /*************************************************************************
  *                                                                       *
  *  EJBCA: The OpenSource Certificate Authority                          *
@@ -13,22 +11,9 @@
  *                                                                       *
  *************************************************************************/
 
- version: $Id: faces-config.xml 22193 2015-11-17 21:10:53Z mikekushner $
- -->
-<faces-config version="2.0"
-    xmlns="http://java.sun.com/xml/ns/javaee"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
-                        http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd"
-    metadata-complete="false">
-    <application>
-        <locale-config>
-            <default-locale>en</default-locale>
-            <supported-locale>sv</supported-locale>
-        </locale-config>
-        <resource-bundle>
-            <base-name>Messages</base-name>
-            <var>msg</var>
-        </resource-bundle>
-    </application>
-</faces-config>
+/* version: $Id$ */
+
+// Executed when the document had been loaded
+document.addEventListener("DOMContentLoaded", function(event) {
+    console.log("Document loaded.");
+}, false);
