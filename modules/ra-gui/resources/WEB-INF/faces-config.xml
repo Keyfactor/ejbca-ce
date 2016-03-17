@@ -28,7 +28,7 @@
             <supported-locale>ar</supported-locale>
         </locale-config>
         <resource-bundle>
-            <base-name>Messages</base-name>
+            <base-name>org.ejbca.ra.jsfext.Utf8ResourceBundleMessages</base-name>
             <var>msg</var>
         </resource-bundle>
     </application>
