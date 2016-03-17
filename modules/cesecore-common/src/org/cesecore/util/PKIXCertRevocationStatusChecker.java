@@ -35,11 +35,13 @@ import java.security.cert.PKIXCertPathChecker;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
@@ -181,7 +183,9 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         ArrayList<String> ocspurls = getOcspUrls(cert);
         if(!ocspurls.isEmpty()) {
             BigInteger certSerialnumber = CertTools.getSerialNumber(cert);
-            String nonce = CertTools.getFingerprintAsString(cert)+System.currentTimeMillis();
+            byte[] nonce = new byte[16];
+            final Random randomSource = new Random();
+            randomSource.nextBytes(nonce);
             OCSPReq req = null;
             try {
                 req = getOcspRequest(cacert, certSerialnumber, nonce);
@@ -338,16 +342,17 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
      * Construct an OCSP request
      * @param cacert The certificate of the issuer of the certificate to be checked
      * @param certSerialnumber the serialnumber of the certificate to be checked
-     * @return
+     * @param nonce random nonce to be included in the OCSP request (OCSP POST)
+     * @return OCSPReq
      * @throws CertificateEncodingException
      * @throws OCSPException
      */
-    private OCSPReq getOcspRequest(Certificate cacert, BigInteger certSerialnumber, final String nonce) throws CertificateEncodingException, OCSPException {
+    private OCSPReq getOcspRequest(Certificate cacert, BigInteger certSerialnumber, final byte[] nonce) throws CertificateEncodingException, OCSPException {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate) cacert, certSerialnumber));
         
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(nonce.getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(nonce));
         gen.setRequestExtensions(new Extensions(extensions));
 
         return gen.build();
@@ -360,7 +365,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
      * 
      * @return The OCSP response, or null of no correct response could be obtained.
      */
-    private SingleResp getOCSPResponse(final String ocspurl, final OCSPReq ocspRequest, final Certificate cert, final String nonce, int expectedOcspRespCode, int expectedHttpRespCode) {
+    private SingleResp getOCSPResponse(final String ocspurl, final OCSPReq ocspRequest, final Certificate cert, final byte[] nonce, int expectedOcspRespCode, int expectedHttpRespCode) {
         if(log.isDebugEnabled()) {
             log.debug("Sending OCSP request to " + ocspurl + " regarding certificate with SubjectDN: " + CertTools.getSubjectDN(cert) 
                         + " - IssuerDN: " + CertTools.getIssuerDN(cert));
@@ -451,7 +456,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             ASN1InputStream ain = new ASN1InputStream(noncerep);
             ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
             ain.close();
-            if(!StringUtils.equals(nonce, new String(oct.getOctets()))) {
+            if(!Arrays.equals(nonce, oct.getOctets())) {
                 log.warn("The nonce in the OCSP request and the OCSP response do not match");
                 return null;
             }
