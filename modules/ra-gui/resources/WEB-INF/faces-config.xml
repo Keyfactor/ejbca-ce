@@ -25,6 +25,7 @@
         <locale-config>
             <default-locale>en</default-locale>
             <supported-locale>sv</supported-locale>
+            <supported-locale>ar</supported-locale>
         </locale-config>
         <resource-bundle>
             <base-name>Messages</base-name>

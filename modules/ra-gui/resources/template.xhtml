@@ -26,14 +26,14 @@
      -->
     </ui:remove>
     <f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
-    <h:head>
+    <h:head dir="#{raLocaleBean.direction}">
         <meta charset="UTF-8"/>
-        <title><h:outputText value="#{msg.generic_title}"/></title>
+        <title dir="#{raLocaleBean.direction}"><h:outputText value="#{msg.generic_title}"/></title>
         <link rel="shortcut icon" type="image/png" href="#{facesContext.externalContext.context.contextPath}/img/favicon.png"/>
         <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/base.css"/>
         <script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/js/common.js"></script>
     </h:head>
-    <h:body>
+    <h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
   	    <h:panelGroup layout="block" id="templateAll">
   	  	    <h:panelGroup layout="block" id="templateHeader">
                 <h:outputText value="RA GUI"/>

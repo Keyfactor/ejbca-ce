@@ -25,6 +25,9 @@ body {
 	background-image: linear-gradient(to bottom, #ffffff 0%, #d8efff 100%);
 }
 
+.rtlDirection { direction: rtl; }
+.ltrDirection { direction: ltr; }
+
 #templateAll {
 	background: #ffffff;
 	border: 2px solid #ff8888;
