@@ -43,6 +43,7 @@ public class RaLocaleBean implements Serializable {
     private static final Logger log = Logger.getLogger(RaLocaleBean.class);
     
     private Locale locale = null;
+    private boolean directionLeftToRight = true;
 
     /** @return this sessions Locale */
     public Locale getLocale() {
@@ -54,12 +55,14 @@ public class RaLocaleBean implements Serializable {
             } else {
                 locale = facesContext.getApplication().getDefaultLocale();
             }
+            directionLeftToRight = isDirectionLeftToRight(locale);
         }
         return locale;
     }
     /** Set this sessions Locale */
     public void setLocale(final Locale locale) {
         this.locale = locale;
+        directionLeftToRight = isDirectionLeftToRight(locale);
     }
 
     /** @return a list of all locales as defined in faces-config.xml */
@@ -81,6 +84,19 @@ public class RaLocaleBean implements Serializable {
             }
         });
         return ret;
+    }
+
+    /** @return true if the language direction is left to right */
+    private boolean isDirectionLeftToRight(final Locale locale) {
+        final int directionality = Character.getDirectionality(locale.getDisplayName(locale).charAt(0));
+        log.debug("directionality is " + directionality + " for " + locale.getLanguage() + " (" + locale.getDisplayName(locale) + ").");
+        return directionality != Character.DIRECTIONALITY_RIGHT_TO_LEFT && directionality != Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC &&
+                directionality != Character.DIRECTIONALITY_RIGHT_TO_LEFT_EMBEDDING && directionality != Character.DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE;
+    }
+
+    /** @return true if the language direction is left to right */
+    public String getDirection() {
+        return directionLeftToRight ? "ltr" : "rtl";
     }
 
     /** Add a faces message with the localized message summary with level FacesMessage.SEVERITY_ERROR. */
