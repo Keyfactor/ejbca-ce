@@ -14,6 +14,10 @@ package org.cesecore.authorization.cache;
 
 import java.util.Collection;
 
+import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.access.AccessSet;
+import org.cesecore.authorization.access.AccessSets;
 import org.cesecore.authorization.access.AccessTree;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.roles.RoleData;
@@ -35,6 +39,7 @@ public class AccessTreeCache {
      * Set volatile to make it thread friendly.
      */
     private volatile AccessTree accessTree = null;
+    private volatile AccessSets accessSets = null;
     /*
      * Help variable used to check that authorization trees are updated.
      */
@@ -52,8 +57,10 @@ public class AccessTreeCache {
     public synchronized void updateAccessTree(Collection<RoleData> roles, int authorizationTreeUpdateNumber) {
         if (accessTree == null) {
             accessTree = new AccessTree();
+            accessSets = new AccessSets();
         }
         accessTree.buildTree(roles);
+        accessSets.buildAccessSets(roles);
         this.accessTreeUpdatenumber = authorizationTreeUpdateNumber;
         setLastUpdateToNow();
     }
@@ -79,12 +86,17 @@ public class AccessTreeCache {
     public void setLastUpdateToNow() {
         lastUpdateTime = System.currentTimeMillis();
     }
+    
     public AccessTree getAccessTree() {
         return accessTree;
     }
 
-    public void setAccessTree(AccessTree accessTree) {
-        this.accessTree = accessTree;
+    public AccessSets getAccessSets() {
+        return accessSets;
+    }
+    
+    public AccessSet getAccessSetForAuthToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        return accessSets.getAccessSetForAuthToken(authenticationToken);
     }
 
     public int getAccessTreeUpdateNumber() {
