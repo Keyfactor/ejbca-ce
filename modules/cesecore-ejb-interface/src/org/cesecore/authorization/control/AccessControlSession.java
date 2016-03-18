@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.cesecore.authorization.control;
 
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.access.AccessSet;
 
 /**
  * Main interface for checking authorization. This interface makes use of roles and entity authentication to verify authorization.
@@ -74,6 +76,12 @@ public interface AccessControlSession {
      * due to circular dependencies.
      */
     void forceCacheExpire();
+
+    /**
+     * Returns all rules that the given authenticationToken is allowed to access. Includes *SOME wildcard rules
+     * @throws AuthenticationFailedException On authentication errors, such as an invalid password for a CLI token
+     */
+    AccessSet getAccessSetForAuthToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
     
 
 

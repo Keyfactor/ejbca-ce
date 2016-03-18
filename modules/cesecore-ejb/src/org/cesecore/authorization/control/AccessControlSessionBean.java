@@ -31,6 +31,7 @@ import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.NestableAuthenticationToken;
+import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.cache.AccessTreeCache;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.internal.InternalResources;
@@ -96,7 +97,7 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
         try {
             Map<String, Object> details = null;
             if (doLogging) {
-                details = new LinkedHashMap<String, Object>();
+                details = new LinkedHashMap<>();
             }
             for (int i=0; i<resources.length; i++) {
                 final String resource = resources[i];
@@ -131,7 +132,7 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
             }
             return true;
         } catch (AuthenticationFailedException e) {
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             String msg = intres.getLocalizedMessage("authentication.failed", e.getMessage());
             details.put("msg", msg);
             try {
@@ -185,6 +186,16 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
         if (accessTreeCache != null) {
             accessTreeCache.forceCacheExpire();
         }
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public AccessSet getAccessSetForAuthToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        final AccessSet ret;
+        log.trace(">getOwnAccessSet");
+        ret = accessTreeCache.getAccessSetForAuthToken(authenticationToken);
+        log.trace("<getOwnAccessSet");
+        return ret;
     }
 
     /**

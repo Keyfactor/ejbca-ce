@@ -20,11 +20,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -50,6 +53,8 @@ import org.junit.Test;
  */
 public class AccessControlSessionBeanTest extends RoleUsingTestCase {
 
+    private static final Logger log = Logger.getLogger(AccessControlSessionBeanTest.class);
+    
     private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
@@ -274,4 +279,93 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
         
     }
     
+    @Test
+    public void testAccessSets() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException, AuthenticationFailedException {
+        final String roleName = "TestAccessSet";
+        final String otherRoleName = "TestAccessSetOther";
+        final String unrelatedRoleName = "TestAccessSetUnrelated";
+        try {
+            final RoleData role = roleManagementSession.create(alwaysAllowAuthenticationToken, roleName);
+            final String organization = "PrimeKey Solutions TEST";
+            final String issuerDn = "CN="+roleName;//+",O="+organization;
+            final X509CertificateAuthenticationToken authenticationToken = (X509CertificateAuthenticationToken) createAuthenticationToken(issuerDn);
+            final int caId = issuerDn.hashCode();
+           
+            // Create a role for this admin
+            List<AccessUserAspectData> accessUsers = new ArrayList<>();
+            accessUsers.add(new AccessUserAspectData(role.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                    AccessMatchType.TYPE_EQUALCASE, roleName));
+            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, role, accessUsers);
+            
+            List<AccessRuleData> accessRules = new ArrayList<>();
+            accessRules.add(new AccessRuleData(role.getRoleName(), "/acceptRecursive", AccessRuleState.RULE_ACCEPT, true));
+            accessRules.add(new AccessRuleData(role.getRoleName(), "/accept", AccessRuleState.RULE_ACCEPT, false));
+            accessRules.add(new AccessRuleData(role.getRoleName(), "/notused", AccessRuleState.RULE_NOTUSED, false));
+            accessRules.add(new AccessRuleData(role.getRoleName(), "/acceptRecursive/accept", AccessRuleState.RULE_ACCEPT, false));
+            accessRules.add(new AccessRuleData(role.getRoleName(), "/acceptRecursive/notused", AccessRuleState.RULE_NOTUSED, false));
+            accessRules.add(new AccessRuleData(role.getRoleName(), "/acceptRecursive/accept/notused", AccessRuleState.RULE_NOTUSED, false));
+            accessRules.add(new AccessRuleData(role.getRoleName(), "/acceptRecursive/notused/notused", AccessRuleState.RULE_NOTUSED, false));
+            accessRules.add(new AccessRuleData(role.getRoleName(), "/accept/accept", AccessRuleState.RULE_ACCEPT, false));
+            accessRules.add(new AccessRuleData(role.getRoleName(), "/accept/notused", AccessRuleState.RULE_NOTUSED, false));
+            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, role, accessRules);
+            
+            // Create a less specific role
+            final RoleData otherRole = roleManagementSession.create(alwaysAllowAuthenticationToken, otherRoleName);
+            accessUsers = new ArrayList<>();
+            accessUsers.add(new AccessUserAspectData(otherRole.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_ORGANIZATION,
+                    AccessMatchType.TYPE_EQUALCASE, organization));
+            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, otherRole, accessUsers);
+            
+            accessRules = new ArrayList<>();       
+            accessRules.add(new AccessRuleData(otherRole.getRoleName(), "/otherrole", AccessRuleState.RULE_ACCEPT, true));
+            accessRules.add(new AccessRuleData(otherRole.getRoleName(), "/notused/other", AccessRuleState.RULE_ACCEPT, false));
+            accessRules.add(new AccessRuleData(otherRole.getRoleName(), "/ca/*ALL/edit", AccessRuleState.RULE_ACCEPT, false));
+            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, otherRole, accessRules);
+            
+            // Create a role that shouldn't match our admin
+            final RoleData unrelatedRole = roleManagementSession.create(alwaysAllowAuthenticationToken, unrelatedRoleName);
+            accessUsers = new ArrayList<>();
+            accessUsers.add(new AccessUserAspectData(unrelatedRole.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_ORGANIZATION,
+                    AccessMatchType.TYPE_EQUALCASE, "Not matching"));
+            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, unrelatedRole, accessUsers);
+            
+            accessRules = new ArrayList<>();       
+            accessRules.add(new AccessRuleData(unrelatedRole.getRoleName(), "/restricted", AccessRuleState.RULE_ACCEPT, true));
+            accessRules.add(new AccessRuleData(unrelatedRole.getRoleName(), "/notused/other", AccessRuleState.RULE_ACCEPT, false));
+            accessRules.add(new AccessRuleData(unrelatedRole.getRoleName(), "/ca/*ALL/edit", AccessRuleState.RULE_ACCEPT, false));
+            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, unrelatedRole, accessRules);
+            
+            // Now get an AccessSet and perform some testing on it
+            final AccessSet set = accessControlSession.getAccessSetForAuthToken(authenticationToken);
+
+            log.debug("Now dumping the allowed resources in the AccessSet:");
+            set.dumpRules();
+            
+            assertFalse("Should not have / access", set.isAuthorized(StandardRules.ROLE_ROOT.resource()));
+           
+            assertTrue("Should have /acceptRecursive access", set.isAuthorized("/acceptRecursive"));            
+            assertTrue("Should have /accept access", set.isAuthorized("/accept"));
+            assertFalse("Should not have /notused acccess", set.isAuthorized("/notused"));
+            assertFalse("Should not have /unexistent access", set.isAuthorized("/unexistent"));
+            
+            assertTrue(set.isAuthorized("/acceptRecursive/accept"));
+            assertTrue(set.isAuthorized("/acceptRecursive/notused"));
+            assertTrue(set.isAuthorized("/acceptRecursive/unexistent"));
+            
+            assertTrue(set.isAuthorized("/acceptRecursive/accept/notused"));
+            assertTrue(set.isAuthorized("/acceptRecursive/notused/notused"));
+            
+            assertTrue(set.isAuthorized("/accept/accept"));
+            assertFalse(set.isAuthorized("/accept/notused"));
+            assertFalse(set.isAuthorized("/accept/unexistent"));
+      
+            assertTrue(set.isAuthorized("/acceptRecursive/notused", "/acceptRecursive/unexistent"));
+            assertTrue(set.isAuthorized("/acceptRecursive/accept", "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
+
+        } finally {
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, roleName);
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, otherRoleName);
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, unrelatedRoleName);
+        }
+    }
 }
