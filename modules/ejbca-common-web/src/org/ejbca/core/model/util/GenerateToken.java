@@ -20,7 +20,9 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -33,6 +35,7 @@ import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 
 /** Class that has helper methods to generate tokens for users in ejbca. 
@@ -127,7 +130,12 @@ public class GenerateToken {
     	// Clear password from database
     	EndEntityInformation userdata = endEntityAccessSession.findUser(administrator, username);
         if (userdata.getStatus() == EndEntityConstants.STATUS_GENERATED) {
-    	   endEntityManagementSession.setClearTextPassword(administrator, username, null);
+            if (loadkeys && endEntityManagementSession instanceof EndEntityManagementSessionLocal) {
+                endEntityManagementSession.setClearTextPassword(new AlwaysAllowLocalAuthenticationToken(
+                        new UsernamePrincipal("Implicit authorization from key recovery operation to reset password.")), username, null);
+            } else {
+                endEntityManagementSession.setClearTextPassword(administrator, username, null);
+            }
     	}
         // Make a certificate chain from the certificate and the CA-certificate
     	Certificate[] cachain = (Certificate[])signSession.getCertificateChain(caid).toArray(new Certificate[0]);
