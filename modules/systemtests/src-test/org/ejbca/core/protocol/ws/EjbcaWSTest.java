@@ -99,6 +99,7 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.Base64;
@@ -202,6 +203,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     private static List<File> fileHandles = new ArrayList<File>();
     
+    private GlobalConfiguration originalGlobalConfiguration = null;
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         adminBeforeClass();
@@ -214,6 +217,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Before
     public void setUpAdmin() throws Exception {
         adminSetUpAdmin();
+        originalGlobalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
     }
     
     @AfterClass
@@ -238,6 +242,21 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        // Restore WS admin access
+        setAccessRulesForWsAdmin(new AccessRuleData(WS_ADMIN_ROLENAME, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
+        // Restore key recovery, end entity profile limitations etc
+        if (originalGlobalConfiguration!=null) {
+            globalConfigurationSession.saveConfiguration(intAdmin, originalGlobalConfiguration);
+        }
+    }
+
+    private void setAccessRulesForWsAdmin(final AccessRuleData...accessRuleDatas) throws AuthorizationDeniedException, RoleNotFoundException {
+        final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+        final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+        final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>(Arrays.asList(accessRuleDatas));
+        final RoleData roleData = roleAccessSession.findRole(WS_ADMIN_ROLENAME);
+        assertNotNull("Role " + WS_ADMIN_ROLENAME + " does not exist!", roleData);
+        roleManagementSession.replaceAccessRulesInRole(intAdmin, roleData, accessRules);
     }
 
     /** This test is not a WebService test, but for simplicity it re-uses the created administrator certificate in order to connect to the
@@ -712,13 +731,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test20bKeyRecoverAny() throws Exception {
         log.trace(">keyRecoverAny");
-        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        boolean krenabled = gc.getEnableKeyRecovery();
-        if (!krenabled == true) {
+        final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        if (!gc.getEnableKeyRecovery() || !gc.getEnableEndEntityProfileLimitations()) {
             gc.setEnableKeyRecovery(true);
+            gc.setEnableEndEntityProfileLimitations(true);
             globalConfigurationSession.saveConfiguration(intAdmin, gc);
         }
-
         // Add a new user, set token to P12, status to new and end entity
         // profile to key recovery
         UserDataVOWS user1 = new UserDataVOWS();
@@ -735,15 +753,15 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         user1.setEndEntityProfileName(KEY_RECOVERY_EEP);
         user1.setCertificateProfileName("ENDUSER");
         ejbcaraws.editUser(user1);
-        
+        final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+        final int eepId = endEntityProfileSession.getEndEntityProfileId(KEY_RECOVERY_EEP);
+        final int caId = caSession.getCAInfo(intAdmin, getAdminCAName()).getCAId();
+        // generate 4 certificates
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
         usermatch.setMatchvalue("WSTESTUSERKEYREC2");
-        
         List<java.security.KeyStore> keyStores = new ArrayList<java.security.KeyStore>();
-        
-        // generate 4 certificates
         for (int i=0; i < 4; i++) {
             List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
             assertTrue(userdatas != null);
@@ -762,54 +780,81 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             user1.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
             user1.setEndEntityProfileName(KEY_RECOVERY_EEP);
             user1.setCertificateProfileName("ENDUSER");
+            setAccessRulesForWsAdmin(new AccessRuleData(WS_ADMIN_ROLENAME, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
             ejbcaraws.editUser(user1);
-            
+            setAccessRulesForWsAdmin(
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.VIEW_END_ENTITY, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, StandardRules.CAACCESS.resource() + caId, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false),
+                    // Additionally we need to have edit rights to clear the password, since this is currently not implicitly granted for non-key recovery
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.EDIT_END_ENTITY, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_EDITENDENTITY, AccessRuleState.RULE_ACCEPT, false),
+                    // Additionally we need to have access to key recovery in this special case
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.KEYRECOVERY_RIGHTS, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_KEYRECOVERY, AccessRuleState.RULE_ACCEPT, false)
+                    );
             KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC2", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
             java.security.KeyStore ks = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
             assertNotNull(ks);
             keyStores.add(ks);
         }
-        
         // user should have 4 certificates
         assertTrue(keyStores.size() == 4);
-        
         // recover all keys
-        for (java.security.KeyStore ks : keyStores){
+        for (final java.security.KeyStore ks : keyStores){
             Enumeration<String> en = ks.aliases();
-            String alias = (String) en.nextElement();
+            String alias = en.nextElement();
             // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
             if(!ks.isKeyEntry(alias)) {
-                alias = (String) en.nextElement();
+                alias = en.nextElement();
             }
             X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
             assertEquals(cert.getSubjectDN().toString(), "CN=WSTESTUSERKEYREC2");
             PrivateKey privK = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
             log.info("recovering key. sn "+ cert.getSerialNumber().toString(16) + " issuer "+ cert.getIssuerDN().toString());
-            
             // recover key
+            setAccessRulesForWsAdmin(
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.KEYRECOVERY_RIGHTS, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.VIEW_END_ENTITY, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, StandardRules.CAACCESS.resource() + caId, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_KEYRECOVERY, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false)
+                    );
             ejbcaraws.keyRecover("WSTESTUSERKEYREC2",cert.getSerialNumber().toString(16),cert.getIssuerDN().toString());
-            
+            assertEquals("EjbcaWS.keyRecover failed to set status for end entity.", EndEntityConstants.STATUS_KEYRECOVERY, endEntityAccessSession.findUser(intAdmin, "WSTESTUSERKEYREC2").getStatus());
             // A new PK12 request now should return the same key and certificate
+            setAccessRulesForWsAdmin(
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.VIEW_END_ENTITY, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, StandardRules.CAACCESS.resource() + caId, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false),
+                    // Additionally we need to have access to key recovery in this special case
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.KEYRECOVERY_RIGHTS, AccessRuleState.RULE_ACCEPT, false),
+                    new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_KEYRECOVERY, AccessRuleState.RULE_ACCEPT, false)
+                    );
             KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC2", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
             java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
             assertNotNull(ks2);
             en = ks2.aliases();
-            alias = (String) en.nextElement();
+            alias = en.nextElement();
             // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
             if(!ks.isKeyEntry(alias)) {
-                alias = (String) en.nextElement();
+                alias = en.nextElement();
             }
             X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
             assertEquals(cert2.getSubjectDN().toString(), "CN=WSTESTUSERKEYREC2");
             PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
-
             // Compare certificates
             assertEquals(cert.getSerialNumber().toString(16), cert2.getSerialNumber().toString(16));
             // Compare keys
             String key1 = new String(Hex.encode(privK.getEncoded()));
             String key2 = new String(Hex.encode(privK2.getEncoded()));
             assertEquals(key1, key2);
-
         }
         log.trace("<keyRecoverAny");
     }
