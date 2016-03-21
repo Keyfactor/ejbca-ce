@@ -15,8 +15,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.access.AccessSet;
 import org.ejbca.core.EjbcaException;
 
 /**
@@ -63,6 +65,20 @@ public class RaMasterApiProxy implements RaMasterApi {
             }
         }
         return false;
+    }
+    
+    @Override
+    public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    return raMasterApi.getUserAccessSet(authenticationToken);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        throw new RaMasterBackendUnavailableException();
     }
 
     @Override
