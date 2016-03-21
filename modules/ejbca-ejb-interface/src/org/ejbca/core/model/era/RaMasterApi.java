@@ -11,8 +11,10 @@ package org.ejbca.core.model.era;
 
 import java.util.List;
 
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.access.AccessSet;
 import org.ejbca.core.EjbcaException;
 
 /**
@@ -24,6 +26,8 @@ public interface RaMasterApi {
 
     /** @return true if the implementation if the interface is available and usable. */
     boolean isBackendAvailable();
+    
+    AccessSet getUserAccessSet(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
 
     @Deprecated // PoC. Remove when we have real functions to invoke.
     String testCall(AuthenticationToken authenticationToken, String argument1, int argument2) throws AuthorizationDeniedException, EjbcaException;
