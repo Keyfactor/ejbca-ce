@@ -130,6 +130,7 @@ public class GenerateToken {
     	// Clear password from database
     	EndEntityInformation userdata = endEntityAccessSession.findUser(administrator, username);
         if (userdata.getStatus() == EndEntityConstants.STATUS_GENERATED) {
+            // If we have a successful key recovery via EJBCA WS we implicitly want to allow resetting of the password without edit_end_entity rights (ECA-4947)
             if (loadkeys && endEntityManagementSession instanceof EndEntityManagementSessionLocal) {
                 endEntityManagementSession.setClearTextPassword(new AlwaysAllowLocalAuthenticationToken(
                         new UsernamePrincipal("Implicit authorization from key recovery operation to reset password.")), username, null);
