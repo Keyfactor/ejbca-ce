@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.NestableAuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.roles.RoleData;
@@ -81,7 +82,7 @@ public final class AccessSets {
         log.trace("<buildAccessSets");
     }
     
-    public AccessSet getAccessSetForAuthToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+    private Set<String> getAccessSetInternal(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         final Set<String> set = new HashSet<>();
         for (final Integer roleId : getRoleIdsForAuthToken(authenticationToken)) {
             final Collection<String> rulesForRole = sets.get(roleId);
@@ -91,12 +92,67 @@ public final class AccessSets {
                 log.warn("Role with primary key " + roleId + " is missing in the cache.");
             }
         }
+        return set;
+    }
+    
+    public AccessSet getAccessSetForAuthToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        if (log.isTraceEnabled()) {
+            log.trace(">getAccessSetForAuthToken(" + authenticationToken + ")");
+        }
+        // Get the access rules for the authentication token itself
+        Set<String> set = getAccessSetInternal(authenticationToken);
+        
+        // Get access rules for the nested authentication token
+        if (authenticationToken instanceof NestableAuthenticationToken) {
+            final NestableAuthenticationToken nat = (NestableAuthenticationToken) authenticationToken;
+            for (final AuthenticationToken nestedToken : nat.getNestedAuthenticationTokens()) {
+                final Set<String> nestedSet = getAccessSetInternal(nestedToken);
+                if (log.isDebugEnabled()) {
+                    log.debug("Intersecting existing " + set.size() + " access rules with " + nestedSet.size() + " rules from a nested AuthenticationToken.");
+                }
+                set = intersectAccessSet(set, nestedSet);
+            }
+        }
+        
         if (log.isDebugEnabled() && set.isEmpty()) {
-            log.debug("Returning empty access set for " + authenticationToken);
+            log.debug("Returning empty access set for " + authenticationToken + ". All access will be denied.");
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<getAccessSetForAuthToken(" + authenticationToken + "), returning " + set.size() + " rules");
         }
         return new AccessSet(set);
     }
     
+    /** Returns the resources that may be accessed from both sets. Takes recursive rules and other wildcards into account */
+    private Set<String> intersectAccessSet(final Set<String> set, final Set<String> intersectWith) {
+        final Set<String> result = new HashSet<>();
+        
+        final Set<String> ruleWiseIntersection = new HashSet<>(set);
+        ruleWiseIntersection.retainAll(intersectWith);
+        result.addAll(ruleWiseIntersection);
+        
+        // Need to take recursive rules etc. into account
+        Set<String> nonMatching = new HashSet<>(intersectWith);
+        nonMatching.removeAll(ruleWiseIntersection);
+        AccessSet otherSet = new AccessSet(set);
+        for (final String rule : nonMatching) {
+            if (otherSet.isAuthorized(rule)) {
+                result.add(rule);
+            }
+        }
+        
+        nonMatching = new HashSet<>(set);
+        nonMatching.removeAll(ruleWiseIntersection);
+        otherSet = new AccessSet(intersectWith);
+        for (final String rule : nonMatching) {
+            if (otherSet.isAuthorized(rule)) {
+                result.add(rule);
+            }
+        }
+        
+        return result;
+    }
+
     private Collection<Integer> getRoleIdsForAuthToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         final Collection<Integer> roleIds = new ArrayList<>();
         for (final RoleData role : roles) {
