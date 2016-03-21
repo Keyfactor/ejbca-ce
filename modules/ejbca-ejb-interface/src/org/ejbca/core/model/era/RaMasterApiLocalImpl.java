@@ -13,8 +13,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.access.AccessSet;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -32,12 +35,14 @@ public class RaMasterApiLocalImpl implements RaMasterApi {
     
     private static final Logger log = Logger.getLogger(RaMasterApiLocalImpl.class);
 
+    private final AccessControlSessionLocal accessControlSession;
     private final CaSessionLocal caSession;
     private final EndEntityAccessSessionLocal endEntityAccessSession;
     private Boolean backendAvailable = null;
     
     public RaMasterApiLocalImpl() {
         final EjbLocalHelper ejb = new EjbLocalHelper();
+        accessControlSession = ejb.getAccessControlSession();
         endEntityAccessSession = ejb.getEndEntityAccessSession();
         caSession = ejb.getCaSession();
     }
@@ -59,6 +64,11 @@ public class RaMasterApiLocalImpl implements RaMasterApi {
             backendAvailable = Boolean.valueOf(available);
         }
         return backendAvailable.booleanValue();
+    }
+    
+    @Override
+    public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException  {
+        return accessControlSession.getAccessSetForAuthToken(authenticationToken);
     }
 
     @Override
