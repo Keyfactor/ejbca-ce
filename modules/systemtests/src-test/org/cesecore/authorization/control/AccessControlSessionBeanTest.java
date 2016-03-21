@@ -147,15 +147,15 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void testNestedIsAuthorized() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+    public void testNestedIsAuthorized() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException, AuthenticationFailedException {
         // Let's set up a role and a nice resource tree to play with.
         final String roleNameClients = "Dragon";
         final String roleNameViaRaServer = "LonelyMountainRaServer";
         final String roleNameViaProxyServer = "MiddleEarthProxyServer";
         try {
-            final RoleData roleClients = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameClients);      
-            final RoleData roleViaRaServer = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameViaRaServer);      
-            final RoleData roleViaProxyServer = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameViaProxyServer);      
+            final RoleData roleClients = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameClients);
+            final RoleData roleViaRaServer = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameViaRaServer);
+            final RoleData roleViaProxyServer = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameViaProxyServer);
             final String issuerDnClients = "CN="+roleNameClients;
             final String issuerViaRaServer = "CN="+roleNameViaRaServer;
             final String issuerViaProxyServer = "CN="+roleNameViaProxyServer;
@@ -171,9 +171,9 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
                     roleViaRaServer.getRoleName(), caIdViaRaServer, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, roleNameViaRaServer)}));
             final List<AccessUserAspectData> accessUsersViaProxyServer = new ArrayList<>(Arrays.asList(new AccessUserAspectData[] { new AccessUserAspectData(
                     roleViaProxyServer.getRoleName(), caIdViaProxyServer, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, roleNameViaProxyServer)}));
-            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, roleClients, accessUsersClients);          
-            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, roleViaRaServer, accessUsersViaRaServer);          
-            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, roleViaProxyServer, accessUsersViaProxyServer);          
+            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, roleClients, accessUsersClients);
+            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, roleViaRaServer, accessUsersViaRaServer);
+            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, roleViaProxyServer, accessUsersViaProxyServer);
             // Give the access to do anything
             final List<AccessRuleData> accessRulesClients = new ArrayList<AccessRuleData>(Arrays.asList(new AccessRuleData[]{
                     new AccessRuleData(roleClients.getRoleName(), StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true)
@@ -187,24 +187,42 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
                     new AccessRuleData(roleClients.getRoleName(), "/beshotbyarrow", AccessRuleState.RULE_ACCEPT, false),
                     new AccessRuleData(roleClients.getRoleName(), "/hunt", AccessRuleState.RULE_ACCEPT, true)
             }));
-            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, roleClients, accessRulesClients);            
-            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, roleViaRaServer, accessRulesViaRaServer);            
-            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, roleViaProxyServer, accessRulesViaProxyServer);            
+            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, roleClients, accessRulesClients);
+            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, roleViaRaServer, accessRulesViaRaServer);
+            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, roleViaProxyServer, accessRulesViaProxyServer);
+            
             // Direct access by almighty client should allow anything
             assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, StandardRules.ROLE_ROOT.resource()));
             assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/beshotbyarrow"));
             assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/hunt/dwarfs"));
             assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/hunt/elfs"));
             assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/sleepongold"));
+            AccessSet accessSet = accessControlSession.getAccessSetForAuthToken(authenticationTokenClient);
+            assertTrue(accessSet.isAuthorized("/beshotbyarrow"));
+            assertTrue(accessSet.isAuthorized("/hunt/dwarfs"));
+            assertTrue(accessSet.isAuthorized("/hunt/elfs"));
+            assertTrue(accessSet.isAuthorized("/sleepongold"));
+            
             // Direct access by RA server
             assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, StandardRules.ROLE_ROOT.resource()));
             assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, "/beshotbyarrow"));
             assertTrue(accessControlSession.isAuthorized(authenticationTokenRaServer, "/hunt/dwarfs"));
             assertTrue(accessControlSession.isAuthorized(authenticationTokenRaServer, "/sleepongold"));
+            accessSet = accessControlSession.getAccessSetForAuthToken(authenticationTokenRaServer);
+            assertFalse(accessSet.isAuthorized(StandardRules.ROLE_ROOT.resource()));
+            assertFalse(accessSet.isAuthorized("/beshotbyarrow"));
+            assertTrue(accessSet.isAuthorized("/hunt/dwarfs"));
+            assertTrue(accessSet.isAuthorized("/sleepongold"));
+            
             // Direct access by Proxy server
             assertFalse(accessControlSession.isAuthorized(authenticationTokenProxyServer, StandardRules.ROLE_ROOT.resource()));
             assertTrue(accessControlSession.isAuthorized(authenticationTokenProxyServer, "/beshotbyarrow"));
             assertTrue(accessControlSession.isAuthorized(authenticationTokenProxyServer, "/hunt/elfs"));
+            accessSet = accessControlSession.getAccessSetForAuthToken(authenticationTokenProxyServer);
+            assertFalse(accessSet.isAuthorized(StandardRules.ROLE_ROOT.resource()));
+            assertTrue(accessSet.isAuthorized("/beshotbyarrow"));
+            assertTrue(accessSet.isAuthorized("/hunt/elfs"));
+            
             // Access by RA server via Proxy server
             authenticationTokenRaServer.appendNestedAuthenticationToken(authenticationTokenProxyServer);
             assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, StandardRules.ROLE_ROOT.resource()));
@@ -212,6 +230,13 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
             assertTrue(accessControlSession.isAuthorized(authenticationTokenRaServer, "/hunt/dwarfs"));
             assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, "/sleepongold"));
             assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, "/hunt/elfs"));
+            accessSet = accessControlSession.getAccessSetForAuthToken(authenticationTokenRaServer);
+            assertFalse(accessSet.isAuthorized(StandardRules.ROLE_ROOT.resource()));
+            assertFalse(accessSet.isAuthorized("/beshotbyarrow"));
+            assertTrue(accessSet.isAuthorized("/hunt/dwarfs"));
+            assertFalse(accessSet.isAuthorized("/sleepongold"));
+            assertFalse(accessSet.isAuthorized("/hunt/elfs"));
+            
             // Access by Client via RA server via Proxy server
             authenticationTokenClient.appendNestedAuthenticationToken(authenticationTokenRaServer);
             assertFalse(accessControlSession.isAuthorized(authenticationTokenClient, StandardRules.ROLE_ROOT.resource()));
@@ -219,6 +244,13 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
             assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/hunt/dwarfs"));
             assertFalse(accessControlSession.isAuthorized(authenticationTokenClient, "/hunt/elfs"));
             assertFalse(accessControlSession.isAuthorized(authenticationTokenClient, "/sleepongold"));
+            accessSet = accessControlSession.getAccessSetForAuthToken(authenticationTokenClient);
+            assertFalse(accessSet.isAuthorized(StandardRules.ROLE_ROOT.resource()));
+            assertFalse(accessSet.isAuthorized("/beshotbyarrow"));
+            assertTrue(accessSet.isAuthorized("/hunt/dwarfs"));
+            assertFalse(accessSet.isAuthorized("/hunt/elfs"));
+            assertFalse(accessSet.isAuthorized("/sleepongold"));
+            
         } finally {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, roleNameClients);
             roleManagementSession.remove(alwaysAllowAuthenticationToken, roleNameViaRaServer);
