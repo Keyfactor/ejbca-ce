@@ -66,7 +66,9 @@ public final class AccessSet implements Serializable {
                     break;
                 }
                 parentResource = parentResource.substring(0, slash);
-                log.debug("Checking for '"+ parentResource + "/" + AccessSets.WILDCARD_RECURSIVE + "'");
+                if (log.isTraceEnabled()) {
+                    log.trace("Checking for '"+ parentResource + "/" + AccessSets.WILDCARD_RECURSIVE + "'");
+                }
                 if (set.contains(parentResource + "/" + AccessSets.WILDCARD_RECURSIVE)) {
                     continue NEXT_RESOURCE; // OK. Check next resource
                 }
