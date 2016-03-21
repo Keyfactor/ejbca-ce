@@ -103,7 +103,7 @@
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{web.text.MATCHTYPE}" /><br />
-					<h:selectOneMenu id="matchType" value="#{rolesManagedBean.matchType}"rendered="#{rolesManagedBean.authorizedToEdit}">
+					<h:selectOneMenu id="matchType" value="#{rolesManagedBean.matchType}" rendered="#{rolesManagedBean.authorizedToEdit}">
 						<f:selectItems value="#{rolesManagedBean.matchTypeTexts}" />
 					</h:selectOneMenu> 
 					<h:outputText value="<br/>&nbsp;" escape="false" rendered="#{rolesManagedBean.authorizedToEdit}"/>
