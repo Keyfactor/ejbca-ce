@@ -456,12 +456,22 @@ public interface IEjbcaWS {
 	 * 
 	 * Authorization requirements: <pre>
 	 * - /administrator
+     * - /ca/&lt;ca of user&gt;
+     * - /ca_functionality/create_certificate
+     * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
 	 * - /ra_functionality/view_end_entity
-	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
-	 * - /ca_functionality/create_certificate
-	 * - /ca/&lt;ca of user&gt;
 	 * </pre>
 	 * 
+     * Additional authorization requirements for (non key recovery) clearing of password: <pre>
+     * - /endentityprofilesrules/&lt;end entity profile&gt;/edit_end_entity
+     * - /ra_functionality/edit_end_entity
+     * </pre>
+     * 
+     * Additional authorization requirements for key recovery: <pre>
+     * - /endentityprofilesrules/&lt;end entity profile&gt;/keyrecovery
+     * - /ra_functionality/keyrecovery
+     * </pre>
+     * 
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
 	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
@@ -600,9 +610,12 @@ public interface IEjbcaWS {
      * 
      * Authorization requirements:<pre>
      * - /administrator
-     * - /ra_functionality/keyrecovery
      * - /endentityprofilesrules/&lt;end entity profile&gt;/keyrecovery
-     * - /ca/<ca of users certificate>
+     * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
+     * - /ca/&lt;ca of users certificate&gt;
+     * - /ca_functionality/view_certificate
+     * - /ra_functionality/keyrecovery
+     * - /ra_functionality/view_end_entity
      * </pre>
      * 
      * @param username unique username i EJBCA

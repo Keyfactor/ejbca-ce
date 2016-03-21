@@ -2028,7 +2028,11 @@ pkcs10Request, pkcs12req:
 </p>
 <ul>
 <li>/ra_functionality/view_end_entity</li>
+<li>/ra_functionality/edit_end_entity (only required for non key recovery)</li>
+<li>/ra_functionality/keyrecovery (only required for key recovery)</li>
 <li>/ra_functionality/'end entity profile of the user'/view_end_entity</li>
+<li>/ra_functionality/'end entity profile of the user'/keyrecovery (only required for key recovery)</li>
+<li>/ra_functionality/'end entity profile of the user'/keyrecovery (only required for non key recovery)</li>
 <li>/ca_functionality/create_certificate</li>
 </ul>
 <p>
