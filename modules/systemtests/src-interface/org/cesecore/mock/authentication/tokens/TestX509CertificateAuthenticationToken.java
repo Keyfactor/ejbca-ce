@@ -14,6 +14,8 @@ package org.cesecore.mock.authentication.tokens;
 
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -53,11 +55,10 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
 
     public TestX509CertificateAuthenticationToken(Set<X500Principal> principals, Set<X509Certificate> credentials) {
         super(principals, credentials);
-        
         /*
-             * In order to save having to verify the credentials set every time the <code>matches(...)</code> method is called, it's checked here, and the
-             * resulting credential is stored locally.
-             */
+         * In order to save having to verify the credentials set every time the <code>matches(...)</code> method is called, it's checked here, and the
+         * resulting credential is stored locally.
+         */
         X509Certificate[] certificateArray = getCredentials().toArray(new X509Certificate[0]);
         if (certificateArray.length != 1) {
             throw new InvalidAuthenticationTokenException("X509CertificateAuthenticationToken was containing " + certificateArray.length
@@ -73,6 +74,17 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
         dnExtractor = new DNFieldExtractor(certstring, DNFieldExtractor.TYPE_SUBJECTDN);       
         anExtractor = new DNFieldExtractor(altNameString, DNFieldExtractor.TYPE_SUBJECTALTNAME);
 
+    }
+
+    /**
+     * Standard simplified constructor for X509CertificateAuthenticationToken
+     * 
+     * @param certificate A X509Certificate that will be used as principal and credential.
+     * @throws NullPointerException if the provided certificate is null
+     */
+    public TestX509CertificateAuthenticationToken(final X509Certificate certificate) {
+        this(new HashSet<>(Arrays.asList(new X500Principal[]{ certificate.getSubjectX500Principal() })),
+                new HashSet<>(Arrays.asList(new X509Certificate[]{ certificate })));
     }
 
     @Override

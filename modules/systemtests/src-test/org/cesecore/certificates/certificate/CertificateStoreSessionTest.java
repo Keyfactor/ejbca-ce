@@ -34,14 +34,11 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBTransactionRolledbackException;
-import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.CertIOException;
@@ -539,13 +536,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertStoreSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-
-        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(principals, credentials);
+        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
         
         // Try to create a cert with an admin that does not have access to CA
         try {

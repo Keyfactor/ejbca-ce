@@ -19,11 +19,7 @@ import java.io.File;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import javax.security.auth.x500.X500Principal;
 
 import org.cesecore.audit.audit.AuditLogReportElem;
 import org.cesecore.audit.audit.AuditLogValidationReport;
@@ -149,11 +145,7 @@ public class SecurityEventsAuditorSessionBeanTest extends SecurityEventsBase {
     public void test06Authorization() throws Exception {
         final X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test LogMgmtSessionNoAuth", 365, null, keys.getPrivate(),
                 keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-        final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-        final Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-        final AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(principals, credentials);
+        final AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
         for (final String logDeviceId : securityEventsAuditor.getQuerySupportingLogDevices()) {
             // SelectLogsWithNoCriteria
             try {
