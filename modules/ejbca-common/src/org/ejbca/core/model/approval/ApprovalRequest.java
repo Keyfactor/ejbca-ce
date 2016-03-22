@@ -315,12 +315,7 @@ public abstract class ApprovalRequest implements Externalizable {
             } catch (CertificateException e) {
                 log.error(e);
             }
-
-            final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-            credentials.add(x509cert);
-            final Set<X500Principal> principals = new HashSet<X500Principal>();
-            principals.add(x509cert.getSubjectX500Principal());
-            this.requestAdmin = new X509CertificateAuthenticationToken(principals, credentials);
+            this.requestAdmin = new X509CertificateAuthenticationToken(x509cert);
             this.requestSignature = (String) in.readObject();
             this.approvalRequestType = in.readInt();
             this.numOfRequiredApprovals = in.readInt();
@@ -337,11 +332,7 @@ public abstract class ApprovalRequest implements Externalizable {
             		token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(admin.getUsername()));
             	}
             } else {
-            	final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-                credentials.add(x509cert);
-                final Set<X500Principal> principals = new HashSet<X500Principal>();
-                principals.add(x509cert.getSubjectX500Principal());
-                token = new X509CertificateAuthenticationToken(principals, credentials);
+                token = new X509CertificateAuthenticationToken(x509cert);
             }
             this.requestAdmin = token;
             this.requestAdmin = null;

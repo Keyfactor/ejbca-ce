@@ -18,8 +18,6 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -89,9 +87,7 @@ public class ProxiedAuthenticationFilter implements Filter {
 					    return;
 					} else {
 	                    // Create a temporary Admin/AuthenticationToken to make sure it is NOT authorized with Superadmin rights.
-	                    final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-	                    credentials.add(tempCerts[0]);
-	                    final AuthenticationToken admin = new X509CertificateAuthenticationToken(null, credentials);
+	                    final AuthenticationToken admin = new X509CertificateAuthenticationToken(tempCerts[0]);
 	                    if (ejb.getAccessControlSession().isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource()) ||
 	                            ejb.getAccessControlSession().isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
 	                        final String msg = "Authentication failed. Superadmin login is only allowed using client certificate. Subject was '"+username+"'.";

@@ -21,15 +21,11 @@ import java.io.File;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.time.StopWatch;
@@ -202,14 +198,7 @@ public class SecurityEventsLoggerSessionBeanTest extends SecurityEventsBase {
     	KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test SecurityEventsLoggerSessionTestNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-
-        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(principals, credentials);
-
+        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
         try {
             securityEventsLogger.log(adminTokenNoAuth, EventTypes.AUTHENTICATION, EventStatus.SUCCESS, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE);
         	fail("should throw");

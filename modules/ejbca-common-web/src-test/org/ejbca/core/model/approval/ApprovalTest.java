@@ -21,11 +21,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
-
-import javax.security.auth.x500.X500Principal;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -73,11 +69,7 @@ public class ApprovalTest {
 		Date apDate = ap.getApprovalDate();
 		
 		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(testcert);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(testcert.getSubjectX500Principal());
-        AuthenticationToken token = new X509CertificateAuthenticationToken(principals, credentials);
+        AuthenticationToken token = new X509CertificateAuthenticationToken(testcert);
 		ap.setApprovalAdmin(true, token);
 		approvals.add(ap);
 		
@@ -88,8 +80,7 @@ public class ApprovalTest {
 		oos.writeInt(size);
 		Iterator<Approval> iter = approvals.iterator();
 		while(iter.hasNext()){
-			Approval next = (Approval) iter.next();
-			oos.writeObject(next);
+			oos.writeObject(iter.next());
 		}
 		oos.flush();
     	String result = new String(Base64.encode(baos.toByteArray(),false));
@@ -97,7 +88,7 @@ public class ApprovalTest {
     	Collection<Approval> readapprovals = ApprovalDataUtil.getApprovals(result);
     	assertTrue(readapprovals.size() == 1);
     	
-    	Approval rap = (Approval) readapprovals.iterator().next();
+    	Approval rap = readapprovals.iterator().next();
     	X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken)rap.getAdmin(); 
     	assertTrue(CertTools.getIssuerDN(xtok.getCertificate()).equals(CertTools.getIssuerDN(testcert)));
     	assertTrue(CertTools.getSerialNumber(xtok.getCertificate()).equals(CertTools.getSerialNumber(testcert)));

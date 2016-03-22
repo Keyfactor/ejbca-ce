@@ -21,14 +21,11 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.ejb.EJBException;
 import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
-import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -190,11 +187,7 @@ public class ApprovalDataVOView implements Serializable {
         if (!initialized) {
             try {
             	X509Certificate certificate = CertTools.getCertfromByteArray(ApprovalDataVOView.dummycert, X509Certificate.class);
-                Set<X509Certificate> credentials = new HashSet<>();
-                credentials.add(certificate);
-                Set<X500Principal> principals = new HashSet<>();
-                principals.add(certificate.getSubjectX500Principal());
-                AuthenticationToken token = new X509CertificateAuthenticationToken(principals, credentials);
+                AuthenticationToken token = new X509CertificateAuthenticationToken(certificate);
                 DummyApprovalRequest req = new DummyApprovalRequest(token, null, ApprovalDataVO.ANY_ENDENTITYPROFILE, ApprovalDataVO.ANY_CA, false);
                 return new ApprovalDataVO(1, 1, ApprovalDataVO.APPROVALTYPE_DUMMY, 0, 0, "", "", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,
                         new ArrayList<Approval>(), req, new Date(), new Date(), 2);

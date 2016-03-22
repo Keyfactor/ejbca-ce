@@ -86,11 +86,7 @@ public class X509CertificateAuthenticationTokenTest {
      */
     @Test
     public void testCreateAuthenticationToken() {
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-        X509CertificateAuthenticationToken authenticationToken = new X509CertificateAuthenticationToken(principals, credentials);
+        X509CertificateAuthenticationToken authenticationToken = new X509CertificateAuthenticationToken(certificate);
         assertTrue(authenticationToken != null);
     }
 
@@ -102,11 +98,16 @@ public class X509CertificateAuthenticationTokenTest {
         X509CertificateAuthenticationToken authenticationToken = null;
         try {
             authenticationToken = new X509CertificateAuthenticationToken(new HashSet<X500Principal>(), new HashSet<X509Certificate>());
+            fail("X509CertificateAuthenticationToken was created without a certificate. This should not happen.");
         } catch (InvalidAuthenticationTokenException e) {
             assertTrue(authenticationToken == null);
-            return;
         }
-        fail("X509CertificateAuthenticationToken was created without a certificate. This should not happen.");
+        try {
+            authenticationToken = new X509CertificateAuthenticationToken(null);
+            fail("X509CertificateAuthenticationToken was created without a certificate. This should not happen.");
+        } catch (NullPointerException e) {
+            assertTrue(authenticationToken == null);
+        }
     }
 
     /**
@@ -264,10 +265,6 @@ public class X509CertificateAuthenticationTokenTest {
      * @return a working X509CertificateAuthenticationToken.
      */
     private X509CertificateAuthenticationToken getAuthenticationToken() {
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-        return new X509CertificateAuthenticationToken(principals, credentials);
+        return new X509CertificateAuthenticationToken(certificate);
     }
 }

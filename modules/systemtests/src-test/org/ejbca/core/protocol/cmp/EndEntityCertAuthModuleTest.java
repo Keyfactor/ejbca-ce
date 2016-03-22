@@ -808,9 +808,6 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         }
 
         X509Certificate certificate = null;
-        // If we have a certificate as input, use that, otherwise generate a self signed certificate
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-
         // If there was no certificate input, create a self signed
         String dn = "CN="+adminName;
         // If we have created a subject with an X500Principal we will use this DN to create the dummy certificate.
@@ -852,16 +849,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         } catch (CesecoreException e) {
             throw new IllegalStateException(e.getLocalizedMessage(), e);
         }
-
         assertNotNull("Failed to create a test user certificate", certificate);
-
-        // Add the credentials and new principal
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-
         // We cannot use the X509CertificateAuthenticationToken here, since it can only be used internally in a JVM.
-        AuthenticationToken result = new TestX509CertificateAuthenticationToken(principals, credentials);
+        AuthenticationToken result = new TestX509CertificateAuthenticationToken(certificate);
         assertNotNull("Failed to create authentication token.", result);
         return result;
     }

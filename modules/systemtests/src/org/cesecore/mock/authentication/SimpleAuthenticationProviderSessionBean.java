@@ -18,7 +18,6 @@ import java.security.Principal;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.ejb.Stateless;
@@ -137,14 +136,8 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
                 log.debug("Creates a self signed authentication certificate, fp="+CertTools.getFingerprintAsString(certificate));
             }
         }
-        // Add the credentials and new principal
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-
         // We cannot use the X509CertificateAuthenticationToken here, since it can only be used internally in a JVM.
-        AuthenticationToken result = new TestX509CertificateAuthenticationToken(principals, credentials);
+        AuthenticationToken result = new TestX509CertificateAuthenticationToken(certificate);
         return result;
     }
 

@@ -14,6 +14,8 @@ package org.cesecore.authentication.tokens;
 
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -64,28 +66,36 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
      *            A set of X509Certificates. As with the principals, this set should contain one and only one value, anything else will result in a
      *            {@link InvalidAuthenticationTokenException} being thrown.
      */
-    public X509CertificateAuthenticationToken(Set<X500Principal> principals, Set<X509Certificate> credentials) {
+    public X509CertificateAuthenticationToken(final Set<X500Principal> principals, final Set<X509Certificate> credentials) {
         super(principals, credentials);
-
         /*
          * In order to save having to verify the credentials set every time the <code>matches(...)</code> method is called, it's checked here, and the
          * resulting credential is stored locally.
          */
-        X509Certificate[] certificateArray = getCredentials().toArray(new X509Certificate[0]);
+        final X509Certificate[] certificateArray = getCredentials().toArray(new X509Certificate[0]);
         if (certificateArray.length != 1) {
             throw new InvalidAuthenticationTokenException("X509CertificateAuthenticationToken was containing " + certificateArray.length
                     + " credentials instead of 1.");
         } else {
             certificate = certificateArray[0];
         }
-        
         String certstring = CertTools.getSubjectDN(certificate).toString();
         adminCaId = CertTools.getIssuerDN(certificate).hashCode();
         certstring = serialPattern.matcher(certstring).replaceAll("SN=");
-        String altNameString = CertTools.getSubjectAlternativeName(certificate);
-
+        final String altNameString = CertTools.getSubjectAlternativeName(certificate);
         dnExtractor = new DNFieldExtractor(certstring, DNFieldExtractor.TYPE_SUBJECTDN);
         anExtractor = new DNFieldExtractor(altNameString, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+    }
+
+    /**
+     * Standard simplified constructor for X509CertificateAuthenticationToken
+     * 
+     * @param certificate A X509Certificate that will be used as principal and credential.
+     * @throws NullPointerException if the provided certificate is null
+     */
+    public X509CertificateAuthenticationToken(final X509Certificate certificate) {
+        this(new HashSet<>(Arrays.asList(new X500Principal[]{ certificate.getSubjectX500Principal() })),
+                new HashSet<>(Arrays.asList(new X509Certificate[]{ certificate })));
     }
 
     /**

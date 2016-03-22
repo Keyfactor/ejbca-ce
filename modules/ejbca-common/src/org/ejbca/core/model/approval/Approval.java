@@ -19,10 +19,6 @@ import java.io.ObjectOutput;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.security.auth.x500.X500Principal;
 
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -168,11 +164,7 @@ public class Approval implements Comparable<Approval>, Externalizable {
             final Admin admin = (Admin) in.readObject();
             final X509Certificate x509cert = (X509Certificate)admin.getAdminInformation().getX509Certificate();
             if (x509cert != null) {
-                Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-                credentials.add(x509cert);
-                Set<X500Principal> principals = new HashSet<X500Principal>();
-                principals.add(x509cert.getSubjectX500Principal());
-                this.admin = new X509CertificateAuthenticationToken(principals, credentials);            	
+                this.admin = new X509CertificateAuthenticationToken(x509cert);            	
 				this.adminCertIssuerDN = CertTools.getIssuerDN(x509cert);
 				this.adminCertSerialNumber = CertTools.getSerialNumberAsString(x509cert);
             } else if ((admin.getAdminType() >= 0) && (admin.getAdminType() <= 5)) {

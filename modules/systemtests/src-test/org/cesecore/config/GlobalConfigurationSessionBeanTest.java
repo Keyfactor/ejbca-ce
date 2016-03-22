@@ -25,8 +25,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.security.auth.x500.X500Principal;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -79,16 +77,11 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         assertFalse("No CAs exists so this test will not work", caids.isEmpty());
 
         // Add the credentials and new principal
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-        nonCliAdmins = new AuthenticationToken[] {
         // This authtoken should not be possible to use remotely
-        new X509CertificateAuthenticationToken(principals, credentials) };
+        nonCliAdmins = new AuthenticationToken[] { new X509CertificateAuthenticationToken(certificate) };
     }
 
     @After

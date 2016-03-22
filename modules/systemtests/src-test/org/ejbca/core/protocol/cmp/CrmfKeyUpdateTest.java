@@ -1634,9 +1634,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         }
 
         final X509Certificate certificate;
-        // If we have a certificate as input, use that, otherwise generate a self signed certificate
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-
         // If there was no certificate input, create a self signed
         String dn = "C=SE,O=Test,CN=Test"; // default
         // If we have created a subject with an X500Principal we will use this DN to create the dummy certificate.
@@ -1678,14 +1675,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         } catch (CesecoreException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         }
-
-        // Add the credentials and new principal
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-
         // We cannot use the X509CertificateAuthenticationToken here, since it can only be used internally in a JVM.
-        AuthenticationToken result = new TestX509CertificateAuthenticationToken(principals, credentials);
+        AuthenticationToken result = new TestX509CertificateAuthenticationToken(certificate);
         return result;
     }
 

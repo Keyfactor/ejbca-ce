@@ -13,7 +13,6 @@
 package org.ejbca.core.ejb.authentication.web;
 
 import java.security.cert.X509Certificate;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +21,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -119,13 +117,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 }
                 // TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status
             }
-            final Set<X500Principal> principals = new HashSet<X500Principal>();
-            principals.add(certificate.getSubjectX500Principal());
-            final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-            credentials.add(certificate);
-            return new X509CertificateAuthenticationToken(principals, credentials);
+            return new X509CertificateAuthenticationToken(certificate);
         }
-
     }
-
 }

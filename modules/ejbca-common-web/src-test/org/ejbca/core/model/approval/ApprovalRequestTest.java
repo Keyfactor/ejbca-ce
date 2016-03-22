@@ -19,10 +19,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.security.cert.X509Certificate;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.security.auth.x500.X500Principal;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -60,11 +56,7 @@ public class ApprovalRequestTest {
     @Test
 	public void testWriteExternal() throws Exception {
 		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(testcert);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(testcert.getSubjectX500Principal());
-        AuthenticationToken token = new X509CertificateAuthenticationToken(principals, credentials);
+        AuthenticationToken token = new X509CertificateAuthenticationToken(testcert);
 
 		DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false);
 		
@@ -89,11 +81,7 @@ public class ApprovalRequestTest {
     @Test
 	public void testGenerateApprovalId() throws Exception {
 		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(testcert);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(testcert.getSubjectX500Principal());
-        AuthenticationToken token = new X509CertificateAuthenticationToken(principals, credentials);
+        AuthenticationToken token = new X509CertificateAuthenticationToken(testcert);
 
         DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false);
 		
