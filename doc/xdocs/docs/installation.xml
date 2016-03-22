@@ -867,6 +867,15 @@ ant deploy-keystore
 </source>
 </subsubsection>
 
+<subsubsection name="Optional: Add support for sending email">
+<p>If you need support for sending email (smtp) you can configure EjbcaMail with:</p>
+<source>
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejbca-mail-smtp:add(port="993", host="my.mail.server")
+/subsystem=mail/mail-session="java:/EjbcaMail":add(jndi-name=java:/EjbcaMail, from=noreploy@mymail)
+/subsystem=mail/mail-session="java:/EjbcaMail"/server=smtp:add(outbound-socket-binding-ref=ejbca-mail-smtp, ssl=true, username=smtpuser, password=smtppassword)
+</source>
+</subsubsection>
+
 </subsection>
 
 <subsection name="WildFly 8">
@@ -1080,6 +1089,15 @@ ant deploy-keystore
 </source>
 <p>If you are using OCSP GET requests, setting URI encoding and allowing encoding for Query and backslash above is needed.</p>
 <note>WildFly will most likely get confused at this step, and will need a restart with ":shutdown(restart=true)".</note>
+</subsubsection>
+
+<subsubsection name="Optional: Add support for sending email">
+<p>If you need support for sending email (smtp) you can configure EjbcaMail with:</p>
+<source>
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejbca-mail-smtp:add(port="993", host="my.mail.server")
+/subsystem=mail/mail-session="java:/EjbcaMail":add(jndi-name=java:/EjbcaMail, from=noreploy@mymail)
+/subsystem=mail/mail-session="java:/EjbcaMail"/server=smtp:add(outbound-socket-binding-ref=ejbca-mail-smtp, ssl=true, username=smtpuser, password=smtppassword)
+</source>
 </subsubsection>
 
 </subsection>
