@@ -33,6 +33,7 @@
 		<path location="${mod.peerconnector-common.lib}"/>
 		<path location="${mod.peerconnector-interface.lib}"/>
 		<path location="${mod.peerconnector-publ.lib}"/>
+		<path location="${mod.peerconnector-ra.lib}"/>
 		<path location="${mod.edition-specific-interface.lib}"/>
 		<path location="${mod.edition-specific-ejb.lib}"/>
 		<path location="${mod.statedump-common.lib}"/>
