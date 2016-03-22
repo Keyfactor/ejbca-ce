@@ -49,9 +49,9 @@ public class RaAccessBean implements Serializable {
     
     private AccessSet myAccess = null;
     
-    //public boolean isAuthorized(String... resources) {
-    public boolean isAuthorized(String resources) {
-        if (myAccess == null) {
+    // We can't use varargs from JSF, so we only support one parameter
+    public boolean isAuthorized(String resource) {
+        if (myAccess == null || isCacheInvalidated()) {
             final AuthenticationToken authenticationToken = raAuthenticationBean.getAuthenticationToken();
             try {
                 myAccess = raMasterApiBean.getUserAccessSet(authenticationToken);
@@ -60,7 +60,12 @@ public class RaAccessBean implements Serializable {
                 myAccess = new AccessSet(); // empty access set
             }
         }
-        return myAccess.isAuthorized(resources);
+        return myAccess.isAuthorized(resource);
+    }
+    
+    private boolean isCacheInvalidated() {
+        // TODO invalidation of caches on the RA needs to be implemented somehow (see ECA-4919)
+        return false;
     }
     
     @Deprecated
