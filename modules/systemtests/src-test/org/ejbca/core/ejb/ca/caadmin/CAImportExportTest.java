@@ -27,11 +27,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
-
-import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -91,12 +87,7 @@ public class CAImportExportTest  {
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertProfileSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-
-        adminTokenNoAuth = new X509CertificateAuthenticationToken(principals, credentials);
+        adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
     }
 
     @Before

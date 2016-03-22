@@ -22,11 +22,7 @@ import java.security.KeyPair;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import javax.security.auth.x500.X500Principal;
 
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -198,13 +194,7 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
         
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CrlStoreSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-
-        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(principals, credentials);
+        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
         
     	X509CRL crl = CertTools.getCRLfromByteArray(testcrl);    	
     	BigInteger crlnumber = CrlExtensions.getCrlNumber(crl);

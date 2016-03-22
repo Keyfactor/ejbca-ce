@@ -28,9 +28,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -849,11 +847,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         // AuthenticationToken that does not have privileges to create a certificate
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertProfileSessionNoAuth", 365, null, keys.getPrivate(),
                 keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(principals, credentials);
+        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
 
         EndEntityInformation user = new EndEntityInformation("certcreateauth", "C=SE,O=AnaTom,CN=certcreateauth", testx509ca.getCAId(), null,
                 "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,

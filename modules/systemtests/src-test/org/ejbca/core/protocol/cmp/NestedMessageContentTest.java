@@ -301,7 +301,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
         PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(reqSubjectDN)), 
-                    new GeneralName(new X500Name(((X509Certificate)this.cacert).getSubjectDN().getName())));
+                    new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
         myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
         // senderNonce
         myPKIHeader.setSenderNonce(new DEROctetString(nonce));
@@ -371,7 +371,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(reqSubjectDN)), new GeneralName(new X500Name(((X509Certificate)this.cacert).getSubjectDN()
+        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(reqSubjectDN)), new GeneralName(new X500Name(this.cacert.getSubjectDN()
                    .getName())));
         myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
         // senderNonce
@@ -432,7 +432,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         String reqSubjectDN = "CN=bogusSubjectNested";
         final byte[] reqNonce = CmpMessageHelper.createSenderNonce();
         final byte[] reqTransid = CmpMessageHelper.createSenderNonce();
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(reqSubjectDN)), new GeneralName(new X500Name(((X509Certificate)this.cacert).getSubjectDN()
+        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(reqSubjectDN)), new GeneralName(new X500Name(this.cacert.getSubjectDN()
                    .getName())));
         myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
         // senderNonce
@@ -495,7 +495,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(reqSubjectDN), new GeneralName(new X500Name(((X509Certificate)this.cacert).getSubjectDN()
+        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(reqSubjectDN), new GeneralName(new X500Name(this.cacert.getSubjectDN()
                    .getName())));
         myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
         // senderNonce
@@ -565,7 +565,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(reqSubjectDN)), new GeneralName(new X500Name(((X509Certificate)this.cacert).getSubjectDN()
+        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(reqSubjectDN)), new GeneralName(new X500Name(this.cacert.getSubjectDN()
                    .getName())));
         myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
         // nonce
@@ -667,7 +667,7 @@ public class NestedMessageContentTest extends CmpTestCase {
 
         CertReqMessages myCertReqMessages = new CertReqMessages(myCertReqMsg);
 
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(SUBJECT_DN), new GeneralName(new X500Name(((X509Certificate)this.cacert).getSubjectDN().getName())));
+        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(SUBJECT_DN), new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
@@ -736,7 +736,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
         PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(reqSubjectDN), 
-                            new GeneralName(new X500Name(((X509Certificate)this.cacert).getSubjectDN().getName())));
+                            new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
         myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
         // senderNonce
         myPKIHeader.setSenderNonce(new DEROctetString(nonce));
@@ -814,7 +814,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
         PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(reqSubjectDN), 
-                new GeneralName(new X500Name(((X509Certificate)this.cacert).getSubjectDN().getName())));
+                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
         myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
         // senderNonce
         myPKIHeader.setSenderNonce(new DEROctetString(nonce));
@@ -894,7 +894,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
         PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(reqSubjectDN)), 
-                    new GeneralName(new X500Name(((X509Certificate)this.cacert).getSubjectDN().getName())));
+                    new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
         myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
         // senderNonce
         myPKIHeader.setSenderNonce(new DEROctetString(nonce));
@@ -1007,61 +1007,51 @@ public class NestedMessageContentTest extends CmpTestCase {
         }
         
         X509Certificate certificate = null;
-        // If we have a certificate as input, use that, otherwise generate a self signed certificate
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        
         // If there was no certificate input, create a self signed
-            String dn = "C=SE,O=Test,CN=Test"; // default
-            // If we have created a subject with an X500Principal we will use this DN to create the dummy certificate.
-            {
-                final Set<Principal> principals = subject.getPrincipals();
-                if ((principals != null) && (principals.size() > 0)) {
-                    final Principal p = principals.iterator().next();
-                    if (p instanceof X500Principal) {
-                        X500Principal xp = (X500Principal)p;
-                        dn = xp.getName();
-                    }
+        String dn = "C=SE,O=Test,CN=Test"; // default
+        // If we have created a subject with an X500Principal we will use this DN to create the dummy certificate.
+        {
+            final Set<Principal> principals = subject.getPrincipals();
+            if ((principals != null) && (principals.size() > 0)) {
+                final Principal p = principals.iterator().next();
+                if (p instanceof X500Principal) {
+                    X500Principal xp = (X500Principal)p;
+                    dn = xp.getName();
                 }
             }
-            
-            try {
-                createUser(adminName, dn, "foo123", this.caid);
-            } catch (AuthorizationDeniedException e1) {
-                throw new IllegalStateException("Error encountered when creating this.admin user", e1);
-            } catch (UserDoesntFullfillEndEntityProfile e1) {
-                throw new IllegalStateException("Error encountered when creating this.admin user", e1);
-            } catch (WaitingForApprovalException e1) {
-                throw new IllegalStateException("Error encountered when creating this.admin user", e1);
-            } catch (EjbcaException e1) {
-                throw new IllegalStateException("Error encountered when creating this.admin user", e1);
-            } catch (Exception e1) {
-                throw new IllegalStateException("Error encountered when creating this.admin user", e1);
-            }
-            
-            try {
-                certificate = (X509Certificate) this.signSession.createCertificate(this.admin, adminName, "foo123", new PublicKeyWrapper(keys.getPublic()));
-            } catch (ObjectNotFoundException e) {
-                throw new IllegalStateException("Error encountered when creating certificate", e);
-            } catch (CADoesntExistsException e) {
-                throw new IllegalStateException("Error encountered when creating certificate", e);
-            } catch (EjbcaException e) {
-                throw new IllegalStateException("Error encountered when creating certificate", e);
-            } catch (AuthorizationDeniedException e) {
-                throw new IllegalStateException("Error encountered when creating certificate", e);
-            } catch (CesecoreException e) {
-                throw new IllegalStateException("Error encountered when creating certificate", e);
-            } catch (javax.ejb.ObjectNotFoundException e) {
-                throw new IllegalStateException("Error encountered when creating certificate", e);
-            }
+        }
 
-            
-        // Add the credentials and new principal
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
+        try {
+            createUser(adminName, dn, "foo123", this.caid);
+        } catch (AuthorizationDeniedException e1) {
+            throw new IllegalStateException("Error encountered when creating this.admin user", e1);
+        } catch (UserDoesntFullfillEndEntityProfile e1) {
+            throw new IllegalStateException("Error encountered when creating this.admin user", e1);
+        } catch (WaitingForApprovalException e1) {
+            throw new IllegalStateException("Error encountered when creating this.admin user", e1);
+        } catch (EjbcaException e1) {
+            throw new IllegalStateException("Error encountered when creating this.admin user", e1);
+        } catch (Exception e1) {
+            throw new IllegalStateException("Error encountered when creating this.admin user", e1);
+        }
 
+        try {
+            certificate = (X509Certificate) this.signSession.createCertificate(this.admin, adminName, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        } catch (ObjectNotFoundException e) {
+            throw new IllegalStateException("Error encountered when creating certificate", e);
+        } catch (CADoesntExistsException e) {
+            throw new IllegalStateException("Error encountered when creating certificate", e);
+        } catch (EjbcaException e) {
+            throw new IllegalStateException("Error encountered when creating certificate", e);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException("Error encountered when creating certificate", e);
+        } catch (CesecoreException e) {
+            throw new IllegalStateException("Error encountered when creating certificate", e);
+        } catch (javax.ejb.ObjectNotFoundException e) {
+            throw new IllegalStateException("Error encountered when creating certificate", e);
+        }
         // We cannot use the X509CertificateAuthenticationToken here, since it can only be used internally in a JVM.
-        AuthenticationToken result = new TestX509CertificateAuthenticationToken(principals, credentials);
+        AuthenticationToken result = new TestX509CertificateAuthenticationToken(certificate);
         return result;
     }
     
