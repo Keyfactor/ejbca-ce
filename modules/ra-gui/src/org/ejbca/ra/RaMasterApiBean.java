@@ -17,8 +17,10 @@ import java.io.Serializable;
 import javax.faces.bean.ApplicationScoped;
 import javax.faces.bean.ManagedBean;
 
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.access.AccessSet;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.era.RaMasterApi;
 import org.ejbca.core.model.era.RaMasterApiProxy;
@@ -37,6 +39,10 @@ public class RaMasterApiBean implements Serializable {
 
     public boolean isBackendAvailable() {
         return raMasterApi.isBackendAvailable();
+    }
+    
+    public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        return raMasterApi.getUserAccessSet(authenticationToken);
     }
 
     @Deprecated
