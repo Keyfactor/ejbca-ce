@@ -31,8 +31,11 @@ import org.cesecore.util.CertTools;
  *
  * @version $Id$
  */
-class CRLCache implements ICRLCache {
+public class CRLCache {
 	private static final Logger log = Logger.getLogger(CRLCache.class);
+	
+    private static CRLCache instance = null;
+    private static final Lock lock = new ReentrantLock();
 	
 	private final CrlStoreSessionLocal crlSession;
 	private final CaCertificateCache certCache;
@@ -57,24 +60,50 @@ class CRLCache implements ICRLCache {
 	 */
 	final private Lock rebuildlock = new ReentrantLock();
 
+	 /**
+     * @return  {@link CRLCache} for the CA.
+     */
+    public static CRLCache getInstance(CrlStoreSessionLocal crlSession, CaCertificateCache certCache) {
+        if (instance != null) {
+            return instance;
+        }
+        lock.lock();
+        try {
+            if ( instance==null ) {
+                instance = new CRLCache(crlSession, certCache);
+            }
+            return instance;
+        } finally {
+            lock.unlock();
+        }
+    }
+	
 	/**
 	 * @param crlSession DB connections
 	 * @param certStore references to needed CA certificates.
 	 */
-	CRLCache(CrlStoreSessionLocal crlSession, CaCertificateCache certCache) {
+	private CRLCache(CrlStoreSessionLocal crlSession, CaCertificateCache certCache) {
 		super();
 		this.crlSession = crlSession;
 		this.certCache = certCache;
 	}
 
-	@Override
+	/**
+     * @param id The ID of the subject key identifier.
+     * @param isDelta true if delta CRL
+     * @return CRL or null if the CRL does not exist in the cache.
+     */
 	public byte[] findBySubjectKeyIdentifier(HashID id, boolean isDelta) {
-		return findLatest(this.certCache.findBySubjectKeyIdentifier(id), isDelta);
+		return findLatest(certCache.findBySubjectKeyIdentifier(id), isDelta);
 	}
 
-	@Override
+	/**
+     * @param id The ID of the issuer DN.
+     * @param isDelta true if delta CRL
+     * @return  array of X509Certificate or null if no CRLs exist in the cache.
+     */
 	public byte[] findLatestByIssuerDN(HashID id, boolean isDelta) {
-		return findLatest(this.certCache.findLatestBySubjectDN(id), isDelta);
+		return findLatest(certCache.findLatestBySubjectDN(id), isDelta);
 	}
 
 	private byte[] findLatest(X509Certificate caCert, boolean isDelta) {
