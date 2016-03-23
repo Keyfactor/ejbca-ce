@@ -119,15 +119,6 @@
     	</managed-property>
   </managed-bean>
   <managed-bean>
-    	<managed-bean-name>peerInAuthMBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.peerconnector.PeerInAuthMBean</managed-bean-class>
-    	<managed-bean-scope>session</managed-bean-scope>
-    	<managed-property>
-    	    <property-name>peerConnectorsMBean</property-name>
-    	    <value>#{peerConnectorsMBean}</value>
-    	</managed-property>
-  </managed-bean>
-  <managed-bean>
     	<managed-bean-name>scepConfigMBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.configuration.ScepConfigMBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
@@ -258,10 +249,6 @@
   		<from-outcome>manage</from-outcome>
   		<to-view-id>/peerconnector/peermgmt.jsp</to-view-id>
   	</navigation-case>
-  	<navigation-case>
-  		<from-outcome>inauth</from-outcome>
-  		<to-view-id>/peerconnector/peerinauth.jsp</to-view-id>
-  	</navigation-case>
   </navigation-rule>
   <navigation-rule>
   	<from-view-id>/peerconnector/peerconnector.jsp</from-view-id>
@@ -272,13 +259,6 @@
   </navigation-rule>
   <navigation-rule>
   	<from-view-id>/peerconnector/peermgmt.jsp</from-view-id>
-  	<navigation-case>
-  		<from-outcome>done</from-outcome>
-  		<to-view-id>/peerconnector/peerconnectors.jsp</to-view-id>
-  	</navigation-case>
-  </navigation-rule>
-  <navigation-rule>
-  	<from-view-id>/peerconnector/peerinauth.jsp</from-view-id>
   	<navigation-case>
   		<from-outcome>done</from-outcome>
   		<to-view-id>/peerconnector/peerconnectors.jsp</to-view-id>
