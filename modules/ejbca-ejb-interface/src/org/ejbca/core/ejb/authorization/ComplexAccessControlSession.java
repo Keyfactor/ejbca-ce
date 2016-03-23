@@ -61,4 +61,10 @@ public interface ComplexAccessControlSession {
     Map<String, Set<String>> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken,
             boolean enableendentityprofilelimitations, boolean usehardtokenissuing, boolean usekeyrecovery,
             Collection<Integer> authorizedEndEntityProfileIds, Collection<Integer> authorizedUserDataSourceIds, String[] customaccessrules);
+
+
+    /**
+     * Asks all remote RAs to clears their per-AuthenticationToken caches.
+     */
+    void forceRemoteCacheExpire();
 }
