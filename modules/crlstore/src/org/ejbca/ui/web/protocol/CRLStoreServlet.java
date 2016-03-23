@@ -26,8 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.protocol.crlstore.CRLCacheFactory;
-import org.ejbca.core.protocol.crlstore.ICRLCache;
+import org.ejbca.core.protocol.crlstore.CRLCache;
 import org.ejbca.util.HTMLTools;
 
 /** 
@@ -43,12 +42,12 @@ public class CRLStoreServlet extends StoreServletBase {
 	@EJB
 	private CrlStoreSessionLocal crlSession;
 	
-	private ICRLCache crlCache;
+	private CRLCache crlCache;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		this.crlCache = CRLCacheFactory.getInstance(this.crlSession, this.certCache);		
+		this.crlCache = CRLCache.getInstance(crlSession, certCache);		
 	}
 
 	@Override

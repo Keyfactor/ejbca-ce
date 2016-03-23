@@ -84,6 +84,10 @@ public class CertificateFinderBean {
 		return mCurrentCA;
 	}
 
+	public boolean existsDeltaCrlForCurrentCA() {
+	    return ejb.getCrlStoreSession().getLastCRLInfo(getCAInfo().getSubjectDN(), true) != null;
+	}
+	
 	public void setCurrentCA(Integer currentCA) {
 		if (log.isTraceEnabled()) {
 			log.trace(">setCurrentCA(" + currentCA + ")");

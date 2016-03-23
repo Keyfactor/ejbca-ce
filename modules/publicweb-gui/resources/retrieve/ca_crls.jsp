@@ -22,6 +22,7 @@
 			<c:param name="issuer" value="${caDN}" />
 		</c:url>
 		
+		<% if(finder.existsDeltaCrlForCurrentCA()) { %>
 		<c:url var="derdelta" value="../publicweb/webdist/certdist" >
 			<c:param name="cmd" value="deltacrl" />
 			<c:param name="issuer" value="${caDN}" />
@@ -31,10 +32,10 @@
 			<c:param name="format" value="PEM" />
 			<c:param name="issuer" value="${caDN}" />
 		</c:url>
+		<% } %>
 
 		<hr />
 		<h2>CA: ${caName}</h2>
-		<p>The Certificate Revocation List is available in two ways:</p>
 		<table>
 		<thead><tr>
 			<th style="text-align: left;">CRL</th>
@@ -49,10 +50,14 @@
 		</ul>
 		</td>
 		<td>
+		<% if(finder.existsDeltaCrlForCurrentCA()) { %>
 		<ul>
 		  	<li><a href="${derdelta}">DER format</a></li> 
 		  	<li><a href="${pemdelta}">PEM format</a></li> 
 		</ul>
+		<% } else { %>
+			<p><i>None available</i><p>
+		<% } %>
 		</td>
 		</tr>
 		</tbody>
