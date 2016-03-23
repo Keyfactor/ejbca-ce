@@ -93,4 +93,9 @@ public class EnterpriseEjbLocalHelper implements EnterpriseEditionEjbBridgeSessi
     public boolean isRunningEnterprise() {
         return getEnterpriseEditionEjbLocal().isRunningEnterprise();
     }
+    
+    @Override
+    public void clearEnterpriseAuthorizationCaches() {
+        getEnterpriseEditionEjbLocal().clearEnterpriseAuthorizationCaches();
+    }
 }

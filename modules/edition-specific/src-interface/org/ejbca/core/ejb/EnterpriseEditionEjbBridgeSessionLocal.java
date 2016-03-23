@@ -31,4 +31,7 @@ public interface EnterpriseEditionEjbBridgeSessionLocal {
      * @return true if running EJBCA Enterprise Edition
      */
     boolean isRunningEnterprise();
+
+    /** Clears EJBCA Enterprise specific authorization caches */
+    void clearEnterpriseAuthorizationCaches();
 }

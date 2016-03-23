@@ -61,10 +61,12 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.util.EnterpriseEjbLocalHelper;
 
 /**
  * This session bean handles complex authorization queries.
@@ -86,6 +88,8 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     private CaSessionLocal caSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private EnterpriseEditionEjbBridgeSessionLocal enterpriseEditionEjbBridgeSession;
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
     @EJB
@@ -430,4 +434,13 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         return count > 0;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public void forceRemoteCacheExpire() {
+        log.trace(">forceRemoteCacheExpire");
+        // TODO add a new EJB method somewhere that sets a "clear cache" timestamp to clear the local RA auth caches (in case CA-ERA-PRA runs on the same machine)
+        new EnterpriseEjbLocalHelper().clearEnterpriseAuthorizationCaches();
+        log.trace("<forceRemoteCacheExpire");
+    }
+    
 }

@@ -34,4 +34,9 @@ public class EnterpriseEditionEjbBridgeSessionBean implements EnterpriseEditionE
     public boolean isRunningEnterprise() {
         return false;
     }
+
+    @Override
+    public void clearEnterpriseAuthorizationCaches() {
+        // NOOP in community edition
+    }
 }
