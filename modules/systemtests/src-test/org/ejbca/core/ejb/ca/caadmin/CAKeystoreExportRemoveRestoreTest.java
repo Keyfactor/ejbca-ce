@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ca.caadmin;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -48,7 +49,6 @@ import org.junit.Test;
  * CA keystore can be removed using caAdminSessionBean.removeCAKeyStore(). A CA
  * keystore can be restored using caAdminSessionBean.restoreCAKeyStore().
  * 
- * @author Markus Kilås
  * @version $Id$
  */
 public class CAKeystoreExportRemoveRestoreTest {
@@ -302,12 +302,9 @@ public class CAKeystoreExportRemoveRestoreTest {
         // The token should now be offline
         CAInfo info = caSession.getCAInfo(internalAdmin, caname);
         assertEquals("An offline CA Service was expected", CAConstants.CA_OFFLINE, info.getStatus());
-        try {
-            cryptoTokenManagementSession.isCryptoTokenStatusActive(internalAdmin, cryptoTokenId);
-            fail("We expect a removed CA keystore to remove a soft CryptoToken entirely.");
-        } catch (Exception e) {
-            // Ok
-        }
+        assertFalse("We expect a removed CA keystore to remove a soft CryptoToken entirely.",
+                cryptoTokenManagementSession.isCryptoTokenStatusActive(internalAdmin, cryptoTokenId));
+ 
         // Should not be possible to activate
         caAdminSession.activateCAService(internalAdmin, cainfo.getCAId());
         info = caSession.getCAInfo(internalAdmin, caname);
