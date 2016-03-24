@@ -123,6 +123,9 @@ public class RaLocaleBean implements Serializable {
      * @return the localized message or "???messageKey???" if no key way found.
      */
     public String getMessage(final String messageKey, final Object...params) {
+        if (messageKey==null) {
+            return "???null???";
+        }
         final FacesContext facesContext = FacesContext.getCurrentInstance();
         String messageTemplate = null;
         try {
