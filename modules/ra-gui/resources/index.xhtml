@@ -35,7 +35,6 @@
     	        </h:panelGrid>
                 <h:commandButton action="#{raExampleBean.testAction}" value="#{msg.somefunction_command}"/>
             </h:form>
-            <h:outputLabel value="[is authorized to root, method 1]" rendered="#{raAccessBean.isAuthorized('/')}"/>
             <h:outputLabel value="[is authorized to root, method 2]" rendered="#{raAccessBean.authorizedToRootTEST}"/>
         </ui:define>
     </ui:composition>

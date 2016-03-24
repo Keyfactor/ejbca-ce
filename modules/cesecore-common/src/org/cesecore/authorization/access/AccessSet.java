@@ -30,8 +30,33 @@ public final class AccessSet implements Serializable {
     private static final Logger log = Logger.getLogger(AccessSet.class);
     private static final long serialVersionUID = -6522714939328731306L;
     
+    /**
+     * Wildcard meaning: Access is granted to some items. Used only in calls to isAuthorized to query
+     * whether we have access to any of the items (and in AccessSet objects for faster access control checks).
+     * <p>
+     * Example: "/cryptotoken/use/*SOME", which would check if we have access to use any cryptotoken.
+     */
+    public static final String WILDCARD_SOME = "*SOME";
+    
+    /**
+     * Wildcard meaning: Access is granted to all items (which must be numeric ids, currently).
+     * Used in access rules only, never in calls to isAuthorized. EJBCA does not expose this feature (yet), but it's
+     * tested here in CESeCore in AccessSetTest. Consider it an experimental feature.
+     * <p>
+     * Example: "/ca/*ALL", which would grant access to all CAs.
+     */
+    public static final String WILDCARD_ALL = "*ALL";
+    
+    /**
+     * Wildcard meaning: Access is granted recursively to all subresources (but not the resource itself, for performance reasons).
+     * Used internally only, never in calls to isAuthorized (AccessSets don't have anything like the requireRecursive parameter).
+     * <p>
+     * Example: "/*RECURSIVE" together with "/", which would grant access to everything
+     */
+    public static final String WILDCARD_RECURSIVE = "*RECURSIVE";
+    
     private static final Pattern idInRulename = Pattern.compile("^/(.+)/(-?[0-9]+)(/|$)");
-    private static final String WILDCARD_REPLACEMENT = "/$1/" + AccessSets.WILDCARD_ALL + "$3";
+    private static final String WILDCARD_REPLACEMENT = "/$1/" + WILDCARD_ALL + "$3";
     
     private final Collection<String> set;
     
@@ -67,9 +92,9 @@ public final class AccessSet implements Serializable {
                 }
                 parentResource = parentResource.substring(0, slash);
                 if (log.isTraceEnabled()) {
-                    log.trace("Checking for '"+ parentResource + "/" + AccessSets.WILDCARD_RECURSIVE + "'");
+                    log.trace("Checking for '"+ parentResource + "/" + WILDCARD_RECURSIVE + "'");
                 }
-                if (set.contains(parentResource + "/" + AccessSets.WILDCARD_RECURSIVE)) {
+                if (set.contains(parentResource + "/" + WILDCARD_RECURSIVE)) {
                     continue NEXT_RESOURCE; // OK. Check next resource
                 }
             }
