@@ -140,7 +140,13 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			if ( req==null ) {
 				throw new IOException("No CMP message could be parsed from received DER object.");
 			}
-		} catch (Throwable t) { // NOPMD: catch all to report errors back to client
+		} catch (IllegalArgumentException e) { 
+            final String eMsg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
+            log.error(eMsg, e);
+            // Catch this case specifically, for the sake of being future proof. BC library will throw an 
+            // IllegalArgumentException if the underlying ASN.1 could not be parsed. 
+            return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, eMsg);
+        } catch (Throwable t) { // NOPMD: catch all to report errors back to client
 			final String eMsg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
 			log.error(eMsg, t);
 			// If we could not read the message, we should return an error BAD_REQUEST
