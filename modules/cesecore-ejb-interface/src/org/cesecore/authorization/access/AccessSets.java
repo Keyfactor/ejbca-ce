@@ -40,31 +40,6 @@ public final class AccessSets {
     private static final Logger log = Logger.getLogger(AccessSets.class);
     private static final Pattern idOrAllInRulename = Pattern.compile("^/(.+)/(-?[0-9]+|\\*ALL)(/|$)");
     
-    /**
-     * Wildcard meaning: Access is granted to some items. Used only in calls to isAuthorized to query
-     * whether we have access to any of the items (and in AccessSet objects for faster access control checks).
-     * <p>
-     * Example: "/cryptotoken/use/*SOME", which would check if we have access to use any cryptotoken.
-     */
-    public static final String WILDCARD_SOME = "*SOME";
-    
-    /**
-     * Wildcard meaning: Access is granted to all items (which must be numeric ids, currently).
-     * Used in access rules only, never in calls to isAuthorized. EJBCA does not expose this feature (yet), but it's
-     * tested here in CESeCore in AccessSetTest. Consider it an experimental feature.
-     * <p>
-     * Example: "/ca/*ALL", which would grant access to all CAs.
-     */
-    public static final String WILDCARD_ALL = "*ALL";
-    
-    /**
-     * Wildcard meaning: Access is granted recursively to all subresources (but not the resource itself, for performance reasons).
-     * Used internally only, never in calls to isAuthorized (AccessSets don't have anything like the requireRecursive parameter).
-     * <p>
-     * Example: "/*RECURSIVE" together with "/", which would grant access to everything
-     */
-    public static final String WILDCARD_RECURSIVE = "*RECURSIVE";
-    
     /** Map from role primary key to list of all allowed access rules, including generated wildcard rules */
     private Map<Integer,Collection<String>> sets = null;
     private Collection<RoleData> roles = null;
@@ -220,7 +195,7 @@ public final class AccessSets {
         // Add wildcards
         final Matcher matcher = idOrAllInRulename.matcher(rulename);
         if (matcher.find()) {
-            final String availableRule = matcher.replaceFirst("/$1/" + WILDCARD_SOME + "$3");
+            final String availableRule = matcher.replaceFirst("/$1/" + AccessSet.WILDCARD_SOME + "$3");
             set.add(availableRule);
             if (log.isTraceEnabled()) {
                 log.trace("Added rule: " + availableRule);
@@ -230,7 +205,7 @@ public final class AccessSets {
     
     private void addSubRules(final Collection<String> set, final String rulename) {
         // For now we just include the recursive rules directly, instead of trying to expand them
-        final String recursiveRule = "/".equals(rulename) ? "/" + WILDCARD_RECURSIVE : rulename + "/" + WILDCARD_RECURSIVE;
+        final String recursiveRule = "/".equals(rulename) ? "/" + AccessSet.WILDCARD_RECURSIVE : rulename + "/" + AccessSet.WILDCARD_RECURSIVE;
         addRule(set, recursiveRule);
         
         // TODO this is tricky because we can't have the ejbca-specific rules in CESeCore.

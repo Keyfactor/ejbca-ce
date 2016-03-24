@@ -91,10 +91,12 @@ public class AccessTreeCache {
         return accessTree;
     }
 
+    /** Returns all local access sets */
     public AccessSets getAccessSets() {
         return accessSets;
     }
     
+    /** Returns the local access rules for the given authentication token. */
     public AccessSet getAccessSetForAuthToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         return accessSets.getAccessSetForAuthToken(authenticationToken);
     }

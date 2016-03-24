@@ -16,12 +16,15 @@ import java.io.Serializable;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
+import javax.faces.bean.RequestScoped;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.access.AccessSet;
+import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.util.ConcurrentCache;
 
 /**
  * Managed bean with isAuthorized method. 
@@ -29,11 +32,13 @@ import org.cesecore.authorization.access.AccessSet;
  * @version $Id$
  */
 @ManagedBean
-@ViewScoped
+@RequestScoped
 public class RaAccessBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaAccessBean.class);
+    
+    private static final long CACHE_READ_TIMEOUT = 2000L; // milliseconds
     
     @ManagedProperty(value="#{raMasterApiBean}")
     private RaMasterApiBean raMasterApiBean;
@@ -42,34 +47,41 @@ public class RaAccessBean implements Serializable {
     @ManagedProperty(value="#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
-
-    @ManagedProperty(value="#{raLocaleBean}")
-    private RaLocaleBean raLocaleBean;
-    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
     
-    private AccessSet myAccess = null;
-    
-    // We can't use varargs from JSF, so we only support one parameter
-    public boolean isAuthorized(String resource) {
-        if (myAccess == null || isCacheInvalidated()) {
-            final AuthenticationToken authenticationToken = raAuthenticationBean.getAuthenticationToken();
-            try {
-                myAccess = raMasterApiBean.getUserAccessSet(authenticationToken);
-            } catch (AuthenticationFailedException e) {
-                log.info("Failed to match authentication token '" + authenticationToken + "' to a role.");
-                myAccess = new AccessSet(); // empty access set
-            }
+    private boolean isAuthorized(String... resources) {
+        final AuthenticationToken authenticationToken = raAuthenticationBean.getAuthenticationToken();
+        AccessSet myAccess;
+        final ConcurrentCache<AuthenticationToken,AccessSet> cache = RemoteAccessSetCacheHolder.getCache();
+        
+        // Try to read from cache
+        final ConcurrentCache<AuthenticationToken,AccessSet>.Entry entry = cache.openCacheEntry(authenticationToken, CACHE_READ_TIMEOUT);
+        if (entry == null) {
+            // Other thread could not fetch the AccessSet on time
+            throw new IllegalStateException("Timed out waiting for access rules");
         }
-        return myAccess.isAuthorized(resource);
+        try {
+            if (entry.isInCache()) {
+                myAccess = entry.getValue();
+            } else {
+                try {
+                    myAccess = raMasterApiBean.getUserAccessSet(authenticationToken);
+                } catch (AuthenticationFailedException e) {
+                    log.info("Failed to match authentication token '" + authenticationToken + "' to a role.");
+                    myAccess = new AccessSet(); // empty access set
+                }
+                entry.putValue(myAccess);
+            }
+        } finally {
+            entry.close();
+        }
+        return myAccess.isAuthorized(resources);
     }
     
-    private boolean isCacheInvalidated() {
-        // TODO invalidation of caches on the RA needs to be implemented somehow (see ECA-4919)
-        return false;
-    }
+    // Methods for checking authorization to various parts of EJBCA can be defined below
     
+    /** Example method */
     @Deprecated
     public boolean isAuthorizedToRootTEST() {
-        return isAuthorized("/");
+        return isAuthorized(StandardRules.ROLE_ROOT.resource());
     }
 }
