@@ -163,7 +163,13 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             Collections.sort(items, new Comparator<CertificateProfileItem>() {
                 @Override
                 public int compare(final CertificateProfileItem a, final CertificateProfileItem b) {
+                    if(isCertProfileFixed(a.getId()) && !isCertProfileFixed(b.getId())) {
+                        return -1;
+                    } else if(!isCertProfileFixed(a.getId()) && isCertProfileFixed(b.getId())) {
+                        return 1;
+                    } else {
                     return a.getName().compareTo(b.getName());
+                    }
                 }
             });
             certificateProfileItems = new ListDataModel<CertificateProfileItem>(items);
@@ -607,8 +613,9 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                     log.debug("Error parsing certificate profile data: " + e.getMessage());
                 }
                 return null;
+            } finally {
+                decoder.close();
             }
-            decoder.close();
             cprofile.loadData(data);
 
             // Make sure CAs in profile exist
