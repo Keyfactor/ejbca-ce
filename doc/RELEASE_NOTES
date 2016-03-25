@@ -1,3 +1,9 @@
+EJBCA 6.5.1
+-----------
+
+In EJBCA 6.5.1 the optional Nonce sent in OCSP requests have been limited to 32 bytes to counter potential future issues. 
+Now a request containing a Nonce larger than 32 bytes will result in an error returned from the OCSP server.
+
 EJBCA 6.5.0
 -----------
 Primekey Solutions is very pleased to release EJBCA 6.5.0 into the wild. This release has primarily focused on tuning up the UI and responding 
