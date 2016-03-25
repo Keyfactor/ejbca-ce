@@ -14,6 +14,7 @@ package org.ejbca.ui.cli;
 
 import static org.junit.Assert.fail;
 
+import org.apache.log4j.Logger;
 import org.junit.Test;
 
 /**
@@ -24,6 +25,8 @@ import org.junit.Test;
  */
 public class ClearCacheCommandTest {
 
+    private static final Logger log = Logger.getLogger(ClearCacheCommandTest.class);
+    
     private ClearCacheCommand command = new ClearCacheCommand();
 
     @Test
@@ -33,7 +36,8 @@ public class ClearCacheCommandTest {
             command.execute(args);
         } catch (Exception e) {
             //Fail on any exception
-            fail("Command did not execute correctly");
+            log.error("ClearCacheCommand failed.", e);
+           fail("Command did not execute correctly. See logs:  " + e.getLocalizedMessage());
         }
     }
 }
