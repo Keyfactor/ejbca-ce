@@ -117,6 +117,8 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	private static final String SUBJECTALTNAME = "subjectaltname";
 
 	private static final String PRIVATESIGNKEYALIAS = "signKey";   
+    /** This alias was changed in EJBCA 6.4.1 */
+    private static final String OLDPRIVATESIGNKEYALIAS = "privatesignkeyalias";   
 
 	public CmsCAService(final ExtendedCAServiceInfo serviceinfo)  {
 		super(serviceinfo);
@@ -154,15 +156,23 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
                 if (log.isDebugEnabled()) {
                     log.debug("Finished loading CMS keystore");
                 }
-				privKey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
+                String alias = PRIVATESIGNKEYALIAS;
+				privKey = (PrivateKey) keystore.getKey(alias, null);
+				if (privKey == null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("privKey was null for alias "+alias+", trying with "+OLDPRIVATESIGNKEYALIAS);
+                    }
+	                alias = OLDPRIVATESIGNKEYALIAS;
+	                privKey = (PrivateKey) keystore.getKey(alias, null);
+				}
 				// Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this 
 				// Array were of SUNs own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
 				// As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
-				Collection<Certificate> coll = CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), null);
+				Collection<Certificate> coll = CertTools.getCertCollectionFromArray(keystore.getCertificateChain(alias), null);
 				this.certificatechain = new ArrayList<Certificate>(coll);  
 				status = getStatus();
 			} catch (Exception e) {
-				log.error("Could not load keystore or certificate for CA CMS service. Perhaps the password was changed? " + e.getMessage());
+				log.error("Could not load keystore or certificate for CA CMS service. Perhaps the password was changed? " + e.getMessage(), e);
 			} finally {
 				info = new CmsCAServiceInfo(status, getSubjectDN(), getSubjectAltName(), (String)this.data.get(KEYSPEC), 
 						(String) this.data.get(KEYALGORITHM), this.certificatechain);
