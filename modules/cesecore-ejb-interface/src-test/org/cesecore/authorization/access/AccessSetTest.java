@@ -31,10 +31,10 @@ public final class AccessSetTest {
     private static final Logger log = Logger.getLogger(AccessSetTest.class);
     
     private final AccessSet as = makeAccessSet("/test", "/one/two", "/three", "/three/four", "/three/four/five",
-            "/six", "/six/" + AccessSets.WILDCARD_RECURSIVE, "/seven/eight", "/seven/eight/" + AccessSets.WILDCARD_RECURSIVE,
-            "/nine/" + AccessSets.WILDCARD_ALL, "/ten/eleven/" + AccessSets.WILDCARD_ALL + "/subresource",
-            "/twelve/" + AccessSets.WILDCARD_SOME, "/twelve/-123456",
-            "/thirteen/" + AccessSets.WILDCARD_SOME + "/subres", "/thirteen/98765/subres");
+            "/six", "/six/" + AccessSet.WILDCARD_RECURSIVE, "/seven/eight", "/seven/eight/" + AccessSet.WILDCARD_RECURSIVE,
+            "/nine/" + AccessSet.WILDCARD_ALL, "/ten/eleven/" + AccessSet.WILDCARD_ALL + "/subresource",
+            "/twelve/" + AccessSet.WILDCARD_SOME, "/twelve/-123456",
+            "/thirteen/" + AccessSet.WILDCARD_SOME + "/subres", "/thirteen/98765/subres");
 
     @Test
     public void testSimpleAllowed() {
@@ -70,7 +70,7 @@ public final class AccessSetTest {
         assertTrue(as.isAuthorized("/six"));
         assertTrue(as.isAuthorized("/six/blabla"));
         assertTrue(as.isAuthorized("/six/-9876"));
-        assertTrue(as.isAuthorized("/six/blabla/" + AccessSets.WILDCARD_SOME + "/bla"));
+        assertTrue(as.isAuthorized("/six/blabla/" + AccessSet.WILDCARD_SOME + "/bla"));
         assertTrue(as.isAuthorized("/six/blabla/123456/bla"));
         assertTrue(as.isAuthorized("/seven/eight"));
         assertTrue(as.isAuthorized("/seven/eight/test"));
@@ -81,7 +81,7 @@ public final class AccessSetTest {
     @Test
     public void testSlashRecurisve() {
         log.trace(">testSlashRecurisve");
-        final AccessSet sr = makeAccessSet("/" + AccessSets.WILDCARD_RECURSIVE);
+        final AccessSet sr = makeAccessSet("/" + AccessSet.WILDCARD_RECURSIVE);
         assertTrue(sr.isAuthorized("/"));
         assertTrue(sr.isAuthorized("/one"));
         assertTrue(sr.isAuthorized("/one/two/three"));
@@ -106,8 +106,8 @@ public final class AccessSetTest {
     @Test
     public void testSomeWilcard() {
         log.trace(">testSomeWilcard");
-        assertTrue(as.isAuthorized("/twelve/" + AccessSets.WILDCARD_SOME));
-        assertTrue(as.isAuthorized("/thirteen/" + AccessSets.WILDCARD_SOME + "/subres"));
+        assertTrue(as.isAuthorized("/twelve/" + AccessSet.WILDCARD_SOME));
+        assertTrue(as.isAuthorized("/thirteen/" + AccessSet.WILDCARD_SOME + "/subres"));
         assertFalse(as.isAuthorized("/twelve/-11111"));
         assertFalse(as.isAuthorized("/thirteen/22222/subres"));
         log.trace("<testAllWilcard");
