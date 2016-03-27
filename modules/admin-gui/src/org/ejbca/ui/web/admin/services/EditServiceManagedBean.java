@@ -27,10 +27,12 @@ import javax.faces.model.SelectItem;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -78,6 +80,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
     private static final Logger log = Logger.getLogger(EditServiceManagedBean.class);
 
 	private final EjbLocalHelper ejb = new EjbLocalHelper();
+	private final CertificateProfileSessionLocal certificateProfileSession = ejb.getCertificateProfileSession();
 	private ServiceConfigurationView serviceConfigurationView;
 	private String serviceName = "";
 
@@ -320,7 +323,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
             }
         }
         return availableCANames;
-    }
+    }    
     
     /**
      * 
@@ -330,23 +333,32 @@ public class EditServiceManagedBean extends BaseManagedBean {
      */
     public Collection<SelectItem> getCertificateProfiles() {
         TreeMap<String, SelectItem> certificateProfiles = new TreeMap<String, SelectItem>();
-
-        final Integer[] certificateProfileTypes = new Integer[] { CertificateConstants.CERTTYPE_ENDENTITY,
-                CertificateConstants.CERTTYPE_ROOTCA, CertificateConstants.CERTTYPE_SUBCA };
+         
+        final List<Integer> certificateProfileTypes = new ArrayList<>();
+        certificateProfileTypes.add(CertificateConstants.CERTTYPE_ENDENTITY);
+        if (isAuthorizedTo(StandardRules.ROLE_ROOT.resource())) {
+            //Only root users may use CA profiles
+            certificateProfileTypes.add(CertificateConstants.CERTTYPE_ROOTCA);
+            certificateProfileTypes.add(CertificateConstants.CERTTYPE_SUBCA);
+        }
         
+        if (getEjbcaWebBean().getGlobalConfiguration().getIssueHardwareTokens()) {
+            certificateProfileTypes.add(CertificateConstants.CERTTYPE_HARDTOKEN);
+        }
+             
         for (Integer certificateProfileType : certificateProfileTypes) {
-            Collection<Integer> profiles = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(), certificateProfileType);
+            Collection<Integer> profiles = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), certificateProfileType);
             for (Integer certificateProfile : profiles) {
-                String profileName = ejb.getCertificateProfileSession().getCertificateProfileName(
+                String profileName = certificateProfileSession.getCertificateProfileName(
                         certificateProfile);
                 certificateProfiles.put(profileName.toLowerCase(), new SelectItem(certificateProfile.toString(), profileName));
             }
         }
         // Only add hardprofile certificate profiles if enabled.
         if( ( (GlobalConfiguration) ejb.getGlobalConfigurationSession().getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getIssueHardwareTokens()) {
-            Collection<Integer> profiles = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_HARDTOKEN);
+            Collection<Integer> profiles = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_HARDTOKEN);
             for (Integer certificateProfile : profiles) {
-                String profileName = ejb.getCertificateProfileSession().getCertificateProfileName(
+                String profileName = certificateProfileSession.getCertificateProfileName(
                         certificateProfile);
                 // In this loop we also get the CERTTYPE_ENDUSER profiles again, but those are simply overwritten since a map can't contain duplicates
                 certificateProfiles.put(profileName.toLowerCase(), new SelectItem(certificateProfile.toString(), profileName));
