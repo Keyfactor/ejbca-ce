@@ -19,8 +19,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -36,12 +38,17 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
@@ -66,11 +73,14 @@ public class ProfilesExportServlet extends HttpServlet {
     private static final long serialVersionUID = -8091852234056712787L;
     private static final Logger log = Logger.getLogger(ProfilesExportServlet.class);
 
-
+    @EJB
+    private AccessControlSessionLocal accessControlSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private WebAuthenticationProviderSessionLocal authenticationSession;
     
@@ -111,7 +121,24 @@ public class ProfilesExportServlet extends HttpServlet {
         if(StringUtils.equalsIgnoreCase(type, "cp")) {
             zipfilename = "certprofiles.zip";
       
-            Collection<Integer> certprofids = certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, 0);
+            final List<Integer> certificateProfileTypes = new ArrayList<>();
+            certificateProfileTypes.add(CertificateConstants.CERTTYPE_ENDENTITY);
+            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
+                //Only root users may use CA profiles
+                certificateProfileTypes.add(CertificateConstants.CERTTYPE_ROOTCA);
+                certificateProfileTypes.add(CertificateConstants.CERTTYPE_SUBCA);
+            }
+            GlobalConfiguration globaConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            if (globaConfiguration.getIssueHardwareTokens()) {
+                certificateProfileTypes.add(CertificateConstants.CERTTYPE_HARDTOKEN);
+            }
+            
+            
+            Collection<Integer> certprofids = new ArrayList<>();
+            for(Integer certificateProfileType : certificateProfileTypes) {
+                certprofids.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, certificateProfileType));
+            }
+                   
             totalprofiles = certprofids.size();
             log.info("Exporting non-fixed certificate profiles");
                 for (int profileid : certprofids) {
