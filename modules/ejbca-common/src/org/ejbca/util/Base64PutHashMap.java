@@ -20,9 +20,11 @@ import org.cesecore.util.StringTools;
 
 /** Only used for backwards compatibility with earlier versions of EJBCA
  * @see org.cesecore.util.Base64PutHashMap
+ * @deprecated
  * 
  * @version $Id$
  */
+@Deprecated
 public class Base64PutHashMap extends HashMap<Object, Object> {
     private static final long serialVersionUID = 4700506858751520533L;
 

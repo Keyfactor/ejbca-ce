@@ -164,8 +164,11 @@ public class SecureXMLDecoderTest {
         final Map<String,Long> nested = new HashMap<>();
         nested.put("testlong", Long.valueOf(Long.MAX_VALUE));
         list.add(nested);
-        
         root.put("testlist", list);
+        
+        final Map<Object,Object> propmap = new HashMap<>();
+        root.put("b64getmap", new Base64GetHashMap(propmap));
+        root.put("b64putmap", new Base64PutHashMap(propmap));
         
         // Base64PutHashMap
         
