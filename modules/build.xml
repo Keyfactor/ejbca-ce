@@ -15,7 +15,7 @@
     <!-- =================================================================== -->
     <!-- Clover stuff                                                        -->
     <!-- =================================================================== -->
-    <property name="clover.jar" location="/home/hudson/clover/clover-ant-3.0.2/lib/clover.jar"/>
+    <property name="clover.jar" location="${env.CLOVER_HOME}/clover-ant-3.0.2/lib/clover.jar"/>
     <property name="clover.out.dir" location="${ejbca.home}"/>
     <property name="clover.db" location="${clover.out.dir}/.clover/clover.db"/>
 	<taskdef resource="cloverlib.xml" classpath="${clover.jar}" onerror="ignore"/>
