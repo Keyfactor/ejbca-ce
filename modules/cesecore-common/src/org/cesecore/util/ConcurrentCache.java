@@ -101,11 +101,17 @@ public final class ConcurrentCache<K,V> {
          */
         public void putValue(final V value) {
             if (key != null) {
-                entry = new InternalEntry<V>(value);
+                entry = new InternalEntry<>(value);
                 cache.put(key, entry);
             }
         }
         
+        /**
+         * Sets the validity of the value. After the cache entry expires, the next request for it will
+         * fail (on purpose) so it can be updated. Requests that happen while the expired entry is being
+         * updated will still use the expired value, so they don't have to block.
+         * @param validFor Cache validity in milliseconds.
+         */
         public void setCacheValidity(long validFor) {
             if (entry != null) {
                 entry.expire = System.currentTimeMillis() + validFor;
@@ -126,8 +132,8 @@ public final class ConcurrentCache<K,V> {
         }
     }
     
-    private final ConcurrentHashMap<K,InternalEntry<V>> cache = new ConcurrentHashMap<K,InternalEntry<V>>();
-    private final ConcurrentMap<K,Object> semaphores = new ConcurrentHashMap<K,Object>();
+    private final ConcurrentHashMap<K,InternalEntry<V>> cache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<K,Object> semaphores = new ConcurrentHashMap<>();
     
     public static final long NO_LIMIT = -1L;
     
@@ -181,7 +187,7 @@ public final class ConcurrentCache<K,V> {
             // Found valid entry in cache
             if (log.isDebugEnabled()) {
                 log.debug("Found valid entry in cache for key "+key);
-                log.trace("<ConcurrentCacheMap.openCacheEntry");
+                log.trace("<ConcurrentCache.openCacheEntry");
             }
             cleanupIfNeeded();
             return new Entry(key, entry);
@@ -208,6 +214,16 @@ public final class ConcurrentCache<K,V> {
         }
         
         // Someone else was first
+        
+        // Check if we can return an existing entry (ECA-4936)
+        if (entry != null) {
+            log.debug("Returning existing cache entry for now");
+            log.trace("<ConcurrentCache.openCacheEntry");
+            cleanupIfNeeded();
+            return new Entry(key, entry);
+        }
+        
+        // Wait for a fresh entry to be created
         try {
             synchronized (theirSemaphore) {
                 if (!cache.containsKey(key)) {
@@ -226,7 +242,7 @@ public final class ConcurrentCache<K,V> {
         entry = cache.get(key);
         if (log.isDebugEnabled()) {
             log.debug("Got "+ (entry != null ? entry.value : "null") + " after waiting for cache");
-            log.trace("<ConcurrentCacheMap.openCacheEntry");
+            log.trace("<ConcurrentCache.openCacheEntry");
         }
         return entry != null ? new Entry(key, entry) : null;
     }
