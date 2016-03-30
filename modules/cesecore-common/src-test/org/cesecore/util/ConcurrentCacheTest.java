@@ -44,7 +44,7 @@ public final class ConcurrentCacheTest {
     @Test
     public void testSingleThreaded() throws Exception {
         log.trace(">testSingleThreaded");
-        final ConcurrentCache<String,Integer> cache = new ConcurrentCache<String,Integer>();
+        final ConcurrentCache<String,Integer> cache = new ConcurrentCache<>();
         ConcurrentCache<String,Integer>.Entry entry;
         
         // Create new entry
@@ -95,7 +95,7 @@ public final class ConcurrentCacheTest {
     @Test
     public void testDisabled() throws Exception {
         log.trace(">testDisabled");
-        final ConcurrentCache<String,Integer> cache = new ConcurrentCache<String,Integer>();
+        final ConcurrentCache<String,Integer> cache = new ConcurrentCache<>();
         cache.setEnabled(false);
         ConcurrentCache<String,Integer>.Entry entry;
         
@@ -124,7 +124,7 @@ public final class ConcurrentCacheTest {
     @Test
     public void testMultiThreaded() throws Exception {
         log.trace(">testMultiThreaded");
-        final ConcurrentCache<String,Integer> cache = new ConcurrentCache<String,Integer>();
+        final ConcurrentCache<String,Integer> cache = new ConcurrentCache<>();
         
         final Thread thread1 = new Thread(new CacheTestRunner(cache, THREAD_ONE), "CacheTestThread1");
         final Thread thread2 = new Thread(new CacheTestRunner(cache, THREAD_TWO), "CacheTestThread2");
@@ -138,6 +138,45 @@ public final class ConcurrentCacheTest {
         log.trace("<testMultiThreaded");
     }
     
+    @Test
+    public void testExpiryBehavior() throws Exception {
+        log.trace(">testExpiryBehavior");
+        final ConcurrentCache<String,Integer> cache = new ConcurrentCache<>();
+        
+        // Create an entry that will expire
+        final ConcurrentCache<String,Integer>.Entry entry1 = cache.openCacheEntry("A", 1);
+        entry1.putValue(456);
+        entry1.setCacheValidity(1L);
+        entry1.close();
+        
+        Thread.sleep(5);
+        
+        // We should get an expired entry now. Start updating it but don't finish
+        final ConcurrentCache<String,Integer>.Entry entry2 = cache.openCacheEntry("A", 1);
+        assertFalse("Should be forced to update the cache.", entry2.isInCache()); // technically, it is still in the cache, but ConcurrentCache will pretend it's not, so the caller will update it
+        
+        // Start a new request for the same entry. Should use the old expired entry
+        final ConcurrentCache<String,Integer>.Entry entry3 = cache.openCacheEntry("A", 1);
+        assertTrue("Should be able to use the existing cached data, because someone is updating the new value", entry3.isInCache());
+        assertEquals(Integer.valueOf(456), entry3.getValue());
+        entry3.close();
+        
+        // Now write the new value
+        entry2.putValue(768);
+        entry2.setCacheValidity(500);
+        entry2.close();
+        
+        Thread.sleep(5);
+        
+        // We should see the new entry now
+        final ConcurrentCache<String,Integer>.Entry entry4 = cache.openCacheEntry("A", 1);
+        assertTrue("Entry should still be in cache.", entry4.isInCache());
+        assertEquals("Entry should have been updated.", Integer.valueOf(768), entry4.getValue());
+        entry4.close();
+        
+        log.trace("<testExpiryBehavior");
+    }
+    
     @Test(timeout=6000)
     public void testRandomMultiThreaded() throws InterruptedException {
         log.trace(">testRandomMultiThreaded");
@@ -145,7 +184,7 @@ public final class ConcurrentCacheTest {
         Logger.getRootLogger().setLevel(Level.INFO);
         Logger.getLogger(ConcurrentCache.class).setLevel(Level.INFO);
         try {
-            final ConcurrentCache<String,Integer> cache = new ConcurrentCache<String,Integer>();
+            final ConcurrentCache<String,Integer> cache = new ConcurrentCache<>();
             cache.setMaxEntries(20);
             cache.setCleanupInterval(100); // To stress the system a bit more
             
@@ -202,7 +241,7 @@ public final class ConcurrentCacheTest {
     @Test
     public void testMaxEntries() throws Exception {
         log.trace(">testMaxEntries");
-        final ConcurrentCache<String,Integer> cache = new ConcurrentCache<String,Integer>();
+        final ConcurrentCache<String,Integer> cache = new ConcurrentCache<>();
         cache.setMaxEntries(MAXENTRIES);
         cache.setCleanupInterval(100);
         ConcurrentCache<String,Integer>.Entry entry;
