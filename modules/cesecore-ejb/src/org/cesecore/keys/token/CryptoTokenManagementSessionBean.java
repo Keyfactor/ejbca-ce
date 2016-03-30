@@ -354,9 +354,16 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.DEACTIVATE.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         cryptoToken.deactivate();
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
-                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Deactivated CryptoToken '" + cryptoToken.getTokenName()
-                        + "' with id " + cryptoTokenId);
+
+            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                    authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Deactivated CryptoToken '" + cryptoToken.getTokenName()
+                            + "' with id " + cryptoTokenId);
+        if (cryptoToken.isAutoActivationPinPresent()) {
+            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_ACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                    authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Reactivated CryptoToken '" + cryptoToken.getTokenName()
+                            + "' with id " + cryptoTokenId);
+        }
+        
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
