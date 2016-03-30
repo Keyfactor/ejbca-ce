@@ -79,7 +79,7 @@ public class RaExceptionHandlerFactory extends ExceptionHandlerFactory {
                     throwable = throwable.getCause();
                 }
                 if (log.isDebugEnabled()) {
-                    log.debug("Adding throwable " + throwable.getClass().getSimpleName());
+                    log.debug("Adding throwable " + throwable.getClass().getSimpleName() + ": " + throwable.getMessage());
                 }
                 throwables.add(throwable);
                 iterator.remove();

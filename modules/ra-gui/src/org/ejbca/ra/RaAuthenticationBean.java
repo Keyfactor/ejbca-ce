@@ -22,6 +22,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -66,5 +67,16 @@ public class RaAuthenticationBean implements Serializable {
             }
         }
         return authenticationToken;
+    }
+    
+    /** Invoked from RaHttpSessionListener when a session expires/is destroyed */
+    public void onSessionDestroyed(final HttpSessionEvent httpSessionEvent) {
+        log.info("HTTP session from client with authentication " + getAuthenticationToken() + " ended.");
+        if (log.isDebugEnabled()) {
+            log.debug("HTTP session from client with authentication " + getAuthenticationToken() + " ended. jsessionid=" + httpSessionEvent.getSession().getId());
+            log.info("FacesContext.getCurrentInstance=" + FacesContext.getCurrentInstance());
+        }
+        // Insert additional clean up (if any) needed on logout.
+        // (Note that FacesContext is not available any more, but injected SSBs or bean fetched via httpSessionEvent.getSession().getAttribute("beanName") still can be used.)
     }
 }
