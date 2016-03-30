@@ -501,7 +501,7 @@ if (!editerrors.isEmpty()) {
       </td>
       <td width="50%"> 
         <% used = profiledata.getUse(EndEntityProfile.PASSWORD,0); %>
-        <input type="text" name="<%=TEXTFIELD_PASSWORD%>" size="20" maxlength="1024" 
+        <input type="password" name="<%=TEXTFIELD_PASSWORD%>" size="20" maxlength="1024" 
            value="<c:out value="<%= profiledata.getValue(EndEntityProfile.PASSWORD,0) %>"/>" <% if(!used) out.write(" disabled "); %> 
            <% if(!authorizedToEdit) { out.write("disabled"); } %> />
            &nbsp;
