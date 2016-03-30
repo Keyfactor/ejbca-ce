@@ -2869,13 +2869,13 @@ that should be run on a timely basis. Currently there exists five types of
 services:
 <ul>
 <li>a 'CRL Updater' that automatically updates the CRL.</li>
-<li>a 'Certificate Expiration Checker' that checks if a CA have certificates about to expire and 
+<li>a 'Certificate Expiration Checker' that checks if a CA has certificates about to expire and 
 sends an email notification to the end user and/or the administrator.</li>
-<li>a 'User Password Expire Service' that checks if a user have not enrolled for a new certificate within a 
-certain amount of time after been registered, and expires the users possibility to enroll.</li>
-<li>a 'Renew CA Service' that checks if CA certificates are about to expire and renews them.</li>
+<li>a 'User Password Expire Service' that checks if a user hasn't enrolled for a new certificate within a 
+certain amount of time after been registered, and if so expires that user's possibility to enroll.</li>
+<li>a 'Renew CA Service' that checks if CA certificates are about to expire and automatically renews them.</li>
 <li>a 'Rollover CA Service' that activates rollover certificates once they become valid.</li>
-<li>a 'Publisher queue process service' that retries failed publishing.</li>
+<li>a 'Publisher queue process service' that retries failed publishing operations.</li>
 <li>a 'HSM Keepalive Service' that periodically tests crypto tokens to avoid connection timeouts.</li>
 <li>a 'Remote Internal Key Binding Updater' that automatically renews expiring OCSP signing certificates and keys at a connected VA.</li>
 </ul>
@@ -6477,7 +6477,7 @@ the rule, a CustomFieldException should be thrown and the error message you set 
 in the GUI. This rule will be checked each time an end entity is added or changed, whether is was added or changed by the GUI or otherwise.
 </p>
 <p>
-To avoid losing these rules when updating the EJBCA version, the new FieldValidator class should be stored in a ejbca-custom catalog. 
+To avoid losing these rules when updating the EJBCA version, the new FieldValidator class should be stored in a ejbca-custom folder. 
 Please see the "Handling changes in a separate tree" section above.
 </p>
 </subsection>

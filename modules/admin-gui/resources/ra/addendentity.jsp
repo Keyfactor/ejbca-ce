@@ -162,7 +162,7 @@
     String[] lastselectedsubjectdirattrs = null;
     int[] fielddata = null;
 
-    Map caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+    Map<Integer, String> caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
 
     RequestHelper.setDefaultCharacterEncoding(request);
 
@@ -257,6 +257,9 @@
                 newuser.setClearTextPassword(false);
                 oldprofile.setValue(EndEntityProfile.CLEARTEXTPASSWORD, 0, EndEntityProfile.FALSE);
             }
+        } else {
+            //We end up here if the checkbox was non-modifiable. 
+            newuser.setClearTextPassword(oldprofile.getValue(EndEntityProfile.CLEARTEXTPASSWORD, 0).equals(EndEntityProfile.TRUE));
         }
 
         value = request.getParameter(RADIO_MAXFAILEDLOGINS);
@@ -704,22 +707,20 @@
     int[] tokenids = RAInterfaceBean.tokenids;
 
     if (globalconfiguration.getIssueHardwareTokens()) {
-        TreeMap hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles();
+        TreeMap<String, Integer> hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles();
 
         tokentexts = new String[RAInterfaceBean.tokentexts.length + hardtokenprofiles.keySet().size()];
         tokenids = new int[tokentexts.length];
         for (int i = 0; i < RAInterfaceBean.tokentexts.length; i++) {
-    tokentexts[i] = RAInterfaceBean.tokentexts[i];
-    tokenids[i] = RAInterfaceBean.tokenids[i];
+ 			tokentexts[i] = RAInterfaceBean.tokentexts[i];
+   			tokenids[i] = RAInterfaceBean.tokenids[i];
         }
 
-        Iterator iter = hardtokenprofiles.keySet().iterator();
         int index = 0;
-        while (iter.hasNext()) {
-    String name = (String) iter.next();
-    tokentexts[index + RAInterfaceBean.tokentexts.length] = name;
-    tokenids[index + RAInterfaceBean.tokentexts.length] = ((Integer) hardtokenprofiles.get(name)).intValue();
-    index++;
+        for(String name : hardtokenprofiles.keySet()) {
+    		tokentexts[index + RAInterfaceBean.tokentexts.length] = name;
+    		tokenids[index + RAInterfaceBean.tokentexts.length] = ((Integer) hardtokenprofiles.get(name)).intValue();
+    		index++;
         }
     }
 
@@ -915,7 +916,7 @@ function checkallfields(){
          if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){%>
 
     <%  if(profile.isRequired(EndEntityProfile.PASSWORD,0)){%>
-    if((document.adduser.<%= TEXTFIELD_PASSWORD %>.value == "")){
+    if((document.adduser.<%= TEXTFIELD_PASSWORD %>.value == "") && !profile.isPasswordPreDefined()){
       alert("<%= ejbcawebbean.getText("REQUIREDPASSWORD", true) %>");
       illegalfields++;
     } 
@@ -1235,43 +1236,17 @@ function checkallfields(){
       <tr id="Row<%=(row)%2%>">
 		<td align="right"><c:out value="<%= ejbcawebbean.getText(\"PASSWORDORENROLLMENTCODE\") %>"/></td>
         <td>   
-             <%
-               if(!profile.isModifyable(EndEntityProfile.PASSWORD,0)){ 
-               %>
-           <select name="<%= SELECT_PASSWORD %>" size="1" tabindex="3">
-               <% if(profile.getValue(EndEntityProfile.PASSWORD,0) != null){ %>
-             <option value='<c:out value="<%=profile.getValue(EndEntityProfile.PASSWORD,0).trim()%>"/>' > <c:out value="<%=profile.getValue(EndEntityProfile.PASSWORD,0)  %>"/>
-             </option>                
-               <%   
-                  }
-                %>
-           </select>
-           <% }else{ %> 
-             <input type="password" autocomplete="off" name="<%= TEXTFIELD_PASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.PASSWORD,0) %>"/>'>
-           <% } %>
- 
+        	<input type="password" autocomplete="off" name="<%= TEXTFIELD_PASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value=''> 
+        	<% if(profile.isPasswordPreDefined()){ %>
+        		<i><c:out value="<%= ejbcawebbean.getText(\"PASSWORD_DEFINED_IN_PROFILE\") %>"/></i>
+        	<% } %>
         </td>
-	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_PASSWORD %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.PASSWORD,0)) out.write(" CHECKED "); %>></td>
+		<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_PASSWORD %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.PASSWORD,0)) out.write(" CHECKED "); %>></td>
       </tr>
-       <% } %>
-       <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){%>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right"><c:out value="<%= ejbcawebbean.getText(\"CONFIRMPASSWORD\") %>"/></td>
-        <td>
-          <%   if(!profile.isModifyable(EndEntityProfile.PASSWORD,0)){ 
-               %>
-           <select name="<%= SELECT_CONFIRMPASSWORD %>" size="1" tabindex="4">
-               <% if( profile.getValue(EndEntityProfile.PASSWORD,0) != null){ %>
-             <option value='<c:out value="<%=profile.getValue(EndEntityProfile.PASSWORD,0).trim()%>"/>'> 
-                 <c:out value="<%=profile.getValue(EndEntityProfile.PASSWORD,0).trim() %>"/>
-             </option>                
-               <%   
-                  }
-                %>
-           </select>
-           <% }else{ %> 
-             <input type="password" autocomplete="off" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.PASSWORD,0) %>"/>'>
-           <% } %>
+        <td>        
+        	<input type="password" autocomplete="off" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value=''>
         </td>
 		<td>&nbsp;</td> 
       </tr>
