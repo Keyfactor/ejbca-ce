@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.util.Random;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
@@ -50,6 +51,11 @@ public class RaExampleBean implements Serializable {
 
     public String getValue() { return value; }
     public void setValue(String value) { this.value = value.trim(); }
+
+    @Deprecated
+    public void throwException() throws Exception {
+        throw new Exception("RaErrorBean.throwException " + new Random().nextInt(100));
+    }
 
     public void testAction() {
         try {

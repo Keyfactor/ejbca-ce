@@ -32,4 +32,7 @@
             <var>msg</var>
         </resource-bundle>
     </application>
+    <factory>
+        <exception-handler-factory>org.ejbca.ra.jsfext.RaExceptionHandlerFactory</exception-handler-factory>
+    </factory>
 </faces-config>
