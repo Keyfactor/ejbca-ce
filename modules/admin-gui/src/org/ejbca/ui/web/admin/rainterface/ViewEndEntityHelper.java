@@ -33,7 +33,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 
 /**
- * Helper class for the View End Entity Page, parses the request and performs apporiate actions.
+ * Helper class for the View End Entity Page, parses the request and performs appropriate actions.
  * 
  * @version $Id$
  */
