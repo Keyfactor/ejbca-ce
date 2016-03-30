@@ -16,7 +16,6 @@ package org.ejbca.core.model.ra;
 /**
  * Exception is cast when values of an end entity field does not match a specific rule in the function FieldValidator.validate()
  *  
- * @author aveen
  * @version $Id$ 
  */
 public class CustomFieldException extends Exception {
