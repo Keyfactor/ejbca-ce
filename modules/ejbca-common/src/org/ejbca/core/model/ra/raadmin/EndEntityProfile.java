@@ -524,6 +524,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         setValidation(getParameterNumber(parameter), number, validation);
     }
 
+    public boolean isPasswordPreDefined() {
+        return getPredefinedPassword() != null && !getPredefinedPassword().trim().equals("");
+    }
+    
+    
+    public String getPredefinedPassword() {
+        return getValue(EndEntityProfile.PASSWORD, 0);
+    }
+    
 
     public String getValue(final int parameter, final int number) {
     	return getValueDefaultEmpty(Integer.valueOf(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*number) + parameter));
@@ -972,14 +981,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		}
     	}
     	// Checks related to the use of clear text passwords
-    	if (!getUse(CLEARTEXTPASSWORD,0) && clearpwd) {
+    	if (!getUse(CLEARTEXTPASSWORD, 0) && clearpwd) {
     		throw new UserDoesntFullfillEndEntityProfile("Clearpassword (used in batch processing) cannot be used.");
     	}
-    	if (isRequired(CLEARTEXTPASSWORD,0)) {
-    		if (getValue(CLEARTEXTPASSWORD,0).equals(TRUE) && !clearpwd) {
+    	if (isRequired(CLEARTEXTPASSWORD, 0)) {
+    		if (getValue(CLEARTEXTPASSWORD, 0).equals(TRUE) && !clearpwd) {
     			throw new UserDoesntFullfillEndEntityProfile("Clearpassword (used in batch processing) cannot be false.");
     		}
-    		if (getValue(CLEARTEXTPASSWORD,0).equals(FALSE) && clearpwd) {
+    		if (getValue(CLEARTEXTPASSWORD, 0).equals(FALSE) && clearpwd) {
     			throw new UserDoesntFullfillEndEntityProfile("Clearpassword (used in batch processing) cannot be true.");
     		}
     	}
