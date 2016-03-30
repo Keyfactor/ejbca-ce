@@ -13,7 +13,36 @@
 
 /* version: $Id$ */
 
+"use strict";
+
 // Executed when the document had been loaded
 document.addEventListener("DOMContentLoaded", function(event) {
     console.log("Document loaded.");
+    new SessionKeepAlive();
 }, false);
+
+/** Keep JSF session alive by polling back-end before the session has expired */
+function SessionKeepAlive() {
+    var instance = this;
+    this.timeToNextCheckInMs = 100; // Make first check after 100 ms.
+    this.xmlHttpReq = new XMLHttpRequest();
+    this.xmlHttpReq.onreadystatechange = function() {
+        if (instance.xmlHttpReq.readyState == 4) {
+            if (instance.xmlHttpReq.status == 200) {
+                instance.timeToNextCheckInMs = instance.xmlHttpReq.responseText;
+                setTimeout(instance.poll, instance.timeToNextCheckInMs);
+        	} else {
+                console.log("SessionKeepAlive failed with HTTP status code " + instance.xmlHttpReq.status);
+        	}
+        }
+    };
+    this.poll = function() {
+    	instance.xmlHttpReq.open("GET", "sessionKeepAlive", true);
+        try {
+        	instance.xmlHttpReq.send();
+        } catch (exception) {
+            console.log("SessionKeepAlive failed: " + exception);
+        }
+    };
+    setTimeout(this.poll, this.timeToNextCheckInMs);
+};

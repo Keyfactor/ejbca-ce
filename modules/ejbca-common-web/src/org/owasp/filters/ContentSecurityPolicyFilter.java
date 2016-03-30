@@ -107,7 +107,7 @@ public class ContentSecurityPolicyFilter implements Filter {
             cspPolicies.add("font-src " + originLocationRef);
         }
         // --Define loading policies for Connection, which we don't use, but may use when we move to advanced JSF pages and components
-        //cspPolicies.add("connect-src " + originLocationRef);
+        cspPolicies.add("connect-src " + originLocationRef);
         // --Define loading policies for Form
         cspPolicies.add("form-action " + originLocationRef);
         // --Define loading policies for Plugins Types, only allow PDF documents, if plug-ins are enabled in web.xml
