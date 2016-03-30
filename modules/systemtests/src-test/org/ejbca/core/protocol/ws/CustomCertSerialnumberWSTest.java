@@ -77,10 +77,11 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
     }
 
     @AfterClass
-    public static void afterClass() {
+    public static void afterClass() throws Exception {
         for (File file : fileHandles) {
             FileTools.delete(file);
         }
+        cleanUpAdmins(wsadminRoleName);
     }
     
     @Before
