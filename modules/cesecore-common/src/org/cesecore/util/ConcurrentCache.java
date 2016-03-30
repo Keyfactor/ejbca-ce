@@ -148,7 +148,6 @@ public final class ConcurrentCache<K,V> {
     private final Lock isCleaning = new ReentrantLock();
     private volatile long lastCleanup = 0L;
     private volatile long cleanupInterval = 1000L;
-    private boolean waitIfExpired = false;
     
     /**
      * "Opens" a cache entry. If the entry already exists, then an {@link Entry} that
@@ -217,7 +216,7 @@ public final class ConcurrentCache<K,V> {
         // Someone else was first
         
         // Check if we can return an existing entry (ECA-4936)
-        if (entry != null && !waitIfExpired) {
+        if (entry != null) {
             log.debug("Returning existing cache entry for now");
             log.trace("<ConcurrentCache.openCacheEntry");
             cleanupIfNeeded();
@@ -297,19 +296,6 @@ public final class ConcurrentCache<K,V> {
     /** @see ConcurrentCache#setCleanupInterval */
     public long getCleanupInterval() {
         return cleanupInterval;
-    }
-    
-    /**
-     * By default, ConcurrentCache will still return expired entries while a fresh entry is being obtained.
-     * Set this to true to block and wait for a fresh result instead.
-     */
-    public void setWaitIfExpired(boolean allowReturnExpired) {
-        this.waitIfExpired = allowReturnExpired;
-    }
-    
-    /** @see ConcurrentCache#setAllowReturnExpired */
-    public boolean getWaitIfExpired() {
-        return waitIfExpired;
     }
     
     private void cleanupIfNeeded() {
