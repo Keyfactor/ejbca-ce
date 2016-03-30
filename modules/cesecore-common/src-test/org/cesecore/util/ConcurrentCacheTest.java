@@ -142,9 +142,10 @@ public final class ConcurrentCacheTest {
     public void testExpiryBehavior() throws Exception {
         log.trace(">testExpiryBehavior");
         final ConcurrentCache<String,Integer> cache = new ConcurrentCache<>();
+        cache.setCleanupInterval(60000L); // don't run cleanup during test
         
         // Create an entry that will expire
-        final ConcurrentCache<String,Integer>.Entry entry1 = cache.openCacheEntry("A", 1);
+        final ConcurrentCache<String,Integer>.Entry entry1 = cache.openCacheEntry("A", 1000);
         entry1.putValue(456);
         entry1.setCacheValidity(1L);
         entry1.close();
@@ -152,11 +153,14 @@ public final class ConcurrentCacheTest {
         Thread.sleep(5);
         
         // We should get an expired entry now. Start updating it but don't finish
-        final ConcurrentCache<String,Integer>.Entry entry2 = cache.openCacheEntry("A", 1);
+        final ConcurrentCache<String,Integer>.Entry entry2 = cache.openCacheEntry("A", 1000);
         assertFalse("Should be forced to update the cache.", entry2.isInCache()); // technically, it is still in the cache, but ConcurrentCache will pretend it's not, so the caller will update it
         
         // Start a new request for the same entry. Should use the old expired entry
-        final ConcurrentCache<String,Integer>.Entry entry3 = cache.openCacheEntry("A", 1);
+        final long startTime = System.currentTimeMillis();
+        final ConcurrentCache<String,Integer>.Entry entry3 = cache.openCacheEntry("A", 1000);
+        final long stopTime = System.currentTimeMillis();
+        assertTrue("openCacheEntry should not block.", stopTime - startTime < 500L);
         assertTrue("Should be able to use the existing cached data, because someone is updating the new value", entry3.isInCache());
         assertEquals(Integer.valueOf(456), entry3.getValue());
         entry3.close();
@@ -169,7 +173,7 @@ public final class ConcurrentCacheTest {
         Thread.sleep(5);
         
         // We should see the new entry now
-        final ConcurrentCache<String,Integer>.Entry entry4 = cache.openCacheEntry("A", 1);
+        final ConcurrentCache<String,Integer>.Entry entry4 = cache.openCacheEntry("A", 1000);
         assertTrue("Entry should still be in cache.", entry4.isInCache());
         assertEquals("Entry should have been updated.", Integer.valueOf(768), entry4.getValue());
         entry4.close();
