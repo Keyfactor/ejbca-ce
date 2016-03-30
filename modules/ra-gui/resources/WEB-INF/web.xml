@@ -132,57 +132,17 @@
         <auth-constraint />
     </security-constraint> 
 
-   <!--
-   <!ELEMENT mime-mapping (extension, mime-type)>
-   -->
-
-<!-- TODO: Nice non-scary error handling.
+    <!-- Catch 404s etc that are unknown to JSF -->
     <error-page>
-        <exception-type>javax.faces.application.ViewExpiredException</exception-type>
-        <location>/viewexpired.xhtml</location>
+        <error-code>403</error-code>
+        <location>/error.xhtml</location>
     </error-page>
-    <error-page> ...This is actually a HTTP 500 as well..
-        <exception-type>org.ejbca.core.model.era.RaMasterBackendUnavailableException</exception-type>
-        <location>/serviceunavailable.xhtml</location>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/error.xhtml</location>
     </error-page>
     <error-page>
         <error-code>500</error-code>
         <location>/error.xhtml</location>
     </error-page>
-    <error-page>
-        <exception-type>java.lang.Throwable</exception-type>
-        <location>/error.xhtml</location>
-    </error-page>
- -->
-
-   <!--
-   <!ELEMENT security-constraint (display-name?, web-resource-collection+, auth-constraint?, user-data-constraint?)>
-   <!ELEMENT web-resource-collection (web-resource-name, description?, url-pattern*, http-method*)>
-   <!ELEMENT web-resource-name (#PCDATA)>
-   <!ELEMENT url-pattern (#PCDATA)>
-   <!ELEMENT http-method (#PCDATA)>
-   <!ELEMENT user-data-constraint (description?, transport-guarantee)>
-   <!ELEMENT transport-guarantee (#PCDATA)>
-
-   <!ELEMENT login-config (auth-method?, realm-name?, form-login-config?)>
-   <!ELEMENT auth-method (#PCDATA)>
-   <!ELEMENT realm-name (#PCDATA)>
-   <!ELEMENT form-login-config (form-login-page, form-error-page)>
-   <!ELEMENT form-login-page (#PCDATA)>
-   <!ELEMENT form-error-page (#PCDATA)>
-   -->
-<!--
-    <ejb-local-ref>
-        <description>An EJB that can provide references to all other SSBs to avoid this kind of declarations</description>
-        <ejb-ref-name>EjbBridgeSession</ejb-ref-name>
-        <local>org.ejbca.core.ejb.EjbBridgeSessionLocal</local>
-        <ejb-link>EjbBridgeSessionBean</ejb-link>
-    </ejb-local-ref>
-    <ejb-local-ref>
-        <description>An EJB that can provide references to all enterprise edition SSBs to avoid this kind of declarations</description>
-        <ejb-ref-name>EnterpriseEditionEjbBridgeSession</ejb-ref-name>
-        <local>org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal</local>
-        <ejb-link>EnterpriseEditionEjbBridgeSessionBean</ejb-link>
-    </ejb-local-ref>
--->
 </web-app>

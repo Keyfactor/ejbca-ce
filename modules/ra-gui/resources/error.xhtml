@@ -23,20 +23,16 @@
      *************************************************************************/
 
      version: $Id$
+
+   	 This page is rendered when there an exception has been thrown that was caught by our custom RaExceptionHandlerFactory.
+   	 On each page load we use a view scoped bean to allow translation of the error message (if available).
      -->
     </ui:remove>
+    <f:metadata>
+        <f:event type="preRenderView" listener="#{raErrorBean.onErrorPageLoad}"/>
+    </f:metadata>
     <ui:composition template="template.xhtml">
         <ui:define name="content">
-            <h:outputText value="#{msg.generic_sampleText}"/>
-            <h:form>
-	            <h:panelGrid columns="2">
-	                <h:outputLabel for="value" value="#{msg.somefunction_value_label}"/>
-	                <h:inputText id="value" value="#{raExampleBean.value}"/>
-    	        </h:panelGrid>
-                <h:commandButton action="#{raExampleBean.testAction}" value="#{msg.somefunction_command}"/>
-                <h:commandButton action="#{raExampleBean.throwException}" value="Throw Exception (to test error handling)"/>
-            </h:form>
-            <h:outputLabel value="[is authorized to root, method 2]" rendered="#{raAccessBean.authorizedToRootTEST}"/>
         </ui:define>
     </ui:composition>
 </html>
