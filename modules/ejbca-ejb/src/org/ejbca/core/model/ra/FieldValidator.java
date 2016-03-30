@@ -21,7 +21,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * Example: It is possible to ensure that the subject DN serial number is always a number of six digits, or should always end with the letter 'N',
  * otherwise a CustomFieldException should be thrown with a suitable error message that will appear on the GUI.
  * 
- * @author aveen
  * @version $Id$ 
  *
  */
