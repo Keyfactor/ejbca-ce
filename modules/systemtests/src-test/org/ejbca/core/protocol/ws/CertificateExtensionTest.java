@@ -107,10 +107,11 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	}
 
 	@AfterClass
-    public static void afterClass() {
+    public static void afterClass() throws Exception {
         for (File file : fileHandles) {
             FileTools.delete(file);
         }
+        cleanUpAdmins(WS_ADMIN_ROLENAME);
     }
 	
 	@Before
