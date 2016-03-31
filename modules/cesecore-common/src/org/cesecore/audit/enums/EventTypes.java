@@ -83,6 +83,8 @@ public enum EventTypes implements EventType {
     CRYPTOTOKEN_ACTIVATION,
     /** Deactivation of a Crypto Token, making the key material unavailable for use by the application. */
     CRYPTOTOKEN_DEACTIVATION,
+    /** Attempted reactivation of a Crypto Token. Since this occurs automatically, it may fail. */
+    CRYPTOTOKEN_REACTIVATION,
     /** Removal of a key pair from the Crypto Token key material or key pair place-holder from the Crypto Token object. */
     CRYPTOTOKEN_DELETE_ENTRY,
     /** Generation of a new key pair in the Crypto Token. */
