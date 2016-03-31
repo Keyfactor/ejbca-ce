@@ -111,10 +111,9 @@ public class RaAuthenticationBean implements Serializable {
     
     /** Invoked from RaHttpSessionListener when a session expires/is destroyed */
     public void onSessionDestroyed(final HttpSessionEvent httpSessionEvent) {
-        log.info("HTTP session from client with authentication " + getAuthenticationToken() + " ended.");
+        log.info("HTTP session from client with authentication " + authenticationToken + " ended.");
         if (log.isDebugEnabled()) {
-            log.debug("HTTP session from client with authentication " + getAuthenticationToken() + " ended. jsessionid=" + httpSessionEvent.getSession().getId());
-            log.info("FacesContext.getCurrentInstance=" + FacesContext.getCurrentInstance());
+            log.debug("HTTP session from client with authentication " + authenticationToken + " ended. jsessionid=" + httpSessionEvent.getSession().getId());
         }
         // Insert additional clean up (if any) needed on logout.
         // (Note that FacesContext is not available any more, but injected SSBs or bean fetched via httpSessionEvent.getSession().getAttribute("beanName") still can be used.)
