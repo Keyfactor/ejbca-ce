@@ -359,7 +359,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                     authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Deactivated CryptoToken '" + cryptoToken.getTokenName()
                             + "' with id " + cryptoTokenId);
         if (cryptoToken.isAutoActivationPinPresent()) {
-            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_ACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_REACTIVATION, EventStatus.VOID, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                     authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Reactivated CryptoToken '" + cryptoToken.getTokenName()
                             + "' with id " + cryptoTokenId);
         }
