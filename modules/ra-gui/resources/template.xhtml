@@ -34,6 +34,7 @@
         <script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/js/common.js"></script>
     </h:head>
     <h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
+        <h:outputLink id="sessionKeepAliveLink" style="display: none;" value="sessionKeepAlive"><h:outputText value="sessionKeepAlive"/></h:outputLink>
   	    <h:panelGroup layout="block" id="templateAll">
   	  	    <h:panelGroup layout="block" id="templateHeader">
                 <h:outputText value="RA GUI"/>
