@@ -235,7 +235,8 @@ public final class ConcurrentCache<K,V> {
                 }
             }
         } catch (InterruptedException e) {
-            throw new IllegalStateException(e);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e); // should preferably not be catched
         }
         
         // Return cached result from other thread, or null on failure
