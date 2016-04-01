@@ -167,6 +167,7 @@ public class StartupSingletonBean {
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 log.error("Waiting for BC provider failed.", e);
                 break;
             }

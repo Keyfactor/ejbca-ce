@@ -81,6 +81,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
      * 
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#init(java.util.Properties)
      */
+    @Override
     public void init(Properties properties) {
     	if (log.isTraceEnabled()) {
     		log.trace(">init");
@@ -100,7 +101,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
 
     @Override
     public List<CustomPublisherProperty> getCustomUiPropertyList() {
-        final List<CustomPublisherProperty> ret = new ArrayList<CustomPublisherProperty>();
+        final List<CustomPublisherProperty> ret = new ArrayList<>();
         ret.add(new CustomPublisherProperty(crlFailOnErrorCodePropertyName, CustomPublisherProperty.UI_BOOLEAN, String.valueOf(crlFailOnErrorCode)));
         ret.add(new CustomPublisherProperty(crlFailOnStandardErrorPropertyName, CustomPublisherProperty.UI_BOOLEAN, String.valueOf(crlFailOnStandardError)));
         ret.add(new CustomPublisherProperty(crlExternalCommandPropertyName, CustomPublisherProperty.UI_TEXTINPUT, crlExternalCommandFileName));
@@ -131,6 +132,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
      *      java.security.cert.Certificate, java.lang.String, java.lang.String,
      *      int, int)
      */
+    @Override
     public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate,
             int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
         if (log.isTraceEnabled()) {
@@ -149,7 +151,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
                 throw new PublisherException(msg);
             }
             // Run internal method to create tempfile and run the command
-            List<String> arguments = new ArrayList<String>(); // <String>
+            List<String> arguments = new ArrayList<>();
             arguments.add(String.valueOf(type));
             try {
                 arguments.add(CertTools.getSubjectDN(incert));
@@ -177,6 +179,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCRL(org.ejbca.core.model.log.Admin,
      *      byte[], java.lang.String, int)
      */
+    @Override
     public boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {
         if (log.isTraceEnabled()) {
         	log.trace(">storeCRL, Storing CRL");
@@ -188,7 +191,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
             throw new PublisherException(msg);
         }
 
-        List<String> additionalArguments = new ArrayList<String>();
+        List<String> additionalArguments = new ArrayList<>();
 
         if (calclulateDeltaCrlLocally) {
             X509CRL crl;
@@ -230,7 +233,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
             throw new PublisherException(msg);
         }
         // Run internal method to create tempfile and run the command
-        List<String> arguments = new ArrayList<String>(); // <String>
+        List<String> arguments = new ArrayList<>();
         arguments.add(String.valueOf(reason));
         try {
             arguments.add(CertTools.getSubjectDN(cert));
@@ -252,6 +255,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
      * 
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#testConnection()
      */
+    @Override
     public void testConnection() throws PublisherConnectionException {
         if (log.isTraceEnabled()) {
         	log.trace("testConnection, Testing connection");
@@ -283,6 +287,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
     /**
      * Does nothing.
      */
+    @Override
     protected void finalize() throws Throwable {
         if (log.isTraceEnabled()) {
         	log.trace("finalize, doing nothing");
@@ -353,7 +358,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
                     }
                 }
             }
-            String[] cmdargs = (String[]) additionalArguments.toArray(new String[additionalArguments.size()]);
+            String[] cmdargs = additionalArguments.toArray(new String[additionalArguments.size()]);
             String[] cmdarray = new String[cmdcommand.length + cmdargs.length];
             System.arraycopy(cmdcommand, 0, cmdarray, 0, cmdcommand.length);
             System.arraycopy(cmdargs, 0, cmdarray, cmdcommand.length, cmdargs.length);
@@ -385,6 +390,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
             throw new PublisherException(msg);
         } catch (InterruptedException e) {
             String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommand);
+            Thread.currentThread().interrupt();
             throw new PublisherException(msg);
         } finally {
             try {
