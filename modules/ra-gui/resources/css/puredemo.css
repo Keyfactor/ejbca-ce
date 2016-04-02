@@ -1,0 +1,77 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
+/* version: $Id: base.css 23024 2016-03-17 11:11:31Z jeklund $ */
+
+/* Primekey Customization of the Pure CSS */
+
+
+
+.pure-menu {
+	background: #003366;
+	height: 35px;
+}
+
+.pure-menu-item {
+	background: #003366;
+    color: #e6e6e6	
+}
+
+.align_right {
+    text-align: right;
+}
+
+img.resize {
+    height: 1em; 
+    width: auto;
+}
+
+.main_frame {
+	background: #fff3e6;
+	height: 100%;
+	margin: 50px 10% 30px 10%;
+	
+		
+}
+
+.header {
+     margin: 0;
+     color: #333;
+     padding: 1.5em 5em 0;
+     border-bottom: 1px solid #eee;
+     text-align: center;
+ }
+ 
+	.header h1 {
+	    margin: 0.2em 0;
+	    font-size: 3em;
+	    font-weight: 300;
+	}
+	
+.content {
+    margin: 0 auto;
+    padding: 0 1em;
+    max-width: 800px;
+    margin-bottom: 50px;
+    line-height: 1.6em;
+    text-align: left;
+    margin: 10px 0 30px 0;
+    padding: 0em 1.5em 1em;
+ 
+}
+	
+.content-subhead {
+    margin: 10px 0 20px 0;
+    font-weight: 300;
+    color: #888;
+}

@@ -1,0 +1,203 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+    <ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     version: $Id: index.xhtml 23095 2016-03-30 01:03:50Z jeklund $
+     -->
+    </ui:remove><head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title dir="#{raLocaleBean.direction}"><h:outputText value="#{msg.generic_title}"/></title>
+     
+    <link rel="shortcut icon" type="image/png" href="#{facesContext.externalContext.context.contextPath}/img/favicon.png"/>
+   	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/base.css"/>
+    <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/pure.css"/>  
+   	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/grids.css"/>
+   	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/grids-responsive.css"/>
+   	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/menus-dropdown.css"/>
+   	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/forms.css"/>
+   	
+   	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/puredemo.css"/>
+   	
+   	<!-- Use these links when working on the CSS -->
+   	<!-- 
+   	<link rel="shortcut icon" type="image/png" href="img/favicon.png"/>
+   	<link type="text/css" rel="stylesheet" href="css/pure/base.css"/>
+    <link type="text/css" rel="stylesheet" href="css/pure/pure.css"/>  
+   	<link type="text/css" rel="stylesheet" href="css/pure/grids.css"/>
+   	<link type="text/css" rel="stylesheet" href="css/pure/grids-responsive.css"/>
+   	<link type="text/css" rel="stylesheet" href="css/pure/menus-dropdown.css"/>
+   	<link type="text/css" rel="stylesheet" href="css/pure/forms.css"/>
+   
+   	<link type="text/css" rel="stylesheet" href="css/puredemo.css"/>
+   		-->
+    <script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/js/common.js"></script>
+    <title>Your page title</title>
+
+</head>
+
+<h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
+
+	<div class="pure-g" id="menu">
+	    <div class="pure-u-1 pure-u-md-1-12">
+	   		<div class="pure-menu pure-menu-horizontal" >
+	            <a href="#" class="pure-menu-heading">                        
+	            	<img class="resize" alt="EJBCA by PrimeKey" src="#{facesContext.externalContext.context.contextPath}/img/pk_logo.png" /> 
+				</a>
+	        </div>
+	    </div>
+	    <div class="pure-u-1 pure-u-md-1-2">
+	        <div class="pure-menu pure-menu-horizontal">        	
+		    	<ul class="pure-menu-list">
+		    	
+		        	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+		            	<a href="#" id="enrollment" class="pure-menu-link">Enrollment</a>
+		            	<ul class="pure-menu-children">
+		                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Browser Enrollment</a></li>
+		                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Enroll From CSR</a></li>
+		                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Create Keystore</a></li>
+		            	</ul>
+		            </li>
+		   
+		            <li class="pure-menu-item ">
+		            	<a href="#" id="certsAndCrls" class="pure-menu-link">CA Certificates and CRLs</a>
+		       	 	</li>
+		       	 	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+		            	<a href="#" id="search" class="pure-menu-link">Search</a>
+		            	<ul class="pure-menu-children">
+		                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">End Entities</a></li>
+		                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Certificates</a></li>
+		            	</ul>
+		            </li>
+		       	 	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+		            	<a href="#" id="requests" class="pure-menu-link">Certificate Requests</a>
+		            	<ul class="pure-menu-children">
+		                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Pending Approvals</a></li>
+		                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">My Requests</a></li>
+		            	</ul>
+		            </li>
+		            <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+		            	<a href="#" id="endEntities" class="pure-menu-link">End Entity Management</a>
+		            	<ul class="pure-menu-children">
+		                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Create End Entity</a></li>
+		                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Manage End Entity Profiles</a></li>
+		            	</ul>
+		            </li>
+		            <li class="pure-menu-item">
+		            	<a href="#" id="roles" class="pure-menu-link">Roles Management</a>
+		            </li>
+		            
+		    	</ul>
+		    	 
+			</div>
+	    </div>
+	    <div class="pure-u-1 pure-u-md-5-12">
+	        <div class="pure-menu pure-menu-horizontal align_right">
+	            <ul class="pure-menu-list">
+	                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Documentation</a></li>
+	                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Login</a></li>
+	            </ul>
+	        </div>
+	    </div>
+	</div>
+	
+	<div class="main_frame" id="main">
+		
+		<div class="header" id="title">
+			<h1>A Title!</h1>
+		</div>	
+		<div class="content" id="content">
+			<h2 class="content-subhead">A paragraph!</h2>
+			
+			<!-- Demo of a paragraph -->
+			<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+				Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure 
+				dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+				 proident, sunt in culpa qui officia deserunt mollit anim id est laborum. 
+			</p>
+			
+			<!-- An aligned form -->
+			<h2 class="content-subhead">An aligned form!</h2>			
+			<form class="pure-form pure-form-aligned">
+    			<fieldset>
+	        		<div class="pure-control-group">
+	           	 		<label for="name">Username</label>
+	            		<input id="name" type="text" placeholder="Username"/>
+	        		</div>
+	
+	       			 <div class="pure-control-group">
+	            		<label for="password">Password</label>
+	            		<input id="password" type="password" placeholder="Password" />
+	       			 </div>
+         		</fieldset>
+			</form>	
+			<h2 class="content-subhead">An grouped form!</h2>			
+			<!-- A grouped form -->		
+			<form class="pure-form">
+			    <fieldset class="pure-group">
+			        <input type="text" class="pure-input-1-2" placeholder="E-Mail Subject" />
+			        <textarea class="pure-input-1-2" placeholder="Content"></textarea>
+			    </fieldset>
+			</form>
+			<h2 class="content-subhead">Tables!</h2>			
+			
+			<table class="pure-table">
+			    <thead>
+			        <tr>
+			            <th>Username</th>
+			            <th>CA</th>
+			            <th>Subject DN</th>
+			            <th>Status</th>
+			        </tr>
+			    </thead>
+			
+			    <tbody>
+			        <tr class="pure-table-odd">
+			            <td>SuperAdmin</td>
+			            <td>ManagementCA</td>
+			            <td>Accord</td>
+			            <td>Generated</td>
+			        </tr>
+			
+			        <tr>
+			            <td>Alice</td>
+			            <td>AliceCA</td>
+			            <td>CN=Alice,O=AliceCorp,C=SE</td>
+			            <td>Generated</td>
+			        </tr>
+			
+			        <tr class="pure-table-odd">
+			            <td>Bob</td>
+			            <td>BobCA</td>
+			            <td>CN=Bob,O=BobCorp,C=SE</td>
+			            <td>New</td>
+			        </tr>
+					       
+			    </tbody>
+			</table>
+		</div>		
+	</div>
+	
+
+</h:body>
+</html>
