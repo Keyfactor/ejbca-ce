@@ -16,6 +16,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -24,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -31,6 +34,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -244,6 +248,10 @@ public class SecureXMLDecoder implements AutoCloseable {
                 Map<Object,Object> b64getmap = new Base64GetHashMap();
                 value = parseMap(b64getmap);
                 break;
+            case "org.cesecore.certificates.certificateprofile.CertificatePolicy":
+            case "org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy":
+                value = parseObject(new CertificatePolicy());
+                break;
             case "java.util.Collections":
                 value = parseSpecialCollection(method);
                 method = null; // value has been used, don't report error
@@ -408,7 +416,7 @@ public class SecureXMLDecoder implements AutoCloseable {
         
         final String method = parser.getAttributeValue(null, "method");
         if (method == null) {
-            throw new IOException(errorMessage("Element <void> is misisng a \"method\" attribute."));
+            throw new IOException(errorMessage("Element <void> is missing a \"method\" attribute."));
         }
         parser.nextTag();
         return method;
@@ -490,6 +498,50 @@ public class SecureXMLDecoder implements AutoCloseable {
             return col;
         default: throw new IOException("Method \"" + method + "\" not supported or not allowed on java.util.Collections.");
         }
+    }
+    
+    /**
+     * Reads a property start tag, e.g. &lt;void property="name"&gt;.
+     * The data inside the void element is the property value.
+     */
+    private String readProperty() throws XmlPullParserException, IOException {
+        if (parser.getEventType() != XmlPullParser.START_TAG || !"void".equals(parser.getName())) {
+            throw new IOException(errorMessage("Expected <void> start tag."));
+        }
+        
+        final String property = parser.getAttributeValue(null, "property");
+        if (property == null) {
+            throw new IOException(errorMessage("Element <void> is missing a \"property\" attribute."));
+        }
+        parser.nextTag();
+        return property;
+    }
+    
+    /** Parses an arbitrary object. Note that this method will allow any property to be set. */
+    private Object parseObject(final Object obj) throws XmlPullParserException, IOException {
+        Class<?> klass = obj.getClass();
+        while (true) {
+            if (parser.getEventType() == XmlPullParser.END_TAG) {
+                break;
+            }
+            
+            final String property = readProperty();
+            final String method = "set" + property.substring(0, 1).toUpperCase(Locale.ROOT) + property.substring(1);
+            
+            final Object value = readValue();
+            try {
+                final Method setter = klass.getMethod(method, value.getClass());
+                setter.invoke(obj, value);
+            } catch (NoSuchMethodException e) {
+                throw new IOException(errorMessage("Setter \"" + method + "\"(" + value.getClass().getName() + ") does not exist in class " + klass.getName() + "."), e);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
+                throw new IOException(errorMessage("Method \"" + method + "\" could not be called."), e);
+            }
+            
+            expectEndTag("void");
+            parser.nextTag();
+        }
+        return obj;
     }
     
     private String errorMessage(final String msg) {
