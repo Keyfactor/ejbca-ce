@@ -110,8 +110,8 @@ public class HttpMethodsTest {
         assertNotNull("Public web page should return content-security-policy header", csp);
         assertNotNull("Public web page should return x-content-security-policy header", xcsp);
         assertEquals("Public web should return X-FRAME-OPTIONS DENY", "DENY", xframe);
-        assertEquals("Public web page should return csp default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; reflected-xss block", "default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; reflected-xss block", csp);
-        assertEquals("Public web page should return xcsp default-src 'none'; object-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; reflected-xss block", "default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; reflected-xss block", xcsp);
+        assertEquals("Public web page should return csp default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; reflected-xss block", "default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", csp);
+        assertEquals("Public web page should return xcsp default-src 'none'; object-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; reflected-xss block", "default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", xcsp);
     }
 
     /** Test the adminweb.war module that it returns X-FRAME-OPTIONS on the error page. */
