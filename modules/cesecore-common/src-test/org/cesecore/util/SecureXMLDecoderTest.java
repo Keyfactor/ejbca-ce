@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.junit.Test;
 
 /**
@@ -169,6 +170,8 @@ public class SecureXMLDecoderTest {
         final Map<Object,Object> propmap = new HashMap<>();
         root.put("b64getmap", new Base64GetHashMap(propmap));
         root.put("b64putmap", new Base64PutHashMap(propmap));
+        
+        root.put("certpolicy", new CertificatePolicy("1.2.3.4", "Finders keepers!", "http://example.com/policy"));
         
         // Base64PutHashMap
         
