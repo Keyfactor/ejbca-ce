@@ -8,14 +8,10 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
 .pure-menu-horizontal {
     width: 100%;
     white-space: nowrap;
-        
-    
 }
 
 .pure-menu-horizontal .pure-menu-list {
     display: inline-block;
-        
-    
 }
 
 /* Initial menus should be inline-block so that they are horizontal */
