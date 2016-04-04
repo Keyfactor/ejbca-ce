@@ -20,6 +20,7 @@
 .pure-menu {
 	background: #003366;
 	height: 35px;
+	position: fixed;
 }
 
 .pure-menu-item {
