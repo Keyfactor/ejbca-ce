@@ -52,7 +52,7 @@ public class RaExampleBean implements Serializable {
     @PostConstruct
     private void postContruct() {
         // Check if we have a flash scoped value from a redirect to this page
-        final String value = (String) FacesContext.getCurrentInstance().getExternalContext().getFlash().remove("value");
+        final String value = (String) FacesContext.getCurrentInstance().getExternalContext().getFlash().get("value");
         if (value!=null) {
             this.value = value;
         }
