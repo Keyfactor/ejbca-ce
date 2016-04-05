@@ -91,6 +91,20 @@
     	</managed-property>
   </managed-bean>
   <managed-bean>
+    	<managed-bean-name>approvalProfilesMBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.approval.ApprovalProfilesMBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    	<managed-bean-name>approvalProfileMBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.approval.ApprovalProfileMBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+    	<managed-property>
+    	    <property-name>approvalProfilesMBean</property-name>
+    	    <value>#{approvalProfilesMBean}</value>
+    	</managed-property>
+  </managed-bean>
+  <managed-bean>
     	<managed-bean-name>internalKeyBindingMBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.keybind.InternalKeyBindingMBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
@@ -197,6 +211,25 @@
     <navigation-case>
       <from-outcome>done</from-outcome>
       <to-view-id>/ca/editcertificateprofiles/editcertificateprofiles.jsp</to-view-id>
+    </navigation-case>
+  </navigation-rule>
+  
+    <navigation-rule>
+    <from-view-id>/approval/editapprovalprofiles.jsp</from-view-id>
+    <navigation-case>
+      <from-outcome>edit</from-outcome>
+      <to-view-id>/approval/editapprovalprofile.jsp</to-view-id>
+    </navigation-case>
+    <navigation-case>
+      <from-outcome>view</from-outcome>
+      <to-view-id>/approval/editapprovalprofile.jsp</to-view-id>
+    </navigation-case>
+  </navigation-rule>
+  <navigation-rule>
+    <from-view-id>/approval/editapprovalprofile.jsp</from-view-id>
+    <navigation-case>
+      <from-outcome>done</from-outcome>
+      <to-view-id>/approval/editapprovalprofiles.jsp</to-view-id>
     </navigation-case>
   </navigation-rule>
   

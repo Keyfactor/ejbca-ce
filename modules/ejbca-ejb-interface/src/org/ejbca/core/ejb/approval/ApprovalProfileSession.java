@@ -1,0 +1,139 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.ejbca.core.ejb.approval;
+
+import java.util.List;
+import java.util.Map;
+
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.approval.ApprovalProfile;
+
+/** Session bean to manage approval profiles, i.e. add, remove, find
+ * 
+ * In order to add or edit ApprovalProfiles the admin needs access to:
+ * - /ca_functionality/ (StandardRules.CAFUNCTIONALITY
+ */
+public interface ApprovalProfileSession {
+
+    /**
+     * Adds an approval profile to the database.
+     * 
+     * @param admin administrator performing the task
+     * @param name readable name of new approval profile
+     * @param profile the profile to be added
+     * @return the generated approval profile id
+     */
+    public int addApprovalProfile(AuthenticationToken admin, String name, ApprovalProfile profile) throws ApprovalProfileExistsException;
+    
+    /**
+     * Updates approval profile data
+     * 
+     * @param admin Administrator performing the operation
+     * @param name readable name of the approval profile to be changed
+     * @param profile the changed profile
+     */
+    void changeApprovalProfile(AuthenticationToken admin, String name, ApprovalProfile profile) throws AuthorizationDeniedException;
+
+    /** Clear and reload certificate profile caches. */
+    void flushProfileCache();
+
+    /**
+     * Adds an approval profile with the same content as the original approval profile.
+     * 
+     * @param admin Administrator performing the operation
+     * @param orgname name of original approval profile
+     * @param newname name of new approval profile
+     */
+    void cloneApprovalProfile(AuthenticationToken admin, String orgname, String newname) 
+            throws ApprovalProfileExistsException, ApprovalProfileDoesNotExistException, AuthorizationDeniedException;
+
+    /**
+     * Retrieves a Collection of id:s (Integer) to authorized profiles. Only profiles that the specified administrator is 
+     * authorized to will be returned. 
+     * 
+     * @param admin Administrator performing the operation
+     * @return Collection of id:s (Integer)
+     */
+    List<Integer> getAuthorizedApprovalProfileIds(AuthenticationToken admin);
+
+    /**
+     * Finds an approval profile by id.
+     * 
+     * @param id approval profile id
+     * @return Approval profile (cloned) or null if it can not be found.
+     */
+    ApprovalProfile getApprovalProfile(int id);
+
+    /**
+     * Retrieves a named approval profile or null if none was found.
+     * 
+     * @param name approval profile name
+     * @return Approval profile (cloned) or null if it can not be found.
+     */
+    ApprovalProfile getApprovalProfile(String name);
+
+    /**
+     * Returns an approval profile id, given it's approval profile name.
+     * 
+     * @param name approval profile name
+     * @return the id or 0 if approval profile cannot be found.
+     */
+    int getApprovalProfileId(String name);
+
+    /**
+     * Returns an approval profile's name given it's id.
+     * 
+     * @param id approval profile id
+     * @return approval profile name or null if approval profile id does not exist.
+     */
+    String getApprovalProfileName(int id);
+
+    /**
+     * Method creating a Map mapping profile id (Integer) to profile name
+     * (String).
+     */
+    Map<Integer, String> getApprovalProfileIdToNameMap();
+/*
+    /**
+     * A method designed to be called at startuptime to (possibly) upgrade
+     * approval profiles. This method will read all approval Profiles and
+     * as a side-effect upgrade them if the version changed.
+     * /
+    public void initializeAndUpgradeProfiles();
+*/
+    /**
+     * Renames an approval profile
+     * @param oldname the name of the approval profile to rename
+     * @param newname the new name of the approval profile
+     */
+    void renameApprovalProfile(AuthenticationToken admin, String oldname, String newname)
+            throws ApprovalProfileExistsException, ApprovalProfileDoesNotExistException, AuthorizationDeniedException;
+
+    /**
+     * Removes an approval profile from the database, does not throw any errors if the profile does not exist.
+     *
+     * @param admin Administrator performing the operation
+     * @param name the name of the approval profile to remove
+     */
+    public void removeApprovalProfile(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
+    
+    /**
+     * Removes an approval profile from the database, does not throw any errors if the profile does not exist.
+     *
+     * @param admin Administrator performing the operation
+     * @param id the ID of the approval profile to remove
+     */
+    public void removeApprovalProfile(AuthenticationToken admin, int id) throws AuthorizationDeniedException;
+
+}

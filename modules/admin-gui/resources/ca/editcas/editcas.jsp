@@ -198,6 +198,7 @@ java.security.InvalidAlgorithmParameterException
   static final String SELECT_SIGNATUREALGORITHM                   = "selectsignaturealgorithm";
   static final String SELECT_APPROVALSETTINGS                     = "approvalsettings";
   static final String SELECT_NUMOFREQUIREDAPPROVALS               = "numofrequiredapprovals";
+  static final String SELECT_APPROVALPROFILE		              = "approvalprofile";
 
   static final String FILE_RECIEVEFILE                            = "filerecievefile";
   static final String FILE_RECIEVEFILE_MAKEREQUEST                = "filerecievefilemakerequest";
@@ -347,6 +348,7 @@ java.security.InvalidAlgorithmParameterException
                 final String validityString = requestMap.get(TEXTFIELD_VALIDITY);
                 final String approvalSettingValues = requestMap.get(SELECT_APPROVALSETTINGS);//request.getParameterValues(SELECT_APPROVALSETTINGS);
                 final String numofReqApprovalsParam = requestMap.get(SELECT_NUMOFREQUIREDAPPROVALS);
+                final String approvalProfileParam = requestMap.get(SELECT_APPROVALPROFILE);
                 final boolean finishUser = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_FINISHUSER));
                 final boolean isDoEnforceUniquePublicKeys = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS));
                 final boolean isDoEnforceUniqueDistinguishedName = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUEDN));
@@ -393,7 +395,7 @@ java.security.InvalidAlgorithmParameterException
                     illegaldnoraltname = cabean.actionCreateCaMakeRequest(caname, signatureAlgorithmParam,
                      signkeyspec, keySequenceFormatParam, keySequence,
                		 catype, subjectdn, certificateProfileIdString, signedByString, description, validityString,
-               		 approvalSettingValues, numofReqApprovalsParam, finishUser, isDoEnforceUniquePublicKeys,
+               		 approvalSettingValues, numofReqApprovalsParam, approvalProfileParam, finishUser, isDoEnforceUniquePublicKeys,
                		 isDoEnforceUniqueDistinguishedName,
                		 isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage,
                		 subjectaltname, policyid, useauthoritykeyidentifier, authoritykeyidentifiercritical,
@@ -541,6 +543,7 @@ java.security.InvalidAlgorithmParameterException
                 final boolean useCertificateStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTIFICATESTORAGE));
                 final String approvalSettingValues = requestMap.get(SELECT_APPROVALSETTINGS);//request.getParameterValues(SELECT_APPROVALSETTINGS);
                 final String numofReqApprovalsParam = requestMap.get(SELECT_NUMOFREQUIREDAPPROVALS);
+                final String approvalProfileParam = requestMap.get(SELECT_APPROVALPROFILE);
                 final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
                 final boolean useauthoritykeyidentifier = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIER));
                 final boolean authoritykeyidentifiercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL));
@@ -576,7 +579,8 @@ java.security.InvalidAlgorithmParameterException
             		keySequenceFormatParam, keySequence, signedByString, description, validityString,
             		crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, finishUser,
             		isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
-            		useCertReqHistory, useUserStorage, useCertificateStorage, approvalSettingValues, numofReqApprovalsParam,
+            		useCertReqHistory, useUserStorage, useCertificateStorage, approvalSettingValues, numofReqApprovalsParam, 
+            		approvalProfileParam,
             		availablePublisherValues, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber,
             		crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccess,
             		nameConstraintsPermitted, nameConstraintsExcluded,

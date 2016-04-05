@@ -181,6 +181,19 @@ public final class EjbcaConfiguration {
     }
     
     /**
+     * Parameter to specify if retrieving approval profiles in ApprovalProfileSessionBean should be cached, and in that case for how long.
+     */
+    public static long getCacheApprovalProfileTime() {
+        long time = 1000; // cache 1 second is the default
+        try {
+            time = Long.valueOf(EjbcaConfigurationHolder.getString("approvalprofiles.cachetime"));
+        } catch (NumberFormatException e) {
+            log.error("Invalid value in approvalprofiles.cachetime, must be decimal number (milliseconds to cache approval profiles): " + e.getMessage());
+        }
+        return time;
+    }
+    
+    /**
      * Parameter to specify if retrieving Publishers from PublisherSession should be cached, and in that case for how long.
      */
     public static long getCachePublisherTime() {
