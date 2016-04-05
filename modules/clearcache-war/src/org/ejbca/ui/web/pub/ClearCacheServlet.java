@@ -44,6 +44,7 @@ import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.ScepConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -71,6 +72,8 @@ public class ClearCacheServlet extends HttpServlet {
 	private EndEntityProfileSessionLocal endentitysession;
 	@EJB
 	private CertificateProfileSessionLocal certificateprofilesession;
+	@EJB
+	private ApprovalProfileSessionLocal approvalprofilesession;
 	@EJB
 	private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
@@ -125,8 +128,14 @@ public class ClearCacheServlet extends HttpServlet {
         		
         		certificateprofilesession.flushProfileCache();
         		if(log.isDebugEnabled()) {
-        			log.debug("Cert Profile cache cleared");
+        			log.debug("Certificate Profile cache cleared");
         		}
+        		
+        		approvalprofilesession.flushProfileCache();
+        		if(log.isDebugEnabled()) {
+                    log.debug("Approval Profile cache cleared");
+                }
+        		
         		accessControlSession.forceCacheExpire();
         		if(log.isDebugEnabled()) {
         			log.debug("Authorization Rule cache cleared");

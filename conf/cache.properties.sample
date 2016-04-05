@@ -66,6 +66,20 @@
 #certprofiles.cachetime=157680000000
 #certprofiles.cachetime=-1
 
+# Set to a value for caching calls to getApprovalProfile and getApprovalProfileId/Name in ApprovalProfileSessionBean. This means that for Approval profiles to be updated
+# the cache time expires, an "Edit profile" or server restart is done, or flushProfileCache is called on ApprovalProfileSessionBean. 
+# This cache works fine in a single server environment. In a multi server (clustered) environment, 
+# this can be used to disable the check if a profile has been edited on another node, so the profile must be edited on all nodes, 
+# or nodes caches flushed after editing on one node.
+# Setting this value will improve performance for very large volume installations (>100 cert/s). 
+# For normal installations, where extreme speeds and response times are not required, leave as default.
+# Value is milliseconds.
+# Default: 1000 (1 second)
+# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
+#  If you want caching for an infinite time then set something high for example 157680000000 (5years). 
+#approvalprofiles.cachetime=157680000000
+#approvalprofiles.cachetime=-1
+
 # Set to a value for caching calls to getPublisher and getPublisherId/Name in StoreSession. This means that for Publishers to be updated
 # the cache time expires, an "Edit publisher" or server restart is done, or flushPublisherCache is called on StoreSession. 
 # This cache works fine in a single server environment. In a multi server (clustered) environment, 

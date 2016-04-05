@@ -23,6 +23,7 @@
 		<path refid="lib.batik.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.mail.classpath"/>
+        <path location="${mod.ejbca-ejb-interface.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
@@ -78,7 +79,7 @@
 			</manifest>
 			<fileset dir="${build-common.dir}" includes="**/*.class,META-INF/**/*"/>
 			<fileset dir="${src.dir}">
-			    <include name="META-INF/services/org.ejbca.core.model.ca.publisher.ICustomPublisher"/> <!-- for GeneralPurposeCustomPublisher, etc. -->	
+			    <include name="META-INF/services/*"/> <!-- for GeneralPurposeCustomPublisher, etc. -->	
 			</fileset>
 		</jar>
 	</target>
