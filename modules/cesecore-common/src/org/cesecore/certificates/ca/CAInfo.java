@@ -109,6 +109,7 @@ public abstract class CAInfo implements Serializable {
     protected boolean finishuser;
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
     protected Collection<Integer> approvalSettings;
+    protected int approvalProfile;
     protected int numOfReqApprovals;
     protected boolean includeInHealthCheck;
     protected boolean doEnforceUniquePublicKeys;
@@ -333,6 +334,21 @@ public abstract class CAInfo implements Serializable {
         this.extendedcaserviceinfos = extendedcaserviceinfos;
     }
 
+    /**
+     * Returns the ID of an approval profile 
+     */
+    public int getApprovalProfile() {
+        return approvalProfile;
+    }
+
+    /**
+     * Sets the ID of an approval profile.
+     */
+    public void setApprovalProfile(final int approvalProfileID) {
+        this.approvalProfile = approvalProfileID;
+    }
+    
+    
     /**
      * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
      * action that requires approvals, default none 

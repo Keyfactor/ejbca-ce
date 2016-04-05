@@ -35,6 +35,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.EjbcaAuditorSessionLocal;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
@@ -76,6 +77,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	
 	@EJB ApprovalExecutionSessionLocal approvalExecutionSession;
 	@EJB ApprovalSessionLocal approvalSession;
+	@EJB ApprovalProfileSessionLocal approvalProfileSession;
 	@EJB AccessControlSessionLocal authorizationSession;
 	@EJB AccessRuleManagementSessionLocal accessRuleManagementSession;
 	@EJB CAAdminSessionLocal caAdminSession;
@@ -117,6 +119,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
 	@Override public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
+	@Override public ApprovalProfileSessionLocal getApprovalProfileSession() { return approvalProfileSession; }
 	@Override public AccessControlSessionLocal getAccessControlSession() { return authorizationSession; }
 	@Override public AccessRuleManagementSessionLocal getAccessRuleManagementSession() { return accessRuleManagementSession; }
 	@Override public CAAdminSessionLocal getCaAdminSession() { return caAdminSession; }

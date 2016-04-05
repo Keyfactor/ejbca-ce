@@ -505,7 +505,7 @@ public class CAInterfaceBean implements Serializable {
             String extendedServiceSignatureKeySpec,
             String keySequenceFormat, String keySequence, int catype, String subjectdn,
             String certificateProfileIdString, String signedByString, String description, String validityString,
-            String approvalSettingValues, String numofReqApprovalsParam, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
+            String approvalSettingValues, String numofReqApprovalsParam, String approvalProfileParam, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
             boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
             boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String subjectaltname,
             String policyid, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
@@ -566,7 +566,7 @@ public class CAInterfaceBean implements Serializable {
             }
             return actionCreateCaMakeRequestInternal(caName, signatureAlgorithm, extendedServiceSignatureKeySpec,
                     keySequenceFormat, keySequence, catype, subjectdn, certificateProfileIdString, signedByString,
-                    description, validityString, approvalSettingValues, numofReqApprovalsParam, finishUser,
+                    description, validityString, approvalSettingValues, numofReqApprovalsParam, approvalProfileParam, finishUser,
                     isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
                     useCertReqHistory, useUserStorage, useCertificateStorage, subjectaltname, policyid,
                     useauthoritykeyidentifier, authoritykeyidentifiercritical, crlperiod, crlIssueInterval,
@@ -594,7 +594,7 @@ public class CAInterfaceBean implements Serializable {
 	        String extendedServiceSignatureKeySpec,
 	        String keySequenceFormat, String keySequence, int catype, String subjectdn,
 	        String certificateProfileIdString, String signedByString, String description, String validityString,
-	        String approvalSettingValues, String numofReqApprovalsParam, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
+	        String approvalSettingValues, String numofReqApprovalsParam, String approvalProfileParam, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
 	        boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
 	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String subjectaltname,
 	        String policyid, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
@@ -691,6 +691,7 @@ public class CAInterfaceBean implements Serializable {
 	            }
 	        }
             final int numofreqapprovals = (numofReqApprovalsParam==null ? 1 : Integer.parseInt(numofReqApprovalsParam));
+            final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
 
 	        if (catype == CAInfo.CATYPE_X509) {
 	            // Create a X509 CA
@@ -746,6 +747,7 @@ public class CAInterfaceBean implements Serializable {
 	                            useutf8policytext,
 	                            approvalsettings,
 	                            numofreqapprovals,
+	                            approvalProfileID,
 	                            useprintablestringsubjectdn,
 	                            useldapdnorder,
 	                            usecrldistpointoncrl,
@@ -791,6 +793,7 @@ public class CAInterfaceBean implements Serializable {
 	                            useutf8policytext,
 	                            approvalsettings,
 	                            numofreqapprovals,
+	                            approvalProfileID,
 	                            useprintablestringsubjectdn,
 	                            useldapdnorder,
 	                            usecrldistpointoncrl,
@@ -932,7 +935,8 @@ public class CAInterfaceBean implements Serializable {
 	        String keySequenceFormat, String keySequence, String signedByString, String description, String validityString,
 	        long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean finishUser,
 	        boolean isDoEnforceUniquePublicKeys, boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
-	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String approvalSettingValues, String numofReqApprovalsParam,
+	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String approvalSettingValues, String numofReqApprovalsParam, 
+	        String approvalProfileParam,
 	        String availablePublisherValues, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical, boolean usecrlnumber,
 	        boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator, String authorityInformationAccessParam,
 	        String nameConstraintsPermittedString, String nameConstraintsExcludedString,
@@ -979,6 +983,7 @@ public class CAInterfaceBean implements Serializable {
                }
            }
            final int numofreqapprovals = (numofReqApprovalsParam==null ? 1 : Integer.parseInt(numofReqApprovalsParam));
+           final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
            final ArrayList<Integer> crlpublishers = new ArrayList<Integer>(); 
            if (availablePublisherValues != null) {
                for (final String availablePublisherId : availablePublisherValues.split(";")) {
@@ -1013,6 +1018,7 @@ public class CAInterfaceBean implements Serializable {
                        useutf8policytext,
                        approvalsettings,
                        numofreqapprovals,
+                       approvalProfileID,
                        useprintablestringsubjectdn,
                        useldapdnorder,
                        usecrldistpointoncrl,

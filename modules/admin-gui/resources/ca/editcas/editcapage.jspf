@@ -9,6 +9,8 @@
   Map<String,Integer> casigners = info.getActiveCANames();
 
   Map<Integer,String> publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
+  
+  Map<Integer, String> approvalprofilemap = ejbcawebbean.getInformationMemory().getApprovalProfileIdToNameMap();
 
   Collection<AvailableCryptoToken> availablecatokens = CryptoTokenFactory.instance().getAvailableCryptoTokens();
   String[] availablecatokentypes = new String[availablecatokens.size()];
@@ -1510,7 +1512,29 @@ function toggleCANameChange(){
             </select>        
         </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    
+   <tr  id="Row<%=row++%2%>"> 
+     <td width="50%" align="right"> 
+       <%= ejbcawebbean.getText("APPROVALPROFILES") %> <br />&nbsp;
+     </td>
+     <td width="50%"> 
+       <select name="<%=SELECT_APPROVALPROFILE%>" size="1" <%= (hasEditRights ? "" : "disabled") %> >
+          <%   int usedapprovalprofile = -1;
+               if(editca) usedapprovalprofile = cainfo.getApprovalProfile(); 
+               Iterator iter = approvalprofilemap.keySet().iterator(); 
+               while(iter.hasNext()){
+                 Integer next = (Integer) iter.next(); %>
+          <option  value="<%= next %>" 
+             <%    if(editca && usedapprovalprofile==next)
+                     out.write(" selected ");
+                 %>>
+             <c:out value="<%= approvalprofilemap.get(next) %>"/>                 
+          </option>  
+             <% } %>
+       </select>
+     </td>
+   </tr>
+   <tr id="Row<%=row++%2%>"> 
         <td width="50%"  align="right"> 
             <%= ejbcawebbean.getText("FINISHUSER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Finish%20User") %>
         </td>

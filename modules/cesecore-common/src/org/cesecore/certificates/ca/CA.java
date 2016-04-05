@@ -111,6 +111,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String EXTENDEDCASERVICE = "extendedcaservice";
     protected static final String APPROVALSETTINGS = "approvalsettings";
     protected static final String NUMBEROFREQAPPROVALS = "numberofreqapprovals";
+    protected static final String APPROVALPROFILE = "approvalprofile";
     protected static final String INCLUDEINHEALTHCHECK = "includeinhealthcheck";
     private static final String DO_ENFORCE_UNIQUE_PUBLIC_KEYS = "doEnforceUniquePublicKeys";
     private static final String DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME = "doEnforceUniqueDistinguishedName";
@@ -173,6 +174,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(EXTENDEDCASERVICES, extendedservicetypes);
         setApprovalSettings(cainfo.getApprovalSettings());
         setNumOfRequiredApprovals(cainfo.getNumOfReqApprovals());
+        setApprovalProfile(cainfo.getApprovalProfile());
     }
 
     private void createExtendedCAService(ExtendedCAServiceInfo info) {
@@ -739,6 +741,23 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public void setNumOfRequiredApprovals(int numOfReqApprovals) {
         data.put(NUMBEROFREQAPPROVALS, Integer.valueOf(numOfReqApprovals));
     }
+    
+    /**
+     * Returns the id of the approval profile. Defult -1 (= none)
+     */
+    public int getApprovalProfile() {
+        if (data.get(APPROVALPROFILE) == null) {
+            return -1;
+        }
+        return ((Integer) data.get(APPROVALPROFILE)).intValue();
+    }
+
+    /**
+     * The id of the approval profile.
+     */
+    public void setApprovalProfile(final int approvalProfileID) {
+        data.put(APPROVALPROFILE, Integer.valueOf(approvalProfileID));
+    }
 
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
         data.put(VALIDITY, Long.valueOf(cainfo.getValidity()));
@@ -750,6 +769,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
         data.put(APPROVALSETTINGS, cainfo.getApprovalSettings());
         data.put(NUMBEROFREQAPPROVALS, Integer.valueOf(cainfo.getNumOfReqApprovals()));
+        data.put(APPROVALPROFILE, Integer.valueOf(cainfo.getApprovalProfile()));
         if (cainfo.getCertificateProfileId() > 0) {
             data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
         }

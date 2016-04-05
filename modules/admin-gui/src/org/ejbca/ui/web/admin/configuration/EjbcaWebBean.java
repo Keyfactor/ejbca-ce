@@ -182,7 +182,8 @@ public class EjbcaWebBean implements Serializable {
         if (informationmemory == null) {
             informationmemory = new InformationMemory(administrator, caAdminSession, caSession, authorizationSession, complexAccessControlSession,
                     endEntityProfileSession, hardTokenSession, publisherSession, userDataSourceSession, certificateProfileSession,
-                    globalConfigurationSession, roleManagementSession, globalconfiguration, cmpconfiguration, availableExtendedKeyUsagesConfig,
+                    globalConfigurationSession, roleManagementSession, ejbLocalHelper.getApprovalProfileSession(), globalconfiguration, 
+                    cmpconfiguration, availableExtendedKeyUsagesConfig,
                     availableCustomCertExtensionsConfig);
         }
         authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, roleAccessSession, roleManagementSession,

@@ -100,6 +100,7 @@ public class X509CAInfo extends CAInfo{
              false, // use default utf8 settings
              new ArrayList<Integer>(), // Approvals Settings
              1, // Number of Req approvals
+             -1, // Approval profile ID (-1 mean no approval profile used)
              false, // Use UTF8 subject DN by default
              true, // Use LDAP DN order by default
              false, // Use CRL Distribution Point on CRL
@@ -128,7 +129,7 @@ public class X509CAInfo extends CAInfo{
     		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,  
     		final String defaultocspservicelocator, final List<String> authorityInformationAccess, final List<String> nameConstraintsPermitted, final List<String> nameConstraintsExcluded, final String cadefinedfreshestcrl, 
     		final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
-    		final boolean useUTF8PolicyText, final Collection<Integer> approvalSettings, final int numOfReqApprovals, final boolean usePrintableStringSubjectDN, 
+    		final boolean useUTF8PolicyText, final Collection<Integer> approvalSettings, final int numOfReqApprovals, final int approvalProfile, final boolean usePrintableStringSubjectDN, 
     		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
     		final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName, final boolean _doEnforceUniqueSubjectDNSerialnumber,
     		final boolean _useCertReqHistory, final boolean _useUserStorage, final boolean _useCertificateStorage, final String _cmpRaAuthSecret) {
@@ -182,6 +183,7 @@ public class X509CAInfo extends CAInfo{
         this.useUTF8PolicyText = useUTF8PolicyText;
         this.approvalSettings = approvalSettings;
         this.numOfReqApprovals = numOfReqApprovals;
+        this.approvalProfile = approvalProfile;
         this.usePrintableStringSubjectDN = usePrintableStringSubjectDN;
         this.useLdapDNOrder = useLdapDnOrder;
         this.useCrlDistributionPointOnCrl = useCrlDistributionPointOnCrl;
@@ -206,7 +208,7 @@ public class X509CAInfo extends CAInfo{
     		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer, 
     		final String defaultocspservicelocator, final List<String> authorityInformationAccess, final List<String> nameConstraintsPermitted, final List<String> nameConstraintsExcluded, final String cadefinedfreshestcrl, 
     		final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
-    		final boolean useUTF8PolicyText, final Collection<Integer> approvalSettings, final int numOfReqApprovals, final boolean usePrintableStringSubjectDN, 
+    		final boolean useUTF8PolicyText, final Collection<Integer> approvalSettings, final int numOfReqApprovals, final int approvalProfile, final boolean usePrintableStringSubjectDN, 
     		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
     		final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName, final boolean _doEnforceUniqueSubjectDNSerialnumber, final boolean _useCertReqHistory, 
     		final boolean _useUserStorage, final boolean _useCertificateStorage, final String _cmpRaAuthSecret) {        
@@ -232,6 +234,7 @@ public class X509CAInfo extends CAInfo{
         this.useUTF8PolicyText = useUTF8PolicyText;
         this.approvalSettings = approvalSettings;
         this.numOfReqApprovals = numOfReqApprovals;
+        this.approvalProfile = approvalProfile;
         this.usePrintableStringSubjectDN = usePrintableStringSubjectDN;
         this.useLdapDNOrder = useLdapDnOrder;
         this.useCrlDistributionPointOnCrl = useCrlDistributionPointOnCrl;

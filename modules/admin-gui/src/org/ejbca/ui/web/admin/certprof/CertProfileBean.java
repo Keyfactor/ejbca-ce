@@ -51,6 +51,7 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalProfileSession;
 import org.ejbca.cvc.AccessRightAuthTerm;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -233,6 +234,18 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         for (final int current : CertificateProfile.DEFAULTBITLENGTHS) {
             ret.add(new SelectItem(current, current + " " + getEjbcaWebBean().getText("BITS")));
+        }
+        return ret;
+    }
+    
+    public List<SelectItem> getAvailableApprovalProfiles() {
+        List<SelectItem> ret = new ArrayList<SelectItem>();
+        ret.add(new SelectItem(-1, "None"));
+        ApprovalProfileSession approvalProfileSession = getEjbcaWebBean().getEjb().getApprovalProfileSession();
+        Map<Integer, String> approvalProfiles = approvalProfileSession.getApprovalProfileIdToNameMap();
+        Set<Entry<Integer, String>> entries = approvalProfiles.entrySet();
+        for(Entry<Integer, String> entry : entries) {
+            ret.add(new SelectItem(entry.getKey(), entry.getValue()));
         }
         return ret;
     }

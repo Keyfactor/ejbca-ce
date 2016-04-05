@@ -43,6 +43,7 @@ import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -78,6 +79,7 @@ public class InformationMemory implements Serializable {
     private CertificateProfileSession certificateProfileSession;
     private ComplexAccessControlSessionLocal complexAccessControlSession;
     private RoleManagementSession roleManagementSession;
+    private ApprovalProfileSessionLocal approvalProfileSession;
 
     // Memory variables.
     RAAuthorization raauthorization = null;
@@ -87,6 +89,7 @@ public class InformationMemory implements Serializable {
     Map<Integer, String> caidtonamemap = null;
     Map<Integer, HashMap<Integer, List<Integer>>> endentityavailablecas = null;
     Map<Integer, String> publisheridtonamemap = null;
+    Map<Integer, String> approvalprofilemap = null;
 
     TreeMap<String, Integer> authRoles = null;
     TreeMap<String, Integer> publishernames = null;
@@ -106,7 +109,8 @@ public class InformationMemory implements Serializable {
     public InformationMemory(AuthenticationToken administrator, CAAdminSession caadminsession, CaSessionLocal caSession, AccessControlSessionLocal authorizationsession,
             ComplexAccessControlSessionLocal complexAccessControlSession, EndEntityProfileSession endEntityProfileSession,
             HardTokenSession hardtokensession, PublisherSessionLocal publishersession, UserDataSourceSession userdatasourcesession,
-            CertificateProfileSession certificateProfileSession, GlobalConfigurationSession globalConfigurationSession, RoleManagementSessionLocal roleManagementSession,
+            CertificateProfileSession certificateProfileSession, GlobalConfigurationSession globalConfigurationSession, RoleManagementSessionLocal roleManagementSession, 
+            ApprovalProfileSessionLocal approvalProfileSession,
             GlobalConfiguration globalconfiguration, CmpConfiguration cmpconfig, AvailableExtendedKeyUsagesConfiguration ekuConfig, AvailableCustomCertificateExtensionsConfiguration cceConfig) {
         this.caadminsession = caadminsession;
         this.casession = caSession;
@@ -125,6 +129,8 @@ public class InformationMemory implements Serializable {
         this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, roleManagementSession);
         this.complexAccessControlSession = complexAccessControlSession;
         this.roleManagementSession = roleManagementSession;
+        this.approvalProfileSession = approvalProfileSession;
+        
     }
 
     public String getCertificateProfileName(int id) {
@@ -295,6 +301,21 @@ public class InformationMemory implements Serializable {
         return certificateprofilenameproxy;
     }
 
+    /**
+     * Method returning the all available approval profiles id to name.
+     * 
+     * @return the approvalprofiles-id-to-name-map (HashMap)
+     */
+    public Map<Integer, String> getApprovalProfileIdToNameMap() {
+        if(approvalprofilemap == null) {
+            approvalprofilemap = approvalProfileSession.getApprovalProfileIdToNameMap();
+            approvalprofilemap.put(-1, "None");
+        }
+        return approvalprofilemap;
+    }
+
+    
+    
     /**
      * Method returning the all available publishers id to name.
      * 
@@ -519,6 +540,10 @@ public class InformationMemory implements Serializable {
         raauthorization.clear();
         caauthorization.clear();
         hardtokenauthorization.clear();
+    }
+    
+    public void approvalProfilesEdited() {
+        approvalprofilemap = null;
     }
 
     /**

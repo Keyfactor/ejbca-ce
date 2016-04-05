@@ -55,7 +55,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 40.0;
+    public static final float LATEST_VERSION = (float) 41.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -166,6 +166,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEDCERTIFICATEEXTENSIONS = "usedcertificateextensions";
     protected static final String APPROVALSETTINGS = "approvalsettings";
     protected static final String NUMOFREQAPPROVALS = "numofreqapprovals";
+    protected static final String APPROVALPROFILE = "approvalProfile";
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
     protected static final String USECERTIFICATESTORAGE = "usecertificatestorage";
     protected static final String STORECERTIFICATEDATA = "storecertificatedata";
@@ -450,6 +451,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setNumOfReqApprovals(1);
         List<Integer> emptyList = Collections.emptyList();
         setApprovalSettings(emptyList);
+        setApprovalProfileID(-1);
         
      // PrivateKeyUsagePeriod extension
         setUsePrivateKeyUsagePeriodNotBefore(false);
@@ -1933,6 +1935,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
+     * Returns the id of the approval profile. ID -1 means  that no approval profile was set
+     */
+    public int getApprovalProfileID() {
+        return ((Integer) data.get(APPROVALPROFILE)).intValue();
+    }
+
+    /**
+     * The ID of an approval profile
+     */
+    public void setApprovalProfileID(int approvalProfileID) {
+        data.put(APPROVALPROFILE, Integer.valueOf(approvalProfileID));
+    }
+
+    
+
+    /**
      * Returns true if the action requires approvals.
      * 
      * @param action
@@ -2498,6 +2516,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             if (data.get(AVAILABLEECCURVES) == null) { // v 40
                setAvailableEcCurves(new String[]{ ANY_EC_CURVE }); 
+            }
+            if(data.get(APPROVALPROFILE) == null) { // v41
+                setApprovalProfileID(-1);
             }
             data.put(VERSION, new Float(LATEST_VERSION));
         }

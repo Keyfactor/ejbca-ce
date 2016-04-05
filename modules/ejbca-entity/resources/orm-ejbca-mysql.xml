@@ -350,6 +350,16 @@
             <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
         </attributes>
     </entity>
+   <entity class="org.ejbca.core.ejb.profiles.ProfileData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="id"><column name="id" column-definition="INT(11)"/></id>
+            <basic fetch="EAGER" name="profileType"><column name="profileType" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic fetch="EAGER" name="profileName"><column name="profileName" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic fetch="EAGER" name="dataUnsafe"><column name="data" column-definition="LONGBLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
+        </attributes>
+    </entity>
     <entity class="org.cesecore.configuration.GlobalConfigurationData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="configurationId"><column name="configurationId" column-definition="VARCHAR(250) BINARY"/></id>

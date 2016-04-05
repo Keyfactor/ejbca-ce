@@ -24,6 +24,8 @@ org.cesecore.keybind.InternalKeyBindingRules
 
        final String APPROVAL_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "approval/approveactionlist.jsf";
        
+       final String APPROVAL_PROFILES_LINK	 =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "approval/editapprovalprofiles.jsf";
+       
        final String EDITCA_LINK              =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/editcas/editcas.jsp";
        final String EDITPUBLISHERS_LINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath()  + "/editpublishers/editpublishers.jsp";
 
@@ -252,8 +254,9 @@ org.cesecore.keybind.InternalKeyBindingRules
 		<li id="cat4" class="section"><strong><%=ejbcawebbean.getText("NAV_SUPERVISIONFUNCTIONS") %></strong>
 			<ul>
 				<li><a href="<%= APPROVAL_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_APPROVEACTIONS") %></a></li>
-<%      }
-   
+<%      } %>
+				<li><a href="<%= APPROVAL_PROFILES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_APPROVALPROFILES") %></a></li>
+<%   
     // If authorized to view log then display related links.
       if(ejbcawebbean.isAuthorizedNoLogSilent(LOGVIEW_RESOURCE)){
             if(!logheaderprinted){

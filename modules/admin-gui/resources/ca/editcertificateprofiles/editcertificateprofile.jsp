@@ -1098,6 +1098,15 @@
 					<f:selectItems value="#{certProfileBean.numOfReqApprovalsAvailable}"/>
 				</h:selectOneMenu>
 			</h:panelGroup>
+			
+			<h:panelGroup>
+				<h:outputLabel for="selectApprovalProfile" value="#{web.text.APPROVALPROFILES} "/>
+				<h:selectOneMenu id="selectApprovalProfile" value="#{certProfileBean.certificateProfile.approvalProfileID}" converter="javax.faces.Integer"
+					disabled="#{certProfilesBean.viewOnly}">
+					<f:selectItems value="#{certProfileBean.availableApprovalProfiles}"/>
+				</h:selectOneMenu>
+			</h:panelGroup>
+			
 		</h:panelGrid>
 		<h:panelGroup rendered="#{certProfileBean.typeEndEntity}">
 			<h:outputLabel for="singleActiveCertificateConstraintSettings" value="#{web.text.SINGLECERTCONSTRAINT}"/>
