@@ -42,7 +42,9 @@
   	  	    <h:panelGroup layout="block" id="templateLocale">
       	        <h:form>
       	            <ui:repeat value="#{raLocaleBean.supportedLocales}" var="supportedLocale">
-                        <h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" value="#{supportedLocale.language}"/>
+                        <h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" value="#{supportedLocale.language}">
+                            <f:ajax execute="@this" render="@all"/>
+                        </h:commandButton>
       	            </ui:repeat>
       	        </h:form>
   	  	    </h:panelGroup>
