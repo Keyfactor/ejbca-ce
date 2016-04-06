@@ -14,6 +14,7 @@ package org.ejbca.core.model.approval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -57,15 +58,17 @@ public class ApprovalProfile extends UpgradeableDataHashMap implements Serializa
             profileType = new ApprovalProfileNumberOfApprovals();
         }
         data.put(APPROVALPROFILETYPE, profileType);
-        final Map<String, Object> typeFields = profileType.getAllFields();
-        Set<Entry<String, Object>> entries = typeFields.entrySet();
-        for(Entry<String, Object> entry : entries) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            if(fields != null && fields.containsKey(key)) {
-                value = fields.get(key);
+        if(fields != null) {
+            data.putAll(fields);
+            final Map<String, Object> typeFields = profileType.getAllFields();
+            Set<Entry<String, Object>> entries = typeFields.entrySet();
+            for(Entry<String, Object> entry : entries) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                if(!data.containsKey(key)) {
+                    data.put(key, value);
+                }
             }
-            data.put(key, value);
         }
     }
     
@@ -79,6 +82,24 @@ public class ApprovalProfile extends UpgradeableDataHashMap implements Serializa
     
     public void setApprovalProfileType(ApprovalProfileType type) {
         data.put(APPROVALPROFILETYPE, type);
+    }
+    
+    public Object getProperty(String key) {
+        return data.get(key);
+    }
+    
+    public void setProperty(String key, Object value) {
+        data.put(key, value);
+    }
+    
+    public void removeProperty(String key) {
+        data.remove(key);
+    }
+    
+    public Map<String, Object> getAllFields() {
+        HashMap<String,Object> ret = new HashMap<String, Object>();
+        ret = (HashMap<String, Object>) data.clone();
+        return ret;
     }
 
     @Override
