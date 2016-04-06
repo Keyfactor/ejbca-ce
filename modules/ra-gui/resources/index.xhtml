@@ -33,7 +33,9 @@
 	                <h:outputLabel for="value" value="#{msg.somefunction_value_label}"/>
 	                <h:inputText id="value" value="#{raExampleBean.value}"/>
     	        </h:panelGrid>
-                <h:commandButton action="#{raExampleBean.testAction}" value="#{msg.somefunction_command}"/>
+                <h:commandButton action="#{raExampleBean.testAction}" value="#{msg.somefunction_command}">
+                    <f:ajax execute="@form" render="@form :messages"/>
+                </h:commandButton>
                 <h:commandButton action="#{raExampleBean.testActionAndRedirect}" value="#{msg.somefunctionprg_command}"/>
                 <h:commandButton action="#{raExampleBean.throwException}" value="Throw Exception (to test error handling)"/>
             </h:form>
