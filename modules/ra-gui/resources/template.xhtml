@@ -40,14 +40,14 @@
                 <h:outputText value="RA GUI"/>
   	  	    </h:panelGroup>
   	  	    <h:panelGroup layout="block" id="templateLocale">
-      	        <ui:repeat value="#{raLocaleBean.supportedLocales}" var="supportedLocale">
-      	            <h:form>
+      	        <h:form>
+      	            <ui:repeat value="#{raLocaleBean.supportedLocales}" var="supportedLocale">
                         <h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" value="#{supportedLocale.language}"/>
-      	            </h:form>
-      	        </ui:repeat>
+      	            </ui:repeat>
+      	        </h:form>
   	  	    </h:panelGroup>
-  	  	    <h:panelGroup layout="block" id="templateMessages">
-  	  	        <h:messages class="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
+  	  	    <h:panelGroup layout="block" id="globalMessages">
+  	  	        <h:messages id="messages" class="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
   	  	    </h:panelGroup>
   	  	    <h:panelGroup layout="block" id="templateMenu">
                 <h:outputLink value="index.xhtml"><h:outputText value="index.xhtml"/></h:outputLink>
