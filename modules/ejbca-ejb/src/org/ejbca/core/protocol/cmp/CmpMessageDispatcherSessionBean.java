@@ -142,7 +142,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			}
 		} catch (IllegalArgumentException e) { 
             final String eMsg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
-            log.error(eMsg, e);
+            log.info(eMsg, e);
             // Catch this case specifically, for the sake of being future proof. BC library will throw an 
             // IllegalArgumentException if the underlying ASN.1 could not be parsed. 
             return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, eMsg);
