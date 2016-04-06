@@ -101,7 +101,11 @@ public abstract class StoreServletBase extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, java.io.IOException {
 		if (log.isTraceEnabled()) {
-			log.trace(">doGet()");			
+			log.trace(">doGet()");
+		}
+		if (!req.getRequestURI().substring(req.getContextPath().length()).contains("search.cgi")) {
+		    resp.sendRedirect(req.getRequestURI() + "search.cgi");
+		    return;
 		}
 		try {
 			if ( alias(req, resp) ) {
