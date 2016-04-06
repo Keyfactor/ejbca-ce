@@ -47,6 +47,10 @@
         </cookie-config>
     </session-config>
 
+    <welcome-file-list>
+        <welcome-file>search.cgi</welcome-file>
+    </welcome-file-list>
+
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>restricted methods</web-resource-name>
