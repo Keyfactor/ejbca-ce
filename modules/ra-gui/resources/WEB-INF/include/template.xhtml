@@ -43,9 +43,7 @@
   	  	    <h:panelGroup layout="block" id="templateLocale">
       	        <h:form>
       	            <ui:repeat value="#{raLocaleBean.supportedLocales}" var="supportedLocale">
-                        <h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" value="#{supportedLocale.language}">
-                            <f:ajax disabled="true"/>
-                        </h:commandButton>
+                        <h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" value="#{supportedLocale.language}"/>
       	            </ui:repeat>
       	        </h:form>
   	  	    </h:panelGroup>
