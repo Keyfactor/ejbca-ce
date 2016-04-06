@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.cesecore.authorization.cache;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.util.ConcurrentCache;
@@ -21,7 +25,12 @@ import org.cesecore.util.ConcurrentCache;
  * @version $Id$
  */
 public final class RemoteAccessSetCacheHolder {
+    
+    private static final Logger log = Logger.getLogger(RemoteAccessSetCacheHolder.class);
 
+    private static volatile int lastUpdate = -1;
+    private static final Object checkClearLock = new Object();
+    private static final Lock doClearLock = new ReentrantLock();
     private static final ConcurrentCache<AuthenticationToken,AccessSet> cache = new ConcurrentCache<>();
     
     /** Can't be instantiated */
@@ -36,9 +45,37 @@ public final class RemoteAccessSetCacheHolder {
         return cache;
     }
     
-    public static void clear() {
-        cache.clear();
+    /**
+     * Clears 
+     * @param updateNumber 
+     */
+    public static void clear(final int updateNumber) {
+        log.trace(">clear");
+        if (updateNumber != -1) {
+            synchronized (checkClearLock) {
+                if (lastUpdate >= updateNumber) {
+                    log.trace("<clear");
+                    return;
+                }
+                lastUpdate = updateNumber;
+            }
+        }
+        if (doClearLock.tryLock()) {
+            try {
+                log.debug("Updating cache");
+                doClear();
+            } finally {
+                doClearLock.unlock();
+            }
+        }
+        log.trace("<clear");
     }
     
+    private static void doClear() {
+        log.trace(">doClear");
+        // TODO do a background reload of PublicWebAuth
+        cache.clear();
+        log.trace("<doClear");
+    }
     
 }
