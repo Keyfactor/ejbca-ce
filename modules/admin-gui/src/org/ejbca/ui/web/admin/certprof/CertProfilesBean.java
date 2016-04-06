@@ -168,7 +168,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                     } else if(!isCertProfileFixed(a.getId()) && isCertProfileFixed(b.getId())) {
                         return 1;
                     } else {
-                    return a.getName().compareTo(b.getName());
+                    return a.getName().compareToIgnoreCase(b.getName());
                     }
                 }
             });
