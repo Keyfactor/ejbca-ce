@@ -69,16 +69,18 @@ public class RaMasterApiProxy implements RaMasterApi {
     
     @Override
     public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        AccessSet merged = new AccessSet();
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    return raMasterApi.getUserAccessSet(authenticationToken);
+                    AccessSet as = raMasterApi.getUserAccessSet(authenticationToken);
+                    merged = new AccessSet(merged, as);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        throw new RaMasterBackendUnavailableException();
+        return merged;
     }
 
     @Override

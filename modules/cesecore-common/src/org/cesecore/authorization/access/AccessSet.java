@@ -70,6 +70,13 @@ public final class AccessSet implements Serializable {
         this.set = new HashSet<>(set);
     }
 
+    /** Creates an access set merged from two access sets. */
+    public AccessSet(final AccessSet a, final AccessSet b) {
+        set = new HashSet<>(a.set.size() + b.set.size());
+        set.addAll(a.set);
+        set.addAll(b.set);
+    }
+
     public boolean isAuthorized(final String... resources) {
         NEXT_RESOURCE: for (final String resource : resources) {
             if (resource.charAt(0) != '/') {
