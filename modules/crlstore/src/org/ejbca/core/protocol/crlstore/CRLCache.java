@@ -27,7 +27,8 @@ import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.CertTools;
 
 /**
- * See {@link ICRLCache} to see what this is.
+ * An implementation of this is managing a cache of CRLs. The implementation should be optimized for quick lookups of CRLs that the 
+ * VA responder needs to fetch.
  *
  * @version $Id$
  */
@@ -79,7 +80,7 @@ public class CRLCache {
     }
 	
 	/**
-	 * @param crlSession DB connections
+	 * @param crlSession reference to CRLStoreSession
 	 * @param certStore references to needed CA certificates.
 	 */
 	private CRLCache(CrlStoreSessionLocal crlSession, CaCertificateCache certCache) {
@@ -100,7 +101,7 @@ public class CRLCache {
 	/**
      * @param id The ID of the issuer DN.
      * @param isDelta true if delta CRL
-     * @return  array of X509Certificate or null if no CRLs exist in the cache.
+     * @return CRL or null if the CRL does not exist in the cache.
      */
 	public byte[] findLatestByIssuerDN(HashID id, boolean isDelta) {
 		return findLatest(certCache.findLatestBySubjectDN(id), isDelta);
@@ -109,7 +110,7 @@ public class CRLCache {
 	private byte[] findLatest(X509Certificate caCert, boolean isDelta) {
 		if ( caCert==null ) {
 			if (log.isDebugEnabled()) {
-				log.debug("No caCert, returning null.");
+				log.debug("No CA certificate, returning null.");
 			}
 			return null;
 		}
