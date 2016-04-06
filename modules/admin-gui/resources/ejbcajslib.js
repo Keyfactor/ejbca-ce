@@ -1,4 +1,3 @@
-<!--
 /*************************************************************************
  *                                                                       *
  *  EJBCA: The OpenSource Certificate Authority                          *
@@ -14,7 +13,7 @@
 
 /*
  * JavaScript library used by EJBCA JSP pages
- * Originally created by Philip Vendil 2002-03-27
+ * First version 2002-03-27
  */
 
 function checkAll(checkboxlist,size) {
@@ -333,4 +332,3 @@ function getInsertIntoField(fieldname, input, infovalidchars) {
 	}
 	return false;
 }
--->
