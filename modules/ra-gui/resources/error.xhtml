@@ -4,6 +4,7 @@
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:component="http://java.sun.com/jsf/composite/component"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:fn="http://java.sun.com/jsp/jstl/functions"
     xmlns:t="http://myfaces.apache.org/tomahawk">
@@ -31,7 +32,7 @@
     <f:metadata>
         <f:event type="preRenderView" listener="#{raErrorBean.onErrorPageLoad}"/>
     </f:metadata>
-    <ui:composition template="template.xhtml">
+    <ui:composition template="/WEB-INF/include/template.xhtml">
         <ui:define name="content">
         </ui:define>
     </ui:composition>
