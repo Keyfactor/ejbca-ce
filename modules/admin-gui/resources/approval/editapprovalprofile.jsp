@@ -100,6 +100,65 @@
 		</h:selectOneMenu>
 
 	</h:panelGrid>
+	
+		
+	<h:panelGroup rendered="#{!approvalProfileMBean.nrOfApprovalsProfileType}">
+		<h3><h:outputText value="#{web.text.PROPERTIES}"/></h3>
+		<h:dataTable value="#{approvalProfileMBean.propertiesList}" var="property" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
+			<h:column headerClass="gridColumn1">
+				<f:facet name="header"><h:outputText value="Property Key"/></f:facet>
+				<h:outputText value="#{property.propertyKey}"/>
+				<f:facet name="footer">
+		  			<h:inputText value="#{approvalProfileMBean.addProperyKey}" title="#{web.text.FORMAT_ID_STR}" size="25" maxlength="255" rendered="#{!approvalProfilesMBean.viewOnly}"/>
+				</f:facet>
+			</h:column>
+			<h:column headerClass="gridColumn2">
+				<f:facet name="header"><h:outputText value="Property Value"/></f:facet>
+				<h:outputText value="#{property.propertyValue}"/>
+				<f:facet name="footer">
+					<h:panelGroup>
+		  				<h:inputText value="#{approvalProfileMBean.addProperyValue}" title="#{web.text.FORMAT_ID_STR}" size="25" maxlength="255" 
+		  										rendered="#{!approvalProfilesMBean.viewOnly and !approvalProfileMBean.adminApprovalProfileType}"/>
+		  				<h:selectOneMenu id="propertyValue" value="#{approvalProfileMBean.addProperyValue}"  
+		  										rendered="#{!approvalProfilesMBean.viewOnly and approvalProfileMBean.adminApprovalProfileType}">
+							<f:selectItems value="#{approvalProfileMBean.adminRolesAvailable}"/>
+						</h:selectOneMenu>
+		  			</h:panelGroup>
+				</f:facet>
+			</h:column>
+			<h:column headerClass="gridColumn1">
+				<f:facet name="header"><h:outputText value="Property Description"/></f:facet>
+				<h:outputText value="#{property.propertyDescription}"/>
+				<f:facet name="footer">
+		  			<h:inputText value="#{approvalProfileMBean.addPropertyDescription}" title="#{web.text.FORMAT_ID_STR}" size="25" maxlength="255" rendered="#{!approvalProfilesMBean.viewOnly}"/>
+				</f:facet>
+			</h:column>
+			<h:column headerClass="gridColumn2">
+				<f:facet name="header"><h:outputText value="Property Metadata Type"/></f:facet>
+				<h:outputText value="#{property.propertyMetadataTypeString}"/>
+				<f:facet name="footer">
+		  			<h:selectOneMenu id="propertyMetadataType" value="#{approvalProfileMBean.addPropertyMetaDataType}"  rendered="#{!approvalProfilesMBean.viewOnly}">
+						<f:selectItems value="#{approvalProfileMBean.metadataTypesAvailable}"/>
+					</h:selectOneMenu>
+				</f:facet>
+			</h:column>
+			<h:column headerClass="gridColumn1">
+				<f:facet name="header"><h:outputText value="Property Metadata Options"/></f:facet>
+				<h:outputText value="#{property.propertyMetadataString}"/>
+				<f:facet name="footer">
+		  			<h:inputText value="#{approvalProfileMBean.addPropertyMetaData}" title="#{web.text.FORMAT_ID_STR}" size="25" maxlength="255"  rendered="#{!approvalProfilesMBean.viewOnly}"/>
+				</f:facet>
+			</h:column>
+			<h:column headerClass="gridColumn2">
+				<f:facet name="header"><h:outputText value="#{web.text.ACTION}"/></f:facet>
+				<h:commandButton value="#{web.text.DELETE}" action="#{approvalProfileMBean.deletePropertyAction}"/>
+				<f:facet name="footer">
+					<h:commandButton value="#{web.text.ADD}" action="#{approvalProfileMBean.addPropertyAction}" rendered="#{!approvalProfilesMBean.viewOnly}"/>
+				</f:facet>
+			</h:column>
+		</h:dataTable>
+	</h:panelGroup>
+	
 
 
 	<h:panelGrid columns="2" styleClass="edit" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
