@@ -46,8 +46,11 @@ public final class RemoteAccessSetCacheHolder {
     }
     
     /**
-     * Clears 
-     * @param updateNumber 
+     * Clears the access rule cache. This method avoids duplicate cache invalidations if invoked
+     * multiple times from multiple sources (e.g. CAs in a cluster that broadcast a
+     * "clear caches" peer message). 
+     * 
+     * @param updateNumber Access tree update number at the time the clear cache triggered.
      */
     public static void clear(final int updateNumber) {
         log.trace(">clear");
