@@ -44,7 +44,7 @@
       	        <h:form>
       	            <ui:repeat value="#{raLocaleBean.supportedLocales}" var="supportedLocale">
                         <h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" value="#{supportedLocale.language}">
-                            <f:ajax execute="@this" render="@all"/>
+                            <f:ajax disabled="true"/>
                         </h:commandButton>
       	            </ui:repeat>
       	        </h:form>
