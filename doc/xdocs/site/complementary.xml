@@ -214,10 +214,17 @@ Contact <a href="http://aventra.fi/English/index_E.php">Aventra</a> for more inf
     </p>
 </subsection>
 
-<subsection name="Gemalto Versasec">
+<subsection name="Versasec vSEC:CMS">
 <p>
-The Gemalto Versasec, vSEC:CMS, smart card management system is compatible with EJBCA. This is described in the <a href="http://www.gemalto.com/dwnld/7022_vSEC_CMS_T.PDF">product sheet</a>.
-</p>
+The vSEC:CMS product portfolio includes everything from easy to use end-user applications, downloadable tools, 
+ready to go appliances... all the way to complete integration platforms - all with the same purpose, simplify lifecycle 
+management of PKI enable devices. To learn more and to download the software today, visit <a href="http://www.versasec.com/">versasec.com</a>.</p>
+</subsection>
+
+<subsection name="Gemalto IDAdmin 200">
+<p>
+Gemalto IDAdmin 200 is the leading smart card management system for managing Gemalto’s impressive portfolio of smart cards,
+converged badges and other access enabling tokens. For more information visit the <a href="http://www.gemalto.com/products/versatile/">IDAdmin 200 product page</a>.</p>
 </subsection>
 
 </section>
