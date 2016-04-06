@@ -4,6 +4,7 @@
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:composite="http://java.sun.com/jsf/composite" 
     xmlns:component="http://java.sun.com/jsf/composite/component"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:fn="http://java.sun.com/jsp/jstl/functions"
@@ -26,20 +27,19 @@
      version: $Id$
      -->
     </ui:remove>
-    <ui:composition template="/WEB-INF/include/template.xhtml">
-        <ui:define name="content">
-            <h:outputText value="#{msg.generic_sampleText}"/>
-            <h:form>
-	            <h:panelGrid columns="1">
-	                <component:example componentId="value" componentLabel="#{msg.somefunction_value_label}" componentValue="#{raExampleBean.value}"/>
-    	        </h:panelGrid>
-                <h:commandButton action="#{raExampleBean.testAction}" value="#{msg.somefunction_command}">
-                    <f:ajax execute="@form" render="@form :messages"/>
-                </h:commandButton>
-                <h:commandButton action="#{raExampleBean.testActionAndRedirect}" value="#{msg.somefunctionprg_command}"/>
-                <h:commandButton action="#{raExampleBean.throwException}" value="Throw Exception (to test error handling)"/>
-            </h:form>
-            <h:outputLabel value="[is authorized to root, method 2]" rendered="#{raAccessBean.authorizedToRootTEST}"/>
-        </ui:define>
-    </ui:composition>
+    <f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
+    <h:head dir="#{raLocaleBean.direction}"/>
+    <h:body>
+        <composite:interface>
+            <composite:attribute name="componentId" required="true"/>
+            <composite:attribute name="componentLabel" required="true"/>
+            <composite:attribute name="componentValue" required="true"/>
+        </composite:interface>
+
+        <composite:implementation>
+            <h:outputLabel for="#{cc.attrs.componentId}" value="#{cc.attrs.componentLabel}"/>
+            <h:inputText id="#{cc.attrs.componentId}" value="#{cc.attrs.componentValue}"/>
+        </composite:implementation>
+    </h:body>
+    </f:view>
 </html>
