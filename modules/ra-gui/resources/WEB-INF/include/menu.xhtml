@@ -22,25 +22,6 @@
      -->
 </ui:remove>
 <f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
-	<h:head dir="#{raLocaleBean.direction}">
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-		<title dir="#{raLocaleBean.direction}"><h:outputText value="#{msg.generic_title}" /></title>
-		<link rel="shortcut icon" type="image/png" href="#{facesContext.externalContext.context.contextPath}/img/favicon.png" />
-		<!-- CSS links to the used Pure library files used -->
-		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/base.css" />
-		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/pure.css" />
-		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/grids.css" />
-		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/grids-responsive.css" />
-		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/menus-dropdown.css" />
-		<!-- CSS for the top level menu -->
-		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/ra_menu.css" />
-		<!-- Base CSS for the entire RA GUI -->
-		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/base.css" />
-
-		<script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/js/common.js"></script>
-	</h:head>
 	<h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
 		<div class="pure-g" id="ejbca_menu">
 		    <div class="pure-u-1 pure-u-lg-1-8">
@@ -82,7 +63,7 @@
 				</div>
 		    </div>
 		    <div class="pure-u-1 pure-u-lg-1-6">
-		        <div class="pure-menu pure-menu-horizontal">
+		        <div class="pure-menu pure-menu-horizontal align_right">
 		            <ul class="pure-menu-list">
 		                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Documentation</a></li>
 		                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Login</a></li>
