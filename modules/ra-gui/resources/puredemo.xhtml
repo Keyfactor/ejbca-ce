@@ -40,6 +40,8 @@
    	<!-- This page contains our customizations of the Pure CSS lib -->
    	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/ejbca_ra.css"/>
    	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/ra_menu.css"/>
+   	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/ra_footer.css"/>
+   	
    	
    	<!-- Use these links when working on the CSS -->
  	  
@@ -52,6 +54,7 @@
    	<link type="text/css" rel="stylesheet" href="css/pure/forms.css"/>
    	<link type="text/css" rel="stylesheet" href="css/ejbca_ra.css"/>
   	<link type="text/css" rel="stylesheet" href="css/ra_menu.css"/>
+   	<link type="text/css" rel="stylesheet" href="css/ra_footer.css"/>
    	
    
     <script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/js/common.js"></script>
@@ -66,7 +69,7 @@
 		<div class="pure-u-1 pure-u-lg-1-8">
 	   		<div class="pure-menu pure-menu-horizontal" >
 	            <a href="#" class="pure-menu-heading">                        
-	            	<img class="resize" alt="EJBCA by PrimeKey" src="img/pk_logo.png" /> 
+	            	<img class="menu_logo" alt="EJBCA by PrimeKey" src="img/pk_logo.png" /> 
 				</a>
 	        </div>
 	    </div>
@@ -115,7 +118,7 @@
 			</div>
 	    </div>
 	    <div class="pure-u-1 pure-u-lg-1-6">
-	         <div class="pure-menu pure-menu-horizontal">
+	         <div class="pure-menu pure-menu-horizontal align_right">
 		            <ul class="pure-menu-list">
 		                <li class="pure-menu-item">
 		                	<a href="#" class="pure-menu-link ejbca_menu_link">Documentation</a>
@@ -204,6 +207,10 @@
 			</table>
 		</div>		
 	</div>
+	
+	<div class="footer l-box is-center">
+    	© 2002–2016 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB.
+   	</div>
 	
 
 </h:body>

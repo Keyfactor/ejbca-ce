@@ -13,40 +13,17 @@
 
 /* version: $Id$ */
 
-/* CSS definitions specific for the main menu */
+/* CSS definitions specific for the footer */
 
-#ejbca_menu {
-    height: 2em;
+.footer {
     background: #003366;
    	color: #f2f2f2;	
-   	position: fixed;
-   	width: 100%;
 }
 
-.pure-menu-link {
-   	color: #f2f2f2;	    
-   	font-size: 0.875em; 	
+.l-box {
+    padding: 1em;
 }
 
-.pure-menu-item {
-	background: #003366;
-}
-
-.pure-menu-link:hover, .pure-menu-link:focus  {
-	background: #336699;
-}
-
-.align_right {
-    text-align: right;
-}
-
-img.menu_logo {
-    height: 1em; 
-    width: auto;
-}
-
-.main_frame {
-	background: #fff3e6;
-	height: 100%;
-	margin: 50px 10% 30px 10%;		
+.is-center {
+    text-align: center;
 }
