@@ -11,22 +11,31 @@
  *                                                                       *
  *************************************************************************/
 
-/* version: $Id: base.css 23024 2016-03-17 11:11:31Z jeklund $ */
+/* version: $Id$ */
 
-/* Primekey Customization of the Pure CSS */
+/* CSS definitions specific for the main menu */
 
+#ejbca_menu {
+    height: 2em;
+    background: #003366;
+   	color: #f2f2f2;	
+}
 
-
-.pure-menu {
-	background: #003366;
-	height: 35px;
-	position: fixed;
+.pure-menu-link {
+   	color: #f2f2f2;	    
+   	font-size: 0.875em; 	
 }
 
 .pure-menu-item {
 	background: #003366;
-    color: #e6e6e6	
 }
+
+.pure-menu-link:hover, .pure-menu-link:focus  {
+	background: #336699;
+}
+
+
+
 
 .align_right {
     text-align: right;
@@ -40,39 +49,5 @@ img.resize {
 .main_frame {
 	background: #fff3e6;
 	height: 100%;
-	margin: 50px 10% 30px 10%;
-	
-		
-}
-
-.header {
-     margin: 0;
-     color: #333;
-     padding: 1.5em 5em 0;
-     border-bottom: 1px solid #eee;
-     text-align: center;
- }
- 
-	.header h1 {
-	    margin: 0.2em 0;
-	    font-size: 3em;
-	    font-weight: 300;
-	}
-	
-.content {
-    margin: 0 auto;
-    padding: 0 1em;
-    max-width: 800px;
-    margin-bottom: 50px;
-    line-height: 1.6em;
-    text-align: left;
-    margin: 10px 0 30px 0;
-    padding: 0em 1.5em 1em;
- 
-}
-	
-.content-subhead {
-    margin: 10px 0 20px 0;
-    font-weight: 300;
-    color: #888;
+	margin: 50px 10% 30px 10%;		
 }
