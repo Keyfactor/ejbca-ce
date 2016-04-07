@@ -38,7 +38,8 @@
    	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/menus-dropdown.css"/>
    	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/forms.css"/>   	
    	<!-- This page contains our customizations of the Pure CSS lib -->
-   	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/puredemo.css"/>
+   	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/ejbca_ra.css"/>
+   	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/ra_menu.css"/>
    	
    	<!-- Use these links when working on the CSS -->
  	  
@@ -49,7 +50,9 @@
    	<link type="text/css" rel="stylesheet" href="css/pure/grids-responsive.css"/>
    	<link type="text/css" rel="stylesheet" href="css/pure/menus-dropdown.css"/>
    	<link type="text/css" rel="stylesheet" href="css/pure/forms.css"/>
-   	<link type="text/css" rel="stylesheet" href="css/puredemo.css"/>
+   	<link type="text/css" rel="stylesheet" href="css/ejbca_ra.css"/>
+  	<link type="text/css" rel="stylesheet" href="css/ra_menu.css"/>
+   	
    
     <script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/js/common.js"></script>
 
@@ -59,16 +62,16 @@
 
 <h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
 
-	<div class="pure-g" id="menu">
-	    <div class="pure-u-1 pure-u-lg-1-24">
+	<div class="pure-g" id="ejbca_menu">
+		<div class="pure-u-1 pure-u-lg-1-8">
 	   		<div class="pure-menu pure-menu-horizontal" >
 	            <a href="#" class="pure-menu-heading">                        
-	            	<img class="resize" alt="EJBCA by PrimeKey" src="#{facesContext.externalContext.context.contextPath}/img/pk_logo.png" /> 
+	            	<img class="resize" alt="EJBCA by PrimeKey" src="img/pk_logo.png" /> 
 				</a>
 	        </div>
 	    </div>
-	    <div class="pure-u-1 pure-u-md-1-2 pure-u-lg-19-24">
-	        <div class="pure-menu pure-menu-horizontal">        	
+	    <div class="pure-u-1 pure-u-md-1-2 pure-u-lg-17-24">
+	    	 <div class="pure-menu pure-menu-horizontal">        	
 		    	<ul class="pure-menu-list">	    	
 		        	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
 		            	<a href="#" id="enrollment" class="pure-menu-link">Enrollment</a>
@@ -90,14 +93,14 @@
 		            	</ul>
 		            </li>
 		       	 	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
-		            	<a href="#" id="requests" class="pure-menu-link">Certificate Requests</a>
+		            	<a href="#" id="requests" class="pure-menu-link ejbca_menu_link">Certificate Requests</a>
 		            	<ul class="pure-menu-children">
 		                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Pending Approvals</a></li>
 		                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">My Requests</a></li>
 		            	</ul>
 		            </li>
 		            <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
-		            	<a href="#" id="endEntities" class="pure-menu-link">End Entity Management</a>
+		            	<a href="#" id="endEntities" class="pure-menu-link ejbca_menu_link">End Entity Management</a>
 		            	<ul class="pure-menu-children">
 		                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Create End Entity</a></li>
 		                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Manage End Entity Profiles</a></li>
@@ -112,12 +115,16 @@
 			</div>
 	    </div>
 	    <div class="pure-u-1 pure-u-lg-1-6">
-	        <div class="pure-menu pure-menu-horizontal">
-	            <ul class="pure-menu-list">
-	                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Documentation</a></li>
-	                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Login</a></li>
-	            </ul>
-	        </div>
+	         <div class="pure-menu pure-menu-horizontal">
+		            <ul class="pure-menu-list">
+		                <li class="pure-menu-item">
+		                	<a href="#" class="pure-menu-link ejbca_menu_link">Documentation</a>
+		                </li>
+		                <li class="pure-menu-item">
+		                	<a href="#" class="pure-menu-link ejbca_menu_link">Login</a>
+		                </li>
+		            </ul>
+		        </div>
 	    </div>
 	</div>
 	

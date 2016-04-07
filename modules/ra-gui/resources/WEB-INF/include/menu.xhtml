@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:component="http://java.sun.com/jsf/composite/component" xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:t="http://myfaces.apache.org/tomahawk">
+<ui:remove>
+	<!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     version: $Id$
+     -->
+</ui:remove>
+<f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
+	<h:head dir="#{raLocaleBean.direction}">
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+		<title dir="#{raLocaleBean.direction}"><h:outputText value="#{msg.generic_title}" /></title>
+		<link rel="shortcut icon" type="image/png" href="#{facesContext.externalContext.context.contextPath}/img/favicon.png" />
+		<!-- CSS links to the used Pure library files used -->
+		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/base.css" />
+		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/pure.css" />
+		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/grids.css" />
+		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/grids-responsive.css" />
+		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/menus-dropdown.css" />
+		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/forms.css" />
+		<!-- CSS for the top level menu -->
+		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/ra_menu.css" />
+		<!-- Base CSS for the entire RA GUI -->
+		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/base.css" />
+
+		<script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/js/common.js"></script>
+	</h:head>
+	<h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
+		<div class="pure-g" id="ejbca_menu">
+		    <div class="pure-u-1 pure-u-lg-1-8">
+		   		<div class="pure-menu pure-menu-horizontal" >
+		            <a href="#" class="pure-menu-heading">                        
+		            	<img class="resize" alt="EJBCA by PrimeKey" src="#{facesContext.externalContext.context.contextPath}/img/pk_logo.png" /> 
+					</a>
+		        </div>
+		    </div>
+		    <div class="pure-u-1 pure-u-md-1-2 pure-u-lg-17-24">
+		        <div class="pure-menu pure-menu-horizontal">        	
+			    	<ul class="pure-menu-list">	    	
+			        	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+			            	<a href="#" id="enrollment" class="pure-menu-link">Enroll</a>
+			            	<ul class="pure-menu-children">
+			                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Make Request</a></li>
+			                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Enroll with Request ID</a></li>
+			                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">See Request Status</a></li>
+			                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Renew Browser Certificate</a></li>
+			            	</ul>
+			            </li>
+			            <li class="pure-menu-item ">
+		            		<a href="#" id="certsAndCrls" class="pure-menu-link">CA Certificates and CRLs</a>
+		       	 		</li>
+		       	 		<li class="pure-menu-item ">
+		            		<a href="#" id="requestManagement" class="pure-menu-link">Manage Requests</a>
+		       	 		</li>	
+		       	 		<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+			            	<a href="#" id="search" class="pure-menu-link">Search</a>
+			            	<ul class="pure-menu-children">
+			                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Certificates</a></li>
+			                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">End Entities</a></li>
+			            	</ul>
+			            </li>
+			            <li class="pure-menu-item ">
+		            		<a href="#" id="rolesManagement" class="pure-menu-link">Roles Management</a>
+		       	 		</li>			           
+			    	</ul>
+				</div>
+		    </div>
+		    <div class="pure-u-1 pure-u-lg-1-6">
+		        <div class="pure-menu pure-menu-horizontal">
+		            <ul class="pure-menu-list">
+		                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Documentation</a></li>
+		                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Login</a></li>
+		            </ul>
+		        </div>
+		    </div>
+		</div>
+	</h:body>
+
+</f:view>
+</html>
