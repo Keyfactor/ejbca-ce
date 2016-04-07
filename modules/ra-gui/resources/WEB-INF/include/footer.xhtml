@@ -22,22 +22,7 @@
      -->
 </ui:remove>
 <f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
-	<h:head dir="#{raLocaleBean.direction}">
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-		<title dir="#{raLocaleBean.direction}"><h:outputText value="#{msg.generic_title}" /></title>
-		<link rel="shortcut icon" type="image/png" href="#{facesContext.externalContext.context.contextPath}/img/favicon.png" />
-		<!-- CSS links to the used Pure library files used -->
-		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/base.css" />
-		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/pure.css" />
-		<!-- CSS for the top level menu -->
-		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/ra_menu.css" />
-		<!-- Base CSS for the entire RA GUI -->
-		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/base.css" />
-
-		<script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/js/common.js"></script>
-	</h:head>
 	<h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
 		<div class="footer l-box is-center">
         	© 2002–2016 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB.
