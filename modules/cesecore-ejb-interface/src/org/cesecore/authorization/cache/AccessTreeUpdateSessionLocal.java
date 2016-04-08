@@ -14,6 +14,8 @@ package org.cesecore.authorization.cache;
 
 import javax.ejb.Local;
 
+import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
+
 /**
  * @version $Id$
  */
@@ -31,5 +33,13 @@ public interface AccessTreeUpdateSessionLocal {
      * Should be checked when the access tree cache has expired to avoid rebuilding the tree if there are no database changes. 
      */
     int getAccessTreeUpdateNumber();
+
+    /**
+     * Adds a method to be triggered when the authorization cache should be reloaded.
+     * The event is called synchronously.
+     * <p>
+     * This is a workaround until we can use JEE Events.
+     */
+    void addReloadEvent(AuthorizationCacheReloadListener listener);
 
 }
