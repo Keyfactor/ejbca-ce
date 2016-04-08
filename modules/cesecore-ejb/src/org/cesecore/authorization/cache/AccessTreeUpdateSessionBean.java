@@ -12,17 +12,19 @@
  *************************************************************************/
 package org.cesecore.authorization.cache;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.access.AuthorizationCacheReload;
+import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -39,8 +41,13 @@ public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal
 
     private static final Logger LOG = Logger.getLogger(AccessTreeUpdateSessionBean.class);
 
-    @Inject
-    private Event<AuthorizationCacheReload> authCacheReloadEvent;
+    // JBoss 7.1.1 has a problem with JEE Events (see Johans comment in ECA-4919, probably caused by https://bz.apache.org/bugzilla/show_bug.cgi?id=50789)
+    // The problem is that you get an exception when a META-INF/breans.xml file is present.
+    // So for now we just use the standard java Runnable interface (which can only be set within the same JVM)
+    private final Collection<AuthorizationCacheReloadListener> authCacheReloadEvent = new ArrayList<>();
+    // Once this problem is solved, we can do:
+    /*@Inject
+    private Event<AuthorizationCacheReload> authCacheReloadEvent;*/
     
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -73,8 +80,18 @@ public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal
             accessTreeUpdateData.setAccessTreeUpdateNumber(accessTreeUpdateData.getAccessTreeUpdateNumber() + 1);
         }
         LOG.debug("Invoking event");
-        // TODO should skip and log an error if authCacheReloadEvent wasn't injected properly and is null
-        authCacheReloadEvent.fire(new AuthorizationCacheReload(accessTreeUpdateData.getAccessTreeUpdateNumber()));
+        final AuthorizationCacheReload event = new AuthorizationCacheReload(accessTreeUpdateData.getAccessTreeUpdateNumber());
+        // When the problem with JEE Events is solved, we can do this:
+        //authCacheReloadEvent.fire(event);
+        for (AuthorizationCacheReloadListener observer : authCacheReloadEvent) {
+            observer.onReload(event);
+        }
         LOG.debug("Done invoking event");
+    }
+    
+    // When the problem with JEE Events is solved, we can remove this method
+    @Override
+    public void addReloadEvent(final AuthorizationCacheReloadListener observer) {
+        authCacheReloadEvent.add(observer);
     }
 }
