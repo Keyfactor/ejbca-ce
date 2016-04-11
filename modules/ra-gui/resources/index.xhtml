@@ -27,32 +27,19 @@
      -->
     </ui:remove>
     <ui:composition template="/WEB-INF/include/template.xhtml">
-        <ui:define name="main-frame">
+        <ui:define name="content">
         	<div class="header" id="title">
 				<h1>A Title!</h1>
 			</div>	
-        	<div class="content" id="content">
-				<h2 class="content-subhead">Generic Sample Text!</h2>
+        	<div class="content-body" id="content-body">
+				<h2 class="content-body-subhead">Generic Sample Text!</h2>
 	            <h:outputText value="#{msg.generic_sampleText}"/>
 	            <h:panelGrid columns="1">
 		 	    	<component:example componentId="value" componentLabel="#{msg.somefunction_value_label}" componentValue="#{raExampleBean.value}"/>
 		     	 </h:panelGrid>
-				 <h2 class="content-subhead">Locale buttons!</h2>
-	
-				 <h:panelGroup layout="block" id="templateLocale">
-		      	 <h:form>
-		      	 	<ui:repeat value="#{raLocaleBean.supportedLocales}" var="supportedLocale">
-		            	<h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" value="#{supportedLocale.language}"/>
-		      	    </ui:repeat>
-		      	 </h:form>
-		  	  	 </h:panelGroup>
 		       
-		       	 <h2 class="content-subhead">Other stuff!</h2>
+		       	 <h2 class="content-body-subhead">Other stuff!</h2>
 		       	  	
-					 <h:panelGroup layout="block" id="globalMessages">
-		  	  	        <h:messages id="messages" class="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
-		  	  	    </h:panelGroup>
-		       
 		        <h:form>
 		            <h:panelGrid columns="2">
 		                <h:outputLabel for="value" value="#{msg.somefunction_value_label}"/>
@@ -75,7 +62,7 @@
 				</p>
 				
 				<!-- An aligned form -->
-				<h2 class="content-subhead">An aligned form!</h2>			
+				<h2 class="content-body-subhead">An aligned form!</h2>			
 				<form class="pure-form pure-form-aligned">
 	    			<fieldset>
 		        		<div class="pure-control-group">
@@ -90,7 +77,7 @@
 	         		</fieldset>
 				</form>	
 				
-				<h2 class="content-subhead">An grouped form!</h2>			
+				<h2 class="content-body-subhead">An grouped form!</h2>			
 				<!-- A grouped form -->		
 				<form class="pure-form">
 				    <fieldset class="pure-group">
@@ -98,7 +85,7 @@
 				        <textarea class="pure-input-1-2" placeholder="Content"></textarea>
 				    </fieldset>
 				</form>
-				<h2 class="content-subhead">Tables!</h2>			
+				<h2 class="content-body-subhead">Tables!</h2>			
 				
 				<table class="pure-table">
 				    <thead>

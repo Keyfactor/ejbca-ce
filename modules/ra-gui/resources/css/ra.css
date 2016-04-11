@@ -13,7 +13,7 @@
 
 /* version: $Id$ */
 
-.main-frame {
+.content {
 	background: #fff3e6;
 	height: 100%;
 	margin: 50px 10% 30px 10%;		
@@ -33,7 +33,7 @@
 	    font-weight: 300;
 	}
 	
-.content {
+.content-body {
     margin: 0 auto;
     padding: 0 1em;
     max-width: 800px;
@@ -45,7 +45,7 @@
  
 }
 	
-.content-subhead {
+.content-body-subhead {
     margin: 10px 0 20px 0;
     font-weight: 300;
     color: #888;
