@@ -55,16 +55,29 @@
 				<ui:include src="/WEB-INF/include/menu.xhtml" />
 			</ui:insert>
 		</div>
+		<!-- move this into the menu -->
+		<h:panelGroup layout="block" id="templateLocale">
+			<h:form>
+		    	<ui:repeat value="#{raLocaleBean.supportedLocales}" var="supportedLocale">
+		        	<h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" value="#{supportedLocale.language}"/>
+		      	</ui:repeat>
+		     </h:form>
+		</h:panelGroup>
 		 
-		<div id="main-frame" class="main-frame">
-			<ui:insert name="main-frame">
-				<p>Placeholder</p>
+		<h:panelGroup layout="block" id="globalMessages">
+	  		<h:messages id="messages" class="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
+	    </h:panelGroup>
+		<div id="content" class="content">
+			<ui:insert name="content">
+				<p>If you see this then whatever you're looking at couldn't be rendered.</p>
 			</ui:insert>
 			
 		</div>
 		<div id="footer" class="footer">
 			<ui:insert name="footer">
-				<ui:include src="/WEB-INF/include/footer.xhtml" />
+				<div class="align-center">
+   	     			<p>© 2002–2016 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB.</p>
+   	 			</div>
 			</ui:insert>
 		</div>
     </h:body>
