@@ -21,13 +21,13 @@
      version: $Id$
      -->
 </ui:remove>
-<f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
-
-	<h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
-		<div class="footer l-box is-center">
-        	© 2002–2016 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB.
-    	</div>
-	</h:body>
-
-</f:view>
+<ui:composition>
+	<f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
+		<h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
+			<div class="align-center">
+   	     		© 2002–2016 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB.
+   	 		</div>
+		</h:body>
+	</f:view>
+</ui:composition>
 </html>

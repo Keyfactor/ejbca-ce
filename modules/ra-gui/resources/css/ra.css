@@ -13,14 +13,60 @@
 
 /* version: $Id$ */
 
-/* CSS definitions specific for the main menu */
+.main-frame {
+	background: #fff3e6;
+	height: 100%;
+	margin: 50px 10% 30px 10%;		
+}
 
-#ejbca_menu {
+.header {
+     margin: 0;
+     color: #333;
+     padding: 1.5em 5em 0;
+     border-bottom: 1px solid #eee;
+     text-align: center;
+ }
+ 
+	.header h1 {
+	    margin: 0.2em 0;
+	    font-size: 3em;
+	    font-weight: 300;
+	}
+	
+.content {
+    margin: 0 auto;
+    padding: 0 1em;
+    max-width: 800px;
+    margin-bottom: 50px;
+    line-height: 1.6em;
+    text-align: left;
+    margin: 10px 0 30px 0;
+    padding: 0em 1.5em 1em;
+ 
+}
+	
+.content-subhead {
+    margin: 10px 0 20px 0;
+    font-weight: 300;
+    color: #888;
+}
+
+
+
+.align-center {
+    text-align: center;
+}
+
+.align-right {
+    text-align: right;
+}
+
+/* CSS specific for the top menu */
+
+.ejbca-menu {
     height: 2em;
     background: #003366;
    	color: #f2f2f2;	
-   	position: fixed;
-   	width: 100%;
 }
 
 .pure-menu-link {
@@ -36,17 +82,17 @@
 	background: #336699;
 }
 
-.align_right {
-    text-align: right;
-}
-
 img.menu_logo {
     height: 1em; 
     width: auto;
 }
 
-.main_frame {
-	background: #fff3e6;
-	height: 100%;
-	margin: 50px 10% 30px 10%;		
+/* CSS Specific for the bottom menu */
+
+.footer {
+    background: #003366;
+   	color: #f2f2f2;
+   	font-size: 0.875em; 
+    /*padding: 1em;*/
+   			
 }

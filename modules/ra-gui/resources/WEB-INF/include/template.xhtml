@@ -39,48 +39,30 @@
    		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/grids.css"/>
    		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/grids-responsive.css"/>
    		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/menus-dropdown.css"/>
-   		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/forms.css"/>   	
-   		<!-- CSS for the top level menu -->
-   		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/ra_menu.css"/>
-  		<!-- CSS for the footer -->
-  		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/ra_footer.css"/>
-   		
+   		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/forms.css"/>   	   		
+   		 <!-- CSS for the standard content frame -->
+  		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/ra.css"/> 
         <!-- Base CSS for the entire RA GUI -->
-        <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/base.css"/>
+     	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/base.css"/>
         
         <script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/js/common.js"></script>
     </h:head>
     <h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
         <h:outputLink id="sessionKeepAliveLink" style="display: none;" value="sessionKeepAlive"><h:outputText value="sessionKeepAlive"/></h:outputLink>
-		<div id="menu">
-			<ui:insert name="menu">
+		 
+		<div id="menu" class="ejbca-menu">
+			<ui:insert name="menu" >
 				<ui:include src="/WEB-INF/include/menu.xhtml" />
 			</ui:insert>
 		</div>
-		<div id="content">
-	  	    <h:panelGroup layout="block" id="templateAll">
-	  	  	    <h:panelGroup layout="block" id="templateHeader">
-	                <h:outputText value="RA GUI"/>
-	  	  	    </h:panelGroup>
-	  	  	    <h:panelGroup layout="block" id="templateLocale">
-	      	        <h:form>
-	      	            <ui:repeat value="#{raLocaleBean.supportedLocales}" var="supportedLocale">
-	                        <h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" value="#{supportedLocale.language}"/>
-	      	            </ui:repeat>
-	      	        </h:form>
-	  	  	    </h:panelGroup>
-	  	  	    <h:panelGroup layout="block" id="globalMessages">
-	  	  	        <h:messages id="messages" class="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
-	  	  	    </h:panelGroup>
-	  	  	    <h:panelGroup layout="block" id="templateMenu">
-	                <h:outputLink value="index.xhtml"><h:outputText value="index.xhtml"/></h:outputLink>
-	  	  	    </h:panelGroup>
-	  	  	    <h:panelGroup layout="block" id="templateContent">
-	                <ui:insert name="content"/>
-	  	  	    </h:panelGroup>
-	        </h:panelGroup>
+		 
+		<div id="main-frame" class="main-frame">
+			<ui:insert name="main-frame">
+				<p>Placeholder</p>
+			</ui:insert>
+			
 		</div>
-		<div id="footer">
+		<div id="footer" class="footer">
 			<ui:insert name="footer">
 				<ui:include src="/WEB-INF/include/footer.xhtml" />
 			</ui:insert>
