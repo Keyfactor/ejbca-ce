@@ -36,7 +36,7 @@ public class EnterpriseEditionEjbBridgeSessionBean implements EnterpriseEditionE
     }
 
     @Override
-    public void clearEnterpriseAuthorizationCaches() {
+    public void requestClearEnterpriseAuthorizationCaches() {
         // NOOP in community edition
     }
 }
