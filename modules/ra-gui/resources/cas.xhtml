@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:component="http://java.sun.com/jsf/composite/component"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+    <ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     version: $Id$
+     -->
+    </ui:remove>
+    <ui:composition template="/WEB-INF/include/template.xhtml">
+        <ui:define name="content">
+            <h2 class="content-body-subhead"><h:outputText value="#{msg.cas_page_title}"/></h2>
+            <h:outputText rendered="#{empty raCasPageBean.caChainsAndCrls}" value="#{msg.cas_page_info_nocas}"/>
+            <h:panelGroup rendered="#{not empty raCasPageBean.caChainsAndCrls}">
+                <table class="pure-table">
+                    <thead>
+                        <tr>
+                            <th><h:outputText value="#{msg.cas_page_colhead_cas}"/></th>
+                            <th><h:outputText value="#{msg.cas_page_colhead_crls}"/></th>
+                            <th><h:outputText value="#{msg.cas_page_colhead_certs}"/></th>
+                            <th><h:outputText value="#{msg.cas_page_colhead_certchains}"/></th>
+                            <th><h:outputText value="#{msg.cas_page_colhead_browserimport}"/></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:forEach items="#{raCasPageBean.caChainsAndCrls}" var="caChainAndCrls" varStatus="status">
+                            <c:forEach items="#{caChainAndCrls.casAndCrls}" var="caAndCrls" varStatus="statusInner">
+                                <tr class="${caAndCrls.relativePosition % 2 == 0 ? '' : 'pure-table-odd'}" >
+                                    <td>
+                                        <h:outputText style="margin-#{raLocaleBean.indentionDirection}: #{10*caAndCrls.position}px;"
+                                            value="#{caAndCrls.name}" title="#{caAndCrls.subjectDn}"/>
+                                    </td>
+                                    <td>
+                                        <h:panelGrid columns="2" styleClass="nopadding noborder">
+                                            <h:outputLink rendered="#{caAndCrls.crlLink !=null}" value="#{caAndCrls.crlLink}">
+                                                <h:outputText value="#{msg.cas_page_link_download_crlfull_der}"/>
+                                            </h:outputLink>
+                                            <h:outputLink rendered="#{caAndCrls.deltaCrlLink !=null}" value="#{caAndCrls.deltaCrlLink}" style="margin-#{raLocaleBean.indentionDirection}: 16px;">
+                                                <h:outputText value="#{msg.cas_page_link_download_crldelta_der}"/>
+                                            </h:outputLink>
+                                        </h:panelGrid>
+                                    </td>
+                                    <td>
+                                        <h:panelGrid columns="2" styleClass="nopadding noborder">
+                                            <h:outputLink value="cert">
+                                                <f:param name="caid" value="#{caChainAndCrls.caId}"/>
+                                                <f:param name="chain" value="false"/>
+                                                <f:param name="format" value="pem"/>
+                                                <h:outputText value="#{msg.cas_page_link_download_ca_pem}"/>
+                                            </h:outputLink>
+                                            <h:outputLink value="cert" style="margin-#{raLocaleBean.indentionDirection}: 16px;">
+                                                <f:param name="caid" value="#{caChainAndCrls.caId}"/>
+                                                <f:param name="chain" value="false"/>
+                                                <f:param name="format" value="der"/>
+                                                <h:outputText value="#{msg.cas_page_link_download_ca_der}"/>
+                                            </h:outputLink>
+                                        </h:panelGrid>
+                                    </td>
+                                    <td>
+                                        <h:panelGrid columns="3" styleClass="nopadding noborder">
+                                            <h:outputLink value="cert">
+                                                <f:param name="caid" value="#{caChainAndCrls.caId}"/>
+                                                <f:param name="chain" value="true"/>
+                                                <f:param name="format" value="pem"/>
+                                                <h:outputText value="#{msg.cas_page_link_download_cachain_pem}"/>
+                                            </h:outputLink>
+                                            <h:panelGroup style="margin-#{raLocaleBean.indentionDirection}: 16px;">
+                                                <h:outputLink value="cert">
+                                                    <f:param name="caid" value="#{caChainAndCrls.caId}"/>
+                                                    <f:param name="chain" value="true"/>
+                                                    <f:param name="format" value="jks"/>
+                                                    <h:outputText value="#{msg.cas_page_link_download_cachain_jks}"/>
+                                                </h:outputLink>
+                                                <h:outputText value="¹"/>
+                                            </h:panelGroup>
+                                        </h:panelGrid>
+                                    </td>
+                                    <td>
+                                        <h:panelGrid columns="2" styleClass="nopadding noborder">
+                                            <h:outputLink value="cert">
+                                                <f:param name="caid" value="#{caChainAndCrls.caId}"/>
+                                                <f:param name="chain" value="false"/>
+                                                <f:param name="format" value="ns"/>
+                                                <h:outputText value="#{msg.cas_page_link_download_ca_ns}"/>
+                                            </h:outputLink>
+                                            <h:outputLink value="cert" style="margin-#{raLocaleBean.indentionDirection}: 16px;">
+                                                <f:param name="caid" value="#{caChainAndCrls.caId}"/>
+                                                <f:param name="chain" value="false"/>
+                                                <f:param name="format" value="der"/>
+                                                <h:outputText value="#{msg.cas_page_link_download_ca_ie}"/>
+                                            </h:outputLink>
+                                        </h:panelGrid>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </c:forEach>
+                    </tbody>
+                </table>            
+                <h:outputText value="¹ #{msg.cas_page_link_download_cachain_jks_hint}"/>
+            </h:panelGroup>
+        </ui:define>
+    </ui:composition>
+</html>
