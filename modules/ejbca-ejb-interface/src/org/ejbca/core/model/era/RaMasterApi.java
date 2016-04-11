@@ -27,7 +27,11 @@ public interface RaMasterApi {
     /** @return true if the implementation if the interface is available and usable. */
     boolean isBackendAvailable();
     
+    /** Returns an AccessSet containing the access rules that are allowed for the given authentication token. */
     AccessSet getUserAccessSet(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
+    
+    /** Gets multiple access sets at once. Returns them in the same order as in the parameter */
+    List<AccessSet> getUserAccessSets(List<AuthenticationToken> authenticationTokens);
 
     @Deprecated // PoC. Remove when we have real functions to invoke.
     String testCall(AuthenticationToken authenticationToken, String argument1, int argument2) throws AuthorizationDeniedException, EjbcaException;

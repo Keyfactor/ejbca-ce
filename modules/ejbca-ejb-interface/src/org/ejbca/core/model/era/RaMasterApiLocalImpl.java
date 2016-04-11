@@ -9,6 +9,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -69,6 +70,22 @@ public class RaMasterApiLocalImpl implements RaMasterApi {
     @Override
     public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException  {
         return accessControlSession.getAccessSetForAuthToken(authenticationToken);
+    }
+    
+    @Override
+    public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens)  {
+        final List<AccessSet> ret = new ArrayList<>();
+        for (AuthenticationToken authToken : authenticationTokens) {
+            // Always add, even if null. Otherwise the caller won't be able to determine which AccessSet belongs to which AuthenticationToken
+            AccessSet as;
+            try {
+                as = accessControlSession.getAccessSetForAuthToken(authToken);
+            } catch (AuthenticationFailedException e) {
+                as = null;
+            }
+            ret.add(as);
+        }
+        return ret;
     }
 
     @Override

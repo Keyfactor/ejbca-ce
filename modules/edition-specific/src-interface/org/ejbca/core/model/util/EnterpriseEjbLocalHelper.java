@@ -95,7 +95,7 @@ public class EnterpriseEjbLocalHelper implements EnterpriseEditionEjbBridgeSessi
     }
     
     @Override
-    public void clearEnterpriseAuthorizationCaches() {
-        getEnterpriseEditionEjbLocal().clearEnterpriseAuthorizationCaches();
+    public void requestClearEnterpriseAuthorizationCaches() {
+        getEnterpriseEditionEjbLocal().requestClearEnterpriseAuthorizationCaches();
     }
 }
