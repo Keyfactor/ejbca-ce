@@ -27,19 +27,116 @@
      -->
     </ui:remove>
     <ui:composition template="/WEB-INF/include/template.xhtml">
-        <ui:define name="content">
-            <h:outputText value="#{msg.generic_sampleText}"/>
-            <h:form>
+        <ui:define name="main-frame">
+        	<div class="header" id="title">
+				<h1>A Title!</h1>
+			</div>	
+        	<div class="content" id="content">
+				<h2 class="content-subhead">Generic Sample Text!</h2>
+	            <h:outputText value="#{msg.generic_sampleText}"/>
 	            <h:panelGrid columns="1">
-	                <component:example componentId="value" componentLabel="#{msg.somefunction_value_label}" componentValue="#{raExampleBean.value}"/>
-    	        </h:panelGrid>
-                <h:commandButton action="#{raExampleBean.testAction}" value="#{msg.somefunction_command}">
-                    <f:ajax execute="@form" render="@form :messages"/>
-                </h:commandButton>
-                <h:commandButton action="#{raExampleBean.testActionAndRedirect}" value="#{msg.somefunctionprg_command}"/>
-                <h:commandButton action="#{raExampleBean.throwException}" value="Throw Exception (to test error handling)"/>
-            </h:form>
-            <h:outputLabel value="[is authorized to root, method 2]" rendered="#{raAccessBean.authorizedToRootTEST}"/>
+		 	    	<component:example componentId="value" componentLabel="#{msg.somefunction_value_label}" componentValue="#{raExampleBean.value}"/>
+		     	 </h:panelGrid>
+				 <h2 class="content-subhead">Locale buttons!</h2>
+	
+				 <h:panelGroup layout="block" id="templateLocale">
+		      	 <h:form>
+		      	 	<ui:repeat value="#{raLocaleBean.supportedLocales}" var="supportedLocale">
+		            	<h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" value="#{supportedLocale.language}"/>
+		      	    </ui:repeat>
+		      	 </h:form>
+		  	  	 </h:panelGroup>
+		       
+		       	 <h2 class="content-subhead">Other stuff!</h2>
+		       	  	
+					 <h:panelGroup layout="block" id="globalMessages">
+		  	  	        <h:messages id="messages" class="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
+		  	  	    </h:panelGroup>
+		       
+		        <h:form>
+		            <h:panelGrid columns="2">
+		                <h:outputLabel for="value" value="#{msg.somefunction_value_label}"/>
+		                <h:inputText id="value" value="#{raExampleBean.value}"/>
+	    	        </h:panelGrid>
+	                <h:commandButton action="#{raExampleBean.testAction}" value="#{msg.somefunction_command}">
+	                    <f:ajax execute="@form" render="@form :messages"/>
+	                </h:commandButton>
+	                <h:commandButton action="#{raExampleBean.testActionAndRedirect}" value="#{msg.somefunctionprg_command}"/>
+	                <h:commandButton action="#{raExampleBean.throwException}" value="Throw Exception (to test error handling)"/>
+	            </h:form>
+		 	  	
+		        <h:outputLabel value="[is authorized to root, method 2]" rendered="#{raAccessBean.authorizedToRootTEST}"/>
+		        
+		        <!-- Demo of a paragraph -->
+				<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+					Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure 
+					dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+					 proident, sunt in culpa qui officia deserunt mollit anim id est laborum. 
+				</p>
+				
+				<!-- An aligned form -->
+				<h2 class="content-subhead">An aligned form!</h2>			
+				<form class="pure-form pure-form-aligned">
+	    			<fieldset>
+		        		<div class="pure-control-group">
+		           	 		<label for="name">Username</label>
+		            		<input id="name" type="text" placeholder="Username"/>
+		        		</div>
+		
+		       			 <div class="pure-control-group">
+		            		<label for="password">Password</label>
+		            		<input id="password" type="password" placeholder="Password" />
+		       			 </div>
+	         		</fieldset>
+				</form>	
+				
+				<h2 class="content-subhead">An grouped form!</h2>			
+				<!-- A grouped form -->		
+				<form class="pure-form">
+				    <fieldset class="pure-group">
+				        <input type="text" class="pure-input-1-2" placeholder="E-Mail Subject" />
+				        <textarea class="pure-input-1-2" placeholder="Content"></textarea>
+				    </fieldset>
+				</form>
+				<h2 class="content-subhead">Tables!</h2>			
+				
+				<table class="pure-table">
+				    <thead>
+				        <tr>
+				            <th>Username</th>
+				            <th>CA</th>
+				            <th>Subject DN</th>
+				            <th>Status</th>
+				        </tr>
+				    </thead>
+				
+				    <tbody>
+				        <tr class="pure-table-odd">
+				            <td>SuperAdmin</td>
+				            <td>ManagementCA</td>
+				            <td>Accord</td>
+				            <td>Generated</td>
+				        </tr>
+				
+				        <tr>
+				            <td>Alice</td>
+				            <td>AliceCA</td>
+				            <td>CN=Alice,O=AliceCorp,C=SE</td>
+				            <td>Generated</td>
+				        </tr>
+				
+				        <tr class="pure-table-odd">
+				            <td>Bob</td>
+				            <td>BobCA</td>
+				            <td>CN=Bob,O=BobCorp,C=SE</td>
+				            <td>New</td>
+				        </tr>
+						       
+				    </tbody>
+				</table>
+	        </div>
+	        
+	         
         </ui:define>
     </ui:composition>
 </html>

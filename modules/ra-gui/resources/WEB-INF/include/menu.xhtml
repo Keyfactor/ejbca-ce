@@ -21,9 +21,9 @@
      version: $Id$
      -->
 </ui:remove>
-<f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
+<ui:composition>
 	<h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
-		<div class="pure-g" id="ejbca_menu">
+		<div class="pure-g">
 		    <div class="pure-u-1 pure-u-lg-1-8">
 		   		<div class="pure-menu pure-menu-horizontal" >
 		            <a href="#" class="pure-menu-heading">                        
@@ -63,7 +63,7 @@
 				</div>
 		    </div>
 		    <div class="pure-u-1 pure-u-lg-1-6">
-		        <div class="pure-menu pure-menu-horizontal align_right">
+		        <div class="pure-menu pure-menu-horizontal align-right">
 		            <ul class="pure-menu-list">
 		                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Documentation</a></li>
 		                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Login</a></li>
@@ -72,6 +72,5 @@
 		    </div>
 		</div>
 	</h:body>
-
-</f:view>
+	</ui:composition>
 </html>
