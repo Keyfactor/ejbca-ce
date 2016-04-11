@@ -82,6 +82,42 @@ public class RaMasterApiProxy implements RaMasterApi {
         }
         return merged;
     }
+    
+    @Override
+    public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens) {
+        /*final List<AccessSet> accessSets = new ArrayList<>(authenticationTokens.size());
+        for (final AuthenticationToken user : authenticationTokens) {
+            try {
+                accessSets.add(getUserAccessSet(user));
+            } catch (AuthenticationFailedException e) {
+                accessSets.add(null);
+                if (log.isDebugEnabled()) {
+                    log.debug("Failed to refresh access sets for user " + user, e);
+                }
+                continue;
+            }
+        }
+        return accessSets;*/
+        final List<AuthenticationToken> tokens = new ArrayList<>(authenticationTokens);
+        final AccessSet[] merged = new AccessSet[authenticationTokens.size()];
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    final List<AccessSet> accessSets = raMasterApi.getUserAccessSets(tokens);
+                    for (int i = 0; i < accessSets.size(); i++) {
+                        if (merged[i] == null) {
+                            merged[i] = accessSets.get(i);
+                        } else {
+                            merged[i] = new AccessSet(accessSets.get(i), merged[i]);
+                        }
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return Arrays.asList(merged);
+    }
 
     @Override
     public String testCall(AuthenticationToken authenticationToken, String argument1, int argument2) throws AuthorizationDeniedException, EjbcaException {

@@ -13,6 +13,7 @@
 package org.cesecore.util;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
@@ -149,6 +150,29 @@ public final class ConcurrentCache<K,V> {
     private volatile long lastCleanup = 0L;
     private volatile long cleanupInterval = 1000L;
     
+    /** Creates an empty concurrent cache */
+    public ConcurrentCache() {
+        // Do nothing
+    }
+    
+    /**
+     * Creates a concurrent cache initialized with the mapping defined in the given map.
+     * Can be used for rebuilding the cache in the background for instance.
+     * 
+     * @param map
+     * @param validFor Time in milliseconds which the entry will be valid for, or -1L for forever.
+     * @see ConcurrentCache#getKeys()
+     */
+    public ConcurrentCache(final Map<? extends K, ? extends V> map, long validFor) {
+        for (Map.Entry<? extends K, ? extends V> mapEntry : map.entrySet()) {
+            final InternalEntry<V> intEntry = new InternalEntry<V>(mapEntry.getValue());
+            if (validFor != -1L) {
+                intEntry.expire = System.currentTimeMillis() + validFor;
+            }
+            cache.put(mapEntry.getKey(), intEntry);
+        }
+    }
+    
     /**
      * "Opens" a cache entry. If the entry already exists, then an {@link Entry} that
      * maps to the existing entry is returned. Otherwise, a semaphore is used
@@ -246,6 +270,14 @@ public final class ConcurrentCache<K,V> {
             log.trace("<ConcurrentCache.openCacheEntry");
         }
         return entry != null ? new Entry(key, entry) : null;
+    }
+    
+    /**
+     * Returns a set of the keys in the cache. Useful for rebuilding the cache in the background.
+     * @see ConcurrentCache#ConcurrentCache(Map, long)
+     */
+    public Set<K> getKeys() {
+        return new HashSet<>(cache.keySet());
     }
     
     /**

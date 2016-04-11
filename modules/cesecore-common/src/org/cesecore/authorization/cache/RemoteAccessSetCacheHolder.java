@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.cesecore.authorization.cache;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -28,10 +28,11 @@ public final class RemoteAccessSetCacheHolder {
     
     private static final Logger log = Logger.getLogger(RemoteAccessSetCacheHolder.class);
 
+    // These fields are also modified by the test RemoteAccessSetCacheHolderTest
     private static volatile int lastUpdate = -1;
+    private static volatile boolean regularUpdateInProgress = false; // not clear caches etc.
     private static final Object checkClearLock = new Object();
-    private static final Lock doClearLock = new ReentrantLock();
-    private static final ConcurrentCache<AuthenticationToken,AccessSet> cache = new ConcurrentCache<>();
+    private static ConcurrentCache<AuthenticationToken,AccessSet> cache = new ConcurrentCache<>();
     
     /** Can't be instantiated */
     private RemoteAccessSetCacheHolder() { }
@@ -46,39 +47,69 @@ public final class RemoteAccessSetCacheHolder {
     }
     
     /**
-     * Clears the access rule cache. This method avoids duplicate cache invalidations if invoked
-     * multiple times from multiple sources (e.g. CAs in a cluster that broadcast a
-     * "clear caches" peer message). 
+     * Starts a cache reload. The caller is responsible for actually building the cache data after
+     * calling this method, i.e. building a map of AuthenticationTokens to AccessSets, and then
+     * passing that to finishCacheReload(). 
+     * 
+     * This method avoids duplicate cache invalidations if invoked multiple times from multiple
+     * sources (e.g. CAs in a cluster that broadcast a "clear caches" peer message). 
      * 
      * @param updateNumber Access tree update number at the time the clear cache triggered.
+     * @return Currently existing AuthenticationTokens in the cache.
      */
-    public static void clear(final int updateNumber) {
-        log.trace(">clear");
-        if (updateNumber != -1) {
-            synchronized (checkClearLock) {
+    public static Set<AuthenticationToken> startCacheReload(final int updateNumber) {
+        log.trace(">startCacheReload");
+        synchronized (checkClearLock) {
+            if (updateNumber != -1) {
                 if (lastUpdate >= updateNumber) {
-                    log.trace("<clear");
+                    log.trace("<startCacheReload (already has a more recent version)");
+                    return null;
+                }
+                lastUpdate = updateNumber;
+                regularUpdateInProgress = true;
+            } else if (regularUpdateInProgress) {
+                log.trace("<startCacheReload (regular update was in progress)");
+                return null;
+            }
+        }
+        final Set<AuthenticationToken> existing = cache.getKeys();
+        log.trace("<startCacheReload");
+        return existing;
+    }
+    
+    public static void finishCacheReload(final int updateNumber, final Map<AuthenticationToken,AccessSet> newCacheMap) {
+        log.trace(">finishCacheReload");
+        
+        if (updateNumber != -1) {
+            if (lastUpdate > updateNumber) {
+                log.trace("<finishCacheReload (not updating because a more recent update finished earlier)");
+                return;
+            }
+        } else if (regularUpdateInProgress) {
+            log.trace("<finishCacheReload");
+            return;
+        }
+        
+        // Build new cache, but don't update it yet
+        final ConcurrentCache<AuthenticationToken,AccessSet> newCache = new ConcurrentCache<>(newCacheMap, -1L);
+        
+        // Make sure we don't overwrite a more recent update (e.g. if it finished faster than us)
+        synchronized (checkClearLock) {
+            if (updateNumber != -1) {
+                if (lastUpdate > updateNumber) {
+                    log.trace("<finishCacheReload (already has a more recent version)");
                     return;
                 }
                 lastUpdate = updateNumber;
+                regularUpdateInProgress = false;
+            } else if (regularUpdateInProgress) {
+                log.trace("<finishCacheReload (regular update was in progress)");
+                return;
             }
+            log.debug("Replacing access set cache");
+            cache = newCache;
         }
-        if (doClearLock.tryLock()) {
-            try {
-                log.debug("Updating cache");
-                doClear();
-            } finally {
-                doClearLock.unlock();
-            }
-        }
-        log.trace("<clear");
-    }
-    
-    private static void doClear() {
-        log.trace(">doClear");
-        // TODO do a background reload of PublicWebAuth
-        cache.clear();
-        log.trace("<doClear");
+        log.trace("<finishCacheReload");
     }
     
 }

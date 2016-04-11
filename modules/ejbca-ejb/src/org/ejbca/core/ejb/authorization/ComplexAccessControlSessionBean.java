@@ -437,7 +437,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     @Override
     public void forceRemoteCacheExpire() {
         log.trace(">forceRemoteCacheExpire");
-        enterpriseEditionEjbBridgeSession.clearEnterpriseAuthorizationCaches();
+        enterpriseEditionEjbBridgeSession.requestClearEnterpriseAuthorizationCaches();
         log.trace("<forceRemoteCacheExpire");
     }
     
