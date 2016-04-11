@@ -15,6 +15,7 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
+import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.core.EjbcaException;
 
 /**
@@ -33,6 +34,9 @@ public interface RaMasterApi {
     /** Gets multiple access sets at once. Returns them in the same order as in the parameter */
     List<AccessSet> getUserAccessSets(List<AuthenticationToken> authenticationTokens);
 
+    /** @return a list with information about non-external CAs that the caller is authorized to see. */
+    List<CAInfo> getAuthorizedCas(AuthenticationToken authenticationToken);
+
     @Deprecated // PoC. Remove when we have real functions to invoke.
     String testCall(AuthenticationToken authenticationToken, String argument1, int argument2) throws AuthorizationDeniedException, EjbcaException;
 
@@ -44,6 +48,4 @@ public interface RaMasterApi {
 
     @Deprecated // PoC. Remove when we have real functions to invoke.
     String testCallPreferCache(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException;
-
-
 }

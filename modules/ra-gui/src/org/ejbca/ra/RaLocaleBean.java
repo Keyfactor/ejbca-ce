@@ -99,6 +99,11 @@ public class RaLocaleBean implements Serializable {
         return directionLeftToRight ? "ltr" : "rtl";
     }
 
+    /** @return true if the language direction is left to right */
+    public String getIndentionDirection() {
+        return directionLeftToRight ? "left" : "right";
+    }
+
     /** Add a faces message with the localized message summary with level FacesMessage.SEVERITY_ERROR. */
     public void addMessageError(final String messageKey, final Object...params) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, getMessage(messageKey, params), null));

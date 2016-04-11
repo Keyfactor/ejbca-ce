@@ -21,6 +21,7 @@ import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
@@ -86,6 +87,11 @@ public class RaMasterApiLocalImpl implements RaMasterApi {
             ret.add(as);
         }
         return ret;
+    }
+
+    @Override
+    public List<CAInfo> getAuthorizedCas(AuthenticationToken authenticationToken) {
+        return caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
     }
 
     @Override
