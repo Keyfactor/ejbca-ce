@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -188,20 +187,21 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         }
 
         try {
-            CertificateProfile p = getCertificateProfile(orgname);
+            final int origProfileId = getCertificateProfileId(orgname);
+            final CertificateProfile p = getCertificateProfile(origProfileId);
             if (p == null) {
                 final String msg = INTRES.getLocalizedMessage("store.errorcertprofilenotexist", orgname);
                 LOG.info(msg);
                 throw new CertificateProfileDoesNotExistException(msg);
             }
 
-            profile = (CertificateProfile) p.clone();
+            profile = p.clone();
             if (authorizedCaIds != null) {
                 profile.setAvailableCAs(authorizedCaIds);
             }
 
             // We need to check that admin also have rights to edit certificate profiles
-            authorizedToEditProfile(admin, profile, getCertificateProfileId(orgname));
+            authorizedToEditProfile(admin, profile, origProfileId);
 
             if (CertificateProfileData.findByProfileName(entityManager, newname) == null) {
                 entityManager.persist(new CertificateProfileData(findFreeCertificateProfileId(), newname, profile));
@@ -217,7 +217,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             }
         } catch (CloneNotSupportedException f) {
             // If this happens it's a programming error. Throw an exception!
-            throw new EJBException(f);
+            throw new IllegalStateException(f);
         }
     }
     
@@ -314,7 +314,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
                 }
             } catch (CloneNotSupportedException e) {
                 LOG.error("Should never happen: ", e);
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         }
         if (LOG.isTraceEnabled()) {

@@ -78,7 +78,7 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_EDITENDENTITY                      = REGULAR_RAFUNCTIONALITY+EDIT_END_ENTITY ;
     public static final String REGULAR_DELETEENDENTITY                    = REGULAR_RAFUNCTIONALITY+DELETE_END_ENTITY; // Unused, but exists as "raw" string
     public static final String REGULAR_VIEWENDENTITYHISTORY               = REGULAR_RAFUNCTIONALITY+VIEW_END_ENTITY_HISTORY; // Unused, but exists as "raw" string
-
+    
     public static final String REGULAR_VIEWHARDTOKENS                     = REGULAR_RAFUNCTIONALITY + HARDTOKEN_RIGHTS;
     public static final String REGULAR_VIEWPUKS                           = REGULAR_RAFUNCTIONALITY + HARDTOKEN_PUKDATA_RIGHTS;
     public static final String REGULAR_KEYRECOVERY                        = REGULAR_RAFUNCTIONALITY + KEYRECOVERY_RIGHTS;
@@ -110,6 +110,8 @@ public abstract class AccessRulesConstants {
                                                            REGULAR_CREATECRL,
                                                            StandardRules.CERTIFICATEPROFILEEDIT.resource(),   
                                                            StandardRules.CERTIFICATEPROFILEVIEW.resource(),
+                                                           StandardRules.APPROVALPROFILEEDIT.resource(),
+                                                           StandardRules.APPROVALPROFILEVIEW.resource(),
                                                            REGULAR_CREATECERTIFICATE,
                                                            REGULAR_STORECERTIFICATE,
                                                            REGULAR_EDITPUBLISHER,

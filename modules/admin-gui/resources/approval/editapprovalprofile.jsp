@@ -13,7 +13,7 @@
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 <%
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CERTIFICATEPROFILEVIEW.resource());
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.APPROVALPROFILEVIEW.resource());
   cabean.initialize(ejbcawebbean);
   RequestHelper.setDefaultCharacterEncoding(request);
 %>
@@ -168,7 +168,7 @@
 			&nbsp;
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:commandButton value="#{web.text.SAVE}" action="#{approvalProfileMBean.save}"/>
+			<h:commandButton value="#{web.text.SAVE}" action="#{approvalProfileMBean.save}" disabled="#{approvalProfilesMBean.viewOnly}"/>
 			<h:commandButton value="#{web.text.CANCEL}" action="#{approvalProfileMBean.cancel}"/>
 		</h:panelGroup>
 

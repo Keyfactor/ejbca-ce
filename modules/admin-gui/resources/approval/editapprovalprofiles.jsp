@@ -15,7 +15,7 @@
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean"/>
 <html>
 <%
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAFUNCTIONALITY.resource());
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.APPROVALPROFILEVIEW.resource());
   cabean.initialize(ejbcawebbean);
 %>
 <f:view>
@@ -42,7 +42,7 @@
 			<h:column headerClass="gridColumn2">
 				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILEACTION}"/></f:facet>
 				<h:commandButton value="#{web.text.VIEWCERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionView}"/>
-				<h:commandButton value="#{web.text.EDITCERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionEdit}"/>
+				<h:commandButton value="#{web.text.EDITCERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionEdit}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
 				<h:commandButton value="#{web.text.DELETECERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionDelete}"/>
 				<h:commandButton value="#{web.text.RENAME}" action="#{approvalProfilesMBean.actionRename}"/>
 				<h:commandButton value="#{web.text.USECERTPROFILEASTEMPLATE}" action="#{approvalProfilesMBean.actionAddFromTemplate}"/>
