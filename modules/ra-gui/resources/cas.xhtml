@@ -37,7 +37,7 @@
                             <th><h:outputText value="#{msg.cas_page_colhead_cas}"/></th>
                             <th><h:outputText value="#{msg.cas_page_colhead_crls}"/></th>
                             <th><h:outputText value="#{msg.cas_page_colhead_certs}"/></th>
-                            <th><h:outputText value="#{msg.cas_page_colhead_certchains}"/></th>
+                            <th><h:outputText value="#{msg.cas_page_colhead_certchains}"/><h:outputText value="¹"/></th>
                             <th><h:outputText value="#{msg.cas_page_colhead_browserimport}"/></th>
                         </tr>
                     </thead>
@@ -83,15 +83,12 @@
                                                 <f:param name="format" value="pem"/>
                                                 <h:outputText value="#{msg.cas_page_link_download_cachain_pem}"/>
                                             </h:outputLink>
-                                            <h:panelGroup style="margin-#{raLocaleBean.indentionDirection}: 16px;">
-                                                <h:outputLink value="cert">
-                                                    <f:param name="caid" value="#{caChainAndCrls.caId}"/>
-                                                    <f:param name="chain" value="true"/>
-                                                    <f:param name="format" value="jks"/>
-                                                    <h:outputText value="#{msg.cas_page_link_download_cachain_jks}"/>
-                                                </h:outputLink>
-                                                <h:outputText value="¹"/>
-                                            </h:panelGroup>
+                                            <h:outputLink value="cert" style="margin-#{raLocaleBean.indentionDirection}: 16px;">
+                                                <f:param name="caid" value="#{caChainAndCrls.caId}"/>
+                                                <f:param name="chain" value="true"/>
+                                                <f:param name="format" value="jks"/>
+                                                <h:outputText value="#{msg.cas_page_link_download_cachain_jks}"/>
+                                            </h:outputLink>
                                         </h:panelGrid>
                                     </td>
                                     <td>
