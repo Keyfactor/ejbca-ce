@@ -16,6 +16,7 @@ package org.ejbca.core.model.ra;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -154,7 +155,12 @@ public class RAAuthorization implements Serializable {
     
     public TreeMap<String, Integer> getAuthorizedEndEntityProfileNames(final String endentityAccessRule){
     	if (authprofilenames==null){
-    		authprofilenames = new TreeMap<String, Integer>();
+    		authprofilenames = new TreeMap<String, Integer>(new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    return o1.compareToIgnoreCase(o2);
+                }
+            });
     		final Map<Integer, String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
     		for (final Integer id : endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin, endentityAccessRule)) {
     			authprofilenames.put(idtonamemap.get(id), id);

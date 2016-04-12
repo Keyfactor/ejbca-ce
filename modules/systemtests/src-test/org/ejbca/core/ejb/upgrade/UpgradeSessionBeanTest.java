@@ -43,10 +43,15 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.authorization.AccessRuleTemplate;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.DefaultRoles;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,10 +64,11 @@ import org.junit.Test;
  */
 public class UpgradeSessionBeanTest {
 
+    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private UpgradeSessionRemote upgradeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UpgradeSessionRemote.class);
-    private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     private AuthenticationToken alwaysAllowtoken = new TestAlwaysAllowLocalAuthenticationToken("UpgradeSessionBeanTest");
     
@@ -247,6 +253,7 @@ public class UpgradeSessionBeanTest {
         return (Boolean) upgradeMethod.invoke(UpgradeSessionBean.class.newInstance(), firstVersion, secondVersion);
     }
     
+        
     /**
      * This test checks the automatic upgrade to 6.4.2, namely that:
      * 
@@ -317,5 +324,41 @@ public class UpgradeSessionBeanTest {
         }
     }
     
-    
+    /**
+     * This test verifies that CMP aliases which refer to EEPs as names will refer to them by ID afterwards. 
+     */
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testUpgradeCmpConfigurationTo651()
+            throws AuthorizationDeniedException, EndEntityProfileExistsException, EndEntityProfileNotFoundException {
+        String aliasName = "testUpgradeCmpConfigurationTo651";
+        String profileName = "testUpgradeCmpConfigurationTo651_EE_Profile";
+        CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        endEntityProfileSession.addEndEntityProfile(alwaysAllowtoken, profileName, new EndEntityProfile());
+        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(profileName);
+        try {
+            cmpConfiguration.addAlias(aliasName);
+            cmpConfiguration.setRAEEProfile(aliasName, null);
+            cmpConfiguration.setValue(aliasName + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, profileName, aliasName);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, cmpConfiguration);
+            //Perform upgrade. 
+            upgradeSession.upgrade(null, "6.5.0", false);
+            //Confirm that the new value has been set.
+            cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+            assertEquals("End Entity Profile ID was not set during upgrade.", Integer.toString(endEntityProfileId),
+                    cmpConfiguration.getRAEEProfile(aliasName));
+            //Confirm that the old value was unchanged
+            assertEquals("End Entity Profile ID was not set during upgrade.", profileName,
+                    cmpConfiguration.getValue(aliasName + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, aliasName));
+
+        } finally {
+            cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+            if (cmpConfiguration.aliasExists(aliasName)) {
+                cmpConfiguration.removeAlias(aliasName);
+                globalConfigSession.saveConfiguration(alwaysAllowtoken, cmpConfiguration);
+            }
+            endEntityProfileSession.removeEndEntityProfile(alwaysAllowtoken, profileName);
+        }
+    }
+
 }

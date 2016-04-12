@@ -123,9 +123,9 @@ public class UpdateCommand extends BaseCmpConfigCommand {
         StringBuilder existingEeps = new StringBuilder();
         for (Integer profileId : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(
                 getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY)) {
-            existingEeps.append((existingEeps.length() == 0 ? "" : divider) + endentityprofileidtonamemap.get(profileId));
+            existingEeps.append((existingEeps.length() == 0 ? "" : divider) + profileId + " (" + endentityprofileidtonamemap.get(profileId) + ")");
         }
-        sb.append("    " + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE + " - possible values: " + existingEeps + "\n");
+        sb.append("    " + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILEID + " - available IDs: " + existingEeps + "\n");
         Map<Integer, String> certificateprofileidtonamemap = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
                 .getCertificateProfileIdToNameMap();
         StringBuilder existingCps = new StringBuilder();
