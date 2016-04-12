@@ -350,6 +350,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastUpgradedToVersion("6.4.2");
         }
+        if (isLesserThan(oldVersion, "6.6.0")) {
+            try {
+                upgradeSession.migrateDatabase660();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("6.6.0");
+        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -1195,6 +1203,48 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase642() throws UpgradeFailedException {
         addReadOnlyRules642();
         log.error("(This is not an error) Completed upgrade procedure to 6.4.2");
+    }
+    
+    /**
+     * EJBCA 6.6.0:
+     * 
+     * 1.   Adds new access rules for approval profiles
+     * 
+     * @throws UpgradeFailedException if upgrade fails (rolls back)
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase660() throws UpgradeFailedException {
+        try {
+            // Any roles with access to /ca_functionality/view_certifcate_profiles should be given /ca_functionality/view_approval_profiles
+            List<RoleData> endEntityProfileRoles = roleMgmtSession.getAuthorizedRoles(StandardRules.CERTIFICATEPROFILEVIEW.resource(), false);
+            for (RoleData role : endEntityProfileRoles) {
+                // Skip if CA Admin or SuperAdmin
+                if (role.hasAccessToRule(StandardRules.CAFUNCTIONALITY.resource(), true)) {
+                    continue;
+                }
+                // Find 
+                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), StandardRules.APPROVALPROFILEVIEW.resource(), AccessRuleState.RULE_ACCEPT, false);
+                if (!role.getAccessRules().containsValue(newRule)) {
+                    addAccessRulesToRole(role, Arrays.asList(newRule));
+                }
+            }
+            // Any roles with access to /ca_functionality/edit_certificate_profiles should be given /ca_functionality/edit_approval_profiles
+            endEntityProfileRoles = roleMgmtSession.getAuthorizedRoles(StandardRules.CERTIFICATEPROFILEEDIT.resource(), false);
+            for (RoleData role : endEntityProfileRoles) {
+                // Skip if CA Admin or SuperAdmin
+                if (role.hasAccessToRule(StandardRules.CAFUNCTIONALITY.resource(), true)) {
+                    continue;
+                }
+                // Find 
+                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), StandardRules.APPROVALPROFILEEDIT.resource(), AccessRuleState.RULE_ACCEPT, false);
+                if (!role.getAccessRules().containsValue(newRule)) {
+                    addAccessRulesToRole(role, Arrays.asList(newRule));
+                }
+            }
+        } catch (RoleNotFoundException e) {
+            throw new UpgradeFailedException("Upgrade failed, for some reason retrieved role does not exist in database.", e);
+        }
     }
     
     /**

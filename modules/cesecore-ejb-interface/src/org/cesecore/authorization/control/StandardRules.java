@@ -41,7 +41,9 @@ public enum StandardRules {
     EKUCONFIGURATION_EDIT(SYSTEMFUNCTIONALITY.resource()+"/edit_available_extended_key_usages"),
     EKUCONFIGURATION_VIEW(SYSTEMFUNCTIONALITY.resource()+"/view_available_extended_key_usages"),
     CUSTOMCERTEXTENSIONCONFIGURATION_EDIT(SYSTEMFUNCTIONALITY.resource()+"/edit_available_custom_certificate_extensions"),
-    CUSTOMCERTEXTENSIONCONFIGURATION_VIEW(SYSTEMFUNCTIONALITY.resource()+"/view_available_custom_certificate_extensions");
+    CUSTOMCERTEXTENSIONCONFIGURATION_VIEW(SYSTEMFUNCTIONALITY.resource()+"/view_available_custom_certificate_extensions"),
+    APPROVALPROFILEEDIT(CAFUNCTIONALITY.resource()+"/edit_approval_profiles"),
+    APPROVALPROFILEVIEW(CAFUNCTIONALITY.resource()+"/view_approval_profiles");
 
 
 	
@@ -55,6 +57,7 @@ public enum StandardRules {
 		return this.resource;
 	}
 
+	@Override
 	public String toString() {
 		return this.resource;
 	}

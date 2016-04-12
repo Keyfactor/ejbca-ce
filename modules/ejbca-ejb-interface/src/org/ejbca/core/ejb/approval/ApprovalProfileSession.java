@@ -34,7 +34,7 @@ public interface ApprovalProfileSession {
      * @param profile the profile to be added
      * @return the generated approval profile id
      */
-    public int addApprovalProfile(AuthenticationToken admin, String name, ApprovalProfile profile) throws ApprovalProfileExistsException;
+    public int addApprovalProfile(AuthenticationToken admin, String name, ApprovalProfile profile) throws ApprovalProfileExistsException, AuthorizationDeniedException;
     
     /**
      * Updates approval profile data
