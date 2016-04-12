@@ -808,8 +808,8 @@ public class X509CA extends CA implements Serializable {
             sigAlg = certProfile.getSignatureAlgorithm();
         }
         // Check that the signature algorithm is one of the allowed ones
-        if (!ArrayUtils.contains(AlgorithmConstants.AVAILABLE_SIGALGS, sigAlg)) {
-            final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", sigAlg);
+        if (!containsCaseInsensitive(AlgorithmConstants.AVAILABLE_SIGALGS, sigAlg)) {
+            final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", sigAlg, ArrayUtils.toString(AlgorithmConstants.AVAILABLE_SIGALGS));
             throw new InvalidAlgorithmException(msg);        	
         }
         // Check if this is a root CA we are creating

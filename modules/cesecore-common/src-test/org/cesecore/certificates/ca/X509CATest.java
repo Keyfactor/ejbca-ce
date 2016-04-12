@@ -130,6 +130,10 @@ public class X509CATest {
 	@Test
 	public void testX509CABasicOperationsRSA() throws Exception {
 	    doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        // AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1 uses small w in With. Test with capital as well
+        // because this was used previously so need to be supported for upgraded systems.
+        doTestX509CABasicOperations("SHA256WithRSAandMGF1");
 	}
 	
 	@Test
@@ -952,7 +956,8 @@ public class X509CATest {
     private static String getTestKeyPairAlgName(String algName) {
         if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410) ||
             algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145) || 
-            algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)) {
+            algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA) ||
+            algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1)) {
             return algName;
         } else {
             return "SHA256withRSA";
@@ -966,6 +971,8 @@ public class X509CATest {
             return CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
         } else if (algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)) {
             return "brainpoolp224r1";
+        } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1)) {
+            return "1024"; // RSA-PSS required at least 2014 bits
         } else {
             return "512"; // Assume RSA
         }
