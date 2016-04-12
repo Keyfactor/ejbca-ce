@@ -17,6 +17,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -586,8 +588,21 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public Set<String> getAliasList() {
         @SuppressWarnings("unchecked")
         Set<String> ret = (Set<String>) data.get(ALIAS_LIST);
+        
         return (ret == null ? DEFAULT_ALIAS_LIST : ret);
     }
+    
+    public List<String> getSortedAliasList() {
+        List<String> result = new ArrayList<>(getAliasList());
+        Collections.sort(result, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.compareToIgnoreCase(o2);
+            }
+        });
+        return result;
+    }
+    
     public boolean aliasExists(String alias) {
         if(StringUtils.isNotEmpty(alias)) {
             Set<String> aliases = getAliasList();

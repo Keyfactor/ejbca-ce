@@ -12,8 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config.cmp;
 
-import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -34,10 +33,9 @@ public class ListAliasCommand extends BaseCmpConfigCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-        Set<String> aliaslist = getCmpConfiguration().getAliasList();
-        Iterator<String> itr = aliaslist.iterator();
-        while (itr.hasNext()) {
-            log.info(itr.next());
+        List<String> aliaslist = getCmpConfiguration().getSortedAliasList();
+        for(String alias : aliaslist) {
+            log.info(alias);
         }
         return CommandResult.SUCCESS;
 

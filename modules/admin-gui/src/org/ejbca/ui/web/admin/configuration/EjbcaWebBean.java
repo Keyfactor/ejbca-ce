@@ -91,7 +91,6 @@ import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.model.util.EnterpriseEjbLocalHelper;
 import org.ejbca.util.HTMLTools;
@@ -693,13 +692,7 @@ public class EjbcaWebBean implements Serializable {
             informationmemory.systemConfigurationEdited(globalconfiguration);
         }
     }
-
-    public void reloadCmpConfiguration() {
-        cmpconfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-    }
-
     
-
     public void saveGlobalConfiguration(GlobalConfiguration gc) throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(administrator, gc);
         informationmemory.systemConfigurationEdited(gc);
@@ -711,11 +704,15 @@ public class EjbcaWebBean implements Serializable {
         informationmemory.systemConfigurationEdited(globalconfiguration);
     }
 
-    public void saveCMPConfiguration(CmpConfiguration cmpconfiguration) throws AuthorizationDeniedException {
+    public void saveCmpConfiguration(CmpConfiguration cmpconfiguration) throws AuthorizationDeniedException {
         this.cmpconfiguration = cmpconfiguration;
         globalConfigurationSession.saveConfiguration(administrator, cmpconfiguration);
     }
 
+    public void reloadCmpConfiguration() {
+        cmpconfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+    }
+    
     public boolean existsAdminPreference() {
         return adminspreferences.existsAdminPreference(certificatefingerprint);
     }
@@ -986,7 +983,6 @@ public class EjbcaWebBean implements Serializable {
         if (cmpConfigForEdit != null) {
             return cmpConfigForEdit;
         }
-
         reloadCmpConfiguration();
         cmpConfigForEdit = new CmpConfiguration();
         cmpConfigForEdit.setAliasList(new LinkedHashSet<String>());
@@ -996,6 +992,46 @@ public class EjbcaWebBean implements Serializable {
             cmpConfigForEdit.setValue(key, value, alias);
         }
         return cmpConfigForEdit;
+    }
+    
+    public void updateCmpConfigFromClone(String alias) throws AuthorizationDeniedException {
+        if (cmpconfiguration.aliasExists(alias) && cmpConfigForEdit.aliasExists(alias)) {
+            for(String key : CmpConfiguration.getAllAliasKeys(alias)) {
+                String value = cmpConfigForEdit.getValue(key, alias);
+                cmpconfiguration.setValue(key, value, alias);
+            }
+        }
+        saveCmpConfiguration(cmpconfiguration);
+    }
+
+    public void addCmpAlias(final String alias) throws AuthorizationDeniedException {
+        cmpconfiguration.addAlias(alias);
+        saveCmpConfiguration(cmpconfiguration);
+    }
+    
+    public void cloneCmpAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
+        cmpconfiguration.cloneAlias(oldName, newName);
+        saveCmpConfiguration(cmpconfiguration);
+    }
+    
+    public void removeCmpAlias(final String alias) throws AuthorizationDeniedException {
+        cmpconfiguration.removeAlias(alias);
+        saveCmpConfiguration(cmpconfiguration);
+    }
+    
+
+    public void renameCmpAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
+        cmpconfiguration.renameAlias(oldName, newName);
+        saveCmpConfiguration(cmpconfiguration);
+    }
+    
+    public void clearCmpConfigClone() {
+        cmpConfigForEdit = null;
+    }
+
+    public void clearCmpCache() {
+        globalConfigurationSession.flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
+        reloadCmpConfiguration();
     }
     
     /**
@@ -1070,26 +1106,7 @@ public class EjbcaWebBean implements Serializable {
 
         return returnValue;
     }
-
-    public void updateCmpConfigFromClone(String alias) throws AuthorizationDeniedException {
-        if (cmpconfiguration.aliasExists(alias) && cmpConfigForEdit.aliasExists(alias)) {
-            for(String key : CmpConfiguration.getAllAliasKeys(alias)) {
-                String value = cmpConfigForEdit.getValue(key, alias);
-                cmpconfiguration.setValue(key, value, alias);
-            }
-        }
-        saveCMPConfiguration(cmpconfiguration);
-    }
-
-    public void clearCmpConfigClone() {
-        cmpConfigForEdit = null;
-    }
-
-    public void clearCMPCache() throws Exception {
-        globalConfigurationSession.flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
-        reloadCmpConfiguration();
-    }
-
+    
     public Map<String, Integer> getAuthorizedEEProfileNamesAndIds(final String endentityAccessRule) {
         return informationmemory.getAuthorizedEndEntityProfileNames(endentityAccessRule);
     }
