@@ -88,19 +88,6 @@ public class RaMasterApiProxy implements RaMasterApi {
     
     @Override
     public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens) {
-        /*final List<AccessSet> accessSets = new ArrayList<>(authenticationTokens.size());
-        for (final AuthenticationToken user : authenticationTokens) {
-            try {
-                accessSets.add(getUserAccessSet(user));
-            } catch (AuthenticationFailedException e) {
-                accessSets.add(null);
-                if (log.isDebugEnabled()) {
-                    log.debug("Failed to refresh access sets for user " + user, e);
-                }
-                continue;
-            }
-        }
-        return accessSets;*/
         final List<AuthenticationToken> tokens = new ArrayList<>(authenticationTokens);
         final AccessSet[] merged = new AccessSet[authenticationTokens.size()];
         for (final RaMasterApi raMasterApi : raMasterApis) {
