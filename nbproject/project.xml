@@ -24,567 +24,492 @@ auxiliary.show.customizer.message=<message>
                     <label>modules/admin-gui/src</label>
                     <type>java</type>
                     <location>modules/admin-gui/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/appserver-ext/src</label>
                     <type>java</type>
                     <location>modules/appserver-ext/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/batchenrollment-gui/src</label>
                     <type>java</type>
                     <location>modules/batchenrollment-gui/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/buildtools/src</label>
                     <type>java</type>
                     <location>modules/buildtools/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/certsafe/src</label>
                     <type>java</type>
                     <location>modules/certsafe/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cesecore-common/src</label>
                     <type>java</type>
                     <location>modules/cesecore-common/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cesecore-ejb-interface/src</label>
                     <type>java</type>
                     <location>modules/cesecore-ejb-interface/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cesecore-ejb/src</label>
                     <type>java</type>
                     <location>modules/cesecore-ejb/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cesecore-entity/src</label>
                     <type>java</type>
                     <location>modules/cesecore-entity/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cesecore-p11/src</label>
                     <type>java</type>
                     <location>modules/cesecore-p11/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/clearcache-war/src</label>
                     <type>java</type>
                     <location>modules/clearcache-war/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cli-util/src</label>
                     <type>java</type>
                     <location>modules/cli-util/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/clientToolBox/src</label>
                     <type>java</type>
                     <location>modules/clientToolBox/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cmpProxy/src</label>
                     <type>java</type>
                     <location>modules/cmpProxy/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cmpclient/src</label>
                     <type>java</type>
                     <location>modules/cmpclient/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/crlstore/src</label>
                     <type>java</type>
                     <location>modules/crlstore/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ct/src</label>
                     <type>java</type>
                     <location>modules/ct/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/edition-specific-ee/src-ejb</label>
                     <type>java</type>
                     <location>modules/edition-specific-ee/src-ejb</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/edition-specific/src-ejb</label>
                     <type>java</type>
                     <location>modules/edition-specific/src-ejb</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/edition-specific/src-interface</label>
                     <type>java</type>
                     <location>modules/edition-specific/src-interface</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/validationtool/src</label>
                     <type>java</type>
                     <location>modules/validationtool/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-cmp-tcp/src</label>
                     <type>java</type>
                     <location>modules/ejbca-cmp-tcp/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-cmp-war/src</label>
                     <type>java</type>
                     <location>modules/ejbca-cmp-war/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-common-web/src</label>
                     <type>java</type>
                     <location>modules/ejbca-common-web/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-common/src</label>
                     <type>java</type>
                     <location>modules/ejbca-common/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-ejb-cli/src</label>
                     <type>java</type>
                     <location>modules/ejbca-ejb-cli/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-ejb-interface/src</label>
                     <type>java</type>
                     <location>modules/ejbca-ejb-interface/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-ejb/src</label>
                     <type>java</type>
                     <location>modules/ejbca-ejb/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-entity/src</label>
                     <type>java</type>
                     <location>modules/ejbca-entity/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-entity/src-cli</label>
                     <type>java</type>
                     <location>modules/ejbca-entity/src-cli</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-msautoenroll-war/src</label>
                     <type>java</type>
                     <location>modules/ejbca-msautoenroll-war/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-renew-war/src</label>
                     <type>java</type>
                     <location>modules/ejbca-renew-war/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-scep-war/src</label>
                     <type>java</type>
                     <location>modules/ejbca-scep-war/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-webdist-war/src</label>
                     <type>java</type>
                     <location>modules/ejbca-webdist-war/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-ws-cli/src</label>
                     <type>java</type>
                     <location>modules/ejbca-ws-cli/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-ws-cli/src-gen</label>
                     <type>java</type>
                     <location>modules/ejbca-ws-cli/src-gen</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-ws/src</label>
                     <type>java</type>
                     <location>modules/ejbca-ws/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/externalra-gui/src</label>
                     <type>java</type>
                     <location>modules/externalra-gui/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/externalra-scep/src</label>
                     <type>java</type>
                     <location>modules/externalra-scep/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/externalra/src</label>
                     <type>java</type>
                     <location>modules/externalra/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/healthcheck-war/src</label>
                     <type>java</type>
                     <location>modules/healthcheck-war/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/oldlogexport-cli/src</label>
                     <type>java</type>
                     <location>modules/oldlogexport-cli/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/peerconnector/src-cli</label>
                     <type>java</type>
                     <location>modules/peerconnector/src-cli</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/peerconnector/src-common</label>
                     <type>java</type>
                     <location>modules/peerconnector/src-common</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/peerconnector/src-ejb</label>
                     <type>java</type>
                     <location>modules/peerconnector/src-ejb</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/peerconnector/src-interface</label>
                     <type>java</type>
                     <location>modules/peerconnector/src-interface</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/peerconnector/src-publ</label>
                     <type>java</type>
                     <location>modules/peerconnector/src-publ</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/peerconnector/src-ra</label>
                     <type>java</type>
                     <location>modules/peerconnector/src-ra</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/peerconnector/src-rar</label>
                     <type>java</type>
                     <location>modules/peerconnector/src-rar</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/peerconnector/src-war</label>
                     <type>java</type>
                     <location>modules/peerconnector/src-war</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/publicweb-gui/src</label>
                     <type>java</type>
                     <location>modules/publicweb-gui/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/statedump/src-cli</label>
                     <type>java</type>
                     <location>modules/statedump/src-cli</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/statedump/src-common</label>
                     <type>java</type>
                     <location>modules/statedump/src-common</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/statedump/src-ejb</label>
                     <type>java</type>
                     <location>modules/statedump/src-ejb</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/va/publisher/src</label>
                     <type>java</type>
                     <location>modules/va/publisher/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/va/src-war</label>
                     <type>java</type>
                     <location>modules/va/src-war</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/buildtools/src-test</label>
                     <type>java</type>
                     <location>modules/buildtools/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>src/samples/plugins/mywebapps/src</label>
                     <type>java</type>
                     <location>src/samples/plugins/mywebapps/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cesecore-common/src-test</label>
                     <type>java</type>
                     <location>modules/cesecore-common/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>src/samples/plugins/mypublisher/src</label>
                     <type>java</type>
                     <location>src/samples/plugins/mypublisher/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cesecore-ejb-interface/src-test</label>
                     <type>java</type>
                     <location>modules/cesecore-ejb-interface/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cesecore-ejb/src-test</label>
                     <type>java</type>
                     <location>modules/cesecore-ejb/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cesecore-entity/src-test</label>
                     <type>java</type>
                     <location>modules/cesecore-entity/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cli-util/src-test</label>
                     <type>java</type>
                     <location>modules/cli-util/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/cmpProxy/src-test</label>
                     <type>java</type>
                     <location>modules/cmpProxy/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ct/src-test</label>
                     <type>java</type>
                     <location>modules/ct/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-common-web/src-test</label>
                     <type>java</type>
                     <location>modules/ejbca-common-web/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-common/src-test</label>
                     <type>java</type>
                     <location>modules/ejbca-common/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-ejb/src-test</label>
                     <type>java</type>
                     <location>modules/ejbca-ejb/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/ejbca-entity/src-test</label>
                     <type>java</type>
                     <location>modules/ejbca-entity/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/externalra-scep/src-test</label>
                     <type>java</type>
                     <location>modules/externalra-scep/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/externalra/src-test</label>
                     <type>java</type>
                     <location>modules/externalra/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/healthcheck-war/src-test</label>
                     <type>java</type>
                     <location>modules/healthcheck-war/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/peerconnector/src-test</label>
                     <type>java</type>
                     <location>modules/peerconnector/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/statedump/src-test</label>
                     <type>java</type>
                     <location>modules/statedump/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/certificatestore</label>
                     <type>java</type>
                     <location>modules/certificatestore</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/systemtests/src</label>
                     <type>java</type>
                     <location>modules/systemtests/src</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/systemtests/src-interface</label>
                     <type>java</type>
                     <location>modules/systemtests/src-interface</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/systemtests/src-test</label>
                     <type>java</type>
                     <location>modules/systemtests/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/va/publisher/src-test</label>
                     <type>java</type>
                     <location>modules/va/publisher/src-test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
                     <label>modules/validationtool/test</label>
                     <type>java</type>
                     <location>modules/validationtool/test</location>
-                    <excludes>**/org/ejbca/extra/build/**</excludes>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>modules/ra-gui/src</label>
+                    <type>java</type>
+                    <location>modules/ra-gui/src</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
             </folders>
@@ -754,407 +679,330 @@ auxiliary.show.customizer.message=<message>
                     <source-folder style="packages">
                         <label>modules/admin-gui/src</label>
                         <location>modules/admin-gui/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/appserver-ext/src</label>
                         <location>modules/appserver-ext/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/batchenrollment-gui/src</label>
                         <location>modules/batchenrollment-gui/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/buildtools/src</label>
                         <location>modules/buildtools/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/certsafe/src</label>
                         <location>modules/certsafe/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cesecore-common/src</label>
                         <location>modules/cesecore-common/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cesecore-ejb-interface/src</label>
                         <location>modules/cesecore-ejb-interface/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cesecore-ejb/src</label>
                         <location>modules/cesecore-ejb/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cesecore-entity/src</label>
                         <location>modules/cesecore-entity/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cesecore-p11/src</label>
                         <location>modules/cesecore-p11/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/clearcache-war/src</label>
                         <location>modules/clearcache-war/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cli-util/src</label>
                         <location>modules/cli-util/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/clientToolBox/src</label>
                         <location>modules/clientToolBox/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cmpProxy/src</label>
                         <location>modules/cmpProxy/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cmpclient/src</label>
                         <location>modules/cmpclient/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/crlstore/src</label>
                         <location>modules/crlstore/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ct/src</label>
                         <location>modules/ct/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/edition-specific-ee/src-ejb</label>
                         <location>modules/edition-specific-ee/src-ejb</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/edition-specific/src-ejb</label>
                         <location>modules/edition-specific/src-ejb</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/edition-specific/src-interface</label>
                         <location>modules/edition-specific/src-interface</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/validationtool/src</label>
                         <location>modules/validationtool/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-cmp-tcp/src</label>
                         <location>modules/ejbca-cmp-tcp/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-cmp-war/src</label>
                         <location>modules/ejbca-cmp-war/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-common-web/src</label>
                         <location>modules/ejbca-common-web/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-common/src</label>
                         <location>modules/ejbca-common/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-ejb-cli/src</label>
                         <location>modules/ejbca-ejb-cli/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-ejb-interface/src</label>
                         <location>modules/ejbca-ejb-interface/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-ejb/src</label>
                         <location>modules/ejbca-ejb/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-entity/src</label>
                         <location>modules/ejbca-entity/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-entity/src-cli</label>
                         <location>modules/ejbca-entity/src-cli</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-msautoenroll-war/src</label>
                         <location>modules/ejbca-msautoenroll-war/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-renew-war/src</label>
                         <location>modules/ejbca-renew-war/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-scep-war/src</label>
                         <location>modules/ejbca-scep-war/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-webdist-war/src</label>
                         <location>modules/ejbca-webdist-war/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-ws-cli/src</label>
                         <location>modules/ejbca-ws-cli/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-ws-cli/src-gen</label>
                         <location>modules/ejbca-ws-cli/src-gen</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-ws/src</label>
                         <location>modules/ejbca-ws/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/externalra-gui/src</label>
                         <location>modules/externalra-gui/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/externalra-scep/src</label>
                         <location>modules/externalra-scep/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/externalra/src</label>
                         <location>modules/externalra/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/healthcheck-war/src</label>
                         <location>modules/healthcheck-war/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/oldlogexport-cli/src</label>
                         <location>modules/oldlogexport-cli/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/peerconnector/src-cli</label>
                         <location>modules/peerconnector/src-cli</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/peerconnector/src-common</label>
                         <location>modules/peerconnector/src-common</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/peerconnector/src-ejb</label>
                         <location>modules/peerconnector/src-ejb</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/peerconnector/src-interface</label>
                         <location>modules/peerconnector/src-interface</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/peerconnector/src-publ</label>
                         <location>modules/peerconnector/src-publ</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/peerconnector/src-ra</label>
                         <location>modules/peerconnector/src-ra</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/peerconnector/src-rar</label>
                         <location>modules/peerconnector/src-rar</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/peerconnector/src-war</label>
                         <location>modules/peerconnector/src-war</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/publicweb-gui/src</label>
                         <location>modules/publicweb-gui/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/statedump/src-cli</label>
                         <location>modules/statedump/src-cli</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/statedump/src-common</label>
                         <location>modules/statedump/src-common</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/statedump/src-ejb</label>
                         <location>modules/statedump/src-ejb</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/va/publisher/src</label>
                         <location>modules/va/publisher/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/va/src-war</label>
                         <location>modules/va/src-war</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/buildtools/src-test</label>
                         <location>modules/buildtools/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>src/samples/plugins/mywebapps/src</label>
                         <location>src/samples/plugins/mywebapps/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cesecore-common/src-test</label>
                         <location>modules/cesecore-common/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>src/samples/plugins/mypublisher/src</label>
                         <location>src/samples/plugins/mypublisher/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cesecore-ejb-interface/src-test</label>
                         <location>modules/cesecore-ejb-interface/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cesecore-ejb/src-test</label>
                         <location>modules/cesecore-ejb/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cesecore-entity/src-test</label>
                         <location>modules/cesecore-entity/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cli-util/src-test</label>
                         <location>modules/cli-util/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cmpProxy/src-test</label>
                         <location>modules/cmpProxy/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ct/src-test</label>
                         <location>modules/ct/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-common-web/src-test</label>
                         <location>modules/ejbca-common-web/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-common/src-test</label>
                         <location>modules/ejbca-common/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-ejb/src-test</label>
                         <location>modules/ejbca-ejb/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/ejbca-entity/src-test</label>
                         <location>modules/ejbca-entity/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/externalra-scep/src-test</label>
                         <location>modules/externalra-scep/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/externalra/src-test</label>
                         <location>modules/externalra/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/healthcheck-war/src-test</label>
                         <location>modules/healthcheck-war/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/peerconnector/src-test</label>
                         <location>modules/peerconnector/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/statedump/src-test</label>
                         <location>modules/statedump/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/certificatestore</label>
                         <location>modules/certificatestore</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/systemtests/src</label>
                         <location>modules/systemtests/src</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/systemtests/src-interface</label>
                         <location>modules/systemtests/src-interface</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/systemtests/src-test</label>
                         <location>modules/systemtests/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/va/publisher/src-test</label>
                         <location>modules/va/publisher/src-test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/validationtool/test</label>
                         <location>modules/validationtool/test</location>
-                        <excludes>**/org/ejbca/extra/build/**</excludes>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>modules/ra-gui/src</label>
+                        <location>modules/ra-gui/src</location>
                     </source-folder>
                     <source-file>
                         <location>build.xml</location>
@@ -1213,6 +1061,7 @@ auxiliary.show.customizer.message=<message>
                 <package-root>modules/externalra-gui/src</package-root>
                 <package-root>modules/externalra-scep/src</package-root>
                 <package-root>modules/externalra/src</package-root>
+                <package-root>modules/ra-gui/src</package-root>
                 <package-root>modules/healthcheck-war/src</package-root>
                 <package-root>modules/oldlogexport-cli/src</package-root>
                 <package-root>modules/peerconnector/src-cli</package-root>
@@ -1233,7 +1082,7 @@ auxiliary.show.customizer.message=<message>
                 <package-root>modules/certificatestore</package-root>
                 <package-root>src/samples/plugins/mypublisher/src</package-root>
                 <package-root>src/samples/plugins/mywebapps/src</package-root>
-                <classpath mode="compile">lib/bcpkix-jdk15on-154.jar:lib/bcprov-jdk15on-154.jar:lib/cert-cvc-1.4.4.jar:lib/commons-beanutils-1.8.3.jar:lib/commons-cli-1.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.2.jar:lib/commons-configuration-1.6.jar:lib/commons-digester-1.8.jar:lib/commons-el-1.0.jar:lib/commons-fileupload-1.3.1.jar:lib/commons-io-1.3.2.jar:lib/commons-lang-2.5.jar:lib/commons-logging-1.1.1.jar:lib/ldap.jar:lib/log4j-1.2.16.jar:lib/batik/batik-anim.jar:lib/batik/batik-awt-util.jar:lib/batik/batik-bridge.jar:lib/batik/batik-codec.jar:lib/batik/batik-css.jar:lib/batik/batik-dom.jar:lib/batik/batik-ext.jar:lib/batik/batik-gvt.jar:lib/batik/batik-parser.jar:lib/batik/batik-script.jar:lib/batik/batik-svg-dom.jar:lib/batik/batik-svggen.jar:lib/batik/batik-transcoder.jar:lib/batik/batik-util.jar:lib/batik/batik-xml.jar:lib/batik/xerces.jar:lib/batik/xml-apis-ext.jar:lib/batik/xml-apis.jar:lib/ct/ctlog-jdk6-git20140205.jar:lib/ct/guava-18.0.jar:lib/ct/httpclient-4.3.6.jar:lib/ct/httpcore-4.3.3.jar:lib/ct/json-simple-1.1.1.jar:lib/ct/protobuf-2.4.1.jar:lib/ext/easymock/cglib-nodep-2.2.jar:lib/ext/easymock/easymock-3.0.jar:lib/ext/easymock/objenesis-1.2.jar:lib/ext/commons-httpclient-3.1.jar:lib/ext/htmlunit-1.14.jar:lib/ext/jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar:lib/ext/jdom-b9.jar:lib/ext/junit-4.11.jar:lib/ext/mailapi.jar:lib/ext/velocity-dep-1.4.jar:lib/hibernate/antlr-2.7.7.jar:lib/hibernate/dom4j-1.6.1.jar:lib/hibernate/hibernate-commons-annotations-4.0.1.Final.jar:lib/hibernate/hibernate-core-4.1.1.Final.jar:lib/hibernate/hibernate-entitymanager-4.1.1.Final.jar:lib/hibernate/hibernate-jpa-2.0-api-1.0.1.Final.jar:lib/hibernate/javassist-3.15.0-GA.jar:lib/hibernate/jboss-logging-3.1.0.GA.jar:lib/hibernate/jboss-transaction-api_1.1_spec-1.0.0.Final.jar:lib/jee/javaee-api-6.0-6.jar:lib/jee/myfaces-api-2.0.23.jar:lib/jee/myfaces-impl-2.0.23.jar:lib/myfaces/tomahawk-1.1.14.jar:lib/quickserver/QuickServer.jar:lib/quickserver/commons-pool.jar:lib/xstream/xmlpull-1.1.3.1.jar:lib/xstream/xpp3_min-1.1.4c.jar:lib/xstream/xstream-1.4.8.jar:modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar:modules/batchenrollment-gui/lib/swing-app-framework/swing-worker-1.1.jar:modules/cesecore-common/dist/cesecore-common.jar:modules/cesecore-ejb-interface/dist/cesecore-ejb-interface.jar</classpath>
+                <classpath mode="compile">lib/bcpkix-jdk15on-154.jar:lib/bcprov-jdk15on-154.jar:lib/cert-cvc-1.4.4.jar:lib/commons-beanutils-1.8.3.jar:lib/commons-cli-1.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.2.jar:lib/commons-configuration-1.6.jar:lib/commons-digester-1.8.jar:lib/commons-el-1.0.jar:lib/commons-fileupload-1.3.1.jar:lib/commons-io-1.3.2.jar:lib/commons-lang-2.5.jar:lib/commons-logging-1.1.1.jar:lib/ldap.jar:lib/log4j-1.2.16.jar:lib/batik/batik-anim.jar:lib/batik/batik-awt-util.jar:lib/batik/batik-bridge.jar:lib/batik/batik-codec.jar:lib/batik/batik-css.jar:lib/batik/batik-dom.jar:lib/batik/batik-ext.jar:lib/batik/batik-gvt.jar:lib/batik/batik-parser.jar:lib/batik/batik-script.jar:lib/batik/batik-svg-dom.jar:lib/batik/batik-svggen.jar:lib/batik/batik-transcoder.jar:lib/batik/batik-util.jar:lib/batik/batik-xml.jar:lib/batik/xerces.jar:lib/batik/xml-apis-ext.jar:lib/batik/xml-apis.jar:lib/ct/ctlog-jdk6-git20140205.jar:lib/ct/guava-18.0.jar:lib/ct/httpclient-4.3.6.jar:lib/ct/httpcore-4.3.3.jar:lib/ct/json-simple-1.1.1.jar:lib/ct/protobuf-2.4.1.jar:lib/ext/easymock/cglib-nodep-2.2.jar:lib/ext/easymock/easymock-3.0.jar:lib/ext/easymock/objenesis-1.2.jar:lib/ext/commons-httpclient-3.1.jar:lib/ext/htmlunit-1.14.jar:lib/ext/jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar:lib/ext/jdom-b9.jar:lib/ext/junit-4.11.jar:lib/ext/mailapi.jar:lib/ext/velocity-dep-1.4.jar:lib/hibernate/antlr-2.7.7.jar:lib/hibernate/dom4j-1.6.1.jar:lib/hibernate/hibernate-commons-annotations-4.0.1.Final.jar:lib/hibernate/hibernate-core-4.1.1.Final.jar:lib/hibernate/hibernate-entitymanager-4.1.1.Final.jar:lib/hibernate/hibernate-jpa-2.0-api-1.0.1.Final.jar:lib/hibernate/javassist-3.15.0-GA.jar:lib/hibernate/jboss-logging-3.1.0.GA.jar:lib/hibernate/jboss-transaction-api_1.1_spec-1.0.0.Final.jar:lib/jee/javaee-api-6.0-6.jar:lib/jee/myfaces-api-2.0.23.jar:lib/jee/myfaces-impl-2.0.23.jar:lib/myfaces/tomahawk-1.1.14.jar:lib/quickserver/QuickServer.jar:lib/quickserver/commons-pool.jar:lib/xstream/xmlpull-1.1.3.1.jar:lib/xstream/xpp3_min-1.1.4c.jar:lib/xstream/xstream-1.4.8.jar:modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar:modules/batchenrollment-gui/lib/swing-app-framework/swing-worker-1.1.jar:modules/cesecore-common/dist/cesecore-common.jar:modules/cesecore-ejb-interface/dist/cesecore-ejb-interface.jar:/usr/share/java/ant/ant.jar</classpath>
                 <built-to>modules/dist/adminweb.war</built-to>
                 <built-to>modules/dist/certsafe.jar</built-to>
                 <built-to>modules/dist/cesecore-common.jar</built-to>
