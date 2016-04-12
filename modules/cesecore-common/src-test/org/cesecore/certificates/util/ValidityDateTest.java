@@ -84,7 +84,7 @@ public class ValidityDateTest {
         LOG.trace("<testGetString");
     }
 
-    private void getStringInternalRel(final long subject, final String result) throws ParseException {
+    private void getStringInternalRel(final long subject, final String result) {
         Assert.assertEquals("Failed to fetch relative time for " + subject, result, ValidityDate.getString(subject));
     }
 

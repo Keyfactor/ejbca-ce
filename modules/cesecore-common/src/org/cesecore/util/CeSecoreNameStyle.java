@@ -26,7 +26,7 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 
 /**
- * 
+ *
  * @version $Id$
  *
  */
@@ -54,17 +54,17 @@ public class CeSecoreNameStyle extends BCStyle {
      * default look up table translating OID values into their common symbols following
      * the convention in RFC 2253 with a few extras
      */
-    public static final Hashtable<ASN1ObjectIdentifier, String> DefaultSymbols = new Hashtable<ASN1ObjectIdentifier, String>();
+    public static final Hashtable<ASN1ObjectIdentifier, String> DefaultSymbols = new Hashtable<>();
 
     /**
      * look up table translating common symbols into their OIDS.
      */
-    public static final Hashtable<String, ASN1ObjectIdentifier> DefaultLookUp = new Hashtable<String, ASN1ObjectIdentifier>();
+    public static final Hashtable<String, ASN1ObjectIdentifier> DefaultLookUp = new Hashtable<>();
 
     /**
      * look up table translating common symbols into their OIDS.
      */
-    public static final Hashtable<String, String> DefaultStringStringLookUp = new Hashtable<String, String>();
+    public static final Hashtable<String, String> DefaultStringStringLookUp = new Hashtable<>();
 
     static {
         DefaultSymbols.put(C, "C");
@@ -219,7 +219,8 @@ public class CeSecoreNameStyle extends BCStyle {
 
         return buf.toString();
     }
-    
+
+    @Override
     public String toString(X500Name name) {
         return buildString(DefaultSymbols, name);
     }

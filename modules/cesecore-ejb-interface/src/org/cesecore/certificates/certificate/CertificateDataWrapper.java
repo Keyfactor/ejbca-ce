@@ -85,6 +85,7 @@ public class CertificateDataWrapper implements CertificateWrapper, Comparable<Ce
         return base64CertData;
     }
 
+    @Override
     public Certificate getCertificate() {
         if (certificate==null && certificateBytes!=null) {
             // Lazy restore in case of deserialization

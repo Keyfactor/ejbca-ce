@@ -29,8 +29,8 @@ public final class EndEntityValidationHelper {
 
     private static final Logger log = Logger.getLogger(EndEntityValidationHelper.class);
     
-    private static Map<String,EndEntityFieldValidator> validatorCache = new HashMap<String,EndEntityFieldValidator>();
-    private static Set<String> nonExistentValidatorsCache = new HashSet<String>();
+    private static Map<String,EndEntityFieldValidator> validatorCache = new HashMap<>();
+    private static Set<String> nonExistentValidatorsCache = new HashSet<>();
     
     /** Static class, can't be instantiated */
     private EndEntityValidationHelper() { }

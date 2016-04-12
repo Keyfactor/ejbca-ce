@@ -54,6 +54,7 @@ final class CertificateSerializableWrapper implements CertificateWrapper, Serial
         this.certificateBytes = null;
     }
     
+    @Override
     public Certificate getCertificate() {
         if (certificate == null && certificateBytes != null) {
             // Lazy restore in case of deserialization
