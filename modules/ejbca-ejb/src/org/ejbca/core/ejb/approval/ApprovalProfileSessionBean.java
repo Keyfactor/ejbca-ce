@@ -22,7 +22,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -37,6 +36,8 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -53,21 +54,22 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     private static final InternalResources INTRES = InternalResources.getInstance();
 
     @EJB
+    private AccessControlSessionLocal accessSession;
+    @EJB
     private SecurityEventsLoggerSessionLocal logSession;
     
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
     @Override
-    public int addApprovalProfile(AuthenticationToken admin, String name, ApprovalProfile profile) throws ApprovalProfileExistsException {
+    public int addApprovalProfile(AuthenticationToken admin, String name, ApprovalProfile profile) throws ApprovalProfileExistsException, AuthorizationDeniedException {
         return addApprovalProfile(admin, findFreeApprovalProfileId(), name, profile);
     }
     
     private int addApprovalProfile(final AuthenticationToken admin, final int id, final String name, final ApprovalProfile profile)
-            throws ApprovalProfileExistsException {
+            throws ApprovalProfileExistsException, AuthorizationDeniedException {
 
-        // TODO We need to check that admin also have rights to edit certificate profiles
-        //authorizedToEditProfile(admin, profile, id);
+        authorizedToEditProfile(admin, profile, id);
 
         if (isFreeApprovalProfileId(id)) {
             if (ProfileData.findByApprovalProfileName(entityManager, name) == null) {
@@ -90,7 +92,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             throw new ApprovalProfileExistsException(msg);
         }
     }
-    
+
     private boolean isFreeApprovalProfileId(final int id) {
         boolean foundfree = false;
         if (ProfileData.findByIdAndType(entityManager, Integer.valueOf(id), ApprovalProfile.TYPE) == null) {
@@ -113,8 +115,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         if (pdl == null) {
             LOG.info(INTRES.getLocalizedMessage("store.erroreditapprovalprofile", name) + ". No such profile was found");
         } else {
-            // TODO: We need to check that admin also have rights to edit certificate profiles
-            //authorizedToEditProfile(admin, profile, pdl.getId());
+            authorizedToEditProfile(admin, profile, pdl.getId());
 
             // Do the actual change
             pdl.setProfile(profile);
@@ -136,8 +137,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
                 LOG.debug("Trying to remove an approval profile that does not exist: " + name);
             }
         } else {
-            // TODO We need to check that admin also have rights to edit approval profiles
-            //authorizedToEditProfile(admin, pdl.getProfile(), pdl.getId());
+            authorizedToEditProfile(admin, pdl.getProfile(), pdl.getId());
 
             entityManager.remove(pdl);
             flushProfileCache();
@@ -154,8 +154,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
                 LOG.debug("Trying to remove an approval profile that does not exist. ID: " + id);
             }
         } else {
-            // TODO We need to check that admin also have rights to edit approval profiles
-            //authorizedToEditProfile(admin, pdl.getProfile(), pdl.getId());
+            authorizedToEditProfile(admin, pdl.getProfile(), pdl.getId());
 
             final String name = pdl.getProfileName();
             entityManager.remove(pdl);
@@ -174,8 +173,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
                 final String msg = INTRES.getLocalizedMessage("store.errorprofilenotexist", oldname);
                 throw new ApprovalProfileDoesNotExistException(msg);
             } else {
-                //TODO We need to check that admin also have rights to edit approval profiles
-                //authorizedToEditProfile(admin, pdl.getCertificateProfile(), pdl.getId());
+                authorizedToEditProfile(admin, pdl.getProfile(), pdl.getId());
 
                 pdl.setProfileName(newname);
                 flushProfileCache();
@@ -195,17 +193,17 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         ApprovalProfile profile = null;
 
         try {
-            ApprovalProfile p = getApprovalProfile(orgname);
+            final int origProfileId = getApprovalProfileId(orgname);
+            final ApprovalProfile p = getApprovalProfile(origProfileId);
             if (p == null) {
                 final String msg = INTRES.getLocalizedMessage("store.errorprofilenotexist", orgname);
                 LOG.info(msg);
                 throw new ApprovalProfileDoesNotExistException(msg);
             }
 
-            profile = (ApprovalProfile) p.clone();
+            profile = p.clone();
 
-            //TODO We need to check that admin also have rights to edit certificate profiles
-            //authorizedToEditProfile(admin, profile, getProfileId(orgname));
+            authorizedToEditProfile(admin, profile, origProfileId);
 
             if (ProfileData.findByNameAndType(entityManager, newname, ApprovalProfile.TYPE) == null) {
                 entityManager.persist(new ProfileData(findFreeApprovalProfileId(), newname, profile));
@@ -218,7 +216,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             }
         } catch (CloneNotSupportedException f) {
             // If this happens it's a programming error. Throw an exception!
-            throw new EJBException(f);
+            throw new IllegalStateException(f);
         }
     }
 
@@ -291,11 +289,11 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         final ApprovalProfile aprofile = ApprovalProfileCache.INSTANCE.getProfileCache(entityManager).get(Integer.valueOf(id));
         try {
             if (aprofile != null) {
-                returnval = (ApprovalProfile) aprofile.clone();
+                returnval = aprofile.clone();
             }
         } catch (CloneNotSupportedException e) {
             LOG.error("Should never happen: ", e);
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
         
         if (LOG.isTraceEnabled()) {
@@ -348,6 +346,14 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             LOG.trace("><getApprovalProfileIdToNameMap");
         }
         return ApprovalProfileCache.INSTANCE.getIdNameMapCache(entityManager);
+    }
+    
+    
+    private void authorizedToEditProfile(final AuthenticationToken admin, final ApprovalProfile profile, final int id) throws AuthorizationDeniedException {
+        if (!accessSession.isAuthorized(admin, StandardRules.APPROVALPROFILEEDIT.resource())) {
+            final String msg = INTRES.getLocalizedMessage("store.editapprovalprofilenotauthorized", admin.toString(), id);
+            throw new AuthorizationDeniedException(msg);
+        }
     }
 
 }

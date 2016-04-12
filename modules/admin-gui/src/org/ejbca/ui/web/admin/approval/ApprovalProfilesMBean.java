@@ -26,6 +26,7 @@ import javax.faces.model.ListDataModel;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -123,6 +124,10 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
             approvalProfilesList = new ListDataModel<ApprovalProfileGuiInfo>(items);
         }
         return approvalProfilesList;
+    }
+    
+    public boolean isAuthorizedToEdit() {
+        return isAuthorizedTo(StandardRules.APPROVALPROFILEEDIT.resource());
     }
     
     public String getApprovalProfileName() {
@@ -313,6 +318,8 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
                 setApprovalProfileName("");
             } catch (ApprovalProfileExistsException e) {
                 addErrorMessage("CERTIFICATEPROFILEALREADY");
+            } catch (AuthorizationDeniedException e) {
+                addNonTranslatedErrorMessage("Not authorized to add certificate profile.");
             }
         }
         approvalProfilesList = null;

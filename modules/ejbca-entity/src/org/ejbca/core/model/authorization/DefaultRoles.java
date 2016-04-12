@@ -76,6 +76,7 @@ public enum DefaultRoles {
             new AccessRuleTemplate(InternalKeyBindingRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true),
             new AccessRuleTemplate(StandardRules.CAVIEW.resource(), AccessRuleState.RULE_ACCEPT, false),
             new AccessRuleTemplate(StandardRules.CERTIFICATEPROFILEVIEW.resource(), AccessRuleState.RULE_ACCEPT, false),
+            new AccessRuleTemplate(StandardRules.APPROVALPROFILEVIEW.resource(), AccessRuleState.RULE_ACCEPT, false),
             new AccessRuleTemplate(CryptoTokenRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true),
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWPUBLISHER, AccessRuleState.RULE_ACCEPT, false),
             new AccessRuleTemplate(AccessRulesConstants.SERVICES_VIEW, AccessRuleState.RULE_ACCEPT, false),
