@@ -93,6 +93,7 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.JBossUnmarshaller;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
@@ -104,6 +105,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRuleTemplate;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.DefaultRoles;
@@ -114,6 +116,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.SqlExecutor;
 
@@ -154,9 +157,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
     private EnterpriseEditionEjbBridgeSessionLocal enterpriseEditionEjbBridgeSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
@@ -165,8 +172,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private RoleManagementSessionLocal roleMgmtSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLogger;
-    @EJB
-    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
+
 
     private UpgradeSessionLocal upgradeSession;
 
@@ -350,13 +356,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastUpgradedToVersion("6.4.2");
         }
-        if (isLesserThan(oldVersion, "6.6.0")) {
+        if (isLesserThan(oldVersion, "6.5.1")) {
             try {
-                upgradeSession.migrateDatabase660();
+                upgradeSession.migrateDatabase651();
             } catch (UpgradeFailedException e) {
                 return false;
             }
-            setLastUpgradedToVersion("6.6.0");
+            setLastUpgradedToVersion("6.5.1");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -468,7 +474,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         
     /** @return a subset of the source list with index as its first item and index+count-1 as its last. */
     private <T> List<T> getSubSet(final List<T> source, final int index, final int count) {
-    	List<T> ret = new ArrayList<>(count);
+    	List<T> ret = new ArrayList<T>(count);
     	for (int i=0; i<count; i++) {
             if (source.size() > (index + i)) {
                 ret.add(source.get(index + i));
@@ -623,7 +629,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 					}
 					// If key recovery and hard token encrypt service does not exist, we have to create them
 					CAInfo cainfo = ca.getCAInfo();
-					Collection<ExtendedCAServiceInfo> extendedcaserviceinfos = new ArrayList<>();
+					Collection<ExtendedCAServiceInfo> extendedcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
 					if (!extendedServiceTypes.contains(ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE)) {
 						log.info("Adding new extended CA service of type "+ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE+" with implementation class "+HardTokenEncryptCAService.class.getName());
 						extendedcaserviceinfos.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -656,7 +662,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	 */
     	Collection<RoleData> roles = roleAccessSession.getAllRoles();
     	for (RoleData role : roles) {
-    	    Collection<AccessUserAspectData> updatedUsers = new ArrayList<>();
+    	    Collection<AccessUserAspectData> updatedUsers = new ArrayList<AccessUserAspectData>();
     	    for(AccessUserAspectData userAspect : role.getAccessUsers().values()) {
     	        if(userAspect.getTokenType() == null) {
     	            userAspect.setTokenType(X509CertificateAuthenticationToken.TOKEN_TYPE);
@@ -681,7 +687,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     				// Now we add a new rule
     				final AccessRuleData slashRule = new AccessRuleData(role.getRoleName(), StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true);
     				log.info("Replacing all rules of the role '"+role.getRoleName()+"' with the rule '"+slashRule+"' since the role contained the '"+StandardRules.ROLE_ROOT+"' rule.");
-    				final Collection<AccessRuleData> newrules = new ArrayList<>();
+    				final Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
     				newrules.add(slashRule);
     				try {
     					// if one of the rules was "super administrator" then all other rules of the role was disregarded in version<5. So now it should only be the '/' rule for the role.
@@ -715,10 +721,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
 
         Map<Integer, AccessRuleData> rulesFromResult = result.getAccessRules();
-        Map<Integer, AccessRuleData> rulesToResult = new HashMap<>();
+        Map<Integer, AccessRuleData> rulesToResult = new HashMap<Integer, AccessRuleData>();
         //Lists for logging purposes.
-        Collection<AccessRuleData> newRules = new ArrayList<>();
-        Collection<AccessRuleData> changedRules = new ArrayList<>();
+        Collection<AccessRuleData> newRules = new ArrayList<AccessRuleData>();
+        Collection<AccessRuleData> changedRules = new ArrayList<AccessRuleData>();
         for (AccessRuleData rule : accessRules) {
             if (AccessRuleData.generatePrimaryKey(role.getRoleName(), rule.getAccessRuleName()) != rule.getPrimaryKey()) {
                 throw new Error("Role " + role.getRoleName() + " did not match up with the role that created this rule.");
@@ -765,15 +771,15 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @return true if the upgrade was successful and false otherwise
      */
     private boolean addEKUAndCustomCertExtensionsAccessRulestoRoles() {
-        Collection<RoleData> roles = new ArrayList<>(roleAccessSession.getAllRoles());
+        Collection<RoleData> roles = new ArrayList<RoleData>(roleAccessSession.getAllRoles());
         for (RoleData role : roles) {
             final Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
-            final Collection<AccessRuleData> rules = new ArrayList<>(rulemap.values());
+            final Collection<AccessRuleData> rules = new ArrayList<AccessRuleData>(rulemap.values());
             for (AccessRuleData rule : rules) {
                 if (StringUtils.equals(StandardRules.SYSTEMCONFIGURATION_EDIT.resource(), rule.getAccessRuleName()) && 
                         rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
                     // Now we add a new rule
-                    final Collection<AccessRuleData> newrules = new ArrayList<>();
+                    final Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
                     final AccessRuleData editAvailableEKURule = new AccessRuleData(role.getRoleName(), StandardRules.EKUCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false);
                     final AccessRuleData editCustomCertExtensionsRule = new AccessRuleData(role.getRoleName(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false);
                     newrules.add(editAvailableEKURule);
@@ -849,7 +855,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         try {
             // Any roles that had access to /ca_functionality/basic_functions/activate_ca or just /ca_functionality/ (+recursive) 
             // should be given access to /ca_functionality/view_ca
-            Set<RoleData> viewCaRoles = new HashSet<>(roleMgmtSession.getAuthorizedRoles(AccessRulesConstants.REGULAR_ACTIVATECA, false));
+            Set<RoleData> viewCaRoles = new HashSet<RoleData>(roleMgmtSession.getAuthorizedRoles(AccessRulesConstants.REGULAR_ACTIVATECA, false));
             viewCaRoles.addAll(roleMgmtSession.getAuthorizedRoles(StandardRules.CAFUNCTIONALITY.resource(), true));
             for (RoleData role : viewCaRoles) {
                 //Skip if superadmin 
@@ -912,7 +918,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     continue;
                 }
                 //Find 
-                ArrayList<AccessRuleData> accessRulesList = new ArrayList<>();
+                ArrayList<AccessRuleData> accessRulesList = new ArrayList<AccessRuleData>();
                 AccessRuleData servicesEdit = new AccessRuleData(role.getRoleName(), AccessRulesConstants.SERVICES_EDIT, AccessRuleState.RULE_ACCEPT,
                         false);
                 AccessRuleData servicesView = new AccessRuleData(role.getRoleName(), AccessRulesConstants.SERVICES_VIEW, AccessRuleState.RULE_ACCEPT,
@@ -966,7 +972,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 continue;
             }
             //Find roles which correspond to the old Auditor
-            Collection<AccessRuleTemplate> newRulesFor642 = new ArrayList<>();
+            Collection<AccessRuleTemplate> newRulesFor642 = new ArrayList<AccessRuleTemplate>();
             newRulesFor642.add(new AccessRuleTemplate(StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false));
             newRulesFor642.add(new AccessRuleTemplate(StandardRules.EKUCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false));
             newRulesFor642.add(new AccessRuleTemplate(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false));
@@ -977,7 +983,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             String rolename = role.getRoleName();
             try {            
                 if (matches640Auditor(role)) {
-                    List<AccessRuleData> newAccessRules = new ArrayList<>();
+                    List<AccessRuleData> newAccessRules = new ArrayList<AccessRuleData>();
                     newAccessRules.add(new AccessRuleData(rolename, StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT,
                             false));
                     newAccessRules.add(new AccessRuleData(rolename, StandardRules.EKUCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT,
@@ -990,7 +996,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                             false));
                     roleMgmtSession.addAccessRulesToRole(authenticationToken, role, newAccessRules);
                 } else {
-                    List<AccessRuleData> newAccessRules = new ArrayList<>();
+                    List<AccessRuleData> newAccessRules = new ArrayList<AccessRuleData>();
                     //Not an Auditor, but there may be other cases where we should grant access. 
                     if (role.hasAccessToRule(StandardRules.SYSTEMCONFIGURATION_EDIT.resource())) {
                         newAccessRules.add(new AccessRuleData(rolename, StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
@@ -1022,7 +1028,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         // We'll tolerate that the role has some external rules added to it
         // We won't use the method in defaultRoles, because it presumes knowledge of external rules. 
         //So, simply verify that all rules but the new ones are in the selected role. 
-        Set<String> ignoreRules = new HashSet<>(Arrays.asList(StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
+        Set<String> ignoreRules = new HashSet<String>(Arrays.asList(StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
                 StandardRules.EKUCONFIGURATION_VIEW.resource(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(), StandardRules.VIEWROLES.resource(),
                 AccessRulesConstants.REGULAR_VIEWENDENTITY));
         for (AccessRuleTemplate auditorRule : DefaultRoles.AUDITOR.getRuleSet()) {
@@ -1066,7 +1072,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 addedRulesMsg.append("[" + addedRule.toString() + "]");
             }            
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.accessrulesadded", rolename, addedRulesMsg);
-            Map<String, Object> details = new LinkedHashMap<>();
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             securityEventsLogger.log(EventTypes.ROLE_ACCESS_RULE_ADDITION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, details);
@@ -1081,7 +1087,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
        
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.accessruleschanged", rolename, changedRulesMsg);
-            Map<String, Object> details = new LinkedHashMap<>();
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             securityEventsLogger.log(EventTypes.ROLE_ACCESS_RULE_CHANGE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, details);
@@ -1095,7 +1101,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 removedRulesMsg.append("[" + removedRule.getAccessRuleName() + "]");
             }      
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.accessrulesremoved", rolename, removedRulesMsg);
-            Map<String, Object> details = new LinkedHashMap<>();
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             securityEventsLogger.log(EventTypes.ROLE_ACCESS_RULE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, details);
@@ -1153,6 +1159,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * 
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
+    @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase624() throws UpgradeFailedException {
@@ -1203,6 +1210,44 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase642() throws UpgradeFailedException {
         addReadOnlyRules642();
         log.error("(This is not an error) Completed upgrade procedure to 6.4.2");
+    }
+    
+    /**
+     * EJBCA 6.5.1:
+     * 
+     * This upgrade only affects CMP aliases:
+     * 1.   End entity profiles will be referred to by ID instead of by name. In consideration of 100% uptime requirements, the value 
+     *      ra.endentityprofile is replaced by ra.endentityprofileid, allowing legacy configurations to keep using the old value.  
+     * 
+     * @throws UpgradeFailedException if upgrade fails (rolls back)
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase651() throws UpgradeFailedException {
+        CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        for(final String cmpAlias : cmpConfiguration.getAliasList()) {
+            // Avoid aliases that may already have been upgraded
+            if(StringUtils.isEmpty(cmpConfiguration.getRAEEProfile(cmpAlias))) {
+                @SuppressWarnings("deprecation")
+                String endEntityProfileName = cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, cmpAlias);         
+                if (!StringUtils.isEmpty(endEntityProfileName)) {
+                    try {
+                        cmpConfiguration.setRAEEProfile(cmpAlias,
+                                Integer.toString(endEntityProfileSession.getEndEntityProfileId(endEntityProfileName)));
+                    } catch (EndEntityProfileNotFoundException e) {
+                        //Fail gracefully if a CMP alias already is in an error state
+                        log.error("CMP alias " + cmpAlias + " could not be upgraded. It refers by name to End Entity Profile " + endEntityProfileName
+                                + ", which does not appear to exist. Please review this profile after upgrade.");
+                    }
+                }            
+            }
+        }
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Always allow token was denied authoriation to global configuration table.", e);
+        }
+        log.error("(This is not an error) Completed upgrade procedure to 6.5.1");
     }
     
     /**
@@ -1371,7 +1416,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
     private List<CertificatePolicy> getNewPolicies(final List<CertificatePolicy> policies) {
-        final List<CertificatePolicy> newpolicies = new ArrayList<>();
+        final List<CertificatePolicy> newpolicies = new ArrayList<CertificatePolicy>();
         for(final Iterator<?> it = policies.iterator(); it.hasNext(); ) {
             Object o = it.next();
             try {
