@@ -111,7 +111,7 @@
   boolean authorizedToEdit =  ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
 
   
-  ejbcawebbean.clearCMPCache();
+  ejbcawebbean.clearCmpCache();
   CmpConfiguration cmpconfig = ejbcawebbean.getCmpConfiguration();
   CmpConfiguration cmpConfigClone = null;
 
@@ -171,8 +171,8 @@
           					// Delete profile and display profilespage. 
           					alias = request.getParameter(SELECT_ALIASES);
           					if(alias != null && (!alias.trim().equals("")) ){
-              						cmpconfig.removeAlias(alias);
-                					ejbcawebbean.saveCMPConfiguration(cmpconfig);
+                					ejbcawebbean.removeCmpAlias(alias);
+                					cmpconfig = ejbcawebbean.getCmpConfiguration();
                 					if(cmpconfig.aliasExists(alias)) {
                 						aliasDeletionFailed = true;
                 					}
@@ -186,10 +186,10 @@
       					    String oldalias = request.getParameter(SELECT_ALIASES);
       					    if(oldalias != null && newalias != null && !newalias.trim().equals("") && !oldalias.trim().equals("") ){
       					    		if(cmpconfig.aliasExists(newalias)) {
-      					    				triedrenametoexistingalias = true;
+      					    			triedrenametoexistingalias = true;
       					    		} else {
-      					    				cmpconfig.renameAlias(oldalias, newalias);
-			      					    	ejbcawebbean.saveCMPConfiguration(cmpconfig);
+      					    			ejbcawebbean.renameCmpAlias(oldalias, newalias);
+      					    			cmpconfig = ejbcawebbean.getCmpConfiguration();
       					    		}
       					    }
       					    includefile="cmpaliasespage.jspf"; 
@@ -201,8 +201,8 @@
       					    		if(cmpconfig.aliasExists(alias)) {
       					    			triedtoaddexistingalias = true;
       					    		} else {
-      					    			cmpconfig.addAlias(alias);
-      					    			ejbcawebbean.saveCMPConfiguration(cmpconfig);
+      					    			ejbcawebbean.addCmpAlias(alias);
+      					    			cmpconfig = ejbcawebbean.getCmpConfiguration();
       					    		}
       					    }
       					    includefile="cmpaliasespage.jspf"; 
@@ -213,12 +213,12 @@
       					    String newalias = request.getParameter(TEXTFIELD_ALIAS);
       					    String oldalias = request.getParameter(SELECT_ALIASES);
       					    if(oldalias != null && newalias != null && !newalias.trim().equals("") && !oldalias.trim().equals("")){
-      					    			if(cmpconfig.aliasExists(newalias)) {
-      					    					triedclonetoexistingalias = true;
-      					    			} else {
-      					        				cmpconfig.cloneAlias(oldalias, newalias);
-					      					    ejbcawebbean.saveCMPConfiguration(cmpconfig);
-      					    			}
+      					    	if(cmpconfig.aliasExists(newalias)) {
+      					    		triedclonetoexistingalias = true;
+      					    	} else {
+					      		   ejbcawebbean.cloneCmpAlias(oldalias, newalias);
+					      		 	cmpconfig = ejbcawebbean.getCmpConfiguration();
+      					    	}
       					    }
       					    includefile="cmpaliasespage.jspf"; 
       				}
@@ -238,10 +238,10 @@
     		       			//defaultCA
     		       			String value = request.getParameter(LIST_CMPDEFAULTCA);
     		       			if((value==null) || (value.length() == 0)) {
-    		       					cmpConfigClone.setCMPDefaultCA(alias, "");
+    		       				cmpConfigClone.setCMPDefaultCA(alias, "");
     		       			} else {
-    		                		String cadn = cabean.getCAInfo(value).getCAInfo().getSubjectDN();
-    		                		cmpConfigClone.setCMPDefaultCA(alias, cadn);
+    		                	String cadn = cabean.getCAInfo(value).getCAInfo().getSubjectDN();
+    		                	cmpConfigClone.setCMPDefaultCA(alias, cadn);
     		       			}
     		       						
     		    			//operational mode

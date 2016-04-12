@@ -1,6 +1,6 @@
 <%@page import="org.cesecore.authorization.control.StandardRules"%>
 <%
-  Set<String> aliases = cmpconfig.getAliasList();
+  List<String> aliases = cmpconfig.getSortedAliasList();
 
 %>
 
