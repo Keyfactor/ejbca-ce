@@ -185,7 +185,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             auditSession.log(EventTypes.SYSTEMCONF_EDIT, EventStatus.SUCCESS, ModuleTypes.GLOBALCONF, ServiceTypes.CORE,
                     admin.toString(), null, null, null, details);
         } else {
-            // Global configuration doesn't yet exists.
+            // Global configuration doesn't yet exist.
             try {
                 saveConfigurationNoLog(conf);
                 final String msg = intres.getLocalizedMessage("globalconfig.createdconf", configID);

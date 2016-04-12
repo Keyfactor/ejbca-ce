@@ -406,7 +406,7 @@ function checkallfields() {
     
     
     
-    <% String ceep = ""; %>
+    <% Integer ceep = -1; %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRAEEPROFILE\") %>"/>
@@ -415,19 +415,18 @@ function checkallfields() {
       </td>
       <td width="50%"> 
         <select name="<%= LIST_CMPEEPROFILES %>" onchange="reload()" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
-          <% String defeep = cmpConfigClone.getRAEEProfile(alias); %>
-          <% ceep = defeep; %>
+          <% Integer currentEndEntityProfileId = Integer.valueOf(cmpConfigClone.getRAEEProfile(alias)); %>
+          <% ceep = currentEndEntityProfileId; %>
           <% boolean eepselected = false; %>
-          <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
-          		who already use 'KeyId' but not for new installations/aliases -->
-          <% if("KeyId".equals(defeep)) { eepselected=true; %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
           <% 
-
-            for(String eep : ejbcawebbean.getAuthorizedEEProfileNames(AccessRulesConstants.CREATE_END_ENTITY)) { 
-          %>   <option <% if(eep.equals(defeep)){ eepselected=true; %> selected <% } %>
-                  value='<c:out value="<%= eep%>"/>'><c:out value="<%= eep %>"/></option>
+          	Map<String, Integer> nameToIdMap = ejbcawebbean.getAuthorizedEEProfileNamesAndIds(AccessRulesConstants.CREATE_END_ENTITY);
+            for(String endEntityProfileName : nameToIdMap.keySet()) { 
+                Integer endEntityProfileId = nameToIdMap.get(endEntityProfileName);
+          %>   <option <% if(endEntityProfileId.equals(currentEndEntityProfileId)){ eepselected=true; %> selected <% } %> value='<c:out value="<%=endEntityProfileId %>"/>'>
+          			<c:out value="<%= endEntityProfileName %>"/>
+          		</option>
           <% } %>
-          <% if(!eepselected) { %> <option selected value='<c:out value="-1"/>'><c:out value="Non-existing End Entity profile: "/><c:out value="<%= defeep %>"/></option> <% } %>
+          <% if(!eepselected) { %> <option selected value='<c:out value="-1"/>'><c:out value="Non-existing End Entity Profile with ID: "/><c:out value="<%= currentEndEntityProfileId %>"/></option> <% } %>
         </select>
         <noscript>
 			&nbsp;&nbsp;&nbsp;&nbsp;
@@ -450,13 +449,14 @@ function checkallfields() {
           <% String defcp = cmpConfigClone.getRACertProfile(alias); %>
           <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
           		who already use 'KeyId' but not for new installations/aliases -->
-          <% if("KeyId".equals(defcp)){ %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
           <option <% if("ProfileDefault".equals(defcp)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="<%= ejbcawebbean.getText(\"CMPRA_PROFILEDEFAULT\") %>"/></option>
           <% 
-            for(String cp : ejbcawebbean.getAvailableCertProfilessOfEEProfile(ceep)) {
-          %>   <option <% if(cp.equals(defcp)){ %> selected <% } %>
-                  value='<c:out value="<%= cp%>"/>'><c:out value="<%= cp %>"/></option>
-          <% } %>
+          	if(ceep != null) {
+            	for(String cp : ejbcawebbean.getAvailableCertProfilessOfEEProfile(ceep)) {  %>
+            		<option <% if(cp.equals(defcp)){ %> selected <% } %>
+                  		value='<c:out value="<%= cp%>"/>'><c:out value="<%= cp %>"/></option>
+          <% 	} 
+             }%>
         </select>
       </td>
     </tr>
@@ -478,10 +478,12 @@ function checkallfields() {
           <% if("KeyId".equals(defca)){ %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
           <option <% if("ProfileDefault".equals(defca)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="<%= ejbcawebbean.getText(\"CMPRA_PROFILEDEFAULT\") %>"/></option>
           <% 
-            for(String caname : ejbcawebbean.getAvailableCAsOfEEProfile(ceep)) {
-          %>   <option <% if(caname.equals(defca)){ %> selected <% } %>
-                  value='<c:out value="<%= caname%>"/>'><c:out value="<%= caname %>"/></option>
-          <% } %>
+          	if(ceep != null) {
+            	for(String caname : ejbcawebbean.getAvailableCAsOfEEProfile(Integer.valueOf(ceep))) {
+          %>	   <option <% if(caname.equals(defca)){ %> selected <% } %>
+                	  value='<c:out value="<%= caname%>"/>'><c:out value="<%= caname %>"/></option>
+          <% 	}
+            }%>
         </select>
       </td>
     </tr>

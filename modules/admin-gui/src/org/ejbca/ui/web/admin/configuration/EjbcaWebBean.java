@@ -696,10 +696,6 @@ public class EjbcaWebBean implements Serializable {
 
     public void reloadCmpConfiguration() {
         cmpconfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        if (informationmemory != null) {
-            informationmemory.setCmpConfiguration(cmpconfiguration);
-        }
-
     }
 
     
@@ -718,7 +714,6 @@ public class EjbcaWebBean implements Serializable {
     public void saveCMPConfiguration(CmpConfiguration cmpconfiguration) throws AuthorizationDeniedException {
         this.cmpconfiguration = cmpconfiguration;
         globalConfigurationSession.saveConfiguration(administrator, cmpconfiguration);
-        informationmemory.setCmpConfiguration(cmpconfiguration);
     }
 
     public boolean existsAdminPreference() {
@@ -984,7 +979,7 @@ public class EjbcaWebBean implements Serializable {
             reloadCmpConfiguration();
         }
         //Clear CMP config of unauthorized aliases (aliases referring to CA, EEP or CPs that the current admin doesn't have access to)
-       return clearCmpConfigurationFromUnauthorizedAliases(cmpconfiguration);
+        return clearCmpConfigurationFromUnauthorizedAliases(cmpconfiguration);
     }
 
     public CmpConfiguration getCmpConfigForEdit(String alias) {
@@ -1045,18 +1040,17 @@ public class EjbcaWebBean implements Serializable {
                     // "ProfileDefault" is not a CA name and if the profile default is used, this will be implicitly checked be checking access to the EEP
                     caNames.add(raCaName);
                 }
-                String endEntityProfileName = cmpconfiguration.getRAEEProfile(alias);
-                try {
-                    if(!authorizedProfileIds.contains(endEntityProfileSession.getEndEntityProfileId(endEntityProfileName))) {
+                Integer endEntityProfileId = Integer.valueOf(cmpconfiguration.getRAEEProfile(alias));
+                if (endEntityProfileId != null) {
+                    if (!authorizedProfileIds.contains(endEntityProfileId)) {
                         if (log.isDebugEnabled()) {
-                            log.debug("CMP alias " + alias + " hidden because admin lacks access to a CA used in end entity profile: " + endEntityProfileName);
+                            log.debug("CMP alias " + alias + " hidden because admin lacks access to a CA used in end entity profile with ID: "
+                                    + endEntityProfileId);
                         }
                         returnValue.removeAlias(alias);
                         //Profile was not in the authorized list, skip out on this alias. 
                         continue aliasloop;
                     }
-                } catch (EndEntityProfileNotFoundException e) {
-                    throw new IllegalStateException("Profile with name " + endEntityProfileName + " was not found in spite of being defined in a CMP RA alias.", e);
                 }
                 //Certificate Profiles are tested implicitly, since we can't choose any CP which isn't part of the EEP, and we can't choose the EEP if we don't have access to its CPs. 
             }
@@ -1096,27 +1090,23 @@ public class EjbcaWebBean implements Serializable {
         reloadCmpConfiguration();
     }
 
-    public Collection<String> getAuthorizedEEProfileNames(final String endentityAccessRule) {
-        Map<String, Integer> eeps = this.informationmemory.getAuthorizedEndEntityProfileNames(endentityAccessRule);
-        return eeps.keySet();
+    public Map<String, Integer> getAuthorizedEEProfileNamesAndIds(final String endentityAccessRule) {
+        return informationmemory.getAuthorizedEndEntityProfileNames(endentityAccessRule);
     }
 
-    public Collection<String> getAvailableCAsOfEEProfile(String eep) throws NumberFormatException, CADoesntExistsException,
+    public Collection<String> getAvailableCAsOfEEProfile(int endEntityProfileId) throws NumberFormatException, CADoesntExistsException,
             AuthorizationDeniedException {
-        if (StringUtils.equals(eep, "KeyId")) {
-            return informationmemory.getAllCANames().keySet();
-        }
 
-        EndEntityProfile p = endEntityProfileSession.getEndEntityProfile(eep);
-        if (p == null) {
+        
+        EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
+        if (endEntityProfile == null) {
             return new HashSet<String>();
         }
 
-        ArrayList<String> caids = (ArrayList<String>) p.getAvailableCAs();
+        Collection<String> caids = endEntityProfile.getAvailableCAs();
         Set<String> cas = new HashSet<String>();
-        Iterator<String> itr = caids.iterator();
-        while (itr.hasNext()) {
-            String caid = itr.next();
+
+        for(String caid : caids) {
             if (caid.equals("1")) {
                 return informationmemory.getAllCANames().keySet();
             }
@@ -1126,19 +1116,12 @@ public class EjbcaWebBean implements Serializable {
         return cas;
     }
 
-    public Collection<String> getAvailableCertProfilessOfEEProfile(String eep) {
-        if (StringUtils.equals(eep, "KeyId")) {
-            //return getAuthorizedCertProfileNames();
-            Map<String, Integer> cps = this.informationmemory.getAuthorizedEndEntityCertificateProfileNames();
-            return cps.keySet();
-        }
-
-        EndEntityProfile p = endEntityProfileSession.getEndEntityProfile(eep);
-        if (p == null) {
+    public Collection<String> getAvailableCertProfilessOfEEProfile(int endEntityProfileId) {
+        EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
+        if (profile == null) {
             return new HashSet<String>();
         }
-
-        ArrayList<String> cpids = (ArrayList<String>) p.getAvailableCertificateProfileIds();
+        Collection<String> cpids =  profile.getAvailableCertificateProfileIds();
         Set<String> cps = new HashSet<String>();
         for(String cpid : cpids) {
             String cpname = certificateProfileSession.getCertificateProfileName(Integer.parseInt(cpid));

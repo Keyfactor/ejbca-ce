@@ -36,8 +36,9 @@ import org.cesecore.configuration.ConfigurationBase;
  */
 public class CmpConfiguration extends ConfigurationBase implements Serializable {
 
+    private static final long serialVersionUID = -2787354158199916828L;
+
     private static final Logger log = Logger.getLogger(CmpConfiguration.class);
-    private static final long serialVersionUID = -2051789798029184421L;
     
     // Constants: Authentication modules
     public static final String AUTHMODULE_REG_TOKEN_PWD         = "RegTokenPwd";
@@ -58,7 +59,10 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_RA_NAMEGENERATIONPREFIX = "ra.namegenerationprefix";
     public static final String CONFIG_RA_NAMEGENERATIONPOSTFIX= "ra.namegenerationpostfix";
     public static final String CONFIG_RA_PASSWORDGENPARAMS    = "ra.passwordgenparams";
+    /** @deprecated since 6.5.1, but remains to allow 100% uptime during upgrade. Use CONFIG_RA_ENDENTITYPROFILEID instead */
+    @Deprecated
     public static final String CONFIG_RA_ENDENTITYPROFILE     = "ra.endentityprofile";
+    public static final String CONFIG_RA_ENDENTITYPROFILEID   = "ra.endentityprofileid";
     public static final String CONFIG_RA_CERTIFICATEPROFILE   = "ra.certificateprofile";
     public static final String CONFIG_RESPONSEPROTECTION      = "responseprotection";
     public static final String CONFIG_RACANAME                = "ra.caname";
@@ -100,7 +104,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_RA_USERNAME_GENERATION_POSTFIX = "";
     private static final String DEFAULT_RA_PASSWORD_GENERARION_PARAMS = "random";
     private static final String DEFAULT_RA_ALLOW_CUSTOM_SERNO = "false";
-    private static final String DEFAULT_RA_EEPROFILE = "EMPTY";
+    private static final String DEFAULT_RA_EEPROFILE = "1";
     private static final String DEFAULT_RA_CERTPROFILE = "ENDUSER";
     private static final String DEFAULT_RA_CANAME = "ManagementCA";
     private static final String DEFAULT_CLIENT_AUTHENTICATION_MODULE = CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC;
@@ -157,7 +161,8 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX, DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
             data.put(alias + CONFIG_RA_PASSWORDGENPARAMS, DEFAULT_RA_PASSWORD_GENERARION_PARAMS);
             data.put(alias + CONFIG_RA_ALLOWCUSTOMCERTSERNO, DEFAULT_RA_ALLOW_CUSTOM_SERNO);
-            data.put(alias + CONFIG_RA_ENDENTITYPROFILE, DEFAULT_RA_EEPROFILE);
+            data.put(alias + CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
+            data.put(alias + CONFIG_RA_ENDENTITYPROFILEID, DEFAULT_RA_EEPROFILE);
             data.put(alias + CONFIG_RA_CERTIFICATEPROFILE, DEFAULT_RA_CERTPROFILE);
             data.put(alias + CONFIG_RACANAME, DEFAULT_RA_CANAME);
             data.put(alias + CONFIG_RACERT_PATH, DEFAULT_RACERT_PATH);
@@ -189,6 +194,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_RA_PASSWORDGENPARAMS);
         keys.add(alias + CONFIG_RA_ALLOWCUSTOMCERTSERNO);
         keys.add(alias + CONFIG_RA_ENDENTITYPROFILE);
+        keys.add(alias + CONFIG_RA_ENDENTITYPROFILEID);
         keys.add(alias + CONFIG_RA_CERTIFICATEPROFILE);
         keys.add(alias + CONFIG_RACANAME);
         keys.add(alias + CONFIG_RACERT_PATH);
@@ -435,13 +441,22 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         setValue(key, Boolean.toString(allowCustomSerno), alias);
     }
     
-    
+
+    /**
+     * 
+     * @return the end entity profile ID. 
+     */
     public String getRAEEProfile(String alias) {
-        String key = alias + "." + CONFIG_RA_ENDENTITYPROFILE;
+        String key = alias + "." + CONFIG_RA_ENDENTITYPROFILEID;
         return getValue(key, alias);
     }
+  
     public void setRAEEProfile(String alias, String eep) {
-        String key = alias + "." + CONFIG_RA_ENDENTITYPROFILE;
+        String key = alias + "." + CONFIG_RA_ENDENTITYPROFILEID;        
+        if (!data.containsKey(key)) {
+            //Lazy initialization for upgrade
+            data.put(key, DEFAULT_RA_EEPROFILE);
+        }
         setValue(key, eep, alias);
     }
     
@@ -728,22 +743,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         return null;
     }
     
-    
-    
-       
-/*
-       public void setEnableCommandLineInterface(final boolean enable) { data.put(ENABLECOMMANDLINEINTERFACE, Boolean.valueOf(enable)); }
-       public boolean getEnableCommandLineInterface() {
-           final Boolean ret = (Boolean) data.get(ENABLECOMMANDLINEINTERFACE);
-           return (ret == null ? DEFAULTENABLECOMMANDLINEINTERFACE : ret);
-       }
-       
-       public void setEnableCommandLineInterfaceDefaultUser(final boolean enable) { data.put(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, Boolean.valueOf(enable)); }
-       public boolean getEnableCommandLineInterfaceDefaultUser() {
-           final Boolean ret = (Boolean) data.get(ENABLECOMMANDLINEINTERFACEDEFAULTUSER);
-           return(ret == null ? DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER : ret);
-       }
-*/
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
     @Override
     public float getLatestVersion(){
