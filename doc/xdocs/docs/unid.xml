@@ -127,6 +127,10 @@ If these conditions are not met, no Fnr is returned.
   </section>
 
 <section name="Unid CMP configuration">
+<note>
+<p>Please note that setting up CMP to use Unid using the below method was only possible prior to EJBCA 6.0.0, and after that only legacy setups were supported. As of 6.5.1,
+ legacy aliases are no longer supported, but this will be reimplemented in the future.</p>
+</note>
 <p>
 You can configure EJBCA to generate Unids when an RA is using the CMP protocol. The generated Unids are stored in a mapping database that can be read by the OCSP responder.</p>
 <p>
