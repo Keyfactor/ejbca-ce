@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.core.model.era;
@@ -15,6 +18,17 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.DependsOn;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -30,13 +44,32 @@ import org.ejbca.core.EjbcaException;
  * 
  * @version $Id$
  */
-public class RaMasterApiProxy implements RaMasterApi {
+@Singleton
+@Startup
+@DependsOn("StartupSingletonBean")
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+@TransactionManagement(TransactionManagementType.BEAN)
+@Lock(LockType.READ)
+public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     
-    private static final Logger log = Logger.getLogger(RaMasterApiProxy.class);
-    private final RaMasterApi[] raMasterApis;
-    private final RaMasterApi[] raMasterApisLocalFirst;
+    private static final Logger log = Logger.getLogger(RaMasterApiProxyBean.class);
+    private RaMasterApi[] raMasterApis = null;
+    private RaMasterApi[] raMasterApisLocalFirst = null;
     
-    public RaMasterApiProxy(final RaMasterApi...raMasterApis) {
+    /** Default constructor */
+    public RaMasterApiProxyBean() {}
+
+    /** Constructor for use from JUnit tests */
+    public RaMasterApiProxyBean(final RaMasterApi...raMasterApis) {
+        init(raMasterApis);
+    }
+
+    @PostConstruct
+    private void postConstruct() {
+        init();
+    }
+    
+    public void init(final RaMasterApi...raMasterApis) {
         if (raMasterApis.length==0) {
             final List<RaMasterApi> implementations = new ArrayList<>();
             try {
