@@ -1075,7 +1075,7 @@ public class EjbcaWebBean implements Serializable {
                     caNames.add(raCaName);
                 }
                 Integer endEntityProfileId = Integer.valueOf(cmpconfiguration.getRAEEProfile(alias));
-                if (endEntityProfileId != null) {
+                if (endEntityProfileId != null && endEntityProfileSession.getEndEntityProfile(Integer.valueOf(endEntityProfileId)) != null) {
                     if (!authorizedProfileIds.contains(endEntityProfileId)) {
                         if (log.isDebugEnabled()) {
                             log.debug("CMP alias " + alias + " hidden because admin lacks access to a CA used in end entity profile with ID: "
