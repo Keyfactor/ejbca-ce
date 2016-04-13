@@ -61,6 +61,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.statedump.ejb.StatedumpSession;
 import org.ejbca.statedump.ejb.StatedumpSessionLocal;
@@ -152,6 +153,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public AdminPreferenceSessionLocal getRaAdminSession() { return getEjbLocal().getRaAdminSession(); }
 	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return getEjbLocal().getPublisherQueueSession(); }
 	@Override public PublisherSessionLocal getPublisherSession() { return getEjbLocal().getPublisherSession(); }
+    @Override public RaMasterApiProxyBeanLocal getRaMasterApiProxyBean() { return getEjbLocal().getRaMasterApiProxyBean(); }
 	@Override public RoleAccessSessionLocal getRoleAccessSession() { return getEjbLocal().getRoleAccessSession(); }
 	@Override public RoleManagementSessionLocal getRoleManagementSession() { return getEjbLocal().getRoleManagementSession(); }
 	@Override public SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession() { return getEjbLocal().getSecurityEventsAuditorSession(); }
@@ -187,5 +189,4 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
             return null; // this is the common case, since statedump is an internal tool and is not included with EJBCA
         }
     }
-
 }

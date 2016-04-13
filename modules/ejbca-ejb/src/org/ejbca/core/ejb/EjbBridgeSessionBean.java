@@ -58,6 +58,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
 /**
@@ -101,6 +102,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB PublisherQueueSessionLocal publisherQueueSession;
 	@EJB PublisherSessionLocal publisherSession;
 	@EJB AdminPreferenceSessionLocal raSession;
+    @EJB RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 	@EJB RevocationSessionLocal revocationSession;
 	@EJB RoleAccessSessionLocal roleAccessSession;
 	@EJB RoleManagementSessionLocal roleManagementSession;
@@ -142,6 +144,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return publisherQueueSession; }
 	@Override public PublisherSessionLocal getPublisherSession() { return publisherSession; }
 	@Override public AdminPreferenceSessionLocal getRaAdminSession() { return raSession; }
+    @Override public RaMasterApiProxyBeanLocal getRaMasterApiProxyBean() { return raMasterApiProxyBean; }
 	@Override public RevocationSessionLocal getRevocationSession() { return revocationSession; }
 	@Override public RoleAccessSessionLocal getRoleAccessSession() { return roleAccessSession; }
 	@Override public RoleManagementSessionLocal getRoleManagementSession() { return roleManagementSession; }

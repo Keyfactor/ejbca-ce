@@ -14,6 +14,7 @@ package org.ejbca.ra;
 
 import java.io.Serializable;
 
+import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.RequestScoped;
@@ -25,6 +26,7 @@ import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.util.ConcurrentCache;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 /**
  * Managed bean with isAuthorized method. 
@@ -40,9 +42,8 @@ public class RaAccessBean implements Serializable {
     
     private static final long CACHE_READ_TIMEOUT = 2000L; // milliseconds
     
-    @ManagedProperty(value="#{raMasterApiBean}")
-    private RaMasterApiBean raMasterApiBean;
-    public void setRaMasterApiBean(final RaMasterApiBean raMasterApiBean) { this.raMasterApiBean = raMasterApiBean; }
+    @EJB
+    private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
     @ManagedProperty(value="#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
@@ -64,7 +65,7 @@ public class RaAccessBean implements Serializable {
                 myAccess = entry.getValue();
             } else {
                 try {
-                    myAccess = raMasterApiBean.getUserAccessSet(authenticationToken);
+                    myAccess = raMasterApiProxyBean.getUserAccessSet(authenticationToken);
                 } catch (AuthenticationFailedException e) {
                     log.info("Failed to match authentication token '" + authenticationToken + "' to a role.");
                     myAccess = new AccessSet(); // empty access set
