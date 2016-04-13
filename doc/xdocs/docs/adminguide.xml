@@ -940,10 +940,12 @@ After the user has been created in EJBCA, a certificate is generated as usual an
 If the same username is constructed (for example UID) as an already existing user, 
 the existing user will be modified with new values for profile etc, and a new certificate will be issued for that user.
 </p>
+<note>
 <p>
-To allow requests to specify the CAs and profiles to be used, the CA and profiles configuration values should be set to "KeyId". This means that the CA and/or 
-profiles that has the same name as the KeyId sent in the CMP request (UTF-8 encoding is used) will be used to create the end entity.
+Please note that the possibility to allow requests to specify the CAs and profiles to be used by setting the CA and profiles configuration values to 
+"KeyId" has been deprecated since EJBCA 6.0.0, and is no longer supported since EJBCA 6.5.1
 </p>
+</note>
 <subsubsection name="Multiprotection support">
 <p>
 In RA mode, it is also possible to send a CMP request with multiple signatures. Ejbca implements this feature following the specifications 

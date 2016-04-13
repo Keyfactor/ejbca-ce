@@ -447,8 +447,6 @@ function checkallfields() {
       <td width="50%"> 
         <select name="<%= LIST_CMPCERTPROFILES %>" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
           <% String defcp = cmpConfigClone.getRACertProfile(alias); %>
-          <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
-          		who already use 'KeyId' but not for new installations/aliases -->
           <option <% if("ProfileDefault".equals(defcp)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="<%= ejbcawebbean.getText(\"CMPRA_PROFILEDEFAULT\") %>"/></option>
           <% 
           	if(ceep != null) {
@@ -473,9 +471,6 @@ function checkallfields() {
       <td width="50%"> 
         <select name="<%= LIST_CMPRACAS %>" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
           <% String defca = cmpConfigClone.getRACAName(alias); %>
-          <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
-          		who already use 'KeyId' but not for new installations/aliases -->
-          <% if("KeyId".equals(defca)){ %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
           <option <% if("ProfileDefault".equals(defca)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="<%= ejbcawebbean.getText(\"CMPRA_PROFILEDEFAULT\") %>"/></option>
           <% 
           	if(ceep != null) {
