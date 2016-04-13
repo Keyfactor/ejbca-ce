@@ -792,4 +792,19 @@ public final class StringTools {
         }
         return names.toString();
     }
+    
+    /** Method that checks if an array contains a string, ignoring case 
+     * @param l array that we hope contains the string s (ignoring case)
+     * @param s string that we hope is in the array l (ignoring case)
+     * @return true if the string (ignoring case) is contained in the array
+     */
+    public static boolean containsCaseInsensitive(String[] l, String s){
+        for (String string : l){
+            if (string.equalsIgnoreCase(s)){
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
