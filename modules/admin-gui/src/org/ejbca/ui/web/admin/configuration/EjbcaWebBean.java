@@ -1036,8 +1036,6 @@ public class EjbcaWebBean implements Serializable {
     
     /**
      * 
-     * 
-     * 
      * Note that this method modifies the parameter, which is has to due to the design of UpgradableHashMap. 
      * 
      * @param cmpConfiguration the full CMP configuration
@@ -1092,14 +1090,19 @@ public class EjbcaWebBean implements Serializable {
             }
             TreeMap<String, Integer> caNameToIdMap = getInformationMemory().getAllCANames();
             for (String caName : caNames) {
-                if (!caSession.authorizedToCANoLogging(administrator, caNameToIdMap.get(caName))) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("CMP alias " + alias + " hidden because admin lacks access to CA rule: " + StandardRules.CAACCESS.resource()
-                                + caNameToIdMap.get(caName));
+                if(caName != null) { //CA might have been removed
+                    Integer caId = caNameToIdMap.get(caName);
+                    if (caId != null) {
+                        if (!caSession.authorizedToCANoLogging(administrator, caId)) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("CMP alias " + alias + " hidden because admin lacks access to CA rule: " + StandardRules.CAACCESS.resource()
+                                        + caNameToIdMap.get(caName));
+                            }
+                            returnValue.removeAlias(alias);
+                            //Our work here is done, skip to the next alias. 
+                            continue aliasloop;
+                        }
                     }
-                    returnValue.removeAlias(alias);
-                    //Our work here is done, skip to the next alias. 
-                    continue aliasloop;
                 }
             }
         }

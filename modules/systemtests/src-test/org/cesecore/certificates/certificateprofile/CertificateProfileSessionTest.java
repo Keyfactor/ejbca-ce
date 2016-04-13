@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -165,18 +166,18 @@ public class CertificateProfileSessionTest extends RoleUsingTestCase {
         try {
             certificateProfileSession.cloneCertificateProfile(roleMgmgToken, "TEST2", "TEST", null);
         } catch (CertificateProfileExistsException pee) {
-            assertTrue("Cloning Certificate Profile failed", false);
+            fail("Cloning Certificate Profile failed");
         }
         // Try to clone to a fixed profile name
         try {
             certificateProfileSession.cloneCertificateProfile(roleMgmgToken, "TEST2", CertificateProfile.ENDUSERPROFILENAME, null);
-            assertTrue("Cloning Certificate Profile failed", false);
+            fail("Cloning Certificate Profile failed");
         } catch (CertificateProfileExistsException pee) {
         }
         // Try to clone a non existing profile
         try {
             certificateProfileSession.cloneCertificateProfile(roleMgmgToken, "TEST127547483448fff", "TEST6", null);
-            assertTrue("Cloning Certificate Profile failed", false);
+            fail("Cloning Certificate Profile failed");
         } catch (CertificateProfileDoesNotExistException pne) {
         }
     }
