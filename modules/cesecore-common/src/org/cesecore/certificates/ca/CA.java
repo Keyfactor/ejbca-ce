@@ -382,19 +382,6 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         }
         return caToken;
     }
-    /** Method that checks if an array contains a string, ignoring case 
-     * @param l array that we hope contains the string s (ignoring case)
-     * @param s string that we hope is in the array l (ignoring case)
-     * @return true if the string (ignoring case) is contained in the array
-     */
-    boolean containsCaseInsensitive(String[] l, String s){
-        for (String string : l){
-           if (string.equalsIgnoreCase(s)){
-               return true;
-            }
-        }
-       return false;
-     }
 
     /** Sets the CA token. */
     public void setCAToken(CAToken catoken) throws InvalidAlgorithmException {
@@ -402,14 +389,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     	// things like a NulLCryptoToken does not have signature algorithms
     	final String sigAlg = catoken.getSignatureAlgorithm();
     	if (StringUtils.isNotEmpty(sigAlg)) {
-            if (!containsCaseInsensitive(AlgorithmConstants.AVAILABLE_SIGALGS, sigAlg)) {
+            if (!StringTools.containsCaseInsensitive(AlgorithmConstants.AVAILABLE_SIGALGS, sigAlg)) {
                 final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", sigAlg, ArrayUtils.toString(AlgorithmConstants.AVAILABLE_SIGALGS));
                 throw new InvalidAlgorithmException(msg);        	
             }    		
     	}
     	final String encAlg = catoken.getEncryptionAlgorithm();
     	if (StringUtils.isNotEmpty(encAlg)) {
-    		if (!containsCaseInsensitive(AlgorithmConstants.AVAILABLE_SIGALGS, encAlg)) {
+    		if (!StringTools.containsCaseInsensitive(AlgorithmConstants.AVAILABLE_SIGALGS, encAlg)) {
     			final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", encAlg, ArrayUtils.toString(AlgorithmConstants.AVAILABLE_SIGALGS));
     			throw new InvalidAlgorithmException(msg);        	
     		}
