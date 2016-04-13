@@ -450,7 +450,14 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      */
     public String getRAEEProfile(String alias) {
         String key = alias + "." + CONFIG_RA_ENDENTITYPROFILEID;
-        return getValue(key, alias);
+        //Lazy initialization for upgraded values that didn't have this field set.
+        String value = getValue(key, alias);
+        if (!data.containsKey(key) || value == null) {
+            //Lazy initialization for upgrade
+            data.put(key, DEFAULT_RA_EEPROFILE);
+            value = DEFAULT_RA_EEPROFILE;
+        }
+        return value;
     }
   
     public void setRAEEProfile(String alias, String eep) {
