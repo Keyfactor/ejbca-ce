@@ -1426,7 +1426,12 @@ passed as 'otherData'.
 </p><p>
 In the Admin GUI under "CMP Configuration", set "Certificate Request Handler Class" to the name of the plug-in class to enable it. You may then add 
 additional properties that you can use in your implementation.
-</p><p>
+</p>
+<note>
+<p>Please note that setting up CMP to use Unid was only possible prior to EJBCA 6.0.0, and after that only legacy setups were supported. As of 6.5.1,
+ legacy aliases set up using the below method are no longer supported, but this will be reimplemented in the future.</p>
+</note>
+<p>
 In EJBCA there is already an implementation included. This implementation writes to the unid-fnr DB (see separate <a href="unid.html">unid document</a>). 
 To activate this plug-in just set the following configurations:
 </p>
