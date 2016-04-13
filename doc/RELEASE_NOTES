@@ -1,8 +1,20 @@
 EJBCA 6.5.1
 -----------
 
-In EJBCA 6.5.1 the optional Nonce sent in OCSP requests have been limited to 32 bytes to counter potential future issues. 
-Now a request containing a Nonce larger than 32 bytes will result in an error returned from the OCSP server.
+CMP:
+	- Due to a change in how End Entity Profile references to CMP aliases are saved, the deprecated method of setting the EEP to "KeyID" to support
+	  CMP Unid (which hasn't been possible since 6.0.0) is no longer supported.  
+OCSP:
+	- The optional Nonce sent in OCSP requests have been limited to 32 bytes to counter potential future issues. Now a request 
+	  containing a Nonce larger than 32 bytes will result in an error returned from the OCSP server.
+
+Read the full change log for details, and see the UPGRADE document for all functionality changes and upgrade instructions.
+
+-  A selection of known issues:
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*	End entity profiles can't be deleted in high volume databases: https://jira.primekey.se/browse/ECA-4158
+	* 	Some ECDSA key specifiers missing in drop down menu for crypto tokens using PKCS#11 after JDK update: https://jira.primekey.se/browse/ECA-4251	
+    *	Race condition when multiple RA threads are requesting certificates for the same user: https://jira.primekey.se/browse/ECA-4347
 
 EJBCA 6.5.0
 -----------
