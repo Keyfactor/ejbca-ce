@@ -31,11 +31,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
-import org.ejbca.core.model.era.RaMasterApi;
-import org.ejbca.core.model.era.RaMasterApiProxy;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
@@ -60,10 +60,11 @@ public class RaCertDistServlet extends HttpServlet {
     private static final String PARAMETER_CHAIN = "chain";
 
     @EJB
+    private RaMasterApiProxyBeanLocal raMasterApi;
+    @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
 
     private RaAuthenticationHelper raAuthenticationHelper = null;
-    private RaMasterApi raMasterApi = new RaMasterApiProxy();
 
     @Override
     protected void service(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) throws ServletException, IOException {
@@ -76,7 +77,11 @@ public class RaCertDistServlet extends HttpServlet {
             List<Certificate> chain = null;
             try {
                 final int caId = Integer.valueOf(httpServletRequest.getParameter(PARAMETER_CAID));
-                final List<CAInfo> caInfos = raMasterApi.getAuthorizedCas(raAuthenticationHelper.getAuthenticationToken(httpServletRequest));
+                final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest);
+                final List<CAInfo> caInfos = raMasterApi.getAuthorizedCas(authenticationToken);
+                if (log.isDebugEnabled()) {
+                    log.debug(authenticationToken.toString() + " was authorized to " + caInfos.size() + " CAs.");
+                }
                 for (final CAInfo caInfo : caInfos) {
                     if (caId == caInfo.getCAId()) {
                         chain = new ArrayList<>(caInfo.getCertificateChain());

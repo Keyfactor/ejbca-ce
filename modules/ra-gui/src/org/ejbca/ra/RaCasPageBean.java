@@ -34,6 +34,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 /**
  * Backing bean for Certificate and CRLs download page. 
@@ -80,9 +81,10 @@ public class RaCasPageBean implements Serializable {
     private static final String RFC4387_DEFAULT_EJBCA_URL = "/ejbca/publicweb/crls/search.cgi";
     private static final int NO_CAID_AVAILABLE = 0;
 
-    @ManagedProperty(value="#{raMasterApiBean}")
-    private RaMasterApiBean raMasterApiBean;
-    public void setRaMasterApiBean(final RaMasterApiBean raMasterApiBean) { this.raMasterApiBean = raMasterApiBean; }
+    @EJB
+    private CrlStoreSessionLocal crlSession;
+    @EJB
+    private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
     @ManagedProperty(value="#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
@@ -91,9 +93,6 @@ public class RaCasPageBean implements Serializable {
     @ManagedProperty(value="#{raLocaleBean}")
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
-
-    @EJB
-    private CrlStoreSessionLocal crlSession;
 
     private List<CaAndCrl> casAndCrlItems = null;
     private boolean atLeastOneCrlLinkPresent = false;
@@ -107,7 +106,7 @@ public class RaCasPageBean implements Serializable {
     /** @return a list of all known authorized CAs with links to CRLs (if present) */
     public List<CaAndCrl> getCasAndCrlItems() {
         if (casAndCrlItems==null) {
-            final List<CAInfo> caInfos = new ArrayList<>(raMasterApiBean.getAuthorizedCas(raAuthenticationBean.getAuthenticationToken()));
+            final List<CAInfo> caInfos = new ArrayList<>(raMasterApiProxyBean.getAuthorizedCas(raAuthenticationBean.getAuthenticationToken()));
             // First build a mapping of all subjects and their short names
             final Map<String,String> caSubjectToNameMap = new HashMap<>();
             for (final CAInfo caInfo : caInfos) {
