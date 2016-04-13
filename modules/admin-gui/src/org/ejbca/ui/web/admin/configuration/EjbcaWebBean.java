@@ -704,11 +704,20 @@ public class EjbcaWebBean implements Serializable {
         informationmemory.systemConfigurationEdited(globalconfiguration);
     }
 
+    /**
+     * Save the given CMP configuration.
+     * 
+     * @param cmpconfiguration A CMPConfiguration
+     * @throws AuthorizationDeniedException if the current admin doesn't have access to global configurations
+     */
     public void saveCmpConfiguration(CmpConfiguration cmpconfiguration) throws AuthorizationDeniedException {
         this.cmpconfiguration = cmpconfiguration;
         globalConfigurationSession.saveConfiguration(administrator, cmpconfiguration);
     }
 
+    /**
+     * Reload the current configuration from the database.
+     */
     public void reloadCmpConfiguration() {
         cmpconfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
@@ -979,6 +988,13 @@ public class EjbcaWebBean implements Serializable {
         return clearCmpConfigurationFromUnauthorizedAliases(cmpconfiguration);
     }
 
+    /** 
+     * Returns a clone of the current CMPConfiguration containing only the given alias. Also caches the clone locally. 
+     * 
+     * @param alias a CMP config alias
+     * @return a clone of the current CMPConfiguration containing only the given alias. Will return an alias with only default values if the CmpConfiguration doesn't
+     *          contain that alias.
+     */
     public CmpConfiguration getCmpConfigForEdit(String alias) {
         if (cmpConfigForEdit != null) {
             return cmpConfigForEdit;
@@ -994,6 +1010,12 @@ public class EjbcaWebBean implements Serializable {
         return cmpConfigForEdit;
     }
     
+    /**
+     * Merges together an alias from the editing clone into the proper configuration cache and saves it to the database.
+     * 
+     * @param alias a CMP config alias. 
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
     public void updateCmpConfigFromClone(String alias) throws AuthorizationDeniedException {
         if (cmpconfiguration.aliasExists(alias) && cmpConfigForEdit.aliasExists(alias)) {
             for(String key : CmpConfiguration.getAllAliasKeys(alias)) {
@@ -1004,22 +1026,47 @@ public class EjbcaWebBean implements Serializable {
         saveCmpConfiguration(cmpconfiguration);
     }
 
+    /**
+     * Adds an alias to the database.
+     * 
+     * @param alias the name of a CMP alias. 
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
     public void addCmpAlias(final String alias) throws AuthorizationDeniedException {
         cmpconfiguration.addAlias(alias);
         saveCmpConfiguration(cmpconfiguration);
     }
     
+    /**
+     * Makes a copy of a given alias
+     * 
+     * @param oldName the name of the alias to copy
+     * @param newName the name of the new alias
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
     public void cloneCmpAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
         cmpconfiguration.cloneAlias(oldName, newName);
         saveCmpConfiguration(cmpconfiguration);
     }
     
+    /**
+     * Deletes a CMP alias from the database.
+     * 
+     * @param alias the name of the alias to delete.
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
     public void removeCmpAlias(final String alias) throws AuthorizationDeniedException {
         cmpconfiguration.removeAlias(alias);
         saveCmpConfiguration(cmpconfiguration);
     }
     
-
+    /**
+     * Renames a CMP alias
+     * 
+     * @param oldName the old alias name
+     * @param newName the new alias name
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
     public void renameCmpAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
         cmpconfiguration.renameAlias(oldName, newName);
         saveCmpConfiguration(cmpconfiguration);
