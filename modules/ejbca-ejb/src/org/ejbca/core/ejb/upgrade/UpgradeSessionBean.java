@@ -364,6 +364,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastUpgradedToVersion("6.5.1");
         }
+        if (isLesserThan(oldVersion, "6.6.0")) {
+            try {
+                upgradeSession.migrateDatabase660();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("6.6.0");
+        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
