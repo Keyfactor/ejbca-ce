@@ -105,7 +105,7 @@ public class CertificateProfileSessionTest extends RoleUsingTestCase {
             int id1 = certificateProfileSession.getCertificateProfileId("TEST");
             assertEquals(id, id1);
         } catch (CertificateProfileExistsException pee) {
-        	assertTrue("Should not throw", false);
+        	fail("Should not throw");
         }
         
         // Try to add a certificate profile with specified id
@@ -115,27 +115,27 @@ public class CertificateProfileSessionTest extends RoleUsingTestCase {
             int id1 = certificateProfileSession.getCertificateProfileId("TEST3");
             assertEquals(id, id1);
         } catch (CertificateProfileExistsException pee) {
-        	assertTrue("Should not throw", false);
+            fail("Should not throw");
         }
         // Try to add a certificate profile with same name
         try {
             CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             certificateProfileSession.addCertificateProfile(roleMgmgToken, 9999998, "TEST3", profile);
-        	assertTrue("Should not work", false);
+            fail("Should not work");
         } catch (CertificateProfileExistsException pee) {
         }
         // Try to add a certificate profile with same id
         try {
             CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             certificateProfileSession.addCertificateProfile(roleMgmgToken, 999999, "TEST4", profile);
-        	assertTrue("Should not work", false);
+            fail("Should not work");
         } catch (CertificateProfileExistsException pee) {
         }
         // Try to add a certificate profile with fixed name
         try {
             CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             certificateProfileSession.addCertificateProfile(roleMgmgToken, CertificateProfile.ENDUSERPROFILENAME, profile);
-        	assertTrue("Should not work", false);
+            fail("Should not work");
         } catch (CertificateProfileExistsException pee) {
         }
     }
@@ -152,7 +152,7 @@ public class CertificateProfileSessionTest extends RoleUsingTestCase {
             CertificateProfile cp = certificateProfileSession.getCertificateProfile("TEST2");
             assertNotNull(cp);
         } catch (CertificateProfileExistsException pee) {
-        	assertTrue(pee.getMessage(), false);
+            fail(pee.getMessage());
         }
     }
 
