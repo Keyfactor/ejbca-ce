@@ -132,8 +132,7 @@ public class ProfilesExportServlet extends HttpServlet {
             if (globaConfiguration.getIssueHardwareTokens()) {
                 certificateProfileTypes.add(CertificateConstants.CERTTYPE_HARDTOKEN);
             }
-            
-            
+                     
             Collection<Integer> certprofids = new HashSet<>();
             for(Integer certificateProfileType : certificateProfileTypes) {
                 certprofids.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, certificateProfileType));
