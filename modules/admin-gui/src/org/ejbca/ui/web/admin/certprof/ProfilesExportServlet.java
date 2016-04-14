@@ -134,7 +134,7 @@ public class ProfilesExportServlet extends HttpServlet {
             }
             
             
-            Collection<Integer> certprofids = new ArrayList<>();
+            Collection<Integer> certprofids = new HashSet<>();
             for(Integer certificateProfileType : certificateProfileTypes) {
                 certprofids.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, certificateProfileType));
             }
