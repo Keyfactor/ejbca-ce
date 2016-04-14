@@ -169,8 +169,8 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
             log.trace(">saveDefaultAdminPreference()");
         }
 
-        if (!accessControlSession.isAuthorized(admin, StandardRules.ROLE_ROOT.resource())) {
-            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.ROLE_ROOT, null);
+        if (!accessControlSession.isAuthorized(admin, StandardRules.SYSTEMCONFIGURATION_EDIT.resource())) {
+            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.SYSTEMCONFIGURATION_EDIT, null);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.RA_DEFAULTADMINPREF, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA,

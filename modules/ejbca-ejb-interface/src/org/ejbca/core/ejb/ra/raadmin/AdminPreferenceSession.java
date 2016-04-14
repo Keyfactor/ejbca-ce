@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ra.raadmin;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
 /** Session bean to handle admin preference administration
@@ -83,7 +82,7 @@ public interface AdminPreferenceSession {
     /** Function that saves the default admin preference. 
      * @param admin An {@link AuthenticationToken} for authorization.
      * @param adminpreference The {@link AdminPreference} to save as default.
-     * @throws AuthorizationDeniedException if the local {@link AuthenticationToken} wasn't authorized to {@link AccessRulesConstants}.ROLE_ROOT
+     * @throws AuthorizationDeniedException if the local {@link AuthenticationToken} wasn't authorized to /system_functionality/edit_systemconfiguration
      */
     void saveDefaultAdminPreference(AuthenticationToken admin, AdminPreference defaultadminpreference) throws AuthorizationDeniedException;
 
