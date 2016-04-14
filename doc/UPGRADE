@@ -34,7 +34,7 @@ From EJBCA 6.5.0 to EJBCA 6.5.1
 
 EJBCA 6.5.1 involves two minor change to CMP aliases:
 	1. 	End Entity Profiles (for RA configurations) were referred to by name instead of by ID. Since End Entity Profile Names are both volatile and 
-		not guaranteed unique, this led to issues where renaming a profile could cause an EEP to enter an error state. 6.5.1 will automatically 
+		not guaranteed unique, this led to issues where renaming a profile could cause a CMP alias to enter an error state. 6.5.1 will automatically 
 		convert existing CMP aliases to the new format while preserving the old value for 100% uptime needs. CMP will function, no configuration
 		changes should be made during the upgrade.
 		
