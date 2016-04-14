@@ -1,9 +1,26 @@
 EJBCA 6.5.1
 -----------
+Spring is in the air, and we're busy working on a very exciting new feature to be released with EJBCA 6.6.0 in Q3 of 2016. Meanwhile, we've also
+been hard at work shoring up and fixing bugs in our 6.5 branch, ever intent in making sure that bugs get squashed faster than they can appear. All 
+in all, we've fixed 35 bugs and improvements. 
+
+Administration UI:
+	- Information leakage to the client of preset end entity password was patched up. 
+	- Due to hardening implemented in 6.5.0, CertificatePolicy objects were omitted from being imported with certificate profiles. This has been
+	  rectified. 
+	- Several pages that didn't render correctly in WildFly 10 have been fixed.
+
+CMS:
+	- A regression was fixed in the CmsCaService due to the signing key alias for CA's being changed in EJBCA 6.4.1/6.5.0
 
 CMP:
 	- Due to a change in how End Entity Profile references to CMP aliases are saved, the deprecated method of setting the EEP to "KeyID" to support
 	  CMP Unid (which hasn't been possible since 6.0.0) is no longer supported.  
+
+External RA:
+	- A caching bug in the CMP Proxy was fixed
+	- The CMP Proxy message signer chain and issuer chain were mistakenly implemented as one and the same in 6.5.0.
+
 OCSP:
 	- The optional Nonce sent in OCSP requests have been limited to 32 bytes to counter potential future issues. Now a request 
 	  containing a Nonce larger than 32 bytes will result in an error returned from the OCSP server.
