@@ -1,3 +1,49 @@
+EJBCA 6.5.1, 2016-04-15
+---
+Bug
+    [ECA-4549] - In Basic Access Rules, 'All' is listed last in the list of CAs
+    [ECA-4834] - Security hardening
+    [ECA-4856] - Security Hardening
+    [ECA-4858] - Confusing audit log message when reactivating a crypto token
+    [ECA-4860] - CryptoToken Id not updated when importing a statedump with the merge option
+    [ECA-4862] - CmpMessageHelper.createUnprotectedErrorMessage throws an NPE if a nonce is not included in the CMP message
+    [ECA-4872] - System configuration page broken in WildFly 10
+    [ECA-4882] - CMP Proxy: Message signer chain should have its own configuration key in cmpProxy.properties
+    [ECA-4883] - CMP Proxy: NPE when the right CA certificate is not found
+    [ECA-4884] - Reference to Hudson in code when deploying ant
+    [ECA-4885] - Key recovery requires 'Edit End Entities'-rights
+    [ECA-4889] - Change all references from "Enrolment" to "Enrollment"
+    [ECA-4892] - Clearing caches fails locally if clearing the cache on any clustered nodes fails as well.
+    [ECA-4893] - CMP Proxy: Revocation status cache is read incorrectly
+    [ECA-4923] - ClientToolBox is missing lib/ejbca-ws.jar dependency
+    [ECA-4925] - Old version of cert-cvc still under lib
+    [ECA-4928] - CMP Proxy Servlet doesn't properly handle messages with faulty ASN.1 syntax
+    [ECA-4931] - Minor security issue
+    [ECA-4945] - Edit admin entities broken in WildFly 10
+    [ECA-4955] - CMP Proxy swallows underlying error message when verifying certificate path
+    [ECA-4956] - Regression: Key alias in CMS CA service was changed so it can not be read after upgrade
+    [ECA-4974] - Regression: SecureXMLDecoder doesn't allow import of CertificatePolicy objects 
+    [ECA-4988] - CMP Aliases can't handle that End Entity Profiles are renamed 
+    [ECA-4990] - CMP aliases can't handle CA removal
+    [ECA-4992] - SHA256WithRSAAndMGF1 broken in some cases
+    [ECA-4996] - Editing a CMP configuration while having limited access leads to hidden aliases being deleted
+    
+Improvement
+    [ECA-4673] - Downloading an non-existent delta-CRL on the public web leads to a 404
+    [ECA-4795] - External RA: NPE in external RA gui when externalra-gui.issuerchain points to a non existing file
+    [ECA-4906] - Limit OCSP Nonce to 32 bytes
+    [ECA-4932] - Exclude install properties files from ejbca.ear
+    [ECA-4947] - Resetting an end entity password after key recovery should not require 'Edit End Entities'-rights
+    [ECA-4963] - Certificate Profiles: Keep sorting, but sort default profile types first. 
+    [ECA-4998] - Document that CMP Unid support currently isn't supported
+
+New Feature
+    [ECA-4473] - Shell script for running statedump tool
+
+Task
+    [ECA-4868] - Security Issue
+
+
 EJBCA 6.5.0, 2016-02-29
 ---
 Bug
