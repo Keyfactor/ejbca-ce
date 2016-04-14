@@ -22,6 +22,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -133,7 +134,7 @@ public class ProfilesExportServlet extends HttpServlet {
                 certificateProfileTypes.add(CertificateConstants.CERTTYPE_HARDTOKEN);
             }
                      
-            Collection<Integer> certprofids = new HashSet<>();
+            Collection<Integer> certprofids = new LinkedHashSet<>();
             for(Integer certificateProfileType : certificateProfileTypes) {
                 certprofids.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, certificateProfileType));
             }
