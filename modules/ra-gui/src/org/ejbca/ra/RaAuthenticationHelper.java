@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
@@ -96,7 +98,14 @@ public class RaAuthenticationHelper implements Serializable {
     }
     
     private String getTlsSessionId(final HttpServletRequest httpServletRequest) {
-        final String sslSessionIdServletsStandard = (String)httpServletRequest.getAttribute("javax.servlet.request.ssl_session_id");
+        final String sslSessionIdServletsStandard;
+        final Object sslSessionIdServletsStandardObject = httpServletRequest.getAttribute("javax.servlet.request.ssl_session_id");
+        if (sslSessionIdServletsStandardObject!=null && sslSessionIdServletsStandardObject instanceof byte[]) {
+            // Wildfly 9 stores the TLS sessions as a raw byte array. Convert it to a hex String.
+            sslSessionIdServletsStandard = new String(Hex.encode((byte[]) sslSessionIdServletsStandardObject), StandardCharsets.UTF_8);
+        } else {
+            sslSessionIdServletsStandard = (String) sslSessionIdServletsStandardObject; 
+        }
         final String sslSessionIdJBoss7 = (String)httpServletRequest.getAttribute("javax.servlet.request.ssl_session");
         return sslSessionIdJBoss7==null ? sslSessionIdServletsStandard : sslSessionIdJBoss7;
     }
