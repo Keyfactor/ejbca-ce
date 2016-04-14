@@ -188,12 +188,13 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
 
         try {
             final int origProfileId = getCertificateProfileId(orgname);
-            final CertificateProfile p = getCertificateProfile(origProfileId);
-            if (p == null) {
+            if (origProfileId == 0) {
                 final String msg = INTRES.getLocalizedMessage("store.errorcertprofilenotexist", orgname);
                 LOG.info(msg);
                 throw new CertificateProfileDoesNotExistException(msg);
             }
+            final CertificateProfile p = getCertificateProfile(origProfileId);
+
 
             profile = p.clone();
             if (authorizedCaIds != null) {
