@@ -77,7 +77,7 @@ public class RaCertDistServlet extends HttpServlet {
             List<Certificate> chain = null;
             try {
                 final int caId = Integer.valueOf(httpServletRequest.getParameter(PARAMETER_CAID));
-                final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest);
+                final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
                 final List<CAInfo> caInfos = raMasterApi.getAuthorizedCas(authenticationToken);
                 if (log.isDebugEnabled()) {
                     log.debug(authenticationToken.toString() + " was authorized to " + caInfos.size() + " CAs.");

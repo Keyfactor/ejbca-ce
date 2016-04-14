@@ -19,6 +19,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.log4j.Logger;
@@ -48,12 +49,16 @@ public class RaAuthenticationBean implements Serializable {
         if (raAuthenticationHelper==null) {
             raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession);
         }
-        authenticationToken = raAuthenticationHelper.getAuthenticationToken(getHttpServletRequest());
+        authenticationToken = raAuthenticationHelper.getAuthenticationToken(getHttpServletRequest(), getHttpServletResponse());
         return authenticationToken;
     }
     
     private HttpServletRequest getHttpServletRequest() {
         return (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+    }
+
+    private HttpServletResponse getHttpServletResponse() {
+        return (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
     }
     
     /** Invoked from RaHttpSessionListener when a session expires/is destroyed */

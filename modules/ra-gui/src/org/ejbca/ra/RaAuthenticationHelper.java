@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -40,6 +41,8 @@ public class RaAuthenticationHelper implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final Logger log = Logger.getLogger(RaAuthenticationHelper.class);
+    private static final String HTTP_HEADER_SET_COOKIE = "Set-Cookie";
+    private static final String HTTP_HEADER_X_POWERED_BY = "X-Powered-By";
 
     private final WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
     private AuthenticationToken authenticationToken = null;
@@ -51,7 +54,7 @@ public class RaAuthenticationHelper implements Serializable {
     }
 
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
-    public AuthenticationToken getAuthenticationToken(final HttpServletRequest httpServletRequest) {
+    public AuthenticationToken getAuthenticationToken(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) {
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
         if (authenticationToken==null || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId)) {
             // Set the current TLS session 
@@ -89,7 +92,28 @@ public class RaAuthenticationHelper implements Serializable {
                 authenticationToken = new PublicAccessAuthenticationToken("Public access from " + httpServletRequest.getRemoteAddr());
             }
         }
+        resetUnwantedHttpHeaders(httpServletRequest, httpServletResponse);
         return authenticationToken;
+    }
+    
+    /** Invoke once the session is started to prevent security leak via HTTP headers related. */
+    private void resetUnwantedHttpHeaders(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) {
+        // Ensure that we never send the JSESSIONID over an insecure (HTTP) connection
+        // By default JBoss will send the JSESSIONID cookie over HTTP with the "Secure;" option. Since this is sent in clear from the server to the broswer
+        // it does not really help security much that it is only sent over HTTPS from client to server.
+        if (!httpServletRequest.isSecure() && !StringUtils.isEmpty(httpServletResponse.getHeader(HTTP_HEADER_SET_COOKIE))) {
+            if (log.isDebugEnabled()) {
+                log.debug("Preventing '"+HTTP_HEADER_SET_COOKIE+"' HTTP header on insecure connection with value: " + httpServletResponse.getHeader(HTTP_HEADER_SET_COOKIE));
+            }
+            httpServletResponse.setHeader(HTTP_HEADER_SET_COOKIE, "");
+        }
+        // Prevent sending the the X-Powered-By header e.g. "JSF/2.0"
+        if (!StringUtils.isEmpty(httpServletResponse.getHeader(HTTP_HEADER_X_POWERED_BY))) {
+            if (log.isDebugEnabled()) {
+                log.debug("Preventing '"+HTTP_HEADER_X_POWERED_BY+"' HTTP header with value: " + httpServletResponse.getHeader(HTTP_HEADER_X_POWERED_BY));
+            }
+            httpServletResponse.setHeader(HTTP_HEADER_X_POWERED_BY, "");
+        }
     }
     
     private X509Certificate getClientX509Certificate(final HttpServletRequest httpServletRequest) {
