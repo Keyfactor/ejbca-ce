@@ -106,7 +106,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_RA_USERNAME_GENERATION_POSTFIX = "";
     private static final String DEFAULT_RA_PASSWORD_GENERARION_PARAMS = "random";
     private static final String DEFAULT_RA_ALLOW_CUSTOM_SERNO = "false";
-    private static final String DEFAULT_RA_EEPROFILE = "1";
+    public static final String DEFAULT_RA_EEPROFILE = "1";
     private static final String DEFAULT_RA_CERTPROFILE = "ENDUSER";
     private static final String DEFAULT_RA_CANAME = "ManagementCA";
     private static final String DEFAULT_CLIENT_AUTHENTICATION_MODULE = CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC;
@@ -450,14 +450,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      */
     public String getRAEEProfile(String alias) {
         String key = alias + "." + CONFIG_RA_ENDENTITYPROFILEID;
-        //Lazy initialization for upgraded values that didn't have this field set.
-        String value = getValue(key, alias);
-        if (!data.containsKey(key) || value == null) {
-            //Lazy initialization for upgrade
-            data.put(key, DEFAULT_RA_EEPROFILE);
-            value = DEFAULT_RA_EEPROFILE;
-        }
-        return value;
+        return getValue(key, alias); 
     }
   
     public void setRAEEProfile(String alias, String eep) {

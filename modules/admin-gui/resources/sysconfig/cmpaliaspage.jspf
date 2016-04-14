@@ -474,7 +474,7 @@ function checkallfields() {
           <option <% if("ProfileDefault".equals(defca)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="<%= ejbcawebbean.getText(\"CMPRA_PROFILEDEFAULT\") %>"/></option>
           <% 
           	if(ceep != null) {
-            	for(String caname : ejbcawebbean.getAvailableCAsOfEEProfile(Integer.valueOf(ceep))) {
+            	for(String caname : ejbcawebbean.getAvailableCAsOfEEProfile(ceep)) {
           %>	   <option <% if(caname.equals(defca)){ %> selected <% } %>
                 	  value='<c:out value="<%= caname%>"/>'><c:out value="<%= caname %>"/></option>
           <% 	}
