@@ -90,11 +90,11 @@ public class UpgradeSessionBeanTest {
      * 
      */
     @Test
-    public void testPostUpgradeTo640AuditorRole() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+    public void testUpgradeTo640AuditorRole() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
         //Create a role specifically to test that read only access is given. 
         final String readOnlyRoleName = "ReadOnlyRole"; 
         RoleData readOnlyRole = roleManagementSession.create(alwaysAllowtoken, readOnlyRoleName);
-        List<AccessRuleData> oldAccessRules = new ArrayList<AccessRuleData>();
+        List<AccessRuleData> oldAccessRules = new ArrayList<>();
         oldAccessRules.add(new AccessRuleData(readOnlyRole.getRoleName(), AccessRulesConstants.REGULAR_ACTIVATECA, AccessRuleState.RULE_ACCEPT, false));
         oldAccessRules.add(new AccessRuleData(readOnlyRole.getRoleName(), StandardRules.CAFUNCTIONALITY.resource(), AccessRuleState.RULE_ACCEPT, true));
         oldAccessRules.add(new AccessRuleData(readOnlyRole.getRoleName(), StandardRules.CERTIFICATEPROFILEEDIT.resource(), AccessRuleState.RULE_ACCEPT, false));
@@ -154,19 +154,19 @@ public class UpgradeSessionBeanTest {
     * custom certificate extensions should be added to any role that is already allowed to edit system configurations, but not other roles.
     */
    @Test
-   public void testPostUpgradeTo640EKUAndCustomCertExtensionsAccessRules() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+   public void testUpgradeTo640EKUAndCustomCertExtensionsAccessRules() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
        
        // Add a role whose access rules should change after upgrade
        final String sysConfigRoleName = "SystemConfigRole"; 
        RoleData sysConfigRole  = roleManagementSession.create(alwaysAllowtoken, sysConfigRoleName);
-       List<AccessRuleData> oldSysConfigAccessRules = new ArrayList<AccessRuleData>();
+       List<AccessRuleData> oldSysConfigAccessRules = new ArrayList<>();
        oldSysConfigAccessRules.add(new AccessRuleData(sysConfigRole.getRoleName(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false));
        sysConfigRole = roleManagementSession.addAccessRulesToRole(alwaysAllowtoken, sysConfigRole, oldSysConfigAccessRules);
        
        // Add a role whose access rules should NOT change after upgrade
        final String caAdmRoleName = "CaAdminRole"; 
        RoleData caAdmRole  = roleManagementSession.create(alwaysAllowtoken, caAdmRoleName);
-       List<AccessRuleData> oldCaAdmAccessRules = new ArrayList<AccessRuleData>();
+       List<AccessRuleData> oldCaAdmAccessRules = new ArrayList<>();
        oldCaAdmAccessRules.add(new AccessRuleData(caAdmRole.getRoleName(), StandardRules.CAFUNCTIONALITY.resource(), AccessRuleState.RULE_ACCEPT, true));
        oldCaAdmAccessRules.add(new AccessRuleData(caAdmRole.getRoleName(), StandardRules.CERTIFICATEPROFILEEDIT.resource(), AccessRuleState.RULE_ACCEPT, false));
        oldCaAdmAccessRules.add(new AccessRuleData(caAdmRole.getRoleName(), AccessRulesConstants.REGULAR_EDITPUBLISHER, AccessRuleState.RULE_ACCEPT, false));
@@ -223,6 +223,52 @@ public class UpgradeSessionBeanTest {
        }
    }
    
+   /**
+    * This test checks that an upgrade to 6.6.0 adds view/edit access to approval profiles if you have view/edit access to certificate profiles. 
+    */
+   @Test
+   public void testUpgradeTo660ApprovalRules() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+       final String testRoleName = "TestRole"; 
+       
+       // Test view (auditor) access
+       RoleData testRole = roleManagementSession.create(alwaysAllowtoken, testRoleName);
+       try {
+           List<AccessRuleData> oldAccessRules = new ArrayList<>();
+           oldAccessRules.add(new AccessRuleData(testRole.getRoleName(), StandardRules.CERTIFICATEPROFILEVIEW.resource(), AccessRuleState.RULE_ACCEPT, false));
+           testRole = roleManagementSession.addAccessRulesToRole(alwaysAllowtoken, testRole, oldAccessRules);
+           roleManagementSession.addSubjectsToRole(alwaysAllowtoken, testRole, Arrays.asList(new AccessUserAspectData(testRoleName, 1,
+               X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, "CN=foo")));
+           upgradeSession.upgrade(null, "6.5.1", false);
+           RoleData upgradedRole = roleAccessSession.findRole(testRoleName);
+           assertTrue(
+                   "Role was not upgraded with rule " + StandardRules.APPROVALPROFILEVIEW.resource(),
+                   upgradedRole.getAccessRules().containsValue(
+                               new AccessRuleData(testRoleName, StandardRules.APPROVALPROFILEVIEW.resource(), AccessRuleState.RULE_ACCEPT, false)));
+
+       } finally {
+           roleManagementSession.remove(alwaysAllowtoken, testRoleName);
+       }
+       
+       // Test edit access
+       testRole = roleManagementSession.create(alwaysAllowtoken, testRoleName);
+       try {
+           List<AccessRuleData> oldAccessRules = new ArrayList<>();
+           oldAccessRules.add(new AccessRuleData(testRole.getRoleName(), StandardRules.CERTIFICATEPROFILEEDIT.resource(), AccessRuleState.RULE_ACCEPT, false));
+           testRole = roleManagementSession.addAccessRulesToRole(alwaysAllowtoken, testRole, oldAccessRules);
+           roleManagementSession.addSubjectsToRole(alwaysAllowtoken, testRole, Arrays.asList(new AccessUserAspectData(testRoleName, 1,
+               X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, "CN=foo")));
+           upgradeSession.upgrade(null, "6.5.1", false);
+           RoleData upgradedRole = roleAccessSession.findRole(testRoleName);
+           assertTrue(
+                   "Role was not upgraded with rule " + StandardRules.APPROVALPROFILEEDIT.resource(),
+                   upgradedRole.getAccessRules().containsValue(
+                               new AccessRuleData(testRoleName, StandardRules.APPROVALPROFILEEDIT.resource(), AccessRuleState.RULE_ACCEPT, false)));
+
+       } finally {
+           roleManagementSession.remove(alwaysAllowtoken, testRoleName);
+       }
+   }
+   
    /** Basic test that Statedump defaults to being disabled. The actual upgrade is to be tested manually in ECAQA-82 */
    @SuppressWarnings("unchecked")
    @Test
@@ -270,14 +316,14 @@ public class UpgradeSessionBeanTest {
         RoleData oldAuditor = roleManagementSession.create(alwaysAllowtoken, oldAuditorName);
         RoleData editSystemAdmin = roleManagementSession.create(alwaysAllowtoken, editSystemAdminName);
         try {
-            Set<String> newRules = new HashSet<String>();
+            Set<String> newRules = new HashSet<>();
             newRules.add(StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
             newRules.add(StandardRules.EKUCONFIGURATION_VIEW.resource());
             newRules.add(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource());
             newRules.add(StandardRules.VIEWROLES.resource());
             newRules.add(AccessRulesConstants.REGULAR_VIEWENDENTITY);
             //Create an auditor according to 6.4.0, i.e. ignoring the new rules.
-            List<AccessRuleData> oldAuditorRules = new ArrayList<AccessRuleData>();
+            List<AccessRuleData> oldAuditorRules = new ArrayList<>();
             for (AccessRuleTemplate accessRuleTemplate : DefaultRoles.AUDITOR.getRuleSet()) {
                 if (!newRules.contains(accessRuleTemplate.getAccessRuleName())) {
                     oldAuditorRules.add(new AccessRuleData(oldAuditorName, accessRuleTemplate.getAccessRuleName(), accessRuleTemplate.getState(),
@@ -292,7 +338,7 @@ public class UpgradeSessionBeanTest {
                 }
             }
             //Create an auditor with access to the old edit rules. 
-            List<AccessRuleData> oldEditAdminRules = new ArrayList<AccessRuleData>();
+            List<AccessRuleData> oldEditAdminRules = new ArrayList<>();
             oldEditAdminRules.add(new AccessRuleData(editSystemAdminName, StandardRules.SYSTEMCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false));
             oldEditAdminRules.add(new AccessRuleData(editSystemAdminName, StandardRules.EKUCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false));
             oldEditAdminRules.add(new AccessRuleData(editSystemAdminName, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false));
