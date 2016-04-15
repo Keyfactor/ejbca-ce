@@ -103,7 +103,7 @@
                     </h:panelGrid>
                 </h:column>
             </h:dataTable>
-            <h:outputText value="¹ #{msg.cas_page_link_download_cachain_jks_hint}"/>
+            <h:outputText value="¹ #{msg.cas_page_link_download_cachain_jks_hint}" rendered="#{not empty raCasPageBean.casAndCrlItems}"/>
         </ui:define>
     </ui:composition>
 </html>
