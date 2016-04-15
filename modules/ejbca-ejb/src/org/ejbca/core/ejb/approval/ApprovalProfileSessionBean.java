@@ -194,12 +194,12 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
 
         try {
             final int origProfileId = getApprovalProfileId(orgname);
-            final ApprovalProfile p = getApprovalProfile(origProfileId);
-            if (p == null) {
+            if (origProfileId == 0) {
                 final String msg = INTRES.getLocalizedMessage("store.errorprofilenotexist", orgname);
                 LOG.info(msg);
                 throw new ApprovalProfileDoesNotExistException(msg);
             }
+            final ApprovalProfile p = getApprovalProfile(origProfileId);
 
             profile = p.clone();
 
