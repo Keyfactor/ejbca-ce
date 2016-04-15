@@ -23,6 +23,62 @@
   </p>
   </section>
 
+<section name="Concepts and Terminology">
+<p>Some general PKI concepts and EJBCA terminology that is good to know. Technical details can be found in the Admin and User Guides.</p>
+
+<subsection name="General concepts">
+<p>
+<strong>Certification Authority (CA)</strong>
+<br/>
+A CA issues certificates to entities (users, servers, things), and vouches for the authenticity of the information in the certificate. The level of trust you can assign to a CA is individual, per CA, and depends on the CA's policy and operations.
+</p>
+<p>
+<strong>RootCA</strong>
+<br/>
+A RootCA has a self-signed certificate and is also called Trusted Root. Verification of other certificates in the PKI ends with the RootCA's self-signed certificate. Since the RootCA's certificate is self-signed it must be configured as a trusted root with clients in the PKI.
+</p>
+<p>
+<strong>SubCA</strong>
+<br/>
+A subordinate CA, or SubCA for short, is a CA whose certificate is signed by another CA, that can be another SubCA or a RootCA. Since the SubCA's certificate is signed by another CA, it does not have to be configured as a trusted root. It is part of a certificate chain that ends in the RootCA.
+</p>
+<p>
+<strong>Registration Authority (RA)</strong>
+<br/>
+An RA is an administrative function that registers entities in the PKI. The RA is trusted to identify and authenticate entities according to the CA's policy. There can be one or more RAs connected to each CA in the PKI.
+</p>
+<p>
+<strong>End Entity</strong>
+<br/>
+An end entity is a user, an e-mail client, a web server, a web browser, a VPN-gateway, a car etc. End Entities use certificates to authenticate and protect data and communication, but are not allowed to issue certificates to other entities.
+</p>
+</subsection>
+<subsection name="EJBCA specific concepts">
+<p>
+<strong>Certificate Profile</strong>
+<br/>
+A certificate profile determines non user specific content of certificates. The largest part is extensions and here you decide if a specific extension is present and whether it is critical or not. Some extensions are populated with a value, where it is the same value for all certificates such as CRLDistributionPoint. For other extensions only the presence is determined, where the value is user specific such as Subject Alternative Name. Certificate Profiles also specify if certificates will be published and with which publisher.
+</p>
+<p>
+<strong>End Entity Profile</strong>
+<br/>
+End Entity Profiles determine what data can or must be present for users registered with this profile. Some values can be pre-determined such as the organization (O) in the subject DN.
+When adding a user in the PKI, the user must be connected with an end entity profile. The end entity profile specifies one or more certificate profiles used when generating certificates.
+</p>
+<p>
+<strong>Publishers</strong>
+<br/>
+A publisher stores issued certificates to an external location, such as an LDAP directory, a legacy database etc. EJBCA has implemented support for several standard locations, but also have a plug-in API for custom publishers.
+</p>
+<p>
+<strong>External RA</strong>
+<br/>
+In some cases, for security reasons, is it preferable to deny all inbound traffic to the CA and instead let the CA periodically fetch and process information from external RA data sources. For this reason there is a feature in EJBCA Enterprise called External RA.
+</p>
+</subsection>
+
+</section>
+
 </body>
 </document>
 
