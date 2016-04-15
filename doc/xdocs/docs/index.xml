@@ -76,7 +76,7 @@ A publisher stores issued certificates to an external location, such as an LDAP 
 In some cases, for security reasons, is it preferable to deny all inbound traffic to the CA and instead let the CA periodically fetch and process information from external RA data sources. For this reason there is a feature in EJBCA Enterprise called External RA.
 </p>
 </subsection>
-
+<br/>
 </section>
 
 </body>
