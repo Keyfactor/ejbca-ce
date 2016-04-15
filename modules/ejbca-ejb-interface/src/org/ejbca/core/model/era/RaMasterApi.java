@@ -19,6 +19,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.ejbca.core.EjbcaException;
 
 /**
@@ -39,6 +40,13 @@ public interface RaMasterApi {
 
     /** @return a list with information about non-external CAs that the caller is authorized to see. */
     List<CAInfo> getAuthorizedCas(AuthenticationToken authenticationToken);
+
+    /** @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise*/
+    CertificateDataWrapper searchForCertificate(AuthenticationToken authenticationToken, String fingerprint);
+
+    /** @return list of certificates from the specified search criteria*/
+    @Deprecated // NOTE: This is not final version. This needs to support db agnostic pagination
+    List<CertificateDataWrapper> searchForCertificates(AuthenticationToken authenticationToken, List<Integer> caIds);
 
     @Deprecated // PoC. Remove when we have real functions to invoke.
     String testCall(AuthenticationToken authenticationToken, String argument1, int argument2) throws AuthorizationDeniedException, EjbcaException;

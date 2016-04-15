@@ -36,6 +36,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.ejbca.core.EjbcaException;
 
 /**
@@ -171,6 +172,39 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return ret;
+    }
+
+    @Override
+    public CertificateDataWrapper searchForCertificate(final AuthenticationToken authenticationToken, final String fingerprint) {
+        CertificateDataWrapper ret = null;
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    ret = raMasterApi.searchForCertificate(authenticationToken, fingerprint);
+                    if (ret!=null) {
+                        break;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public List<CertificateDataWrapper> searchForCertificates(final AuthenticationToken authenticationToken, final List<Integer> caIds) {
+        final List<CertificateDataWrapper> result = new ArrayList<>();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    result.addAll(raMasterApi.searchForCertificates(authenticationToken, caIds));
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return result;
     }
 
     @Override
