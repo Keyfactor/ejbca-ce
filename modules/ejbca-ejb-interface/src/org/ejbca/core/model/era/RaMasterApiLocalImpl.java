@@ -14,6 +14,7 @@ package org.ejbca.core.model.era;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -26,6 +27,8 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
@@ -42,14 +45,16 @@ public class RaMasterApiLocalImpl implements RaMasterApi {
 
     private final AccessControlSessionLocal accessControlSession;
     private final CaSessionLocal caSession;
+    private final CertificateStoreSessionLocal certificateStoreSession;
     private final EndEntityAccessSessionLocal endEntityAccessSession;
     private Boolean backendAvailable = null;
     
     public RaMasterApiLocalImpl() {
         final EjbLocalHelper ejb = new EjbLocalHelper();
         accessControlSession = ejb.getAccessControlSession();
-        endEntityAccessSession = ejb.getEndEntityAccessSession();
         caSession = ejb.getCaSession();
+        certificateStoreSession = ejb.getCertificateStoreSession();
+        endEntityAccessSession = ejb.getEndEntityAccessSession();
     }
 
     @Override
@@ -95,6 +100,42 @@ public class RaMasterApiLocalImpl implements RaMasterApi {
     @Override
     public List<CAInfo> getAuthorizedCas(AuthenticationToken authenticationToken) {
         return caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
+    }
+
+    @Override
+    public CertificateDataWrapper searchForCertificate(final AuthenticationToken authenticationToken, final String fingerprint) {
+        final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(fingerprint);
+        if (cdw==null) {
+            return null;
+        }
+        if (!caSession.authorizedToCANoLogging(authenticationToken, cdw.getCertificateData().getIssuerDN().hashCode())) {
+            return null;
+        }
+        // TODO: Check EEP authorization once this is implemented
+        return cdw;
+    }
+
+    @Override
+    public List<CertificateDataWrapper> searchForCertificates(AuthenticationToken authenticationToken, List<Integer> caIds) {
+        final List<Integer> authorizedLocalCaIds = new ArrayList<>(caSession.getAuthorizedCaIds(authenticationToken));
+        authorizedLocalCaIds.retainAll(caIds);
+        List<CertificateDataWrapper> ret = new ArrayList<>();
+        // TODO: Proper critera builder with sanity checking and result object that be used for additional paginated requests
+        for (final int caId : authorizedLocalCaIds) {
+            try {
+                final Collection<String> fingerprints = certificateStoreSession.listAllCertificates(caSession.getCAInfoInternal(caId).getSubjectDN());
+                for (final String fingerprint : fingerprints) {
+                    ret.add(certificateStoreSession.getCertificateData(fingerprint));
+                    if (ret.size()>1000) {
+                        log.info("DEVELOP Temporary search algorithm returned more the hard coded limit of entries.");
+                        return ret;
+                    }
+                }
+            } catch (CADoesntExistsException e) {
+                log.warn("CA went missing during search operation. " + e.getMessage());
+            }
+        }
+        return ret;
     }
 
     @Override

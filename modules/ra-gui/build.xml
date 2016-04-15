@@ -13,6 +13,7 @@
 
 	<path id="compile.classpath">
 		<path refid="lib.ejbca-common-web.classpath"/>
+		<path location="${mod.cesecore-entity.lib}"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.servlet.classpath"/>

@@ -18,6 +18,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -159,11 +161,30 @@ public class RaCertDistServlet extends HttpServlet {
                 }
             }
         } else if (httpServletRequest.getParameter(PARAMETER_FINGERPRINT) != null) {
-            // Placeholder for serving regular leaf certificate (optionally with full chain) 
-            if (fullChain) {
-                
-            } else {
-                
+            final String fingerprint = httpServletRequest.getParameter(PARAMETER_FINGERPRINT);
+            // Serving regular leaf certificate (optionally with full chain) 
+            final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
+            final List<CAInfo> caInfos = raMasterApi.getAuthorizedCas(authenticationToken);
+            // Only process request if there is a chance the client is authorized to the CA that issued it
+            if (!caInfos.isEmpty()) {
+                final CertificateDataWrapper cdw = raMasterApi.searchForCertificate(authenticationToken, fingerprint);
+                if (cdw!=null) {
+                    for (final CAInfo caInfo : caInfos) {
+                        if (caInfo.getSubjectDN().equals(cdw.getCertificateData().getIssuerDN())) {
+                            List<Certificate> chain = new ArrayList<>();
+                            chain.add(cdw.getCertificate());
+                            if (fullChain) {
+                                chain.addAll(caInfo.getCertificateChain());
+                            }
+                            try {
+                                writeResponseBytes(httpServletResponse, fingerprint + ".pem", "application/octet-stream", CertTools.getPemFromCertificateChain(chain));
+                                return;
+                            } catch (CertificateEncodingException e) {
+                                log.warn("Failed to provide download of certificate with fingerprint " + fingerprint);
+                            }
+                        }
+                    }
+                }
             }
             httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unable to parse " + PARAMETER_FINGERPRINT + " request parameter.");
         } else {
