@@ -43,7 +43,7 @@
                     <h:inputText id="filterUsername" value="#{raSearchCertsBean.filterUsername}">
                         <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.filterAjaxListener}"/>
                     </h:inputText>
-                    <h:commandButton action="#{raSearchCertsBean.actionFilter}" value="#{msg.search_certs_page_action_filter}"/>
+                    <h:commandButton action="#{raSearchCertsBean.actionFilter}" value="#{msg.search_certs_page_action_filter}" styleClass="hideWithJs"/>
                 </h:panelGrid>
 
                 <h:panelGroup id="filteredResults">
