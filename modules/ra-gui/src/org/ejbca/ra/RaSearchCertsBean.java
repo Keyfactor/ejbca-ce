@@ -16,7 +16,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -28,6 +27,8 @@ import javax.faces.model.SelectItem;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.ejbca.core.model.era.RaCertificateSearchRequest;
+import org.ejbca.core.model.era.RaCertificateSearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 /**
@@ -59,6 +60,68 @@ public class RaSearchCertsBean implements Serializable {
     private int criteriaCaId;
     private String filterUsername = "";
 
+    private RaCertificateSearchRequest lastExecutedRequest = new RaCertificateSearchRequest();
+    private RaCertificateSearchResponse lastExecutedResponse = new RaCertificateSearchResponse();
+    private String basicSearch = "";
+    public String getBasicSearch() { return basicSearch; }
+    public void setBasicSearch(final String basicSearch) { this.basicSearch = basicSearch; }
+    
+    public void basicSearchAction() {
+        basicSearchCommon();
+    }
+
+    public void basicSearchAjaxListener(final AjaxBehaviorEvent event) {
+        basicSearchCommon();
+    }
+    
+    public void basicSearchCommon() {
+        // TODO: Have a "current" request object that has functions for comparisons of all values with last request
+        if (!basicSearch.trim().isEmpty() && basicSearch.equals(lastExecutedRequest.getBasicSearch())) {
+            log.info("DEVELOP: Same search. Ignoring.");
+            return;
+        }
+        boolean search = true;
+        if (!basicSearch.trim().isEmpty() && basicSearch.contains(lastExecutedRequest.getBasicSearch())) {
+            // More narrow search → filter and check if there are sufficient results left
+            log.info("DEVELOP: More narrow → filter");
+            basicSearchCommonFilter();
+            // Check if there are sufficient results to fill screen and search for more
+            if (resultsFiltered.size()<20 && lastExecutedResponse.isMightHaveMoreResults()) {
+                log.info("DEVELOP: Trying to load more results since filter left too few results");
+                search = true;
+            } else {
+                search = false;
+            }
+        }
+        if (search) {
+            // Wider search → Query back-end
+            log.info("DEVELOP: Wider → Query");
+            RaCertificateSearchRequest request = new RaCertificateSearchRequest();
+            final List<Integer> caIds = new ArrayList<>(Arrays.asList(new Integer[]{ criteriaCaId }));
+            request.setCaIds(caIds);
+            request.setBasicSearch(basicSearch);
+            lastExecutedResponse = raMasterApiProxyBean.searchForCertificates(raAuthenticationBean.getAuthenticationToken(), request);
+            lastExecutedRequest = request;
+            results.clear();
+            results.addAll(lastExecutedResponse.getCdws());
+            resultsFiltered.clear();
+            resultsFiltered.addAll(results);
+        }
+    }
+
+    private void basicSearchCommonFilter() {
+        resultsFiltered.clear();
+        for (final CertificateDataWrapper cdw : results) {
+            if (!basicSearch.isEmpty() && (
+                    (cdw.getCertificateData().getUsername() == null || !cdw.getCertificateData().getUsername().contains(basicSearch)) &&
+                    (cdw.getCertificateData().getSubjectDN() == null || !cdw.getCertificateData().getSubjectDN().contains(basicSearch)))) {
+                continue;
+            }
+            // if (this or that) { ...
+            resultsFiltered.add(cdw);
+        }
+    }
+
     public int getCriteriaCaId() { return criteriaCaId; }
     public void setCriteriaCaId(int criteriaCaId) { this.criteriaCaId = criteriaCaId; }
 
@@ -82,30 +145,5 @@ public class RaSearchCertsBean implements Serializable {
 
     public List<CertificateDataWrapper> getFilteredResults() {
         return resultsFiltered;
-    }
-
-    public void actionSearch() {
-        final List<Integer> caIds = new ArrayList<>(Arrays.asList(new Integer[]{ criteriaCaId }));
-        results.clear();
-        results.addAll(raMasterApiProxyBean.searchForCertificates(raAuthenticationBean.getAuthenticationToken(), caIds));
-        // Apply default filter
-        actionFilter();
-    }
-
-    public void filterAjaxListener(final AjaxBehaviorEvent event) {
-        actionFilter();
-    }
-    
-    public void actionFilter() {
-        resultsFiltered.clear();
-        final Locale locale = raLocaleBean.getLocale();
-        for (final CertificateDataWrapper cdw : results) {
-            if (!filterUsername.isEmpty() && (cdw.getCertificateData().getUsername() == null ||
-                    !cdw.getCertificateData().getUsername().toLowerCase(locale).contains(filterUsername))) {
-                continue;
-            }
-            // if (this or that) { ...
-            resultsFiltered.add(cdw);
-        }
     }
 }

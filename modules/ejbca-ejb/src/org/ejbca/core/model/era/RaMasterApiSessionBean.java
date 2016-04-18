@@ -19,6 +19,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -32,55 +40,54 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
  * Implementation of the RaMasterApi that invokes functions at the local node.
  * 
  * @version $Id$
  */
-public class RaMasterApiLocalImpl implements RaMasterApi {
+@Stateless//(mappedName = JndiConstants.APP_JNDI_PREFIX + "RaMasterApiSessionRemote")
+@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
-    private static final Logger log = Logger.getLogger(RaMasterApiLocalImpl.class);
+    private static final Logger log = Logger.getLogger(RaMasterApiSessionBean.class);
 
-    private final AccessControlSessionLocal accessControlSession;
-    private final CaSessionLocal caSession;
-    private final CertificateStoreSessionLocal certificateStoreSession;
-    private final EndEntityAccessSessionLocal endEntityAccessSession;
-    private final EndEntityProfileSessionLocal endEntityProfileSession;
-    private Boolean backendAvailable = null;
-    
-    public RaMasterApiLocalImpl() {
-        final EjbLocalHelper ejb = new EjbLocalHelper();
-        accessControlSession = ejb.getAccessControlSession();
-        caSession = ejb.getCaSession();
-        certificateStoreSession = ejb.getCertificateStoreSession();
-        endEntityAccessSession = ejb.getEndEntityAccessSession();
-        endEntityProfileSession = ejb.getEndEntityProfileSession();
-    }
+    @EJB
+    private AccessControlSessionLocal accessControlSession;
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+
+    @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
+    private EntityManager entityManager;
 
     @Override
     public boolean isBackendAvailable() {
-        if (backendAvailable==null) {
-            boolean available = false;
-            for (int caId : caSession.getAllCaIds()) {
-                try {
-                    if (caSession.getCAInfoInternal(caId).getStatus() == CAConstants.CA_ACTIVE) {
-                        available = true;
-                        break;
-                    }
-                } catch (CADoesntExistsException e) {
-                    log.debug("Fail to get existing CA's info. " + e.getMessage());
+        boolean available = false;
+        for (int caId : caSession.getAllCaIds()) {
+            try {
+                if (caSession.getCAInfoInternal(caId).getStatus() == CAConstants.CA_ACTIVE) {
+                    available = true;
+                    break;
                 }
+            } catch (CADoesntExistsException e) {
+                log.debug("Fail to get existing CA's info. " + e.getMessage());
             }
-            backendAvailable = Boolean.valueOf(available);
         }
-        return backendAvailable.booleanValue();
+        return available;
     }
     
     @Override
@@ -122,22 +129,35 @@ public class RaMasterApiLocalImpl implements RaMasterApi {
         return cdw;
     }
 
+
     @Override
-    public List<CertificateDataWrapper> searchForCertificates(AuthenticationToken authenticationToken, List<Integer> caIds) {
+    public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest) {
         final List<Integer> authorizedLocalCaIds = new ArrayList<>(caSession.getAuthorizedCaIds(authenticationToken));
-        authorizedLocalCaIds.retainAll(caIds);
-        List<CertificateDataWrapper> ret = new ArrayList<>();
+        authorizedLocalCaIds.retainAll(raCertificateSearchRequest.getCaIds());
+        RaCertificateSearchResponse ret = new RaCertificateSearchResponse();
         // TODO: Proper critera builder with sanity checking and result object that be used for additional paginated requests
         for (final int caId : authorizedLocalCaIds) {
             try {
-                final Collection<String> fingerprints = certificateStoreSession.listAllCertificates(caSession.getCAInfoInternal(caId).getSubjectDN());
-                for (final String fingerprint : fingerprints) {
-                    ret.add(certificateStoreSession.getCertificateData(fingerprint));
-                    if (ret.size()>1000) {
-                        log.info("DEVELOP Temporary search algorithm returned more the hard coded limit of entries.");
-                        return ret;
-                    }
+                // This method was only used from CertificateDataTest and it didn't care about the expireDate, so it will only select fingerprints now.
+                final String issuerDn = caSession.getCAInfoInternal(caId).getSubjectDN();
+                final String basicSearch = raCertificateSearchRequest.getBasicSearch();
+                final Query query;
+                if (basicSearch.isEmpty()) {
+                    query = entityManager.createQuery("SELECT a.fingerprint FROM CertificateData a WHERE a.issuerDN=:issuerDN");
+                } else {
+                    query = entityManager.createQuery("SELECT a.fingerprint FROM CertificateData a WHERE a.issuerDN=:issuerDN AND "
+                            +"(a.username LIKE :username OR a.subjectDN LIKE :subjectDN)");
+                    query.setParameter("username", "%" + basicSearch + "%");
+                    query.setParameter("subjectDN", "%" + basicSearch + "%");
                 }
+                query.setParameter("issuerDN", CertTools.stringToBCDNString(StringTools.strip(issuerDn)));
+                query.setMaxResults(100);
+                @SuppressWarnings("unchecked")
+                final List<String> fingerprints = query.getResultList();
+                for (final String fingerprint : fingerprints) {
+                    ret.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
+                }
+                ret.setMightHaveMoreResults(fingerprints.size()==100);
             } catch (CADoesntExistsException e) {
                 log.warn("CA went missing during search operation. " + e.getMessage());
             }

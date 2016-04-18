@@ -25,6 +25,7 @@ import javax.annotation.PostConstruct;
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.DependsOn;
+import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
@@ -57,6 +58,10 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     private static final Logger log = Logger.getLogger(RaMasterApiProxyBean.class);
+    
+    @EJB
+    private RaMasterApiSessionLocal raMasterApiSession;
+    
     private RaMasterApi[] raMasterApis = null;
     private RaMasterApi[] raMasterApisLocalFirst = null;
 
@@ -66,36 +71,28 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     /** Constructor for use from JUnit tests */
     public RaMasterApiProxyBean(final RaMasterApi... raMasterApis) {
-        init(raMasterApis);
+        this.raMasterApis = raMasterApis;
+        final List<RaMasterApi> implementations = new ArrayList<RaMasterApi>(Arrays.asList(raMasterApis));
+        Collections.reverse(implementations);
+        this.raMasterApisLocalFirst = implementations.toArray(new RaMasterApi[implementations.size()]);
     }
 
     @PostConstruct
     private void postConstruct() {
-        init();
-    }
-
-    public void init(final RaMasterApi... raMasterApis) {
-        if (raMasterApis.length == 0) {
-            final List<RaMasterApi> implementations = new ArrayList<>();
-            try {
-                // Load peer implementation if available in this version of EJBCA
-                final Class<?> c = Class.forName("org.ejbca.peerconnector.ra.RaMasterApiPeerImpl");
-                implementations.add((RaMasterApi) c.newInstance());
-            } catch (ClassNotFoundException e) {
-                log.debug("RaMasterApi over Peers is not available on this system.");
-            } catch (InstantiationException | IllegalAccessException e) {
-                log.warn("Failed to instantiate RaMasterApi over Peers: " + e.getMessage());
-            }
-            implementations.add(new RaMasterApiLocalImpl());
-            this.raMasterApis = implementations.toArray(new RaMasterApi[implementations.size()]);
-            Collections.reverse(implementations);
-            this.raMasterApisLocalFirst = implementations.toArray(new RaMasterApi[implementations.size()]);
-        } else {
-            this.raMasterApis = raMasterApis;
-            final List<RaMasterApi> implementations = new ArrayList<RaMasterApi>(Arrays.asList(raMasterApis));
-            Collections.reverse(implementations);
-            this.raMasterApisLocalFirst = implementations.toArray(new RaMasterApi[implementations.size()]);
+        final List<RaMasterApi> implementations = new ArrayList<>();
+        try {
+            // Load peer implementation if available in this version of EJBCA
+            final Class<?> c = Class.forName("org.ejbca.peerconnector.ra.RaMasterApiPeerImpl");
+            implementations.add((RaMasterApi) c.newInstance());
+        } catch (ClassNotFoundException e) {
+            log.debug("RaMasterApi over Peers is not available on this system.");
+        } catch (InstantiationException | IllegalAccessException e) {
+            log.warn("Failed to instantiate RaMasterApi over Peers: " + e.getMessage());
         }
+        implementations.add(raMasterApiSession);
+        this.raMasterApis = implementations.toArray(new RaMasterApi[implementations.size()]);
+        Collections.reverse(implementations);
+        this.raMasterApisLocalFirst = implementations.toArray(new RaMasterApi[implementations.size()]);
     }
 
     @Override
@@ -196,19 +193,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return ret;
     }
 
+
     @Override
-    public List<CertificateDataWrapper> searchForCertificates(final AuthenticationToken authenticationToken, final List<Integer> caIds) {
-        final List<CertificateDataWrapper> result = new ArrayList<>();
+    public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest) {
+        final RaCertificateSearchResponse ret = new RaCertificateSearchResponse();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    result.addAll(raMasterApi.searchForCertificates(authenticationToken, caIds));
+                    ret.merge(raMasterApi.searchForCertificates(authenticationToken, raCertificateSearchRequest));
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        return result;
+        return ret;
     }
 
     @Override
