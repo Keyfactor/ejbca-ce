@@ -18,6 +18,7 @@
 // Executed when the document had been loaded
 document.addEventListener("DOMContentLoaded", function(event) {
     console.log("Document loaded.");
+    hideInputElementsByStyleClass("hideWithJs");
     new SessionKeepAlive("sessionKeepAliveLink");
 }, false);
 
@@ -54,3 +55,19 @@ function SessionKeepAlive(linkElementId) {
         console.log("Unable to find link element with id " + linkElementId + ". SessionKeepAlive will not be enabled.");
     }
 };
+
+/** Hide all input elements marked with the styleClassName. */
+function hideInputElementsByStyleClass(styleClassName) {
+	var inputFields = document.getElementsByTagName("input");
+	for (var i = 0; i<inputFields.length; i++) {
+		if (inputFields[i].className) {
+			var styleClasses = inputFields[i].className.split(' ');
+			for (var j = 0; j<styleClasses.length; j++) {
+				if (styleClasses[j]==styleClassName) {
+					inputFields[i].style.display = "none";
+					break;
+				}
+			}
+		}
+	}
+}
