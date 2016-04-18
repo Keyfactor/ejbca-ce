@@ -69,6 +69,7 @@ org.cesecore.keybind.InternalKeyBindingRules
        final String RAEDITUSERDATASOURCES_RESOURCE         = AccessRulesConstants.REGULAR_EDITUSERDATASOURCES;
        final String HTEDITHARDTOKENISSUERS_RESOURCE        = "/hardtoken_functionality/edit_hardtoken_issuers";
        final String HTEDITHARDTOKENPROFILES_RESOURCE       = "/hardtoken_functionality/edit_hardtoken_profiles";
+       final String APPROVALPROFILEVIEW_RESOURCE           = StandardRules.APPROVALPROFILEVIEW.resource();
        final String LOGVIEW_RESOURCE                       = AuditLogRules.VIEW.resource(); 
        final String SYSTEMCONFIGURATION_RESOURCE           = StandardRules.SYSTEMCONFIGURATION_VIEW.resource();
        final String EDITAVAILABLEEKU_RESOURCE			   = StandardRules.EKUCONFIGURATION_VIEW.resource();
@@ -254,9 +255,15 @@ org.cesecore.keybind.InternalKeyBindingRules
 		<li id="cat4" class="section"><strong><%=ejbcawebbean.getText("NAV_SUPERVISIONFUNCTIONS") %></strong>
 			<ul>
 				<li><a href="<%= APPROVAL_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_APPROVEACTIONS") %></a></li>
-<%      } %>
-				<li><a href="<%= APPROVAL_PROFILES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_APPROVALPROFILES") %></a></li>
-<%   
+<%      }
+    // If authorized to view log then display related links.
+      if(ejbcawebbean.isAuthorizedNoLogSilent(APPROVALPROFILEVIEW_RESOURCE)){
+            if(!logheaderprinted){
+              out.write("<li id=\"cat4\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SUPERVISIONFUNCTIONS")+"</strong><ul>"); 
+              logheaderprinted=true;
+            }  %>
+                <li><a href="<%= APPROVAL_PROFILES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_APPROVALPROFILES") %></a></li>
+<%    }
     // If authorized to view log then display related links.
       if(ejbcawebbean.isAuthorizedNoLogSilent(LOGVIEW_RESOURCE)){
             if(!logheaderprinted){
