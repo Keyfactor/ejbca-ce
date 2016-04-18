@@ -15,8 +15,10 @@ package org.ejbca.core.model.era;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -38,6 +40,7 @@ import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
  * Proxy implementation of the the RaMasterApi that will will get the result of the most preferred API implementation
@@ -52,16 +55,17 @@ import org.ejbca.core.EjbcaException;
 @TransactionManagement(TransactionManagementType.BEAN)
 @Lock(LockType.READ)
 public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
-    
+
     private static final Logger log = Logger.getLogger(RaMasterApiProxyBean.class);
     private RaMasterApi[] raMasterApis = null;
     private RaMasterApi[] raMasterApisLocalFirst = null;
-    
+
     /** Default constructor */
-    public RaMasterApiProxyBean() {}
+    public RaMasterApiProxyBean() {
+    }
 
     /** Constructor for use from JUnit tests */
-    public RaMasterApiProxyBean(final RaMasterApi...raMasterApis) {
+    public RaMasterApiProxyBean(final RaMasterApi... raMasterApis) {
         init(raMasterApis);
     }
 
@@ -69,9 +73,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     private void postConstruct() {
         init();
     }
-    
-    public void init(final RaMasterApi...raMasterApis) {
-        if (raMasterApis.length==0) {
+
+    public void init(final RaMasterApi... raMasterApis) {
+        if (raMasterApis.length == 0) {
             final List<RaMasterApi> implementations = new ArrayList<>();
             try {
                 // Load peer implementation if available in this version of EJBCA
@@ -103,7 +107,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return false;
     }
-    
+
     @Override
     public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         AccessSet merged = new AccessSet();
@@ -119,7 +123,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return merged;
     }
-    
+
     @Override
     public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens) {
         final List<AuthenticationToken> tokens = new ArrayList<>(authenticationTokens);
@@ -161,7 +165,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         for (final CAInfo caInfo : caInfos) {
             boolean skip = false;
             for (final CAInfo caInfo2 : ret) {
-                if (caInfo2.getCAId()==caInfo.getCAId()) {
+                if (caInfo2.getCAId() == caInfo.getCAId()) {
                     // Skip object with same CA Id
                     skip = true;
                     break;
@@ -242,7 +246,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (raMasterApi.isBackendAvailable()) {
                 try {
                     final List<String> result = raMasterApi.testCallMerge(authenticationToken, requestData);
-                    if (result!=null) {
+                    if (result != null) {
                         ret.addAll(result);
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
@@ -257,5 +261,23 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public String testCallPreferCache(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException {
         // TODO: Ask module cache, module is responsible for getting bulk of info from master if needed
         return "cached value";
+    }
+
+    @Override
+    public Map<String, EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
+        final Map<String, EndEntityProfile> ret = new HashMap<String, EndEntityProfile>();
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    final Map<String, EndEntityProfile> result = raMasterApi.getAuthorizedEndEntityProfiles(authenticationToken);
+                    if (result != null) {
+                        ret.putAll(result);
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
     }
 }
