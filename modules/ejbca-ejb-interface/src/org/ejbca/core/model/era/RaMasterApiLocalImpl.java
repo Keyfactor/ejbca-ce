@@ -15,7 +15,9 @@ package org.ejbca.core.model.era;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -32,6 +34,9 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
@@ -47,6 +52,7 @@ public class RaMasterApiLocalImpl implements RaMasterApi {
     private final CaSessionLocal caSession;
     private final CertificateStoreSessionLocal certificateStoreSession;
     private final EndEntityAccessSessionLocal endEntityAccessSession;
+    private final EndEntityProfileSessionLocal endEntityProfileSession;
     private Boolean backendAvailable = null;
     
     public RaMasterApiLocalImpl() {
@@ -55,6 +61,7 @@ public class RaMasterApiLocalImpl implements RaMasterApi {
         caSession = ejb.getCaSession();
         certificateStoreSession = ejb.getCertificateStoreSession();
         endEntityAccessSession = ejb.getEndEntityAccessSession();
+        endEntityProfileSession = ejb.getEndEntityProfileSession();
     }
 
     @Override
@@ -163,5 +170,16 @@ public class RaMasterApiLocalImpl implements RaMasterApi {
     @Override
     public String testCallPreferCache(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public final Map<String, EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken){
+        Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY);
+        Map<Integer, String> idToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
+        Map<String, EndEntityProfile> authorizedEndEntityProfiles = new HashMap<String, EndEntityProfile>(ids.size());
+        for(Integer id: ids){
+            authorizedEndEntityProfiles.put(idToNameMap.get(id), endEntityProfileSession.getEndEntityProfile(id));
+        }
+        return authorizedEndEntityProfiles;
     }
 }

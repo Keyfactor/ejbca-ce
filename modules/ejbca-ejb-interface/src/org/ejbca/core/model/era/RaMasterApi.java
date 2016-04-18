@@ -13,6 +13,7 @@
 package org.ejbca.core.model.era;
 
 import java.util.List;
+import java.util.Map;
 
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -21,6 +22,7 @@ import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
  * TODO: Implement with proper methods. Keep in mind that there is latency, so batch things.
@@ -59,4 +61,8 @@ public interface RaMasterApi {
 
     @Deprecated // PoC. Remove when we have real functions to invoke.
     String testCallPreferCache(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException;
+
+    /** @return map of entity profiles authorized to be used where keys are end entity profile names */
+    Map<String, EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException;
+
 }
