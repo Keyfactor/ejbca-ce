@@ -149,11 +149,11 @@
 		  			<h:inputText value="#{approvalProfileMBean.addPropertyMetaData}" title="#{web.text.FORMAT_ID_STR}" size="25" maxlength="255"  rendered="#{!approvalProfilesMBean.viewOnly}"/>
 				</f:facet>
 			</h:column>
-			<h:column headerClass="gridColumn2">
+			<h:column headerClass="gridColumn2" rendered="#{!approvalProfilesMBean.viewOnly}">
 				<f:facet name="header"><h:outputText value="#{web.text.ACTION}"/></f:facet>
 				<h:commandButton value="#{web.text.DELETE}" action="#{approvalProfileMBean.deletePropertyAction}"/>
 				<f:facet name="footer">
-					<h:commandButton value="#{web.text.ADD}" action="#{approvalProfileMBean.addPropertyAction}" rendered="#{!approvalProfilesMBean.viewOnly}"/>
+					<h:commandButton value="#{web.text.ADD}" action="#{approvalProfileMBean.addPropertyAction}"/>
 				</f:facet>
 			</h:column>
 		</h:dataTable>
