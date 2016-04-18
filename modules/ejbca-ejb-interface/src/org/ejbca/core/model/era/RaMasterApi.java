@@ -47,8 +47,7 @@ public interface RaMasterApi {
     CertificateDataWrapper searchForCertificate(AuthenticationToken authenticationToken, String fingerprint);
 
     /** @return list of certificates from the specified search criteria*/
-    @Deprecated // NOTE: This is not final version. This needs to support db agnostic pagination
-    List<CertificateDataWrapper> searchForCertificates(AuthenticationToken authenticationToken, List<Integer> caIds);
+    RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest);
 
     @Deprecated // PoC. Remove when we have real functions to invoke.
     String testCall(AuthenticationToken authenticationToken, String argument1, int argument2) throws AuthorizationDeniedException, EjbcaException;

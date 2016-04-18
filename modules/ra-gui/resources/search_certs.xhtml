@@ -30,21 +30,22 @@
         <ui:define name="content">
             <h2 class="content-body-subhead"><h:outputText value="#{msg.search_certs_page_title}"/></h2>
             <h:form id="contentForm">
-                <h:panelGrid columns="2">
-                    <h:outputLabel for="caCriteria" value="#{msg.search_certs_page_criteria_ca}"/>
-                    <h:selectOneMenu id="caCriteria" value="#{raSearchCertsBean.criteriaCaId}">
-                        <f:selectItems value="#{raSearchCertsBean.availableCas}"/>
-                    </h:selectOneMenu>
-                    <h:commandButton action="#{raSearchCertsBean.actionSearch}" value="#{msg.search_certs_page_action_search}"/>
-                </h:panelGrid>
-    
-                <h:panelGrid columns="2" rendered="#{not empty raSearchCertsBean.searchResults}">
-                    <h:outputLabel for="filterUsername" value="#{msg.search_certs_page_filter_username}"/>
-                    <h:inputText id="filterUsername" value="#{raSearchCertsBean.filterUsername}">
-                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.filterAjaxListener}"/>
-                    </h:inputText>
-                    <h:commandButton action="#{raSearchCertsBean.actionFilter}" value="#{msg.search_certs_page_action_filter}" styleClass="hideWithJs"/>
-                </h:panelGrid>
+                <h:panelGroup id="basic">
+                    <h:panelGrid columns="2">
+                        <h:outputLabel for="basicSearch" value="#{msg.search_certs_page_basic_search_label}"/>
+                        <h:inputText id="basicSearch" value="#{raSearchCertsBean.basicSearch}">
+                            <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.basicSearchAjaxListener}"/>
+                        </h:inputText>
+
+                        <h:outputLabel for="caCriteria" value="#{msg.search_certs_page_criteria_ca}"/>
+                        <h:selectOneMenu id="caCriteria" value="#{raSearchCertsBean.criteriaCaId}">
+                            <f:selectItems value="#{raSearchCertsBean.availableCas}"/>
+                            <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.basicSearchAjaxListener}"/>
+                        </h:selectOneMenu>
+
+                        <h:commandButton action="#{raSearchCertsBean.basicSearchAction}" value="#{msg.search_certs_page_basic_search_command}" styleClass="hideWithJs"/>
+                    </h:panelGrid>
+                </h:panelGroup>
 
                 <h:panelGroup id="filteredResults">
                     <h:outputText rendered="#{empty raSearchCertsBean.filteredResults}" value="#{msg.search_certs_page_info_noresult}"/>
