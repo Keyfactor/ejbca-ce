@@ -28,22 +28,45 @@
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
 	<ui:define name="content">
-		<h:form id="submitEEPForm">
-			<h:panelGrid columns="2">
+		<h:form id="enrollMakeNewRequestForm">
+			<h:panelGrid id="enrollMain" columns="2">
 				<h:outputText value="#{msg.enroll_certificate_type}" />
 				<h:selectOneMenu id="selectEEPOneMenu"
-					value="#{enrollMakeNewRequestBean.selectedEndEntityProfile}">
+					value="#{enrollMakeNewRequestBean.selectedEndEntityProfile}"
+					valueChangeListener="#{enrollMakeNewRequestBean.endEntityProfileChangedListener}">
 					<f:selectItems
 						value="#{enrollMakeNewRequestBean.authorizedEndEntityProfiles.keySet()}"></f:selectItems>
-					<f:ajax execute=":submitEEPForm:selectEEPOneMenu" event="change" render=":globalMessages" 
-						listener="#{enrollMakeNewRequestBean.endEntityProfileListener}"/>
+					<f:ajax execute=":enrollMakeNewRequestForm:selectEEPOneMenu"
+						event="change"
+						render=":globalMessages :enrollMakeNewRequestForm"
+						listener="#{enrollMakeNewRequestBean.endEntityProfileListener}" />
+				</h:selectOneMenu>
+			
+				<h:outputText value="#{msg.enroll_keypair_generation}"
+					rendered="#{!enrollMakeNewRequestBean.availableKeyPairGenerations.isEmpty()}" />
+				<h:selectOneMenu id="selectKeyPairGenerationOneMenu"
+					valueChangeListener="#{enrollMakeNewRequestBean.keyPairGenerationChangedListener}"
+					value="#{enrollMakeNewRequestBean.selectedKeyPairGeneration}"
+					rendered="#{!enrollMakeNewRequestBean.availableKeyPairGenerations.isEmpty()}">
+					<f:selectItems
+						value="#{enrollMakeNewRequestBean.availableKeyPairGenerations.keySet()}"></f:selectItems>
+					<f:ajax
+						execute=":enrollMakeNewRequestForm:selectKeyPairGenerationOneMenu"
+						event="change" render=":globalMessages :enrollMakeNewRequestForm"
+						listener="#{enrollMakeNewRequestBean.keyPairGenerationListener}" />
 				</h:selectOneMenu>
 			</h:panelGrid>
-			<noscript>
-				<h:commandButton id="submitEEPButton" value="#{msg.generic_ok}"
-					action="#{enrollMakeNewRequestBean.submitEndEntityProfiles()}">
+
+			<h:panelGroup layout="block">
+				<noscript>
+					<h:commandButton id="nextButton" value="#{msg.generic_next}"
+						action="#{enrollMakeNewRequestBean.next()}">
+					</h:commandButton>
+				</noscript>
+				<h:commandButton id="resetButton" value="#{msg.generic_reset}"
+					action="#{enrollMakeNewRequestBean.reset()}">
 				</h:commandButton>
-			</noscript>
+			</h:panelGroup>
 		</h:form>
 	</ui:define>
 </ui:composition>
