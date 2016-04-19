@@ -12,6 +12,8 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
  * @version $Id$
  */
 public class RaCertificateSearchResponse implements Serializable {
+    
+    // TODO: Make Externalizable instead to handle for future versioning
 
     private static final long serialVersionUID = 1L;
 
