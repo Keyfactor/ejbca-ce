@@ -33,7 +33,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 /**
  * Example of JSF Managed Bean for backing a page. 
  * 
- * @version $Id: EnrollMakeNewRequest.java 23135 2016-04-05 23:05:35Z jeklund $
+ * @version $Id$
  */
 @ManagedBean
 @SessionScoped
