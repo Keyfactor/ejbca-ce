@@ -21,6 +21,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
@@ -64,4 +65,9 @@ public interface RaMasterApi {
     /** @return map of entity profiles authorized to be used where keys are end entity profile names */
     Map<String, EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException;
 
+    /** 
+     * @param certificateProfilesIds string array of certificate profile ids  
+     * @return map of certificate profiles available for selected profile where keys are certificate profiles names 
+     */
+    Map<String, CertificateProfile> getAvailableCertificateProfiles(AuthenticationToken authenticationToken, String[] certificateProfilesIds) throws AuthorizationDeniedException;
 }
