@@ -32,44 +32,64 @@
             <h:form id="contentForm">
                 <h:panelGroup id="basic">
                     <h:panelGrid columns="2">
-                        <h:outputLabel for="basicSearch" value="#{msg.search_certs_page_basic_search_label}"/>
-                        <h:inputText id="basicSearch" value="#{raSearchCertsBean.basicSearch}">
-                            <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.basicSearchAjaxListener}"/>
+                        <h:outputLabel for="genericSearchString" value="#{msg.search_certs_page_criteria_string_label}"/>
+                        <h:inputText id="genericSearchString" value="#{raSearchCertsBean.genericSearchString}">
+                            <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"/>
                         </h:inputText>
 
-                        <h:outputLabel for="caCriteria" value="#{msg.search_certs_page_criteria_ca}"/>
-                        <h:selectOneMenu id="caCriteria" value="#{raSearchCertsBean.criteriaCaId}">
+                        <h:outputLabel for="criteriaCaId" value="#{msg.search_certs_page_criteria_ca}"/>
+                        <h:selectOneMenu id="criteriaCaId" value="#{raSearchCertsBean.criteriaCaId}">
                             <f:selectItems value="#{raSearchCertsBean.availableCas}"/>
-                            <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.basicSearchAjaxListener}"/>
+                            <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"/>
                         </h:selectOneMenu>
 
-                        <h:commandButton action="#{raSearchCertsBean.basicSearchAction}" value="#{msg.search_certs_page_basic_search_command}" styleClass="hideWithJs"/>
+                        <h:outputLabel for="criteriaExcludeExpired" value="#{msg.search_certs_page_criteria_excludeexpired}"/>
+                        <h:selectBooleanCheckbox id="criteriaExcludeExpired" value="#{raSearchCertsBean.criteriaExcludeExpired}">
+                            <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"/>
+                        </h:selectBooleanCheckbox>
+
+                        <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" styleClass="hideWithJs"/>
                     </h:panelGrid>
                 </h:panelGroup>
 
                 <h:panelGroup id="filteredResults">
                     <h:outputText rendered="#{empty raSearchCertsBean.filteredResults}" value="#{msg.search_certs_page_info_noresult}"/>
-                    <h:dataTable rendered="#{not empty raSearchCertsBean.filteredResults}" value="#{raSearchCertsBean.filteredResults}" var="cdw"
+                    <h:outputText rendered="#{raSearchCertsBean.moreResultsAvailable}" value="#{msg.search_certs_page_info_moreresults}"/>
+                    <h:dataTable rendered="#{not empty raSearchCertsBean.filteredResults}" value="#{raSearchCertsBean.filteredResults}" var="raSearchCertificate"
                         styleClass="pure-table" rowClasses=",pure-table-odd">
                         <h:column>
                             <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_username}"/></f:facet>
-                            <h:outputText value="#{cdw.certificateData.username}"/>
+                            <h:outputText value="#{raSearchCertificate.username}"/>
+                        </h:column>
+                        <h:column rendered="#{raSearchCertsBean.criteriaCaId==0}">
+                            <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_ca}"/></f:facet>
+                            <h:outputText value="#{raSearchCertificate.caName}"/>
                         </h:column>
                         <h:column>
                             <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_subject}"/></f:facet>
-                            <h:outputText styleClass="fineprintMono" value="#{cdw.certificateData.subjectDN}"/>
+                            <h:panelGrid columns="1" styleClass="nopadding noborder">
+                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.subjectDn}"/>
+                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.subjectAn}"/>
+                            </h:panelGrid>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_validity}"/></f:facet>
+                            <h:panelGrid columns="1" styleClass="nopadding noborder">
+                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.created}"/>
+                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.expires}"/>
+                            </h:panelGrid>
                         </h:column>
                         <h:column>
                             <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_cert}"/></f:facet>
                             <h:outputLink value="cert" style="margin-#{raLocaleBean.indentionDirection}: 16px;">
-                                <f:param name="fp" value="#{cdw.certificateData.fingerprint}"/>
+                                <f:param name="fp" value="#{raSearchCertificate.fingerprint}"/>
                                 <f:param name="chain" value="true"/>
                                 <f:param name="format" value="pem"/>
                                 <h:outputText value="#{msg.search_certs_page_link_download_cert}"/>
                             </h:outputLink>
                         </h:column>
                     </h:dataTable>
-                </h:panelGroup>    
+                </h:panelGroup>
             </h:form>
         </ui:define>
     </ui:composition>
