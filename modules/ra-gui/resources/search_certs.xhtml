@@ -33,19 +33,25 @@
                 <h:panelGroup id="basic">
                     <h:panelGrid columns="2">
                         <h:outputLabel for="genericSearchString" value="#{msg.search_certs_page_criteria_string_label}"/>
-                        <h:inputText id="genericSearchString" value="#{raSearchCertsBean.genericSearchString}">
-                            <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"/>
+                        <h:inputText id="genericSearchString" value="#{raSearchCertsBean.genericSearchString}" styleClass="autoFocusWithJs">
+                            <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                         </h:inputText>
 
                         <h:outputLabel for="criteriaCaId" value="#{msg.search_certs_page_criteria_ca}"/>
                         <h:selectOneMenu id="criteriaCaId" value="#{raSearchCertsBean.criteriaCaId}">
                             <f:selectItems value="#{raSearchCertsBean.availableCas}"/>
-                            <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"/>
+                            <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                         </h:selectOneMenu>
 
                         <h:outputLabel for="criteriaExcludeExpired" value="#{msg.search_certs_page_criteria_excludeexpired}"/>
                         <h:selectBooleanCheckbox id="criteriaExcludeExpired" value="#{raSearchCertsBean.criteriaExcludeExpired}">
-                            <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"/>
+                            <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                         </h:selectBooleanCheckbox>
 
                         <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" styleClass="hideWithJs"/>
@@ -53,17 +59,17 @@
                 </h:panelGroup>
 
                 <h:panelGroup id="filteredResults">
-                    <h:outputText rendered="#{empty raSearchCertsBean.filteredResults}" value="#{msg.search_certs_page_info_noresult}"/>
-                    <h:outputText rendered="#{raSearchCertsBean.moreResultsAvailable}" value="#{msg.search_certs_page_info_moreresults}"/>
+                    <h:outputText styleClass="fineprint" rendered="#{empty raSearchCertsBean.filteredResults}" value="#{msg.search_certs_page_info_noresult}"/>
+                    <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.moreResultsAvailable}" value="#{msg.search_certs_page_info_moreresults}"/>
                     <h:dataTable rendered="#{not empty raSearchCertsBean.filteredResults}" value="#{raSearchCertsBean.filteredResults}" var="raSearchCertificate"
                         styleClass="pure-table" rowClasses=",pure-table-odd">
-                        <h:column>
-                            <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_username}"/></f:facet>
-                            <h:outputText value="#{raSearchCertificate.username}"/>
-                        </h:column>
                         <h:column rendered="#{raSearchCertsBean.criteriaCaId==0}">
                             <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_ca}"/></f:facet>
-                            <h:outputText value="#{raSearchCertificate.caName}"/>
+                            <h:outputText styleClass="fineprint" value="#{raSearchCertificate.caName}"/>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_serialnumber}"/></f:facet>
+                            <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.serialnumber}"/>
                         </h:column>
                         <h:column>
                             <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_subject}"/></f:facet>
@@ -80,8 +86,19 @@
                             </h:panelGrid>
                         </h:column>
                         <h:column>
+                            <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_status}"/></f:facet>
+                            <h:panelGrid columns="1" styleClass="nopadding noborder">
+                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.status}"/>
+                                <h:outputText rendered="#{!raSearchCertificate.active}" styleClass="fineprintMono" value="#{raSearchCertificate.updated}"/>
+                            </h:panelGrid>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_username}"/></f:facet>
+                            <h:outputText styleClass="fineprint" value="#{raSearchCertificate.username}"/>
+                        </h:column>
+                        <h:column>
                             <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_cert}"/></f:facet>
-                            <h:outputLink value="cert" style="margin-#{raLocaleBean.indentionDirection}: 16px;">
+                            <h:outputLink styleClass="fineprintMono" value="cert" style="margin-#{raLocaleBean.indentionDirection}: 16px;">
                                 <f:param name="fp" value="#{raSearchCertificate.fingerprint}"/>
                                 <f:param name="chain" value="true"/>
                                 <f:param name="format" value="pem"/>

@@ -31,6 +31,7 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
@@ -50,27 +51,53 @@ public class RaSearchCertsBean implements Serializable {
     public class RaSearchCertificate {
         private final String fingerprint;
         private final String username;
+        private final String serialnumber;
         private final String subjectDn;
         private final String subjectAn;
         private final String caName;
         private final String created;
         private final String expires;
+        private final int status;
+        private final int revocationReason;
+        private String updated;
         public RaSearchCertificate(final CertificateDataWrapper cdw) {
             this.fingerprint = cdw.getCertificateData().getFingerprint();
+            this.serialnumber = CertTools.getSerialNumberAsString(cdw.getCertificate());
             this.username = cdw.getCertificateData().getUsername();
             this.subjectDn = cdw.getCertificateData().getSubjectDN();
             this.subjectAn = CertTools.getSubjectAlternativeName(cdw.getCertificate());
             this.caName = caSubjectToNameMap.get(cdw.getCertificateData().getIssuerDN());
             this.created = ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(cdw.getCertificate()).getTime(), TimeZone.getDefault());
             this.expires = ValidityDate.formatAsISO8601ServerTZ(cdw.getCertificateData().getExpireDate(), TimeZone.getDefault());
+            this.status = cdw.getCertificateData().getStatus();
+            this.revocationReason = cdw.getCertificateData().getRevocationReason();
+            if (status==CertificateConstants.CERT_ARCHIVED || status==CertificateConstants.CERT_REVOKED) {
+                this.updated = ValidityDate.formatAsISO8601ServerTZ(cdw.getCertificateData().getRevocationDate(), TimeZone.getDefault());
+            } else {
+                this.updated = ValidityDate.formatAsISO8601ServerTZ(cdw.getCertificateData().getUpdateTime(), TimeZone.getDefault());
+            }
         }
         public String getFingerprint() { return fingerprint; }
+        public String getSerialnumber() { return serialnumber; }
         public String getUsername() { return username; }
         public String getSubjectDn() { return subjectDn; }
         public String getSubjectAn() { return subjectAn; }
         public String getCaName() { return caName; }
         public String getCreated() { return created; }
         public String getExpires() { return expires; }
+        public boolean isActive() { return status==CertificateConstants.CERT_ACTIVE || status==CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION; }
+        public String getStatus() {
+            switch (status) {
+            case CertificateConstants.CERT_ACTIVE:
+            case CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION:
+                return raLocaleBean.getMessage("search_certs_page_status_active");
+            case CertificateConstants.CERT_ARCHIVED:
+            case CertificateConstants.CERT_REVOKED:
+                return raLocaleBean.getMessage("search_certs_page_status_revoked_"+revocationReason);
+            }
+            return raLocaleBean.getMessage("search_certs_page_status_other");
+        }
+        public String getUpdated() { return updated; }
     }
     
     private static final long serialVersionUID = 1L;
