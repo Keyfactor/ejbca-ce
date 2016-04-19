@@ -40,6 +40,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
@@ -272,6 +273,24 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         ret.putAll(result);
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
+    
+    @Override
+    public Map<String, CertificateProfile> getAvailableCertificateProfiles(AuthenticationToken authenticationToken, String[] certificateProfilesIds) throws AuthorizationDeniedException{
+        final Map<String, CertificateProfile> ret = new HashMap<String, CertificateProfile>();
+        for(final RaMasterApi raMasterApi : raMasterApis){
+            if(raMasterApi.isBackendAvailable()){
+                try{
+                    final Map<String, CertificateProfile> result = raMasterApi.getAvailableCertificateProfiles(authenticationToken, certificateProfilesIds);
+                    if (result != null) {
+                        ret.putAll(result);
+                    }
+                }catch  (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
