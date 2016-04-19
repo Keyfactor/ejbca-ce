@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:component="http://java.sun.com/jsf/composite/component" xmlns:c="http://java.sun.com/jsp/jstl/core"
-	xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:t="http://myfaces.apache.org/tomahawk">
+    xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:component="http://java.sun.com/jsf/composite/component" xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:t="http://myfaces.apache.org/tomahawk">
 <ui:remove>
-	<!--
+    <!--
     /*************************************************************************
      *                                                                       *
      *  EJBCA: The OpenSource Certificate Authority                          *
@@ -23,56 +23,78 @@
 </ui:remove>
 <h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
     <ui:composition>
-		<div class="pure-g">
-		    <div class="pure-u-1 pure-u-lg-1-8">
-		   		<div class="pure-menu pure-menu-horizontal" >
-		            <a href="#" class="pure-menu-heading">                        
-		            	<img class="menu_logo" alt="EJBCA by PrimeKey" src="#{facesContext.externalContext.context.contextPath}/img/pk_logo.png" /> 
-					</a>
-		        </div>
-		    </div>
-		    <div class="pure-u-1 pure-u-md-1-2 pure-u-lg-17-24">
-		        <div class="pure-menu pure-menu-horizontal">        	
-			    	<ul class="pure-menu-list">	    	
-			        	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
-			            	<a href="#" id="enrollment" class="pure-menu-link">Enroll</a>
-			            	<ul class="pure-menu-children">
-			                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Make Request</a></li>
-			                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Enroll with Request ID</a></li>
-			                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">See Request Status</a></li>
-			                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">Renew Browser Certificate</a></li>
-			            	</ul>
-			            </li>
-			            <li class="pure-menu-item">
-                            <h:outputLink value="cas.xhtml" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_cas}"/></h:outputLink>
-		       	 		</li>
-		       	 		<li class="pure-menu-item ">
-		            		<a href="#" id="requestManagement" class="pure-menu-link">Manage Requests</a>
-		       	 		</li>	
-		       	 		<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
-			            	<a href="#" id="search" class="pure-menu-link">Search</a>
-			            	<ul class="pure-menu-children">
-			                	<li class="pure-menu-item">
-                                    <h:outputLink value="search_certs.xhtml" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_search_certs}"/></h:outputLink>
+        <div class="pure-g">
+            <div class="pure-u-1 pure-u-lg-1-8">
+                   <div class="pure-menu pure-menu-horizontal" >
+                    <a href="#" class="pure-menu-heading">                        
+                        <img class="menu_logo" alt="EJBCA by PrimeKey" src="#{facesContext.externalContext.context.contextPath}/img/pk_logo.png" /> 
+                    </a>
+                </div>
+            </div>
+            <div class="pure-u-1 pure-u-md-1-2 pure-u-lg-17-24">
+                <div class="pure-menu pure-menu-horizontal">
+                    <ul class="pure-menu-list">
+                        <ui:fragment rendered="#{raAccessBean.authorizedToEnroll}">
+                            <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+                                <a href="#" id="enrollment" class="pure-menu-link">Enroll</a>
+                                <ul class="pure-menu-children">
+                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollMakeRequest}">
+                                        <li class="pure-menu-item"><a href="#" class="pure-menu-link">Make Request</a></li>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollWithRequestId}">
+                                        <li class="pure-menu-item"><a href="#" class="pure-menu-link">Enroll with Request ID</a></li>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollSeeRequestStatus}">
+                                        <li class="pure-menu-item"><a href="#" class="pure-menu-link">See Request Status</a></li>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollRenewBrowserCert}">
+                                        <li class="pure-menu-item"><a href="#" class="pure-menu-link">Renew Browser Certificate</a></li>
+                                    </ui:fragment>
+                                </ul>
+                            </li>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{raAccessBean.authorizedToCas}">
+                            <li class="pure-menu-item">
+                                <h:outputLink value="cas.xhtml" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_cas}"/></h:outputLink>
                                 </li>
-			                	<li class="pure-menu-item"><a href="#" class="pure-menu-link">End Entities</a></li>
-			            	</ul>
-			            </li>
-			            <li class="pure-menu-item ">
-		            		<a href="#" id="rolesManagement" class="pure-menu-link">Roles Management</a>
-		       	 		</li>			           
-			    	</ul>
-				</div>
-		    </div>
-		    <div class="pure-u-1 pure-u-lg-1-6">
-		        <div class="pure-menu pure-menu-horizontal align-right">
-		            <ul class="pure-menu-list">
-		                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Documentation</a></li>
-		                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Login</a></li>
-		            </ul>
-		        </div>
-		    </div>
-		</div>
-	</ui:composition>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{raAccessBean.authorizedToManageRequests}">
+                                <li class="pure-menu-item">
+                                <a href="#" id="requestManagement" class="pure-menu-link">Manage Requests</a>
+                                </li>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{raAccessBean.authorizedToSearch}">
+                                <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+                                <a href="#" id="search" class="pure-menu-link">Search</a>
+                                <ul class="pure-menu-children">
+                                    <ui:fragment rendered="#{raAccessBean.authorizedToSearchCerts}">
+                                        <li class="pure-menu-item">
+                                            <h:outputLink value="search_certs.xhtml" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_search_certs}"/></h:outputLink>
+                                        </li>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{raAccessBean.authorizedToSearchEndEntities}">
+                                        <li class="pure-menu-item"><a href="#" class="pure-menu-link">End Entities</a></li>
+                                    </ui:fragment>
+                                </ul>
+                            </li>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{raAccessBean.authorizedToRoles}">
+                            <li class="pure-menu-item">
+                                <a href="#" id="rolesManagement" class="pure-menu-link">Roles Management</a>
+                                </li>
+                            </ui:fragment>
+                    </ul>
+                </div>
+            </div>
+            <div class="pure-u-1 pure-u-lg-1-6">
+                <div class="pure-menu pure-menu-horizontal align-right">
+                    <ul class="pure-menu-list">
+                        <li class="pure-menu-item"><a href="#" class="pure-menu-link">Documentation</a></li>
+                        <li class="pure-menu-item"><a href="#" class="pure-menu-link">Login</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </ui:composition>
 </h:body>
 </html>

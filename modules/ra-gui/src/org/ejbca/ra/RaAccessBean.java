@@ -26,6 +26,7 @@ import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.util.ConcurrentCache;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 /**
@@ -84,5 +85,54 @@ public class RaAccessBean implements Serializable {
     @Deprecated
     public boolean isAuthorizedToRootTEST() {
         return isAuthorized(StandardRules.ROLE_ROOT.resource());
+    }
+    
+    /* These methods correspond to menu items in menu.xhtml */
+    public boolean isAuthorizedToEnroll() {
+        return isAuthorizedToEnrollMakeRequest() ||
+                isAuthorizedToEnrollWithRequestId() ||
+                isAuthorizedToEnrollSeeRequestStatus() ||
+                isAuthorizedToEnrollRenewBrowserCert();
+    }
+    
+    public boolean isAuthorizedToEnrollMakeRequest() {
+        return true; // TODO
+    }
+    
+    public boolean isAuthorizedToEnrollWithRequestId() {
+        return true; // TODO
+    }
+    
+    public boolean isAuthorizedToEnrollSeeRequestStatus() {
+        return true; // TODO
+    }
+    
+    public boolean isAuthorizedToEnrollRenewBrowserCert() {
+        return true; // TODO
+    }
+    
+    public boolean isAuthorizedToCas() {
+        return isAuthorized(StandardRules.CAVIEW.resource());
+    }
+    
+    public boolean isAuthorizedToManageRequests() {
+        return isAuthorized(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+    }
+
+    public boolean isAuthorizedToSearch() {
+        return isAuthorizedToSearchCerts() ||
+                isAuthorizedToSearchEndEntities();
+    }
+    
+    public boolean isAuthorizedToSearchCerts() {
+        return isAuthorized(AccessRulesConstants.REGULAR_VIEWENDENTITY); // TODO perhaps a different access rule for certs?
+    }
+    
+    public boolean isAuthorizedToSearchEndEntities() {
+        return isAuthorized(AccessRulesConstants.REGULAR_VIEWENDENTITY);
+    }
+    
+    public boolean isAuthorizedToRoles() {
+        return isAuthorized(StandardRules.VIEWROLES.resource());
     }
 }
