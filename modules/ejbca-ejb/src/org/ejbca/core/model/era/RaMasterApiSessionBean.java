@@ -131,38 +131,54 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
 
     @Override
-    public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest) {
+    public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest request) {
+        final RaCertificateSearchResponse response = new RaCertificateSearchResponse();
         final List<Integer> authorizedLocalCaIds = new ArrayList<>(caSession.getAuthorizedCaIds(authenticationToken));
-        authorizedLocalCaIds.retainAll(raCertificateSearchRequest.getCaIds());
-        RaCertificateSearchResponse ret = new RaCertificateSearchResponse();
+        // Only search a subset of the requested CAs if requested
+        if (!request.getCaIds().isEmpty()) {
+            authorizedLocalCaIds.retainAll(request.getCaIds());
+        }
+        final List<String> issuerDns = new ArrayList<>();
         // TODO: Proper critera builder with sanity checking and result object that be used for additional paginated requests
         for (final int caId : authorizedLocalCaIds) {
             try {
-                // This method was only used from CertificateDataTest and it didn't care about the expireDate, so it will only select fingerprints now.
-                final String issuerDn = caSession.getCAInfoInternal(caId).getSubjectDN();
-                final String basicSearch = raCertificateSearchRequest.getBasicSearch();
-                final Query query;
-                if (basicSearch.isEmpty()) {
-                    query = entityManager.createQuery("SELECT a.fingerprint FROM CertificateData a WHERE a.issuerDN=:issuerDN");
-                } else {
-                    query = entityManager.createQuery("SELECT a.fingerprint FROM CertificateData a WHERE a.issuerDN=:issuerDN AND "
-                            +"(a.username LIKE :username OR a.subjectDN LIKE :subjectDN)");
-                    query.setParameter("username", "%" + basicSearch + "%");
-                    query.setParameter("subjectDN", "%" + basicSearch + "%");
-                }
-                query.setParameter("issuerDN", CertTools.stringToBCDNString(StringTools.strip(issuerDn)));
-                query.setMaxResults(100);
-                @SuppressWarnings("unchecked")
-                final List<String> fingerprints = query.getResultList();
-                for (final String fingerprint : fingerprints) {
-                    ret.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
-                }
-                ret.setMightHaveMoreResults(fingerprints.size()==100);
+                final String issuerDn = CertTools.stringToBCDNString(StringTools.strip(caSession.getCAInfoInternal(caId).getSubjectDN()));
+                issuerDns.add(issuerDn);
             } catch (CADoesntExistsException e) {
                 log.warn("CA went missing during search operation. " + e.getMessage());
             }
         }
-        return ret;
+        if (issuerDns.isEmpty()) {
+            // Empty response since there were no authorized CAs
+            return response;
+        }
+        final String genericSearchString = request.getGenericSearchString();
+        StringBuilder sb = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE a.issuerDN IN :issuerDns");
+        if (!genericSearchString.isEmpty()) {
+            sb.append(" AND (a.username LIKE :username OR a.subjectDN LIKE :subjectDN)");
+        }
+        final long expiresAfter = request.getExpiresAfter();
+        if (expiresAfter>0L) {
+            sb.append(" AND (a.expireDate > :expiresAfter)");
+        }
+        final Query query = entityManager.createQuery(sb.toString());
+        query.setParameter("issuerDns", issuerDns);
+        if (!genericSearchString.isEmpty()) {
+            query.setParameter("username", "%" + genericSearchString + "%");
+            query.setParameter("subjectDN", "%" + genericSearchString + "%");
+        }
+        if (expiresAfter>0L) {
+            query.setParameter("expiresAfter", expiresAfter);
+        }
+        final int maxResults = Math.min(1000, request.getMaxResults());
+        query.setMaxResults(maxResults);
+        @SuppressWarnings("unchecked")
+        final List<String> fingerprints = query.getResultList();
+        for (final String fingerprint : fingerprints) {
+            response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
+        }
+        response.setMightHaveMoreResults(fingerprints.size()==maxResults);
+        return response;
     }
 
     @Override
