@@ -72,9 +72,6 @@ public interface PublishingCrlSession {
      */
     boolean forceCRL(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException,
             CAOfflineException;
-    
-    boolean forceCRL(AuthenticationToken admin, int caid, int renamedCAOldId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException,
-        CAOfflineException;
 
     /** Method that forces generation of a Delta CRL for a certain CA
      * 
@@ -84,8 +81,4 @@ public interface PublishingCrlSession {
      */
     boolean forceDeltaCRL(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException,
             CryptoTokenOfflineException, CAOfflineException;
-    
-    boolean forceDeltaCRL(AuthenticationToken admin, int caid, int renamedCAOldId) throws CADoesntExistsException, AuthorizationDeniedException,
-        CryptoTokenOfflineException, CAOfflineException;
-
 }
