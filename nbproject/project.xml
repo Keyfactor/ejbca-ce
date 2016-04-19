@@ -674,6 +674,31 @@ auxiliary.show.customizer.message=<message>
                 <location>modules/dist/va-publisher.jar</location>
                 <build-target>build</build-target>
             </export>
+            <export>
+                <type>jar</type>
+                <location>dist/cesecore-common.jar</location>
+                <build-target>build</build-target>
+            </export>
+            <export>
+                <type>jar</type>
+                <location>dist/ejbca-common.jar</location>
+                <build-target>build</build-target>
+            </export>
+            <export>
+                <type>jar</type>
+                <location>dist/ejbca-ejb-cli/ejbca-ejb-cli.jar</location>
+                <build-target>build</build-target>
+            </export>
+            <export>
+                <type>jar</type>
+                <location>dist/ejbca-ws-cli/ejbca-ws-cli.jar</location>
+                <build-target>build</build-target>
+            </export>
+            <export>
+                <type>jar</type>
+                <location>dist/ext/cesecore-p11.jar</location>
+                <build-target>build</build-target>
+            </export>
             <view>
                 <items>
                     <source-folder style="packages">
@@ -1123,6 +1148,13 @@ auxiliary.show.customizer.message=<message>
                 <built-to>modules/dist/status.war</built-to>
                 <built-to>modules/dist/va-publisher.jar</built-to>
                 <built-to>modules/dist/webdist.war</built-to>
+                <built-to>dist/cesecore-common.jar</built-to>
+                <built-to>dist/doc.war</built-to>
+                <built-to>dist/ejbca-common.jar</built-to>
+                <built-to>dist/ejbca.ear</built-to>
+                <built-to>dist/ejbca-ejb-cli/ejbca-ejb-cli.jar</built-to>
+                <built-to>dist/ejbca-ws-cli/ejbca-ws-cli.jar</built-to>
+                <built-to>dist/ext/cesecore-p11.jar</built-to>
                 <source-level>1.7</source-level>
             </compilation-unit>
             <compilation-unit>
