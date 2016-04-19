@@ -39,6 +39,8 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.CertTools;
@@ -70,6 +72,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -217,5 +221,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             authorizedEndEntityProfiles.put(idToNameMap.get(id), endEntityProfileSession.getEndEntityProfile(id));
         }
         return authorizedEndEntityProfiles;
+    }
+
+    @Override
+    public Map<String, CertificateProfile> getAvailableCertificateProfiles(AuthenticationToken authenticationToken, String[] certificateProfilesIds)
+            throws AuthorizationDeniedException {
+        Map<String, CertificateProfile> availableCertificateProfiles = new HashMap<String, CertificateProfile>();
+        for(String certificateProfileId: certificateProfilesIds){
+            CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(Integer.parseInt(certificateProfileId));
+            String certificateProfilename = certificateProfileSession.getCertificateProfileName(Integer.parseInt(certificateProfileId));
+            availableCertificateProfiles.put(certificateProfilename, certificateProfile);
+        }
+        
+        return availableCertificateProfiles;
     }
 }

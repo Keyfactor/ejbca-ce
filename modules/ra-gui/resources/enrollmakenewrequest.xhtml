@@ -37,11 +37,23 @@
 					<f:selectItems
 						value="#{enrollMakeNewRequestBean.authorizedEndEntityProfiles.keySet()}"></f:selectItems>
 					<f:ajax execute=":enrollMakeNewRequestForm:selectEEPOneMenu"
-						event="change"
-						render=":globalMessages :enrollMakeNewRequestForm"
-						listener="#{enrollMakeNewRequestBean.endEntityProfileListener}" />
+						event="change" render=":globalMessages :enrollMakeNewRequestForm"
+						listener="#{enrollMakeNewRequestBean.endEntityProfileAjaxListener}" />
 				</h:selectOneMenu>
-			
+
+				<h:outputText value="#{msg.enroll_certificate_subtype}"
+					rendered="#{!enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty()}" />
+				<h:selectOneMenu id="selectCPOneMenu"
+					value="#{enrollMakeNewRequestBean.selectedCertificateProfile}"
+					valueChangeListener="#{enrollMakeNewRequestBean.certificateProfileChangedListener}"
+					rendered="#{!enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty()}">
+					<f:selectItems
+						value="#{enrollMakeNewRequestBean.availableCertificateProfiles.keySet()}"></f:selectItems>
+					<f:ajax execute=":enrollMakeNewRequestForm:selectCPOneMenu"
+						event="change" render=":globalMessages :enrollMakeNewRequestForm"
+						listener="#{enrollMakeNewRequestBean.certificateProfileAjaxListener}" />
+				</h:selectOneMenu>
+
 				<h:outputText value="#{msg.enroll_keypair_generation}"
 					rendered="#{!enrollMakeNewRequestBean.availableKeyPairGenerations.isEmpty()}" />
 				<h:selectOneMenu id="selectKeyPairGenerationOneMenu"
@@ -53,8 +65,10 @@
 					<f:ajax
 						execute=":enrollMakeNewRequestForm:selectKeyPairGenerationOneMenu"
 						event="change" render=":globalMessages :enrollMakeNewRequestForm"
-						listener="#{enrollMakeNewRequestBean.keyPairGenerationListener}" />
+						listener="#{enrollMakeNewRequestBean.keyPairGenerationAjaxListener}" />
 				</h:selectOneMenu>
+
+
 			</h:panelGrid>
 
 			<h:panelGroup layout="block">
