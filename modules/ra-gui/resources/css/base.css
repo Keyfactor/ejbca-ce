@@ -19,4 +19,5 @@
 .nopadding td { padding: 0px; }
 .noborder td { border: 0px; }
 
+.fineprint { font-size: xx-small; }
 .fineprintMono { font-size: xx-small; font-family: monospace; }
