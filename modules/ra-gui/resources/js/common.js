@@ -19,6 +19,7 @@
 document.addEventListener("DOMContentLoaded", function(event) {
     console.log("Document loaded.");
     hideInputElementsByStyleClass("hideWithJs");
+    autoFocusFirstInputElementsByStyleClass("autoFocusWithJs");
     new SessionKeepAlive("sessionKeepAliveLink");
 }, false);
 
@@ -70,4 +71,34 @@ function hideInputElementsByStyleClass(styleClassName) {
 			}
 		}
 	}
+}
+
+/** Autofocus first input elements marked with the styleClassName. */
+function autoFocusFirstInputElementsByStyleClass(styleClassName) {
+	var inputFields = document.getElementsByTagName("input");
+	for (var i = 0; i<inputFields.length; i++) {
+		if (inputFields[i].className) {
+			var styleClasses = inputFields[i].className.split(' ');
+			for (var j = 0; j<styleClasses.length; j++) {
+				if (styleClasses[j]==styleClassName) {
+					inputFields[i].focus();
+					return;
+				}
+			}
+		}
+	}
+}
+
+/** Can be invoked on AJAX requests to indicate that a background operation is running. */
+function onAjaxEvent(data, elementId) {
+    if (data.status == "begin") {
+        document.getElementById(elementId).style.opacity = "0.2";
+    } else if (data.status == "success") {
+        document.getElementById(elementId).style.opacity = "1.0";
+    }
+}
+/** Can be invoked on AJAX requests to indicate that an error has occurred. */
+function onAjaxError(data, elementId) {
+	console.log("onAjaxError: " + data.errorMessage);
+    document.getElementById(elementId).style.opacity = "0.2";
 }
