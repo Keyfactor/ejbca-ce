@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.security.cert.Certificate;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -24,6 +25,10 @@ import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 
 /**
@@ -59,6 +64,28 @@ public class RaAuthenticationBean implements Serializable {
 
     private HttpServletResponse getHttpServletResponse() {
         return (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
+    }
+    
+    public boolean isPublicUser() {
+        final AuthenticationToken authToken = getAuthenticationToken();
+        return authToken instanceof PublicAccessAuthenticationToken;
+    }
+    
+    public String getUserDisplayName() {
+        final AuthenticationToken authToken = getAuthenticationToken();
+        if (authToken instanceof X509CertificateAuthenticationToken) {
+            final Certificate cert = ((X509CertificateAuthenticationToken)authToken).getCertificate();
+            final String subjectDN = CertTools.getSubjectDN(cert);
+            String cn = CertTools.getPartFromDN(subjectDN, "CN"); // should perhaps be configurable?
+            if (cn != null) {
+                cn = cn.trim();
+                if (!cn.isEmpty()) {
+                    return cn;
+                }
+            }
+            return subjectDN;
+        }
+        return authToken.toString();
     }
     
     /** Invoked from RaHttpSessionListener when a session expires/is destroyed */
