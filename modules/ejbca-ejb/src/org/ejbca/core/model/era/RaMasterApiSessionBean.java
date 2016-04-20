@@ -37,6 +37,7 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -157,7 +158,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return response;
         }
         final String genericSearchString = request.getGenericSearchString();
-        StringBuilder sb = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE a.issuerDN IN :issuerDns");
+        StringBuilder sb = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE (a.issuerDN IN (:issuerDN))");
         if (!genericSearchString.isEmpty()) {
             sb.append(" AND (a.username LIKE :username OR a.subjectDN LIKE :subjectDN)");
         }
@@ -165,14 +166,28 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (expiresAfter>0L) {
             sb.append(" AND (a.expireDate > :expiresAfter)");
         }
+        if (!request.getStatuses().isEmpty()) {
+            sb.append(" AND (a.status IN (:status))");
+            if ((request.getStatuses().contains(CertificateConstants.CERT_REVOKED) || request.getStatuses().contains(CertificateConstants.CERT_ARCHIVED)) &&
+                    !request.getRevocationReasons().isEmpty()) {
+                sb.append(" AND (a.revocationReason IN (:revocationReason))");
+            }
+        }
         final Query query = entityManager.createQuery(sb.toString());
-        query.setParameter("issuerDns", issuerDns);
+        query.setParameter("issuerDN", issuerDns);
         if (!genericSearchString.isEmpty()) {
             query.setParameter("username", "%" + genericSearchString + "%");
             query.setParameter("subjectDN", "%" + genericSearchString + "%");
         }
         if (expiresAfter>0L) {
             query.setParameter("expiresAfter", expiresAfter);
+        }
+        if (!request.getStatuses().isEmpty()) {
+            query.setParameter("status", request.getStatuses());
+            if ((request.getStatuses().contains(CertificateConstants.CERT_REVOKED) || request.getStatuses().contains(CertificateConstants.CERT_ARCHIVED)) &&
+                    !request.getRevocationReasons().isEmpty()) {
+                query.setParameter("revocationReason", request.getRevocationReasons());
+            }
         }
         final int maxResults = Math.min(1000, request.getMaxResults());
         query.setMaxResults(maxResults);
