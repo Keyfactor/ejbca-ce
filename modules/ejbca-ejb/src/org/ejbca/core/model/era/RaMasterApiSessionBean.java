@@ -144,7 +144,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             authorizedLocalCaIds.retainAll(request.getCaIds());
         }
         final List<String> issuerDns = new ArrayList<>();
-        // TODO: Proper critera builder with sanity checking and result object that be used for additional paginated requests
+        // TODO: Check EEP authorization once this is implemented
         for (final int caId : authorizedLocalCaIds) {
             try {
                 final String issuerDn = CertTools.stringToBCDNString(StringTools.strip(caSession.getCAInfoInternal(caId).getSubjectDN()));
@@ -162,9 +162,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!genericSearchString.isEmpty()) {
             sb.append(" AND (a.username LIKE :username OR a.subjectDN LIKE :subjectDN)");
         }
-        final long expiresAfter = request.getExpiresAfter();
-        if (expiresAfter>0L) {
+        if (request.getExpiresAfter()<Long.MAX_VALUE) {
             sb.append(" AND (a.expireDate > :expiresAfter)");
+        }
+        if (request.getExpiresBefore()>0) {
+            sb.append(" AND (a.expireDate < :expiresBefore)");
+        }
+        // NOTE: updateTime is not indexed.. we might want to disallow such search.
+        if (request.getUpdatedAfter()<Long.MAX_VALUE) {
+            sb.append(" AND (a.updateTime > :updatedAfter)");
+        }
+        if (request.getUpdatedBefore()>0L) {
+            sb.append(" AND (a.updateTime < :updatedBefore)");
         }
         if (!request.getStatuses().isEmpty()) {
             sb.append(" AND (a.status IN (:status))");
@@ -173,14 +182,26 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 sb.append(" AND (a.revocationReason IN (:revocationReason))");
             }
         }
+        if (log.isDebugEnabled()) {
+            log.debug("Certificate search query: " + sb.toString());
+        }
         final Query query = entityManager.createQuery(sb.toString());
         query.setParameter("issuerDN", issuerDns);
         if (!genericSearchString.isEmpty()) {
             query.setParameter("username", "%" + genericSearchString + "%");
             query.setParameter("subjectDN", "%" + genericSearchString + "%");
         }
-        if (expiresAfter>0L) {
-            query.setParameter("expiresAfter", expiresAfter);
+        if (request.getExpiresAfter()<Long.MAX_VALUE) {
+            query.setParameter("expiresAfter", request.getExpiresAfter());
+        }
+        if (request.getExpiresBefore()>0) {
+            query.setParameter("expiresBefore", request.getExpiresBefore());
+        }
+        if (request.getUpdatedAfter()<Long.MAX_VALUE) {
+            query.setParameter("updatedAfter", request.getUpdatedAfter());
+        }
+        if (request.getUpdatedBefore()>0L) {
+            query.setParameter("updatedBefore", request.getUpdatedBefore());
         }
         if (!request.getStatuses().isEmpty()) {
             query.setParameter("status", request.getStatuses());

@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,6 +54,7 @@ public class RaSearchCertsBean implements Serializable {
         private final String fingerprint;
         private final String username;
         private final String serialnumber;
+        private final String serialnumberRaw;
         private final String subjectDn;
         private final String subjectAn;
         private final String caName;
@@ -64,6 +66,7 @@ public class RaSearchCertsBean implements Serializable {
         public RaSearchCertificate(final CertificateDataWrapper cdw) {
             this.fingerprint = cdw.getCertificateData().getFingerprint();
             this.serialnumber = CertTools.getSerialNumberAsString(cdw.getCertificate());
+            this.serialnumberRaw = cdw.getCertificateData().getSerialNumber();
             this.username = cdw.getCertificateData().getUsername();
             this.subjectDn = cdw.getCertificateData().getSubjectDN();
             this.subjectAn = CertTools.getSubjectAlternativeName(cdw.getCertificate());
@@ -80,6 +83,7 @@ public class RaSearchCertsBean implements Serializable {
         }
         public String getFingerprint() { return fingerprint; }
         public String getSerialnumber() { return serialnumber; }
+        public String getSerialnumberRaw() { return serialnumberRaw; }
         public String getUsername() { return username; }
         public String getSubjectDn() { return subjectDn; }
         public String getSubjectAn() { return subjectAn; }
@@ -122,6 +126,11 @@ public class RaSearchCertsBean implements Serializable {
     private RaCertificateSearchRequest stagedRequest = new RaCertificateSearchRequest();
     private RaCertificateSearchRequest lastExecutedRequest = null;
     private RaCertificateSearchResponse lastExecutedResponse = null;
+
+    private String expiresAfter = "";
+    private String expiresBefore = "";
+    private String updatedAfter = "";
+    private String updatedBefore = "";
 
     public String getGenericSearchString() { return stagedRequest.getGenericSearchString(); }
     public void setGenericSearchString(final String genericSearchString) { stagedRequest.setGenericSearchString(genericSearchString); }
@@ -172,8 +181,23 @@ public class RaSearchCertsBean implements Serializable {
                 if (!stagedRequest.getCaIds().isEmpty() && !stagedRequest.getCaIds().contains(cdw.getCertificateData().getIssuerDN().hashCode())) {
                     continue;
                 }
-                if (stagedRequest.getExpiresAfter()>0L) {
+                if (stagedRequest.getExpiresAfter()<Long.MAX_VALUE) {
                     if (cdw.getCertificateData().getExpireDate()<stagedRequest.getExpiresAfter()) {
+                        continue;
+                    }
+                }
+                if (stagedRequest.getExpiresBefore()>0L) {
+                    if (cdw.getCertificateData().getExpireDate()>stagedRequest.getExpiresBefore()) {
+                        continue;
+                    }
+                }
+                if (stagedRequest.getUpdatedAfter()<Long.MAX_VALUE) {
+                    if (cdw.getCertificateData().getUpdateTime()<stagedRequest.getUpdatedAfter()) {
+                        continue;
+                    }
+                }
+                if (stagedRequest.getUpdatedBefore()>0L) {
+                    if (cdw.getCertificateData().getUpdateTime()>stagedRequest.getUpdatedBefore()) {
                         continue;
                     }
                 }
@@ -186,19 +210,88 @@ public class RaSearchCertsBean implements Serializable {
                 // if (this or that) { ...
                 resultsFiltered.add(new RaSearchCertificate(cdw));
             }
-            Collections.sort(resultsFiltered, new Comparator<RaSearchCertificate>() {
-                @Override
-                public int compare(RaSearchCertificate o1, RaSearchCertificate o2) {
-                    return o1.username.compareTo(o2.username);
-                }
-            });
+            sort();
         }
+    }
+
+    private void sort() {
+        Collections.sort(resultsFiltered, new Comparator<RaSearchCertificate>() {
+            @Override
+            public int compare(RaSearchCertificate o1, RaSearchCertificate o2) {
+                switch (sortBy) {
+                case CA:
+                    return o1.caName.compareTo(o2.caName) * (sortAscending ? 1 : -1);
+                case SERIALNUMBER:
+                    return o1.serialnumber.compareTo(o2.serialnumber) * (sortAscending ? 1 : -1);
+                case SUBJECT:
+                    return (o1.subjectDn+o1.subjectAn).compareTo(o2.subjectDn+o2.subjectAn) * (sortAscending ? 1 : -1);
+                case EXPIRATION:
+                    return o1.expires.compareTo(o2.expires) * (sortAscending ? 1 : -1);
+                case STATUS:
+                    return o1.getStatus().compareTo(o2.getStatus()) * (sortAscending ? 1 : -1);
+                case USERNAME:
+                default:
+                    return o1.username.compareTo(o2.username) * (sortAscending ? 1 : -1);
+                }
+            }
+        });
+    }
+
+    private enum SortOrder { CA, SERIALNUMBER, SUBJECT, USERNAME, EXPIRATION, STATUS };
+    
+    private SortOrder sortBy = SortOrder.USERNAME;
+    private boolean sortAscending = true;
+    
+    public String getSortedByCa() { return getSortedBy(SortOrder.CA); }
+    public void sortByCa() { sortBy(SortOrder.CA, true); }
+    public String getSortedBySerialNumber() { return getSortedBy(SortOrder.SERIALNUMBER); }
+    public void sortBySerialNumber() { sortBy(SortOrder.SERIALNUMBER, true); }
+    public String getSortedBySubject() { return getSortedBy(SortOrder.SUBJECT); }
+    public void sortBySubject() { sortBy(SortOrder.SUBJECT, true); }
+    public String getSortedByExpiration() { return getSortedBy(SortOrder.EXPIRATION); }
+    public void sortByExpiration() { sortBy(SortOrder.EXPIRATION, false); }
+    public String getSortedByStatus() { return getSortedBy(SortOrder.STATUS); }
+    public void sortByStatus() { sortBy(SortOrder.STATUS, true); }
+    public String getSortedByUsername() { return getSortedBy(SortOrder.USERNAME); }
+    public void sortByUsername() { sortBy(SortOrder.USERNAME, true); }
+
+    private String getSortedBy(final SortOrder sortOrder) {
+        if (sortBy.equals(sortOrder)) {
+            return sortAscending ? "\u25bc" : "\u25b2";
+        }
+        return "";
+    }
+    private void sortBy(final SortOrder sortOrder, final boolean defaultAscending) {
+        if (sortBy.equals(sortOrder)) {
+            sortAscending = !sortAscending;
+        } else {
+            sortAscending = defaultAscending;
+        }
+        this.sortBy = sortOrder;
+        sort();
     }
     
     public boolean isMoreResultsAvailable() {
         return lastExecutedResponse!=null && lastExecutedResponse.isMightHaveMoreResults();
     }
 
+    private boolean moreOptions = false;
+    public boolean isMoreOptions() { return moreOptions; };
+
+    public void moreOptionsAction() {
+        moreOptions = !moreOptions;
+        // Reset any criteria in the advanced section
+        stagedRequest.setExpiresAfter(Long.MAX_VALUE);
+        stagedRequest.setExpiresBefore(0L);
+        stagedRequest.setUpdatedAfter(Long.MAX_VALUE);
+        stagedRequest.setUpdatedBefore(0L);
+        expiresAfter = "";
+        expiresBefore = "";
+        updatedAfter = "";
+        updatedBefore = "";
+        searchAndFilterCommon();
+    }
+    
     public int getCriteriaCaId() {
         return stagedRequest.getCaIds().isEmpty() ? 0 : stagedRequest.getCaIds().get(0);
     }
@@ -210,15 +303,52 @@ public class RaSearchCertsBean implements Serializable {
         }
     }
     
-    public boolean isCriteriaExcludeExpired() {
-        return stagedRequest.getExpiresAfter()>0L;
+    public String getExpiresAfter() {
+        return getDateAsString(expiresAfter, stagedRequest.getExpiresAfter(), Long.MAX_VALUE);
     }
-    public void setCriteriaExcludeExpired(final boolean value) {
-        if (value) {
-            stagedRequest.setExpiresAfter(System.currentTimeMillis());
-        } else {
-            stagedRequest.setExpiresAfter(0L);
+    public void setExpiresAfter(final String expiresAfter) {
+        this.expiresAfter = expiresAfter;
+        stagedRequest.setExpiresAfter(parseDateAndUseDefaultOnFail(expiresAfter, Long.MAX_VALUE));
+    }
+    public String getExpiresBefore() {
+        return getDateAsString(expiresBefore, stagedRequest.getExpiresBefore(), 0L);
+    }
+    public void setExpiresBefore(final String expiresBefore) {
+        this.expiresBefore = expiresBefore;
+        stagedRequest.setExpiresBefore(parseDateAndUseDefaultOnFail(expiresBefore, 0L));
+    }
+    public String getUpdatedAfter() {
+        return getDateAsString(updatedAfter, stagedRequest.getUpdatedAfter(), Long.MAX_VALUE);
+    }
+    public void setUpdatedAfter(final String updatedAfter) {
+        this.updatedAfter = updatedAfter;
+        stagedRequest.setUpdatedAfter(parseDateAndUseDefaultOnFail(updatedAfter, Long.MAX_VALUE));
+    }
+    public String getUpdatedBefore() {
+        return getDateAsString(updatedBefore, stagedRequest.getUpdatedBefore(), 0L);
+    }
+    public void setUpdatedBefore(final String updatedBefore) {
+        this.updatedBefore = updatedBefore;
+        stagedRequest.setUpdatedBefore(parseDateAndUseDefaultOnFail(updatedBefore, 0L));
+    }
+
+    /** @return the current value if the staged request value if the default value */
+    private String getDateAsString(final String stagedValue, final long value, final long defaultValue) {
+        if (value==defaultValue) {
+            return stagedValue;
         }
+        return ValidityDate.formatAsISO8601ServerTZ(value, TimeZone.getDefault());
+    }
+    /** @return the staged request value if it is a parsable date and the default value otherwise */
+    private long parseDateAndUseDefaultOnFail(final String input, final long defaultValue) {
+        if (!input.trim().isEmpty()) {
+            try {
+                return ValidityDate.parseAsIso8601(input).getTime();
+            } catch (ParseException e) {
+                raLocaleBean.addMessageWarn("search_certs_page_warn_invaliddate");
+            }
+        }
+        return defaultValue;
     }
 
     public List<SelectItem> getAvailableCas() {
