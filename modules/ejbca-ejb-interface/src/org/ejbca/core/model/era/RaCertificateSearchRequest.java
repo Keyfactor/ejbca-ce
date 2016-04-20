@@ -33,16 +33,21 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     private int maxResults = 20;
     private List<Integer> caIds = new ArrayList<>();
     private String genericSearchString = "";
-    private long expiresAfter = -1;
+    private long expiresAfter = 0;
+    private List<Integer> statuses = new ArrayList<>();
+    private List<Integer> revocationReasons = new ArrayList<>();
 
     /** Default constructor */
     public RaCertificateSearchRequest() {}
     
     /** Copy constructor */
     public RaCertificateSearchRequest(final RaCertificateSearchRequest request) {
-        maxResults = request.getMaxResults();
-        caIds.addAll(request.getCaIds());
-        genericSearchString = request.getGenericSearchString();
+        maxResults = request.maxResults;
+        caIds.addAll(request.caIds);
+        genericSearchString = request.genericSearchString;
+        expiresAfter = request.expiresAfter;
+        statuses.addAll(request.statuses);
+        revocationReasons.addAll(request.revocationReasons);
     }
 
     public int getMaxResults() { return maxResults; }
@@ -51,8 +56,12 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     public void setCaIds(List<Integer> caIds) { this.caIds = caIds; }
     public String getGenericSearchString() { return genericSearchString; }
     public void setGenericSearchString(final String genericSearchString) { this.genericSearchString = genericSearchString; }
-    public void setExpiresAfter(final long expiresAfter) { this.expiresAfter = expiresAfter; }
     public long getExpiresAfter() { return expiresAfter; }
+    public void setExpiresAfter(final long expiresAfter) { this.expiresAfter = expiresAfter; }
+    public List<Integer> getStatuses() { return statuses; }
+    public void setStatuses(final List<Integer> statuses) { this.statuses = statuses; }
+    public List<Integer> getRevocationReasons() { return revocationReasons; }
+    public void setRevocationReasons(final List<Integer> revocationReasons) { this.revocationReasons = revocationReasons; }
 
     public boolean equals(final Object object) {
         if (!(object instanceof RaCertificateSearchRequest)) {
@@ -72,15 +81,9 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         if (maxResults!=other.maxResults) {
             return maxResults-other.maxResults;
         }
-        if (caIds.containsAll(other.caIds) && !other.caIds.containsAll(caIds)) {
-            // This does contain whole other, but other does not contain whole this → more narrow
-            return -1;
-        }
-        if (!caIds.containsAll(other.caIds)) {
-            // This does not contain whole other → wider
-            return 1;
-        }
-        log.info("DEVELOP expiresAfter="+expiresAfter + " other.expiresAfter="+other.expiresAfter);
+        if (isMoreNarrow(caIds, other.caIds)) { return -1; }
+        if (isWider(caIds, other.caIds)) { return 1; }
+        //log.info("DEVELOP expiresAfter="+expiresAfter + " other.expiresAfter="+other.expiresAfter);
         if (expiresAfter<other.expiresAfter) {
             return 1;
         }
@@ -95,6 +98,19 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
             // This does not contain whole other → wider
             return 1;
         }
+        if (isMoreNarrow(statuses, other.statuses)) { return -1; }
+        if (isWider(statuses, other.statuses)) { return 1; }
+        if (isMoreNarrow(revocationReasons, other.revocationReasons)) { return -1; }
+        if (isWider(revocationReasons, other.revocationReasons)) { return 1; }
         return 0;
+    }
+    
+    // @return true if thisObject does contain whole other, but other does not contain whole this → more narrow
+    private boolean isMoreNarrow(final List<Integer> thisObject, final List<Integer> otherObject) {
+        return thisObject.containsAll(otherObject) && !otherObject.containsAll(thisObject);
+    }
+    // @return true if thisObject does not contain whole other → wider
+    private boolean isWider(final List<Integer> thisObject, final List<Integer> otherObject) {
+        return !thisObject.containsAll(otherObject);
     }
 }

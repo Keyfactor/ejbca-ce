@@ -30,35 +30,38 @@
         <ui:define name="content">
             <h2 class="content-body-subhead"><h:outputText value="#{msg.search_certs_page_title}"/></h2>
             <h:form id="contentForm">
-                <h:panelGroup id="basic">
-                    <h:panelGrid columns="2">
-                        <h:outputLabel for="genericSearchString" value="#{msg.search_certs_page_criteria_string_label}"/>
-                        <h:inputText id="genericSearchString" value="#{raSearchCertsBean.genericSearchString}" styleClass="autoFocusWithJs">
-                            <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-                                onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
-                        </h:inputText>
+                <h:panelGroup id="basic" layout="block">
+                    <h:selectOneMenu id="criteriaCaId" value="#{raSearchCertsBean.criteriaCaId}">
+                        <f:selectItems value="#{raSearchCertsBean.availableCas}"/>
+                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                    </h:selectOneMenu>
 
-                        <h:outputLabel for="criteriaCaId" value="#{msg.search_certs_page_criteria_ca}"/>
-                        <h:selectOneMenu id="criteriaCaId" value="#{raSearchCertsBean.criteriaCaId}">
-                            <f:selectItems value="#{raSearchCertsBean.availableCas}"/>
-                            <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-                                onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
-                        </h:selectOneMenu>
+                    <h:inputText id="genericSearchString" value="#{raSearchCertsBean.genericSearchString}" styleClass="autoFocusWithJs">
+                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                    </h:inputText>
 
-                        <h:outputLabel for="criteriaExcludeExpired" value="#{msg.search_certs_page_criteria_excludeexpired}"/>
-                        <h:selectBooleanCheckbox id="criteriaExcludeExpired" value="#{raSearchCertsBean.criteriaExcludeExpired}">
-                            <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-                                onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
-                        </h:selectBooleanCheckbox>
+                    <h:selectBooleanCheckbox id="criteriaExcludeExpired" value="#{raSearchCertsBean.criteriaExcludeExpired}">
+                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                    </h:selectBooleanCheckbox>
+                    <h:outputLabel for="criteriaExcludeExpired" value="#{msg.search_certs_page_criteria_excludeexpired}"/>
 
-                        <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" styleClass="hideWithJs"/>
-                    </h:panelGrid>
+                    <h:selectOneMenu id="criteriaStatus" value="#{raSearchCertsBean.criteriaStatus}">
+                        <f:selectItems value="#{raSearchCertsBean.availableStatuses}"/>
+                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                    </h:selectOneMenu>
+
+                    <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" styleClass="hideWithJs"/>
                 </h:panelGroup>
 
-                <h:panelGroup id="filteredResults">
+                <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
                     <h:outputText styleClass="fineprint" rendered="#{empty raSearchCertsBean.filteredResults}" value="#{msg.search_certs_page_info_noresult}"/>
                     <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.moreResultsAvailable}" value="#{msg.search_certs_page_info_moreresults}"/>
                     <h:dataTable rendered="#{not empty raSearchCertsBean.filteredResults}" value="#{raSearchCertsBean.filteredResults}" var="raSearchCertificate"

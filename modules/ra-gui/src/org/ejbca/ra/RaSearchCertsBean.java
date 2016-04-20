@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
@@ -176,6 +177,12 @@ public class RaSearchCertsBean implements Serializable {
                         continue;
                     }
                 }
+                if (!stagedRequest.getStatuses().isEmpty() && !stagedRequest.getStatuses().contains(cdw.getCertificateData().getStatus())) {
+                    continue;
+                }
+                if (!stagedRequest.getRevocationReasons().isEmpty() && !stagedRequest.getRevocationReasons().contains(cdw.getCertificateData().getRevocationReason())) {
+                    continue;
+                }
                 // if (this or that) { ...
                 resultsFiltered.add(new RaSearchCertificate(cdw));
             }
@@ -233,6 +240,59 @@ public class RaSearchCertsBean implements Serializable {
             ret.add(new SelectItem(caInfo.getCAId(), caInfo.getName()));
         }
         return ret;
+    }
+    
+    public String getCriteriaStatus() {
+        final StringBuilder sb = new StringBuilder();
+        final List<Integer> statuses = stagedRequest.getStatuses();
+        final List<Integer> revocationReasons = stagedRequest.getRevocationReasons();
+        if (statuses.contains(CertificateConstants.CERT_ACTIVE)) {
+            sb.append(CertificateConstants.CERT_ACTIVE);
+        } else if (statuses.contains(CertificateConstants.CERT_REVOKED)) {
+            sb.append(CertificateConstants.CERT_REVOKED);
+            if (!revocationReasons.isEmpty()) {
+                sb.append("_").append(revocationReasons.get(0));
+            }
+        }
+        return sb.toString();
+    }
+    public void setCriteriaStatus(final String criteriaStatus) {
+        final List<Integer> statuses = new ArrayList<>();
+        final List<Integer> revocationReasons = new ArrayList<>();
+        if (!criteriaStatus.isEmpty()) {
+            final String[] criteriaStatusSplit = criteriaStatus.split("_");
+            if (String.valueOf(CertificateConstants.CERT_ACTIVE).equals(criteriaStatusSplit[0])) {
+                statuses.addAll(Arrays.asList(new Integer[]{ CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION }));
+            } else {
+                statuses.addAll(Arrays.asList(new Integer[]{ CertificateConstants.CERT_REVOKED, CertificateConstants.CERT_ARCHIVED }));
+                if (criteriaStatusSplit.length>1) {
+                    revocationReasons.addAll(Arrays.asList(new Integer[]{ Integer.parseInt(criteriaStatusSplit[1]) }));
+                }
+            }
+        }
+        stagedRequest.setStatuses(statuses);
+        stagedRequest.setRevocationReasons(revocationReasons);
+    }
+    
+    public List<SelectItem> getAvailableStatuses() {
+        final List<SelectItem> ret = new ArrayList<>();
+        ret.add(new SelectItem("", raLocaleBean.getMessage("search_certs_page_criteria_status_option_any")));
+        ret.add(new SelectItem(String.valueOf(CertificateConstants.CERT_ACTIVE), raLocaleBean.getMessage("search_certs_page_criteria_status_option_active")));
+        ret.add(new SelectItem(String.valueOf(CertificateConstants.CERT_REVOKED), raLocaleBean.getMessage("search_certs_page_criteria_status_option_revoked")));
+        ret.add(getAvailableStatusRevoked(RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED));
+        ret.add(getAvailableStatusRevoked(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE));
+        ret.add(getAvailableStatusRevoked(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE));
+        ret.add(getAvailableStatusRevoked(RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED));
+        ret.add(getAvailableStatusRevoked(RevokedCertInfo.REVOCATION_REASON_SUPERSEDED));
+        ret.add(getAvailableStatusRevoked(RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION));
+        ret.add(getAvailableStatusRevoked(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD));
+        ret.add(getAvailableStatusRevoked(RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL));
+        ret.add(getAvailableStatusRevoked(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN));
+        ret.add(getAvailableStatusRevoked(RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE));
+        return ret;
+    }
+    private SelectItem getAvailableStatusRevoked(final int reason) {
+        return new SelectItem(CertificateConstants.CERT_REVOKED + "_" + reason, raLocaleBean.getMessage("search_certs_page_criteria_status_option_revoked_reason_"+reason));
     }
 
     public List<RaSearchCertificate> getFilteredResults() {
