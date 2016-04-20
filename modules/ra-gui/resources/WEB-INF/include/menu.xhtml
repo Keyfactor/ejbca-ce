@@ -81,8 +81,8 @@
                         <ui:fragment rendered="#{raAccessBean.authorizedToRoles}">
                             <li class="pure-menu-item">
                                 <a href="#" id="rolesManagement" class="pure-menu-link">Roles Management</a>
-                                </li>
-                            </ui:fragment>
+                            </li>
+                        </ui:fragment>
                     </ul>
                 </div>
             </div>
@@ -90,7 +90,12 @@
                 <div class="pure-menu pure-menu-horizontal align-right">
                     <ul class="pure-menu-list">
                         <li class="pure-menu-item"><a href="#" class="pure-menu-link">Documentation</a></li>
-                        <li class="pure-menu-item"><a href="#" class="pure-menu-link">Login</a></li>
+                        <ui:fragment rendered="#{raAuthenticationBean.publicUser}">
+                            <li class="pure-menu-item"><a href="#" class="pure-menu-link">Login</a></li>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{!raAuthenticationBean.publicUser}">
+                            <li class="pure-menu-item"><a href="#" id="search" class="pure-menu-link">Log out <h:outputText value="#{raAuthenticationBean.userDisplayName}"/></a></li>
+                        </ui:fragment>
                     </ul>
                 </div>
             </div>
