@@ -19,6 +19,7 @@
 document.addEventListener("DOMContentLoaded", function(event) {
     console.log("Document loaded.");
     hideInputElementsByStyleClass("hideWithJs");
+    useTitleAsPlaceHolderOnInputElementsByStyleClass("titleAsPlaceHolderWithJs");
     autoFocusFirstInputElementsByStyleClass("autoFocusWithJs");
     new SessionKeepAlive("sessionKeepAliveLink");
 }, false);
@@ -83,6 +84,23 @@ function autoFocusFirstInputElementsByStyleClass(styleClassName) {
 				if (styleClasses[j]==styleClassName) {
 					inputFields[i].focus();
 					return;
+				}
+			}
+		}
+	}
+}
+
+/** Autofocus first input elements marked with the styleClassName. */
+function useTitleAsPlaceHolderOnInputElementsByStyleClass(styleClassName) {
+	var inputFields = document.getElementsByTagName("input");
+	for (var i = 0; i<inputFields.length; i++) {
+		if (inputFields[i].className) {
+			var styleClasses = inputFields[i].className.split(' ');
+			for (var j = 0; j<styleClasses.length; j++) {
+				if (styleClasses[j]==styleClassName) {
+					inputFields[i].placeholder = inputFields[i].title;
+					inputFields[i].title = "";
+					break;
 				}
 			}
 		}

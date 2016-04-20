@@ -33,7 +33,10 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     private int maxResults = 20;
     private List<Integer> caIds = new ArrayList<>();
     private String genericSearchString = "";
-    private long expiresAfter = 0;
+    private long expiresAfter = Long.MAX_VALUE;
+    private long expiresBefore = 0L;
+    private long updatedAfter = Long.MAX_VALUE;
+    private long updatedBefore = 0L;
     private List<Integer> statuses = new ArrayList<>();
     private List<Integer> revocationReasons = new ArrayList<>();
 
@@ -46,6 +49,9 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         caIds.addAll(request.caIds);
         genericSearchString = request.genericSearchString;
         expiresAfter = request.expiresAfter;
+        expiresBefore = request.expiresBefore;
+        updatedAfter = request.updatedAfter;
+        updatedBefore = request.updatedBefore;
         statuses.addAll(request.statuses);
         revocationReasons.addAll(request.revocationReasons);
     }
@@ -58,6 +64,12 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     public void setGenericSearchString(final String genericSearchString) { this.genericSearchString = genericSearchString; }
     public long getExpiresAfter() { return expiresAfter; }
     public void setExpiresAfter(final long expiresAfter) { this.expiresAfter = expiresAfter; }
+    public long getExpiresBefore() { return expiresBefore; }
+    public void setExpiresBefore(final long expiresBefore) { this.expiresBefore = expiresBefore; }
+    public long getUpdatedAfter() { return updatedAfter; }
+    public void setUpdatedAfter(final long updatedAfter) { this.updatedAfter = updatedAfter; }
+    public long getUpdatedBefore() { return updatedBefore; }
+    public void setUpdatedBefore(final long updatedBefore) { this.updatedBefore = updatedBefore; }
     public List<Integer> getStatuses() { return statuses; }
     public void setStatuses(final List<Integer> statuses) { this.statuses = statuses; }
     public List<Integer> getRevocationReasons() { return revocationReasons; }
@@ -84,12 +96,14 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         if (isMoreNarrow(caIds, other.caIds)) { return -1; }
         if (isWider(caIds, other.caIds)) { return 1; }
         //log.info("DEVELOP expiresAfter="+expiresAfter + " other.expiresAfter="+other.expiresAfter);
-        if (expiresAfter<other.expiresAfter) {
-            return 1;
-        }
-        if (expiresAfter>other.expiresAfter) {
-            return -1;
-        }
+        if (expiresAfter<other.expiresAfter) { return 1; }
+        if (expiresAfter>other.expiresAfter) { return -1; }
+        if (expiresBefore>other.expiresBefore) { return 1; }
+        if (expiresBefore<other.expiresBefore) { return -1; }
+        if (updatedAfter<other.updatedAfter) { return 1; }
+        if (updatedAfter>other.updatedAfter) { return -1; }
+        if (updatedBefore>other.updatedBefore) { return 1; }
+        if (updatedBefore<other.updatedBefore) { return -1; }
         if (genericSearchString.contains(other.genericSearchString) && !other.genericSearchString.contains(genericSearchString)) {
             // This does contain whole other, but other does not contain whole this → more narrow
             return -1;
