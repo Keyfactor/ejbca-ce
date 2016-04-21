@@ -727,8 +727,11 @@ In EJBCA 6.0.4 <a href="https://jira.primekey.se/browse/ECA-3371">ECA-3371</a> s
 
 <subsection name="WildFly 10">
 <p>EJBCA 6.x compiles, deploys and runs with WildFly 10 (release following 6.3.1.1).</p>
-<p>For WildFly deploy and install does not automagically configure the Application server for you, instead we supply configuration instructions for the Application server for you to follow.</p>
-
+<p>For WildFly, deploy and install does not automagically configure the Application server for you, instead we supply configuration instructions for the Application server for you to follow.
+This makes your configuration robust, and possible to script on your own.</p>
+<note>
+Run your installation without mixing root and user accounts as this may lead to root privileges being set on files, which later WildFly is unable to read. Therefore the advice is to run everything as your "wildfly" user.
+</note>
 <subsubsection name="Add database driver">
 <p>Add MariaDB database driver by hot-deploying it into the Ddeployment directory. This will be picked up by WildFly and deployed so we can create a datasource straight away.
 You can use a generic name, without version number, in order to get a generic 'driver-name' for the data source command.
@@ -739,15 +742,29 @@ You can use a generic name, without version number, in order to get a generic 'd
 </subsubsection>
 
 <subsubsection name="Increase allowed memory usage">
-<p>By default, only 512MiB of heap and 256MiB perm gen space is allowed. Edit wildfly_home/bin/standalone.conf to increase this to a more suitable value, e.g. </p>
+<p>By default, only 512MiB of heap and 256MiB PermGen space is allowed. Edit wildfly_home/bin/standalone.conf to increase this to a more suitable value, e.g. </p>
 <source>
    JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MaxPermSize=384m -Djava.net.preferIPv4Stack=true"
 </source>
 </subsubsection>
 
+<subsubsection name="Create database">
+<p>Before creating the datasource in the following step, create your database. In MariaDB the command to create the database, matching the datasource in the next step, and add privileges to connect to the database is:</p>
+<source> 
+$ mysqladmin -u root -p create ejbca
+$ mysql -u root -p
+mysql> CREATE DATABASE ejbca CHARACTER SET utf8 COLLATE utf8_general_ci;
+mysql> GRANT ALL PRIVILEGES ON ejbca.* TO 'ejbca'@'localhost' IDENTIFIED BY 'ejbca';
+</source>
+<p>
+You should define secure passwords for your database in production.
+You can also improve the security by limiting access to tables. See for <a href="security.html#Database privileges">Database privileges</a> for more information about that.
+</p>
+</subsubsection>
+
 <subsubsection name="Add datasource">
 <p>Add data source for EJBCA to use.</p>
-<p>Start JBoss and run two commands in JBoss CLI.</p>
+<p>Start JBoss and run two commands in JBoss CLI. Note that "-jindi-name" is linked to the database.properties value (default value in this example).</p>
 <source>
 > wildfly_home/bin/jboss-cli.sh -c
 > data-source add --name=ejbcads --driver-name="mariadb-java-client.jar" --connection-url="jdbc:mysql://127.0.0.1:3306/ejbca" --jndi-name="java:/EjbcaDS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="ejbca" --password="ejbca" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"
@@ -811,8 +828,9 @@ ant deploy-keystore
 </subsubsection>
 
 <subsubsection name="Configure TLS">
+<note>Make sure the passwords in this section are correct, or the commands will fail. In production the passwords should be changed to "real" passwords.</note>
 <p>The run the following commands in JBoss CLI (jboss-cli.sh -c) to configure TLS.</p>
-<p>Add interfaces:</p>
+<p>Add interfaces, using 0.0.0.0 to make it available for the world:</p>
 <source>
 /interface=http:add(inet-address="0.0.0.0")
 /interface=httpspub:add(inet-address="0.0.0.0")
