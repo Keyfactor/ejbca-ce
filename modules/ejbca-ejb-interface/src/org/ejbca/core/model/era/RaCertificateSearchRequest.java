@@ -29,8 +29,11 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaCertificateSearchRequest.class);
+    public static int DEFAULT_MAX_RESULTS = 25;
 
-    private int maxResults = 20;
+    private int maxResults = DEFAULT_MAX_RESULTS;
+    private List<Integer> eepIds = new ArrayList<>();
+    private List<Integer> cpIds = new ArrayList<>();
     private List<Integer> caIds = new ArrayList<>();
     private String genericSearchString = "";
     private long expiresAfter = Long.MAX_VALUE;
@@ -46,6 +49,8 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     /** Copy constructor */
     public RaCertificateSearchRequest(final RaCertificateSearchRequest request) {
         maxResults = request.maxResults;
+        eepIds.addAll(request.eepIds);
+        cpIds.addAll(request.cpIds);
         caIds.addAll(request.caIds);
         genericSearchString = request.genericSearchString;
         expiresAfter = request.expiresAfter;
@@ -57,9 +62,13 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     }
 
     public int getMaxResults() { return maxResults; }
-    public void setMaxResults(int maxResults) { this.maxResults = maxResults; }
+    public void setMaxResults(final int maxResults) { this.maxResults = maxResults; }
+    public List<Integer> getEepIds() { return eepIds; }
+    public void setEepIds(final List<Integer> eepIds) { this.eepIds = eepIds; }
+    public List<Integer> getCpIds() { return cpIds; }
+    public void setCpIds(final List<Integer> cpIds) { this.cpIds = cpIds; }
     public List<Integer> getCaIds() { return caIds; }
-    public void setCaIds(List<Integer> caIds) { this.caIds = caIds; }
+    public void setCaIds(final List<Integer> caIds) { this.caIds = caIds; }
     public String getGenericSearchString() { return genericSearchString; }
     public void setGenericSearchString(final String genericSearchString) { this.genericSearchString = genericSearchString; }
     public long getExpiresAfter() { return expiresAfter; }
@@ -90,9 +99,12 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         if (other==null) {
             return 1;
         }
-        if (maxResults!=other.maxResults) {
-            return maxResults-other.maxResults;
-        }
+        if (maxResults<other.maxResults) { return -1; }
+        if (maxResults>other.maxResults) { return 1; }
+        if (isMoreNarrow(eepIds, other.eepIds)) { return -1; }
+        if (isWider(eepIds, other.eepIds)) { return 1; }
+        if (isMoreNarrow(cpIds, other.cpIds)) { return -1; }
+        if (isWider(cpIds, other.cpIds)) { return 1; }
         if (isMoreNarrow(caIds, other.caIds)) { return -1; }
         if (isWider(caIds, other.caIds)) { return 1; }
         //log.info("DEVELOP expiresAfter="+expiresAfter + " other.expiresAfter="+other.expiresAfter);
