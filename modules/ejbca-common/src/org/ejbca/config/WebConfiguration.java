@@ -260,4 +260,18 @@ public class WebConfiguration {
     public static String getStatedumpTemplatesBasedir() {
         return EjbcaConfigurationHolder.getString("statedump.templatebasedir");
     }
+    
+    /** Returns true if the CRL Store Servlet (search.cgi) is enabled. Default is false */
+    public static boolean isCrlStoreEnabled() {
+        return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("crlstore.enabled"));
+    }
+    
+    /** Returns the base URL path of the CRL store servlet, e.g. /ejbca/publicweb/crls */ 
+    public static String getCrlStoreContextRoot() {
+        String value = EjbcaConfigurationHolder.getString("crlstore.contextroot");
+        if (value == null) {
+            value = "/crls";
+        }
+        return value;
+    }
 }

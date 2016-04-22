@@ -58,7 +58,7 @@ public final class EjbcaConfigurationHolder {
 	/** ejbca.properties must be first in this file, because CONFIGALLOWEXTERNAL is defined in there. */
 	public static final String[] CONFIG_FILES = {"ejbca.properties", "web.properties", "cmptcp.properties",
 	    "externalra-caservice.properties", "ocsp.properties", "jaxws.properties", "cache.properties", 
-	    "database.properties", "va.properties", "va-publisher.properties"};
+	    "crlstore.properties", "database.properties", "va.properties", "va-publisher.properties"};
 
 	/** Configuration property that enables dynamic reading of properties from the file system. This is not allowed by default for security reasons. */
 	public static final String CONFIGALLOWEXTERNAL = "allow.external-dynamic.configuration";
