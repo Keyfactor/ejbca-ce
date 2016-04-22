@@ -91,6 +91,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     private String username;
     private String tag;
     private Integer certificateProfileId;
+    private Integer endEntityProfileId = null;
     private long updateTime = 0;
     private String subjectKeyId;
     private int rowVersion = 0;
@@ -640,6 +641,33 @@ public class CertificateData extends ProtectedData implements Serializable {
         } else {
             setRevocationDate(revocationDate.getTime());
         }
+    }
+
+    /** @deprecated Not yet implemented. */
+    @Deprecated // TODO
+    @Transient
+    public void setEndEntityProfileId(final Integer endEntityProfileId) {
+        this.endEntityProfileId = endEntityProfileId;
+    }
+
+    /**
+     * @return the end entity profile Id or null if the entry was created before this field was introduced. 
+     * @deprecated Not yet implemented.
+     */
+    @Deprecated // TODO
+    @Transient
+    public Integer getEndEntityProfileId() {
+        return endEntityProfileId;
+    }
+
+    /**
+     * @return the end entity profile Id or 0 if the entry was created before this field was introduced. 
+     * @deprecated Not yet implemented.
+     */
+    @Deprecated // TODO
+    @Transient
+    public Integer getEndEntityProfileIdOrZero() {
+        return endEntityProfileId==null ? 0 : endEntityProfileId;
     }
 
     // Comparators
@@ -1312,5 +1340,4 @@ public class CertificateData extends ProtectedData implements Serializable {
     //
     // End Database integrity protection methods
     //
-
 }
