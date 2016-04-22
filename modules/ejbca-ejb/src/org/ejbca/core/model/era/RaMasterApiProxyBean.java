@@ -147,33 +147,19 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public List<CAInfo> getAuthorizedCas(final AuthenticationToken authenticationToken) {
-        final Set<CAInfo> caInfos = new HashSet<>();
+        final Map<Integer,CAInfo> caInfoMap = new HashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    caInfos.addAll(raMasterApi.getAuthorizedCas(authenticationToken));
+                    for (final CAInfo caInfo : raMasterApi.getAuthorizedCas(authenticationToken)) {
+                        caInfoMap.put(caInfo.getCAId(), caInfo);
+                    }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        // Remove duplicates (which would happen in the non-production like use case where there is a peer connection over localhost
-        // Note that if we ever implement .equals and .hashCode for CAInfo this could be removed
-        final ArrayList<CAInfo> ret = new ArrayList<>();
-        for (final CAInfo caInfo : caInfos) {
-            boolean skip = false;
-            for (final CAInfo caInfo2 : ret) {
-                if (caInfo2.getCAId() == caInfo.getCAId()) {
-                    // Skip object with same CA Id
-                    skip = true;
-                    break;
-                }
-            }
-            if (!skip) {
-                ret.add(caInfo);
-            }
-        }
-        return ret;
+        return new ArrayList<>(caInfoMap.values());
     }
 
     @Override
