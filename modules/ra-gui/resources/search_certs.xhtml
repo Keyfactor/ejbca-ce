@@ -41,7 +41,23 @@
                             onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                     </h:inputText>
 
-                    <h:selectOneMenu id="criteriaCaId" value="#{raSearchCertsBean.criteriaCaId}">
+                    <h:selectOneMenu id="criteriaEepId" value="#{raSearchCertsBean.criteriaEepId}" rendered="#{!raSearchCertsBean.onlyOneEepAvailable}" readonly="true">
+                        <f:selectItems value="#{raSearchCertsBean.availableEeps}"/>
+                        <ui:remove><!-- Disabled until we have the endEntityProfile column in CertificateData -->
+                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                        </ui:remove>
+                    </h:selectOneMenu>
+
+                    <h:selectOneMenu id="criteriaCpId" value="#{raSearchCertsBean.criteriaCpId}" rendered="#{!raSearchCertsBean.onlyOneCpAvailable}">
+                        <f:selectItems value="#{raSearchCertsBean.availableCps}"/>
+                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                    </h:selectOneMenu>
+
+                    <h:selectOneMenu id="criteriaCaId" value="#{raSearchCertsBean.criteriaCaId}" rendered="#{!raSearchCertsBean.onlyOneCaAvailable}">
                         <f:selectItems value="#{raSearchCertsBean.availableCas}"/>
                         <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
                             onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
@@ -71,7 +87,17 @@
                 <h:panelGroup id="more" layout="block" style="margin-top: 10px;">
                     <h:panelGroup rendered="#{raSearchCertsBean.moreOptions}">
                     
-                        <h:panelGrid columns="2">
+                        <h:panelGrid columns="3">
+                            <h:panelGrid columns="2">
+                                <h:outputLabel for="criteriaMaxResults" value="#{msg.search_certs_page_criteria_maxresults}"/>
+                                <h:selectOneMenu id="criteriaMaxResults" value="#{raSearchCertsBean.criteriaMaxResults}">
+                                    <f:selectItems value="#{raSearchCertsBean.availableMaxResults}"/>
+                                    <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:selectOneMenu>
+                                
+                            </h:panelGrid>
                             <h:panelGrid columns="2">
                                 <h:outputLabel for="expiresAfter" value="#{msg.search_certs_page_criteria_expiresafter}"/>
                                 <h:inputText id="expiresAfter" value="#{raSearchCertsBean.expiresAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ" styleClass="titleAsPlaceHolderWithJs">
@@ -110,7 +136,7 @@
                     <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.moreResultsAvailable}" value="#{msg.search_certs_page_info_moreresults}"/>
                     <h:dataTable rendered="#{not empty raSearchCertsBean.filteredResults}" value="#{raSearchCertsBean.filteredResults}" var="raSearchCertificate"
                         styleClass="pure-table" rowClasses=",pure-table-odd">
-                        <h:column rendered="#{raSearchCertsBean.criteriaCaId==0}">
+                        <h:column>
                             <f:facet name="header">
                                 <h:outputLabel for="sortCa" value="#{msg.search_certs_page_colhead_ca} #{raSearchCertsBean.sortedByCa}"/>
                                 <h:commandButton id="sortCa" action="#{raSearchCertsBean.sortByCa}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
@@ -120,6 +146,28 @@
                                 </h:commandButton>
                             </f:facet>
                             <h:outputText styleClass="fineprint" value="#{raSearchCertificate.caName}"/>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortCp" value="#{msg.search_certs_page_colhead_cp} #{raSearchCertsBean.sortedByCp}"/>
+                                <h:commandButton id="sortCp" action="#{raSearchCertsBean.sortByCp}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText styleClass="fineprint" value="#{raSearchCertificate.cpName}"/>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortEep" value="#{msg.search_certs_page_colhead_eep} #{raSearchCertsBean.sortedByEep}"/>
+                                <h:commandButton id="sortEep" action="#{raSearchCertsBean.sortByEep}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText styleClass="fineprint" value="#{raSearchCertificate.eepName}"/>
                         </h:column>
                         <h:column>
                             <f:facet name="header">

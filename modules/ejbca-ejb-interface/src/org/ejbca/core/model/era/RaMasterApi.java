@@ -62,6 +62,12 @@ public interface RaMasterApi {
     @Deprecated // PoC. Remove when we have real functions to invoke.
     String testCallPreferCache(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException;
 
+    /** @return map of authorized certificate profile Ids and each mapped name */
+    Map<Integer, String> getAuthorizedCertificateProfileIdsToNameMap(AuthenticationToken authenticationToken);
+
+    /** @return map of authorized entity profile Ids and each mapped name */
+    Map<Integer, String> getAuthorizedEndEntityProfileIdsToNameMap(AuthenticationToken authenticationToken);
+
     /** @return map of entity profiles authorized to be used where keys are end entity profile names */
     Map<String, EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException;
 

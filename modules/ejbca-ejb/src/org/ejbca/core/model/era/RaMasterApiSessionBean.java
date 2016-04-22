@@ -15,9 +15,12 @@ package org.ejbca.core.model.era;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -155,6 +158,31 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         if (issuerDns.isEmpty()) {
             // Empty response since there were no authorized CAs
+            if (log.isDebugEnabled()) {
+                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested CAs and the search request will be dropped.");
+            }
+            return response;
+        }
+        final List<Integer> authorizedCpIds = new ArrayList<>(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, 0));
+        if (!request.getCpIds().isEmpty()) {
+            authorizedCpIds.retainAll(request.getCpIds());
+        }
+        if (authorizedCpIds.isEmpty()) {
+            // Empty response since there were no authorized Certificate Profiles
+            if (log.isDebugEnabled()) {
+                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested CPs and the search request will be dropped.");
+            }
+            return response;
+        }
+        final Collection<Integer> authorizedEepIds = new ArrayList<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY));
+        if (!request.getEepIds().isEmpty()) {
+            authorizedEepIds.retainAll(request.getEepIds());
+        }
+        if (authorizedEepIds.isEmpty()) {
+            // Empty response since there were no authorized End Entity Profiles
+            if (log.isDebugEnabled()) {
+                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested EEPs and the search request will be dropped.");
+            }
             return response;
         }
         final String genericSearchString = request.getGenericSearchString();
@@ -182,11 +210,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 sb.append(" AND (a.revocationReason IN (:revocationReason))");
             }
         }
-        if (log.isDebugEnabled()) {
-            log.debug("Certificate search query: " + sb.toString());
-        }
+        sb.append(" AND (a.certificateProfileId IN (:certificateProfileId))");
+        //sb.append(" AND (a.endEntityProfileId IN (:endEntityProfileId))");
         final Query query = entityManager.createQuery(sb.toString());
         query.setParameter("issuerDN", issuerDns);
+        query.setParameter("certificateProfileId", authorizedCpIds);
+        //query.setParameter("endEntityProfileId", authorizedEepIds);
         if (!genericSearchString.isEmpty()) {
             query.setParameter("username", "%" + genericSearchString + "%");
             query.setParameter("subjectDN", "%" + genericSearchString + "%");
@@ -214,6 +243,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         query.setMaxResults(maxResults);
         @SuppressWarnings("unchecked")
         final List<String> fingerprints = query.getResultList();
+        if (log.isDebugEnabled()) {
+            log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " → " + query.getResultList().size() + " results.");
+        }
         for (final String fingerprint : fingerprints) {
             response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
         }
@@ -246,6 +278,38 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public String testCallPreferCache(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public final Map<Integer, String> getAuthorizedEndEntityProfileIdsToNameMap(AuthenticationToken authenticationToken) {
+        final Collection<Integer> authorizedEepIds = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY);
+        final Map<Integer, String> idToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
+        final Map<Integer, String> authorizedIdToNameMap = new HashMap<>();
+        for (final Integer eepId : authorizedEepIds) {
+            authorizedIdToNameMap.put(eepId, idToNameMap.get(eepId));
+        }
+        return authorizedIdToNameMap;
+    }
+    
+    @Override
+    public final Map<Integer, String> getAuthorizedCertificateProfileIdsToNameMap(AuthenticationToken authenticationToken) {
+        final List<Integer> authorizedCpIds = new ArrayList<>(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, 0));
+        // There is no reason to return a certificate profile if it is not present in one of the authorized EEPs
+        final Collection<Integer> authorizedEepIds = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY);
+        final Set<Integer> cpIdsInAuthorizedEeps = new HashSet<>(); 
+        for (final Integer eepId : authorizedEepIds) {
+            final EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(eepId);
+            for (final String availableCertificateProfileId : eep.getAvailableCertificateProfileIds()) {
+                cpIdsInAuthorizedEeps.add(Integer.parseInt(availableCertificateProfileId));
+            }
+        }
+        authorizedCpIds.retainAll(cpIdsInAuthorizedEeps);
+        final Map<Integer, String> idToNameMap = certificateProfileSession.getCertificateProfileIdToNameMap();
+        final Map<Integer, String> authorizedIdToNameMap = new HashMap<>();
+        for (final Integer cpId : authorizedCpIds) {
+            authorizedIdToNameMap.put(cpId, idToNameMap.get(cpId));
+        }
+        return authorizedIdToNameMap;
     }
     
     @Override
