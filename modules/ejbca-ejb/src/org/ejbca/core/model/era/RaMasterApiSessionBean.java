@@ -186,9 +186,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return response;
         }
         final String genericSearchString = request.getGenericSearchString();
+        final String genericSearchStringDec = request.getGenericSearchStringAsDecimal();
+        final String genericSearchStringHex = request.getGenericSearchStringAsHex();
         StringBuilder sb = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE (a.issuerDN IN (:issuerDN))");
         if (!genericSearchString.isEmpty()) {
-            sb.append(" AND (a.username LIKE :username OR a.subjectDN LIKE :subjectDN)");
+            sb.append(" AND (a.username LIKE :username OR a.subjectDN LIKE :subjectDN");
+            if (genericSearchStringDec!=null) {
+                sb.append(" OR a.serialNumber LIKE :serialNumberDec");
+            }
+            if (genericSearchStringHex!=null) {
+                sb.append(" OR a.serialNumber LIKE :serialNumberHex");
+            }
+            sb.append(")");
         }
         if (request.getExpiresAfter()<Long.MAX_VALUE) {
             sb.append(" AND (a.expireDate > :expiresAfter)");
@@ -219,6 +228,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!genericSearchString.isEmpty()) {
             query.setParameter("username", "%" + genericSearchString + "%");
             query.setParameter("subjectDN", "%" + genericSearchString + "%");
+            if (genericSearchStringDec!=null) {
+                query.setParameter("serialNumberDec", genericSearchStringDec);
+                log.debug(" serialNumberDec: " + genericSearchStringDec);
+            }
+            if (genericSearchStringHex!=null) {
+                query.setParameter("serialNumberHex", genericSearchStringHex);
+                log.debug(" serialNumberHex: " + genericSearchStringHex);
+            }
         }
         if (request.getExpiresAfter()<Long.MAX_VALUE) {
             query.setParameter("expiresAfter", request.getExpiresAfter());

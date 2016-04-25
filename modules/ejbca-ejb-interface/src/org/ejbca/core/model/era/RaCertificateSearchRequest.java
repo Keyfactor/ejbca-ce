@@ -13,10 +13,9 @@
 package org.ejbca.core.model.era;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.log4j.Logger;
 
 /**
  * Search request for certificates from RA UI.
@@ -28,7 +27,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     // TODO: Make Externalizable instead to handle for future versioning
 
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(RaCertificateSearchRequest.class);
+    //private static final Logger log = Logger.getLogger(RaCertificateSearchRequest.class);
     public static int DEFAULT_MAX_RESULTS = 25;
 
     private int maxResults = DEFAULT_MAX_RESULTS;
@@ -84,6 +83,29 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     public List<Integer> getRevocationReasons() { return revocationReasons; }
     public void setRevocationReasons(final List<Integer> revocationReasons) { this.revocationReasons = revocationReasons; }
 
+    /** @return the generic search string as a decimal String if it has potential to be a decimal certificate serial number. */
+    public String getGenericSearchStringAsDecimal() {
+        // Assuming 8 octets and some leading zeroes
+        if (genericSearchString.length()>=17) {
+            try {
+                return new BigInteger(genericSearchString, 10).toString(10);
+            } catch (NumberFormatException e) {
+            }
+        }
+        return null;
+    }
+    /** @return the generic search string as a decimal String if it has potential to be a hex certificate serial number. */
+    public String getGenericSearchStringAsHex() {
+        // Assuming 8 octets and maybe a leading zero
+        if (genericSearchString.length()>=15) {
+            try {
+                return new BigInteger(genericSearchString, 16).toString(10);
+            } catch (NumberFormatException e) {
+            }
+        }
+        return null;
+    }
+    
     public boolean equals(final Object object) {
         if (!(object instanceof RaCertificateSearchRequest)) {
             return false;
@@ -116,6 +138,8 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         if (updatedAfter>other.updatedAfter) { return -1; }
         if (updatedBefore>other.updatedBefore) { return 1; }
         if (updatedBefore<other.updatedBefore) { return -1; }
+        if (getGenericSearchStringAsDecimal()!=null && !getGenericSearchStringAsDecimal().equals(other.getGenericSearchStringAsDecimal())) { return 1; }
+        if (getGenericSearchStringAsHex()!=null && !getGenericSearchStringAsHex().equals(other.getGenericSearchStringAsHex())) { return 1; }
         if (genericSearchString.contains(other.genericSearchString) && !other.genericSearchString.contains(genericSearchString)) {
             // This does contain whole other, but other does not contain whole this → more narrow
             return -1;
