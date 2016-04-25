@@ -145,8 +145,8 @@ public class RaSearchCertsBean implements Serializable {
 
     private String expiresAfter = "";
     private String expiresBefore = "";
-    private String updatedAfter = "";
-    private String updatedBefore = "";
+    private String revokedAfter = "";
+    private String revokedBefore = "";
 
     public String getGenericSearchString() { return stagedRequest.getGenericSearchString(); }
     public void setGenericSearchString(final String genericSearchString) { stagedRequest.setGenericSearchString(genericSearchString); }
@@ -217,13 +217,13 @@ public class RaSearchCertsBean implements Serializable {
                         continue;
                     }
                 }
-                if (stagedRequest.getUpdatedAfter()<Long.MAX_VALUE) {
-                    if (cdw.getCertificateData().getUpdateTime()<stagedRequest.getUpdatedAfter()) {
+                if (stagedRequest.getRevokedAfter()<Long.MAX_VALUE) {
+                    if (cdw.getCertificateData().getUpdateTime()<stagedRequest.getRevokedAfter()) {
                         continue;
                     }
                 }
-                if (stagedRequest.getUpdatedBefore()>0L) {
-                    if (cdw.getCertificateData().getUpdateTime()>stagedRequest.getUpdatedBefore()) {
+                if (stagedRequest.getRevokedBefore()>0L) {
+                    if (cdw.getCertificateData().getUpdateTime()>stagedRequest.getRevokedBefore()) {
                         continue;
                     }
                 }
@@ -318,12 +318,12 @@ public class RaSearchCertsBean implements Serializable {
         stagedRequest.setMaxResults(RaCertificateSearchRequest.DEFAULT_MAX_RESULTS);
         stagedRequest.setExpiresAfter(Long.MAX_VALUE);
         stagedRequest.setExpiresBefore(0L);
-        stagedRequest.setUpdatedAfter(Long.MAX_VALUE);
-        stagedRequest.setUpdatedBefore(0L);
+        stagedRequest.setRevokedAfter(Long.MAX_VALUE);
+        stagedRequest.setRevokedBefore(0L);
         expiresAfter = "";
         expiresBefore = "";
-        updatedAfter = "";
-        updatedBefore = "";
+        revokedAfter = "";
+        revokedBefore = "";
         searchAndFilterCommon();
     }
 
@@ -422,19 +422,19 @@ public class RaSearchCertsBean implements Serializable {
         this.expiresBefore = expiresBefore;
         stagedRequest.setExpiresBefore(parseDateAndUseDefaultOnFail(expiresBefore, 0L));
     }
-    public String getUpdatedAfter() {
-        return getDateAsString(updatedAfter, stagedRequest.getUpdatedAfter(), Long.MAX_VALUE);
+    public String getRevokedAfter() {
+        return getDateAsString(revokedAfter, stagedRequest.getRevokedAfter(), Long.MAX_VALUE);
     }
-    public void setUpdatedAfter(final String updatedAfter) {
-        this.updatedAfter = updatedAfter;
-        stagedRequest.setUpdatedAfter(parseDateAndUseDefaultOnFail(updatedAfter, Long.MAX_VALUE));
+    public void setRevokedAfter(final String revokedAfter) {
+        this.revokedAfter = revokedAfter;
+        stagedRequest.setRevokedAfter(parseDateAndUseDefaultOnFail(revokedAfter, Long.MAX_VALUE));
     }
-    public String getUpdatedBefore() {
-        return getDateAsString(updatedBefore, stagedRequest.getUpdatedBefore(), 0L);
+    public String getRevokedBefore() {
+        return getDateAsString(revokedBefore, stagedRequest.getRevokedBefore(), 0L);
     }
-    public void setUpdatedBefore(final String updatedBefore) {
-        this.updatedBefore = updatedBefore;
-        stagedRequest.setUpdatedBefore(parseDateAndUseDefaultOnFail(updatedBefore, 0L));
+    public void setRevokedBefore(final String revokedBefore) {
+        this.revokedBefore = revokedBefore;
+        stagedRequest.setRevokedBefore(parseDateAndUseDefaultOnFail(revokedBefore, 0L));
     }
 
     /** @return the current value if the staged request value if the default value */

@@ -206,11 +206,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             sb.append(" AND (a.expireDate < :expiresBefore)");
         }
         // NOTE: updateTime is not indexed.. we might want to disallow such search.
-        if (request.getUpdatedAfter()<Long.MAX_VALUE) {
-            sb.append(" AND (a.updateTime > :updatedAfter)");
+        if (request.getRevokedAfter()<Long.MAX_VALUE) {
+            sb.append(" AND (a.revocationDate > :revokedAfter)");
         }
-        if (request.getUpdatedBefore()>0L) {
-            sb.append(" AND (a.updateTime < :updatedBefore)");
+        if (request.getRevokedBefore()>0L) {
+            sb.append(" AND (a.revocationDate < :revokedBefore)");
         }
         if (!request.getStatuses().isEmpty()) {
             sb.append(" AND (a.status IN (:status))");
@@ -243,11 +243,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (request.getExpiresBefore()>0) {
             query.setParameter("expiresBefore", request.getExpiresBefore());
         }
-        if (request.getUpdatedAfter()<Long.MAX_VALUE) {
-            query.setParameter("updatedAfter", request.getUpdatedAfter());
+        if (request.getRevokedAfter()<Long.MAX_VALUE) {
+            query.setParameter("revokedAfter", request.getRevokedAfter());
         }
-        if (request.getUpdatedBefore()>0L) {
-            query.setParameter("updatedBefore", request.getUpdatedBefore());
+        if (request.getRevokedBefore()>0L) {
+            query.setParameter("revokedBefore", request.getRevokedBefore());
         }
         if (!request.getStatuses().isEmpty()) {
             query.setParameter("status", request.getStatuses());
