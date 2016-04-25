@@ -18,11 +18,26 @@
 // Executed when the document had been loaded
 document.addEventListener("DOMContentLoaded", function(event) {
     console.log("Document loaded.");
-    hideInputElementsByStyleClass("hideWithJs");
-    useTitleAsPlaceHolderOnInputElementsByStyleClass("titleAsPlaceHolderWithJs");
-    autoFocusFirstInputElementsByStyleClass("autoFocusWithJs");
+    jsTouchUpDocument();
+    // Auto fokus first found element with this tag on page load (JSF2.0 does not support HTML5 attributes)
+	forEachInputElementByStyleClass("jsAutoFocusOnce", function(inputField) {
+		inputField.focus();
+		return true;
+	});
     new SessionKeepAlive("sessionKeepAliveLink");
 }, false);
+
+function jsTouchUpDocument() {
+    // Hide elements that should not be shown when JS is enabled
+	forEachInputElementByStyleClass("jsHide", function(inputField) {
+		inputField.style.display = "none";
+	});
+	// Use title as HTML5 placeholder for elements marked with the style class (JSF2.0 does not support HTML5 attributes)
+	forEachInputElementByStyleClass("jsTitleAsPlaceHolder", function(inputField) {
+		inputField.placeholder = inputField.title;
+		inputField.title = "";
+	});
+};
 
 /** Keep JSF session alive by polling back-end before the session has expired */
 function SessionKeepAlive(linkElementId) {
@@ -58,48 +73,18 @@ function SessionKeepAlive(linkElementId) {
     }
 };
 
-/** Hide all input elements marked with the styleClassName. */
-function hideInputElementsByStyleClass(styleClassName) {
+/** Process the callback on each input element that matches the provided style class. */
+function forEachInputElementByStyleClass(styleClassName, callback) {
 	var inputFields = document.getElementsByTagName("input");
 	for (var i = 0; i<inputFields.length; i++) {
 		if (inputFields[i].className) {
 			var styleClasses = inputFields[i].className.split(' ');
 			for (var j = 0; j<styleClasses.length; j++) {
 				if (styleClasses[j]==styleClassName) {
-					inputFields[i].style.display = "none";
-					break;
-				}
-			}
-		}
-	}
-}
-
-/** Autofocus first input elements marked with the styleClassName. */
-function autoFocusFirstInputElementsByStyleClass(styleClassName) {
-	var inputFields = document.getElementsByTagName("input");
-	for (var i = 0; i<inputFields.length; i++) {
-		if (inputFields[i].className) {
-			var styleClasses = inputFields[i].className.split(' ');
-			for (var j = 0; j<styleClasses.length; j++) {
-				if (styleClasses[j]==styleClassName) {
-					inputFields[i].focus();
-					return;
-				}
-			}
-		}
-	}
-}
-
-/** Autofocus first input elements marked with the styleClassName. */
-function useTitleAsPlaceHolderOnInputElementsByStyleClass(styleClassName) {
-	var inputFields = document.getElementsByTagName("input");
-	for (var i = 0; i<inputFields.length; i++) {
-		if (inputFields[i].className) {
-			var styleClasses = inputFields[i].className.split(' ');
-			for (var j = 0; j<styleClasses.length; j++) {
-				if (styleClasses[j]==styleClassName) {
-					inputFields[i].placeholder = inputFields[i].title;
-					inputFields[i].title = "";
+					// Invoke the callback with the matching element. If it returns true we stop looking for more elements.
+					if (callback(inputFields[i])) {
+						return;
+					}
 					break;
 				}
 			}
