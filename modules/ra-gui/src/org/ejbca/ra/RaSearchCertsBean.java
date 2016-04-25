@@ -190,6 +190,8 @@ public class RaSearchCertsBean implements Serializable {
             for (final CertificateDataWrapper cdw : lastExecutedResponse.getCdws()) {
                 // ...we don't filter if the requested maxResults is lower than the search request
                 if (!stagedRequest.getGenericSearchString().isEmpty() && (
+                        (!cdw.getCertificateData().getSerialNumber().equals(stagedRequest.getGenericSearchStringAsDecimal())) &&
+                        (!cdw.getCertificateData().getSerialNumber().equals(stagedRequest.getGenericSearchStringAsHex())) &&
                         (cdw.getCertificateData().getUsername() == null || !cdw.getCertificateData().getUsername().contains(stagedRequest.getGenericSearchString())) &&
                         (cdw.getCertificateData().getSubjectDN() == null || !cdw.getCertificateData().getSubjectDN().contains(stagedRequest.getGenericSearchString())))) {
                     continue;
