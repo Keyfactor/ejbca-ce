@@ -26,7 +26,6 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 /**
  * Base class for CMP message handlers that require RA mode secret verification.
@@ -70,29 +69,6 @@ public class BaseCmpMessageHandler {
 		this.caSession = caSession;
 		this.endEntityProfileSession = endEntityProfileSession;
 		this.certificateProfileSession = certificateProfileSession;
-	}
-
-	/** @return the end entity profile id to use for a request based on the current configuration and keyId. 
-	 * @throws NotFoundException */
-	protected int getUsedEndEntityProfileId(final String keyId) throws NotFoundException {
-		String endEntityProfile = cmpConfiguration.getRAEEProfile(this.confAlias);
-		if (StringUtils.equals(endEntityProfile, "KeyId")) {
-		    if(keyId != null) {
-		        if (LOG.isDebugEnabled()) {
-		            LOG.debug("Using End Entity Profile with same name as KeyId in request: "+keyId);
-		        }
-		        endEntityProfile = keyId;
-		    } else {
-	              LOG.error("Expecting the End Entity Profile ID to be specified in the KeyID parameter, but the KeyID parameter is 'null'");
-		    }
-		} 
-		try {
-            return endEntityProfileSession.getEndEntityProfileId(endEntityProfile);
-        } catch (EndEntityProfileNotFoundException e) {
-            final String msg = "No end entity profile found with name: " + endEntityProfile;
-            LOG.info(msg);
-            throw new NotFoundException(msg, e);
-        }
 	}
 
 	/** @return the CA id to use for a request based on the current configuration, used end entity profile and keyId. 
