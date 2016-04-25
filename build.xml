@@ -814,6 +814,7 @@
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
 		    	<exclude name="bin/backup/**" />
+		    	<exclude name="modules/statedump/**" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700">
 		    	<include name="conf/extendedkeyusage.properties" />		    	
