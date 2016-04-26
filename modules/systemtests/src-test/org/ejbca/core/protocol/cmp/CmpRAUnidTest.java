@@ -76,6 +76,7 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
+@Ignore
 public class CmpRAUnidTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(CmpRAUnidTest.class);
