@@ -28,10 +28,10 @@
     </ui:remove>
     <ui:composition template="/WEB-INF/include/template.xhtml">
         <ui:define name="content">
-        	<div class="header" id="title">
+        	<h:panelGroup layout="block" class="header" id="title">
 				<h1>A Title!</h1>
-			</div>	
-        	<div class="content-body" id="content-body">
+			</h:panelGroup>	
+        	<h:panelGroup layout="block" class="content-body" id="content-body">
 				<h2 class="content-body-subhead">Generic Sample Text!</h2>
 	            <h:outputText value="#{msg.generic_sampleText}"/>
 	            <h:panelGrid columns="1">
@@ -121,7 +121,7 @@
 						       
 				    </tbody>
 				</table>
-	        </div>
+	        </h:panelGroup>
 	        
 	         
         </ui:define>
