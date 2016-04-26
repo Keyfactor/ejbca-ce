@@ -151,6 +151,8 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileSession.getCertificateProfileId(CERTPROFILE_NAME)));
         endEntityProfileSession.addEndEntityProfile(ADMIN, EEPROFILE_NAME, endEntityProfile);
         assertNotNull("Failed to create end entity profile.", endEntityProfileSession.getEndEntityProfile(EEPROFILE_NAME));
+        final int eepId = endEntityProfileSession.getEndEntityProfileId(EEPROFILE_NAME);
+        
         // Configure CMP for this test. RA mode with individual shared PBE secrets for each CA.
         this.cmpConfiguration.addAlias(configAlias);
         this.cmpConfiguration.setRAMode(configAlias, true);
@@ -158,7 +160,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         this.cmpConfiguration.setResponseProtection(configAlias, "pbe");
         this.cmpConfiguration.setRANameGenScheme(configAlias, "DN");
         this.cmpConfiguration.setRANameGenParams(configAlias, "CN");
-        this.cmpConfiguration.setRAEEProfile(configAlias, EEPROFILE_NAME);
+        this.cmpConfiguration.setRAEEProfile(configAlias, String.valueOf(eepId));
         this.cmpConfiguration.setRACertProfile(configAlias, CERTPROFILE_NAME);
         this.cmpConfiguration.setRACAName(configAlias, TESTCA_NAME);
         this.cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
