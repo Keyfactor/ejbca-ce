@@ -2139,4 +2139,18 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         stringBuilder.append("}");
         return stringBuilder.toString();
     }
+    
+    /** 
+     * Nested method wrapper class for convenient invoking
+     */
+    public class Field{
+        private String name;
+        public Field(String name){this.name = name;}
+        public boolean isUsed(){return EndEntityProfile.this.getUse(name, 0);}
+        public boolean isRequired(){return EndEntityProfile.this.isRequired(name, 0);}
+        public boolean isModifiable(){return EndEntityProfile.this.isModifyable(name, 0);}
+    }
+    public Field getUsername(){return new Field(EndEntityProfile.USERNAME);};
+    public Field getPassword(){return new Field(EndEntityProfile.PASSWORD);};
+    public Field getEmail(){return new Field(EndEntityProfile.EMAIL);};
 }

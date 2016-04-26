@@ -69,7 +69,7 @@ public interface RaMasterApi {
     Map<Integer, String> getAuthorizedEndEntityProfileIdsToNameMap(AuthenticationToken authenticationToken);
 
     /** @return map of entity profiles authorized to be used where keys are end entity profile names */
-    Map<String, EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException;
+    Map<String, EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken);
 
     /** 
      * @param certificateProfilesIds string array of certificate profile ids  

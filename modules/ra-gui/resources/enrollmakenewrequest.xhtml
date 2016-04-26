@@ -29,54 +29,145 @@
 <ui:composition template="/WEB-INF/include/template.xhtml">
 	<ui:define name="content">
 		<h:form id="enrollMakeNewRequestForm">
-			<h:panelGrid id="enrollMain" columns="2">
-				<h:outputText value="#{msg.enroll_certificate_type}" />
-				<h:selectOneMenu id="selectEEPOneMenu"
-					value="#{enrollMakeNewRequestBean.selectedEndEntityProfile}"
-					valueChangeListener="#{enrollMakeNewRequestBean.endEntityProfileChangedListener}">
-					<f:selectItems
-						value="#{enrollMakeNewRequestBean.authorizedEndEntityProfiles.keySet()}"></f:selectItems>
-					<f:ajax execute=":enrollMakeNewRequestForm:selectEEPOneMenu"
-						event="change" render=":globalMessages :enrollMakeNewRequestForm"
-						listener="#{enrollMakeNewRequestBean.endEntityProfileAjaxListener}" />
-				</h:selectOneMenu>
+			<h:panelGrid id="enrollMain" columns="1">
+				<h:outputText value="#{msg.enroll_step_1_select_certificate_type}" />
+				<h:panelGrid columns="3" frame="border">
+					<h:outputText value="#{msg.enroll_certificate_type}" />
+					<h:selectOneMenu id="selectEEPOneMenu"
+						value="#{enrollMakeNewRequestBean.selectedEndEntityProfile}"
+						valueChangeListener="#{enrollMakeNewRequestBean.endEntityProfileChangedListener}">
+						<c:if
+							test="#{enrollMakeNewRequestBean.selectedEndEntityProfile == null}">
+							<f:selectItem itemLabel="Select..." itemValue="#{null}"
+								itemDisabled="true" />
+						</c:if>
+						<f:selectItems
+							value="#{enrollMakeNewRequestBean.authorizedEndEntityProfiles.keySet()}" />
+						<f:ajax execute=":enrollMakeNewRequestForm:selectEEPOneMenu"
+							event="change" render=":globalMessages :enrollMakeNewRequestForm"
+							listener="#{enrollMakeNewRequestBean.endEntityProfileAjaxListener}" />
+					</h:selectOneMenu>
+					<br />
 
-				<h:outputText value="#{msg.enroll_certificate_subtype}"
-					rendered="#{!enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty()}" />
-				<h:selectOneMenu id="selectCPOneMenu"
-					value="#{enrollMakeNewRequestBean.selectedCertificateProfile}"
-					valueChangeListener="#{enrollMakeNewRequestBean.certificateProfileChangedListener}"
-					rendered="#{!enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty()}">
-					<f:selectItems
-						value="#{enrollMakeNewRequestBean.availableCertificateProfiles.keySet()}"></f:selectItems>
-					<f:ajax execute=":enrollMakeNewRequestForm:selectCPOneMenu"
-						event="change" render=":globalMessages :enrollMakeNewRequestForm"
-						listener="#{enrollMakeNewRequestBean.certificateProfileAjaxListener}" />
-				</h:selectOneMenu>
+					<h:outputText value="#{msg.enroll_certificate_subtype}"
+						rendered="#{!enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty()}" />
+					<h:selectOneMenu id="selectCPOneMenu"
+						value="#{enrollMakeNewRequestBean.selectedCertificateProfile}"
+						valueChangeListener="#{enrollMakeNewRequestBean.certificateProfileChangedListener}"
+						rendered="#{!enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty()}"
+						disabled="#{enrollMakeNewRequestBean.availableCertificateProfiles.size()==1}">
+						<c:if
+							test="#{enrollMakeNewRequestBean.availableCertificateProfiles.size()>1}">
+							<f:selectItem itemLabel="Select..." itemValue="#{null}"
+								itemDisabled="true" />
+						</c:if>
+						<f:selectItems
+							value="#{enrollMakeNewRequestBean.availableCertificateProfiles.keySet()}" />
+						<f:ajax execute=":enrollMakeNewRequestForm:selectCPOneMenu"
+							event="change" render=":globalMessages :enrollMakeNewRequestForm"
+							listener="#{enrollMakeNewRequestBean.certificateProfileAjaxListener}" />
+					</h:selectOneMenu>
+					<br />
+				</h:panelGrid>
+				<br />
 
-				<h:outputText value="#{msg.enroll_keypair_generation}"
-					rendered="#{!enrollMakeNewRequestBean.availableKeyPairGenerations.isEmpty()}" />
-				<h:selectOneMenu id="selectKeyPairGenerationOneMenu"
-					valueChangeListener="#{enrollMakeNewRequestBean.keyPairGenerationChangedListener}"
-					value="#{enrollMakeNewRequestBean.selectedKeyPairGeneration}"
+				<h:panelGroup layout="block"
 					rendered="#{!enrollMakeNewRequestBean.availableKeyPairGenerations.isEmpty()}">
-					<f:selectItems
-						value="#{enrollMakeNewRequestBean.availableKeyPairGenerations.keySet()}"></f:selectItems>
-					<f:ajax
-						execute=":enrollMakeNewRequestForm:selectKeyPairGenerationOneMenu"
-						event="change" render=":globalMessages :enrollMakeNewRequestForm"
-						listener="#{enrollMakeNewRequestBean.keyPairGenerationAjaxListener}" />
-				</h:selectOneMenu>
+					<h:outputText value="#{msg.enroll_step_2_provide_a_key_pair}" />
+					<h:panelGrid columns="1" frame="border">
+						<h:outputText value="#{msg.enroll_keypair_generation}" />
+						<h:selectOneRadio id="selectKeyPairGenerationOneMenu"
+							valueChangeListener="#{enrollMakeNewRequestBean.keyPairGenerationChangedListener}"
+							value="#{enrollMakeNewRequestBean.selectedKeyPairGeneration}">
+							<f:selectItems
+								value="#{enrollMakeNewRequestBean.availableKeyPairGenerations.keySet()}" />
+							<f:ajax
+								execute=":enrollMakeNewRequestForm:selectKeyPairGenerationOneMenu"
+								event="change"
+								render=":globalMessages :enrollMakeNewRequestForm"
+								listener="#{enrollMakeNewRequestBean.keyPairGenerationAjaxListener}" />
+						</h:selectOneRadio>
+						<br />
 
+						<h:panelGrid id="algorithmSelectionMainPanel" columns="1"
+							rendered="#{!enrollMakeNewRequestBean.availableAlgorithms.isEmpty()}">
+							<h:outputText value="#{msg.enroll_key_specification}" />
+							<h:selectOneMenu id="selectAlgorithmOneMenu"
+								value="#{enrollMakeNewRequestBean.selectedAlgorithm}"
+								valueChangeListener="#{enrollMakeNewRequestBean.algorithmChangedListener}">
+								<c:if
+									test="#{enrollMakeNewRequestBean.availableAlgorithms.size()>1}">
+									<f:selectItem itemLabel="Select..." itemValue="#{null}"
+										itemDisabled="true" />
+								</c:if>
+								<f:selectItems
+									value="#{enrollMakeNewRequestBean.availableAlgorithms.keySet()}" />
+								<f:ajax
+									execute=":enrollMakeNewRequestForm:selectAlgorithmOneMenu"
+									event="change"
+									render=":globalMessages :enrollMakeNewRequestForm"
+									listener="#{enrollMakeNewRequestBean.algorithmAjaxListener}" />
+							</h:selectOneMenu>
+						</h:panelGrid>
+						<br />
+					</h:panelGrid>
+					<br />
+				</h:panelGroup>
+				<h:panelGroup layout="block"
+					rendered="#{enrollMakeNewRequestBean.endEntityInformation != null}">
+					<h:outputText
+						value="#{msg.enroll_step_3_enter_general_information}" />
+					<h:panelGrid columns="2" frame="border">
+						<h:outputText value="#{msg.enroll_user_credentials}" />
+						<h:outputText value="&#160;" />
 
+						<component:endEntityOutputText value="#{msg.enroll_username}"
+							required="#{enrollMakeNewRequestBean.endEntityProfile.username.isRequired()}"
+							modifiable="#{true}"
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.username.isUsed()}" />
+						<h:inputText
+							value="#{enrollMakeNewRequestBean.endEntityInformation.username}"
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.username.isUsed()}" />
+
+						<component:endEntityOutputText value="#{msg.enroll_password}"
+							required="#{enrollMakeNewRequestBean.endEntityProfile.password.isRequired()}"
+							modifiable="#{true}"
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.isUsed()}" />
+						<h:inputSecret
+							value="#{enrollMakeNewRequestBean.endEntityInformation.password}"
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.isUsed()}" />
+
+						<component:endEntityOutputText
+							value="#{msg.enroll_confirm_password}"
+							required="#{enrollMakeNewRequestBean.endEntityProfile.password.isRequired()}"
+							modifiable="#{true}"
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.isUsed()}" />
+						<h:inputSecret value="#{enrollMakeNewRequestBean.confirmPassword}"
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.isRequired()}" />
+
+						<component:endEntityOutputText value="#{msg.enroll_email}"
+							required="#{enrollMakeNewRequestBean.endEntityProfile.email.isRequired()}"
+							modifiable="#{true}"
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.email.isUsed()}" />
+						<h:inputText
+							value="#{enrollMakeNewRequestBean.endEntityInformation.email}"
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.email.isUsed()}" />
+
+						<h:outputText value="#{msg.enroll_subject_dn_attributes}" />
+						<h:outputText value="&#160;" />
+					</h:panelGrid>
+					<br />
+				</h:panelGroup>
 			</h:panelGrid>
+			<br />
+
 
 			<h:panelGroup layout="block">
-				<noscript>
-					<h:commandButton id="nextButton" value="#{msg.generic_next}"
-						action="#{enrollMakeNewRequestBean.next()}">
-					</h:commandButton>
-				</noscript>
+				<!-- <noscript>-->
+				<h:commandButton id="nextButton" value="#{msg.generic_next}"
+					action="#{enrollMakeNewRequestBean.next()}">
+				</h:commandButton>
+				<!--</noscript> -->
 				<h:commandButton id="resetButton" value="#{msg.generic_reset}"
 					action="#{enrollMakeNewRequestBean.reset()}">
 				</h:commandButton>
