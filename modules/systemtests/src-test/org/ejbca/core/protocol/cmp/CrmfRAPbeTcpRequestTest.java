@@ -109,7 +109,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         this.cmpConfiguration.setAllowRAVerifyPOPO(cmpAlias, true);
         this.cmpConfiguration.setResponseProtection(cmpAlias, "pbe");
         this.cmpConfiguration.setRACertProfile(cmpAlias, CP_DN_OVERRIDE_NAME);
-        this.cmpConfiguration.setRAEEProfile(cmpAlias, EEP_DN_OVERRIDE_NAME);
+        this.cmpConfiguration.setRAEEProfile(cmpAlias, String.valueOf(eepDnOverrideId));
         this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;" + PBEPASSWORD);
         this.cmpConfiguration.setRACAName(cmpAlias, this.testx509ca.getName());

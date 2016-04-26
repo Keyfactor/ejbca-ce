@@ -68,6 +68,7 @@ import org.ejbca.core.protocol.unid.UnidFnrHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -209,7 +210,8 @@ public class CmpRAUnidTest extends CmpTestCase {
     }
 
     // TODO Setting KeyId as the RA end entity profile is no longer supported, however, it will be supported later in a different format 
-    // specifically for the Unid users/customers. This test should be modified then
+    // specifically for the Unid users/customers. This test should be modified then    
+    @Ignore
     public void test01() throws Exception {
         final Connection connection;
         final String host = "localhost";

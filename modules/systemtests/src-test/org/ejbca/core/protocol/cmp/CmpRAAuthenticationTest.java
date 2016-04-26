@@ -44,6 +44,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.junit.After;
@@ -102,7 +103,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         this.cmpConfiguration.setRAMode(this.configAlias, true);
         this.cmpConfiguration.setAllowRAVerifyPOPO(this.configAlias, true);
         this.cmpConfiguration.setResponseProtection(this.configAlias, "pbe");
-        this.cmpConfiguration.setRAEEProfile(this.configAlias, String.valueOf(endEntityProfileSession.getEndEntityProfileId("EMPTY")));
+        this.cmpConfiguration.setRAEEProfile(this.configAlias, String.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
         this.cmpConfiguration.setRACertProfile(this.configAlias, "ENDUSER");
         this.cmpConfiguration.setRACAName(this.configAlias, "KeyId");
         this.cmpConfiguration.setAuthenticationModule(this.configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);

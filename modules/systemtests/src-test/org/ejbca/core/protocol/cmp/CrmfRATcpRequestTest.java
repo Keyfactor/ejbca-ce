@@ -119,7 +119,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         this.cmpConfiguration.setRAMode(this.cmpAlias, true);
         this.cmpConfiguration.setAllowRAVerifyPOPO(this.cmpAlias, true);
         this.cmpConfiguration.setResponseProtection(this.cmpAlias, "signature");
-        this.cmpConfiguration.setRAEEProfile(this.cmpAlias, EEP_DN_OVERRIDE_NAME);
+        this.cmpConfiguration.setRAEEProfile(this.cmpAlias, String.valueOf(eepDnOverrideId));
         this.cmpConfiguration.setRACertProfile(this.cmpAlias, CP_DN_OVERRIDE_NAME);
         this.cmpConfiguration.setRACAName(this.cmpAlias, "TestCA");
         this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
