@@ -28,7 +28,9 @@
     </ui:remove>
     <ui:composition template="/WEB-INF/include/template.xhtml">
         <ui:define name="content">
-            <h2 class="content-body-subhead"><h:outputText value="#{msg.cas_page_title}"/></h2>
+        	<h:panelGroup layout="block" class="header" id="title">
+				<h1><h:outputText value="#{msg.cas_page_title}"/></h1>
+			</h:panelGroup>	        
             <h:outputText rendered="#{empty raCasPageBean.casAndCrlItems}" value="#{msg.cas_page_info_nocas}"/>
             <h:dataTable rendered="#{not empty raCasPageBean.casAndCrlItems}" value="#{raCasPageBean.casAndCrlItems}" var="caAndCrls" styleClass="pure-table"
                 rowClasses=",pure-table-odd">
