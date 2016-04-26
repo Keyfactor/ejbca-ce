@@ -102,7 +102,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         this.cmpConfiguration.setRAMode(this.configAlias, true);
         this.cmpConfiguration.setAllowRAVerifyPOPO(this.configAlias, true);
         this.cmpConfiguration.setResponseProtection(this.configAlias, "pbe");
-        this.cmpConfiguration.setRAEEProfile(this.configAlias, "EMPTY");
+        this.cmpConfiguration.setRAEEProfile(this.configAlias, String.valueOf(endEntityProfileSession.getEndEntityProfileId("EMPTY")));
         this.cmpConfiguration.setRACertProfile(this.configAlias, "ENDUSER");
         this.cmpConfiguration.setRACAName(this.configAlias, "KeyId");
         this.cmpConfiguration.setAuthenticationModule(this.configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
@@ -167,11 +167,10 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     @Test
     public void test04IssueConfirmRevokeEEP() throws Exception {
         LOG.trace(">test04IssueConfirmRevokeEEP");
-        this.cmpConfiguration.setRACAName(this.configAlias, "ProfileDefault");
-        this.cmpConfiguration.setRAEEProfile(this.configAlias, EEP_1);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        EndEntityProfileSessionRemote eepSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class); 
         // Create EEP
-        if (EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(EEP_1) == null) {
+        if (eepSessionRemote.getEndEntityProfile(EEP_1) == null) {
             // Configure an EndEntity profile that allows CN, O, C in DN and rfc822Name, MS UPN in altNames.
             EndEntityProfile eep = new EndEntityProfile(true);
             eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, "" + CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -181,11 +180,16 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             eep.setModifyable(DnComponents.RFC822NAME, 0, true);
             eep.setUse(DnComponents.RFC822NAME, 0, false); // Don't use field from "email" data
             try {
-                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).addEndEntityProfile(ADMIN, EEP_1, eep);
+                eepSessionRemote.addEndEntityProfile(ADMIN, EEP_1, eep);
             } catch (EndEntityProfileExistsException e) {
                 LOG.error("Could not create end entity profile " + EEP_1, e);
             }
         }
+        final int eepId = eepSessionRemote.getEndEntityProfileId(EEP_1);
+        this.cmpConfiguration.setRACAName(this.configAlias, "ProfileDefault");
+        this.cmpConfiguration.setRAEEProfile(this.configAlias, String.valueOf(eepId));
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+        
         testIssueConfirmRevoke(this.caCertificate1, PBE_SECRET_1, EEP_1, false);
         LOG.trace("<test04IssueConfirmRevokeEEP");
     }
@@ -198,13 +202,11 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         String caName = "DNOrderCA";
         String caDN = "CN=" + caName + ",O=PrimeKey";
         X509Certificate dnOrderCA = setupCA(caName, caDN, PBE_SECRET_1);
-        
-        this.cmpConfiguration.setRACAName(this.configAlias, caName);
-        this.cmpConfiguration.setRAEEProfile(this.configAlias, EEP_1);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        EndEntityProfileSessionRemote eepSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class); 
         
         // Create EEP
-        if (EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(EEP_1) == null) {
+        if (eepSessionRemote.getEndEntityProfile(EEP_1) == null) {
             // Configure an EndEntity profile that allows CN, O, C in DN and rfc822Name, MS UPN in altNames.
             EndEntityProfile eep = new EndEntityProfile(true);
             eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, "" + CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -214,11 +216,16 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             eep.setModifyable(DnComponents.RFC822NAME, 0, true);
             eep.setUse(DnComponents.RFC822NAME, 0, false); // Don't use field from "email" data
             try {
-                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).addEndEntityProfile(ADMIN, EEP_1, eep);
+                eepSessionRemote.addEndEntityProfile(ADMIN, EEP_1, eep);
             } catch (EndEntityProfileExistsException e) {
                 LOG.error("Could not create end entity profile " + EEP_1, e);
             }
         }
+        
+        final int eepId = eepSessionRemote.getEndEntityProfileId(EEP_1);
+        this.cmpConfiguration.setRACAName(this.configAlias, caName);
+        this.cmpConfiguration.setRAEEProfile(this.configAlias, String.valueOf(eepId));
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         testIssueConfirmRevoke(dnOrderCA, PBE_SECRET_1, EEP_1, false);
         testIssueConfirmRevoke(dnOrderCA, PBE_SECRET_1, EEP_1, true);

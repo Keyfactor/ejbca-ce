@@ -233,12 +233,13 @@ public class NestedMessageContentTest extends CmpTestCase {
         } catch (EndEntityProfileExistsException e) {
             log.error("Could not create end entity profile.", e);
         }
+        final int eepId = eeProfileSession.getEndEntityProfileId(CMPTESTPROFILE);
         
         // Configure CMP for this test
         this.cmpConfiguration.addAlias(cmpAlias);
         this.cmpConfiguration.setRAMode(cmpAlias, true);
         this.cmpConfiguration.setAllowRAVerifyPOPO(cmpAlias, true);
-        this.cmpConfiguration.setRAEEProfile(cmpAlias, CMPTESTPROFILE);
+        this.cmpConfiguration.setRAEEProfile(cmpAlias, String.valueOf(eepId));
         this.cmpConfiguration.setRACertProfile(cmpAlias, CMPTESTPROFILE);
         this.cmpConfiguration.setRACAName(cmpAlias, "TestCA");
         this.cmpConfiguration.setRANameGenScheme(cmpAlias, "DN");

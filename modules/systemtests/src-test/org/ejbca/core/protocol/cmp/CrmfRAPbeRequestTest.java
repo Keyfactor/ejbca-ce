@@ -151,7 +151,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         this.cmpConfiguration.setAllowRAVerifyPOPO(ALIAS, true);
         this.cmpConfiguration.setResponseProtection(ALIAS, "pbe");
         this.cmpConfiguration.setRACertProfile(ALIAS, CP_DN_OVERRIDE_NAME);
-        this.cmpConfiguration.setRAEEProfile(ALIAS, EEP_DN_OVERRIDE_NAME);
+        this.cmpConfiguration.setRAEEProfile(ALIAS, String.valueOf(eepDnOverrideId));
         this.cmpConfiguration.setRACAName(ALIAS, this.testx509ca.getName());
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "-;" + PBEPASSWORD);
@@ -282,127 +282,6 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             } catch (NotFoundException e) {
                 // NOPMD: ignore
             }
-        }
-    }
-
-    /** Tests the cmp configuration settings:
-     * cmp.ra.certificateprofile=KeyId
-     * cmp.ra.certificateprofile=ProfileDefault
-     * 
-     * KeyId means that the certificate profile used to issue the certificate is the same as the KeyId sent in the request.
-     * ProfileDefault means that the certificate profile used is taken from the default certificate profile in the end entity profile.
-     */
-    @Test
-    public void test02KeyIdProfiles() throws Exception {
-        final String keyId = "CmpTestKeyIdProfileName";
-        final String keyIdDefault = "CmpTestKeyIdProfileNameDefault";
-        
-        this.cmpConfiguration.setRACertProfile(ALIAS, "KeyId");
-        this.cmpConfiguration.setRAEEProfile(ALIAS, "KeyId");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
-        
-        try {
-            final byte[] nonce = CmpMessageHelper.createSenderNonce();
-            final byte[] transid = CmpMessageHelper.createSenderNonce();
-
-            // Create one EE profile and 2 certificate profiles, one of the certificate profiles
-            // (that does not have the same name as KeyId) will be the default in the EE profile.
-            // First we will use "KeyId" for both profiles, and then we will use ProfileDefault for the cert profile
-            CertificateProfile cp1 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-            cp1.setUseSubjectAlternativeName(true);
-            cp1.setAllowDNOverride(true);
-            // Add a weird CDP, so we are sure this is the profile used
-            final String cdp1 = "http://keyidtest/crl.crl";
-            cp1.setCRLDistributionPointURI(cdp1);
-            cp1.setUseCRLDistributionPoint(true);
-            CertificateProfile cp2 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-            cp2.setUseSubjectAlternativeName(false);
-            cp2.setAllowDNOverride(true);
-            final String cdp2 = "http://keyidtestDefault/crl.crl";
-            cp2.setCRLDistributionPointURI(cdp2);
-            cp2.setUseCRLDistributionPoint(true);
-            try {
-                this.certProfileSession.addCertificateProfile(ADMIN, keyId, cp1);
-            } catch (CertificateProfileExistsException e) {
-                log.error("Error adding certificate profile: ", e);
-            }
-            try {
-                this.certProfileSession.addCertificateProfile(ADMIN, keyIdDefault, cp2);
-            } catch (CertificateProfileExistsException e) {
-                log.error("Error adding certificate profile: ", e);
-            }
-
-            int cpId1 = this.certProfileSession.getCertificateProfileId(keyId);
-            int cpId2 = this.certProfileSession.getCertificateProfileId(keyIdDefault);
-            // Configure an EndEntity profile with allow CN, O, C in DN
-            // and rfc822Name (uncheck 'Use entity e-mail field' and check
-            // 'Modifyable'), MS UPN in altNames in the end entity profile.
-            EndEntityProfile eep = new EndEntityProfile(true);
-            eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, "" + cpId2);
-            eep.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cpId1+";"+cpId2);
-            eep.setModifyable(DnComponents.RFC822NAME, 0, true);
-            eep.setUse(DnComponents.RFC822NAME, 0, false); // Don't use field
-            // from "email" data
-            try {
-                this.endEntityProfileSession.addEndEntityProfile(ADMIN, keyId, eep);
-            } catch (EndEntityProfileExistsException e) {
-                log.error("Could not create end entity profile.", e);
-            }
-            
-            // In this test userDN contains special, escaped characters to verify
-            // that that works with CMP RA as well
-            PKIMessage one = genCertReq(issuerDN, userDN, this.keys, this.cacert, nonce, transid, true, null, null, null, null, null, null);
-            PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, keyId, 567);
-            assertNotNull(req);
-
-            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
-            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
-            out.writeObject(req);
-            byte[] ba = bao.toByteArray();
-            // Send request and receive response
-            byte[] resp = sendCmpHttp(ba, 200, ALIAS);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
-            String altNames = CertTools.getSubjectAlternativeName(cert);
-            assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
-            assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
-            final URL cdpfromcert1 = CertTools.getCrlDistributionPoint(cert);
-            assertEquals("CDP is not correct, it probably means it was not the correct 'KeyId' certificate profile that was used", cdp1, cdpfromcert1.toString());
-            
-            // Update property on server so that we use ProfileDefault as certificate profile, should give a little different result
-            this.cmpConfiguration.setRACertProfile(ALIAS, "ProfileDefault");
-            this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
-            
-            // Make new request, the certificate should now be produced with the other certificate profile
-            PKIMessage two = genCertReq(issuerDN, userDN, this.keys, this.cacert, nonce, transid, true, null, null, null, null, null, null);
-            PKIMessage req2 = protectPKIMessage(two, false, PBEPASSWORD, keyId, 567);
-            assertNotNull(req2);
-
-            ir = (CertReqMessages) req.getBody().getContent();
-            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
-            out.writeObject(req);
-            ba = bao.toByteArray();
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, ALIAS);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
-            altNames = CertTools.getSubjectAlternativeName(cert);
-            assertNull(altNames);
-            final URL cdpfromcert2 = CertTools.getCrlDistributionPoint(cert);
-            assertEquals("CDP is not correct, it probably means it was not the correct 'KeyId' certificate profile that was used", cdp2, cdpfromcert2.toString());            
-        } finally {
-            try {
-                this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
-            } catch (NotFoundException e) {
-                // NOPMD: ignore
-            }
-            this.endEntityProfileSession.removeEndEntityProfile(ADMIN, keyId);
-            this.certProfileSession.removeCertificateProfile(ADMIN, keyId);
-            this.certProfileSession.removeCertificateProfile(ADMIN, keyIdDefault);
         }
     }
 
