@@ -31,6 +31,7 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
+import javax.faces.component.html.HtmlOutputLabel;
 import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
@@ -445,25 +446,44 @@ public class RaSearchCertsBean implements Serializable {
     }
     /** @return the staged request value if it is a parsable date and the default value otherwise */
     private long parseDateAndUseDefaultOnFail(final String input, final long defaultValue) {
+        markCurrentComponentAsValid(true);
         if (!input.trim().isEmpty()) {
             try {
                 return ValidityDate.parseAsIso8601(input).getTime();
             } catch (ParseException e) {
-                markCurrentComponentAsInvalid();
+                markCurrentComponentAsValid(false);
                 raLocaleBean.addMessageWarn("search_certs_page_warn_invaliddate");
             }
         }
         return defaultValue;
     }
     
-    /** After invoking this method from a setter the current UIInput.isValid() will return false. E.g. #{component.valid} is false. */
-    private void markCurrentComponentAsInvalid() {
+    private void markCurrentComponentAsValid(final boolean valid) {
+        final String STYLE_CLASS_INVALID = "invalidInput";
+        // UIComponent.getCurrentComponent only works when invoked via f:ajax
         final UIComponent uiComponent = UIComponent.getCurrentComponent(FacesContext.getCurrentInstance());
-        if (uiComponent instanceof UIInput) {
-            ((UIInput)uiComponent).setValid(false);
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("UIComponent " + uiComponent.getId() + " is not an UIInput component and will not be marked as invalid.");
+        final String id = uiComponent.getId();
+        final List<UIComponent> siblings = uiComponent.getParent().getChildren();
+        for (final UIComponent sibling : siblings) {
+            if (sibling instanceof HtmlOutputLabel) {
+                final HtmlOutputLabel htmlOutputLabel = (HtmlOutputLabel) sibling;
+                if (htmlOutputLabel.getFor().equals(id)) {
+                    String styleClass = htmlOutputLabel.getStyleClass();
+                    if (valid) {
+                        if (styleClass!=null && styleClass.contains(STYLE_CLASS_INVALID)) {
+                            styleClass = styleClass.replace(STYLE_CLASS_INVALID, "").trim();
+                        }
+                    } else {
+                        if (styleClass==null) {
+                            styleClass = STYLE_CLASS_INVALID;
+                        } else {
+                            if (!styleClass.contains(STYLE_CLASS_INVALID)) {
+                                styleClass = styleClass.concat(" " + STYLE_CLASS_INVALID);
+                            }
+                        }
+                    }
+                    htmlOutputLabel.setStyleClass(styleClass);
+                }
             }
         }
     }
