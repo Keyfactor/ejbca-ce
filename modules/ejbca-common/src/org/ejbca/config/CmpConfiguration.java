@@ -453,7 +453,11 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         return getValue(key, alias); 
     }
   
-    public void setRAEEProfile(String alias, String eep) {
+    public void setRAEEProfile(String alias, String eep) throws NumberFormatException {
+        
+        // Check the the value actually is an int. Throws NumberFormatException
+        Integer.parseInt(eep);
+        
         String key = alias + "." + CONFIG_RA_ENDENTITYPROFILEID;        
         if (!data.containsKey(key)) {
             //Lazy initialization for upgrade
