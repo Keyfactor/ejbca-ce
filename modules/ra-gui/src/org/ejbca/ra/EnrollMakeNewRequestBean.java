@@ -14,8 +14,14 @@ package org.ejbca.ra;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -28,6 +34,11 @@ import javax.faces.event.ValueChangeEvent;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
@@ -48,17 +59,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     @ManagedProperty(value = "#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
-
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) {
         this.raAuthenticationBean = raAuthenticationBean;
     }
 
     @ManagedProperty(value = "#{raLocaleBean}")
     private RaLocaleBean raLocaleBean;
-
-    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {
-        this.raLocaleBean = raLocaleBean;
-    }
+    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {this.raLocaleBean = raLocaleBean;}
 
     //1. Authorized end entity profiles (certificate types)
     private Map<String, EndEntityProfile> authorizedEndEntityProfiles = new HashMap<String, EndEntityProfile>();
@@ -86,7 +93,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private Map<String, KeyPairGeneration> availableKeyPairGenerations = new HashMap<String, KeyPairGeneration>();
     private String selectedKeyPairGeneration;
     private boolean keyPairGenerationChanged;
+    
+    //4. Key-pair generation on server
+    private Map<String, String> availableAlgorithms = new TreeMap<String, String>();
+    private String selectedAlgorithm;
+    private boolean algorithmChanged;
 
+    //5. End-entity metadata
+    private boolean endEntityMetadataSubmitted;
+    private EndEntityInformation endEntityInformation;
+    private String confirmPassword;
+    
     @PostConstruct
     private void postContruct() {
         reset();
@@ -99,7 +116,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         String[] availableCertificateProfileIds = endEntityProfile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
         try{
-            this.availableCertificateProfiles = raMasterApiProxyBean.getAvailableCertificateProfiles(raAuthenticationBean.getAuthenticationToken(), availableCertificateProfileIds);
+            availableCertificateProfiles = raMasterApiProxyBean.getAvailableCertificateProfiles(raAuthenticationBean.getAuthenticationToken(), availableCertificateProfileIds);
         } catch (AuthorizationDeniedException e) {
             raLocaleBean.addMessageError("page_initialization_fail", e.getMessage());
         }
@@ -120,13 +137,73 @@ public class EnrollMakeNewRequestBean implements Serializable {
             availableKeyPairGenerations.put(KeyPairGeneration.PROVIDED_BY_USER.getValue(), KeyPairGeneration.PROVIDED_BY_USER);
         }
     }
+    
+    private void initAvailableAlgorithms(){
+        CertificateProfile certificateProfile = getAvailableCertificateProfiles().get(getSelectedCertificateProfile());
+        final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
+        final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
+        if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
+            for (final int availableBitLength : availableBitLengths) {
+                if (availableBitLength==1024) {
+                    availableAlgorithms.put(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength, AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits");
+                }
+            }
+        }
+        if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
+            for (final int availableBitLength : availableBitLengths) {
+                if (availableBitLength>=1024) {
+                    availableAlgorithms.put(AlgorithmConstants.KEYALGORITHM_RSA + "_" + availableBitLength, AlgorithmConstants.KEYALGORITHM_RSA + " " + availableBitLength + " bits");
+                }
+            }
+        }
+        if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+            final Set<String> ecChoices = new HashSet<>();
+            final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(false);
+            if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {
+                final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
+                for (final String ecNamedCurve : keys) {
+                    if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
+                        continue;
+                    }
+                    final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
+                    if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                        ecChoices.add(ecNamedCurve);
+                    }
+                }
+            }
+            ecChoices.addAll(certificateProfile.getAvailableEcCurvesAsList());
+            ecChoices.remove(CertificateProfile.ANY_EC_CURVE);
+            final List<String> ecChoicesList = new ArrayList<>(ecChoices);
+            Collections.sort(ecChoicesList);
+            for (final String ecNamedCurve : ecChoicesList) {
+                availableAlgorithms.put(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " " +
+                        StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(ecNamedCurve)));
+            }
+        }
+        for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
+            if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
+                for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
+                    final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
+                    final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
+                    if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                        availableAlgorithms.put(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name, CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg));
+                    } else {
+                        if (log.isTraceEnabled()) {
+                            log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private void initEndEntityProfileMetadata(){
+        endEntityInformation = new EndEntityInformation();
+       
+    }
 
     public void reset() {
-        try {
-            setAuthorizedEndEntityProfiles(raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken()));
-        } catch (AuthorizationDeniedException e) {
-            raLocaleBean.addMessageError("page_initialization_fail", e.getMessage());
-        }
+        setAuthorizedEndEntityProfiles(raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken()));
         
         resetCertificateProfile();
     }
@@ -143,17 +220,35 @@ public class EnrollMakeNewRequestBean implements Serializable {
         availableKeyPairGenerations.clear();
         selectedKeyPairGeneration = null;
         keyPairGenerationChanged = false;
+        
+        resetAlgorithm();
+    }
+    
+    private final void resetAlgorithm(){
+        availableAlgorithms.clear();
+        selectedAlgorithm = null;
+        algorithmChanged = false;
+        
+        resetEndEntityMetadata();
+    }
+    
+    private final void resetEndEntityMetadata(){
+        endEntityInformation = null;
     }
 
-    public void next() throws IOException {
+    public final void next() throws IOException {
         if(endEntityProfileChanged){
             selectEndEntityProfile();
         }else if(certificateProfileChanged){
             selectCertificateProfile();
         }else if(keyPairGenerationChanged){
             selectKeyPairGeneration();
+        }else if(algorithmChanged){
+            selectAlgorithm();
+        }else if(endEntityMetadataSubmitted){
+            submitEndEntityMetadata();
         }else{
-            selectEndEntityProfile();
+            
         }
     }
     
@@ -164,6 +259,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         resetCertificateProfile();
         initAvailableCertificateProfiles();
         if(availableCertificateProfiles.size() == 1){
+            setSelectedCertificateProfile(availableCertificateProfiles.keySet().iterator().next());
             selectCertificateProfile();
         }
         raLocaleBean.addMessageInfo("somefunction_testok", "selectedEndEntityProfile", selectedEndEntityProfile);
@@ -174,29 +270,53 @@ public class EnrollMakeNewRequestBean implements Serializable {
         
         resetKeyPairGeneration();
         initAvailableKeyPairGeneration();
+        if(availableKeyPairGenerations.size() ==1){
+            setSelectedKeyPairGeneration(availableKeyPairGenerations.keySet().iterator().next());
+            selectKeyPairGeneration();
+        }
         raLocaleBean.addMessageInfo("somefunction_testok", "selectedCertificateProfile", selectedCertificateProfile);
     }
     
     private final void selectKeyPairGeneration(){
         setKeyPairGenerationChanged(false);
         
-        //TODO
+        resetAlgorithm();
+        if(selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())){
+            initAvailableAlgorithms();
+        }
         raLocaleBean.addMessageInfo("somefunction_testok", "selectedKeyPairGeneration", selectedKeyPairGeneration);
     }
     
-    public void endEntityProfileChangedListener(ValueChangeEvent e){
+    private final void selectAlgorithm(){
+        setAlgorithmChanged(false);
+        
+        resetEndEntityMetadata();
+        initEndEntityProfileMetadata();
+        raLocaleBean.addMessageInfo("somefunction_testok", "selectedAlgorithm", selectedAlgorithm);
+    }
+    
+    private final void submitEndEntityMetadata(){
+        raLocaleBean.addMessageInfo("somefunction_testok", "endEntityMetadataSubmitted", endEntityMetadataSubmitted);
+    }
+    
+    //Listeners
+    public final void endEntityProfileChangedListener(ValueChangeEvent e){
         setEndEntityProfileChanged(true);
     }
     
-    public void certificateProfileChangedListener(ValueChangeEvent e){
+    public final void certificateProfileChangedListener(ValueChangeEvent e){
         setCertificateProfileChanged(true);
     }
     
-    public void keyPairGenerationChangedListener(ValueChangeEvent e){
+    public final void keyPairGenerationChangedListener(ValueChangeEvent e){
         setKeyPairGenerationChanged(true);
     }
     
-    //Ajax listeners
+    public final void algorithmChangedListener(ValueChangeEvent e){
+        setAlgorithmChanged(true);
+    }
+    
+    //Ajax actions
     public final void endEntityProfileAjaxListener(final AjaxBehaviorEvent event) {
         selectEndEntityProfile();
     }
@@ -207,6 +327,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     
     public final void keyPairGenerationAjaxListener(final AjaxBehaviorEvent event) {
         selectKeyPairGeneration();
+    }
+    
+    public final void algorithmAjaxListener(final AjaxBehaviorEvent event) {
+        selectAlgorithm();
     }
 
     //Getter/setters
@@ -229,6 +353,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public String getSelectedEndEntityProfile() {
         return selectedEndEntityProfile;
+    }
+    
+    public EndEntityProfile getEndEntityProfile(){
+        return getAuthorizedEndEntityProfiles().get(getSelectedEndEntityProfile());
     }
 
     /**
@@ -328,5 +456,75 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public void setCertificateProfileChanged(boolean certificateProfileChanged) {
         this.certificateProfileChanged = certificateProfileChanged;
+    }
+
+    /**
+     * @return the availableAlgorithms
+     */
+    public Map<String, String> getAvailableAlgorithms() {
+        return availableAlgorithms;
+    }
+
+    /**
+     * @param availableAlgorithms the availableAlgorithms to set
+     */
+    public void setAvailableAlgorithms(Map<String, String> availableAlgorithms) {
+        this.availableAlgorithms = availableAlgorithms;
+    }
+
+    /**
+     * @return the selectedAlgorithm
+     */
+    public String getSelectedAlgorithm() {
+        return selectedAlgorithm;
+    }
+
+    /**
+     * @param selectedAlgorithm the selectedAlgorithm to set
+     */
+    public void setSelectedAlgorithm(String selectedAlgorithm) {
+        this.selectedAlgorithm = selectedAlgorithm;
+    }
+
+    /**
+     * @return the algorithmChanged
+     */
+    public boolean isAlgorithmChanged() {
+        return algorithmChanged;
+    }
+
+    /**
+     * @param algorithmChanged the algorithmChanged to set
+     */
+    public void setAlgorithmChanged(boolean algorithmChanged) {
+        this.algorithmChanged = algorithmChanged;
+    }
+
+    /**
+     * @return the endEntityInformation
+     */
+    public EndEntityInformation getEndEntityInformation() {
+        return endEntityInformation;
+    }
+
+    /**
+     * @param endEntityInformation the endEntityInformation to set
+     */
+    public void setEndEntityInformation(EndEntityInformation endEntityInformation) {
+        this.endEntityInformation = endEntityInformation;
+    }
+
+    /**
+     * @return the confirmPassword
+     */
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    /**
+     * @param confirmPassword the confirmPassword to set
+     */
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
     }
 }
