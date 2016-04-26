@@ -199,7 +199,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.caSession.addCA(ADMIN, this.testx509ca);
 
         this.cmpConfiguration.addAlias(ALIAS);
-        this.cmpConfiguration.setRAEEProfile(ALIAS, EEP_DN_OVERRIDE_NAME);
+        this.cmpConfiguration.setRAEEProfile(ALIAS, String.valueOf(eepDnOverrideId));
         this.cmpConfiguration.setRACertProfile(ALIAS, CP_DN_OVERRIDE_NAME);
         this.cmpConfiguration.setRACAName(ALIAS, "TestCA");
         this.cmpConfiguration.setExtractUsernameComponent(ALIAS, "CN");
@@ -1389,18 +1389,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
     public void test22EECAuthWithSHA256AndECDSA() throws Exception {
         log.trace(">test22EECAuthWithSHA256AndECDSA()");
 
-        //-------------- Set the necessary configurations
-        this.cmpConfiguration.setRAEEProfile(ALIAS, "ECDSAEEP");
-        this.cmpConfiguration.setRACertProfile(ALIAS, "ECDSACP");
-        this.cmpConfiguration.setCMPDefaultCA(ALIAS, "CmpECDSATestCA");
-        this.cmpConfiguration.setRACAName(ALIAS, "CmpECDSATestCA");
-        this.cmpConfiguration.setRAMode(ALIAS, true);
-        this.cmpConfiguration.setRANameGenScheme(ALIAS, "DN");
-        this.cmpConfiguration.setRANameGenParams(ALIAS, "CN");
-        this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        this.cmpConfiguration.setAuthenticationParameters(ALIAS, "CmpECDSATestCA");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
-
+        //---------------------- Create the test CA
+        // Create catoken
+        
         removeTestCA("CmpECDSATestCA");
         try {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
@@ -1409,9 +1400,6 @@ public class AuthenticationModulesTest extends CmpTestCase {
             CryptoTokenTestUtils.removeCryptoToken(ADMIN, cryptoTokenId);
         } catch (Exception e) {/* do nothing */
         }
-
-        //---------------------- Create the test CA
-        // Create catoken
 
         String ecdsaCADN = "CN=CmpECDSATestCA";
         String keyspec = "prime256v1";
@@ -1472,6 +1460,21 @@ public class AuthenticationModulesTest extends CmpTestCase {
         } catch (EndEntityProfileExistsException e) {// do nothing
         }
         int eepId = this.endEntityProfileSession.getEndEntityProfileId("ECDSAEEP");
+
+        
+        
+        //-------------- Set the necessary configurations
+        this.cmpConfiguration.setRAEEProfile(ALIAS, String.valueOf(eepId));
+        this.cmpConfiguration.setRACertProfile(ALIAS, "ECDSACP");
+        this.cmpConfiguration.setCMPDefaultCA(ALIAS, "CmpECDSATestCA");
+        this.cmpConfiguration.setRACAName(ALIAS, "CmpECDSATestCA");
+        this.cmpConfiguration.setRAMode(ALIAS, true);
+        this.cmpConfiguration.setRANameGenScheme(ALIAS, "DN");
+        this.cmpConfiguration.setRANameGenParams(ALIAS, "CN");
+        this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        this.cmpConfiguration.setAuthenticationParameters(ALIAS, "CmpECDSATestCA");
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
 
         //---------------- Send a CMP initialization request
         AuthenticationToken admToken = null;
@@ -1638,57 +1641,6 @@ public class AuthenticationModulesTest extends CmpTestCase {
         log.trace("<test23EECAuthWithRSAandECDSA()");
     }
 
-    /**
-     * Sending a Crmf Request in RA mode. The request is authenticated using HMAC and is expected to contain the EndEntityProfile 'EMPTY' in the KeyId field.
-     * The request should fail because specifying 'EMPTY' or 'ENDUSER' as the KeyId is not allowed in combination with RA mode and HMAC authentication module 
-     * 
-     * The test is only done for HMAC and not EndEntityCertificate because in the later, the use of profiles can be restricted through Administrator privileges.
-     * Other authentication modules are not used in RA mode
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void test24HMACUnacceptedKeyId() throws Exception {
-
-        this.cmpConfiguration.setRAMode(ALIAS, true);
-        this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
-        this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123hmac");
-        this.cmpConfiguration.setRAEEProfile(ALIAS, "KeyId");
-        this.cmpConfiguration.setRACertProfile(ALIAS, "ProfileDefault");
-        this.cmpConfiguration.setRACAName(ALIAS, "TestCA");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
-
-        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-
-        PKIMessage msg = genCertReq(issuerDN, USER_DN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null);
-        assertNotNull("Generating CrmfRequest failed.", msg);
-        PKIMessage req = protectPKIMessage(msg, false, "foo123hmac", "EMPTY", 567);
-        assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
-
-        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        final DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(req);
-        final byte[] ba = bao.toByteArray();
-        // Send request and receive response
-        final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
-        checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
-                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-
-        ASN1InputStream inputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
-        try {
-            PKIMessage respObject = PKIMessage.getInstance(inputStream.readObject());
-            assertNotNull(respObject);
-
-            final PKIBody body = respObject.getBody();
-            assertEquals(23, body.getType());
-            ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-            final String expectedErrMsg = "Unaccepted KeyId 'EMPTY' in CMP request";
-            assertEquals(expectedErrMsg, errMsg);
-        } finally {
-            inputStream.close();
-        }
-    }
 
     @AfterClass
     public static void restoreConf() {

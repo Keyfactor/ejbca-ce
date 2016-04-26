@@ -133,7 +133,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         this.cmpConfiguration.setAllowRAVerifyPOPO(configAlias, true);
         this.cmpConfiguration.setResponseProtection(configAlias, "pbe");
         this.cmpConfiguration.setRACertProfile(configAlias, "KeyId");
-        this.cmpConfiguration.setRAEEProfile(configAlias, "KeyId");
+        //this.cmpConfiguration.setRAEEProfile(configAlias, "KeyId");
         this.cmpConfiguration.setRACAName(configAlias, this.testx509ca.getName());
         this.cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBEPASSWORD);
@@ -208,7 +208,8 @@ public class CmpRAUnidTest extends CmpTestCase {
         }
     }
 
-    @Test
+    // TODO Setting KeyId as the RA end entity profile is no longer supported, however, it will be supported later in a different format 
+    // specifically for the Unid users/customers. This test should be modified then
     public void test01() throws Exception {
         final Connection connection;
         final String host = "localhost";

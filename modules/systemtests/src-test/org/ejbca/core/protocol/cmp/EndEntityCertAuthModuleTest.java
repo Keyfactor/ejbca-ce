@@ -219,12 +219,13 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 fail(e.getMessage());
             }
         }
+        final int eepId = endEntityProfileSession.getEndEntityProfileId(EEP1);
         // Configure CMP alias for RA1
         cmpConfiguration.addAlias(RA1_ALIAS);
         cmpConfiguration.setRAMode(RA1_ALIAS, true);
         cmpConfiguration.setAuthenticationModule(RA1_ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         cmpConfiguration.setAuthenticationParameters(RA1_ALIAS, AUTH_PARAM_CA);
-        cmpConfiguration.setRAEEProfile(RA1_ALIAS, EEP1);
+        cmpConfiguration.setRAEEProfile(RA1_ALIAS, String.valueOf(eepId));
         cmpConfiguration.setRACertProfile(RA1_ALIAS, CP1);
         cmpConfiguration.setRACAName(RA1_ALIAS, CA1);
         cmpConfiguration.setExtractUsernameComponent(RA1_ALIAS, "CN");
@@ -262,12 +263,13 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 fail(e.getMessage());
             }
         }
+        final int eep2Id = endEntityProfileSession.getEndEntityProfileId(EEP2);
         // Configure CMP alias for RA2
         cmpConfiguration.addAlias(RA2_ALIAS);
         cmpConfiguration.setRAMode(RA2_ALIAS, true);
         cmpConfiguration.setAuthenticationModule(RA2_ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         cmpConfiguration.setAuthenticationParameters(RA2_ALIAS, AUTH_PARAM_CA);
-        cmpConfiguration.setRAEEProfile(RA2_ALIAS, EEP2);
+        cmpConfiguration.setRAEEProfile(RA2_ALIAS, String.valueOf(eep2Id));
         cmpConfiguration.setRACertProfile(RA2_ALIAS, CP2);
         cmpConfiguration.setRACAName(RA2_ALIAS, CA2);
         cmpConfiguration.setExtractUsernameComponent(RA2_ALIAS, "CN");
