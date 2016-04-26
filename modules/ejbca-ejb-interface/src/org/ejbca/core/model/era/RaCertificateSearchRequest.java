@@ -121,45 +121,36 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         if (other==null) {
             return 1;
         }
-        if (maxResults<other.maxResults) { return -1; }
-        if (maxResults>other.maxResults) { return 1; }
-        if (isMoreNarrow(eepIds, other.eepIds)) { return -1; }
-        if (isWider(eepIds, other.eepIds)) { return 1; }
-        if (isMoreNarrow(cpIds, other.cpIds)) { return -1; }
-        if (isWider(cpIds, other.cpIds)) { return 1; }
-        if (isMoreNarrow(caIds, other.caIds)) { return -1; }
-        if (isWider(caIds, other.caIds)) { return 1; }
-        //log.info("DEVELOP expiresAfter="+expiresAfter + " other.expiresAfter="+other.expiresAfter);
-        if (expiresAfter<other.expiresAfter) { return 1; }
-        if (expiresAfter>other.expiresAfter) { return -1; }
-        if (expiresBefore>other.expiresBefore) { return 1; }
-        if (expiresBefore<other.expiresBefore) { return -1; }
-        if (revokedAfter<other.revokedAfter) { return 1; }
-        if (revokedAfter>other.revokedAfter) { return -1; }
-        if (revokedBefore>other.revokedBefore) { return 1; }
-        if (revokedBefore<other.revokedBefore) { return -1; }
-        if (getGenericSearchStringAsDecimal()!=null && !getGenericSearchStringAsDecimal().equals(other.getGenericSearchStringAsDecimal())) { return 1; }
-        if (getGenericSearchStringAsHex()!=null && !getGenericSearchStringAsHex().equals(other.getGenericSearchStringAsHex())) { return 1; }
-        if (genericSearchString.contains(other.genericSearchString) && !other.genericSearchString.contains(genericSearchString)) {
-            // This does contain whole other, but other does not contain whole this → more narrow
-            return -1;
-        }
-        if (!genericSearchString.contains(other.genericSearchString)) {
+        // First check if there is any there is any indication that this does not contain the whole other
+        if (maxResults>other.maxResults ||
+                isWider(eepIds, other.eepIds) || isWider(cpIds, other.cpIds) || isWider(caIds, other.caIds) ||
+                expiresAfter<other.expiresAfter || expiresBefore>other.expiresBefore ||
+                revokedAfter<other.revokedAfter || revokedBefore>other.revokedBefore ||
+                (getGenericSearchStringAsDecimal()!=null && !getGenericSearchStringAsDecimal().equals(other.getGenericSearchStringAsDecimal())) ||
+                (getGenericSearchStringAsHex()!=null && !getGenericSearchStringAsHex().equals(other.getGenericSearchStringAsHex())) ||
+                !genericSearchString.contains(other.genericSearchString) ||
+                isWider(statuses, other.statuses) || isWider(revocationReasons, other.revocationReasons)) {
             // This does not contain whole other → wider
             return 1;
         }
-        if (isMoreNarrow(statuses, other.statuses)) { return -1; }
-        if (isWider(statuses, other.statuses)) { return 1; }
-        if (isMoreNarrow(revocationReasons, other.revocationReasons)) { return -1; }
-        if (isWider(revocationReasons, other.revocationReasons)) { return 1; }
+        // Next check if this object is more narrow than the other
+        if (maxResults<other.maxResults ||
+                isMoreNarrow(eepIds, other.eepIds) || isMoreNarrow(cpIds, other.cpIds) || isMoreNarrow(caIds, other.caIds) ||
+                expiresAfter>other.expiresAfter || expiresBefore<other.expiresBefore ||
+                revokedAfter>other.revokedAfter || revokedBefore<other.revokedBefore ||
+                (genericSearchString.contains(other.genericSearchString) && !other.genericSearchString.contains(genericSearchString)) ||
+                isMoreNarrow(statuses, other.statuses) || isMoreNarrow(revocationReasons, other.revocationReasons)) {
+            // This does contain whole other, but other does not contain whole this → more narrow
+            return -1;
+        }
         return 0;
     }
     
-    // @return true if thisObject does contain whole other, but other does not contain whole this → more narrow
+    /** @return true if thisObject does contain whole other, but other does not contain whole this → more narrow */
     private boolean isMoreNarrow(final List<Integer> thisObject, final List<Integer> otherObject) {
         return thisObject.containsAll(otherObject) && !otherObject.containsAll(thisObject);
     }
-    // @return true if thisObject does not contain whole other → wider
+    /** @return true if thisObject does not contain whole other → wider */
     private boolean isWider(final List<Integer> thisObject, final List<Integer> otherObject) {
         return !thisObject.containsAll(otherObject);
     }

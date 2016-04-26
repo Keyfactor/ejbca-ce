@@ -194,7 +194,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (genericSearchStringDec!=null) {
                 sb.append(" OR a.serialNumber LIKE :serialNumberDec");
             }
-            if (genericSearchStringHex!=null) {
+            if (genericSearchStringDec==null && genericSearchStringHex!=null) {
                 sb.append(" OR a.serialNumber LIKE :serialNumberHex");
             }
             sb.append(")");
@@ -225,16 +225,25 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         query.setParameter("issuerDN", issuerDns);
         query.setParameter("certificateProfileId", authorizedCpIds);
         //query.setParameter("endEntityProfileId", authorizedEepIds);
+        if (log.isDebugEnabled()) {
+            log.debug(" issuerDN: " + Arrays.toString(issuerDns.toArray()));
+            log.debug(" certificateProfileId: " + Arrays.toString(authorizedCpIds.toArray()));
+            log.debug(" endEntityProfileId: " + Arrays.toString(authorizedEepIds.toArray()));
+        }
         if (!genericSearchString.isEmpty()) {
             query.setParameter("username", "%" + genericSearchString + "%");
             query.setParameter("subjectDN", "%" + genericSearchString + "%");
             if (genericSearchStringDec!=null) {
                 query.setParameter("serialNumberDec", genericSearchStringDec);
-                log.debug(" serialNumberDec: " + genericSearchStringDec);
+                if (log.isDebugEnabled()) {
+                    log.debug(" serialNumberDec: " + genericSearchStringDec);
+                }
             }
-            if (genericSearchStringHex!=null) {
+            if (genericSearchStringDec==null && genericSearchStringHex!=null) {
                 query.setParameter("serialNumberHex", genericSearchStringHex);
-                log.debug(" serialNumberHex: " + genericSearchStringHex);
+                if (log.isDebugEnabled()) {
+                    log.debug(" serialNumberHex: " + genericSearchStringHex);
+                }
             }
         }
         if (request.getExpiresAfter()<Long.MAX_VALUE) {

@@ -37,7 +37,7 @@
                 <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" style="display: none;"/>
 
                 <h:panelGroup id="basic">
-                    <h:inputText id="genericSearchString" value="#{raSearchCertsBean.genericSearchString}" styleClass="jsAutoFocusOnce jsTitleAsPlaceHolder delayKeyUpJs" size="40"
+                    <h:inputText id="genericSearchString" value="#{raSearchCertsBean.genericSearchString}" styleClass="jsAutoFocusOnce jsTitleAsPlaceHolder jsDelayKeyUp" size="40"
                          title="#{msg.search_certs_page_criteria_generic_title}">
                         <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
                             onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
@@ -105,14 +105,14 @@
                                 <h:outputLabel for="expiresAfter" value="#{msg.search_certs_page_criteria_expiresafter}"/>
                                 <h:inputText id="expiresAfter" value="#{raSearchCertsBean.expiresAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
                                     styleClass="jsTitleAsPlaceHolder #{component.valid?'':'invalidInputText'}">
-                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages @this" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
                                         onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
                                         onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                                 </h:inputText>
                                 <h:outputLabel for="expiresBefore" value="#{msg.search_certs_page_criteria_expiresbefore}"/>
                                 <h:inputText id="expiresBefore" value="#{raSearchCertsBean.expiresBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
                                     styleClass="jsTitleAsPlaceHolder #{component.valid?'':'invalidInputText'}">
-                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages @this" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
                                         onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
                                         onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                                 </h:inputText>
@@ -121,15 +121,15 @@
                             <h:panelGrid columns="2">
                                 <h:outputLabel for="revokedAfter" value="#{msg.search_certs_page_criteria_revokedafter}"/>
                                 <h:inputText id="revokedAfter" value="#{raSearchCertsBean.revokedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
-                                    styleClass="jsTitleAsPlaceHolder delayKeyUpJs #{component.valid?'':'invalidInputText'}">
-                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp #{component.valid?'':'invalidInputText'}">
+                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages @this" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
                                         onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
                                         onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                                 </h:inputText>
                                 <h:outputLabel for="revokedBefore" value="#{msg.search_certs_page_criteria_revokedbefore}"/>
                                 <h:inputText id="revokedBefore" value="#{raSearchCertsBean.revokedBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
-                                    styleClass="jsTitleAsPlaceHolder delayKeyUpJs #{component.valid?'':'invalidInputText'}">
-                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp #{component.valid?'':'invalidInputText'}">
+                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages @this" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
                                         onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
                                         onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                                 </h:inputText>
@@ -156,25 +156,17 @@
                         </h:column>
                         <h:column>
                             <f:facet name="header">
-                                <h:outputLabel for="sortCp" value="#{msg.search_certs_page_colhead_cp} #{raSearchCertsBean.sortedByCp}"/>
-                                <h:commandButton id="sortCp" action="#{raSearchCertsBean.sortByCp}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
+                                <h:outputLabel for="sortProfile" value="#{msg.search_certs_page_colhead_profile} #{raSearchCertsBean.sortedByProfile}"/>
+                                <h:commandButton id="sortProfile" action="#{raSearchCertsBean.sortByProfile}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
                                     <f:ajax execute="@this" render=":contentForm:filteredResults"
                                         onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
                                         onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
-                            <h:outputText styleClass="fineprint" value="#{raSearchCertificate.cpName}"/>
-                        </h:column>
-                        <h:column>
-                            <f:facet name="header">
-                                <h:outputLabel for="sortEep" value="#{msg.search_certs_page_colhead_eep} #{raSearchCertsBean.sortedByEep}"/>
-                                <h:commandButton id="sortEep" action="#{raSearchCertsBean.sortByEep}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
-                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
-                                </h:commandButton>
-                            </f:facet>
-                            <h:outputText styleClass="fineprint" value="#{raSearchCertificate.eepName}"/>
+                            <h:panelGrid columns="1" styleClass="nopadding noborder">
+                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.eepName}"/>
+                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.cpName}"/>
+                            </h:panelGrid>
                         </h:column>
                         <h:column>
                             <f:facet name="header">

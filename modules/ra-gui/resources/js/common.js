@@ -24,6 +24,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
 		inputField.focus();
 		return true;
 	});
+	/*
+	// Delay "keyup" events for input elements marked with the provided styleClassName. (JSF2.0 AJAX work around.)
+	forEachInputElementByStyleClass("jsDelayKeyUp", function(inputField) {
+		var originalHandler = inputField.onkeyup;
+		inputField.onkeyup = new EventDelay(originalHandler, 500).delay;
+	});
+	*/
     new SessionKeepAlive("sessionKeepAliveLink");
 }, false);
 
@@ -91,6 +98,18 @@ function forEachInputElementByStyleClass(styleClassName, callback) {
 		}
 	}
 }
+
+function EventDelay(originalHandler, timeout) {
+    var instance = this;
+    this.callback = originalHandler;
+    this.timeoutms = timeout;
+    this.timer = 0;
+
+    this.delay = function(event) {
+        clearTimeout(instance.timer);
+        instance.timer = setTimeout(instance.callback, instance.timeoutms);
+    };
+};
 
 /** Can be invoked on AJAX requests to indicate that a background operation is running. */
 function onAjaxEvent(data, elementId) {
