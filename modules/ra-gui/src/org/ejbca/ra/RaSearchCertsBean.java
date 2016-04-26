@@ -29,6 +29,9 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 
@@ -245,10 +248,8 @@ public class RaSearchCertsBean implements Serializable {
             @Override
             public int compare(RaSearchCertificate o1, RaSearchCertificate o2) {
                 switch (sortBy) {
-                case EEP:
-                    return o1.eepName.compareTo(o2.eepName) * (sortAscending ? 1 : -1);
-                case CP:
-                    return o1.cpName.compareTo(o2.cpName) * (sortAscending ? 1 : -1);
+                case PROFILE:
+                    return o1.eepName.concat(o1.cpName).compareTo(o2.eepName.concat(o2.cpName)) * (sortAscending ? 1 : -1);
                 case CA:
                     return o1.caName.compareTo(o2.caName) * (sortAscending ? 1 : -1);
                 case SERIALNUMBER:
@@ -267,15 +268,13 @@ public class RaSearchCertsBean implements Serializable {
         });
     }
 
-    private enum SortOrder { EEP, CP, CA, SERIALNUMBER, SUBJECT, USERNAME, EXPIRATION, STATUS };
+    private enum SortOrder { PROFILE, CA, SERIALNUMBER, SUBJECT, USERNAME, EXPIRATION, STATUS };
     
     private SortOrder sortBy = SortOrder.USERNAME;
     private boolean sortAscending = true;
     
-    public String getSortedByEep() { return getSortedBy(SortOrder.EEP); }
-    public void sortByEep() { sortBy(SortOrder.EEP, true); }
-    public String getSortedByCp() { return getSortedBy(SortOrder.CP); }
-    public void sortByCp() { sortBy(SortOrder.CP, true); }
+    public String getSortedByProfile() { return getSortedBy(SortOrder.PROFILE); }
+    public void sortByProfile() { sortBy(SortOrder.PROFILE, true); }
     public String getSortedByCa() { return getSortedBy(SortOrder.CA); }
     public void sortByCa() { sortBy(SortOrder.CA, true); }
     public String getSortedBySerialNumber() { return getSortedBy(SortOrder.SERIALNUMBER); }
@@ -450,10 +449,23 @@ public class RaSearchCertsBean implements Serializable {
             try {
                 return ValidityDate.parseAsIso8601(input).getTime();
             } catch (ParseException e) {
+                markCurrentComponentAsInvalid();
                 raLocaleBean.addMessageWarn("search_certs_page_warn_invaliddate");
             }
         }
         return defaultValue;
+    }
+    
+    /** After invoking this method from a setter the current UIInput.isValid() will return false. E.g. #{component.valid} is false. */
+    private void markCurrentComponentAsInvalid() {
+        final UIComponent uiComponent = UIComponent.getCurrentComponent(FacesContext.getCurrentInstance());
+        if (uiComponent instanceof UIInput) {
+            ((UIInput)uiComponent).setValid(false);
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("UIComponent " + uiComponent.getId() + " is not an UIInput component and will not be marked as invalid.");
+            }
+        }
     }
 
     public String getCriteriaStatus() {
