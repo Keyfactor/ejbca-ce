@@ -15,7 +15,6 @@ package org.ejbca.core.model.era;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,6 +46,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
@@ -71,13 +72,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @EJB
     private CaSessionLocal caSession;
     @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
-    private CertificateProfileSessionLocal certificateProfileSession;
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -265,7 +268,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 query.setParameter("revocationReason", request.getRevocationReasons());
             }
         }
-        final int maxResults = Math.min(1000, request.getMaxResults());
+        final int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
         query.setMaxResults(maxResults);
         @SuppressWarnings("unchecked")
         final List<String> fingerprints = query.getResultList();
@@ -360,5 +363,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         return availableCertificateProfiles;
+    }
+
+    private GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
+        return (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
     }
 }
