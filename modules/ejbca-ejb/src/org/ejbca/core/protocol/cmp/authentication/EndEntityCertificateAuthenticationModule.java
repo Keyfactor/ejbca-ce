@@ -486,10 +486,15 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             final int eeprofid;
             final String eepname;
             try {
-                eeprofid = getRaEndEntityProfileId((DEROctetString) msg.getHeader().getSenderKID());
+                final String configuredId = this.cmpConfiguration.getRAEEProfile(this.confAlias);
+                eeprofid = Integer.parseInt(configuredId);
                 eepname = eeProfileSession.getEndEntityProfileName(eeprofid);
-            } catch (EndEntityProfileNotFoundException e) {
-                log.error(e.getLocalizedMessage(), e);
+                if(eepname == null) {
+                    log.error("End Entity Profile with ID " + configuredId + " was not found");
+                    return false;
+                }
+            } catch(NumberFormatException e) {
+                log.error("Configures End Entity Profile ID in CMP alias " + this.confAlias + " was not an Integer");
                 return false;
             }
             
@@ -611,23 +616,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
         } 
         return getCAInfoByName(caname).getCAId();
-    }
-    
-    /**
-     * Return the ID of EndEntityProfile that is used for CMP purposes. 
-     * @param keyId
-     * @return the ID of EndEntityProfile used for CMP purposes. 
-     * @throws EndEntityProfileNotFoundException 
-     */
-    private int getRaEndEntityProfileId(final DEROctetString keyId) throws EndEntityProfileNotFoundException {
-        String endEntityProfile = this.cmpConfiguration.getRAEEProfile(this.confAlias);
-        if (StringUtils.equals(endEntityProfile, "KeyId") && (keyId != null)) {
-            endEntityProfile = CmpMessageHelper.getStringFromOctets(keyId);
-            if (log.isDebugEnabled()) {
-                log.debug("Using End Entity Profile with same name as KeyId in request: "+endEntityProfile);
-            }
-        } 
-        return eeProfileSession.getEndEntityProfileId(endEntityProfile);
     }
     
     private boolean isExtraCertValid() {
