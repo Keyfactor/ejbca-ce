@@ -28,7 +28,10 @@
     </ui:remove>
     <ui:composition template="/WEB-INF/include/template.xhtml">
         <ui:define name="content">
-            <h2 class="content-body-subhead"><h:outputText value="#{msg.search_certs_page_title}"/></h2>
+        	<h:panelGroup layout="block" class="header" id="title">
+				<h1><h:outputText value="#{msg.search_certs_page_title}"/></h1>
+			</h:panelGroup>	
+        
             <h:form id="contentForm">
                 <ui:remove><!-- Add a hidden h:commandButton first in the form to ensure that hitting enter leads to a search --></ui:remove>
                 <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" style="display: none;"/>
