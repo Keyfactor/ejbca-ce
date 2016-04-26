@@ -146,7 +146,7 @@ public class CrmfRequestTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;foo123");
         this.cmpConfiguration.setExtractUsernameComponent(cmpAlias, "CN");
         this.cmpConfiguration.setRACertProfile(cmpAlias, CP_DN_OVERRIDE_NAME);
-        this.cmpConfiguration.setRAEEProfile(cmpAlias, EEP_DN_OVERRIDE_NAME);
+        this.cmpConfiguration.setRAEEProfile(cmpAlias, String.valueOf(eepDnOverrideId));
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
 

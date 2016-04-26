@@ -133,7 +133,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
         this.cmpConfiguration.setRAMode(cmpAlias, true);
         this.cmpConfiguration.setAllowRAVerifyPOPO(cmpAlias, true);
         this.cmpConfiguration.setResponseProtection(cmpAlias, "signature");
-        this.cmpConfiguration.setRAEEProfile(cmpAlias, EEP_DN_OVERRIDE_NAME);
+        this.cmpConfiguration.setRAEEProfile(cmpAlias, String.valueOf(eepDnOverrideId));
         this.cmpConfiguration.setRACertProfile(cmpAlias, CP_DN_OVERRIDE_NAME);
         this.cmpConfiguration.setRACAName(cmpAlias, "ManagementCA");
         this.cmpConfiguration.setRANameGenScheme(cmpAlias, "DN");

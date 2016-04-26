@@ -166,10 +166,9 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         // Initialize config in here
         EjbcaConfigurationHolder.instance();
         //confSession.backupConfiguration();
-
         
         this.cmpConfiguration.addAlias(this.cmpAlias);
-        this.cmpConfiguration.setRAEEProfile(this.cmpAlias, "EMPTY");
+        this.cmpConfiguration.setRAEEProfile(this.cmpAlias, String.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
         this.cmpConfiguration.setRACertProfile(this.cmpAlias, "ENDUSER");
         this.cmpConfiguration.setRACAName(this.cmpAlias, "TestCA");
         this.cmpConfiguration.setCMPDefaultCA(this.cmpAlias, "TestCA");
