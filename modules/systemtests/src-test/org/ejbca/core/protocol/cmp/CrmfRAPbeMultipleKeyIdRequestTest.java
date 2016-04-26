@@ -63,6 +63,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -103,6 +104,8 @@ import org.junit.Test;
  * @author Tomas Gustavsson
  * @version $Id$
  */
+// TODO Setting KeyId as the RA end entity profile is no longer supported, however, it will be supported later in a different format 
+// specifically for the Unid users/customers. This test should be modified then
 public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 	
     private static final Logger log = Logger.getLogger(CrmfRAPbeMultipleKeyIdRequestTest.class);
@@ -198,7 +201,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(configAlias, "password");
         this.cmpConfiguration.setRANameGenScheme(configAlias, "DN");
-        this.cmpConfiguration.setRAEEProfile(configAlias, "KeyId");
+        //this.cmpConfiguration.setRAEEProfile(configAlias, "KeyId");
         this.cmpConfiguration.setRACertProfile(configAlias, "KeyId");
         this.cmpConfiguration.setRACAName(configAlias, "ProfileDefault");
         updatePropertyOnServer("cmp.tcp.portno", "5587");
@@ -232,7 +235,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         return this.getClass().getSimpleName(); 
     }
 
-    @Test
+    @Ignore
     public void test01CrmfHttpOkUserWrongKeyId() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -258,7 +261,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
     }
 
 
-    @Test
+    @Ignore
     public void test02CrmfHttpOkUserKeyId1() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -341,7 +344,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
     }
 
-    @Test
+    @Ignore
     public void test03CrmfTcpOkUserKeyId1() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -395,7 +398,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(userDN1, this.cacert1, resp);
     }
 
-    @Test
+    @Ignore
     public void test04CrmfTcpOkUserKeyId2() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -449,7 +452,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(userDN2, this.cacert2, resp);
     }
 
-    @Test
+    @Ignore
     public void test05CrmfHttpOkUserKeyId2() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -518,7 +521,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
     }
 
-    @Test
+    @Ignore
     public void test06CrmfTcpOkUserKeyId3() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -577,7 +580,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(userDN2, this.cacert2, resp);
     } // test06CrmfTcpOkUserKeyId3
 
-    @Test
+    @Ignore
     public void test07ExtensionOverride() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
