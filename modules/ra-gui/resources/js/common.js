@@ -24,29 +24,28 @@ document.addEventListener("DOMContentLoaded", function(event) {
 		inputField.focus();
 		return true;
 	});
-	/*
-	// Delay "keyup" events for input elements marked with the provided styleClassName. (JSF2.0 AJAX work around.)
-	forEachInputElementByStyleClass("jsDelayKeyUp", function(inputField) {
-		var originalHandler = inputField.onkeyup;
-		inputField.onkeyup = new EventDelay(originalHandler, 500).delay;
-	});
-	*/
     new SessionKeepAlive("sessionKeepAliveLink");
 }, false);
 
 function jsTouchUpDocument() {
     // Hide elements that should not be shown when JS is enabled
-	forEachInputElementByStyleClass("jsHide", function(inputField) {
-		inputField.style.display = "none";
-	});
+	forEachInputElementByStyleClass("jsHide", function(inputField) { inputField.style.display = "none"; });
 	// Use title as HTML5 placeholder for elements marked with the style class (JSF2.0 does not support HTML5 attributes)
 	forEachInputElementByStyleClass("jsTitleAsPlaceHolder", function(inputField) {
 		inputField.placeholder = inputField.title;
 		inputField.title = "";
 	});
+	// Delay "keyup" events for input elements marked with the provided styleClassName. (JSF2.0 AJAX work around.)
+	forEachInputElementByStyleClass("jsDelayKeyUp", function(inputField) {
+		new KeyUpEventDelay(inputField, 400);
+	});
 };
 
-/** Keep JSF session alive by polling back-end before the session has expired */
+/**
+ * Keep JSF session alive by polling back-end before the session has expired.
+ * 
+ * @param linkElementId ID of a-element pointing to keep alive link.
+ */
 function SessionKeepAlive(linkElementId) {
     var instance = this;
     this.timeToNextCheckInMs = 100; // Make first check after 100 ms.
@@ -59,7 +58,7 @@ function SessionKeepAlive(linkElementId) {
         if (instance.xmlHttpReq.readyState == 4) {
             if (instance.xmlHttpReq.status == 200) {
                 instance.timeToNextCheckInMs = instance.xmlHttpReq.responseText;
-                setTimeout(instance.poll, instance.timeToNextCheckInMs);
+                window.setTimeout(instance.poll, instance.timeToNextCheckInMs);
         	} else {
                 console.log("SessionKeepAlive failed with HTTP status code " + instance.xmlHttpReq.status);
         	}
@@ -74,7 +73,7 @@ function SessionKeepAlive(linkElementId) {
         }
     };
     if (this.link) {
-        setTimeout(this.poll, this.timeToNextCheckInMs);
+    	window.setTimeout(this.poll, this.timeToNextCheckInMs);
     } else {
         console.log("Unable to find link element with id " + linkElementId + ". SessionKeepAlive will not be enabled.");
     }
@@ -88,6 +87,8 @@ function forEachInputElementByStyleClass(styleClassName, callback) {
 			var styleClasses = inputFields[i].className.split(' ');
 			for (var j = 0; j<styleClasses.length; j++) {
 				if (styleClasses[j]==styleClassName) {
+					// First remove the class name to avoid processing it multiple times if this method is invoked again
+					inputFields[i].className = inputFields[i].className.replace(styleClassName, "").trim();
 					// Invoke the callback with the matching element. If it returns true we stop looking for more elements.
 					if (callback(inputFields[i])) {
 						return;
@@ -99,16 +100,28 @@ function forEachInputElementByStyleClass(styleClassName, callback) {
 	}
 }
 
-function EventDelay(originalHandler, timeout) {
+/**
+ * Delays "onkeyup" event handler invocation while additional events are triggered.
+ * 
+ * @param inputElement the element to wrap the onkeyup handler for
+ * @param timeoutMs delay in milliseconds
+ */
+function KeyUpEventDelay(inputElement, timeoutMs) {
     var instance = this;
-    this.callback = originalHandler;
-    this.timeoutms = timeout;
+    this.component = inputElement;
+    this.originalHandler = inputElement.onkeyup;
+    this.timeout = timeoutMs;
     this.timer = 0;
 
     this.delay = function(event) {
-        clearTimeout(instance.timer);
-        instance.timer = setTimeout(instance.callback, instance.timeoutms);
+    	// Reschedule (prevent) any existing timeout to the original handler and schedule a new one
+        window.clearTimeout(instance.timer);
+        instance.timer = window.setTimeout(function() { instance.originalHandler.call(instance.component, event); }, instance.timeout);
     };
+    
+    if (this.originalHandler) {
+    	this.component.onkeyup = this.delay;
+    }
 };
 
 /** Can be invoked on AJAX requests to indicate that a background operation is running. */
