@@ -22,4 +22,4 @@
 .fineprint { font-size: xx-small; }
 .fineprintMono { font-size: xx-small; font-family: monospace; }
 
-.invalidInputText { border: 1px solid red; color: red; }
+label.invalidInput { color: red; }
