@@ -106,6 +106,7 @@ import org.junit.Test;
  */
 // TODO Setting KeyId as the RA end entity profile is no longer supported, however, it will be supported later in a different format 
 // specifically for the Unid users/customers. This test should be modified then
+@Ignore
 public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 	
     private static final Logger log = Logger.getLogger(CrmfRAPbeMultipleKeyIdRequestTest.class);
