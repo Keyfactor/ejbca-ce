@@ -30,7 +30,7 @@ import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
 
 /**
  * Adds items to the Unid-Fnr DB.
- * @author primelars
+ * 
  * @version $Id$
  */
 public class UnidFnrHandler implements ExtendedUserDataHandler {
