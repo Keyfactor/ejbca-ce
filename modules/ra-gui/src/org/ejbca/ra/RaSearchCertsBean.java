@@ -30,7 +30,6 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
 import javax.faces.component.html.HtmlOutputLabel;
 import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -56,6 +55,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 @ViewScoped
 public class RaSearchCertsBean implements Serializable {
 
+    /** UI representation of a result set item from the back end. */
     public class RaSearchCertificate {
         private final String fingerprint;
         private final String username;
@@ -152,27 +152,38 @@ public class RaSearchCertsBean implements Serializable {
     private String revokedAfter = "";
     private String revokedBefore = "";
 
-    public String getGenericSearchString() { return stagedRequest.getGenericSearchString(); }
-    public void setGenericSearchString(final String genericSearchString) { stagedRequest.setGenericSearchString(genericSearchString); }
+    private enum SortOrder { PROFILE, CA, SERIALNUMBER, SUBJECT, USERNAME, EXPIRATION, STATUS };
     
+    private SortOrder sortBy = SortOrder.USERNAME;
+    private boolean sortAscending = true;
+
+    private boolean moreOptions = false;
+
+    /** Invoked action on search form post */
     public void searchAndFilterAction() {
         searchAndFilterCommon();
     }
 
+    /** Invoked on criteria changes */
     public void searchAndFilterAjaxListener(final AjaxBehaviorEvent event) {
         searchAndFilterCommon();
     }
     
+    /** Determine if we need to query back end or just filter and execute the required action. */
     private void searchAndFilterCommon() {
         final int compared = stagedRequest.compareTo(lastExecutedRequest);
         boolean search = compared>0;
         if (compared<=0 && lastExecutedResponse!=null) {
             // More narrow search → filter and check if there are sufficient results left
-            log.info("DEVELOP: More narrow or same → filter");
+            if (log.isDebugEnabled()) {
+                log.debug("More narrow criteria → Filter");
+            }
             filterTransformSort();
             // Check if there are sufficient results to fill screen and search for more
             if (resultsFiltered.size()<lastExecutedRequest.getMaxResults() && lastExecutedResponse.isMightHaveMoreResults()) {
-                log.info("DEVELOP: Trying to load more results since filter left too few results");
+                if (log.isDebugEnabled()) {
+                    log.debug("Trying to load more results since filter left too few results → Query");
+                }
                 search = true;
             } else {
                 search = false;
@@ -180,7 +191,9 @@ public class RaSearchCertsBean implements Serializable {
         }
         if (search) {
             // Wider search → Query back-end
-            log.info("DEVELOP: Wider → Query");
+            if (log.isDebugEnabled()) {
+                log.debug("Wider criteria → Query");
+            }
             lastExecutedResponse = raMasterApiProxyBean.searchForCertificates(raAuthenticationBean.getAuthenticationToken(), stagedRequest);
             lastExecutedRequest = stagedRequest;
             stagedRequest = new RaCertificateSearchRequest(stagedRequest);
@@ -188,6 +201,7 @@ public class RaSearchCertsBean implements Serializable {
         }
     }
 
+    /** Perform in memory filtering using the current search criteria of the last result set from the back end. */
     private void filterTransformSort() {
         resultsFiltered.clear();
         if (lastExecutedResponse != null) {
@@ -200,7 +214,7 @@ public class RaSearchCertsBean implements Serializable {
                         (cdw.getCertificateData().getSubjectDN() == null || !cdw.getCertificateData().getSubjectDN().contains(stagedRequest.getGenericSearchString())))) {
                     continue;
                 }
-                /*
+                /* TODO: ECA-4874
                 if (!stagedRequest.getEepIds().isEmpty() && !stagedRequest.getEepIds().contains(cdw.getCertificateData().getEndEntityProfileIdOrZero())) {
                     continue;
                 }
@@ -237,13 +251,13 @@ public class RaSearchCertsBean implements Serializable {
                 if (!stagedRequest.getRevocationReasons().isEmpty() && !stagedRequest.getRevocationReasons().contains(cdw.getCertificateData().getRevocationReason())) {
                     continue;
                 }
-                // if (this or that) { ...
                 resultsFiltered.add(new RaSearchCertificate(cdw));
             }
             sort();
         }
     }
 
+    /** Sort the filtered result set based on the select column and sort order. */
     private void sort() {
         Collections.sort(resultsFiltered, new Comparator<RaSearchCertificate>() {
             @Override
@@ -268,11 +282,6 @@ public class RaSearchCertsBean implements Serializable {
             }
         });
     }
-
-    private enum SortOrder { PROFILE, CA, SERIALNUMBER, SUBJECT, USERNAME, EXPIRATION, STATUS };
-    
-    private SortOrder sortBy = SortOrder.USERNAME;
-    private boolean sortAscending = true;
     
     public String getSortedByProfile() { return getSortedBy(SortOrder.PROFILE); }
     public void sortByProfile() { sortBy(SortOrder.PROFILE, true); }
@@ -289,12 +298,14 @@ public class RaSearchCertsBean implements Serializable {
     public String getSortedByUsername() { return getSortedBy(SortOrder.USERNAME); }
     public void sortByUsername() { sortBy(SortOrder.USERNAME, true); }
 
+    /** @return an up or down arrow character depending on sort order if the sort column matches */
     private String getSortedBy(final SortOrder sortOrder) {
         if (sortBy.equals(sortOrder)) {
             return sortAscending ? "\u25bc" : "\u25b2";
         }
         return "";
     }
+    /** Set current sort column. Flip the order if the column was already selected. */
     private void sortBy(final SortOrder sortOrder, final boolean defaultAscending) {
         if (sortBy.equals(sortOrder)) {
             sortAscending = !sortAscending;
@@ -305,13 +316,15 @@ public class RaSearchCertsBean implements Serializable {
         sort();
     }
     
+    /** @return true if there might be more results in the back end than retrieved based on the current criteria. */
     public boolean isMoreResultsAvailable() {
         return lastExecutedResponse!=null && lastExecutedResponse.isMightHaveMoreResults();
     }
 
-    private boolean moreOptions = false;
+    /** @return true of more search criteria than just the basics should be shown */
     public boolean isMoreOptions() { return moreOptions; };
 
+    /** Invoked when more or less options action is invoked. */
     public void moreOptionsAction() {
         moreOptions = !moreOptions;
         // Reset any criteria in the advanced section
@@ -327,6 +340,13 @@ public class RaSearchCertsBean implements Serializable {
         searchAndFilterCommon();
     }
 
+    public List<RaSearchCertificate> getFilteredResults() {
+        return resultsFiltered;
+    }
+
+    public String getGenericSearchString() { return stagedRequest.getGenericSearchString(); }
+    public void setGenericSearchString(final String genericSearchString) { stagedRequest.setGenericSearchString(genericSearchString); }
+    
     public int getCriteriaMaxResults() { return stagedRequest.getMaxResults(); }
     public void setCriteriaMaxResults(final int criteriaMaxResults) { stagedRequest.setMaxResults(criteriaMaxResults); }
     public List<Integer> getAvailableMaxResults() {
@@ -458,6 +478,7 @@ public class RaSearchCertsBean implements Serializable {
         return defaultValue;
     }
     
+    /** Set or remove the styleClass "invalidInput" on the label with a for-attribute matching the current input component. */
     private void markCurrentComponentAsValid(final boolean valid) {
         final String STYLE_CLASS_INVALID = "invalidInput";
         // UIComponent.getCurrentComponent only works when invoked via f:ajax
@@ -539,10 +560,6 @@ public class RaSearchCertsBean implements Serializable {
     }
     private SelectItem getAvailableStatusRevoked(final int reason) {
         return new SelectItem(CertificateConstants.CERT_REVOKED + "_" + reason, raLocaleBean.getMessage("search_certs_page_criteria_status_option_revoked_reason_"+reason));
-    }
-
-    public List<RaSearchCertificate> getFilteredResults() {
-        return resultsFiltered;
     }
 
     private <T> List<Entry<T, String>> getAsSortedByValue(final Set<Entry<T, String>> entrySet) {
