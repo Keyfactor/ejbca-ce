@@ -445,14 +445,19 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     
 
     /**
-     * 
-     * @return the end entity profile ID. 
+     * @param alias
+     * @return the end entity profile ID
      */
     public String getRAEEProfile(String alias) {
         String key = alias + "." + CONFIG_RA_ENDENTITYPROFILEID;
         return getValue(key, alias); 
     }
   
+    /**
+     * @param alias the CMP alias
+     * @param eep the end entity profile ID
+     * @throws NumberFormatException if the end entity profile ID is not an integer
+     */
     public void setRAEEProfile(String alias, String eep) throws NumberFormatException {
         
         // Check the the value actually is an int. Throws NumberFormatException
