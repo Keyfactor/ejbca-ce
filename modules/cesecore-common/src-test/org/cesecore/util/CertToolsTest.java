@@ -671,7 +671,7 @@ public class CertToolsTest {
         assertEquals("CN=hexencoded SN,SN=foo", CertTools.stringToBCDNString(dn31));
 
         String dn32 = "CN=eidas,O=MyOrg,ORGANIZATIONIDENTIFIER=12345,C=SE";
-        assertEquals("CN=eidas,O=MyOrg,organizationIdentifier=12345,C=SE", CertTools.stringToBCDNString(dn32));
+        assertEquals("CN=eidas,organizationIdentifier=12345,O=MyOrg,C=SE", CertTools.stringToBCDNString(dn32));
 
     }
 

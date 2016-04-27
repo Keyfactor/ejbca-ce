@@ -91,7 +91,7 @@ public class DnComponents {
      */
     private static String[] dNObjectsForward = { "jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality", "street", "pseudonym",
             "telephonenumber", "postaladdress", "businesscategory", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e",
-            "email", "dn", "uid", "cn", "name", "sn", "serialnumber", "gn", "givenname", "initials", "surname", "t", "ou", "o", "organizationidentifier", "l", "st", "dc", "c" };
+            "email", "dn", "uid", "cn", "name", "sn", "serialnumber", "gn", "givenname", "initials", "surname", "t", "ou", "organizationidentifier", "o", "l", "st", "dc", "c" };
     // Default values    
     private static String[] dNObjectsReverse = null;
 
