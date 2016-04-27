@@ -53,9 +53,9 @@ public class DnComponentsTest {
         assertEquals("name", s[i++]);
         i += 6;
         assertEquals("t", s[i]);
-        i += 3;
+        i += 2;
         assertEquals("organizationidentifier", s[i]);
-        i += 4;
+        i += 5;
         assertEquals("c", s[i]);
 
         String[] s1 = DnComponents.getDnObjectsReverse();
@@ -73,7 +73,7 @@ public class DnComponentsTest {
         assertEquals("cn", s1[15]);
         assertEquals("name", s1[14]);
         assertEquals("t", s1[7]);
-        assertEquals("organizationidentifier", s1[4]);
+        assertEquals("organizationidentifier", s1[5]);
         assertEquals("c", s1[0]);
 
         String[] s2 = DnComponents.getDnObjects(true);
