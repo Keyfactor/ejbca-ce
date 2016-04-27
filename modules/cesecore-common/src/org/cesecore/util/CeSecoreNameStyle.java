@@ -49,6 +49,11 @@ public class CeSecoreNameStyle extends BCStyle {
      * https://cabforum.org/wp-content/uploads/EV-V1_5_2Libre.pdf
      */
     public static final ASN1ObjectIdentifier JURISDICTION_LOCALITY = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.60.2.1.1");
+    /**
+     * X.520 organizationIdentifier, used by ETSI TS 319 412 (eIDAS).
+     * https://www.itu.int/rec/dologin.asp?lang=e&id=T-REC-X.520-201210-S!Cor3!PDF-E&type=items
+     */
+    public static final ASN1ObjectIdentifier ORGANIZATION_IDENTIFIER = new ASN1ObjectIdentifier("2.5.4.97");
 
     /**
      * default look up table translating OID values into their common symbols following
@@ -102,6 +107,7 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultSymbols.put(JURISDICTION_LOCALITY, "JurisdictionLocality");
         DefaultSymbols.put(JURISDICTION_STATE, "JurisdictionState");
         DefaultSymbols.put(JURISDICTION_COUNTRY, "JurisdictionCountry");
+        DefaultSymbols.put(ORGANIZATION_IDENTIFIER, "organizationIdentifier");
 
         DefaultLookUp.put("c", C);
         DefaultLookUp.put("o", O);
@@ -140,6 +146,7 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultLookUp.put("jurisdictionlocality", JURISDICTION_LOCALITY);
         DefaultLookUp.put("jurisdictionstate", JURISDICTION_STATE);
         DefaultLookUp.put("jurisdictioncountry", JURISDICTION_COUNTRY);
+        DefaultLookUp.put("organizationidentifier", ORGANIZATION_IDENTIFIER);
 
         DefaultStringStringLookUp.put("C", C.getId());
         DefaultStringStringLookUp.put("O", O.getId());
@@ -178,6 +185,7 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultStringStringLookUp.put("JURISDICTIONLOCALITY", JURISDICTION_LOCALITY.getId());
         DefaultStringStringLookUp.put("JURISDICTIONSTATE", JURISDICTION_STATE.getId());
         DefaultStringStringLookUp.put("JURISDICTIONCOUNTRY", JURISDICTION_COUNTRY.getId());
+        DefaultStringStringLookUp.put("ORGANIZATIONIDENTIFIER", ORGANIZATION_IDENTIFIER.getId());
     }
 
     /**

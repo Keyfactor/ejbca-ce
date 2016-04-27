@@ -33,7 +33,7 @@ public class DnComponentsTest {
     @Test
     public void test01CheckObjects() throws Exception {
         String[] s = DnComponents.getDnObjects(true);
-        assertEquals(31, s.length);
+        assertEquals(32, s.length);
         int i = 0;
         assertEquals("jurisdictioncountry", s[i++]);
         assertEquals("jurisdictionstate", s[i++]);
@@ -53,28 +53,31 @@ public class DnComponentsTest {
         assertEquals("name", s[i++]);
         i += 6;
         assertEquals("t", s[i]);
-        i += 6;
+        i += 3;
+        assertEquals("organizationidentifier", s[i]);
+        i += 4;
         assertEquals("c", s[i]);
 
         String[] s1 = DnComponents.getDnObjectsReverse();
-        assertEquals(31, s1.length);
-        assertEquals("jurisdictioncountry", s1[30]);
-        assertEquals("jurisdictionstate", s1[29]);
-        assertEquals("jurisdictionlocality", s1[28]);
-        assertEquals("street", s1[27]);
-        assertEquals("telephonenumber", s1[25]);
-        assertEquals("businesscategory", s1[23]);
-        assertEquals("postalcode", s1[22]);
-        assertEquals("unstructuredaddress", s1[21]);
-        assertEquals("unstructuredname", s1[20]);
-        assertEquals("uid", s1[15]);
-        assertEquals("cn", s1[14]);
-        assertEquals("name", s1[13]);
-        assertEquals("t", s1[6]);
+        assertEquals(32, s1.length);
+        assertEquals("jurisdictioncountry", s1[31]);
+        assertEquals("jurisdictionstate", s1[30]);
+        assertEquals("jurisdictionlocality", s1[29]);
+        assertEquals("street", s1[28]);
+        assertEquals("telephonenumber", s1[26]);
+        assertEquals("businesscategory", s1[24]);
+        assertEquals("postalcode", s1[23]);
+        assertEquals("unstructuredaddress", s1[22]);
+        assertEquals("unstructuredname", s1[21]);
+        assertEquals("uid", s1[16]);
+        assertEquals("cn", s1[15]);
+        assertEquals("name", s1[14]);
+        assertEquals("t", s1[7]);
+        assertEquals("organizationidentifier", s1[4]);
         assertEquals("c", s1[0]);
 
         String[] s2 = DnComponents.getDnObjects(true);
-        assertEquals(31, s2.length);
+        assertEquals(32, s2.length);
         assertEquals("businesscategory", s2[7]);
         assertEquals("postalcode", s2[8]);
         assertEquals("unstructuredaddress", s2[9]);
@@ -82,10 +85,11 @@ public class DnComponentsTest {
         assertEquals("uid", s2[15]);
         assertEquals("cn", s2[16]);
         assertEquals("t", s2[24]);
-        assertEquals("c", s2[30]);
+        assertEquals("c", s2[31]);
 
         assertEquals("2.5.4.6", DnComponents.getOid("c").toString());
         assertEquals("2.5.4.3", DnComponents.getOid("cn").toString());
+        assertEquals("2.5.4.97", DnComponents.getOid("organizationidentifier").toString());
         assertEquals("1.3.6.1.4.1.311.60.2.1.3", DnComponents.getOid("jurisdictioncountry").toString());
         assertEquals("1.3.6.1.4.1.311.60.2.1.2", DnComponents.getOid("jurisdictionstate").toString());
         assertEquals("1.3.6.1.4.1.311.60.2.1.1", DnComponents.getOid("jurisdictionlocality").toString());
