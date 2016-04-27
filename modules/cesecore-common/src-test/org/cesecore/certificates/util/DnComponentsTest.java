@@ -110,6 +110,7 @@ public class DnComponentsTest {
         assertEquals("JURISDICTIONLOCALITY=", DnComponents.getDnExtractorFieldFromDnId(103));
         assertEquals("JURISDICTIONSTATE=", DnComponents.getDnExtractorFieldFromDnId(104));
         assertEquals("JURISDICTIONCOUNTRY=", DnComponents.getDnExtractorFieldFromDnId(105));
+        assertEquals("ORGANIZATIONIDENTIFIER=", DnComponents.getDnExtractorFieldFromDnId(106));
     }
     
     @Test
