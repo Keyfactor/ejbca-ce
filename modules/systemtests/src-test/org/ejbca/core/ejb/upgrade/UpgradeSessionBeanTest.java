@@ -384,7 +384,7 @@ public class UpgradeSessionBeanTest {
         int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(profileName);
         try {
             cmpConfiguration.addAlias(aliasName);
-            cmpConfiguration.setRAEEProfile(aliasName, null);
+            cmpConfiguration.setValue(aliasName + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILEID, null, aliasName);
             cmpConfiguration.setValue(aliasName + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, profileName, aliasName);
             globalConfigSession.saveConfiguration(alwaysAllowtoken, cmpConfiguration);
             //Perform upgrade. 
