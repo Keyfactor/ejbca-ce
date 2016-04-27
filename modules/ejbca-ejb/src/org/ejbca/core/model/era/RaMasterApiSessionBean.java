@@ -150,7 +150,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             authorizedLocalCaIds.retainAll(request.getCaIds());
         }
         final List<String> issuerDns = new ArrayList<>();
-        // TODO: Check EEP authorization once this is implemented
+        // TODO: ECA-4874 Check EEP authorization once this is implemented
         for (final int caId : authorizedLocalCaIds) {
             try {
                 final String issuerDn = CertTools.stringToBCDNString(StringTools.strip(caSession.getCAInfoInternal(caId).getSubjectDN()));
@@ -208,7 +208,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (request.getExpiresBefore()>0) {
             sb.append(" AND (a.expireDate < :expiresBefore)");
         }
-        // NOTE: updateTime is not indexed.. we might want to disallow such search.
+        // NOTE: revocationDate is not indexed.. we might want to disallow such search.
         if (request.getRevokedAfter()<Long.MAX_VALUE) {
             sb.append(" AND (a.revocationDate > :revokedAfter)");
         }
@@ -223,10 +223,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         sb.append(" AND (a.certificateProfileId IN (:certificateProfileId))");
+        // TODO: ECA-4874
         //sb.append(" AND (a.endEntityProfileId IN (:endEntityProfileId))");
         final Query query = entityManager.createQuery(sb.toString());
         query.setParameter("issuerDN", issuerDns);
         query.setParameter("certificateProfileId", authorizedCpIds);
+        // TODO: ECA-4874
         //query.setParameter("endEntityProfileId", authorizedEepIds);
         if (log.isDebugEnabled()) {
             log.debug(" issuerDN: " + Arrays.toString(issuerDns.toArray()));
