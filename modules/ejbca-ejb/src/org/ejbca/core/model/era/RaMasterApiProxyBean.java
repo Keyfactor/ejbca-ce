@@ -297,12 +297,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public Map<String, CertificateProfile> getAvailableCertificateProfiles(AuthenticationToken authenticationToken, String[] certificateProfilesIds) throws AuthorizationDeniedException{
+    public Map<String, CertificateProfile> getAvailableCertificateProfiles(String[] certificateProfilesIds) {
         final Map<String, CertificateProfile> ret = new HashMap<String, CertificateProfile>();
         for(final RaMasterApi raMasterApi : raMasterApis){
             if(raMasterApi.isBackendAvailable()){
                 try{
-                    final Map<String, CertificateProfile> result = raMasterApi.getAvailableCertificateProfiles(authenticationToken, certificateProfilesIds);
+                    final Map<String, CertificateProfile> result = raMasterApi.getAvailableCertificateProfiles(certificateProfilesIds);
                     if (result != null) {
                         ret.putAll(result);
                     }

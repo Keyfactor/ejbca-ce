@@ -75,5 +75,5 @@ public interface RaMasterApi {
      * @param certificateProfilesIds string array of certificate profile ids  
      * @return map of certificate profiles available for selected profile where keys are certificate profiles names 
      */
-    Map<String, CertificateProfile> getAvailableCertificateProfiles(AuthenticationToken authenticationToken, String[] certificateProfilesIds) throws AuthorizationDeniedException;
+    Map<String, CertificateProfile> getAvailableCertificateProfiles(String[] certificateProfilesIds);
 }
