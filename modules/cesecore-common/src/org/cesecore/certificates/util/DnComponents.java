@@ -83,6 +83,7 @@ public class DnComponents {
         oids.put("jurisdictionlocality", CeSecoreNameStyle.JURISDICTION_LOCALITY);
         oids.put("jurisdictionstate", CeSecoreNameStyle.JURISDICTION_STATE);
         oids.put("jurisdictioncountry", CeSecoreNameStyle.JURISDICTION_COUNTRY);
+        oids.put("organizationidentifier", CeSecoreNameStyle.ORGANIZATION_IDENTIFIER);
 
     }
     /** Default values used when constructing DN strings that are put in the database
@@ -90,7 +91,7 @@ public class DnComponents {
      */
     private static String[] dNObjectsForward = { "jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality", "street", "pseudonym",
             "telephonenumber", "postaladdress", "businesscategory", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e",
-            "email", "dn", "uid", "cn", "name", "sn", "serialnumber", "gn", "givenname", "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c" };
+            "email", "dn", "uid", "cn", "name", "sn", "serialnumber", "gn", "givenname", "initials", "surname", "t", "ou", "o", "organizationidentifier", "l", "st", "dc", "c" };
     // Default values    
     private static String[] dNObjectsReverse = null;
 
