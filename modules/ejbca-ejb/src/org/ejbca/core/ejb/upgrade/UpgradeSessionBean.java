@@ -1452,9 +1452,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      */
     @Override
     public boolean checkColumnExists500() {
-		// Try to find out if rowVersion exists and upgrade the PublisherQueueData in that case
-		// This is needed since PublisherQueueData is a rather new table so it may have been created when the server started 
-		// and we are upgrading from a not so new version
+		// Try to find out if caID exists in AdminGroupData, which it did prior to EJBCA 5
+        // If it does exist, a post-upgrade has to be done
 		final Connection connection = JDBCUtil.getDBConnection();
 		boolean exists = false;
 		try {
@@ -1464,9 +1463,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 			exists = true; 
 			log.info("cAId column exists in AdminGroupData");
 		} catch (SQLException e) {
-			// Column did not exist
+			// Column did not exist, it's good we are running a newer version
 			log.info("cAId column does not exist in AdminGroupData");
-			log.error(e);
+			//log.debug(e.getMessage());
 		} finally {
 			try {
 				connection.close();
