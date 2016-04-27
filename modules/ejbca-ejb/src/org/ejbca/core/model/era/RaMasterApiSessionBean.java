@@ -355,8 +355,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public Map<String, CertificateProfile> getAvailableCertificateProfiles(AuthenticationToken authenticationToken, String[] certificateProfilesIds)
-            throws AuthorizationDeniedException {
+    public Map<String, CertificateProfile> getAvailableCertificateProfiles(String[] certificateProfilesIds) {
         Map<String, CertificateProfile> availableCertificateProfiles = new HashMap<String, CertificateProfile>();
         for(String certificateProfileId: certificateProfilesIds){
             CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(Integer.parseInt(certificateProfileId));

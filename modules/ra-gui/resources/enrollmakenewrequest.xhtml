@@ -35,7 +35,8 @@
 					<h:outputText value="#{msg.enroll_certificate_type}" />
 					<h:selectOneMenu id="selectEEPOneMenu"
 						value="#{enrollMakeNewRequestBean.selectedEndEntityProfile}"
-						valueChangeListener="#{enrollMakeNewRequestBean.endEntityProfileChangedListener}">
+						valueChangeListener="#{enrollMakeNewRequestBean.endEntityProfileChangedListener}"
+						disabled="#{enrollMakeNewRequestBean.authorizedEndEntityProfiles.size()==1}">
 						<c:if
 							test="#{enrollMakeNewRequestBean.selectedEndEntityProfile == null}">
 							<f:selectItem itemLabel="Select..." itemValue="#{null}"
