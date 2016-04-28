@@ -126,7 +126,7 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 			ret = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[distpoints.size()]));			
 		} 
 		if (ret == null) {
-			log.error("DrlDistributionPoints missconfigured, no distribution points available.");
+			log.error("CrlDistributionPoints missconfigured, no distribution points available.");
 		}
 		return ret;
 	}	
