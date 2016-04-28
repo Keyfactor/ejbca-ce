@@ -1506,7 +1506,6 @@ Windows Registry Editor Version 5.00
   <ul>
   <li>ICertPassage remote protocol, <a href="http://msdn.microsoft.com/en-us/library/cc233162.aspx">http://msdn.microsoft.com/en-us/library/cc233162.aspx</a></li>
   <li>Windows Client Certificate Enrollment Protocol, <a href="http://msdn.microsoft.com/en-us/library/cc249820.aspx">http://msdn.microsoft.com/en-us/library/cc249820.aspx</a></li>
-  <li>RedHat auto enroll proxy, <a href="http://directory.fedoraproject.org/wiki/Auto_Enroll_Documentation">http://directory.fedoraproject.org/wiki/Auto_Enroll_Documentation</a></li>
   </ul>
   </subsection>
   </section>  
