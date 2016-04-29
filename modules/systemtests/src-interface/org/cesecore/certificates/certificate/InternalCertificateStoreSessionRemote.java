@@ -149,6 +149,6 @@ public interface InternalCertificateStoreSessionRemote {
 
     void removeCRLs(AuthenticationToken admin, String issuerDN) throws AuthorizationDeniedException;
 
-    /** @see org.cesecore.certificates.certificate.CertificateStoreSessionLocal#storeCertificateNoAuth(AuthenticationToken, Certificate, String, String, int, int, int, String, long) */
-    CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type, int certificateProfileId, String tag, long updateTime);
+    /** @see org.cesecore.certificates.certificate.CertificateStoreSessionLocal#storeCertificateNoAuth(AuthenticationToken, Certificate, String, String, int, int, int, Integer, String, long) */
+    CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type, int certificateProfileId, Integer endEntityProfileId, String tag, long updateTime);
 }

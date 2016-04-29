@@ -188,7 +188,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                         }
                         EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificateRemote(getAuthenticationToken(),
                                 EJBTools.wrap(certificate), missing_user_name, fingerprint, CertificateConstants.CERT_ACTIVE,
-                                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null,
+                                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, null,
                                 new Date().getTime());
                         log.info("Dummy certificate  '" + serialHex + "' has been stored.");
                     }

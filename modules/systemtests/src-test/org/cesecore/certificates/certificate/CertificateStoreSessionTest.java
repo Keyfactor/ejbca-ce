@@ -58,6 +58,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keys.util.KeyTools;
@@ -627,7 +628,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 			final String fp = CertTools.getFingerprintAsString(xcert);
 			final String username = "foouser<tag>mytag</mytag>!";
 	        certificateStoreSession.storeCertificateRemote(roleMgmgToken, EJBTools.wrap(xcert), username, "1234", CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
-	        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
+	        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, "footag", new Date().getTime());
 	        CertificateInfo info = certificateStoreSession.getCertificateInfo(fp);
 	        // Username must not include <tag>s or !
 	        assertEquals("username must not contain < or ! signs: ", "foouser/tag/mytag//mytag//", info.getUsername());
@@ -803,13 +804,13 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         try {
             // Persists self signed certificates
             internalCertStoreSession.storeCertificateNoAuth(alwaysAllowToken, x509Certificate1, USERNAME, fingerprint1, CertificateConstants.CERT_ACTIVE,
-                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, now);
             internalCertStoreSession.storeCertificateNoAuth(alwaysAllowToken, x509Certificate2, USERNAME, fingerprint2, CertificateConstants.CERT_ARCHIVED,
-                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, now);
             internalCertStoreSession.storeCertificateNoAuth(alwaysAllowToken, x509Certificate3, USERNAME, fingerprint3, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION,
-                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, now);
             internalCertStoreSession.storeCertificateNoAuth(alwaysAllowToken, x509Certificate4, USERNAME, fingerprint4, CertificateConstants.CERT_REVOKED,
-                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, now);
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, now);
             // Check that the expected certificate are returned
             final List<CertificateDataWrapper> cdws1 = certificateStoreSession.getCertificateDataByUsername(USERNAME, false, null);
             assertTrue("Unfiltered result did not return all certificates for user.", isCertificatePresentInList(cdws1, fingerprint1, fingerprint2, fingerprint3, fingerprint4));
@@ -871,7 +872,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             assertTrue("Certificate with fp=" + fp + " already exists in db, very strange since I just generated it.", false);
         }
         certificateStoreSession.storeCertificateRemote(admin, EJBTools.wrap(xcert), USERNAME, "1234", status, CertificateConstants.CERTTYPE_ENDENTITY,
-        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
+        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, "footag", new Date().getTime());
         return xcert;
     }
 
