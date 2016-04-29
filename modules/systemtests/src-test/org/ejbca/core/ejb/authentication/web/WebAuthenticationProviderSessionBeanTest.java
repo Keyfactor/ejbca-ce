@@ -71,6 +71,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
@@ -128,7 +129,7 @@ public class WebAuthenticationProviderSessionBeanTest {
         AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         try {
             certificateStoreSession.storeCertificateRemote(internalToken, EJBTools.wrap(certificate), "foo", "1234", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION,
-                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, "footag", new Date().getTime());
             AuthenticationToken authenticationToken = authenticationProviderProxy.authenticate(subject);
             assertNotNull("Authentication was not returned for active (but soon to expire) cert", authenticationToken);
         } finally {
@@ -216,7 +217,7 @@ public class WebAuthenticationProviderSessionBeanTest {
         try {
             //We're using CertificateConstants.CERT_REVOKED here, but any status but any status != CertificateConstants.CERT_ACTIVE would suffice.
             certificateStoreSession.storeCertificateRemote(internalToken, EJBTools.wrap(certificate), "foo", "1234", CertificateConstants.CERT_REVOKED,
-                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, "footag", new Date().getTime());
             AuthenticationToken authenticationToken = authenticationProviderProxy.authenticate(subject);
             assertNull("Authentication was returned for inactive cert", authenticationToken);
             final String expectedRegexp = intres.getLocalizedMessage("authentication.revokedormissing", ".*");

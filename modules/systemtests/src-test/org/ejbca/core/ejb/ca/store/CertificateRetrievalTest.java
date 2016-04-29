@@ -146,7 +146,7 @@ public class CertificateRetrievalTest {
                 certificateStoreSession.storeCertificateRemote(adm, EJBTools.wrap(cert), "o=AnaTom,c=SE", rootCaFp,
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_ROOTCA,
-                                                         CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
+                                                         CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityInformation.NO_ENDENTITYPROFILE,
                                                          null, new Date().getTime());
             }
             cert = CertTools.getCertfromByteArray(testcacert, Certificate.class);
@@ -158,7 +158,7 @@ public class CertificateRetrievalTest {
                 certificateStoreSession.storeCertificateRemote(adm, EJBTools.wrap(cert), "o=AnaTom,c=SE", subCaFp,
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_SUBCA,
-                        CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, null, new Date().getTime());
+                        CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, EndEntityInformation.NO_ENDENTITYPROFILE, null, new Date().getTime());
             }
             cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
             m_certs.add(cert);
@@ -169,7 +169,7 @@ public class CertificateRetrievalTest {
                 certificateStoreSession.storeCertificateRemote(adm, EJBTools.wrap(cert), "o=AnaTom,c=SE", endEntityFp,
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_ENDENTITY,
-                                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE,
                                                          null, new Date().getTime());
             }
         } catch (Exception e) {

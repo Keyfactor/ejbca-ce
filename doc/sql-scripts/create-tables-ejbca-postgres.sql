@@ -128,6 +128,7 @@ CREATE TABLE CertificateData (
     base64Cert TEXT,
     cAFingerprint TEXT,
     certificateProfileId INT4 NOT NULL,
+    endEntityProfileId INT4,
     expireDate INT8 NOT NULL,
     issuerDN TEXT NOT NULL,
     revocationDate INT8 NOT NULL,

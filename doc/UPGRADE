@@ -29,6 +29,20 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+
+From EJBCA 6.5.x to EJBCA 6.6.0
+-------------------------------
+CertificateData has a new column "endEntityProfileId". Since CertificateData is used by EJBCA running as a Validation
+Authority, you need to make this database schema change to your VAs as well before upgrading for publishing to work.
+See src/upgrade/650_660/650_660-upgrade-<database>.sql for the correct SQL alter statement.
+In the case where the endEntityProfileId has not changed for End Entities since certificate issuance, you can copy this
+value using a SQL statement like (consult your DBA for the proper syntax and feasibility of executing this query on
+your production database):
+
+  UPDATE CertificateData AS a INNER JOIN UserData AS b ON a.username = b.username
+    SET a.endEntityProfileId = b.endEntityProfileId WHERE a.endEntityProfileId IS NULL;
+
+
 From EJBCA 6.5.0 to EJBCA 6.5.1
 -------------------------------
 

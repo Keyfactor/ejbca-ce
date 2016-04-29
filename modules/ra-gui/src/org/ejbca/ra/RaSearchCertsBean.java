@@ -40,6 +40,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
@@ -78,8 +79,22 @@ public class RaSearchCertsBean implements Serializable {
             this.username = cdw.getCertificateData().getUsername();
             this.subjectDn = cdw.getCertificateData().getSubjectDN();
             this.subjectAn = CertTools.getSubjectAlternativeName(cdw.getCertificate());
-            this.cpName = String.valueOf(cpIdToNameMap.get(cdw.getCertificateData().getCertificateProfileId()));
-            this.eepName = String.valueOf(eepIdToNameMap.get(cdw.getCertificateData().getEndEntityProfileIdOrZero()));
+            final Integer cpId = cdw.getCertificateData().getCertificateProfileId();
+            if (cpId != null && cpId.intValue()==EndEntityInformation.NO_CERTIFICATEPROFILE) {
+                this.cpName = raLocaleBean.getMessage("search_certs_page_info_unknowncp");
+            } else if (cpId != null && cpIdToNameMap.containsKey(cpId)) {
+                this.cpName = String.valueOf(cpIdToNameMap.get(cpId));
+            } else {
+                this.cpName = raLocaleBean.getMessage("search_certs_page_info_missingcp", cpId);
+            }
+            final int eepId = cdw.getCertificateData().getEndEntityProfileIdOrZero();
+            if (eepId==EndEntityInformation.NO_ENDENTITYPROFILE) {
+                this.eepName = raLocaleBean.getMessage("search_certs_page_info_unknowneep", eepId);
+            } else if (eepIdToNameMap.containsKey(Integer.valueOf(eepId))) {
+                this.eepName = String.valueOf(eepIdToNameMap.get(Integer.valueOf(eepId)));
+            } else {
+                this.eepName = raLocaleBean.getMessage("search_certs_page_info_missingeep", eepId);
+            }
             this.caName = String.valueOf(caSubjectToNameMap.get(cdw.getCertificateData().getIssuerDN()));
             this.created = ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(cdw.getCertificate()).getTime(), TimeZone.getDefault());
             this.expires = ValidityDate.formatAsISO8601ServerTZ(cdw.getCertificateData().getExpireDate(), TimeZone.getDefault());
@@ -214,11 +229,9 @@ public class RaSearchCertsBean implements Serializable {
                         (cdw.getCertificateData().getSubjectDN() == null || !cdw.getCertificateData().getSubjectDN().contains(stagedRequest.getGenericSearchString())))) {
                     continue;
                 }
-                /* TODO: ECA-4874
                 if (!stagedRequest.getEepIds().isEmpty() && !stagedRequest.getEepIds().contains(cdw.getCertificateData().getEndEntityProfileIdOrZero())) {
                     continue;
                 }
-                */
                 if (!stagedRequest.getCpIds().isEmpty() && !stagedRequest.getCpIds().contains(cdw.getCertificateData().getCertificateProfileId())) {
                     continue;
                 }

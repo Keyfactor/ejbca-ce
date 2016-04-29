@@ -401,7 +401,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
         log.info("User '" + username + "' has been updated.");
         // Finally import the certificate and revoke it if necessary
         certificateStoreSession.storeCertificateRemote(getAuthenticationToken(), EJBTools.wrap(certificate),
-                username, fingerprint, CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, null,
+                username, fingerprint, CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, endEntityProfileId, null,
                 now.getTime());
         if (status == CertificateConstants.CERT_REVOKED) {
             endEntityManagementSession.revokeCert(getAuthenticationToken(), certificate.getSerialNumber(), revocationTime, issuer,

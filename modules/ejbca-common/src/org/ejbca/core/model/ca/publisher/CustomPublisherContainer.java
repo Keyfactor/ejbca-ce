@@ -145,7 +145,8 @@ public class CustomPublisherContainer extends BasePublisher {
 
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
-	 */    
+	 */
+    @Override
 	public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException{
 		return this.getCustomPublisher().storeCertificate(admin,incert,username,password, userDN, cafp,status,type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);		
 	}

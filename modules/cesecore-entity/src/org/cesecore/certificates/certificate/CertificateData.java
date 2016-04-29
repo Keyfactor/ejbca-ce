@@ -39,6 +39,7 @@ import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
@@ -91,7 +92,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     private String username;
     private String tag;
     private Integer certificateProfileId;
-    private Integer endEntityProfileId = null;
+    private Integer endEntityProfileId = null;  // @since EJBCA 6.6.0
     private long updateTime = 0;
     private String subjectKeyId;
     private int rowVersion = 0;
@@ -116,7 +117,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param updatetime the time the certificate was updated in the database, i.e. System.currentTimeMillis().
      * @param storeCertificate true if a special table is used for the encoded certificates, or if certificate data isn't supposed to be stored at all. NOTE: If true then the caller must store the certificate in Base64CertData as well. 
      */
-    public CertificateData(Certificate incert, PublicKey enrichedpubkey, String username, String cafp, int status, int type, int certprofileid,
+    public CertificateData(Certificate incert, PublicKey enrichedpubkey, String username, String cafp, int status, int type, int certprofileid, Integer endEntityProfileId,
             String tag, long updatetime, boolean storeCertificate) {
         // Extract all fields to store with the certificate.
         try {
@@ -145,6 +146,7 @@ public class CertificateData extends ProtectedData implements Serializable {
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             setUpdateTime(updatetime); // (new Date().getTime());
             setCertificateProfileId(certprofileid);
+            setEndEntityProfileId(endEntityProfileId);
             // Create a key identifier
             PublicKey pubk = incert.getPublicKey();
             if (enrichedpubkey != null) {
@@ -184,6 +186,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         setRevocationReason(copy.getRevocationReason());
         setUpdateTime(copy.getUpdateTime());
         setCertificateProfileId(copy.getCertificateProfileId());
+        setEndEntityProfileId(copy.getEndEntityProfileId());
         setSubjectKeyId(copy.getSubjectKeyId());
         setTag(copy.getTag());
         setRowVersion(copy.getRowVersion());
@@ -643,31 +646,18 @@ public class CertificateData extends ProtectedData implements Serializable {
         }
     }
 
-    /** @deprecated Not yet implemented. */
-    @Deprecated // TODO
-    @Transient
     public void setEndEntityProfileId(final Integer endEntityProfileId) {
         this.endEntityProfileId = endEntityProfileId;
     }
-
-    /**
-     * @return the end entity profile Id or null if the entry was created before this field was introduced. 
-     * @deprecated Not yet implemented.
-     */
-    @Deprecated // TODO
-    @Transient
+    // @Column
+    /** @return the end entity profile this certificate was issued under or null if the information is not available. */
     public Integer getEndEntityProfileId() {
         return endEntityProfileId;
     }
-
-    /**
-     * @return the end entity profile Id or 0 if the entry was created before this field was introduced. 
-     * @deprecated Not yet implemented.
-     */
-    @Deprecated // TODO
+    /** @return the end entity profile this certificate was issued under or 0 if the information is not available. */
     @Transient
-    public Integer getEndEntityProfileIdOrZero() {
-        return endEntityProfileId==null ? 0 : endEntityProfileId;
+    public int getEndEntityProfileIdOrZero() {
+        return endEntityProfileId==null ? EndEntityInformation.NO_ENDENTITYPROFILE : endEntityProfileId;
     }
 
     // Comparators

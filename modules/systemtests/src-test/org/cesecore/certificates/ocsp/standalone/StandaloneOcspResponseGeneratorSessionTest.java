@@ -434,7 +434,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         caSession.addCA(authenticationToken, externalCa);
         certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(externalCaCertificate), externalCaName, "1234",
                 CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ROOTCA,
-                CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, new Date().getTime());
+                CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, new Date().getTime());
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         try {
             final String externalUsername = "testStandAloneOcspResponseExternalUser";
@@ -459,7 +459,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             X509Certificate importedCertificate = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
             certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(importedCertificate), externalUsername, "1234",
                     CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, null, new Date().getTime());
             try {
                 //Now everything is in place. Perform a request, make sure that the default responder signed it. 
                 final OCSPReq ocspRequest = buildOcspRequest(null, null, (X509Certificate) externalCaCertificate,
@@ -509,7 +509,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             caSession.addCA(authenticationToken, externalCa);
             certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(externalCaCertificate), externalCaName, "1234",
                     CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ROOTCA,
-                    CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, new Date().getTime());
+                    CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, new Date().getTime());
             ocspResponseGeneratorSession.reloadOcspSigningCache();
             try {
                 final String externalUsername = "testStandAloneOcspResponseExternalUser";
@@ -534,7 +534,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 X509Certificate importedCertificate = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
                 certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(importedCertificate), externalUsername, "1234",
                         CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
-                        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
+                        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, null, new Date().getTime());
                 try {
                     //Now everything is in place. Perform a request, make sure that the default responder signed it. 
                     final OCSPReq ocspRequest = buildOcspRequest(null, null, (X509Certificate) externalCaCertificate,
@@ -581,7 +581,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             caSession.addCA(authenticationToken, externalCa);
             certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(externalCaCertificate), externalCaName, "1234",
                     CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ROOTCA,
-                    CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, new Date().getTime());
+                    CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, new Date().getTime());
             ocspResponseGeneratorSession.reloadOcspSigningCache();
             try {
                 final String externalUsername = "testStandAloneOcspResponseExternalUser";
@@ -606,7 +606,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 X509Certificate importedCertificate = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
                 certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(importedCertificate), externalUsername, "1234",
                         CertificateConstants.CERT_REVOKED, CertificateConstants.CERTTYPE_ENDENTITY,
-                        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
+                        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, null, new Date().getTime());
                 try {
                     //Now everything is in place. Perform a request, make sure that the default responder signed it. 
                     final OCSPReq ocspRequest = buildOcspRequest(null, null, (X509Certificate) externalCaCertificate,
@@ -968,7 +968,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         X509Certificate signerIssuerCaCertificate = (X509Certificate) signatureIssuerCa.getCACertificate();
         //Store the CA Certificate.
         certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(signerIssuerCaCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,
-                CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "footag", new Date().getTime());
+                CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityInformation.NO_ENDENTITYPROFILE, "footag", new Date().getTime());
         final String signatureRequired = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED);
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "true");
 

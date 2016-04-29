@@ -55,7 +55,7 @@ public class Base64CertData extends ProtectedData implements Serializable {
 
     /**
      * Storing an encoded certificate. Called only when
-     * {@link CertificateData#CertificateData(Certificate, java.security.PublicKey, String, String, int, int, int, String, long, boolean)}
+     * {@link CertificateData#CertificateData(Certificate, java.security.PublicKey, String, String, int, int, int, java.lang.Integer, String, long, boolean)}
      * is called with useBase64CertTable set to true.
      * @param incert the (X509)Certificate to be stored in the database.
      */

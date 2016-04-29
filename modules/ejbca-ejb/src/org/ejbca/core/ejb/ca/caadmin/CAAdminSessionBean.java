@@ -3115,7 +3115,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // If we don't have it in the database, store it
                 long updateTime = System.currentTimeMillis();
                 certificateDataWrapper = certificateStoreSession.storeCertificate(admin, cert, name, cafp,
-                        futureRollover ? CertificateConstants.CERT_ROLLOVERPENDING : CertificateConstants.CERT_ACTIVE, type, EndEntityInformation.NO_CERTIFICATEPROFILE, null, updateTime);
+                        futureRollover ? CertificateConstants.CERT_ROLLOVERPENDING : CertificateConstants.CERT_ACTIVE, type, EndEntityInformation.NO_CERTIFICATEPROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, updateTime);
                 certificateStoreSession.reloadCaCertificateCache();
             }
             if (usedpublishers != null) {

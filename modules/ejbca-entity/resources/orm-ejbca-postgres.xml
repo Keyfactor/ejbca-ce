@@ -67,6 +67,7 @@
             <basic fetch="EAGER" name="username"><column name="username" column-definition="TEXT"/></basic>
             <basic fetch="EAGER" name="tag"><column name="tag" column-definition="TEXT"/></basic>
             <basic fetch="EAGER" name="certificateProfileId"><column name="certificateProfileId" column-definition="INT4" nullable="false"/></basic>
+            <basic fetch="EAGER" name="endEntityProfileId"><column name="endEntityProfileId" column-definition="INT4" nullable="true"/></basic>
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="INT8" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="TEXT"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>

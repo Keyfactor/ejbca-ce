@@ -35,13 +35,14 @@ public interface CertificateStoreSessionRemote extends CertificateStoreSession {
      * @param status the status from the CertificateConstants.CERT_ constants
      * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
      * @param certificateProfileId the certificate profile id this cert was issued under
+     * @param endEntityProfileId the end entity profile id the cert was issued under
      * @param tag a custom string tagging this certificate for some purpose
      * @param updateTime epoch millis to use as last update time of the stored object
      *
      * @throws AuthorizationDeniedException if admin was not authorized to store certificate in database
      */
     void storeCertificateRemote(AuthenticationToken admin, CertificateWrapper cert, String username, String cafp, int status, int type,
-            int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
+            int certificateProfileId, Integer endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
 
     /**
      * Finds a certificate by fingerprint (remote EJB interface, supports unnamed ECC and Brainpool)

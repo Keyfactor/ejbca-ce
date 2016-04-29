@@ -915,7 +915,6 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             return;
         }
         // Set some values for things we cannot know
-        final int certificateProfileId = 0;
         final String username = "IMPORTED_InternalKeyBinding_" + internalKeyBinding.getId();
         // Find caFingerprint through ca(Admin?)Session
         final List<Integer> availableCaIds = caSession.getAuthorizedCaIds(authenticationToken);
@@ -939,7 +938,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             throw new CertificateImportException("No CA certificate for " + issuerDn + " was found on the system.");
         }
         certificateStoreSession.storeCertificate(authenticationToken, certificate, username, caFingerprint, CertificateConstants.CERT_ACTIVE,
-                CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, null, System.currentTimeMillis());
+                CertificateConstants.CERTTYPE_ENDENTITY, EndEntityInformation.NO_CERTIFICATEPROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, System.currentTimeMillis());
     }
 
     /** Helper method for audit logging changes */

@@ -30,9 +30,10 @@
         <ui:define name="content">
         	<h:panelGroup layout="block" class="header" id="title">
 				<h1><h:outputText value="#{msg.search_certs_page_title}"/></h1>
-			</h:panelGroup>	
-        	<h:panelGroup layout="block" styleClass="content-body">	         	        	
-	            <h:form id="contentForm" class="pure-form">
+			</h:panelGroup>
+        	<h:panelGroup layout="block" styleClass="content-body">
+                <h:outputText value="#{msg.search_certs_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToSearchCerts}"/>
+	            <h:form id="contentForm" class="pure-form" rendered="#{raAccessBean.authorizedToSearchCerts}">
 	                <ui:remove><!-- Add a hidden h:commandButton first in the form to ensure that hitting enter leads to a search --></ui:remove>
 	                <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" style="display: none;"/>
 	
@@ -47,13 +48,11 @@
 	                    </h:panelGroup>
 	                    
 						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
-		                    <h:selectOneMenu id="criteriaEepId" value="#{raSearchCertsBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneEepAvailable}" readonly="true">
+		                    <h:selectOneMenu id="criteriaEepId" value="#{raSearchCertsBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneEepAvailable}">
 		                        <f:selectItems value="#{raSearchCertsBean.availableEeps}"/>
-		                        <ui:remove><!-- Disabled until we have the endEntityProfile column in CertificateData -->
 		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
 		                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
 		                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
-		                        </ui:remove>
 		                    </h:selectOneMenu>
 	                    </h:panelGroup>
 	                    
