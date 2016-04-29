@@ -426,7 +426,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     // Authorization was already checked by since this is a private method, the CA parameter should
                     // not be possible to get without authorization
                     result = certificateStoreSession.storeCertificateNoAuth(admin, cert, endEntityInformation.getUsername(), cafingerprint, CertificateConstants.CERT_ACTIVE,
-                            certProfile.getType(), certProfileId, tag, updateTime);
+                            certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(), tag, updateTime);
                     storeEx = null;
                     break;
                 } catch (CertificateSerialNumberException e) {

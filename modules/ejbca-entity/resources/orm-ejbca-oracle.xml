@@ -55,6 +55,7 @@
             <basic fetch="EAGER" name="username"><column name="username" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="tag"><column name="tag" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="certificateProfileId"><column name="certificateProfileId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="endEntityProfileId"><column name="endEntityProfileId" column-definition="NUMBER(10)" nullable="true"/></basic>
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="NUMBER(19)" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>

@@ -50,6 +50,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @param status the status from the CertificateConstants.CERT_ constants
      * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
      * @param certificateProfileId the certificate profile id this cert was issued under
+     * @param endEntityProfileId the end entity profile id this cert was issued under
      * @param tag a custom string tagging this certificate for some purpose
      * @param updateTime epoch millis to use as last update time of the stored object
      * @return CertificateDataWrapper with the certificate just stored that can be used for further publishing
@@ -57,7 +58,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @throws AuthorizationDeniedException if admin was not authorized to store certificate in database
      */
     CertificateDataWrapper storeCertificate(AuthenticationToken admin, Certificate incert, String username,
-            String cafp, int status, int type, int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
+            String cafp, int status, int type, int certificateProfileId, Integer endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
 
     /**
      * Stores a certificate without checking authorization. This should be used from other methods where authorization to
@@ -69,11 +70,12 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @param status the status from the CertificateConstants.CERT_ constants
      * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
      * @param certificateProfileId the certificate profile id this cert was issued under
+     * @param endEntityProfileId the end entity profile id this cert was issued under
      * @param tag a custom string tagging this certificate for some purpose
      * 
      */
     CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken admin, Certificate incert, String username,
-            String cafp, int status, int type, int certificateProfileId, String tag, long updateTime);
+            String cafp, int status, int type, int certificateProfileId, Integer endEntityProfileId, String tag, long updateTime);
 
     /** 
      * Retrieve the full wrapped CertificateData and Base64CertData objects.
@@ -148,7 +150,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
     /** Checks for present certificate serial number unique index in a new transaction in order to avoid rollback, since we can expect SQL exceptions here. 
      * Should not be used externally. */
     void checkForUniqueCertificateSerialNumberIndexInTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
-            int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
+            int certificateProfileId, Integer endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
 
     /** Removed certificates created during checks for present certificate serial number unique index. 
      * Should not be used externally. */
