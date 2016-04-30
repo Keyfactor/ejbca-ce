@@ -16,10 +16,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.ConcurrencyManagement;
@@ -279,12 +277,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public Map<String, EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken) {
-        final Map<String, EndEntityProfile> ret = new HashMap<String, EndEntityProfile>();
+    public IdNameHashMap<EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken) {
+        final IdNameHashMap<EndEntityProfile> ret = new IdNameHashMap<EndEntityProfile>();
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    final Map<String, EndEntityProfile> result = raMasterApi.getAuthorizedEndEntityProfiles(authenticationToken);
+                    final IdNameHashMap<EndEntityProfile> result = raMasterApi.getAuthorizedEndEntityProfiles(authenticationToken);
                     if (result != null) {
                         ret.putAll(result);
                     }
@@ -296,13 +294,32 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return ret;
     }
     
+    
     @Override
-    public Map<String, CertificateProfile> getAvailableCertificateProfiles(String[] certificateProfilesIds) {
-        final Map<String, CertificateProfile> ret = new HashMap<String, CertificateProfile>();
+    public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken){
+        final IdNameHashMap<CAInfo> ret = new IdNameHashMap<CAInfo>();
         for(final RaMasterApi raMasterApi : raMasterApis){
             if(raMasterApi.isBackendAvailable()){
                 try{
-                    final Map<String, CertificateProfile> result = raMasterApi.getAvailableCertificateProfiles(certificateProfilesIds);
+                    final IdNameHashMap<CAInfo> result = raMasterApi.getAuthorizedCAInfos(authenticationToken);
+                    if (result != null) {
+                        ret.putAll(result);
+                    }
+                }catch  (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken) {
+        final IdNameHashMap<CertificateProfile> ret = new IdNameHashMap<CertificateProfile>();
+        for(final RaMasterApi raMasterApi : raMasterApis){
+            if(raMasterApi.isBackendAvailable()){
+                try{
+                    final IdNameHashMap<CertificateProfile> result = raMasterApi.getAuthorizedCertificateProfiles(authenticationToken);
                     if (result != null) {
                         ret.putAll(result);
                     }
