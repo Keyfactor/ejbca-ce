@@ -36,14 +36,15 @@
 					<h:selectOneMenu id="selectEEPOneMenu"
 						value="#{enrollMakeNewRequestBean.selectedEndEntityProfile}"
 						valueChangeListener="#{enrollMakeNewRequestBean.endEntityProfileChangedListener}"
-						disabled="#{enrollMakeNewRequestBean.authorizedEndEntityProfiles.size()==1}">
+						disabled="#{enrollMakeNewRequestBean.availableEndEntityProfiles.size()==1}">
 						<c:if
 							test="#{enrollMakeNewRequestBean.selectedEndEntityProfile == null}">
 							<f:selectItem itemLabel="Select..." itemValue="#{null}"
 								itemDisabled="true" />
 						</c:if>
 						<f:selectItems
-							value="#{enrollMakeNewRequestBean.authorizedEndEntityProfiles.keySet()}" />
+							value="#{enrollMakeNewRequestBean.availableEndEntityProfiles.entrySet()}"
+							var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}" />
 						<f:ajax execute=":enrollMakeNewRequestForm:selectEEPOneMenu"
 							event="change" render=":globalMessages :enrollMakeNewRequestForm"
 							listener="#{enrollMakeNewRequestBean.endEntityProfileAjaxListener}" />
@@ -57,16 +58,28 @@
 						valueChangeListener="#{enrollMakeNewRequestBean.certificateProfileChangedListener}"
 						rendered="#{!enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty()}"
 						disabled="#{enrollMakeNewRequestBean.availableCertificateProfiles.size()==1}">
-						<c:if
-							test="#{enrollMakeNewRequestBean.availableCertificateProfiles.size()>1}">
-							<f:selectItem itemLabel="Select..." itemValue="#{null}"
-								itemDisabled="true" />
-						</c:if>
 						<f:selectItems
-							value="#{enrollMakeNewRequestBean.availableCertificateProfiles.keySet()}" />
+							value="#{enrollMakeNewRequestBean.availableCertificateProfiles.entrySet()}"
+							var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}" />
 						<f:ajax execute=":enrollMakeNewRequestForm:selectCPOneMenu"
 							event="change" render=":globalMessages :enrollMakeNewRequestForm"
 							listener="#{enrollMakeNewRequestBean.certificateProfileAjaxListener}" />
+					</h:selectOneMenu>
+					<br />
+
+					<h:outputText value="#{msg.enroll_certificate_authority}"
+						rendered="#{!enrollMakeNewRequestBean.availableCertificateAuthorities.isEmpty()}" />
+					<h:selectOneMenu id="selectCAOneMenu"
+						value="#{enrollMakeNewRequestBean.selectedCertificateAuthority}"
+						valueChangeListener="#{enrollMakeNewRequestBean.certificateAuthorityChangedListener}"
+						rendered="#{!enrollMakeNewRequestBean.availableCertificateAuthorities.isEmpty()}"
+						disabled="#{enrollMakeNewRequestBean.availableCertificateAuthorities.size()==1}">
+						<f:selectItems
+							value="#{enrollMakeNewRequestBean.availableCertificateAuthorities.entrySet()}"
+							var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}" />
+						<f:ajax execute=":enrollMakeNewRequestForm:selectCAOneMenu"
+							event="change" render=":globalMessages :enrollMakeNewRequestForm"
+							listener="#{enrollMakeNewRequestBean.certificateAuthorityAjaxListener}" />
 					</h:selectOneMenu>
 					<br />
 				</h:panelGrid>
@@ -162,13 +175,10 @@
 			</h:panelGrid>
 			<br />
 
-
 			<h:panelGroup layout="block">
-				<!-- <noscript>-->
 				<h:commandButton id="nextButton" value="#{msg.generic_next}"
 					action="#{enrollMakeNewRequestBean.next()}">
 				</h:commandButton>
-				<!--</noscript> -->
 				<h:commandButton id="resetButton" value="#{msg.generic_reset}"
 					action="#{enrollMakeNewRequestBean.reset()}">
 				</h:commandButton>

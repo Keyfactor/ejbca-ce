@@ -45,7 +45,9 @@
                                 <a href="#" id="enrollment" class="pure-menu-link">Enroll</a>
                                 <ul class="pure-menu-children">
                                     <ui:fragment rendered="#{raAccessBean.authorizedToEnrollMakeRequest}">
-                                        <li class="pure-menu-item"><a href="#" class="pure-menu-link">Make Request</a></li>
+                                    	<li class="pure-menu-item">
+                                            <h:outputLink value="enrollmakenewrequest.xhtml" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_enroll_make_new_request}"/></h:outputLink>
+                                        </li>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{raAccessBean.authorizedToEnrollWithRequestId}">
                                         <li class="pure-menu-item"><a href="#" class="pure-menu-link">Enroll with Request ID</a></li>

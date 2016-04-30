@@ -363,26 +363,37 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public final Map<String, EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken){
-        Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY);
+    public final IdNameHashMap<EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken){
+        Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.EDIT_END_ENTITY);
         Map<Integer, String> idToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
-        Map<String, EndEntityProfile> authorizedEndEntityProfiles = new HashMap<String, EndEntityProfile>(ids.size());
+        IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();
         for(Integer id: ids){
-            authorizedEndEntityProfiles.put(idToNameMap.get(id), endEntityProfileSession.getEndEntityProfile(id));
+            authorizedEndEntityProfiles.put(id, idToNameMap.get(id), endEntityProfileSession.getEndEntityProfile(id));
         }
         return authorizedEndEntityProfiles;
     }
-
+    
     @Override
-    public Map<String, CertificateProfile> getAvailableCertificateProfiles(String[] certificateProfilesIds) {
-        Map<String, CertificateProfile> availableCertificateProfiles = new HashMap<String, CertificateProfile>();
-        for(String certificateProfileId: certificateProfilesIds){
-            CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(Integer.parseInt(certificateProfileId));
-            String certificateProfilename = certificateProfileSession.getCertificateProfileName(Integer.parseInt(certificateProfileId));
-            availableCertificateProfiles.put(certificateProfilename, certificateProfile);
+    public IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken){
+        IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<CertificateProfile>();
+        List<Integer> authorizedCertificateProfileIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, CertificateConstants.CERTTYPE_ENDENTITY);
+        for(Integer certificateProfileId : authorizedCertificateProfileIds){
+            CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
+            String certificateProfilename = certificateProfileSession.getCertificateProfileName(certificateProfileId);
+            authorizedCertificateProfiles.put(certificateProfileId, certificateProfilename, certificateProfile);
         }
         
-        return availableCertificateProfiles;
+        return authorizedCertificateProfiles;
+    }
+    
+    @Override
+    public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken) {
+        IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<CAInfo>();
+        List<CAInfo> authorizedCAInfosList = caSession.getAuthorizedAndEnabledCaInfos(authenticationToken);
+        for(CAInfo caInfo : authorizedCAInfosList){
+            authorizedCAInfos.put(caInfo.getCAId(), caInfo.getName(), caInfo);
+        }
+        return authorizedCAInfos;
     }
 
     private GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {

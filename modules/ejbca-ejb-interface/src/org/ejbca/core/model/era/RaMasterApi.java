@@ -63,17 +63,17 @@ public interface RaMasterApi {
     String testCallPreferCache(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException;
 
     /** @return map of authorized certificate profile Ids and each mapped name */
+    @Deprecated //TODO Should be replaced/refactored with IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken)
     Map<Integer, String> getAuthorizedCertificateProfileIdsToNameMap(AuthenticationToken authenticationToken);
 
     /** @return map of authorized entity profile Ids and each mapped name */
+    @Deprecated //TODO Should be replaced/refactored with IdNameHashMap<EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken)
     Map<Integer, String> getAuthorizedEndEntityProfileIdsToNameMap(AuthenticationToken authenticationToken);
 
     /** @return map of entity profiles authorized to be used where keys are end entity profile names */
-    Map<String, EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken);
+    IdNameHashMap<EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken);
 
-    /** 
-     * @param certificateProfilesIds string array of certificate profile ids  
-     * @return map of certificate profiles available for selected profile where keys are certificate profiles names 
-     */
-    Map<String, CertificateProfile> getAvailableCertificateProfiles(String[] certificateProfilesIds);
+    IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken);
+
+    IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken);
 }
