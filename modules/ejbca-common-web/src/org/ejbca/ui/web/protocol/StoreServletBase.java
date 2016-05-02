@@ -69,6 +69,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	 * @throws ServletException
 	 */
 	public abstract void sHash(String sHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
+
 	/**
 	 * Return certificate or CRL for the RFC4387 iHash http parameter
 	 * @param iHash
@@ -78,6 +79,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	 * @throws ServletException
 	 */
 	public abstract void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
+
 	/**
 	 * Return certificate or CRL for the RFC4387 sKIDHash http parameter
 	 * @param sKIDHash
@@ -87,6 +89,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	 * @throws ServletException
 	 */
 	public abstract void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
+	
 	/**
 	 * Return certificate or CRL for the RFC4387 sKIDHash http parameter. In this case the alias name has been used to get the parameter.
 	 * @param sKIDHash
@@ -99,31 +102,32 @@ public abstract class StoreServletBase extends HttpServlet {
 	public abstract void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException;
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, java.io.IOException {
-		if (log.isTraceEnabled()) {
-			log.trace(">doGet()");
-		}
-		if (!req.getRequestURI().substring(req.getContextPath().length()).contains("search.cgi")) {
-		    resp.sendRedirect(req.getRequestURI() + "search.cgi");
-		    return;
-		}
-		try {
-			if ( alias(req, resp) ) {
-				return;
-			}
-			if ( reload(req, resp) ) {
-				return;
-			}
-			if ( fromName(req, resp) ) {
-				return;
-			}
-			rfcRequest(req, resp);
-		} finally {
-			if (log.isTraceEnabled()) {
-				log.trace("<doGet()");			
-			}
-		}
-	}
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, java.io.IOException {
+        if (log.isTraceEnabled()) {
+            log.trace(">doGet()");
+        }
+        if (!req.getRequestURI().substring(req.getContextPath().length()).contains("search.cgi")) {
+            resp.sendRedirect(req.getRequestURI() + "search.cgi");
+            return;
+        }
+        try {
+            if (alias(req, resp)) {
+                return;
+            }
+            if (performReload(req, resp)) {
+                return;
+            }
+            if (fromName(req, resp)) {
+                return;
+            }
+            rfcRequest(req, resp);
+        } finally {
+            if (log.isTraceEnabled()) {
+                log.trace("<doGet()");
+            }
+        }
+    }
+	
 	private void rfcRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		// Do actual processing of the protocol
 		{
@@ -169,6 +173,7 @@ public abstract class StoreServletBase extends HttpServlet {
 		log.debug("Alias '"+key+"' defined for hash '"+hash+"'.");
 		return true;
 	}
+	
 	private boolean fromName(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		final String alias = req.getParameter("alias");
 		if ( alias==null ) {
@@ -184,21 +189,42 @@ public abstract class StoreServletBase extends HttpServlet {
 		sKIDHash( sKIDHash, resp, req, alias );
 		return true;
 	}
-	private boolean reload(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	
+	/**
+	 * Reloads the certificate cache, if it was requested.
+	 * 
+	 * @param req the HttpServletRequest
+	 * @param resp the HttpServletResponse
+	 * @return false if reload wasn't requested, or true if it was requested (even if it turned out to be unauthorized)
+	 */
+	private boolean performReload(HttpServletRequest req, HttpServletResponse resp) {
 		// We have a command to force reloading of the certificate cache that can only be run from localhost
 		// http://localhost:8080/crls/search.cgi?reloadcache=true
 		final boolean doReload = StringUtils.equals(req.getParameter("reloadcache"), "true");
 		if ( !doReload ) {
 			return false;
 		}
-		if ( !checkIfAutorizedIP(req, resp) ) {
-			return true;
-		}
+		try {
+            if ( !checkIfAutorizedIP(req, resp) ) {
+            	return true;
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not send error response", e);
+        }
 		log.info("Reloading certificate and CRL caches due to request from "+req.getRemoteAddr());
 		// Reload CA certificates
 		certificateStoreSession.reloadCaCertificateCache();
 		return true;
 	}
+	
+	/**
+	 * Checks if the request originates from localhost
+	 * 
+     * @param req the HttpServletRequest
+     * @param resp the HttpServletResponse
+	 * @return true if authorized, or false if not, and sends HttpServletResponse.SC_UNAUTHORIZED
+     * @throws IOException if the HttpServletResponse.SC_UNAUTHORIZED response couldn't be sent in case if a negative result
+	 */
 	private boolean checkIfAutorizedIP(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		final String remote = req.getRemoteAddr();
 		// localhost in either ipv4 and ipv6
@@ -209,6 +235,7 @@ public abstract class StoreServletBase extends HttpServlet {
 		resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 		return false;
 	}
+	
 	private void printInfo(X509Certificate certs[], String indent, PrintWriter pw, String url) {
 		for ( int i=0; i<certs.length; i++ ) {
 			printInfo(certs[i], indent, pw, url);
