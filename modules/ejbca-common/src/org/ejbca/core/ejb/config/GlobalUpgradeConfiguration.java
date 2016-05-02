@@ -29,6 +29,7 @@ public class GlobalUpgradeConfiguration extends ConfigurationBase {
 
     private static final String UPGRADED_TO_VERSION = "upgradedToVersion";
     private static final String POST_UPGRADED_TO_VERSION = "postUpgradedToVersion";
+    private static final String EEP_IN_CERTIFICATE_DATA = "endEntityProfileInCertificateData";
     
     public String getUpgradedToVersion() {
         return (String) data.get(UPGRADED_TO_VERSION);
@@ -42,6 +43,13 @@ public class GlobalUpgradeConfiguration extends ConfigurationBase {
     }
     public void setPostUpgradedToVersion(final String version) {
         data.put(POST_UPGRADED_TO_VERSION, version);
+    }
+    /** @return true if the endEntityProfileId column in CertificateData has been populated or false if not or value has not been set. */
+    public boolean isEndEntityProfileInCertificateData() {
+        return Boolean.parseBoolean((String) data.get(EEP_IN_CERTIFICATE_DATA));
+    }
+    public void setEndEntityProfileInCertificateData(final boolean value) {
+        data.put(EEP_IN_CERTIFICATE_DATA, Boolean.valueOf(value).toString());
     }
 
     @Override
