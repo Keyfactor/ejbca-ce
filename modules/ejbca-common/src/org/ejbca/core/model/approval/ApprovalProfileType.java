@@ -17,44 +17,39 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 
+/**
+ * A base class for approval profiles types. Any new approval profile type 
+ * should inherit this class. The most important functions to implement in 
+ * the new types are the methods that decide whether an admin is authorized 
+ * to approve or not
+ * 
+ * @version $Id$
+ */
 public abstract class ApprovalProfileType implements Serializable {
 
     private static final long serialVersionUID = -4107580498745140912L;
     
-    public static final String ACTIONS_REQUIRE_APPROVAL_PROPERTY_NAME = "actionsRequireApprovals";
-
-    protected Map<String, Object> fields = new HashMap<String, Object>();
-    
-    public abstract int getTypeID();
-    
     public abstract String getTypeName();
     
-    public abstract void init(Map<String, Object> fields);
+    public void init() {}
     
-    public abstract Map<String, Object> getAllFields();
     
-    public abstract boolean isAdminAllowedToApprove(AuthenticationToken admin);
+    public abstract boolean isAdminAllowedToApprove(AuthenticationToken admin, ApprovalProfile approvalProfile)  throws AuthorizationDeniedException;
     
-    public abstract boolean isProfileFulfilled();
+    public abstract boolean isAdminAllowedToApproveStep(AuthenticationToken admin, ApprovalStep approvalstep, 
+            ApprovalProfile approvalProfile)  throws AuthorizationDeniedException;
     
-    public Object getField(String key) {
-        return fields.get(key);
-    }
+    public abstract long getDefaultRequestExpirationPeriod();
     
-    public void setField(String key, Object value) {
-        fields.put(key, value);
-    }
-    
-    public int[] getActionsRequireApproval() {
-        Object ret = fields.get(ACTIONS_REQUIRE_APPROVAL_PROPERTY_NAME);
-        if(ret==null) {
-            return new int[0];
-        }
-        return (int[]) ret;
-        
-    }
+    public abstract long getDefaultApprovalExpirationPeriod();
+
+    /**
+     * @return Options for how to decided which admins are authorized
+     */
+    public abstract Map<Integer, String> getMainAuthorizationObjectOptions();
     
     public static Map<Integer, String> getAvailableApprovableActions() {
         Map<Integer, String> actions = new  HashMap<Integer, String>();

@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -28,9 +29,11 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalProfileSession;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
@@ -45,22 +48,26 @@ public class RAAuthorization implements Serializable {
     private String authendentityprofilestring = null;
     private TreeMap<String, Integer> authprofilenames = null;
 	private List<Integer> authprofileswithmissingcas = null;
+	private String authApprovalProfilesString = null;
     private AuthenticationToken admin;
     private AccessControlSessionLocal authorizationsession;
     private ComplexAccessControlSession complexAccessControlSession;
     private GlobalConfigurationSession globalConfigurationSession;
     private CaSession caSession;
     private EndEntityProfileSession endEntityProfileSession;
+    private ApprovalProfileSession approvalProfileSession;
     
     /** Creates a new instance of RAAuthorization. */
     public RAAuthorization(AuthenticationToken admin, GlobalConfigurationSession globalConfigurationSession, AccessControlSessionLocal authorizationsession, 
-                    ComplexAccessControlSession complexAccessControlSession, CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
+                    ComplexAccessControlSession complexAccessControlSession, CaSession caSession, EndEntityProfileSession endEntityProfileSession, 
+                    ApprovalProfileSession approvalProfileSession) {
     	this.admin = admin;
     	this.globalConfigurationSession = globalConfigurationSession;
     	this.authorizationsession = authorizationsession;
     	this.caSession = caSession;
     	this.endEntityProfileSession = endEntityProfileSession;
     	this.complexAccessControlSession = complexAccessControlSession;
+    	this.approvalProfileSession = approvalProfileSession;
     }
 
     /**
@@ -89,6 +96,48 @@ public class RAAuthorization implements Serializable {
       
       return authcastring;
     } 
+    
+    public String getApprovalProfileAuthorizationString() throws AuthorizationDeniedException {
+        boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
+        boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
+     
+        authorizedToApproveCAActions = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
+
+        authorizedToApproveRAActions = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+
+        if (!authorizedToApproveCAActions && !authorizedToApproveRAActions) {
+            throw new AuthorizationDeniedException("Not authorized to query apporvals");
+        }
+        
+        if(authApprovalProfilesString == null) {
+            
+            authApprovalProfilesString = "";
+            
+            Set<Integer> profilesIds = approvalProfileSession.getApprovalProfileIdToNameMap().keySet();
+            for(Integer profileId : profilesIds) {
+                ApprovalProfile profile = approvalProfileSession.getApprovalProfile(profileId);
+                try {
+                    if(profile.getApprovalProfileType().isAdminAllowedToApprove(admin, profile)) {
+                        addApprovalProfileIdToAuthApprovalProfilesString(profileId);
+                    }
+                } catch (AuthorizationDeniedException e) { }
+            }
+            
+            if(!authApprovalProfilesString.equals("")) {
+                authApprovalProfilesString = "( " + authApprovalProfilesString + " )"; 
+            }
+        }
+        return authApprovalProfilesString;
+        
+    }
+    
+    private void addApprovalProfileIdToAuthApprovalProfilesString(Integer profileId) {
+        if(authApprovalProfilesString.equals("")) {
+            authApprovalProfilesString = " approvalProfileId = " + profileId;   
+          } else {    
+              authApprovalProfilesString = authApprovalProfilesString + " OR approvalProfileId = " + profileId;
+          }
+    }
 
     /**
      * @return a string of end entity profile privileges that should be used in the where clause of SQL queries, or null if no authorized end entity profiles exist.

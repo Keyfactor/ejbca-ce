@@ -35,12 +35,17 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -50,6 +55,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -77,9 +83,15 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     @EJB
     private AccessControlSessionLocal authorizationSession;
     @EJB
-    private ApprovalSessionLocal approvalSession;  
+    private ApprovalSessionLocal approvalSession;
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;  
+    @EJB
+    private CertificateProfileSessionLocal certProfileSession;  
     @EJB
     private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
@@ -126,19 +138,55 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @throws ApprovalException 
      * @throws WaitingForApprovalException 
      */
-    private void checkIfApprovalRequired(AuthenticationToken admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) throws ApprovalException, WaitingForApprovalException{    	
+    private void checkIfApprovalRequired(AuthenticationToken admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) 
+            throws ApprovalException, WaitingForApprovalException{    	
         final int caid = CertTools.getIssuerDN(certificate).hashCode();
 		final CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(certificate));
+		final int certProfileId = certinfo.getCertificateProfileId();
         // Check if approvals is required.
-        int numOfApprovalsRequired = caAdminSession.getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_KEYRECOVER, caid, certinfo.getCertificateProfileId());
-        if (numOfApprovalsRequired > 0){    
-			KeyRecoveryApprovalRequest ar = new KeyRecoveryApprovalRequest(certificate,username,checkNewest, admin,null,numOfApprovalsRequired,caid,endEntityProfileId);
+		final ApprovalProfile approvalProfiles[] = getApprovalProfiles(caid, certProfileId);
+        int numOfApprovalsRequired = caAdminSession.getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_KEYRECOVER, caid, certProfileId);
+        if ((numOfApprovalsRequired > 0) || (approvalProfiles[0] != null)) {    
+			KeyRecoveryApprovalRequest ar = new KeyRecoveryApprovalRequest(certificate,username,checkNewest, admin,null,numOfApprovalsRequired,caid,
+			        endEntityProfileId, approvalProfiles[0], approvalProfiles[1]);
 			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_KEYRECOVERY)){
 				approvalSession.addApprovalRequest(admin, ar);
 	            String msg = intres.getLocalizedMessage("keyrecovery.addedforapproval");            	
 				throw new WaitingForApprovalException(msg, ar.generateApprovalId());
 			}
         } 
+    }
+    
+    private ApprovalProfile[] getApprovalProfiles(final int caid, final int certProfileId) {
+        ApprovalProfile profiles[] = new ApprovalProfile[2];
+        ApprovalProfile profileFromCA = null;
+        ApprovalProfile profileFromCP = null;
+        
+        try {
+            final CAInfo cainfo = caSession.getCAInfoInternal(caid);
+            final int approvalProfileId = cainfo.getApprovalProfile();
+            if(approvalProfileId > -1) {
+                profileFromCA = approvalProfileSession.getApprovalProfile(approvalProfileId);
+            }
+        } catch (CADoesntExistsException e) { }
+
+        final CertificateProfile certProfile = certProfileSession.getCertificateProfile(certProfileId);
+        if(certProfile != null) {
+            final int approvalProfileId = certProfile.getApprovalProfileID();
+            if(approvalProfileId > -1) {
+                profileFromCP = approvalProfileSession.getApprovalProfile(approvalProfileId);
+            }            
+        }
+        
+        if(profileFromCA != null) {
+            profiles[0] = profileFromCA;
+            profiles[1] = profileFromCP;
+        } else {
+            profiles[0] = profileFromCP;
+            profiles[1] = null;
+        }
+        
+        return profiles;
     }
     
     @Override

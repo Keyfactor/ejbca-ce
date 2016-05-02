@@ -58,7 +58,8 @@ public class ApprovalRequestTest {
 		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
         AuthenticationToken token = new X509CertificateAuthenticationToken(testcert);
 
-		DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false);
+        ApprovalProfile approvalProfile = new ApprovalProfile("nrOfApprovalsApprovalProfile");
+		DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false, approvalProfile, null);
 		
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -83,7 +84,8 @@ public class ApprovalRequestTest {
 		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
         AuthenticationToken token = new X509CertificateAuthenticationToken(testcert);
 
-        DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false);
+        ApprovalProfile approvalProfile = new ApprovalProfile("nrOfApprovalsApprovalProfile");
+        DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false, approvalProfile, null);
 		
     	int id1 = ar.generateApprovalId();
     	int id2 = ar.generateApprovalId();
@@ -92,10 +94,13 @@ public class ApprovalRequestTest {
         final String TEST_NONADMIN_USERNAME = "wsnonadmintest";
         final String TEST_NONADMIN_CN = "CN=wsnonadmintest";
         final String serialNumber = "12344711";
-        ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, serialNumber, true, token, null, 1, 0, 0);
+        approvalProfile.setNumberOfApprovals(1);
+        ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, 
+                TEST_NONADMIN_CN, serialNumber, true, token, null, 1, 0, 0, approvalProfile, null);
         int approvalId = approvalRequest.generateApprovalId();
-        ViewHardTokenDataApprovalRequest ar1 = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, CertTools.stringToBCDNString(TEST_NONADMIN_CN), serialNumber, 
-        		true,token,null,1,123456,1);
+        ViewHardTokenDataApprovalRequest ar1 = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, 
+                CertTools.stringToBCDNString(TEST_NONADMIN_CN), serialNumber, true,token,null,1,123456,1, 
+                approvalProfile, null);
         int approvalId1 = ar1.generateApprovalId();
         assertEquals("Ids should be the same.", approvalId, approvalId1);
 

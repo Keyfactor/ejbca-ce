@@ -116,8 +116,10 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 		try {
             RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), ejbLocalHelper.getGlobalConfigurationSession(),
             		ejbLocalHelper.getAccessControlSession(), ejbLocalHelper.getComplexAccessControlSession(), ejbLocalHelper.getCaSession(), 
-            		ejbLocalHelper.getEndEntityProfileSession());
-			result = ejbLocalHelper.getApprovalSession().query(EjbcaJSFHelper.getBean().getAdmin(), query, 0, QUERY_MAX_NUM_ROWS, raAuthorization.getCAAuthorizationString(), raAuthorization.getEndEntityProfileAuthorizationString(AccessRulesConstants.APPROVE_END_ENTITY));
+            		ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getApprovalProfileSession());
+			result = ejbLocalHelper.getApprovalSession().query(EjbcaJSFHelper.getBean().getAdmin(), query, 0, QUERY_MAX_NUM_ROWS, 
+			        raAuthorization.getCAAuthorizationString(), raAuthorization.getEndEntityProfileAuthorizationString(AccessRulesConstants.APPROVE_END_ENTITY), 
+			        raAuthorization.getApprovalProfileAuthorizationString());
 			if(result.size() == QUERY_MAX_NUM_ROWS){
 				String messagestring = getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS1", true) + " " + QUERY_MAX_NUM_ROWS + " " + getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS2", true);
 				FacesContext ctx = FacesContext.getCurrentInstance();

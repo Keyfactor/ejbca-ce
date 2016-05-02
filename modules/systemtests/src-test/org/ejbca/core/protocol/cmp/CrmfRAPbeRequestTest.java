@@ -593,9 +593,9 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
                 Query q = new Query(Query.TYPE_APPROVALQUERY);
                 q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
                 ApprovalDataVO approvalData = (approvalS.query(admin, q, 0, 1, "cAId=" + approvalCAID,
-                        "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")").get(0));
+                        "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")", "").get(0));
                 Approval approval = new Approval("Approved during testing.");
-                approvalExecSession.approve(approvingAdmin, approvalID, approval);
+                approvalExecSession.approve(approvingAdmin, approvalID, approval, null, true);
                 approvalData = approvalS.findApprovalDataVO(admin, approvalID).iterator().next();
                 assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                 CertificateStatus status = certStoreSession.getStatus(issuer, serialNumber);

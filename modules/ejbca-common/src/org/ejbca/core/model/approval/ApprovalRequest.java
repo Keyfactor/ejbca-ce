@@ -21,8 +21,11 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
@@ -54,7 +57,7 @@ public abstract class ApprovalRequest implements Externalizable {
 
     private static final long serialVersionUID = -1L;
     private static final Logger log = Logger.getLogger(ApprovalRequest.class);
-    private static final int LATEST_BASE_VERSION = 4;
+    private static final int LATEST_BASE_VERSION = 5;
 
     /**
      * Simple request type means that the approver will only see new data about the action and will not compare it to old data
@@ -73,13 +76,22 @@ public abstract class ApprovalRequest implements Externalizable {
     private int numOfRequiredApprovals = 0;
     private int cAId = 0;
     private int endEntityProfileId = 0;
-    private boolean[] approvalSteps = { false };
+    private boolean[] approvalStepsNrOfApprovals = { false };
+    
+    private ApprovalProfile approvalProfile;
+    private ApprovalProfile secondApprovalProfile;
+    private Map<Integer, ApprovalStep> approvalSteps;
+    private Map<Integer, Boolean> approvalStepsHandledMap;
+    
+    // TODO Check if this is needed if we set the ID as order
+    private List<Integer> orderedStepIds;
+    
 
     /**
      * Main constructor of an approval request for standard one step approval request.
      * 
      * @param requestAdminCert the certificate of the requesting admin
-     * @param requestSignature signature of the requestor (OPTIONAL, for future use)
+     * @param requestSignature signature of the requester (OPTIONAL, for future use)
      * @param approvalRequestType one of TYPE_ constants
      * @param numOfRequiredApprovals
      * @param cAId the related cAId of the request that the approver must be authorized to or ApprovalDataVO.ANY_CA in applicable to any ca
@@ -87,21 +99,30 @@ public abstract class ApprovalRequest implements Externalizable {
      *            to any end entity profile
      */
     protected ApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int approvalRequestType,
-            int numOfRequiredApprovals, int cAId, int endEntityProfileId) {
+            int numOfRequiredApprovals, int cAId, int endEntityProfileId, ApprovalProfile firstApprovalProfile, 
+            ApprovalProfile secondApprovalProfile) {
         super();
         setRequestAdmin(requestAdmin);
         this.requestSignature = requestSignature;
         this.approvalRequestType = approvalRequestType;
-        this.numOfRequiredApprovals = numOfRequiredApprovals;
         this.cAId = cAId;
         this.endEntityProfileId = endEntityProfileId;
+
+        this.approvalProfile = firstApprovalProfile;
+        this.secondApprovalProfile = secondApprovalProfile;
+        initApprovalSteps();
+
+        this.numOfRequiredApprovals = 0;
+        if(this.approvalProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+            this.numOfRequiredApprovals = this.approvalProfile.getNumberOfApprovals();
+        }
     }
 
     /**
      * Main constructor of an approval request.
      * 
      * @param requestAdminCert the certificate of the requesting admin
-     * @param requestSignature signature of the requestor (OPTIONAL, for future use)
+     * @param requestSignature signature of the requester (OPTIONAL, for future use)
      * @param approvalRequestType one of TYPE_ constants
      * @param numOfRequiredApprovals
      * @param cAId the related cAId of the request that the approver must be authorized to or ApprovalDataVO.ANY_CA in applicable to any ca
@@ -110,7 +131,8 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param numberOfSteps that this type approval request supports.
      */
     protected ApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int approvalRequestType,
-            int numOfRequiredApprovals, int cAId, int endEntityProfileId, int numberOfSteps) {
+            int numOfRequiredApprovals, int cAId, int endEntityProfileId, int numberOfSteps, ApprovalProfile firstApprovalProfile, 
+            ApprovalProfile secondApprovalProfile) {
         super();
         setRequestAdmin(requestAdmin);
         this.requestSignature = requestSignature;
@@ -118,14 +140,86 @@ public abstract class ApprovalRequest implements Externalizable {
         this.numOfRequiredApprovals = numOfRequiredApprovals;
         this.cAId = cAId;
         this.endEntityProfileId = endEntityProfileId;
-        this.approvalSteps = new boolean[numberOfSteps];
+        this.approvalStepsNrOfApprovals = new boolean[numberOfSteps];
         for (int i = 0; i < numberOfSteps; i++) {
-            this.approvalSteps[i] = false;
+            this.approvalStepsNrOfApprovals[i] = false;
         }
+        this.approvalProfile = firstApprovalProfile;
+        this.secondApprovalProfile = secondApprovalProfile;
+        initApprovalSteps();
     }
 
     /** Constuctor used in externaliziation only */
     public ApprovalRequest() {
+    }
+    
+    private void initApprovalSteps() {
+        approvalSteps = new HashMap<Integer, ApprovalStep>();
+        approvalStepsHandledMap = new HashMap<Integer, Boolean>();
+        
+        if(approvalProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+            orderedStepIds = new ArrayList<Integer>();
+        } else {
+            int i=1;
+            orderedStepIds = approvalProfile.getApprovalStepsOrder();
+            Map<Integer, ApprovalStep> steps = approvalProfile.getApprovalSteps();
+            for(Integer stepId : orderedStepIds) {
+                ApprovalStep step = steps.get(stepId);
+                step.setStepOrder(i);
+                approvalSteps.put(stepId, step);
+                approvalStepsHandledMap.put(stepId, Boolean.FALSE);
+                i++;
+            }
+        }
+    }
+    
+    /**   
+     * The different approval parts. Could either be already approved or not approved yet
+     */
+    public Map<Integer, ApprovalStep> getApprovalSteps() {
+        return approvalSteps;
+    }
+    public ApprovalStep getApprovalStep(final int stepId) {
+        return approvalSteps.get(Integer.valueOf(stepId));
+    }
+    public void addApprovalToStep(final int stepId, final Approval approval) {
+        ApprovalStep step = approvalSteps.get(stepId);
+        step.addApproval(approval);
+        approvalSteps.put(stepId, step);
+        if(step.getApprovalStatus()==ApprovalDataVO.STATUS_APPROVED) {
+            approvalStepsHandledMap.put(stepId, Boolean.TRUE);
+        }
+    }
+    public void updateApprovalStepMetadata(final int stepId, final ApprovalStepMetadata metadata) {
+        ApprovalStep step = approvalSteps.get(stepId);
+        step.updateMetadataValue(metadata.getOptionValue(), metadata.getOptionNote());
+        approvalSteps.put(stepId, step);
+    }
+    public void updateApprovalStepMetadata(final int stepId, final String optionValue, 
+            final String optionNote) {
+        ApprovalStep step = approvalSteps.get(stepId);
+        step.updateMetadataValue(optionValue, optionNote);
+        approvalSteps.put(stepId, step);
+    }
+    public ApprovalStep getNextUnhandledAppprovalStep() {
+        for(Integer stepId : orderedStepIds) {
+            if(!approvalStepsHandledMap.get(stepId)) {
+                return approvalSteps.get(stepId);
+            }
+        }
+        return null;
+    }
+    public List<ApprovalStep> getApprovedApprovalSteps() {
+        ArrayList<ApprovalStep> approvedSteps = new ArrayList<ApprovalStep>();
+        for(Integer stepId : orderedStepIds) {
+            if(approvalStepsHandledMap.get(stepId)) {
+                ApprovalStep step = approvalSteps.get(stepId);
+                if(step.getApprovalStatus()==ApprovalDataVO.STATUS_APPROVED) {
+                    approvedSteps.add(step);
+                }
+            }
+        }
+        return approvedSteps;
     }
 
     /**
@@ -207,8 +301,17 @@ public abstract class ApprovalRequest implements Externalizable {
         return numOfRequiredApprovals;
     }
 
+    
+    public ApprovalProfile getApprovalProfile() {
+        return approvalProfile;
+    }
+    
+    public ApprovalProfile getSecondApprovalProfile() {
+        return secondApprovalProfile;
+    }
+    
     /**
-     * The type of requesttype, one of TYPE_ constants
+     * The type of request type, one of TYPE_ constants
      * 
      */
     public int getApprovalRequestType() {
@@ -270,7 +373,7 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param step to query
      */
     public boolean isStepDone(int step) {
-        return approvalSteps[step];
+        return approvalStepsNrOfApprovals[step];
     }
 
     /**
@@ -279,14 +382,14 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param step to query
      */
     public void markStepAsDone(int step) {
-        approvalSteps[step] = true;
+        approvalStepsNrOfApprovals[step] = true;
     }
 
     /**
      * Returns the number of steps that this approval request supports.
      */
     public int getNumberOfApprovalSteps() {
-        return approvalSteps.length;
+        return approvalStepsNrOfApprovals.length;
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -297,10 +400,35 @@ public abstract class ApprovalRequest implements Externalizable {
         out.writeInt(this.numOfRequiredApprovals);
         out.writeInt(this.cAId);
         out.writeInt(this.endEntityProfileId);
-        out.writeInt(this.approvalSteps.length);
-        for (int i = 0; i < approvalSteps.length; i++) {
-            out.writeBoolean(approvalSteps[i]);
+        out.writeInt(this.approvalStepsNrOfApprovals.length);
+        for (int i = 0; i < approvalStepsNrOfApprovals.length; i++) {
+            out.writeBoolean(approvalStepsNrOfApprovals[i]);
         }
+        
+        out.writeObject(approvalProfile);
+        final boolean existSecondApprovalProfile = (secondApprovalProfile!=null); 
+        out.writeBoolean(existSecondApprovalProfile);
+        if(existSecondApprovalProfile) {
+            out.writeObject(secondApprovalProfile);
+        }
+        
+        out.writeInt(this.approvalSteps.size());
+        for (Integer stepId : approvalSteps.keySet()) {
+            out.writeObject(stepId);
+            out.writeObject(approvalSteps.get(stepId));
+        }
+        
+        out.writeInt(this.approvalStepsHandledMap.size());
+        for (Integer stepId : approvalStepsHandledMap.keySet()) {
+            out.writeObject(stepId);
+            out.writeBoolean(approvalStepsHandledMap.get(stepId));
+        }
+        
+        out.writeInt(this.orderedStepIds.size());
+        for (Integer stepId : orderedStepIds) {
+            out.writeObject(stepId);
+        }
+        
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -321,7 +449,7 @@ public abstract class ApprovalRequest implements Externalizable {
             this.numOfRequiredApprovals = in.readInt();
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
-            this.approvalSteps = new boolean[1];
+            this.approvalStepsNrOfApprovals = new boolean[1];
         }
         if (version == 2) {
             final Admin admin = (Admin) in.readObject();
@@ -341,7 +469,7 @@ public abstract class ApprovalRequest implements Externalizable {
             this.numOfRequiredApprovals = in.readInt();
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
-            this.approvalSteps = new boolean[1];
+            this.approvalStepsNrOfApprovals = new boolean[1];
         }
         if (version == 3) {
         	// Version 2 and 3 only care about the certificate from the old Admin object
@@ -366,9 +494,9 @@ public abstract class ApprovalRequest implements Externalizable {
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
             final int stepSize = in.readInt();
-            this.approvalSteps = new boolean[stepSize];
-            for (int i = 0; i < approvalSteps.length; i++) {
-                approvalSteps[i] = in.readBoolean();
+            this.approvalStepsNrOfApprovals = new boolean[stepSize];
+            for (int i = 0; i < approvalStepsNrOfApprovals.length; i++) {
+                approvalStepsNrOfApprovals[i] = in.readBoolean();
             }
         }
         if (version == 4) {
@@ -394,9 +522,68 @@ public abstract class ApprovalRequest implements Externalizable {
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
             final int stepSize = in.readInt();
-            this.approvalSteps = new boolean[stepSize];
-            for (int i = 0; i < approvalSteps.length; i++) {
-                approvalSteps[i] = in.readBoolean();
+            this.approvalStepsNrOfApprovals = new boolean[stepSize];
+            for (int i = 0; i < approvalStepsNrOfApprovals.length; i++) {
+                approvalStepsNrOfApprovals[i] = in.readBoolean();
+            }
+        }
+        if (version == 5) {
+            // Version 5 after introducing approval profiles
+            this.requestAdmin = (AuthenticationToken) in.readObject();
+            if (log.isTraceEnabled()) {
+                log.trace("ApprovalRequest has a requestAdmin token of type: "+this.requestAdmin.getClass().getName());
+            }
+            if (this.requestAdmin instanceof LocalJvmOnlyAuthenticationToken) {
+                if (log.isTraceEnabled()) {
+                    log.trace("It was a LocalJvmOnlyAuthenticationToken so we will re-init it with local random token.");
+                }
+                LocalJvmOnlyAuthenticationToken localtoken = (LocalJvmOnlyAuthenticationToken) this.requestAdmin;
+                localtoken.initRandomToken();
+            } else if (this.requestAdmin instanceof CliAuthenticationToken) {
+                // A Cli authentication token was probably used already and must thus be "re-registered"
+                CliAuthenticationToken ctok = (CliAuthenticationToken)this.requestAdmin;
+                CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(ctok);
+            }
+            this.requestSignature = (String) in.readObject();
+            this.approvalRequestType = in.readInt();
+            this.numOfRequiredApprovals = in.readInt();
+            this.cAId = in.readInt();
+            this.endEntityProfileId = in.readInt();
+            final int stepSize = in.readInt();
+            this.approvalStepsNrOfApprovals = new boolean[stepSize];
+            for (int i = 0; i < approvalStepsNrOfApprovals.length; i++) {
+                approvalStepsNrOfApprovals[i] = in.readBoolean();
+            }
+            
+            this.approvalProfile = (ApprovalProfile) in.readObject();
+            final boolean existSecondApprovalProfile = in.readBoolean();
+            if(existSecondApprovalProfile) {
+                this.secondApprovalProfile = (ApprovalProfile) in.readObject();
+            } else {
+                this.secondApprovalProfile = null;
+            }
+            
+            this.approvalSteps = new HashMap<Integer, ApprovalStep>();
+            int length = in.readInt(); 
+            for (int i = 0; i < length; i++) {
+                Integer stepId = (Integer)in.readObject();
+                ApprovalStep step = (ApprovalStep)in.readObject();
+                approvalSteps.put(stepId, step);
+            }
+            
+            this.approvalStepsHandledMap = new HashMap<Integer, Boolean>();
+            length = in.readInt(); 
+            for (int i = 0; i < length; i++) {
+                Integer stepId = (Integer)in.readObject();
+                Boolean handled = in.readBoolean();
+                approvalStepsHandledMap.put(stepId, handled);
+            }
+            
+            this.orderedStepIds = new ArrayList<Integer>();
+            length = in.readInt(); 
+            for (int i = 0; i < length; i++) {
+                Integer stepId = (Integer)in.readObject();
+                orderedStepIds.add(stepId);
             }
         }
     }

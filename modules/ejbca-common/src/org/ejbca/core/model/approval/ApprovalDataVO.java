@@ -95,11 +95,13 @@ public class ApprovalDataVO implements Serializable {
 	 * @param approvals     Collection of created Approvals (never null)
 	 * @param approvalRequest The ApprovalRequest
 	 * @param requestDate   Date the request for approval were added
-	 * @param expireDate    Date the request for action or the approvel action will expire, Long.MAX_VALUE 
+	 * @param expireDate    Date the request for action or the approval action will expire, Long.MAX_VALUE 
      *                      means that the request/approval never expires
 	 * @param remainingApprovals Indicates the number of approvals that remains in order to execute the action.
 	 */
-	public ApprovalDataVO(int id, int approvalId, int approvalType, int endEntityProfileiId, int cAId, String reqadmincertissuerdn, String reqadmincertsn, int status, Collection<Approval> approvals, ApprovalRequest approvalRequest, Date requestDate, Date expireDate, int remainingApprovals) {
+	public ApprovalDataVO(int id, int approvalId, int approvalType, int endEntityProfileiId, int cAId, String reqadmincertissuerdn, 
+	        String reqadmincertsn, int status, Collection<Approval> approvals, ApprovalRequest approvalRequest, Date requestDate, 
+	        Date expireDate, int remainingApprovals) {
 		super();
 		this.id = id;
 		this.approvalId = approvalId;

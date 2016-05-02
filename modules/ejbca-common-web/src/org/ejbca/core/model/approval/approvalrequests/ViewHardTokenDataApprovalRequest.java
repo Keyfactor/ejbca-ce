@@ -22,6 +22,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 
@@ -45,8 +46,11 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
 	/** Constructor used in externalization only */
 	public ViewHardTokenDataApprovalRequest() {}
 
-	public ViewHardTokenDataApprovalRequest(String username, String userDN, String tokensn, boolean viewPUK, AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
-		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId);
+	public ViewHardTokenDataApprovalRequest(String username, String userDN, String tokensn, boolean viewPUK, 
+	        AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, 
+	        int endEntityProfileId, ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
+		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId, 
+		        approvalProfile, secondApprovalProfile);
 		this.username = username;
 		this.dn = userDN;
 		this.tokensn = tokensn;

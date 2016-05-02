@@ -125,6 +125,39 @@ function viewcert(link){
       </p>
     </h:panelGroup>
 
+
+
+	<h3><h:outputText value="Approval Steps:"/></h3>
+  <h:dataTable id="approvalPartsTable" value="#{approvalActionManagedBean.approvalStepsList}" var="step" width="100%">
+    <h:column>
+		<h:panelGroup>
+			<h:outputLabel for="approvedpart" value="#{step.metadataInstruction} "/>
+		</h:panelGroup>
+    </h:column>
+    <h:column>
+    	<h:panelGroup>
+   			<h:selectManyListbox value="#{step.metadataOptionValueList}" size="5" rendered="#{step.metadataOptionsType==1}"  disabled="#{step.approved}">
+				<f:selectItems value="#{step.metadataOptions}"/>
+			</h:selectManyListbox>
+   			
+   			<h:selectOneMenu value="#{step.metadataOptionValue}"  rendered="#{step.metadataOptionsType==2}"  disabled="#{step.approved}">
+				<f:selectItems value="#{step.metadataOptions}"/>
+			</h:selectOneMenu>
+			
+			<h:inputText value="#{step.metadataOptionValue}" title="#{web.text.FORMAT_ID_STR}" size="25" maxlength="255" 
+		  										rendered="#{step.metadataOptionsType==3}"  disabled="#{step.approved}"/>
+		  	
+   		</h:panelGroup>
+    </h:column>
+    
+	<h:column>
+		<h:inputText value="#{step.metadataNote}" title="#{web.text.FORMAT_ID_STR}" size="25" maxlength="255" 
+												rendered="#{step.metadataOptionsType!=3}"  disabled="#{step.approved}"/>
+	</h:column>
+
+  </h:dataTable>   
+
+
     <h3><h:outputText value="#{web.text.APPROVEDBY}"/></h3>
     <h:outputText value="#{web.text.NONE}" rendered="#{!approvalActionManagedBean.existsApprovals}"/>
   <h:dataTable id="approvalTable" value="#{approvalActionManagedBean.approvalViews}" var="approvalView" width="100%" rendered="#{approvalActionManagedBean.existsApprovals}">

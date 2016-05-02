@@ -90,7 +90,7 @@ public class ApprovalExecutorUtil {
             log.trace(">requireApproval: "+req.getClass().getName());            
         }
 		boolean ret = true;
-		if (req.getNumOfRequiredApprovals() > 0) {
+		if ((req.getNumOfRequiredApprovals() > 0) || (req.getApprovalProfile().getApprovalSteps().size() > 0)) {
 			ret = !isCalledByOveridableClassnames(getGloballyAllowed());
 			// If we were not found in the globally allowed list, check the passed in list
 			if (ret && (overridableClassNames != null)) {

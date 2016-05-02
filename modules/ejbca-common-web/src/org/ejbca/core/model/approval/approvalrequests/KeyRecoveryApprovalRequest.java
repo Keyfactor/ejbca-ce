@@ -32,6 +32,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -56,9 +57,11 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	/** Constructor used in externalization only */
 	public KeyRecoveryApprovalRequest() {}
 
-	public KeyRecoveryApprovalRequest(Certificate cert, String username, boolean recoverNewestCert, AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+	public KeyRecoveryApprovalRequest(Certificate cert, String username, boolean recoverNewestCert, 
+	        AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, 
+	        int endEntityProfileId, ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
 		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE,
-				numOfReqApprovals, cAId, endEntityProfileId);
+				numOfReqApprovals, cAId, endEntityProfileId, approvalProfile, secondApprovalProfile);
 		this.username = username;
 		this.cert = cert;
 		this.recoverNewestCert = recoverNewestCert;

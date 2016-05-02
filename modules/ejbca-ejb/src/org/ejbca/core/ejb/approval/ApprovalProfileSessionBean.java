@@ -45,6 +45,11 @@ import org.cesecore.util.ProfileID;
 import org.ejbca.core.ejb.profiles.ProfileData;
 import org.ejbca.core.model.approval.ApprovalProfile;
 
+/**
+ * Keeps track of the approval profiles
+ * 
+ * @version $Id$
+ */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ApprovalProfileSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, ApprovalProfileSessionRemote {
@@ -313,19 +318,20 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     }
 
     @Override
-    public int getApprovalProfileId(String name) {
+    public int getApprovalProfileId(String name) throws ApprovalProfileDoesNotExistException {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getApprovalProfileId: " + name);
         }
-        int returnval = 0;
+        
         final Integer id = ApprovalProfileCache.INSTANCE.getNameIdMapCache(entityManager).get(name);
         if (id != null) {
-            returnval = id.intValue();
+            final int returnval = id.intValue();
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("<getApprovalProfileId: " + name + "): " + returnval);
+            }
+            return returnval;
         }
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("<getApprovalProfileId: " + name + "): " + returnval);
-        }
-        return returnval;
+        throw new ApprovalProfileDoesNotExistException("Approval profile '" + name + "' does not exist");
     }
 
     @Override

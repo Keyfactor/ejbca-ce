@@ -17,6 +17,8 @@ import org.cesecore.CesecoreException;
 
 /**
  * An exception thrown when someone tries to change an approval profile that doesn't already exits
+ * 
+ * @version $Id$
  */
 public class ApprovalProfileDoesNotExistException extends CesecoreException {
     

@@ -19,13 +19,21 @@ import javax.ejb.Local;
 
 import org.ejbca.core.model.approval.ApprovalProfile;
 
+/**
+ * Session to access approval profiles locally
+ * 
+ * @version $Id$
+ */
 @Local
 public interface ApprovalProfileSessionLocal extends ApprovalProfileSession {
 
     /**
-     * @return a collection of all existing approval profiles.
+     * @return a map of all existing approval profiles.
      */
     Map<Integer, ApprovalProfile> getAllApprovalProfiles();
     
+    /**
+     * @return a list of all existing approval profiles
+     */
     Collection<ApprovalProfile> getApprovalProfilesList();
 }

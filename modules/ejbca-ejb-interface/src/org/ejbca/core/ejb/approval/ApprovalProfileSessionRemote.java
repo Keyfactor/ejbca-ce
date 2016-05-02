@@ -14,6 +14,10 @@ package org.ejbca.core.ejb.approval;
 
 import javax.ejb.Remote;
 
+/**
+ * Session to access approval profiles remotely
+ * @version $Id$
+ */
 @Remote
 public interface ApprovalProfileSessionRemote extends ApprovalProfileSession {
 

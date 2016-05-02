@@ -38,11 +38,16 @@ public class ApprovalExecutorUtilTest {
     @Test
 	public void testNoOfApprovals() {
 		int numOfApprovalsRequired = 1;
-		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1);
+		ApprovalProfile nrOfApprovalsApprovalProfile = new ApprovalProfile("nrOfApprovalApprovalProfile");
+		nrOfApprovalsApprovalProfile.setNumberOfApprovals(numOfApprovalsRequired);
+		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, 
+		        EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
 		boolean approvalRequired = ApprovalExecutorUtil.requireApproval(ar, null);   
 		assertTrue(approvalRequired);		
 		numOfApprovalsRequired = 0;
-		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1);
+		nrOfApprovalsApprovalProfile.setNumberOfApprovals(numOfApprovalsRequired);
+		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_NEW, admin, 
+		        null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
 		approvalRequired = ApprovalExecutorUtil.requireApproval(ar, null);   
 		assertFalse(approvalRequired);		
 	}
@@ -50,7 +55,10 @@ public class ApprovalExecutorUtilTest {
     @Test
 	public void testGloballyExcludedClasses() {
 		int numOfApprovalsRequired = 1;
-		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1);
+		ApprovalProfile nrOfApprovalsApprovalProfile = new ApprovalProfile("nrOfApprovalApprovalProfile");
+		nrOfApprovalsApprovalProfile.setNumberOfApprovals(numOfApprovalsRequired);
+		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, 
+		        EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
 		boolean approvalRequired = ApprovalExecutorUtil.requireApproval(ar, null);   
 		assertTrue(approvalRequired);
 		ApprovalJunitHelper.JunitApprovalExecutorUtil1.init();
@@ -76,7 +84,10 @@ public class ApprovalExecutorUtilTest {
 		};
 
 		int numOfApprovalsRequired = 1;
-		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1);
+		ApprovalProfile nrOfApprovalsApprovalProfile = new ApprovalProfile("nrOfApprovalApprovalProfile");
+		nrOfApprovalsApprovalProfile.setNumberOfApprovals(numOfApprovalsRequired);
+		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, 
+		        EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
 		boolean approvalRequired = ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS);   
 		assertTrue(approvalRequired);
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS1 = {
@@ -87,7 +98,8 @@ public class ApprovalExecutorUtilTest {
 				new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
 				new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)
 			};		
-		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1);
+		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_NEW, 
+		        admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
 		approvalRequired = ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS1);   
 		assertTrue(approvalRequired);
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS2 = {
@@ -98,7 +110,8 @@ public class ApprovalExecutorUtilTest {
 				new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
 				new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)
 			};		
-		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1);
+		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_NEW, 
+		        admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
 		approvalRequired = ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS2);   
 		assertFalse(approvalRequired);
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS3 = {
@@ -108,8 +121,9 @@ public class ApprovalExecutorUtilTest {
 				new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
 				new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
 				new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)
-			};		
-		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1);
+			};
+		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_NEW, 
+		        admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
 		approvalRequired = ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS3);   
 		assertFalse(approvalRequired);
 
@@ -118,19 +132,26 @@ public class ApprovalExecutorUtilTest {
     @Test
 	public void testAllowedTransitions() {
 		int numOfApprovalsRequired = 1;
-		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_NEW, EndEntityConstants.STATUS_INPROCESS, admin, null, numOfApprovalsRequired, 1, 1);
+		ApprovalProfile nrOfApprovalsApprovalProfile = new ApprovalProfile("nrOfApprovalApprovalProfile");
+		nrOfApprovalsApprovalProfile.setNumberOfApprovals(numOfApprovalsRequired);
+		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_NEW, 
+		        EndEntityConstants.STATUS_INPROCESS, admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
 		boolean approvalRequired = ApprovalExecutorUtil.requireApproval(ar, null);   
 		assertFalse(approvalRequired);
-		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1);
+		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_NEW, 
+		        admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
 		approvalRequired = ApprovalExecutorUtil.requireApproval(ar, null);   
 		assertTrue(approvalRequired);
-		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_INPROCESS, EndEntityConstants.STATUS_GENERATED, admin, null, numOfApprovalsRequired, 1, 1);
+		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_INPROCESS, EndEntityConstants.STATUS_GENERATED, 
+		        admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
 		approvalRequired = ApprovalExecutorUtil.requireApproval(ar, null);   
 		assertFalse(approvalRequired);
-		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_INPROCESS, EndEntityConstants.STATUS_FAILED, admin, null, numOfApprovalsRequired, 1, 1);
+		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_INPROCESS, EndEntityConstants.STATUS_FAILED, 
+		        admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
 		approvalRequired = ApprovalExecutorUtil.requireApproval(ar, null);   
 		assertFalse(approvalRequired);
-		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_REVOKED, EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1);
+		ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_REVOKED, EndEntityConstants.STATUS_NEW, admin, 
+		        null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
 		approvalRequired = ApprovalExecutorUtil.requireApproval(ar, null);   
 		assertTrue(approvalRequired);
 		

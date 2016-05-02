@@ -74,6 +74,13 @@ public class ApprovalDataVOView implements Serializable {
     /** Constructor used for initialization of dummy values. */
     public ApprovalDataVOView() { }
 
+    public ApprovalRequest getApprovalRequest() {
+        if(initialized) {
+            return data.getApprovalRequest();
+        }
+        return null;
+    }
+    
     public String getRequestDate() {
         if (initialized) {
             return fastDateFormat(data.getRequestDate());
@@ -188,7 +195,7 @@ public class ApprovalDataVOView implements Serializable {
             try {
             	X509Certificate certificate = CertTools.getCertfromByteArray(ApprovalDataVOView.dummycert, X509Certificate.class);
                 AuthenticationToken token = new X509CertificateAuthenticationToken(certificate);
-                DummyApprovalRequest req = new DummyApprovalRequest(token, null, ApprovalDataVO.ANY_ENDENTITYPROFILE, ApprovalDataVO.ANY_CA, false);
+                DummyApprovalRequest req = new DummyApprovalRequest(token, null, ApprovalDataVO.ANY_ENDENTITYPROFILE, ApprovalDataVO.ANY_CA, false, null, null);
                 return new ApprovalDataVO(1, 1, ApprovalDataVO.APPROVALTYPE_DUMMY, 0, 0, "", "", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,
                         new ArrayList<Approval>(), req, new Date(), new Date(), 2);
             } catch (CertificateParsingException e) {

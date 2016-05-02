@@ -22,6 +22,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 
@@ -51,8 +52,11 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 	/** Constructor used in externalization only */
 	public GenerateTokenApprovalRequest() {}
 
-	public GenerateTokenApprovalRequest(String username, String userDN, String tokenTypeLabel, AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
-		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId,2);
+	public GenerateTokenApprovalRequest(String username, String userDN, String tokenTypeLabel, AuthenticationToken requestAdmin, 
+	        String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile, 
+	        ApprovalProfile secondApprovalProfile) {
+		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId,2, approvalProfile, 
+		        secondApprovalProfile);
 		this.username = username;
 		this.dn = userDN;
 		this.tokenTypeLabel = tokenTypeLabel;

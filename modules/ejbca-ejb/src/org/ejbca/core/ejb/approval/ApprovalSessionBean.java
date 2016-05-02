@@ -47,6 +47,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ProfileID;
@@ -62,8 +63,11 @@ import org.ejbca.core.model.approval.ApprovalDataUtil;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalNotificationParamGen;
+import org.ejbca.core.model.approval.ApprovalProfile;
+import org.ejbca.core.model.approval.ApprovalProfileNumberOfApprovals;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.ApprovalStep;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
@@ -89,6 +93,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @EJB
     private AccessControlSessionLocal authorizationSession;
     @EJB
+    private RoleAccessSessionLocal roleAccessSession;
+    @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
@@ -96,6 +102,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;
     
     @Override
     public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException {
@@ -116,6 +124,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 final ApprovalData approvalData = new ApprovalData(freeId);
                 approvalData.setApprovalid(approvalRequest.generateApprovalId());
                 approvalData.setApprovaltype(approvalRequest.getApprovalType());
+                final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
+                approvalData.setApprovalProfileId(approvalProfileSession.getApprovalProfileId(approvalProfile.getProfileName()));
                 approvalData.setEndentityprofileid(approvalRequest.getEndEntityProfileId());
                 approvalData.setCaid(approvalRequest.getCAId());
                 if (approvalRequest.getRequestAdminCert() != null) {
@@ -187,14 +197,14 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         log.trace(">reject");
         ApprovalData adl;
         try {
-            adl = isAuthorizedBeforeApproveOrReject(admin, approvalId);
+            adl = isAuthorizedBeforeApproveOrReject(admin, approvalId, null);
         } catch (ApprovalException e1) {
             String msg = intres.getLocalizedMessage("approval.notexist", approvalId);
             log.info(msg);
             throw e1;
         }
 
-        checkExecutionPossibility(admin, adl);
+        checkExecutionPossibility(admin, adl, null);
         approval.setApprovalAdmin(false, admin);
 
         try {
@@ -220,7 +230,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public void checkExecutionPossibility(AuthenticationToken admin, ApprovalData adl) throws AdminAlreadyApprovedRequestException {
+    public void checkExecutionPossibility(AuthenticationToken admin, ApprovalData adl, ApprovalStep approvalStep) throws AdminAlreadyApprovedRequestException {
         // Check that the approver's principals don't exist among the existing usernames.
         ApprovalDataVO data = getApprovalDataVO(adl);
         int approvalId = data.getApprovalId();
@@ -235,7 +245,14 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             }
         }
         // Check that his admin has not approved this this request before
-        for (Approval next : data.getApprovals()) {
+        Collection<Approval> approvals = new ArrayList<Approval>();
+        if(approvalStep==null) { // Approvals by number
+            approvals = data.getApprovals();
+        } else {
+            approvals = approvalStep.getApprovals();
+        }
+        
+        for (Approval next : approvals) {
             if (next.getAdmin().equals(admin)) {
                 String msg = intres.getLocalizedMessage("approval.error.alreadyapproved", approvalId);
                 log.info(msg);
@@ -245,11 +262,30 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public ApprovalData isAuthorizedBeforeApproveOrReject(AuthenticationToken admin, int approvalId) throws ApprovalException,
+    public ApprovalData isAuthorizedBeforeApproveOrReject(AuthenticationToken admin, int approvalId, final ApprovalStep approvalStep) throws ApprovalException,
             AuthorizationDeniedException {
         ApprovalData retval = findNonExpiredApprovalDataLocal(approvalId);
         if (retval != null) {
-            if (retval.getEndentityprofileid() == ApprovalDataVO.ANY_ENDENTITYPROFILE) {
+            ApprovalDataVO advo = getApprovalDataVO(retval);
+            ApprovalProfile profile = advo.getApprovalRequest().getApprovalProfile();
+            if(profile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+                checkNrOfApprovalAuthorization(admin, retval);
+            } else {
+                if(!profile.getApprovalProfileType().isAdminAllowedToApproveStep(admin, approvalStep, profile)) {
+                    throw new AuthorizationDeniedException("Administrator not authorized for step " + 
+                                approvalStep.getStepId() + " from profile " + profile.getProfileName());
+                }
+            }
+        } else {
+            throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, "Suitable approval with id : " + approvalId + " doesn't exist");
+        }
+        return retval;
+    }
+    
+    // TODO find a better name for the method
+    private void checkNrOfApprovalAuthorization(final AuthenticationToken admin, 
+            final ApprovalData approvalData) throws AuthorizationDeniedException, ApprovalException {
+            if (approvalData.getEndentityprofileid() == ApprovalDataVO.ANY_ENDENTITYPROFILE) {
                 if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVECAACTION)) {
                     final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
                             AccessRulesConstants.REGULAR_APPROVECAACTION, null);
@@ -264,26 +300,22 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
                         .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
                 if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
-                    if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid()
+                    if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + approvalData.getEndentityprofileid()
                             + AccessRulesConstants.APPROVE_END_ENTITY)) {
                         final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
-                                AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid() + AccessRulesConstants.APPROVE_END_ENTITY,
+                                AccessRulesConstants.ENDENTITYPROFILEPREFIX + approvalData.getEndentityprofileid() + AccessRulesConstants.APPROVE_END_ENTITY,
                                 null);
                         throw new AuthorizationDeniedException(msg);
                     }
                 }
             }
-            if (retval.getCaid() != ApprovalDataVO.ANY_CA) {
-                if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + retval.getCaid())) {
+            if (approvalData.getCaid() != ApprovalDataVO.ANY_CA) {
+                if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + approvalData.getCaid())) {
                     final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
-                            StandardRules.CAACCESS.resource() + retval.getCaid(), null);
+                            StandardRules.CAACCESS.resource() + approvalData.getCaid(), null);
                     throw new AuthorizationDeniedException(msg);
                 }
             }
-        } else {
-            throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, "Suitable approval with id : " + approvalId + " doesn't exist");
-        }
-        return retval;
     }
 
     @Override
@@ -376,7 +408,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<ApprovalDataVO> query(AuthenticationToken admin, Query query, int index, int numberofrows, String caAuthorizationString,
-            String endEntityProfileAuthorizationString) throws AuthorizationDeniedException, IllegalQueryException {
+            String endEntityProfileAuthorizationString, final String approvalProfileAuthorizationString) throws AuthorizationDeniedException, IllegalQueryException {
         log.trace(">query()");
         String customQuery = "";
         // Check if query is legal.
@@ -398,10 +430,24 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 customQuery += " AND " + endEntityProfileAuthorizationString;
             }
         }
+        
+        if (StringUtils.isNotEmpty(approvalProfileAuthorizationString)) {
+            if (StringUtils.isEmpty(customQuery)) {
+                customQuery += approvalProfileAuthorizationString;
+            } else {
+                customQuery += " AND " + approvalProfileAuthorizationString;
+            }
+        }
+        
         final List<ApprovalData> approvalDataList = ApprovalData.findByCustomQuery(entityManager, index, numberofrows, customQuery);
         final List<ApprovalDataVO> returnData = new ArrayList<ApprovalDataVO>(approvalDataList.size());
         for (ApprovalData approvalData : approvalDataList) {
-            returnData.add(getApprovalDataVO(approvalData));
+            final ApprovalDataVO advo = getApprovalDataVO(approvalData);
+            final ApprovalStep approvalStep = advo.getApprovalRequest().getNextUnhandledAppprovalStep();
+            ApprovalProfile approvalProfile = advo.getApprovalRequest().getApprovalProfile();
+            if(approvalProfile.getApprovalProfileType().isAdminAllowedToApproveStep(admin, approvalStep, approvalProfile)) {
+                returnData.add(advo);
+            }
         }
         log.trace("<query()");
         return returnData;
@@ -633,5 +679,12 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             log.error("Error building approvals.", e);
             throw new RuntimeException(e);
         }
+    }
+    
+    public void addApprovalToApprovalStep(final ApprovalData approvalData, final Approval approval, final ApprovalStep approvalStep) {
+        final ApprovalRequest approvalRequest = getApprovalRequest(approvalData);
+        approvalRequest.updateApprovalStepMetadata(approvalStep.getStepId(), approvalStep.getMetadata());
+        approvalRequest.addApprovalToStep(approvalStep.getStepId(), approval);
+        setApprovalRequest(approvalData, approvalRequest);
     }
 }

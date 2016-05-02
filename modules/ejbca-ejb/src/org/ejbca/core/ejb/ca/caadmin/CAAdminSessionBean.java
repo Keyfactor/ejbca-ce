@@ -165,6 +165,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -181,6 +182,7 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -214,6 +216,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private AccessControlSessionLocal accessSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -2914,8 +2918,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Check if approvals is required.
         final int numOfApprovalsRequired = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ACTIVATECA, cainfo.getCAId(),
                 cainfo.getCertificateProfileId());
+        ApprovalProfile[] approvalProfiles = getApprovalProfiles(cainfo);
         final ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(), "", admin, numOfApprovalsRequired, caid,
-                ApprovalDataVO.ANY_ENDENTITYPROFILE);
+                ApprovalDataVO.ANY_ENDENTITYPROFILE, approvalProfiles[0], approvalProfiles[1]);
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {
             approvalSession.addApprovalRequest(admin, ar);
             throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalcaactivation"));
@@ -2934,6 +2939,32 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw new RuntimeException(detailsMsg);
         }
     }
+    
+    private ApprovalProfile[] getApprovalProfiles(final CAInfo cainfo) {
+        ApprovalProfile ret[] = new ApprovalProfile[2];
+        
+        ApprovalProfile profileFromCA = null;
+        int approvalProfileIdFromCA = cainfo.getApprovalProfile();
+        if(approvalProfileIdFromCA > -1) {
+            profileFromCA = approvalProfileSession.getApprovalProfile(approvalProfileIdFromCA);
+        }
+        ApprovalProfile profileFromCP = null;
+        final int approvalProfileIdFromCertProf = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId()).getApprovalProfileID();
+        if(approvalProfileIdFromCertProf > -1) {
+            profileFromCP = approvalProfileSession.getApprovalProfile(approvalProfileIdFromCertProf);
+        } 
+        
+        if(profileFromCA != null) {
+            ret[0] = profileFromCA;
+            ret[1] = profileFromCP;
+        } else {
+            ret[0] = profileFromCP;
+            ret[1] = null;
+        }
+        
+        return ret;
+    }
+    
 
     private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN = { new ApprovalOveradableClassName(
             org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest.class.getName(), null), };

@@ -48,6 +48,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	private int id;
 	private int approvalId;
 	private int approvalType;
+	private int approvalProfileId;
 	private int endEntityProfileId;
 	private int cAId;
 	private String reqAdminCertIssuerDn;
@@ -57,7 +58,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	private String requestData;
 	private long requestDate;
 	private long expireDate;
-	private int remainingApprovals;	
+	private int remainingApprovals;
 	private int rowVersion = 0;
 	private String rowProtection;
 
@@ -107,6 +108,16 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	 * constants ex: ApprovalDataVO.APPROVALTYPE_ADDUSER
 	 */
 	public void setApprovaltype(int approvalType) { this.approvalType = approvalType; }
+	
+	/**
+     * The related approval profile id
+     */
+    //@Column
+    public int getApprovalProfileId() { return approvalProfileId; }
+    /**
+     * The related approval profile id     
+     */
+    public void setApprovalProfileId(int approvalProfileId) { this.approvalProfileId = approvalProfileId; }
 
 	/**
 	 * For RA specific approval requests should the related end entity profile id be specified
@@ -339,6 +350,16 @@ s	 */
 		query.setParameter("status", status);
 		return query.getResultList();
 	}
+	
+	/** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
+    public static List<ApprovalData> findByStatusAndApprovalProfile(final EntityManager entityManager, final int status, final int approvalPorfileId) {
+        final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.status=:status AND a.approvalProfileId=:approvalProfileId");
+        query.setParameter("status", status);
+        query.setParameter("approvalProfileId", approvalPorfileId);
+        return query.getResultList();
+    }
+	
 
 	/** @return return the query results as a List<ApprovalData>. */
 	public static List<ApprovalData> findByCustomQuery(final EntityManager entityManager, final int index, final int numberofrows, final String customQuery) {
