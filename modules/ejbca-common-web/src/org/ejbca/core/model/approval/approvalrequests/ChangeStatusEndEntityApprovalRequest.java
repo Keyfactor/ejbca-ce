@@ -29,6 +29,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -52,8 +53,11 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	/** Constructor used in externalization only */
 	public ChangeStatusEndEntityApprovalRequest() {}
 
-	public ChangeStatusEndEntityApprovalRequest( String username, int oldstatus, int newstatus, AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
-		super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, numOfReqApprovals, cAId, endEntityProfileId);
+	public ChangeStatusEndEntityApprovalRequest( String username, int oldstatus, int newstatus, 
+	        AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, 
+	        int endEntityProfileId, ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
+		super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, numOfReqApprovals, cAId, endEntityProfileId, 
+		        approvalProfile, secondApprovalProfile);
 		this.username = username;
 		this.oldstatus = oldstatus;
 		this.newstatus = newstatus;

@@ -23,6 +23,8 @@ import org.ejbca.core.model.approval.ApprovalProfile;
  * 
  * In order to add or edit ApprovalProfiles the admin needs access to:
  * - /ca_functionality/ (StandardRules.CAFUNCTIONALITY
+ * 
+ * @version $Id$
  */
 public interface ApprovalProfileSession {
 
@@ -33,8 +35,10 @@ public interface ApprovalProfileSession {
      * @param name readable name of new approval profile
      * @param profile the profile to be added
      * @return the generated approval profile id
+     * @throws ApprovalProfileExistsException
+     * @throws AuthorizationDeniedException
      */
-    public int addApprovalProfile(AuthenticationToken admin, String name, ApprovalProfile profile) throws ApprovalProfileExistsException, AuthorizationDeniedException;
+    int addApprovalProfile(AuthenticationToken admin, String name, ApprovalProfile profile) throws ApprovalProfileExistsException, AuthorizationDeniedException;
     
     /**
      * Updates approval profile data
@@ -42,10 +46,11 @@ public interface ApprovalProfileSession {
      * @param admin Administrator performing the operation
      * @param name readable name of the approval profile to be changed
      * @param profile the changed profile
+     * @throws AuthorizationDeniedException
      */
     void changeApprovalProfile(AuthenticationToken admin, String name, ApprovalProfile profile) throws AuthorizationDeniedException;
 
-    /** Clear and reload certificate profile caches. */
+    /** Clear and reload approval profile caches. */
     void flushProfileCache();
 
     /**
@@ -54,6 +59,9 @@ public interface ApprovalProfileSession {
      * @param admin Administrator performing the operation
      * @param orgname name of original approval profile
      * @param newname name of new approval profile
+     * @throws ApprovalProfileExistsException
+     * @throws ApprovalProfileDoesNotExistException
+     * @throws AuthorizationDeniedException
      */
     void cloneApprovalProfile(AuthenticationToken admin, String orgname, String newname) 
             throws ApprovalProfileExistsException, ApprovalProfileDoesNotExistException, AuthorizationDeniedException;
@@ -63,7 +71,7 @@ public interface ApprovalProfileSession {
      * authorized to will be returned. 
      * 
      * @param admin Administrator performing the operation
-     * @return Collection of id:s (Integer)
+     * @return List of id:s (Integer)
      */
     List<Integer> getAuthorizedApprovalProfileIds(AuthenticationToken admin);
 
@@ -88,8 +96,9 @@ public interface ApprovalProfileSession {
      * 
      * @param name approval profile name
      * @return the id or 0 if approval profile cannot be found.
+     * @throws ApprovalProfileDoesNotExistException
      */
-    int getApprovalProfileId(String name);
+    int getApprovalProfileId(String name) throws ApprovalProfileDoesNotExistException;
 
     /**
      * Returns an approval profile's name given it's id.
@@ -102,20 +111,20 @@ public interface ApprovalProfileSession {
     /**
      * Method creating a Map mapping profile id (Integer) to profile name
      * (String).
+     * 
+     * @return a Map mapping profile id (Integer) to profile name (String) 
      */
     Map<Integer, String> getApprovalProfileIdToNameMap();
-/*
-    /**
-     * A method designed to be called at startuptime to (possibly) upgrade
-     * approval profiles. This method will read all approval Profiles and
-     * as a side-effect upgrade them if the version changed.
-     * /
-    public void initializeAndUpgradeProfiles();
-*/
+
     /**
      * Renames an approval profile
+     * 
+     * @param admin Administrator performing the operation
      * @param oldname the name of the approval profile to rename
      * @param newname the new name of the approval profile
+     * @throws ApprovalProfileExistsException
+     * @throws ApprovalProfileDoesNotExistException
+     * @throws AuthorizationDeniedException
      */
     void renameApprovalProfile(AuthenticationToken admin, String oldname, String newname)
             throws ApprovalProfileExistsException, ApprovalProfileDoesNotExistException, AuthorizationDeniedException;
@@ -125,15 +134,17 @@ public interface ApprovalProfileSession {
      *
      * @param admin Administrator performing the operation
      * @param name the name of the approval profile to remove
+     * @throws AuthorizationDeniedException
      */
-    public void removeApprovalProfile(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
+    void removeApprovalProfile(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
     
     /**
      * Removes an approval profile from the database, does not throw any errors if the profile does not exist.
      *
      * @param admin Administrator performing the operation
      * @param id the ID of the approval profile to remove
+     * @throws AuthorizationDeniedException
      */
-    public void removeApprovalProfile(AuthenticationToken admin, int id) throws AuthorizationDeniedException;
+    void removeApprovalProfile(AuthenticationToken admin, int id) throws AuthorizationDeniedException;
 
 }

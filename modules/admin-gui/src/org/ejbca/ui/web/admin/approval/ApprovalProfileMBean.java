@@ -14,13 +14,20 @@ package org.ejbca.ui.web.admin.approval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 
+import javax.el.ELContext;
+import javax.el.ExpressionFactory;
+import javax.el.ValueExpression;
+import javax.faces.component.html.HtmlColumn;
+import javax.faces.component.html.HtmlDataTable;
+import javax.faces.component.html.HtmlOutputText;
+import javax.faces.component.html.HtmlPanelGroup;
+import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
@@ -28,60 +35,69 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalProfileByAdminRoles;
-import org.ejbca.core.model.approval.ApprovalProfileFieldObject;
 import org.ejbca.core.model.approval.ApprovalProfileNumberOfApprovals;
 import org.ejbca.core.model.approval.ApprovalProfileType;
+import org.ejbca.core.model.approval.ApprovalStep;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
+/**
+ * JSF MBean backing the approval profile pages.
+ * @version $Id$
+ *
+ */
 public class ApprovalProfileMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -3751383340600251434L;
     
-    
-    
-    
-    public class ApprovalPropertyGuiInfo {
-        private final String propertyKey;
-        private final String propertyValue;
-        private final String propertyDescription;
-        private final List<String> propertyMetadata;
-        private final String propertyMetadataString;
-        private final int propertyMetadataType;
-        private final String propertyMetadataTypeString;
-        public ApprovalPropertyGuiInfo(final String key, final ApprovalProfileFieldObject fieldObject) {
-            propertyKey = key;
-            propertyValue = fieldObject.getKeyObject();
-            propertyDescription = fieldObject.getDescription();
-            propertyMetadata = fieldObject.getMetaData();
+    public class ApprovalStepGuiInfo {
+        private int stepId;
+        private String stepAuthorizationObject;
+        private String metadataInstruction;
+        private String metadataOptions;
+        private int metadataOptionsType;
+        private String metadataOptionTypeString;
+        private int nrOfApprovals;
+        private boolean canSeePreviousSteps;
+        private String email;
+        public ApprovalStepGuiInfo(final ApprovalStep step) {
+            stepId = step.getStepId();
+            stepAuthorizationObject = step.getStepAuthorizationObject();
+            metadataInstruction = step.getMetadata().getInstruction();
             
-            StringBuilder options = new StringBuilder("");
-            for(String option : fieldObject.getMetaData()) {
-                options.append(option + ", ");
+            List<String> mtoptions = step.getMetadata().getOptions();
+            StringBuilder optionsBuilder = new StringBuilder("");
+            for(String option : mtoptions) {
+                optionsBuilder.append(option + ", ");
             }
-            options.deleteCharAt(options.length()-2);
-            propertyMetadataString = options.toString();
+            optionsBuilder.deleteCharAt(optionsBuilder.length()-2);
+            metadataOptions = optionsBuilder.toString();
             
-            
-            
-            propertyMetadataType = fieldObject.getMetaDataType();
-            if(propertyMetadataType == ApprovalProfileFieldObject.METADATATYPE_CHECKBOX) {
-                propertyMetadataTypeString = "Check Boxes";
-            } else if(propertyMetadataType == ApprovalProfileFieldObject.METADATATYPE_RADIOBUTTON) {
-                propertyMetadataTypeString = "Radio Buttons";
-            } else if(propertyMetadataType == ApprovalProfileFieldObject.METADATATYPE_TEXTBOX) {
-                propertyMetadataTypeString = "Text Box";
+            metadataOptionsType = step.getMetadata().getOptionsType();
+            if(metadataOptionsType == ApprovalStep.METADATATYPE_CHECKBOX) {
+                metadataOptionTypeString = "Check Boxes";
+            } else if(metadataOptionsType == ApprovalStep.METADATATYPE_RADIOBUTTON) {
+                metadataOptionTypeString = "Radio Buttons";
+            } else if(metadataOptionsType == ApprovalStep.METADATATYPE_TEXTBOX) {
+                metadataOptionTypeString = "Text Box";
             } else {
-                propertyMetadataTypeString = "Type unknown";
+                metadataOptionTypeString = "Type unknown";
             }
             
+            nrOfApprovals = step.getRequiredNumberOfApproval();
+            canSeePreviousSteps = step.canSeePreviousSteps();
+            email = step.getNotificationEmail();
         }
-        public String getPropertyKey() { return propertyKey; }
-        public String getPropertyValue() { return propertyValue; }
-        public String getPropertyDescription() { return propertyDescription; }
-        public List<String> getPropertyMetadata() { return propertyMetadata; }
-        public String getPropertyMetadataString() { return propertyMetadataString; }
-        public int getPropertyMetadataType() {return propertyMetadataType; }
-        public String getPropertyMetadataTypeString() {return propertyMetadataTypeString;}
+        
+        public int getStepId() {return stepId; }
+        public String getStepAuthorizationObject() { return stepAuthorizationObject; }
+        public String getMetadataInstruction() { return metadataInstruction; }
+        public String getMetadataOptions() { return metadataOptions; }
+        public int getMetadataOptionsType() { return metadataOptionsType; }
+        public String getMetadataOptionTypeString() {return metadataOptionTypeString;}
+        public int getNrOfApprovals() { return nrOfApprovals; }
+        public boolean getCanSeePreviousSteps() { return canSeePreviousSteps; }
+        public String getEmail() { return email; }
+
     }
     
     
@@ -129,8 +145,9 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         approvalProfile = null;
         currentApprovalProfileTypeName = null;
         nrOfApprovalsProfileType = false;
-        adminApprovalProfileType = false;
-        propertiesList = null;
+        
+        currentApprovalSteps = null;
+        approvalStepsList = null;
     }
     
     public String save() {
@@ -171,20 +188,12 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         }
         return ret;
     }
-    public int[] getApprovalActions() throws AuthorizationDeniedException {
-        ApprovalProfileType type = getApprovalProfile().getApprovalProfileType();
-        if(type!=null) {
-            return type.getActionsRequireApproval();
-        }
-        return new int[0];
+    public int[] getApprovalActions() {
+        return getApprovalProfile().getActionsRequireApproval();
     }
     public void setApprovalActions(int[] actions) {
         ApprovalProfile profile = getApprovalProfile();
-        ApprovalProfileType profileType = profile.getApprovalProfileType();
-        if(profileType != null) {
-            profileType.setField(ApprovalProfileType.ACTIONS_REQUIRE_APPROVAL_PROPERTY_NAME, actions);
-        }
-        profile.setApprovalProfileType(profileType);
+        profile.setActionsRequireApproval(actions);
         approvalProfile = profile;
     }
     
@@ -192,10 +201,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     
     private String currentApprovalProfileTypeName = null;
     private boolean nrOfApprovalsProfileType = false;
-    private boolean adminApprovalProfileType = false;
     
     public boolean getNrOfApprovalsProfileType() { return nrOfApprovalsProfileType; }
-    public boolean getAdminApprovalProfileType() { return adminApprovalProfileType; }
     
     public String getCurrentApprovalProfileTypeName() {
         if(currentApprovalProfileTypeName == null) {
@@ -209,13 +216,12 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             Class<ApprovalProfileType> c = (Class<ApprovalProfileType>) Class.forName(typeName);
             Object obj = c.newInstance();
             ApprovalProfileType profileType = (ApprovalProfileType) obj;
-            profileType.init(null);
-    
+            profileType.init();
+            
             ApprovalProfile profile = getApprovalProfile();
             profile.setApprovalProfileType(profileType);
             approvalProfile = profile;
             nrOfApprovalsProfileType = profileType instanceof ApprovalProfileNumberOfApprovals;
-            adminApprovalProfileType = profileType instanceof ApprovalProfileByAdminRoles;
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             String msg = "Could not get an ApprovalProfileType from " + typeName + ". " + e.getLocalizedMessage();
             log.info(msg);
@@ -234,14 +240,14 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         return ret;
     }
 
-    // ----------------- Approval Profile Type By Admins -------------- //
+    // -----------------None number of approvals Approval Profile Type -------------- //
     
-    public List<SelectItem> getAdminRolesAvailable() {
+    public List<SelectItem> getMainAuthorizationObjectOptions() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         ApprovalProfileType type = getApprovalProfile().getApprovalProfileType();
         if(type!=null && type instanceof ApprovalProfileByAdminRoles) {
             ApprovalProfileByAdminRoles adminProfileType = (ApprovalProfileByAdminRoles) type;
-            Map<Integer, String> roles = adminProfileType.getAdminRolesNames(getAdmin(), getEjbcaWebBean().getEjb().getRoleManagementSession());
+            Map<Integer, String> roles = adminProfileType.getMainAuthorizationObjectOptions();
             Set<Entry<Integer, String>> entries = roles.entrySet();
             for(Entry<Integer, String> role : entries) {
                 ret.add(new SelectItem(role.getValue(), role.getValue()));
@@ -255,28 +261,20 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     
     
     public void setNumberOfApprovals(String nrOfApprovals) {
-        ApprovalProfileType type = getApprovalProfile().getApprovalProfileType();
-        if(type instanceof ApprovalProfileNumberOfApprovals) {
-            ApprovalProfileNumberOfApprovals nrOfApprovalsProfileType = (ApprovalProfileNumberOfApprovals) type;
-            nrOfApprovalsProfileType.setNumberOfApprovals(Integer.parseInt(nrOfApprovals));
-            getApprovalProfile().setApprovalProfileType(nrOfApprovalsProfileType);
-        }
+        ApprovalProfile profile = getApprovalProfile();
+        profile.setNumberOfApprovals(Integer.parseInt(nrOfApprovals));
+        approvalProfile = profile;
     }
     public String getNumberOfApprovals() {
-        ApprovalProfileType type = getApprovalProfile().getApprovalProfileType();
-        if(type instanceof ApprovalProfileNumberOfApprovals) {
-            ApprovalProfileNumberOfApprovals nrOfApprovalsProfileType = (ApprovalProfileNumberOfApprovals) type;
-            return Integer.toString(nrOfApprovalsProfileType.getNumberOfApprovals());
-        }
-        return "0";
+        int nrOfApprovals = getApprovalProfile().getNumberOfApprovals();
+        return ""+nrOfApprovals;
     }
     public List<SelectItem> getNumberOfApprovalsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         ApprovalProfileType type = getApprovalProfile().getApprovalProfileType();
         if(type!=null && type instanceof ApprovalProfileNumberOfApprovals) {
             if(approvalProfilesMBean.getViewOnly()) {
-                ApprovalProfileNumberOfApprovals nrOfApprovalsProfileType = (ApprovalProfileNumberOfApprovals) type;
-                String nrOfApprovals = Integer.toString(nrOfApprovalsProfileType.getNumberOfApprovals());
+                String nrOfApprovals = Integer.toString(getApprovalProfile().getNumberOfApprovals());
                 ret.add(new SelectItem(nrOfApprovals, nrOfApprovals));
             } else {
                 for(int i=0; i<10; i++) {
@@ -288,141 +286,197 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
     
     
+    // ----------------------- Approval Steps ------------------------
     
-    // ---------------------- Properties ------------------
     
-    private String addProperyKey = "";
-    private String addProperyValue = "";
-    private String addPropertyDescription = "";
-    private int addPropertyMetaDataType = 0;
-    private String addPropertyMetaData = "";
+    private Map<Integer, ApprovalStep> currentApprovalSteps = null;
+    private ListDataModel<ApprovalStepGuiInfo> approvalStepsList = null;
     
-    private ListDataModel<ApprovalPropertyGuiInfo> propertiesList = null;
-
-    public String getAddProperyKey() { return addProperyKey; }
-    public void setAddProperyKey(String key) { addProperyKey = key; }
-    
-    public String getAddProperyValue() { return addProperyValue; }
-    public void setAddProperyValue(String value) { addProperyValue = value; }
-    
-    public String getAddPropertyDescription() { return addPropertyDescription;}
-    public void setAddPropertyDescription(String desc) { addPropertyDescription = desc; }
-    
-    public int getAddPropertyMetaDataType() { return addPropertyMetaDataType; }
-    public void setAddPropertyMetaDataType(int type) { addPropertyMetaDataType=type; }
-    public List<SelectItem> getMetadataTypesAvailable() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
-        ret.add(new SelectItem(ApprovalProfileFieldObject.METADATATYPE_CHECKBOX, "Check boxes"));
-        ret.add(new SelectItem(ApprovalProfileFieldObject.METADATATYPE_RADIOBUTTON, "Radio buttens"));
-        ret.add(new SelectItem(ApprovalProfileFieldObject.METADATATYPE_TEXTBOX, "Text field"));
-        return ret;
-    } 
-    
-    public String getAddPropertyMetaData() { return addPropertyMetaData; }
-    public void setAddPropertyMetaData(String metadata) { addPropertyMetaData = metadata; }
-    
-    public void deletePropertyAction() {
-        final ApprovalPropertyGuiInfo approvalPropertyItem = (ApprovalPropertyGuiInfo) getPropertiesList().getRowData();
-        ApprovalProfile profile = getApprovalProfile();
-        profile.removeProperty(approvalPropertyItem.getPropertyKey());
-        approvalProfile = profile;
-        propertiesList = null;
-
-    }
-    
-    public void addPropertyAction() {
-        ArrayList<String> metadata = new ArrayList<>();
-        if(getAddPropertyMetaDataType() == ApprovalProfileFieldObject.METADATATYPE_TEXTBOX) {
-            metadata.add(getAddPropertyMetaData());
-        } else {
-            String[] metadataArray = getAddPropertyMetaData().split(";");
-            metadata.addAll(Arrays.asList(metadataArray));
-        }
-        ApprovalProfileFieldObject fieldObj = new ApprovalProfileFieldObject(addProperyValue, addPropertyDescription, metadata, getAddPropertyMetaDataType());
-        ApprovalProfile profile = getApprovalProfile();
-        profile.setProperty(getAddProperyKey(), fieldObj);
-        approvalProfile = profile;
-        propertiesList = null;
-        resetAddPropery();
-    }
-    
-    public ListDataModel<ApprovalPropertyGuiInfo> getPropertiesList() {
-        if (propertiesList == null) {
-            final List<ApprovalPropertyGuiInfo> items = new ArrayList<ApprovalPropertyGuiInfo>();
-            ApprovalProfile profile = getApprovalProfile();
-            Map<String, Object> allFields = profile.getAllFields();
-            Set<Entry<String, Object>> entries = allFields.entrySet();
-            for(Entry<String, Object> entry : entries) {
-                Object value = entry.getValue();
-                if(entry.getValue() instanceof ApprovalProfileFieldObject) {
-                    String key = entry.getKey();
-                    ApprovalProfileFieldObject fieldObject = (ApprovalProfileFieldObject) value;
-                    ApprovalPropertyGuiInfo item = new ApprovalPropertyGuiInfo(key, fieldObject);
-                    items.add(item);
-                }
+    public ListDataModel<ApprovalStepGuiInfo> getApprovalStepsList() {
+        if(approvalStepsList==null) {
+            final ApprovalProfile profile = getApprovalProfile();
+            if(currentApprovalSteps == null) {
+                currentApprovalSteps = profile.getApprovalSteps();
             }
-            propertiesList = new ListDataModel<ApprovalPropertyGuiInfo>(items);
+            ArrayList<ApprovalStepGuiInfo> approvalSteps = new ArrayList<ApprovalStepGuiInfo>();
+            List<Integer> stepsOrder = profile.getApprovalStepsOrder();
+            for(Integer stepid : stepsOrder) {
+                ApprovalStep step = profile.getApprovalStep(stepid);
+                ApprovalStepGuiInfo stepGui = new ApprovalStepGuiInfo(step);
+                approvalSteps.add(stepGui);
+            }
+            approvalStepsList = new ListDataModel<ApprovalStepGuiInfo>(approvalSteps);
         }
-        return propertiesList;
-    }
-    
-    private void resetAddPropery() {
-        addProperyKey = "";
-        addProperyValue = "";
-        addPropertyDescription = "";
-        addPropertyMetaDataType = 0;
-        addPropertyMetaData = "";
+        return approvalStepsList;
     }
     
     
-    
-
-    
+    // ---------------------- Add new Approval Step ------------------
     
     
-    /*
+    private boolean addingNewStep = false;
+    private String newStepAuthorizationObject = "";
+    private String newStepMetadataInstruction = "";
+    private String newStepMetadataOptions = "";
+    private int newStepMetadataOptionsType = 1;
+    private int newStepNrOfApprovals = 1;
+    private boolean newStepCanSeePreviousSteps = false;
+    private String newStepEmail = "";
+    
+    public boolean getAddingNewStep() { return addingNewStep; }
+    
+    private int getNewStepId() {
+        return getApprovalProfile().getNewStepId();
+    }
+    
+    public String getNewStepAuthorizationObject() { return newStepAuthorizationObject; }
+    public void setNewStepAuthorizationObject(String object) { newStepAuthorizationObject=object; }
+    public String getNewStepMetadataInstruction() { return newStepMetadataInstruction; }
+    public void setNewStepMetadataInstruction(String instruction) { newStepMetadataInstruction=instruction; }
+    public String getNewStepMetadataOptions() { return newStepMetadataOptions; }
+    public void setNewStepMetadataOptions(String options) { newStepMetadataOptions=options; }
+    public int getNewStepMetadataOptionsType() { return newStepMetadataOptionsType; }
+    public void setNewStepMetadataOptionsType(int type) { newStepMetadataOptionsType=type; }
+    public List<SelectItem> getOptionTypesAvailable() {
+        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        ret.add(new SelectItem(ApprovalStep.METADATATYPE_CHECKBOX, "Check boxes"));
+        ret.add(new SelectItem(ApprovalStep.METADATATYPE_RADIOBUTTON, "Radio buttons"));
+        ret.add(new SelectItem(ApprovalStep.METADATATYPE_TEXTBOX, "Text field"));
+        return ret;
+    }
+    public int getNewStepNrOfApprovals() { return newStepNrOfApprovals; }
+    public void setNewStepNrOfApprovals(int nrOfApprovals) { newStepNrOfApprovals=nrOfApprovals; }
+    public List<SelectItem> getNrOfApprovalsAvailable() {
+        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        for(int i=0; i<5; ++i) {
+            ret.add(new SelectItem(i));
+        }
+        return ret;
+    }
+    public boolean getNewStepCanSeePreviousSteps() { return newStepCanSeePreviousSteps; }
+    public void setNewStepCanSeePreviousSteps(boolean canSeePreviousSteps) { newStepCanSeePreviousSteps=canSeePreviousSteps; }
+    public String getNewStepEmail() { return newStepEmail; }
+    public void setNewStepEmail(String email) { newStepEmail=email; }
+    
+    public void addNewStep() {
+        String[] options = getNewStepMetadataOptions().split(";");
+        ArrayList<String> optionsList = new ArrayList<String>();
+        for(String option : options) {
+            optionsList.add(option);
+        }
+        
+        ApprovalStep step = new ApprovalStep(getNewStepId(), getNewStepAuthorizationObject(), getNewStepMetadataInstruction(), 
+                optionsList, getNewStepMetadataOptionsType(), getNewStepNrOfApprovals(), getNewStepCanSeePreviousSteps(), 
+                getNewStepEmail());
+        getApprovalProfile().addApprovalStep(step);
+        currentApprovalSteps.put(step.getStepId(), step);
+        resetSteps();
+    }
+    
+    private void resetSteps() {
+        addingNewStep = false;
+        
+        newStepAuthorizationObject = "";
+        newStepMetadataInstruction = "";
+        newStepMetadataOptions = "";
+        newStepMetadataOptionsType = 1;
+        newStepNrOfApprovals = 1;
+        newStepCanSeePreviousSteps = false;
+        newStepEmail = "";
+        
+        approvalStepsList = null;
+    }
     
  // Actions ----------------------------------------------------------------------------------
+    
+    private static List<ApprovalStepGuiInfo> dynamicList; // Simulate fake DB.
+    private HtmlPanelGroup dynamicDataTableGroup; // Placeholder.
+    
     private void loadDynamicList() {
         
         // Set headers (optional).
-        dynamicHeaders = new String[] {"Propery Key", "Property Value", "Property Description", "Propert MetaData Type", "MetaDataOptions"};
+        //dynamicHeaders = new String[] {"Propery Key", "Property Value", "Property Description", "Propert MetaData Type", "MetaDataOptions"};
  
         // Set rows
-        dynamicList = new ArrayList<List<String>>();
+        dynamicList = new ArrayList<ApprovalStepGuiInfo>();
         
         ApprovalProfile profile = getApprovalProfile();
-        Map<String, Object> allFields = profile.getAllFields();
-        Set<Entry<String, Object>> entries = allFields.entrySet();
-        for(Entry<String, Object> entry : entries) {
-            Object value = entry.getValue();
-            if(entry.getValue() instanceof ApprovalProfileFieldObject) {
-                ArrayList<String> row = new ArrayList<String>();
-                String key = entry.getKey();
-                ApprovalProfileFieldObject fieldObject = (ApprovalProfileFieldObject) value;
-                row.add(key);
-                row.add(fieldObject.getKeyObject());
-                row.add(fieldObject.getDescription());
-                row.add(fieldObject.getMetaDataType()+"");
-                StringBuilder options = new StringBuilder("");
-                for(String option : fieldObject.getMetaData()) {
-                    options.append(option + ", ");
-                }
-                options.deleteCharAt(options.length()-2);
-                row.add(options.toString());
-                dynamicList.add(row);
-            }
+        Map<Integer, ApprovalStep> steps = profile.getApprovalSteps();
+        for(ApprovalStep step : steps.values()) {
+            ApprovalStepGuiInfo stepgui = new ApprovalStepGuiInfo(step);
+            //ArrayList<ApprovalStepGuiInfo> row = new ArrayList<ApprovalStepGuiInfo>();
+            //row.add(stepgui);
+            //dynamicList.add(row);
+            dynamicList.add(stepgui);
         }
-        
-        
         //dynamicList.add(Arrays.asList(new String[] { "Super Admin Role", "Check Location", "See Skatteverket", "2"}));
+    }
+    
+    private void populateDynamicDataTable() {
+        
+        // Context and Expression Factory
+        FacesContext fCtx = FacesContext.getCurrentInstance();
+        ELContext elCtx = fCtx.getELContext();
+        ExpressionFactory ef = fCtx.getApplication().getExpressionFactory();
  
+        // Create <h:dataTable value="#{datatableManagedBean.dynamicList}" var="dynamicRow">.
+        HtmlDataTable dynamicDataTable = new HtmlDataTable();
+        ValueExpression ve = ef.createValueExpression(elCtx,"#{approvalProfileMBean.dynamicList}",List.class);
+        dynamicDataTable.setValueExpression("value", ve);
+        dynamicDataTable.setVar("dynamicRow");
+ 
+        // Iterate over columns
+        for (int i = 0; i < dynamicList.size(); i++) {
+ 
+            // Create <h:column>.
+            HtmlColumn column = new HtmlColumn();
+            dynamicDataTable.getChildren().add(column);
+ 
+            // Create <h:outputText value="dynamicHeaders[i]"> for <f:facet name="header"> of column.
+            //HtmlOutputText header = new HtmlOutputText();
+            //header.setValue(dynamicHeaders[i]);
+            //column.setHeader(header);
+ 
+            // Create <h:outputText value="#{dynamicRow[" + i + "]}"> for the body of column.
+            HtmlOutputText output = new HtmlOutputText();
+            ve = ef.createValueExpression(elCtx, "#{dynamicRow.stepId}", String.class);
+            output.setValueExpression("value", ve);
+            column.getChildren().add(output);
+ 
+        }
+ 
+        // Add the datatable to <h:panelGroup binding="#{datatableManagedBean.dynamicDataTableGroup}">.
+        dynamicDataTableGroup = new HtmlPanelGroup();
+        dynamicDataTableGroup.getChildren().add(dynamicDataTable);
+ 
+    }
+    
+    // Getters -----------------------------------------------------------------------------------
+    
+    public HtmlPanelGroup getDynamicDataTableGroup() {
+        // This will be called once in the first RESTORE VIEW phase.
+        if (dynamicDataTableGroup == null) {
+            loadDynamicList(); // Preload dynamic list.
+            populateDynamicDataTable(); // Populate editable datatable.
+        }
+ 
+        return dynamicDataTableGroup;
+    }
+ 
+    public List<ApprovalStepGuiInfo> getDynamicList() {
+        return dynamicList;
+    }
+ 
+    // Setters -----------------------------------------------------------------------------------
+ 
+    public void setDynamicDataTableGroup(HtmlPanelGroup dynamicDataTableGroup) {
+        this.dynamicDataTableGroup = dynamicDataTableGroup;
     }
    
     
     
     
-
+/*
     //-------------- Properties  ------------------------------//
     
     private static List<List<String>> dynamicList; // Simulate fake DB.

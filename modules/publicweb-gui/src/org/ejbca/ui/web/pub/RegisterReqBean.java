@@ -29,6 +29,10 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicWebPrincipal;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -39,10 +43,12 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -545,9 +551,20 @@ public class RegisterReqBean {
             return;
         }
         
+        final CaSessionLocal casession = ejbLocalHelper.getCaSession();
+        CAInfo cainfo = null;
+        try {
+            cainfo = casession.getCAInfoInternal(caid);
+        } catch (CADoesntExistsException e1) {
+            errors.add("CA with ID " + caid + " does not exist. " + e1.getMessage());
+            return;
+        }
+        final ApprovalProfile approvalProfiles[] = getApprovalProfiles(cainfo, certProfileId);
+        
         // Add approval request
         final AddEndEntityApprovalRequest approvalReq = new AddEndEntityApprovalRequest(endEntity,
-                false, admin, null, numApprovalsRequired, caid, eeProfileId);
+                false, admin, null, numApprovalsRequired, caid, eeProfileId, approvalProfiles[0], 
+                approvalProfiles[1]);
         
         try {
             approvalSession.addApprovalRequest(admin, approvalReq);
@@ -555,6 +572,36 @@ public class RegisterReqBean {
             errors.add("Could not submit the information for approval: "+e.getMessage());
             log.info("Approval request could not be added", e);
         }
+    }
+    
+    private ApprovalProfile[] getApprovalProfiles(final CAInfo cainfo, final int certProfileId) {
+            ApprovalProfile profiles[] = new ApprovalProfile[2];
+            ApprovalProfile profileFromCA = null;
+            ApprovalProfile profileFromCP = null;
+            
+            final ApprovalProfileSessionLocal approvalProfileSession = ejbLocalHelper.getApprovalProfileSession();
+            int approvalProfileId = cainfo.getApprovalProfile();
+            if(approvalProfileId > -1) {
+                profileFromCA = approvalProfileSession.getApprovalProfile(approvalProfileId);
+            }
+
+            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
+            if(certProfile != null) {
+                approvalProfileId = certProfile.getApprovalProfileID();
+                if(approvalProfileId > -1) {
+                    profileFromCP = approvalProfileSession.getApprovalProfile(approvalProfileId);
+                }            
+            }
+            
+            if(profileFromCA != null) {
+                profiles[0] = profileFromCA;
+                profiles[1] = profileFromCP;
+            } else {
+                profiles[0] = profileFromCP;
+                profiles[1] = null;
+            }
+            
+            return profiles; 
     }
     
 }

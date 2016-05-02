@@ -31,6 +31,11 @@ import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.QueryResultWrapper;
 import org.ejbca.core.model.approval.ApprovalProfile;
 
+/**
+ * A class to access the "ProfileData" tabel in the database
+ * 
+ * @version $Id$
+ */
 @Entity
 @Table(name="ProfileData")
 public class ProfileData extends ProtectedData implements Serializable {

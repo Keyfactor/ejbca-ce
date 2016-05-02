@@ -69,6 +69,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.GenerateTokenApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
@@ -295,7 +296,10 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         setUpNonAdmin();
         setupApprovals();
 
-        ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, serialNumber, true, reqadmin, null, 1, 0, 0);
+        ApprovalProfile approvalProfile = new ApprovalProfile();
+        approvalProfile.setNumberOfApprovals(1);
+        ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, 
+                serialNumber, true, reqadmin, null, 1, 0, 0, approvalProfile, null);
 
         // Setup the test
         if (!hardTokenSessionRemote.existsHardToken(serialNumber)) {
@@ -330,7 +334,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
             Approval approval1 = new Approval("ap1test");
             try {
                 log.debug("ID: "+approvalRequest.generateApprovalId());
-                approvalExecutionSession.approve(admin1, approvalRequest.generateApprovalId(), approval1);
+                approvalExecutionSession.approve(admin1, approvalRequest.generateApprovalId(), approval1, null, true);
                 getHardTokenData(serialNumber, true);
                 try {
                     getHardTokenData(serialNumber, true);
@@ -377,7 +381,10 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     @Test
     public void test03CleanGetHardTokenDataWithApprovals() throws Exception {
         setupApprovals();
-        ApprovalRequest ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0);
+        ApprovalProfile approvalProfile = new ApprovalProfile();
+        approvalProfile.setNumberOfApprovals(1);
+        ApprovalRequest ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", 
+                true, reqadmin, null, 1, 0, 0, approvalProfile, null);
 
         Collection<ApprovalDataVO> result = approvalSession.findApprovalDataVO(intAdmin, ar.generateApprovalId());
         Iterator<ApprovalDataVO> iter = result.iterator();
@@ -407,8 +414,11 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         Approval approval1 = new Approval("ap1test");
 
-        ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, reqadmin, null, 1, 0, 0);
-        approvalExecutionSession.approve(admin1, ar.generateApprovalId(), approval1);
+        ApprovalProfile approvalProfile = new ApprovalProfile();
+        approvalProfile.setNumberOfApprovals(1);
+        ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, 
+                reqadmin, null, 1, 0, 0, approvalProfile, null);
+        approvalExecutionSession.approve(admin1, ar.generateApprovalId(), approval1, null, true);
 
         genTokenCertificates(true);
 
@@ -438,7 +448,10 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     @Test
     public void test05CleanGenTokenCertificatesWithApprovals() throws Exception {
         setupApprovals();
-        ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, reqadmin, null, 1, 0, 0);
+        ApprovalProfile approvalProfile = new ApprovalProfile();
+        approvalProfile.setNumberOfApprovals(1);
+        ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, 
+                reqadmin, null, 1, 0, 0, approvalProfile, null);
 
         Collection<ApprovalDataVO> result = approvalSession.findApprovalDataVO(intAdmin, ar.generateApprovalId());
         Iterator<ApprovalDataVO> iter = result.iterator();
@@ -447,7 +460,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
             approvalSession.removeApprovalRequest(admin1, next.getId());
         }
 
-        ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0);
+        ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 
+                0, approvalProfile, null);
 
         result = approvalSession.findApprovalDataVO(intAdmin, ar.generateApprovalId());
         iter = result.iterator();

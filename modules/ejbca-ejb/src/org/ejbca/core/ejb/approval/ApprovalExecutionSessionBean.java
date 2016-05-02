@@ -44,6 +44,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.ApprovalStep;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
@@ -78,23 +79,24 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @Override
-    public void approve(AuthenticationToken admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException,
+    public void approve(AuthenticationToken admin, int approvalId, Approval approval, ApprovalStep approvalStep, 
+            final boolean isNrOfApprovalsProfile) throws ApprovalRequestExpiredException,
             ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, ApprovalException, SelfApprovalException {
         if (log.isTraceEnabled()) {
             log.trace(">approve: "+approvalId);
         }
         ApprovalData adl;
         try {
-            adl = approvalSession.isAuthorizedBeforeApproveOrReject(admin, approvalId);
+            adl = approvalSession.isAuthorizedBeforeApproveOrReject(admin, approvalId, approvalStep);
         } catch (ApprovalException e) {
             String msg = intres.getLocalizedMessage("approval.notexist", approvalId);            	
         	log.info(msg, e);
             throw e;
         }
-        approvalSession.checkExecutionPossibility(admin, adl);
+        approvalSession.checkExecutionPossibility(admin, adl, approvalStep);
 		approval.setApprovalAdmin(true, admin);
         try {
-            approve(adl, approval);
+            approve(adl, approval, approvalStep, isNrOfApprovalsProfile);
             GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             if (gc.getUseApprovalNotifications()) {
             	final ApprovalDataVO approvalDataVO = approvalSession.getApprovalDataVO(adl);
@@ -142,22 +144,36 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
 	 * @throws ApprovalRequestExecutionException 
 	 * @throws ApprovalException 
 	 */
-	private void approve(final ApprovalData approvalData, final Approval approval) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, ApprovalException {
+	private void approve(final ApprovalData approvalData, final Approval approval, final ApprovalStep approvalStep, 
+	        final boolean isNrOfApprovalProfile) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, ApprovalException {
+	    
 		if(approvalData.hasRequestOrApprovalExpired()){
 			throw new ApprovalRequestExpiredException();
 		}
 		if(approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL){
 			throw new ApprovalException("Wrong status of approval request.");
 		}
-		final int numberofapprovalsleft = approvalData.getRemainingapprovals() -1;
-		if(numberofapprovalsleft < 0){
-			throw new ApprovalException("Error already enough approvals have been done on this request.");
+		
+		boolean readyToCheckExecution = false;
+		if(isNrOfApprovalProfile) {
+		    final int numberofapprovalsleft = approvalData.getRemainingapprovals() -1;
+		    if(numberofapprovalsleft < 0){
+		        throw new ApprovalException("Error already enough approvals have been done on this request.");
+		    }
+		    approvalData.setRemainingapprovals(numberofapprovalsleft);
+		     
+		    final Collection<Approval> approvals = approvalSession.getApprovals(approvalData);
+		    approvals.add(approval);
+		    approvalSession.setApprovals(approvalData, approvals);
+
+		    readyToCheckExecution = numberofapprovalsleft == 0;
+		} else {
+		    approvalSession.addApprovalToApprovalStep(approvalData, approval, approvalStep);
+		    final ApprovalRequest approvalRequest = approvalSession.getApprovalRequest(approvalData);
+		    readyToCheckExecution = approvalRequest.getNextUnhandledAppprovalStep() == null;
 		}
-		approvalData.setRemainingapprovals(numberofapprovalsleft);
-		final Collection<Approval> approvals = approvalSession.getApprovals(approvalData);
-		approvals.add(approval);
-		approvalSession.setApprovals(approvalData, approvals);
-		if(numberofapprovalsleft == 0){
+		
+		if(readyToCheckExecution){
 			final ApprovalRequest approvalRequest = approvalSession.getApprovalRequest(approvalData);
 			if(approvalRequest.isExecutable()){
 				try{

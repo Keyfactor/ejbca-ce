@@ -28,6 +28,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -64,8 +65,9 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * @param endEntityProfileId
 	 */
 	public ActivateCATokenApprovalRequest(String cAName, String authenticationCode,
-	        AuthenticationToken requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId) {
-		super(requestAdmin, null, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId);
+	        AuthenticationToken requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId, 
+	        ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
+		super(requestAdmin, null, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId, approvalProfile, secondApprovalProfile);
 		this.cAName = cAName;
 		this.authenticationCode = authenticationCode;
 	}
