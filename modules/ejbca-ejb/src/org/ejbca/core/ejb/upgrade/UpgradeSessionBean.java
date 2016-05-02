@@ -213,6 +213,22 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public boolean isEndEntityProfileInCertificateData() {
+        return getGlobalUpgradeConfiguration().isEndEntityProfileInCertificateData();
+    }
+
+    private void setEndEntityProfileInCertificateData(final boolean value) {
+        final GlobalUpgradeConfiguration guc = getGlobalUpgradeConfiguration();
+        guc.setEndEntityProfileInCertificateData(value);
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, guc);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     private GlobalUpgradeConfiguration getGlobalUpgradeConfiguration() {
         return (GlobalUpgradeConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
     }
@@ -226,6 +242,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
                 globalConfig.setStatedumpLockedDown(false);
                 globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig);
+                setEndEntityProfileInCertificateData(true);
             }
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException("AlwaysAllowLocalAuthenticationToken should not have been denied authorization");
@@ -369,6 +386,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 upgradeSession.migrateDatabase660();
             } catch (UpgradeFailedException e) {
                 return false;
+            }
+            if (!isEndEntityProfileInCertificateData()) {
+                // Persist mark that this upgrade has not been performed so we can do it in later release (unless the value was set due to this being a fresh installation)
+                setEndEntityProfileInCertificateData(false); 
             }
             setLastUpgradedToVersion("6.6.0");
         }

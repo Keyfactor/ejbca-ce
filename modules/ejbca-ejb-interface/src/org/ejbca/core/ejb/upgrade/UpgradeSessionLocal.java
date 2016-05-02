@@ -46,6 +46,9 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     /** @return EJBCA version of the database content that can be upgraded after all nodes run the same EJBCA version. */
     String getLastPostUpgradedToVersion();
 
+    /** @return true if the endEntityProfileId column in CertificateData has been populated. */
+    boolean isEndEntityProfileInCertificateData();
+
     /** @return true if the AdminGroupData.cAId column still exists which indicates that this is EJBCA 4.0 or earlier. */
     boolean checkColumnExists500();
 
