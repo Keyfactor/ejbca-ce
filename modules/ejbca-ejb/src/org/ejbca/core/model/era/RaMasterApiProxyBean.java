@@ -178,7 +178,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return ret;
     }
 
-
     @Override
     public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest) {
         final RaCertificateSearchResponse ret = new RaCertificateSearchResponse();
@@ -186,6 +185,21 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (raMasterApi.isBackendAvailable()) {
                 try {
                     ret.merge(raMasterApi.searchForCertificates(authenticationToken, raCertificateSearchRequest));
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest raEndEntitySearchRequest) {
+        final RaEndEntitySearchResponse ret = new RaEndEntitySearchResponse();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    ret.merge(raMasterApi.searchForEndEntities(authenticationToken, raEndEntitySearchRequest));
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }

@@ -141,7 +141,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return cdw;
     }
 
-
     @Override
     public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest request) {
         final RaCertificateSearchResponse response = new RaCertificateSearchResponse();
@@ -300,6 +299,129 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
         }
         response.setMightHaveMoreResults(fingerprints.size()==maxResults);
+        return response;
+    }
+
+    @Override
+    public RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest request) {
+        final RaEndEntitySearchResponse response = new RaEndEntitySearchResponse();
+        final boolean rootAccessAvailable = accessControlSession.isAuthorizedNoLogging(authenticationToken, true, StandardRules.ROLE_ROOT.resource());
+        final List<Integer> authorizedLocalCaIds = new ArrayList<>(caSession.getAuthorizedCaIds(authenticationToken));
+        // Only search a subset of the requested CAs if requested
+        if (!request.getCaIds().isEmpty()) {
+            authorizedLocalCaIds.retainAll(request.getCaIds());
+        }
+        if (authorizedLocalCaIds.isEmpty()) {
+            // Empty response since there were no authorized CAs
+            if (log.isDebugEnabled()) {
+                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested CAs and the search request will be dropped.");
+            }
+            return response;
+        }
+        // Check Certificate Profile authorization
+        final List<Integer> authorizedCpIds = new ArrayList<>(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, 0));
+        if (!request.getCpIds().isEmpty()) {
+            authorizedCpIds.retainAll(request.getCpIds());
+        }
+        if (authorizedCpIds.isEmpty()) {
+            // Empty response since there were no authorized Certificate Profiles
+            if (log.isDebugEnabled()) {
+                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested CPs and the search request will be dropped.");
+            }
+            return response;
+        }
+        // Check End Entity Profile authorization
+        final Collection<Integer> authorizedEepIds = new ArrayList<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY));
+        if (!request.getEepIds().isEmpty()) {
+            authorizedEepIds.retainAll(request.getEepIds());
+        }
+        if (authorizedEepIds.isEmpty()) {
+            // Empty response since there were no authorized End Entity Profiles
+            if (log.isDebugEnabled()) {
+                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested EEPs and the search request will be dropped.");
+            }
+            return response;
+        }
+        final String genericSearchString = request.getGenericSearchString();
+        final StringBuilder sb = new StringBuilder("SELECT a.username FROM UserData a WHERE (a.caId IN (:caId))");
+        if (!genericSearchString.isEmpty()) {
+            sb.append(" AND (a.username LIKE :username OR a.subjectDN LIKE :subjectDN OR a.subjectAltName LIKE :subjectAltName)");
+        }
+        if (request.getCreatedAfter()<Long.MAX_VALUE) {
+            sb.append(" AND (a.timeCreated > :createdAfter)");
+        }
+        if (request.getCreatedBefore()>0) {
+            sb.append(" AND (a.timeCreated < :createdBefore)");
+        }
+        if (request.getModifiedAfter()<Long.MAX_VALUE) {
+            sb.append(" AND (a.timeModified > :modifiedAfter)");
+        }
+        if (request.getModifiedBefore()>0L) {
+            sb.append(" AND (a.timeModified < :modifiedBefore)");
+        }
+        if (!request.getStatuses().isEmpty()) {
+            sb.append(" AND (a.status IN (:status))");
+        }
+        // Don't constrain results to certain end entity profiles if root access is available and "any" CP is requested
+        if (!rootAccessAvailable || !request.getCpIds().isEmpty()) {
+            sb.append(" AND (a.certificateProfileId IN (:certificateProfileId))");
+        }
+        // Don't constrain results to certain end entity profiles if root access is available and "any" EEP is requested
+        if (!rootAccessAvailable || !request.getEepIds().isEmpty()) {
+            sb.append(" AND (a.endEntityProfileId IN (:endEntityProfileId))");
+        }
+        final Query query = entityManager.createQuery(sb.toString());
+        query.setParameter("caId", authorizedLocalCaIds);
+        if (!rootAccessAvailable || !request.getCpIds().isEmpty()) {
+            query.setParameter("certificateProfileId", authorizedCpIds);
+        }
+        if (!rootAccessAvailable || !request.getEepIds().isEmpty()) {
+            query.setParameter("endEntityProfileId", authorizedEepIds);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug(" CA IDs: " + Arrays.toString(authorizedLocalCaIds.toArray()));
+            if (!rootAccessAvailable || !request.getEepIds().isEmpty()) {
+                log.debug(" certificateProfileId: " + Arrays.toString(authorizedCpIds.toArray()));
+            } else {
+                log.debug(" certificateProfileId: Any (even deleted) profile(s) due to root access.");
+            }
+            if (!rootAccessAvailable || !request.getEepIds().isEmpty()) {
+                log.debug(" endEntityProfileId: " + Arrays.toString(authorizedEepIds.toArray()));
+            } else {
+                log.debug(" endEntityProfileId: Any (even deleted) profile(s) due to root access.");
+            }
+        }
+        if (!genericSearchString.isEmpty()) {
+            query.setParameter("username", "%" + genericSearchString + "%");
+            query.setParameter("subjectDN", "%" + genericSearchString + "%");
+            query.setParameter("subjectAltName", "%" + genericSearchString + "%");
+        }
+        if (request.getCreatedAfter()<Long.MAX_VALUE) {
+            query.setParameter("createdAfter", request.getCreatedAfter());
+        }
+        if (request.getCreatedBefore()>0L) {
+            query.setParameter("createdBefore", request.getCreatedBefore());
+        }
+        if (request.getModifiedAfter()<Long.MAX_VALUE) {
+            query.setParameter("modifiedAfter", request.getModifiedAfter());
+        }
+        if (request.getModifiedBefore()>0) {
+            query.setParameter("modifiedBefore", request.getModifiedBefore());
+        }
+        if (!request.getStatuses().isEmpty()) {
+            query.setParameter("status", request.getStatuses());
+        }
+        final int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
+        query.setMaxResults(maxResults);
+        @SuppressWarnings("unchecked")
+        final List<String> usernames = query.getResultList();
+        if (log.isDebugEnabled()) {
+            log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " → " + query.getResultList().size() + " results.");
+        }
+        for (final String username : usernames) {
+            response.getEndEntities().add(endEntityAccessSession.findUser(username));
+        }
+        response.setMightHaveMoreResults(usernames.size()==maxResults);
         return response;
     }
 

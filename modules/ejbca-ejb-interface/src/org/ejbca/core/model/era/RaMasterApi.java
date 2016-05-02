@@ -50,6 +50,9 @@ public interface RaMasterApi {
     /** @return list of certificates from the specified search criteria*/
     RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest);
 
+    /** @return list of end entities from the specified search criteria*/
+    RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest raEndEntitySearchRequest);
+
     @Deprecated // PoC. Remove when we have real functions to invoke.
     String testCall(AuthenticationToken authenticationToken, String argument1, int argument2) throws AuthorizationDeniedException, EjbcaException;
 
