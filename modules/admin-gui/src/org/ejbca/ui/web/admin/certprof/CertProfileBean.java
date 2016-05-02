@@ -247,6 +247,15 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         for(Entry<Integer, String> entry : entries) {
             ret.add(new SelectItem(entry.getKey(), entry.getValue()));
         }
+        
+        // Sort list by name
+        Collections.sort(ret, new Comparator<SelectItem>() {
+            @Override
+            public int compare(final SelectItem a, final SelectItem b) {
+                return a.getLabel().compareToIgnoreCase(b.getLabel());
+            }
+        });
+        
         return ret;
     }
     

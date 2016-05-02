@@ -38,6 +38,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestHelper;
@@ -62,8 +63,8 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 	public AddEndEntityApprovalRequest() {}
 
     public AddEndEntityApprovalRequest(EndEntityInformation userdata, boolean clearpwd, AuthenticationToken requestAdmin, String requestSignature,
-            int numOfReqApprovals, int cAId, int endEntityProfileId) {
-		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId);
+            int numOfReqApprovals, int cAId, int endEntityProfileId, final ApprovalProfile approvalProfile, final ApprovalProfile secondApprovalProfile) {
+		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId, approvalProfile, secondApprovalProfile);
 		this.userdata = userdata;
 		this.clearpwd = clearpwd;
 	}

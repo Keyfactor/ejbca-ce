@@ -36,6 +36,8 @@ import org.ejbca.core.model.approval.ApprovalProfile;
  * might overwrite the result from forced update's database query.
  * 
  * The intention of this design is better throughput than fully ordered sequential updates.
+ * 
+ * @version $Id$
  */
 public enum ApprovalProfileCache {
 

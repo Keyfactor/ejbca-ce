@@ -38,6 +38,11 @@ import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
+/**
+ * JSF MBean backing the approval profiles page.
+ * @version $Id$
+ *
+ */
 public class ApprovalProfilesMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -2452049885728885525L;
@@ -118,7 +123,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
             Collections.sort(items, new Comparator<ApprovalProfileGuiInfo>() {
                 @Override
                 public int compare(final ApprovalProfileGuiInfo a, final ApprovalProfileGuiInfo b) {
-                    return a.getName().compareTo(b.getName());
+                    return a.getName().compareToIgnoreCase(b.getName());
                 }
             });
             approvalProfilesList = new ListDataModel<ApprovalProfileGuiInfo>(items);

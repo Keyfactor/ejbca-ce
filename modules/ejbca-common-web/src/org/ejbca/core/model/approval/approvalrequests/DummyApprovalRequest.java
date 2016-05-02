@@ -23,6 +23,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 
@@ -36,7 +37,8 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	private static final long serialVersionUID = -1L;
 	private static final Logger log = Logger.getLogger(DummyApprovalRequest.class);
 	private static final int LATEST_VERSION = 1;
-	private static final int NUM_OF_REQUIRED_APPROVALS = 2;
+	
+	public static final int NUM_OF_REQUIRED_APPROVALS = 2;
 	
 	private boolean executable = false;
 	
@@ -49,16 +51,20 @@ public class DummyApprovalRequest extends ApprovalRequest {
      * @param cAId the related cAId of the request that the approver must be authorized to or ApprovalDataVO.ANY_CA in applicable to any ca
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
      */
-	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, boolean executable) {
-		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId);	
+	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, 
+	            boolean executable, ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
+		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, 
+		        approvalProfile, secondApprovalProfile);	
 		this.executable = executable;
 	}  
 	
     /**
      * Main constructor of an approval request with step functionality
      */
-	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, int steps, boolean executable) {
-		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, steps);	
+	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, 
+	        int steps, boolean executable, ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
+		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, 
+		        steps, approvalProfile, secondApprovalProfile);	
 		this.executable = executable;
 	} 
 	

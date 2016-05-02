@@ -20,6 +20,7 @@ import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.ApprovalStep;
 import org.ejbca.core.model.approval.SelfApprovalException;
 
 public interface ApprovalExecutionSession {
@@ -49,6 +50,8 @@ public interface ApprovalExecutionSession {
      * @throws AdminAlreadyApprovedRequestException if the admin has already approved the action before
      * @throws SelfApprovalException if the administrator performing the approval is the same as the one requesting the original action. 
      */
-    void approve(AuthenticationToken admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException,
-            ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, ApprovalException, SelfApprovalException;
+    void approve(AuthenticationToken admin, int approvalId, Approval approval, ApprovalStep approvalStep, 
+            boolean isNrOfApprovalsProfile) throws ApprovalRequestExpiredException,
+            ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, 
+            ApprovalException, SelfApprovalException;
 }

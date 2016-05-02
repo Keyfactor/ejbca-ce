@@ -88,6 +88,7 @@ import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -106,6 +107,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
@@ -156,6 +158,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private AccessControlSessionLocal authorizationSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
@@ -339,9 +343,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (caInfo.isUseUserStorage()) {
             final int numOfApprovalsRequired = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid,
                     endEntity.getCertificateProfileId());
-            if (numOfApprovalsRequired > 0) {
+            final ApprovalProfile approvalProfiles[] = getApprovalProfiles(caInfo, endEntity.getCertificateProfileId());
+            if (approvalProfiles[0]!=null) {
                 AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(endEntity, clearpwd, admin, null, numOfApprovalsRequired, caid,
-                        endEntityProfileId);
+                        endEntityProfileId, approvalProfiles[0], approvalProfiles[1]);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ADDUSER)) {
                     approvalSession.addApprovalRequest(admin, ar);
                     throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalad"));
@@ -444,6 +449,35 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (log.isTraceEnabled()) {
             log.trace("<addUser(" + username + ", password, " + dn + ", " + email + ")");
         }
+    }
+    
+    private ApprovalProfile[] getApprovalProfiles(final CAInfo cainfo, final int certProfileId) {
+            ApprovalProfile profiles[] = new ApprovalProfile[2];
+            ApprovalProfile profileFromCA = null;
+            ApprovalProfile profileFromCP = null;
+            
+            int approvalProfileId = cainfo.getApprovalProfile();
+            if(approvalProfileId > -1) {
+                profileFromCA = approvalProfileSession.getApprovalProfile(approvalProfileId);
+            }
+
+            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
+            if(certProfile != null) {
+                approvalProfileId = certProfile.getApprovalProfileID();
+                if(approvalProfileId > -1) {
+                    profileFromCP = approvalProfileSession.getApprovalProfile(approvalProfileId);
+                }            
+            }
+            
+            if(profileFromCA != null) {
+                profiles[0] = profileFromCA;
+                profiles[1] = profileFromCP;
+            } else {
+                profiles[0] = profileFromCP;
+                profiles[1] = null;
+            }
+            
+            return profiles;
     }
 
     /* Does not check authorization. Calling code is responsible for this. */
@@ -717,10 +751,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Check if approvals is required.
         final int numOfApprovalsRequired = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, endEntityInformation.getCertificateProfileId());
-        if (numOfApprovalsRequired > 0) {
+        final CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
+        final ApprovalProfile approvalProfiles[] = getApprovalProfiles(cainfo, endEntityInformation.getCertificateProfileId());
+        if ((numOfApprovalsRequired > 0) || (approvalProfiles[0]!=null)) {
             final EndEntityInformation orguserdata = userData.toEndEntityInformation();
             final EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(endEntityInformation, clearpwd, orguserdata, admin, null,
-                    numOfApprovalsRequired, caid, endEntityProfileId);
+                    numOfApprovalsRequired, caid, endEntityProfileId, approvalProfiles[0], approvalProfiles[1]);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)) {
                 approvalSession.addApprovalRequest(admin, ar);
                 throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"));
@@ -728,7 +764,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Check if the subjectDN serialnumber already exists.
         // No need to access control on the CA here just to get these flags, we have already checked above that we are authorized to the CA
-        CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
         if (cainfo.isDoEnforceUniqueSubjectDNSerialnumber()) {
             if (!isSubjectDnSerialnumberUnique(caid, dn, username)) {
                 throw new EjbcaException(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, "Error: SubjectDN Serialnumber already exists.");
@@ -1169,13 +1204,19 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private void setUserStatus(final AuthenticationToken admin, final UserData data1, final int status)
             throws ApprovalException, WaitingForApprovalException {
         final int caid = data1.getCaId();
+        CAInfo cainfo = null;
+        try {
+            cainfo = caSession.getCAInfoInternal(caid, null, true);
+        } catch (CADoesntExistsException e) { /* Do nothing, just send null to getApprovalProfiles() */ }
+        
         final String username = data1.getUsername();
         final int endEntityProfileId = data1.getEndEntityProfileId();
         // Check if approvals is required.
+        final ApprovalProfile approvalProfiles[] = getApprovalProfiles(cainfo, data1.getCertificateProfileId());
         final int numOfApprovalsRequired = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, data1.getCertificateProfileId());
-        if (numOfApprovalsRequired > 0) {
+        if ((numOfApprovalsRequired > 0) || (approvalProfiles[0]!=null)) {
             final ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status, admin,
-                    null, numOfApprovalsRequired, data1.getCaId(), endEntityProfileId);
+                    null, numOfApprovalsRequired, data1.getCaId(), endEntityProfileId, approvalProfiles[0], approvalProfiles[1]);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)) {
                 approvalSession.addApprovalRequest(admin, ar);
                 String msg = intres.getLocalizedMessage("ra.approvaledit");
@@ -1381,10 +1422,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         try {
             if (data.getStatus() != EndEntityConstants.STATUS_REVOKED) {
                 // Check if approvals is required.
+                final CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
+                final ApprovalProfile approvalProfiles[] = getApprovalProfiles(cainfo, data.getCertificateProfileId());
                 final int numOfReqApprovals = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_REVOCATION, caid, data.getCertificateProfileId());
-                if (numOfReqApprovals > 0) {
+                if ((numOfReqApprovals > 0) || (approvalProfiles[0]!=null)) {
                     final RevocationApprovalRequest ar = new RevocationApprovalRequest(true, username, reason, admin, numOfReqApprovals, caid,
-                            data.getEndEntityProfileId());
+                            data.getEndEntityProfileId(), approvalProfiles[0], approvalProfiles[1]);
                     if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER)) {
                         approvalSession.addApprovalRequest(admin, ar);
                         throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"));
@@ -1398,7 +1441,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
             }
         } catch (FinderException e) {
-            throw new NotFoundException("User " + username + "not found.");
+            throw new NotFoundException("User " + username + " not found.");
+        } catch (CADoesntExistsException e1) {
+            throw new NotFoundException("CA with ID " + caid + " not found.");
         }
         deleteUser(admin, username);
     }
@@ -1430,10 +1475,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
 
         // Check if approvals is required.
+        CAInfo cainfo;
+        try {
+            cainfo = caSession.getCAInfoInternal(caid, null, true);
+        } catch (CADoesntExistsException e1) {
+            throw new FinderException("CA with ID " + caid + " not found.");
+        }
+        final ApprovalProfile approvalProfiles[] = getApprovalProfiles(cainfo, userData.getCertificateProfileId());
         final int numOfReqApprovals = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_REVOCATION, caid, userData.getCertificateProfileId());
-        if (numOfReqApprovals > 0) {
+        if ((numOfReqApprovals > 0) || (approvalProfiles[0]!=null)) {
             final RevocationApprovalRequest ar = new RevocationApprovalRequest(false, username, reason, admin, numOfReqApprovals, caid,
-                    userData.getEndEntityProfileId());
+                    userData.getEndEntityProfileId(), approvalProfiles[0], approvalProfiles[1]);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEUSER)) {
                 approvalSession.addApprovalRequest(admin, ar);
                 throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"));
@@ -1576,10 +1628,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (endEntityProfileId != -1 && certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
             // We can only perform this check if we have a trail of what eep and cp was used..
             // Check if approvals is required.
+            CAInfo cainfo;
+            try {
+                cainfo = caSession.getCAInfoInternal(caid, null, true);
+            } catch (CADoesntExistsException e) {
+                throw new FinderException("CA with ID " + caid + " not found.");
+            }
+            final ApprovalProfile approvalProfiles[] = getApprovalProfiles(cainfo, data.getCertificateProfileId());
             final int numOfReqApprovals = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_REVOCATION, caid, certificateProfileId);
-            if (numOfReqApprovals > 0) {
+            if ((numOfReqApprovals > 0) || (approvalProfiles[0]!=null)) {
                 final RevocationApprovalRequest ar = new RevocationApprovalRequest(certserno, issuerdn, username, reason, admin, numOfReqApprovals,
-                        caid, endEntityProfileId);
+                        caid, endEntityProfileId, approvalProfiles[0], approvalProfiles[1]);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
                     approvalSession.addApprovalRequest(admin, ar);
                     throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"));
@@ -1830,7 +1889,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         RAAuthorization raauthorization = null;
         if (caauthorizationstring == null || endentityprofilestring == null) {
             raauthorization = new RAAuthorization(admin, globalConfigurationSession, authorizationSession, complexAccessControlSession, caSession,
-                    endEntityProfileSession);
+                    endEntityProfileSession, approvalProfileSession);
             caauthstring = raauthorization.getCAAuthorizationString();
             if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
                 endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true, endentityAccessRule);
