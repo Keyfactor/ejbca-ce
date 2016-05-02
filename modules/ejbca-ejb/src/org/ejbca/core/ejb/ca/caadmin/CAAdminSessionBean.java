@@ -89,8 +89,8 @@ import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CANameChangeRenewalException;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CvcCA;
@@ -227,6 +227,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
@@ -244,6 +246,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private RoleManagementSessionLocal roleManagementSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
+    @EJB
+    private ServiceSessionLocal serviceSession;
     @EJB
     private UserDataSourceSessionLocal userDataSourceSession;
 
@@ -408,22 +412,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
         
-        // Update End-Entities (only if it's possible to get the session bean)
-        EndEntityManagementSessionLocal endEntityManagementSession = getEndEntityManagementSession();
-        if (endEntityManagementSession != null) {
-            final Collection<EndEntityInformation> endEntities = endEntityManagementSession.findAllUsersByCaIdNoAuth(fromId);
-            for (EndEntityInformation endEntityInfo : endEntities) {
-                try {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Changing CA Id of End Entity "+endEntityInfo.getUsername());
-                    }
-                    endEntityManagementSession.updateCAId(authenticationToken, endEntityInfo.getUsername(), toId);
-                } catch (NoSuchEndEntityException e) {
-                    log.error("End entity "+endEntityInfo.getUsername()+" could no longer be found", e);
+        // Update End-Entities
+        final Collection<EndEntityInformation> endEntities = endEntityManagementSession.findAllUsersByCaIdNoAuth(fromId);
+        for (EndEntityInformation endEntityInfo : endEntities) {
+            try {
+                if (log.isDebugEnabled()) {
+                    log.debug("Changing CA Id of End Entity "+endEntityInfo.getUsername());
                 }
+                endEntityManagementSession.updateCAId(authenticationToken, endEntityInfo.getUsername(), toId);
+            } catch (NoSuchEndEntityException e) {
+                log.error("End entity "+endEntityInfo.getUsername()+" could no longer be found", e);
             }
-        } else {
-            log.info("Can not update CAIds of end-entities (this requires EJB 3.1 support in the appserver)");
         }
         
         // Update Data Sources
@@ -440,17 +439,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         
         // Update Services
-        ServiceSessionLocal serviceSession = getServiceSession();
-        if (serviceSession != null) {
-            final Map<Integer,String> services = serviceSession.getServiceIdToNameMap();
-            for (String serviceName : services.values()) {
-                final ServiceConfiguration serviceConf = serviceSession.getService(serviceName);
-                if (CAIdTools.updateCAIds(serviceConf, fromId, toId, toDN)) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Changing CA Ids in Service "+serviceName);
-                    }
-                    serviceSession.changeService(authenticationToken, serviceName, serviceConf, false);
+        final Map<Integer,String> services = serviceSession.getServiceIdToNameMap();
+        for (String serviceName : services.values()) {
+            final ServiceConfiguration serviceConf = serviceSession.getService(serviceName);
+            if (CAIdTools.updateCAIds(serviceConf, fromId, toId, toDN)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Changing CA Ids in Service "+serviceName);
                 }
+                serviceSession.changeService(authenticationToken, serviceName, serviceConf, false);
             }
         }
         
@@ -550,43 +546,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
                 initExternalCAService(admin, caid, next);
             }
-        }
-    }
-    
-    /**
-     * Tries to get an EndEntityManagementSession, if this is possible on the appserver.
-     * We can't use @EJB since that fails on JBoss 5.1 which doesn't support circular dependencies.
-     * We also can't use EjbLocalHelper here since it will "remember" failures, and propagate failures to other parts of EJBCA.
-     * 
-     * This method can be removed whenever JBoss 5.1 support is dropped, and replaced with a normal @EJB injection
-     *
-     * @return Session bean or null.
-     */
-    private EndEntityManagementSessionLocal getEndEntityManagementSession() {
-        try {
-            return (EndEntityManagementSessionLocal)sessionContext.lookup("java:global/ejbca/ejbca-ejb/EndEntityManagementSessionBean!org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal");
-        } catch (Exception e) {
-            // Non EJB 3.1 app servers
-            if (log.isDebugEnabled()) {
-                log.debug("Could not look up end-entity management session", e);
-            }
-            return null;
-        }
-    }
-    
-    /**
-     * Tries to get an ServiceSession.
-     * @see getEndEntityManagementSession
-     */
-    private ServiceSessionLocal getServiceSession() {
-        try {
-            return (ServiceSessionLocal)sessionContext.lookup("java:global/ejbca/ejbca-ejb/ServiceSessionBean!org.ejbca.core.ejb.services.ServiceSessionLocal");
-        } catch (Exception e) {
-            // Non EJB 3.1 app servers
-            if (log.isDebugEnabled()) {
-                log.debug("Could not look up ServiceSession", e);
-            }
-            return null;
         }
     }
 
