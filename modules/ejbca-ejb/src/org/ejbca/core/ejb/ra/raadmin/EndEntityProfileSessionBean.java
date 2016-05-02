@@ -279,6 +279,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
     	
     	final boolean rootAccess = authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
+        // We have to manually add the EMPTY end entity profile because it is not included in the profile cache
         if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + SecConst.EMPTY_ENDENTITYPROFILE + endentityAccessRule)) {
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
@@ -286,24 +287,28 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         	for (final Entry<Integer, EndEntityProfile> entry : EndEntityProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
         		// Check if all profiles available CAs exists in authorizedcaids.
         		final String availableCasString = entry.getValue().getValue(EndEntityProfile.AVAILCAS, 0);
-                boolean authorizedToProfile = true;
-
-        		if (availableCasString != null) {
-        			for (final String caidString : availableCasString.split(EndEntityProfile.SPLITCHAR)) {
-        			    final int caIdInt = Integer.parseInt(caidString);
-        			    // with root rule access you can edit profiles with missing CA ids
-        				if (!authorizedcaids.contains(caIdInt) && (!rootAccess || allcaids.contains(caIdInt))) {
-        					authorizedToProfile = false;
-        					if (LOG.isDebugEnabled()) {
-        						LOG.debug("Profile " + entry.getKey().toString() + " not authorized to CA with ID " + caIdInt);
-        					}
-        					break;
-        				}
-        			}
-                    if (authorizedToProfile) {
-                        returnval.add(entry.getKey());
+                boolean authorizedToProfile = false;
+                // Check authorization for the endentityAccessRule here. The built in EMPTY EE profile is obviously not included in the cache, so added manually above
+                if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + entry.getKey().toString() + endentityAccessRule)) {
+                    authorizedToProfile = true;
+                    if (availableCasString != null) {
+                        for (final String caidString : availableCasString.split(EndEntityProfile.SPLITCHAR)) {
+                            final int caIdInt = Integer.parseInt(caidString);
+                            // with root rule access you can edit profiles with missing CA ids
+                            if (!authorizedcaids.contains(caIdInt) && (!rootAccess || allcaids.contains(caIdInt))) {
+                                authorizedToProfile = false;
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("Profile " + entry.getKey().toString() + " not authorized to CA with ID " + caIdInt);
+                                }
+                                break;
+                            }
+                        }
+                        if (authorizedToProfile) {
+                            returnval.add(entry.getKey());
+                        }
                     }
-        		}
+                }
+
         	}
         } catch (NumberFormatException e) {
             throw new IllegalStateException("CA ID was store in an end entity profile as something other than a number.", e);
