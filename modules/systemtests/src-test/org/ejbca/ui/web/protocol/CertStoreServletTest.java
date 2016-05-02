@@ -14,6 +14,8 @@
 package org.ejbca.ui.web.protocol;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -115,7 +117,7 @@ public class CertStoreServletTest extends CaTestCase {
             log.info("The number of CAs created was " + setOfSubjectKeyIDs.size() + ".");
             internalCertificateStoreSession.reloadCaCertificateCache();
             new CertFetchAndVerify().doIt(rootCert, setOfSubjectKeyIDs);
-            assertEquals("All created CA certificates not found.", 0, setOfSubjectKeyIDs.size());
+            assertEquals("All created CA certificates not found.", setOfSubjectKeyIDs.size(), 0);
         } finally {
             ca1.deleteCA();
         }
@@ -144,7 +146,7 @@ public class CertStoreServletTest extends CaTestCase {
             pw.close();
             log.debug(sw);
         }
-        Assert.assertEquals("text/html;charset=UTF-8", connection.getContentType());
+        assertEquals("text/html;charset=UTF-8", connection.getContentType());
     }
     @Override
     public String getRoleName() {
@@ -175,7 +177,7 @@ class CAInHierarchy {
     private X509Certificate createCA(int signedBy, Collection<Certificate> certificateChain, Set<Integer> setOfSubjectKeyIDs)
             throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
-        Assert.assertTrue("Failed to created certificate.",
+        assertTrue("Failed to created certificate.",
                 CaTestCase.createTestCA(this.name, 1024, "CN=" + this.name + ",O=EJBCA junit,OU=CertStoreServletTest", signedBy, certificateChain));
         final CAInfo info = getCAInfo();
         final Collection<Certificate> newCertificateChain = info.getCertificateChain();

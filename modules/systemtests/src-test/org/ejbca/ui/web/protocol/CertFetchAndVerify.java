@@ -46,7 +46,6 @@ import org.junit.Assert;
  * Note that old CA certificates will only be found if there is now newer with same issuer and subject DN.
  * The test is started by calling {@link #doIt(X509Certificate, Set)}
  * 
- * @author Lars Silven PrimeKey
  * @version $Id$
  *
  */
@@ -81,32 +80,24 @@ public class CertFetchAndVerify {
             private static final long serialVersionUID = -2853491917200109295L;
 			// nothing
 		}
-		/* (non-Javadoc)
-		 * @see javax.activation.DataSource#getContentType()
-		 */
+
 		@Override
 		public String getContentType() {
 			final String contentType = this.connection.getContentType();
 			log.trace("content type: "+contentType);
 			return contentType;
 		}
-		/* (non-Javadoc)
-		 * @see javax.activation.DataSource#getInputStream()
-		 */
+
 		@Override
 		public InputStream getInputStream() throws IOException {
 			return this.connection.getInputStream();
 		}
-		/* (non-Javadoc)
-		 * @see javax.activation.DataSource#getName()
-		 */
+
 		@Override
 		public String getName() {
 			return "my name";
 		}
-		/* (non-Javadoc)
-		 * @see javax.activation.DataSource#getOutputStream()
-		 */
+
 		@Override
 		public OutputStream getOutputStream() throws IOException {
 			return null;
