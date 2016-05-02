@@ -148,6 +148,9 @@ public class EndEntityInformation implements Serializable {
     public void setUsername(String user) { this.username=StringTools.putBase64String(StringTools.stripUsername(user));}
     public String getUsername() {return StringTools.getBase64String(username);}
     public void setDN(String dn) {
+        if (dn==null) {
+            dn = "";
+        }
     	final StringBuilder removedAllEmpties = new StringBuilder(dn.length());
     	final StringBuilder removedTrailingEmpties = DNFieldsUtil.removeEmpties(dn, removedAllEmpties, true);
     	if (removedTrailingEmpties == null) {
