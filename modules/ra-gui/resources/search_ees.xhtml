@@ -1,0 +1,258 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:component="http://java.sun.com/jsf/composite/component"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+    <ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     version: $Id$
+     -->
+    </ui:remove>
+    <ui:composition template="/WEB-INF/include/template.xhtml">
+        <ui:define name="content">
+            <h:panelGroup layout="block" class="header" id="title">
+                <h1><h:outputText value="#{msg.search_ees_page_title}"/></h1>
+            </h:panelGroup>
+            <h:panelGroup layout="block" styleClass="content-body">
+                <h:outputText value="#{msg.search_ees_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToSearchEndEntities}"/>
+                <h:form id="contentForm" class="pure-form" rendered="#{raAccessBean.authorizedToSearchEndEntities}">
+                    <ui:remove><!-- Add a hidden h:commandButton first in the form to ensure that hitting enter leads to a search --></ui:remove>
+                    <h:commandButton action="#{raSearchEesBean.searchAndFilterAction}" value="#{msg.search_ees_page_search_command}" style="display: none;"/>
+    
+                    <h:panelGroup id="basic" styleClass="pure-g">
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+                            <h:inputText id="genericSearchString" value="#{raSearchEesBean.genericSearchString}" styleClass="jsAutoFocusOnce jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
+                                 title="#{msg.search_ees_page_criteria_generic_title}">
+                                <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                            </h:inputText>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+                            <h:selectOneMenu id="criteriaEepId" value="#{raSearchEesBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneEepAvailable}">
+                                <f:selectItems value="#{raSearchEesBean.availableEeps}"/>
+                                <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                            </h:selectOneMenu>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+                            <h:selectOneMenu id="criteriaCpId" value="#{raSearchEesBean.criteriaCpId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneCpAvailable}">
+                                <f:selectItems value="#{raSearchEesBean.availableCps}"/>
+                                <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                            </h:selectOneMenu>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+                            <h:selectOneMenu id="criteriaCaId" value="#{raSearchEesBean.criteriaCaId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneCaAvailable}">
+                                <f:selectItems value="#{raSearchEesBean.availableCas}"/>
+                                <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                            </h:selectOneMenu>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+                            <h:selectOneMenu id="criteriaStatus" value="#{raSearchEesBean.criteriaStatus}" styleClass="pure-input-1">
+                                <f:selectItems value="#{raSearchEesBean.availableStatuses}"/>
+                                <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                            </h:selectOneMenu>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+                            <h:commandButton rendered="#{raSearchEesBean.moreOptions}" action="#{raSearchEesBean.moreOptionsAction}" value="#{msg.search_ees_page_lessoptions_command}"
+                                styleClass="pure-button pure-button-primary">
+                                <f:ajax execute="@this" render=":contentForm:basic :contentForm:more :contentForm:filteredResults"
+                                    onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');if(data.status=='success'){jsTouchUpDocument();}"
+                                    onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                            </h:commandButton>
+                            <h:commandButton rendered="#{!raSearchEesBean.moreOptions}" action="#{raSearchEesBean.moreOptionsAction}" value="#{msg.search_ees_page_moreoptions_command}"
+                                styleClass="pure-button pure-button-primary">
+                                <f:ajax execute="@this" render=":contentForm:basic :contentForm:more"
+                                    onevent="function(data){if(data.status=='success'){jsTouchUpDocument();}}"/>
+                            </h:commandButton>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    <h:commandButton action="#{raSearchEesBean.searchAndFilterAction}" value="#{msg.search_ees_page_search_command}" styleClass="jsHide"/>
+    
+                    <h:panelGroup id="more" layout="block" style="margin-top: 10px;">
+                        <h:panelGroup rendered="#{raSearchEesBean.moreOptions}">
+                        
+                            <h:panelGrid columns="3">
+                                <h:panelGrid columns="2">
+                                    <h:outputLabel for="criteriaMaxResults" value="#{msg.search_ees_page_criteria_maxresults}"/>
+                                    <h:selectOneMenu id="criteriaMaxResults" value="#{raSearchEesBean.criteriaMaxResults}">
+                                        <f:selectItems value="#{raSearchEesBean.availableMaxResults}"/>
+                                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:selectOneMenu>
+                                </h:panelGrid>
+    
+                                <h:panelGrid columns="2">
+                                    <h:outputLabel for="createdAfter" id="createdAfterLabel" value="#{msg.search_ees_page_criteria_createdafter}"/>
+                                    <h:inputText id="createdAfter" value="#{raSearchEesBean.createdAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
+                                        styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
+                                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:createdAfterLabel" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:inputText>
+                                    <h:outputLabel for="createdBefore" id="createdBeforeLabel" value="#{msg.search_ees_page_criteria_createdbefore}"/>
+                                    <h:inputText id="createdBefore" value="#{raSearchEesBean.createdBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
+                                        styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
+                                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:createdBeforeLabel" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:inputText>
+                                </h:panelGrid>
+
+                                <h:panelGrid columns="2">
+                                    <h:outputLabel for="modifiedAfter" id="modifiedAfterLabel" value="#{msg.search_ees_page_criteria_modifiedafter}"/>
+                                    <h:inputText id="modifiedAfter" value="#{raSearchEesBean.modifiedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
+                                        styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
+                                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:modifiedAfterLabel" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:inputText>
+                                    <h:outputLabel for="modifiedBefore" id="modifiedBeforeLabel" value="#{msg.search_ees_page_criteria_modifiedbefore}"/>
+                                    <h:inputText id="modifiedBefore" value="#{raSearchEesBean.modifiedBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
+                                        styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
+                                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:modifiedBeforeLabel" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:inputText>
+                                </h:panelGrid>
+                            </h:panelGrid>
+                        </h:panelGroup>
+                    </h:panelGroup>
+    
+                    <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
+                        <h:outputText styleClass="fineprint" rendered="#{empty raSearchEesBean.filteredResults}" value="#{msg.search_ees_page_info_noresult}"/>
+                        <h:outputText styleClass="fineprint" rendered="#{raSearchEesBean.moreResultsAvailable}" value="#{msg.search_ees_page_info_moreresults}"/>
+                        <h:dataTable rendered="#{not empty raSearchEesBean.filteredResults}" value="#{raSearchEesBean.filteredResults}" var="raSearchEndEntity"
+                            styleClass="pure-table" rowClasses=",pure-table-odd">
+                            <h:column>
+                                <f:facet name="header">
+                                    <h:outputLabel for="sortCa" value="#{msg.search_ees_page_colhead_ca} #{raSearchEesBean.sortedByCa}"/>
+                                    <h:commandButton id="sortCa" action="#{raSearchEesBean.sortByCa}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
+                                        <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:commandButton>
+                                </f:facet>
+                                <h:outputText styleClass="fineprint" value="#{raSearchEndEntity.caName}"/>
+                            </h:column>
+                            <h:column>
+                                <f:facet name="header">
+                                    <h:outputLabel for="sortProfile" value="#{msg.search_ees_page_colhead_profile} #{raSearchEesBean.sortedByProfile}"/>
+                                    <h:commandButton id="sortProfile" action="#{raSearchEesBean.sortByProfile}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
+                                        <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:commandButton>
+                                </f:facet>
+                                <h:panelGrid columns="1" styleClass="nopadding noborder">
+                                    <h:outputText styleClass="fineprint" value="#{raSearchEndEntity.eepName}"/>
+                                    <h:outputText styleClass="fineprint" value="#{raSearchEndEntity.cpName}"/>
+                                </h:panelGrid>
+                            </h:column>
+                            <h:column>
+                                <f:facet name="header">
+                                    <h:outputLabel for="sortUsername" value="#{msg.search_ees_page_colhead_username} #{raSearchEesBean.sortedByUsername}"/>
+                                    <h:commandButton id="sortUsername" action="#{raSearchEesBean.sortByUsername}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
+                                        <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:commandButton>
+                                </f:facet>
+                                <h:outputText styleClass="fineprint" value="#{raSearchEndEntity.username}"/>
+                            </h:column>
+                            <h:column>
+                                <f:facet name="header">
+                                    <h:outputLabel for="sortSubject" value="#{msg.search_ees_page_colhead_subject} #{raSearchEesBean.sortedBySubject}"/>
+                                    <h:commandButton id="sortSubject" action="#{raSearchEesBean.sortBySubject}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
+                                        <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:commandButton>
+                                </f:facet>
+                                <h:panelGrid columns="1" styleClass="nopadding noborder">
+                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.subjectDn}"/>
+                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.subjectAn}"/>
+                                </h:panelGrid>
+                            </h:column>
+                            <h:column>
+                                <f:facet name="header">
+                                    <h:outputLabel for="sortModified" value="#{msg.search_ees_page_colhead_updates} #{raSearchEesBean.sortedByModified}"/>
+                                    <h:commandButton id="sortModified" action="#{raSearchEesBean.sortByModified}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
+                                        <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:commandButton>
+                                </f:facet>
+                                <h:panelGrid columns="1" styleClass="nopadding noborder">
+                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.created}"/>
+                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.modified}"/>
+                                </h:panelGrid>
+                            </h:column>
+                            <h:column>
+                                <f:facet name="header">
+                                    <h:outputLabel for="sortStatus" value="#{msg.search_ees_page_colhead_status} #{raSearchEesBean.sortedByStatus}"/>
+                                    <h:commandButton id="sortStatus" action="#{raSearchEesBean.sortByStatus}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
+                                        <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:commandButton>
+                                </f:facet>
+                                <h:panelGrid columns="1" styleClass="nopadding noborder">
+                                    <h:outputText styleClass="fineprint" value="#{raSearchEndEntity.status}"/>
+                                </h:panelGrid>
+                            </h:column>
+                            <h:column>
+                                <f:facet name="header">
+                                    <h:outputLabel for="sortTokenType" value="#{msg.search_ees_page_colhead_tokentype} #{raSearchEesBean.sortedByTokenType}"/>
+                                    <h:commandButton id="sortTokenType" action="#{raSearchEesBean.sortByTokenType}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
+                                        <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:commandButton>
+                                </f:facet>
+                                <h:panelGrid columns="1" styleClass="nopadding noborder">
+                                    <h:outputText styleClass="fineprint" value="#{raSearchEndEntity.tokenType}"/>
+                                </h:panelGrid>
+                            </h:column>
+                            <h:column>
+                                <f:facet name="header"><h:outputText value="#{msg.search_ees_page_colhead_action}"/></f:facet>
+
+                            </h:column>
+                        </h:dataTable>
+                    </h:panelGroup>
+                </h:form>
+            </h:panelGroup>
+        </ui:define>
+    </ui:composition>
+</html>
