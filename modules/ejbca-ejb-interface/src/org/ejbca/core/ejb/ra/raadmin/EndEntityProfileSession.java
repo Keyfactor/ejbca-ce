@@ -95,7 +95,11 @@ public interface EndEntityProfileSession {
     void internalChangeEndEntityProfileNoFlushCache(AuthenticationToken admin, String profilename, EndEntityProfile profile)
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException;
 
-    /** Retrieves a Collection of id:s (Integer) to authorized profiles. */
+    /** Retrieves a Collection of id:s (Integer) to authorized profiles. 
+     * @param admin the administrator for whom to get the profile Ids he/she has access to
+     * @param endentityAccessRule an access rule which is required on the profile in order for it to be returned, for example AccessRulesConstants.CREATE_END_ENTITY to only return profiles for which the admin have create rights
+     * @return Collection of end entity profile id:s (Integer)
+     */
     Collection<Integer> getAuthorizedEndEntityProfileIds(AuthenticationToken admin, String endentityAccessRule);
 
     /**
