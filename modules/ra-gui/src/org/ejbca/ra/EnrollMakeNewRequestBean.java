@@ -44,6 +44,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page
@@ -119,6 +120,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private boolean endEntityMetadataSubmitted;
     private EndEntityInformation endEntityInformation;
     private String confirmPassword;
+    private SubjectDn subjectDn;
 
     @PostConstruct
     private void postContruct() {
@@ -181,7 +183,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if((anyCAAvailableFromEEP || Arrays.asList(availableCAsFromEEPArray).contains(tuple.getId()+"")) &&
                 (anyCAAvailableFromCP || availableCAsFromCP.contains(tuple.getId()))){
                 String defaultCAId = endEntityProfile.getValue(EndEntityProfile.DEFAULTCA, 0);
-                if(tuple.getId() == Integer.parseInt(defaultCAId)){
+                if(!defaultCAId.isEmpty() && tuple.getId() == Integer.parseInt(defaultCAId)){
                     availableCertificateAuthorities.put(tuple.getName(), tuple.getName() + " (default)");
                 }else{
                     availableCertificateAuthorities.put(tuple.getName(), tuple.getName());
@@ -190,7 +192,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         
         String defaultCertAuthorityId = endEntityProfile.getValue(EndEntityProfile.DEFAULTCA, 0);
-        selectedCertificateAuthority = authorizedCAInfos.get(Integer.parseInt(defaultCertAuthorityId)).getName();
+        if(!defaultCertAuthorityId.isEmpty()){
+            selectedCertificateAuthority = authorizedCAInfos.get(Integer.parseInt(defaultCertAuthorityId)).getName();
+        }
     }
 
     private void initAvailableKeyPairGeneration() {
@@ -273,6 +277,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private void initEndEntityProfileMetadata() {
         endEntityInformation = new EndEntityInformation();
+        subjectDn = new SubjectDn(getEndEntityProfile());
+    }
+    
+    //-----------------------------------------------------------------------------------------------
+    // Helpers
+    public String getSubjectDnFieldOutputName(String keyName){
+        return raLocaleBean.getMessage("subject_dn_" + keyName);
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -319,6 +330,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private final void resetEndEntityMetadata() {
         endEntityInformation = null;
+        subjectDn = null;
     }
 
     /**
@@ -732,5 +744,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public void setAvailableEndEntityProfiles(Map<String, String> availableEndEntities) {
         this.availableEndEntityProfiles = availableEndEntities;
+    }
+
+    /**
+     * @return the subjectDN
+     */
+    public SubjectDn getSubjectDn() {
+        return subjectDn;
+    }
+
+    /**
+     * @param subjectDn the subjectDN to set
+     */
+    public void setSubjectDn(SubjectDn subjectDn) {
+        this.subjectDn = subjectDn;
     }
 }
