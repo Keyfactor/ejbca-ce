@@ -219,19 +219,6 @@
                                 </h:panelGrid>
                             </h:column>
                             <h:column>
-                                <f:facet name="header">
-                                    <h:outputLabel for="sortTokenType" value="#{msg.search_ees_page_colhead_tokentype} #{raSearchEesBean.sortedByTokenType}"/>
-                                    <h:commandButton id="sortTokenType" action="#{raSearchEesBean.sortByTokenType}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
-                                        <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
-                                    </h:commandButton>
-                                </f:facet>
-                                <h:panelGrid columns="1" styleClass="nopadding noborder">
-                                    <h:outputText styleClass="fineprint" value="#{raSearchEndEntity.tokenType}"/>
-                                </h:panelGrid>
-                            </h:column>
-                            <h:column>
                                 <f:facet name="header"><h:outputText value="#{msg.search_ees_page_colhead_action}"/></f:facet>
 
                             </h:column>

@@ -63,7 +63,6 @@ public class RaSearchEesBean implements Serializable {
         private final String caName;
         private final String modified;
         private final int status;
-        private final int tokenType;
 
         public RaSearchEndEntity(final EndEntityInformation endEntity) {
             this.username = endEntity.getUsername();
@@ -88,7 +87,6 @@ public class RaSearchEesBean implements Serializable {
             this.caName = String.valueOf(caIdToNameMap.get(endEntity.getCAId()));
             this.modified = ValidityDate.formatAsISO8601ServerTZ(endEntity.getTimeModified().getTime(), TimeZone.getDefault());
             this.status = endEntity.getStatus();
-            this.tokenType = endEntity.getTokenType();
         }
         public String getUsername() { return username; }
         public String getSubjectDn() { return subjectDn; }
@@ -112,19 +110,6 @@ public class RaSearchEesBean implements Serializable {
                 return raLocaleBean.getMessage("search_ees_page_status_revoked");
             }
             return raLocaleBean.getMessage("search_ees_page_status_other");
-        }
-        public String getTokenType() {
-            switch (tokenType) {
-            case EndEntityConstants.TOKEN_USERGEN:
-                return raLocaleBean.getMessage("search_ees_page_tokentype_usergenerated");
-            case EndEntityConstants.TOKEN_SOFT_JKS:
-                return raLocaleBean.getMessage("search_ees_page_tokentype_jks");
-            case EndEntityConstants.TOKEN_SOFT_P12:
-                return raLocaleBean.getMessage("search_ees_page_tokentype_p12");
-            case EndEntityConstants.TOKEN_SOFT_PEM:
-                return raLocaleBean.getMessage("search_ees_page_tokentype_pem");
-            }
-            return raLocaleBean.getMessage("search_ees_page_tokentype_unknown");
         }
     }
     
@@ -157,7 +142,7 @@ public class RaSearchEesBean implements Serializable {
     private String modifiedAfter = "";
     private String modifiedBefore = "";
 
-    private enum SortOrder { PROFILE, CA, SUBJECT, USERNAME, MODIFIED, STATUS, TOKENTYPE };
+    private enum SortOrder { PROFILE, CA, SUBJECT, USERNAME, MODIFIED, STATUS };
     
     private SortOrder sortBy = SortOrder.USERNAME;
     private boolean sortAscending = true;
@@ -240,9 +225,6 @@ public class RaSearchEesBean implements Serializable {
                 if (!stagedRequest.getStatuses().isEmpty() && !stagedRequest.getStatuses().contains(endEntity.getStatus())) {
                     continue;
                 }
-                if (!stagedRequest.getTokenTypes().isEmpty() && !stagedRequest.getTokenTypes().contains(endEntity.getTokenType())) {
-                    continue;
-                }
                 resultsFiltered.add(new RaSearchEndEntity(endEntity));
             }
             sort();
@@ -265,8 +247,6 @@ public class RaSearchEesBean implements Serializable {
                     return o1.modified.compareTo(o2.modified) * (sortAscending ? 1 : -1);
                 case STATUS:
                     return o1.getStatus().compareTo(o2.getStatus()) * (sortAscending ? 1 : -1);
-                case TOKENTYPE:
-                    return o1.getTokenType().compareTo(o2.getTokenType()) * (sortAscending ? 1 : -1);
                 case USERNAME:
                 default:
                     return o1.username.compareTo(o2.username) * (sortAscending ? 1 : -1);
@@ -285,8 +265,6 @@ public class RaSearchEesBean implements Serializable {
     public void sortByModified() { sortBy(SortOrder.MODIFIED, false); }
     public String getSortedByStatus() { return getSortedBy(SortOrder.STATUS); }
     public void sortByStatus() { sortBy(SortOrder.STATUS, true); }
-    public String getSortedByTokenType() { return getSortedBy(SortOrder.TOKENTYPE); }
-    public void sortByTokenType() { sortBy(SortOrder.TOKENTYPE, true); }
     public String getSortedByUsername() { return getSortedBy(SortOrder.USERNAME); }
     public void sortByUsername() { sortBy(SortOrder.USERNAME, true); }
 
