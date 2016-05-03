@@ -35,24 +35,23 @@ public class ApprovalStep implements Serializable {
     private int requiredNumberOfApprovals;
     private boolean canSeePreviousSteps;
     private String notificationEmail;
+    private List<Integer> previousStepsDependency;
     
     // Approval data
     private int approvalStatus;
-    //TODO Check if step order here is actually needed
-    private int stepOrder; // Set when a request is actually created
     private List<Approval> approvals;
     
     public ApprovalStep(final int id, final String stepAuthObject, final String instruction, 
             final List<String> options, final int optionsType, final int nrOfApprovals, 
-            final boolean canSeePreviousSteps, final String email) {
+            final boolean canSeePreviousSteps, final String email, final List<Integer> previousStepsDependency) {
         this.stepId = id;
         this.stepAuthorizationObject = stepAuthObject;
         this.metadata = new ApprovalStepMetadata(instruction, options, optionsType);
         this.requiredNumberOfApprovals = nrOfApprovals;
         this.canSeePreviousSteps = canSeePreviousSteps;
         this.notificationEmail = email;
+        this.previousStepsDependency = previousStepsDependency;
         this.approvalStatus = ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
-        this.stepOrder = 0;
         this.approvals = new ArrayList<Approval>();
     }
 
@@ -89,12 +88,12 @@ public class ApprovalStep implements Serializable {
         return approvalStatus;
     }
     
-    public int getStepOrder() {
-        return stepOrder;
+    public List<Integer> getPreviousStepsDependency() {
+        return previousStepsDependency;
     }
     
-    public void setStepOrder(int order) {
-        stepOrder = order;
+    public void setPreviousStepsDependency(final List<Integer> previousStepsDependency) {
+        this.previousStepsDependency = previousStepsDependency;
     }
     
     public List<Approval> getApprovals() {

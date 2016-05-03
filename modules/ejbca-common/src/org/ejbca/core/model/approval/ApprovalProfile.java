@@ -49,8 +49,6 @@ public class ApprovalProfile extends UpgradeableDataHashMap implements Serializa
     
     // None number of approvals profile
     public static final String APPROVALSTEPS = "approvalSteps"; // Holds a Map<ApprovalStepID, ApprovalStep>
-    public static final String ISAPPROVALSTEPSORDERED = "isApprovalStepsOrdered"; // whether or not the steps are ordered
-    public static final String APPROVALSTEPSORDER = "approvalStepsOrder"; // An ordered list of step IDs
     
     private int lastApprovalStepId;
     
@@ -83,11 +81,6 @@ public class ApprovalProfile extends UpgradeableDataHashMap implements Serializa
 
         data.put(APPROVALSTEPS, new HashMap<Integer, ApprovalStep>());
         lastApprovalStepId = 0;
-        data.put(ISAPPROVALSTEPSORDERED, orderedApprovalSteps);
-        if(orderedApprovalSteps) {
-            data.put(APPROVALSTEPSORDER, new ArrayList<Integer>());
-        }
-        
     }
     
     public String getProfileName() {
@@ -115,18 +108,6 @@ public class ApprovalProfile extends UpgradeableDataHashMap implements Serializa
         data.put(APPROVAL_EXPIRATION_PERIOD, expirationPeriod);
     }
 
-    
-    public boolean getIsApprovalStepsOrdered() {
-        return (Boolean)data.get(ISAPPROVALSTEPSORDERED);
-    }
-    public void setIsApprovalStepsOrdered(final boolean ordered) {
-        data.put(ISAPPROVALSTEPSORDERED, ordered);
-    }
-    
-    public List<Integer> getApprovalStepsOrder() {
-        return (List<Integer>)data.get(APPROVALSTEPSORDER);
-    }
-    
     public int[] getActionsRequireApproval() {
         if(!data.containsKey(ACTIONS_REQUIRE_APPROVAL)) {
             data.put(ACTIONS_REQUIRE_APPROVAL, new int[0]);
@@ -144,8 +125,8 @@ public class ApprovalProfile extends UpgradeableDataHashMap implements Serializa
     
     public int getNewStepId() {
         int newID = lastApprovalStepId+1;
-        final List<Integer> order = getApprovalStepsOrder();
-        while(order.contains(Integer.valueOf(newID))) {
+        final Map<Integer, ApprovalStep> steps = getApprovalSteps();
+        while(steps.containsKey(Integer.valueOf(newID))) {
             newID++;
         }
         
@@ -168,15 +149,7 @@ public class ApprovalProfile extends UpgradeableDataHashMap implements Serializa
         Map<Integer, ApprovalStep> steps = getApprovalSteps();
         steps.put(Integer.valueOf(step.getStepId()), step);
         data.put(APPROVALSTEPS, steps);
-        if(getIsApprovalStepsOrdered()) {
-            List<Integer> order = getApprovalStepsOrder();
-            if(!order.contains(Integer.valueOf(step.getStepId()))) {
-                order.add(step.getStepId());
-                data.put(APPROVALSTEPSORDER, order);
-                lastApprovalStepId = step.getStepId();
-            }
-        }
-        
+        lastApprovalStepId = step.getStepId();
     }
     
     public void removeApprovalStep(final ApprovalStep step) {
@@ -189,34 +162,9 @@ public class ApprovalProfile extends UpgradeableDataHashMap implements Serializa
         Map<Integer, ApprovalStep> steps = getApprovalSteps();
         if(steps.containsKey(Integer.valueOf(stepId))) {
             steps.remove(Integer.valueOf(stepId));
-            List<Integer> order = getApprovalStepsOrder();
-            final int stepIndex = order.indexOf(Integer.valueOf(stepId));
-            order.remove(stepIndex);
             data.put(APPROVALSTEPS, steps);
-            data.put(APPROVALSTEPSORDER, order);
         }
     }
-    
-    public void moveApprovalStepUp(final int stepId) {
-        if(stepId > 0) { 
-            List<Integer> orderedSteps = getApprovalStepsOrder();
-            final int index = orderedSteps.indexOf(Integer.valueOf(stepId));
-            orderedSteps.remove(index);
-            orderedSteps.add(index-1, Integer.valueOf(stepId));
-            data.put(APPROVALSTEPSORDER, orderedSteps);
-        }
-    }
-    
-    public void moveApprovalStepDown(final int stepId) {
-        if(stepId > 1) {
-            List<Integer> orderedSteps = getApprovalStepsOrder();
-            final int index = orderedSteps.indexOf(Integer.valueOf(stepId));
-            orderedSteps.remove(index);
-            orderedSteps.add(index+1, stepId);
-            data.put(APPROVALSTEPSORDER, orderedSteps);
-        }
-    }
-    
     
     // ---------------- Nr of Approvals -------------------------- //
     
