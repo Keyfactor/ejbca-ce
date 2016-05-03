@@ -16,8 +16,8 @@
 .content {
 	background: #fff3e6;
 	height: 100%;
-	margin: 50px 10% 30px 10%;		
-	
+	margin: 50px 0 30px 0;	
+	border-radius: 15px;
 }
 
 .header {
@@ -38,16 +38,29 @@
     margin-bottom: 50px;
     line-height: 1.6em;
     text-align: left;
-    margin: 10px 0 30px 0;
-    padding: 0em 1.5em 1em;
-    display: inline-block;
- 
+    padding: 0em 1.5em 1em; 
 }
+
+
+
+	
+	.content-body pure-form {
+	  max-width:100%;
+	}
+	
+	.content-body pure-table td,
+	.content-body pure-table th {
+    border-left: 1px solid #cbcbcb;/*  inner column border */
+    border-width: 0 0 0 1px;
+    font-size: inherit;
+    margin: 0;
+    padding: 0px 10px; /* cell padding */    
+    overflow: visible; /*to make ths where the title is really long work*/
+}
+
 	
 .content-body-subhead {
-    margin: 10px 0 20px 0;
-    font-weight: 300;
-    color: #888;
+    margin: 0 1.5em 0;
 }
 
 .vertical-align-center {
