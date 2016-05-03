@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -112,12 +113,22 @@ public class RAAuthorization implements Serializable {
         if(authApprovalProfilesString == null) {
             
             authApprovalProfilesString = "";
+        
+            Map<String, Boolean> adminAuthorizedCache = new HashMap<String, Boolean>();
             
             Set<Integer> profilesIds = approvalProfileSession.getApprovalProfileIdToNameMap().keySet();
             for(Integer profileId : profilesIds) {
                 ApprovalProfile profile = approvalProfileSession.getApprovalProfile(profileId);
+                final String profileType = profile.getApprovalProfileType().getTypeName();
                 try {
-                    if(profile.getApprovalProfileType().isAdminAllowedToApprove(admin, profile)) {
+                    boolean adminAuthorized = false;
+                    if(adminAuthorizedCache.containsKey(profileType)) {
+                        adminAuthorized = adminAuthorizedCache.get(profileType).booleanValue(); 
+                    } else {
+                        adminAuthorized = profile.getApprovalProfileType().isAdminAllowedToApprove(admin, profile);
+                        adminAuthorizedCache.put(profileType, Boolean.valueOf(adminAuthorized));
+                    }
+                    if(adminAuthorized) {
                         addApprovalProfileIdToAuthApprovalProfilesString(profileId);
                     }
                 } catch (AuthorizationDeniedException e) { }
