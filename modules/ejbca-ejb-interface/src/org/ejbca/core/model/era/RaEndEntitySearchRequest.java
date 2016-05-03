@@ -37,7 +37,6 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
     private long modifiedAfter = Long.MAX_VALUE;
     private long modifiedBefore = 0L;
     private List<Integer> statuses = new ArrayList<>();
-    private List<Integer> tokenTypes = new ArrayList<>();
 
     /** Default constructor */
     public RaEndEntitySearchRequest() {}
@@ -52,7 +51,6 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
         modifiedAfter = request.modifiedAfter;
         modifiedBefore = request.modifiedBefore;
         statuses.addAll(request.statuses);
-        tokenTypes.addAll(request.tokenTypes);
     }
 
     public int getMaxResults() { return maxResults; }
@@ -71,8 +69,6 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
     public void setModifiedBefore(final long modifiedBefore) { this.modifiedBefore = modifiedBefore; }
     public List<Integer> getStatuses() { return statuses; }
     public void setStatuses(final List<Integer> statuses) { this.statuses = statuses; }
-    public List<Integer> getTokenTypes() { return tokenTypes; }
-    public void setTokenTypes(final List<Integer> tokenTypes) { this.tokenTypes = tokenTypes; }
 
     public boolean equals(final Object object) {
         if (!(object instanceof RaEndEntitySearchRequest)) {
@@ -94,7 +90,7 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
                 isWider(eepIds, other.eepIds) || isWider(cpIds, other.cpIds) || isWider(caIds, other.caIds) ||
                 modifiedAfter<other.modifiedAfter || modifiedBefore>other.modifiedBefore ||
                 !genericSearchString.contains(other.genericSearchString) ||
-                isWider(statuses, other.statuses) || isWider(tokenTypes, other.tokenTypes)) {
+                isWider(statuses, other.statuses)) {
             // This does not contain whole other → wider
             return 1;
         }
@@ -103,7 +99,7 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
                 isMoreNarrow(eepIds, other.eepIds) || isMoreNarrow(cpIds, other.cpIds) || isMoreNarrow(caIds, other.caIds) ||
                 modifiedAfter>other.modifiedAfter || modifiedBefore<other.modifiedBefore ||
                 (genericSearchString.contains(other.genericSearchString) && !other.genericSearchString.contains(genericSearchString)) ||
-                isMoreNarrow(statuses, other.statuses) || isMoreNarrow(tokenTypes, other.tokenTypes)) {
+                isMoreNarrow(statuses, other.statuses)) {
             // This does contain whole other, but other does not contain whole this → more narrow
             return -1;
         }
