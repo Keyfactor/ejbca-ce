@@ -86,7 +86,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     /** @return the generic search string as a decimal String if it has potential to be a decimal certificate serial number. */
     public String getGenericSearchStringAsDecimal() {
         // Assuming 8 octets and some leading zeroes
-        if (genericSearchString.length()>=17) {
+        if (genericSearchString.length()>=16) {
             try {
                 return new BigInteger(genericSearchString, 10).toString(10);
             } catch (NumberFormatException e) {
@@ -97,7 +97,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     /** @return the generic search string as a decimal String if it has potential to be a hex certificate serial number. */
     public String getGenericSearchStringAsHex() {
         // Assuming 8 octets and maybe a leading zero
-        if (genericSearchString.length()>=15) {
+        if (genericSearchString.length()>=14) {
             try {
                 return new BigInteger(genericSearchString, 16).toString(10);
             } catch (NumberFormatException e) {
