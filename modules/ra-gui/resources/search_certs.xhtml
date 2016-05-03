@@ -33,7 +33,7 @@
 			</h:panelGroup>	
         	<h:panelGroup layout="block" styleClass="content-body">	  
                 <h:outputText value="#{msg.search_certs_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToSearchCerts}"/>        		       	        	
-	            <h:form id="contentForm" class="pure-form pure-form-aligned foo-form" rendered="#{raAccessBean.authorizedToSearchCerts}">
+	            <h:form id="contentForm" styleClass="pure-form pure-form-aligned foo-form" rendered="#{raAccessBean.authorizedToSearchCerts}">
 	                <ui:remove><!-- Add a hidden h:commandButton first in the form to ensure that hitting enter leads to a search --></ui:remove>
 	                <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" style="display: none;"/>
 	
