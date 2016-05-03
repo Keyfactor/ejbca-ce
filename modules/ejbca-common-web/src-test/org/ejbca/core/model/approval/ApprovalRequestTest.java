@@ -58,8 +58,9 @@ public class ApprovalRequestTest {
 		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
         AuthenticationToken token = new X509CertificateAuthenticationToken(testcert);
 
-        ApprovalProfile approvalProfile = new ApprovalProfile("nrOfApprovalsApprovalProfile");
-		DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false, approvalProfile, null);
+        ApprovalProfile approvalProfile = new ApprovalProfile("NrOfApprovalsApprovalProfile");
+        approvalProfile.setNumberOfApprovals(DummyApprovalRequest.NUM_OF_REQUIRED_APPROVALS);
+		DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false, approvalProfile);
 		
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -75,6 +76,8 @@ public class ApprovalRequestTest {
     	assertTrue(CertTools.getSerialNumber(readrequest.getRequestAdminCert()).equals(CertTools.getSerialNumber(testcert)));
     	assertTrue(readrequest.getCAId() == 1);
     	assertTrue(readrequest.getEndEntityProfileId() == 2);
+    	assertTrue(readrequest.getApprovalProfile()!=null);
+    	assertTrue(readrequest.getApprovalProfile().getProfileName().equals(approvalProfile.getProfileName()));
     	assertTrue(!readrequest.isExecutable());
 		
 	}
@@ -84,8 +87,9 @@ public class ApprovalRequestTest {
 		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
         AuthenticationToken token = new X509CertificateAuthenticationToken(testcert);
 
-        ApprovalProfile approvalProfile = new ApprovalProfile("nrOfApprovalsApprovalProfile");
-        DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false, approvalProfile, null);
+        ApprovalProfile approvalProfile = new ApprovalProfile("NrOfApprovalsApprovalProfile");
+        approvalProfile.setNumberOfApprovals(DummyApprovalRequest.NUM_OF_REQUIRED_APPROVALS);
+        DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false, approvalProfile);
 		
     	int id1 = ar.generateApprovalId();
     	int id2 = ar.generateApprovalId();

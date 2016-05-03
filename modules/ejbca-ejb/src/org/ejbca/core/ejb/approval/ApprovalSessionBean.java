@@ -445,9 +445,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             final ApprovalDataVO advo = getApprovalDataVO(approvalData);
             final ApprovalStep approvalStep = advo.getApprovalRequest().getNextUnhandledAppprovalStep();
             ApprovalProfile approvalProfile = advo.getApprovalRequest().getApprovalProfile();
-            if(approvalProfile.getApprovalProfileType().isAdminAllowedToApproveStep(admin, approvalStep, approvalProfile)) {
-                returnData.add(advo);
-            }
+            try {
+                if(approvalProfile.getApprovalProfileType().isAdminAllowedToApproveStep(admin, approvalStep, approvalProfile)) {
+                    returnData.add(advo);
+                }
+            } catch(AuthorizationDeniedException e) {}
         }
         log.trace("<query()");
         return returnData;
