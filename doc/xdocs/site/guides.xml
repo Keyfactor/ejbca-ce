@@ -65,6 +65,10 @@
      
   <section name="Microsoft smart card logon">
   <p>
+  In general we recommend to use a smart card management system to manage smart cards and integrate smart card logon. 
+  We have an outline of some of the supported card management systems in our <a href="complementary.html#Token Management">Complementary software</a> section. 
+  </p>
+  <p>
   PrimeKey has made a detailed guide how you set up and configure Windows and EJBCA for Windows SmartCard Logon.
   The guide is divided in three section, introduction, Windows configuration and PKI configuration. 
   The reason for this division is that you can give the Windows guide to the windows administrator, who can easily

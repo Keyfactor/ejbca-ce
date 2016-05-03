@@ -63,11 +63,13 @@ to manage your Public Key Infrastructure, we recommend EJBCA.
 <p><strong>EJBCA has everything for your trust center.</strong> Contact us for more info, or look at the full (but never complete) <a href="features.html">features list</a>.</p>
 <subsection name="Certificate issuance">
 <p>
-Some uses cases where EJBCA can help you to issue certificates are:
+Example uses cases (non-exhaustive) where EJBCA is used to issue certificates are:
 </p>
 <ul>
+<li>PKI Trust and Certificate service providers, WebTrust and ETSI/eIDAS.</li>
 <li>Strong authentication for users accessing your intranet/extranet/internet resources.</li>
 <li>Secure communication with SSL/TLS servers and SSL/TLS clients. EJBCA is an excellent SSL PKI.</li>
+<li><a href="complementary.html#Token Management">Smart card and token management</a>.</li>
 <li><a href="guides.html#Microsoft smart card logon">Smart card logon</a> to Windows and/or Linux.</li>
 <li>Linux autoenrollment, Windows autoenrollment, automated secure VM deployment, and more.</li>
 <li>Signing and encrypting email (SMIME).</li>
