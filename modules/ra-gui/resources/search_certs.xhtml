@@ -30,10 +30,10 @@
         <ui:define name="content">
         	<h:panelGroup layout="block" class="header" id="title">
 				<h1><h:outputText value="#{msg.search_certs_page_title}"/></h1>
-			</h:panelGroup>
-        	<h:panelGroup layout="block" styleClass="content-body">
-                <h:outputText value="#{msg.search_certs_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToSearchCerts}"/>
-	            <h:form id="contentForm" class="pure-form" rendered="#{raAccessBean.authorizedToSearchCerts}">
+			</h:panelGroup>	
+        	<h:panelGroup layout="block" styleClass="content-body">	  
+                <h:outputText value="#{msg.search_certs_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToSearchCerts}"/>        		       	        	
+	            <h:form id="contentForm" class="pure-form pure-form-aligned foo-form" rendered="#{raAccessBean.authorizedToSearchCerts}">
 	                <ui:remove><!-- Add a hidden h:commandButton first in the form to ensure that hitting enter leads to a search --></ui:remove>
 	                <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" style="display: none;"/>
 	
@@ -48,11 +48,13 @@
 	                    </h:panelGroup>
 	                    
 						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
-		                    <h:selectOneMenu id="criteriaEepId" value="#{raSearchCertsBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneEepAvailable}">
+		                    <h:selectOneMenu id="criteriaEepId" value="#{raSearchCertsBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneEepAvailable}" readonly="true">
 		                        <f:selectItems value="#{raSearchCertsBean.availableEeps}"/>
+		                        <ui:remove><!-- Disabled until we have the endEntityProfile column in CertificateData -->
 		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
 		                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
 		                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+		                        </ui:remove>
 		                    </h:selectOneMenu>
 	                    </h:panelGroup>
 	                    
@@ -97,13 +99,12 @@
 		                    </h:commandButton>
 						</h:panelGroup>
 	                </h:panelGroup>
-	                <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" styleClass="jsHide"/>
+	                <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" styleClass="pure-button pure-button-primary jsHide"/>
 	
 	                <h:panelGroup id="more" layout="block" style="margin-top: 10px;">
-	                    <h:panelGroup rendered="#{raSearchCertsBean.moreOptions}">
-	                    
-	                        <h:panelGrid columns="3">
-	                            <h:panelGrid columns="2">
+	                    <h:panelGroup rendered="#{raSearchCertsBean.moreOptions}" styleClass="pure-g">                
+							<h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-5 ">
+								<h:panelGroup layout="block" styleClass="pure-control-group">
 	                                <h:outputLabel for="criteriaMaxResults" value="#{msg.search_certs_page_criteria_maxresults}"/>
 	                                <h:selectOneMenu id="criteriaMaxResults" value="#{raSearchCertsBean.criteriaMaxResults}">
 	                                    <f:selectItems value="#{raSearchCertsBean.availableMaxResults}"/>
@@ -111,9 +112,10 @@
 	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
 	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:selectOneMenu>
-	                                
-	                            </h:panelGrid>
-	                            <h:panelGrid columns="2">
+                                </h:panelGroup>
+	                       </h:panelGroup>
+	                       <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-2-5 ">                  
+	                            <h:panelGroup layout="block" styleClass="pure-control-group">
 	                                <h:outputLabel for="expiresAfter" id="expiresAfterLabel" value="#{msg.search_certs_page_criteria_expiresafter}"/>
 	                                <h:inputText id="expiresAfter" value="#{raSearchCertsBean.expiresAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
 	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
@@ -121,6 +123,8 @@
 	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
 	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:inputText>
+	                            </h:panelGroup>
+	                            <h:panelGroup layout="block" styleClass="pure-control-group">
 	                                <h:outputLabel for="expiresBefore" id="expiresBeforeLabel" value="#{msg.search_certs_page_criteria_expiresbefore}"/>
 	                                <h:inputText id="expiresBefore" value="#{raSearchCertsBean.expiresBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
 	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
@@ -128,9 +132,10 @@
 	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
 	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:inputText>
-	                            </h:panelGrid>
-	
-	                            <h:panelGrid columns="2">
+                                 </h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-2-5 ">				
+	                            <h:panelGroup layout="block" styleClass="pure-control-group">	                            	
 	                                <h:outputLabel for="revokedAfter" id="revokedAfterLabel" value="#{msg.search_certs_page_criteria_revokedafter}"/>
 	                                <h:inputText id="revokedAfter" value="#{raSearchCertsBean.revokedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
 	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
@@ -138,6 +143,8 @@
 	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
 	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:inputText>
+	                            </h:panelGroup>
+	                            <h:panelGroup layout="block" styleClass="pure-control-group">	                            		                            
 	                                <h:outputLabel for="revokedBefore" id="revokedBeforeLabel" value="#{msg.search_certs_page_criteria_revokedbefore}"/>
 	                                <h:inputText id="revokedBefore" value="#{raSearchCertsBean.revokedBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
 	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
@@ -145,8 +152,8 @@
 	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
 	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:inputText>
-	                            </h:panelGrid>
-	                        </h:panelGrid>
+	                            </h:panelGroup>
+							</h:panelGroup>
 	                    </h:panelGroup>
 	                </h:panelGroup>
 	
@@ -154,7 +161,7 @@
 	                    <h:outputText styleClass="fineprint" rendered="#{empty raSearchCertsBean.filteredResults}" value="#{msg.search_certs_page_info_noresult}"/>
 	                    <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.moreResultsAvailable}" value="#{msg.search_certs_page_info_moreresults}"/>
 	                    <h:dataTable rendered="#{not empty raSearchCertsBean.filteredResults}" value="#{raSearchCertsBean.filteredResults}" var="raSearchCertificate"
-	                        styleClass="pure-table" rowClasses=",pure-table-odd">
+	                       styleClass="pure-table" rowClasses=",pure-table-odd" >
 	                        <h:column>
 	                            <f:facet name="header">
 	                                <h:outputLabel for="sortCa" value="#{msg.search_certs_page_colhead_ca} #{raSearchCertsBean.sortedByCa}"/>
