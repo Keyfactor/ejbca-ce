@@ -33,12 +33,12 @@
             </h:panelGroup>
             <h:panelGroup layout="block" styleClass="content-body">
                 <h:outputText value="#{msg.search_ees_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToSearchEndEntities}"/>
-                <h:form id="contentForm" class="pure-form" rendered="#{raAccessBean.authorizedToSearchEndEntities}">
+                <h:form id="contentForm" styleClass="pure-form pure-form-aligned foo-form" rendered="#{raAccessBean.authorizedToSearchEndEntities}">
                     <ui:remove><!-- Add a hidden h:commandButton first in the form to ensure that hitting enter leads to a search --></ui:remove>
                     <h:commandButton action="#{raSearchEesBean.searchAndFilterAction}" value="#{msg.search_ees_page_search_command}" style="display: none;"/>
     
                     <h:panelGroup id="basic" styleClass="pure-g">
-                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-4-5">
                             <h:inputText id="genericSearchString" value="#{raSearchEesBean.genericSearchString}" styleClass="jsAutoFocusOnce jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
                                  title="#{msg.search_ees_page_criteria_generic_title}">
                                 <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
@@ -46,8 +46,12 @@
                                     onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                             </h:inputText>
                         </h:panelGroup>
+
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
+                            <h:commandButton action="#{raSearchEesBean.searchAndFilterAction}" value="#{msg.search_ees_page_search_command}" styleClass="pure-button pure-button-primary jsHide"/>
+                        </h:panelGroup>
                         
-                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
                             <h:selectOneMenu id="criteriaEepId" value="#{raSearchEesBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneEepAvailable}">
                                 <f:selectItems value="#{raSearchEesBean.availableEeps}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
@@ -56,7 +60,7 @@
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
-                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
                             <h:selectOneMenu id="criteriaCpId" value="#{raSearchEesBean.criteriaCpId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneCpAvailable}">
                                 <f:selectItems value="#{raSearchEesBean.availableCps}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
@@ -65,7 +69,7 @@
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
-                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
                             <h:selectOneMenu id="criteriaCaId" value="#{raSearchEesBean.criteriaCaId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneCaAvailable}">
                                 <f:selectItems value="#{raSearchEesBean.availableCas}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
@@ -74,7 +78,7 @@
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
-                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
                             <h:selectOneMenu id="criteriaStatus" value="#{raSearchEesBean.criteriaStatus}" styleClass="pure-input-1">
                                 <f:selectItems value="#{raSearchEesBean.availableStatuses}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
@@ -83,7 +87,7 @@
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
-                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
                             <h:commandButton rendered="#{raSearchEesBean.moreOptions}" action="#{raSearchEesBean.moreOptionsAction}" value="#{msg.search_ees_page_lessoptions_command}"
                                 styleClass="pure-button pure-button-primary">
                                 <f:ajax execute="@this" render=":contentForm:basic :contentForm:more :contentForm:filteredResults"
@@ -97,13 +101,11 @@
                             </h:commandButton>
                         </h:panelGroup>
                     </h:panelGroup>
-                    <h:commandButton action="#{raSearchEesBean.searchAndFilterAction}" value="#{msg.search_ees_page_search_command}" styleClass="jsHide"/>
     
-                    <h:panelGroup id="more" layout="block" style="margin-top: 10px;">
-                        <h:panelGroup rendered="#{raSearchEesBean.moreOptions}">
-                        
-                            <h:panelGrid columns="3">
-                                <h:panelGrid columns="2">
+	                <h:panelGroup id="more" layout="block" style="margin-top: 10px;" styleClass="pure-u-1 pure-u-lg-4-5">
+                        <h:panelGroup rendered="#{raSearchEesBean.moreOptions}" styleClass="pure-g">
+                            <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-3">
+                                <h:panelGroup layout="block" styleClass="pure-control-group">
                                     <h:outputLabel for="criteriaMaxResults" value="#{msg.search_ees_page_criteria_maxresults}"/>
                                     <h:selectOneMenu id="criteriaMaxResults" value="#{raSearchEesBean.criteriaMaxResults}">
                                         <f:selectItems value="#{raSearchEesBean.availableMaxResults}"/>
@@ -111,9 +113,11 @@
                                             onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
                                             onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:selectOneMenu>
-                                </h:panelGrid>
-    
-                                <h:panelGrid columns="2">
+                                </h:panelGroup>
+                           </h:panelGroup>
+                        
+	                       <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-3">                  
+	                            <h:panelGroup layout="block" styleClass="pure-control-group">
                                     <h:outputLabel for="modifiedAfter" id="modifiedAfterLabel" value="#{msg.search_ees_page_criteria_modifiedafter}"/>
                                     <h:inputText id="modifiedAfter" value="#{raSearchEesBean.modifiedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
                                         styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
@@ -121,6 +125,8 @@
                                             onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
                                             onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:inputText>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" styleClass="pure-control-group">
                                     <h:outputLabel for="modifiedBefore" id="modifiedBeforeLabel" value="#{msg.search_ees_page_criteria_modifiedbefore}"/>
                                     <h:inputText id="modifiedBefore" value="#{raSearchEesBean.modifiedBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
                                         styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
@@ -128,10 +134,10 @@
                                             onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
                                             onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:inputText>
-                                </h:panelGrid>
-                            </h:panelGrid>
+                                </h:panelGroup>
                         </h:panelGroup>
                     </h:panelGroup>
+                </h:panelGroup>
     
                     <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
                         <h:outputText styleClass="fineprint" rendered="#{empty raSearchEesBean.filteredResults}" value="#{msg.search_ees_page_info_noresult}"/>
