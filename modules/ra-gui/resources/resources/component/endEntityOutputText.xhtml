@@ -33,18 +33,14 @@
 		<composite:interface>
 			<composite:attribute name="value" required="true" />
 			<composite:attribute name="required" required="true" />
-			<composite:attribute name="modifiable" required="true" />
 			<composite:attribute name="rendered" required="true" />
 		</composite:interface>
 
 		<composite:implementation>
 			<h:panelGroup layout="block" rendered="#{cc.attrs.rendered}">
-				<c:if test="#{cc.attrs.required}">
-					<h:outputText value="#{cc.attrs.value}*" />
-				</c:if>
-				<c:if test="#{not cc.attrs.required}">
-					<h:outputText value="#{cc.attrs.value}" />
-				</c:if>
+				<h:outputText value="#{cc.attrs.value}*"
+					rendered="#{cc.attrs.required}" />
+				<h:outputText value="#{cc.attrs.value}" rendered="#{not cc.attrs.required}"/>
 			</h:panelGroup>
 		</composite:implementation>
 	</h:body>
