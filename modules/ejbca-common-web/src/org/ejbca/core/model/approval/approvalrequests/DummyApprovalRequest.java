@@ -52,9 +52,9 @@ public class DummyApprovalRequest extends ApprovalRequest {
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
      */
 	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, 
-	            boolean executable, ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
+	            boolean executable, final ApprovalProfile approvalProfile) {
 		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, 
-		        approvalProfile, secondApprovalProfile);	
+		        approvalProfile, null);	
 		this.executable = executable;
 	}  
 	
@@ -62,9 +62,9 @@ public class DummyApprovalRequest extends ApprovalRequest {
      * Main constructor of an approval request with step functionality
      */
 	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, 
-	        int steps, boolean executable, ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
+	        int steps, boolean executable, final ApprovalProfile approvalProfile) {
 		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, 
-		        steps, approvalProfile, secondApprovalProfile);	
+		        steps, approvalProfile, null);	
 		this.executable = executable;
 	} 
 	
