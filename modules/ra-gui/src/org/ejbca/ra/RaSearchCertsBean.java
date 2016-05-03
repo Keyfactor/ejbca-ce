@@ -359,8 +359,12 @@ public class RaSearchCertsBean implements Serializable {
     
     public int getCriteriaMaxResults() { return stagedRequest.getMaxResults(); }
     public void setCriteriaMaxResults(final int criteriaMaxResults) { stagedRequest.setMaxResults(criteriaMaxResults); }
-    public List<Integer> getAvailableMaxResults() {
-        return Arrays.asList(new Integer[]{ RaCertificateSearchRequest.DEFAULT_MAX_RESULTS, 50, 100, 200, 400});
+    public List<SelectItem> getAvailableMaxResults() {
+        List<SelectItem> ret = new ArrayList<>();
+        for (final int value : new int[]{ RaCertificateSearchRequest.DEFAULT_MAX_RESULTS, 50, 100, 200, 400}) {
+            ret.add(new SelectItem(value, raLocaleBean.getMessage("search_certs_page_criteria_results_option", value)));
+        }
+        return ret;
     }
 
     public int getCriteriaEepId() {
