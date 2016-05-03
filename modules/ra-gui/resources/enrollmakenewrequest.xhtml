@@ -44,7 +44,8 @@
 						</c:if>
 						<f:selectItems
 							value="#{enrollMakeNewRequestBean.availableEndEntityProfiles.entrySet()}"
-							var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}" />
+							var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}"
+							itemLabelEscaped="true" />
 						<f:ajax execute=":enrollMakeNewRequestForm:selectEEPOneMenu"
 							event="change" render=":globalMessages :enrollMakeNewRequestForm"
 							listener="#{enrollMakeNewRequestBean.endEntityProfileAjaxListener}" />
@@ -60,7 +61,8 @@
 						disabled="#{enrollMakeNewRequestBean.availableCertificateProfiles.size()==1}">
 						<f:selectItems
 							value="#{enrollMakeNewRequestBean.availableCertificateProfiles.entrySet()}"
-							var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}" />
+							var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}"
+							itemLabelEscaped="true" />
 						<f:ajax execute=":enrollMakeNewRequestForm:selectCPOneMenu"
 							event="change" render=":globalMessages :enrollMakeNewRequestForm"
 							listener="#{enrollMakeNewRequestBean.certificateProfileAjaxListener}" />
@@ -76,7 +78,8 @@
 						disabled="#{enrollMakeNewRequestBean.availableCertificateAuthorities.size()==1}">
 						<f:selectItems
 							value="#{enrollMakeNewRequestBean.availableCertificateAuthorities.entrySet()}"
-							var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}" />
+							var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}"
+							itemLabelEscaped="true" />
 						<f:ajax execute=":enrollMakeNewRequestForm:selectCAOneMenu"
 							event="change" render=":globalMessages :enrollMakeNewRequestForm"
 							listener="#{enrollMakeNewRequestBean.certificateAuthorityAjaxListener}" />
@@ -94,7 +97,8 @@
 							valueChangeListener="#{enrollMakeNewRequestBean.keyPairGenerationChangedListener}"
 							value="#{enrollMakeNewRequestBean.selectedKeyPairGeneration}">
 							<f:selectItems
-								value="#{enrollMakeNewRequestBean.availableKeyPairGenerations.keySet()}" />
+								value="#{enrollMakeNewRequestBean.availableKeyPairGenerations.keySet()}"
+								itemLabelEscaped="true" />
 							<f:ajax
 								execute=":enrollMakeNewRequestForm:selectKeyPairGenerationOneMenu"
 								event="change"
@@ -112,7 +116,7 @@
 								<c:if
 									test="#{enrollMakeNewRequestBean.availableAlgorithms.size()>1}">
 									<f:selectItem itemLabel="Select..." itemValue="#{null}"
-										itemDisabled="true" />
+										itemDisabled="true" itemLabelEscaped="true" />
 								</c:if>
 								<f:selectItems
 									value="#{enrollMakeNewRequestBean.availableAlgorithms.keySet()}" />
@@ -136,40 +140,59 @@
 						<h:outputText value="&#160;" />
 
 						<component:endEntityOutputText value="#{msg.enroll_username}"
-							required="#{enrollMakeNewRequestBean.endEntityProfile.username.isRequired()}"
+							required="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isRequired()}"
 							modifiable="#{true}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.username.isUsed()}" />
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isUsed()}" />
 						<h:inputText
 							value="#{enrollMakeNewRequestBean.endEntityInformation.username}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.username.isUsed()}" />
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isUsed()}" />
 
 						<component:endEntityOutputText value="#{msg.enroll_password}"
-							required="#{enrollMakeNewRequestBean.endEntityProfile.password.isRequired()}"
+							required="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isRequired()}"
 							modifiable="#{true}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.isUsed()}" />
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isUsed()}" />
 						<h:inputSecret
 							value="#{enrollMakeNewRequestBean.endEntityInformation.password}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.isUsed()}" />
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isUsed()}" />
 
 						<component:endEntityOutputText
 							value="#{msg.enroll_confirm_password}"
-							required="#{enrollMakeNewRequestBean.endEntityProfile.password.isRequired()}"
+							required="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isRequired()}"
 							modifiable="#{true}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.isUsed()}" />
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isUsed()}" />
 						<h:inputSecret value="#{enrollMakeNewRequestBean.confirmPassword}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.isRequired()}" />
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isUsed()}" />
 
 						<component:endEntityOutputText value="#{msg.enroll_email}"
-							required="#{enrollMakeNewRequestBean.endEntityProfile.email.isRequired()}"
+							required="#{enrollMakeNewRequestBean.endEntityProfile.email.instances.get(0).isRequired()}"
 							modifiable="#{true}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.email.isUsed()}" />
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.email.instances.get(0).isUsed()}" />
 						<h:inputText
 							value="#{enrollMakeNewRequestBean.endEntityInformation.email}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.email.isUsed()}" />
+							rendered="#{enrollMakeNewRequestBean.endEntityProfile.email.instances.get(0).isUsed()}" />
 
+					</h:panelGrid>
+					<h:panelGrid frame="border" layout="block">
 						<h:outputText value="#{msg.enroll_subject_dn_attributes}" />
 						<h:outputText value="&#160;" />
+
+						<h:dataTable var="instance"
+							value="#{enrollMakeNewRequestBean.subjectDn.getFieldInstances()}">
+							<h:column>
+								<component:endEntityOutputText
+									value="#{enrollMakeNewRequestBean.getSubjectDnFieldOutputName(instance.getName())}"
+									required="#{instance.isRequired()}"
+									rendered="#{instance.isUsed()}" />
+							</h:column>
+							<h:column>
+								<h:inputText value="#{instance.value}"
+									rendered="#{instance.isUsed()}"
+									required="#{instance.isRequired()}"
+									disabled="#{!instance.isModifiable()}" />
+							</h:column>
+						</h:dataTable>
 					</h:panelGrid>
+
 					<br />
 				</h:panelGroup>
 			</h:panelGrid>

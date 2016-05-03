@@ -2141,16 +2141,45 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     /** 
-     * Nested method wrapper class for convenient invoking
+     * Nested class FieldInstance for convenient invoking from xhtml
+     */
+    public class FieldInstance{
+        private String name;
+        private int number;
+        private String value;
+        public FieldInstance(String name, int number){
+            this.name = name;
+            this.number = number;
+            this.value = EndEntityProfile.this.getValue(name, number);
+        }
+        public boolean isUsed() {return EndEntityProfile.this.getUse(name, number);}
+        public boolean isRequired() {return EndEntityProfile.this.isRequired(name, number);}
+        public boolean isModifiable() {return EndEntityProfile.this.isModifyable(name, number);}
+        public String getValue(){return value;}
+        public void setValue(String value){this.value = value;}
+        public String getName(){return name;}
+    }
+    
+    /** 
+     * Nested method wrapper class Field for convenient invoking from xhtml
      */
     public class Field{
         private String name;
-        public Field(String name){this.name = name;}
-        public boolean isUsed(){return EndEntityProfile.this.getUse(name, 0);}
-        public boolean isRequired(){return EndEntityProfile.this.isRequired(name, 0);}
-        public boolean isModifiable(){return EndEntityProfile.this.isModifyable(name, 0);}
+        private List<FieldInstance> instances;
+        public Field(String name){
+            this.name = name;
+            int numberOfInstances = EndEntityProfile.this.getNumberOfField(name);
+            instances = new ArrayList<>(numberOfInstances);
+            for(int i=0; i<numberOfInstances; i++){
+                instances.add(new FieldInstance(name, i));
+            }
+        }
+        public int getNumber(){return instances.size();}
+        public String getName(){return name;}
+        public List<FieldInstance> getInstances(){return instances;}
     }
     public Field getUsername(){return new Field(EndEntityProfile.USERNAME);};
     public Field getPassword(){return new Field(EndEntityProfile.PASSWORD);};
     public Field getEmail(){return new Field(EndEntityProfile.EMAIL);};
+    public Field getStateOrProvince(){return new Field(DnComponents.STATEORPROVINCE);}
 }
