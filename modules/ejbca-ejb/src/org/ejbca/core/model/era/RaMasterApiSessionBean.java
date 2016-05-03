@@ -347,12 +347,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!genericSearchString.isEmpty()) {
             sb.append(" AND (a.username LIKE :username OR a.subjectDN LIKE :subjectDN OR a.subjectAltName LIKE :subjectAltName)");
         }
-        if (request.getCreatedAfter()<Long.MAX_VALUE) {
-            sb.append(" AND (a.timeCreated > :createdAfter)");
-        }
-        if (request.getCreatedBefore()>0) {
-            sb.append(" AND (a.timeCreated < :createdBefore)");
-        }
         if (request.getModifiedAfter()<Long.MAX_VALUE) {
             sb.append(" AND (a.timeModified > :modifiedAfter)");
         }
@@ -395,12 +389,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             query.setParameter("username", "%" + genericSearchString + "%");
             query.setParameter("subjectDN", "%" + genericSearchString + "%");
             query.setParameter("subjectAltName", "%" + genericSearchString + "%");
-        }
-        if (request.getCreatedAfter()<Long.MAX_VALUE) {
-            query.setParameter("createdAfter", request.getCreatedAfter());
-        }
-        if (request.getCreatedBefore()>0L) {
-            query.setParameter("createdBefore", request.getCreatedBefore());
         }
         if (request.getModifiedAfter()<Long.MAX_VALUE) {
             query.setParameter("modifiedAfter", request.getModifiedAfter());
