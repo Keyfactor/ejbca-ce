@@ -48,13 +48,11 @@
 	                    </h:panelGroup>
 	                    
 						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
-		                    <h:selectOneMenu id="criteriaEepId" value="#{raSearchCertsBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneEepAvailable}" readonly="true">
+                            <h:selectOneMenu id="criteriaEepId" value="#{raSearchCertsBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneEepAvailable}">
 		                        <f:selectItems value="#{raSearchCertsBean.availableEeps}"/>
-		                        <ui:remove><!-- Disabled until we have the endEntityProfile column in CertificateData -->
 		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
 		                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
 		                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
-		                        </ui:remove>
 		                    </h:selectOneMenu>
 	                    </h:panelGroup>
 	                    
