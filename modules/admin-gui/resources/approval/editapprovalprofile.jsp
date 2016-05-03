@@ -281,6 +281,10 @@
 		
 		
 		
+		<h:outputLabel value="Depends on Previous Steps"/>
+		<h:selectManyListbox value="#{approvalProfileMBean.newStepPreviousStepsDependency}" size="5" disabled="#{approvalProfilesMBean.viewOnly}">
+			<f:selectItems value="#{approvalProfileMBean.previousStepsAvailable}"/>
+		</h:selectManyListbox>
 		
 		
 		

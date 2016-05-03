@@ -14,6 +14,8 @@ package org.ejbca.ui.web.admin.approval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -299,12 +301,28 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 currentApprovalSteps = profile.getApprovalSteps();
             }
             ArrayList<ApprovalStepGuiInfo> approvalSteps = new ArrayList<ApprovalStepGuiInfo>();
-            List<Integer> stepsOrder = profile.getApprovalStepsOrder();
-            for(Integer stepid : stepsOrder) {
-                ApprovalStep step = profile.getApprovalStep(stepid);
+            Map<Integer, ApprovalStep> steps = profile.getApprovalSteps();
+            for(Integer stepid : steps.keySet()) {
+                ApprovalStep step = steps.get(stepid);
                 ApprovalStepGuiInfo stepGui = new ApprovalStepGuiInfo(step);
                 approvalSteps.add(stepGui);
             }
+            
+            // Sort list by id
+            Collections.sort(approvalSteps, new Comparator<ApprovalStepGuiInfo>() {
+                @Override
+                public int compare(final ApprovalStepGuiInfo a, final ApprovalStepGuiInfo b) {
+                    if(a.getStepId() < b.getStepId()) {
+                        return -1;
+                    } else if(a.getStepId() < b.getStepId()) {
+                        return 1;
+                    } else {
+                    return 0;
+                    }
+                }
+            });
+            
+            
             approvalStepsList = new ListDataModel<ApprovalStepGuiInfo>(approvalSteps);
         }
         return approvalStepsList;
@@ -322,6 +340,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     private int newStepNrOfApprovals = 1;
     private boolean newStepCanSeePreviousSteps = false;
     private String newStepEmail = "";
+    private List<String> newStepPreviousStepsDependency = new ArrayList<String>();
     
     public boolean getAddingNewStep() { return addingNewStep; }
     
@@ -357,6 +376,16 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public void setNewStepCanSeePreviousSteps(boolean canSeePreviousSteps) { newStepCanSeePreviousSteps=canSeePreviousSteps; }
     public String getNewStepEmail() { return newStepEmail; }
     public void setNewStepEmail(String email) { newStepEmail=email; }
+    public List<String> getNewStepPreviousStepsDependency() { return newStepPreviousStepsDependency; }
+    public void setNewStepPreviousStepsDependency(final List<String> dependencyList) { newStepPreviousStepsDependency=dependencyList; }
+    public List<SelectItem> getPreviousStepsAvailable() {
+        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        for(Integer id : currentApprovalSteps.keySet()) {
+            ret.add(new SelectItem(id));
+        }
+        return ret;
+    }
+    
     
     public void addNewStep() {
         String[] options = getNewStepMetadataOptions().split(";");
@@ -365,9 +394,13 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             optionsList.add(option);
         }
         
+        ArrayList<Integer> dependencyList = new ArrayList<Integer>();
+        for(String id : getNewStepPreviousStepsDependency()) {
+            dependencyList.add(new Integer(id));
+        }
         ApprovalStep step = new ApprovalStep(getNewStepId(), getNewStepAuthorizationObject(), getNewStepMetadataInstruction(), 
                 optionsList, getNewStepMetadataOptionsType(), getNewStepNrOfApprovals(), getNewStepCanSeePreviousSteps(), 
-                getNewStepEmail());
+                getNewStepEmail(), dependencyList);
         getApprovalProfile().addApprovalStep(step);
         currentApprovalSteps.put(step.getStepId(), step);
         resetSteps();
@@ -383,6 +416,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         newStepNrOfApprovals = 1;
         newStepCanSeePreviousSteps = false;
         newStepEmail = "";
+        newStepPreviousStepsDependency = new ArrayList<String>();
         
         approvalStepsList = null;
     }

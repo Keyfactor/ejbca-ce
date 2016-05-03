@@ -83,10 +83,6 @@ public abstract class ApprovalRequest implements Externalizable {
     private Map<Integer, ApprovalStep> approvalSteps;
     private Map<Integer, Boolean> approvalStepsHandledMap;
     
-    // TODO Check if this is needed if we set the ID as order
-    private List<Integer> orderedStepIds;
-    
-
     /**
      * Main constructor of an approval request for standard one step approval request.
      * 
@@ -158,17 +154,18 @@ public abstract class ApprovalRequest implements Externalizable {
         approvalStepsHandledMap = new HashMap<Integer, Boolean>();
         
         if(approvalProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
-            orderedStepIds = new ArrayList<Integer>();
+            final int requiredNrOfApprovals = approvalProfile.getNumberOfApprovals();
+            for(int i=0; i<requiredNrOfApprovals; i++) {
+                ApprovalStep step = new ApprovalStep(approvalProfile.getNewStepId(), null, null, null, 0, 1, false, null, new ArrayList<Integer>());
+                approvalSteps.put(Integer.valueOf(step.getStepId()), step);
+                approvalStepsHandledMap.put(Integer.valueOf(step.getStepId()), Boolean.valueOf(false));
+            }
+            
         } else {
-            int i=1;
-            orderedStepIds = approvalProfile.getApprovalStepsOrder();
             Map<Integer, ApprovalStep> steps = approvalProfile.getApprovalSteps();
-            for(Integer stepId : orderedStepIds) {
-                ApprovalStep step = steps.get(stepId);
-                step.setStepOrder(i);
-                approvalSteps.put(stepId, step);
-                approvalStepsHandledMap.put(stepId, Boolean.FALSE);
-                i++;
+            for(ApprovalStep step : steps.values()) {
+                approvalSteps.put(Integer.valueOf(step.getStepId()), step);
+                approvalStepsHandledMap.put(Integer.valueOf(step.getStepId()), Boolean.FALSE);
             }
         }
     }
@@ -202,16 +199,25 @@ public abstract class ApprovalRequest implements Externalizable {
         approvalSteps.put(stepId, step);
     }
     public ApprovalStep getNextUnhandledAppprovalStep() {
-        for(Integer stepId : orderedStepIds) {
-            if(!approvalStepsHandledMap.get(stepId)) {
-                return approvalSteps.get(stepId);
+        for(ApprovalStep step : approvalSteps.values()) {
+            boolean nextStep = true;
+            for(Integer dependStepId : step.getPreviousStepsDependency()) {
+                if(!approvalStepsHandledMap.get(dependStepId).booleanValue()) {
+                    nextStep = false;
+                    break;
+                }
+            }
+            if(nextStep) {
+                if(!approvalStepsHandledMap.get(step.getStepId()).booleanValue()) {
+                    return step;
+                }
             }
         }
         return null;
     }
     public List<ApprovalStep> getApprovedApprovalSteps() {
         ArrayList<ApprovalStep> approvedSteps = new ArrayList<ApprovalStep>();
-        for(Integer stepId : orderedStepIds) {
+        for(Integer stepId : approvalSteps.keySet()) {
             if(approvalStepsHandledMap.get(stepId)) {
                 ApprovalStep step = approvalSteps.get(stepId);
                 if(step.getApprovalStatus()==ApprovalDataVO.STATUS_APPROVED) {
@@ -423,12 +429,6 @@ public abstract class ApprovalRequest implements Externalizable {
             out.writeObject(stepId);
             out.writeBoolean(approvalStepsHandledMap.get(stepId));
         }
-        
-        out.writeInt(this.orderedStepIds.size());
-        for (Integer stepId : orderedStepIds) {
-            out.writeObject(stepId);
-        }
-        
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -577,13 +577,6 @@ public abstract class ApprovalRequest implements Externalizable {
                 Integer stepId = (Integer)in.readObject();
                 Boolean handled = in.readBoolean();
                 approvalStepsHandledMap.put(stepId, handled);
-            }
-            
-            this.orderedStepIds = new ArrayList<Integer>();
-            length = in.readInt(); 
-            for (int i = 0; i < length; i++) {
-                Integer stepId = (Integer)in.readObject();
-                orderedStepIds.add(stepId);
             }
         }
     }
