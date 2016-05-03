@@ -113,12 +113,9 @@ public class RaSearchCertsBean implements Serializable {
         public String getSubjectDn() { return subjectDn; }
         public String getSubjectAn() { return subjectAn; }
         public String getCaName() { return caName; }
-        public String getCpName() {
-            return cpName;
-        }
-        public String getEepName() {
-            return eepName;
-        }
+        public String getCpName() { return cpName; }
+        public boolean isCpNameSameAsEepName() { return eepName.equals(cpName); }
+        public String getEepName() { return eepName; }
         public String getCreated() { return created; }
         public String getExpires() { return expires; }
         public boolean isActive() { return status==CertificateConstants.CERT_ACTIVE || status==CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION; }

@@ -175,10 +175,8 @@
 	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:commandButton>
 	                            </f:facet>
-	                            <h:panelGrid columns="1" styleClass="nopadding noborder">
-	                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.eepName}"/>
-	                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.cpName}"/>
-	                            </h:panelGrid>
+                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.eepName}"/>
+                                <h:outputText styleClass="fineprint" value=" / #{raSearchCertificate.cpName}" rendered="#{!raSearchCertificate.cpNameSameAsEepName}"/>
 	                        </h:column>
 	                        <h:column>
 	                            <f:facet name="header">
