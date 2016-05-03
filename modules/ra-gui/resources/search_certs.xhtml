@@ -38,7 +38,7 @@
 	                <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" style="display: none;"/>
 	
 	                <h:panelGroup id="basic" styleClass="pure-g">
-	               		<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+	               		<h:panelGroup styleClass="pure-u-1 pure-u-lg-4-5">
 		                    <h:inputText id="genericSearchString" value="#{raSearchCertsBean.genericSearchString}" styleClass="jsAutoFocusOnce jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
 		                         title="#{msg.search_certs_page_criteria_generic_title}">
 		                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
@@ -46,8 +46,12 @@
 		                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
 		                    </h:inputText>
 	                    </h:panelGroup>
+    
+                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
+                            <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" styleClass="pure-button pure-button-primary jsHide"/>
+                        </h:panelGroup>
 	                    
-						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
                             <h:selectOneMenu id="criteriaEepId" value="#{raSearchCertsBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneEepAvailable}">
 		                        <f:selectItems value="#{raSearchCertsBean.availableEeps}"/>
 		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
@@ -56,7 +60,7 @@
 		                    </h:selectOneMenu>
 	                    </h:panelGroup>
 	                    
-						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
 		                    <h:selectOneMenu id="criteriaCpId" value="#{raSearchCertsBean.criteriaCpId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneCpAvailable}">
 		                        <f:selectItems value="#{raSearchCertsBean.availableCps}"/>
 		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
@@ -65,7 +69,7 @@
 		                    </h:selectOneMenu>
 						</h:panelGroup>
 						
-						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
 		                    <h:selectOneMenu id="criteriaCaId" value="#{raSearchCertsBean.criteriaCaId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneCaAvailable}">
 		                        <f:selectItems value="#{raSearchCertsBean.availableCas}"/>
 		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
@@ -74,7 +78,7 @@
 		                    </h:selectOneMenu>
 						</h:panelGroup>
 						
-						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
 		                    <h:selectOneMenu id="criteriaStatus" value="#{raSearchCertsBean.criteriaStatus}" styleClass="pure-input-1">
 		                        <f:selectItems value="#{raSearchCertsBean.availableStatuses}"/>
 		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
@@ -83,7 +87,7 @@
 		                    </h:selectOneMenu>
 						</h:panelGroup>
 						
-						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-6 ">
+						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
 		                    <h:commandButton rendered="#{raSearchCertsBean.moreOptions}" action="#{raSearchCertsBean.moreOptionsAction}" value="#{msg.search_certs_page_lessoptions_command}"
 		                    	styleClass="pure-button pure-button-primary">
 		                        <f:ajax execute="@this" render=":contentForm:basic :contentForm:more :contentForm:filteredResults"
@@ -97,11 +101,10 @@
 		                    </h:commandButton>
 						</h:panelGroup>
 	                </h:panelGroup>
-	                <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" styleClass="pure-button pure-button-primary jsHide"/>
 	
-	                <h:panelGroup id="more" layout="block" style="margin-top: 10px;">
+	                <h:panelGroup id="more" layout="block" style="margin-top: 10px;" styleClass="pure-u-1 pure-u-lg-4-5">
 	                    <h:panelGroup rendered="#{raSearchCertsBean.moreOptions}" styleClass="pure-g">                
-							<h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-5 ">
+							<h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-3">
 								<h:panelGroup layout="block" styleClass="pure-control-group">
 	                                <h:outputLabel for="criteriaMaxResults" value="#{msg.search_certs_page_criteria_maxresults}"/>
 	                                <h:selectOneMenu id="criteriaMaxResults" value="#{raSearchCertsBean.criteriaMaxResults}">
@@ -112,7 +115,7 @@
 	                                </h:selectOneMenu>
                                 </h:panelGroup>
 	                       </h:panelGroup>
-	                       <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-2-5 ">                  
+	                       <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-3">                  
 	                            <h:panelGroup layout="block" styleClass="pure-control-group">
 	                                <h:outputLabel for="expiresAfter" id="expiresAfterLabel" value="#{msg.search_certs_page_criteria_expiresafter}"/>
 	                                <h:inputText id="expiresAfter" value="#{raSearchCertsBean.expiresAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
@@ -132,7 +135,7 @@
 	                                </h:inputText>
                                  </h:panelGroup>
 							</h:panelGroup>
-							<h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-2-5 ">				
+							<h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-3">				
 	                            <h:panelGroup layout="block" styleClass="pure-control-group">	                            	
 	                                <h:outputLabel for="revokedAfter" id="revokedAfterLabel" value="#{msg.search_certs_page_criteria_revokedafter}"/>
 	                                <h:inputText id="revokedAfter" value="#{raSearchCertsBean.revokedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
