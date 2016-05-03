@@ -114,23 +114,6 @@
                                 </h:panelGrid>
     
                                 <h:panelGrid columns="2">
-                                    <h:outputLabel for="createdAfter" id="createdAfterLabel" value="#{msg.search_ees_page_criteria_createdafter}"/>
-                                    <h:inputText id="createdAfter" value="#{raSearchEesBean.createdAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
-                                        styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-                                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:createdAfterLabel" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
-                                    </h:inputText>
-                                    <h:outputLabel for="createdBefore" id="createdBeforeLabel" value="#{msg.search_ees_page_criteria_createdbefore}"/>
-                                    <h:inputText id="createdBefore" value="#{raSearchEesBean.createdBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
-                                        styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-                                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:createdBeforeLabel" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
-                                    </h:inputText>
-                                </h:panelGrid>
-
-                                <h:panelGrid columns="2">
                                     <h:outputLabel for="modifiedAfter" id="modifiedAfterLabel" value="#{msg.search_ees_page_criteria_modifiedafter}"/>
                                     <h:inputText id="modifiedAfter" value="#{raSearchEesBean.modifiedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
                                         styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
@@ -175,10 +158,8 @@
                                             onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:commandButton>
                                 </f:facet>
-                                <h:panelGrid columns="1" styleClass="nopadding noborder">
-                                    <h:outputText styleClass="fineprint" value="#{raSearchEndEntity.eepName}"/>
-                                    <h:outputText styleClass="fineprint" value="#{raSearchEndEntity.cpName}"/>
-                                </h:panelGrid>
+                                <h:outputText styleClass="fineprint" value="#{raSearchEndEntity.eepName}"/>
+                                <h:outputText styleClass="fineprint" value=" / #{raSearchEndEntity.cpName}" rendered="#{!raSearchEndEntity.cpNameSameAsEepName}"/>
                             </h:column>
                             <h:column>
                                 <f:facet name="header">
@@ -215,7 +196,6 @@
                                     </h:commandButton>
                                 </f:facet>
                                 <h:panelGrid columns="1" styleClass="nopadding noborder">
-                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.created}"/>
                                     <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.modified}"/>
                                 </h:panelGrid>
                             </h:column>

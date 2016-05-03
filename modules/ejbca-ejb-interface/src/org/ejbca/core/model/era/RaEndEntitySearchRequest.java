@@ -34,8 +34,6 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
     private List<Integer> cpIds = new ArrayList<>();
     private List<Integer> caIds = new ArrayList<>();
     private String genericSearchString = "";
-    private long createdAfter = Long.MAX_VALUE;
-    private long createdBefore = 0L;
     private long modifiedAfter = Long.MAX_VALUE;
     private long modifiedBefore = 0L;
     private List<Integer> statuses = new ArrayList<>();
@@ -51,8 +49,6 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
         cpIds.addAll(request.cpIds);
         caIds.addAll(request.caIds);
         genericSearchString = request.genericSearchString;
-        createdAfter = request.createdAfter;
-        createdBefore = request.createdBefore;
         modifiedAfter = request.modifiedAfter;
         modifiedBefore = request.modifiedBefore;
         statuses.addAll(request.statuses);
@@ -69,10 +65,6 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
     public void setCaIds(final List<Integer> caIds) { this.caIds = caIds; }
     public String getGenericSearchString() { return genericSearchString; }
     public void setGenericSearchString(final String genericSearchString) { this.genericSearchString = genericSearchString; }
-    public long getCreatedAfter() { return createdAfter; }
-    public void setCreatedAfter(final long createdAfter) { this.createdAfter = createdAfter; }
-    public long getCreatedBefore() { return createdBefore; }
-    public void setCreatedBefore(final long createdBefore) { this.createdBefore = createdBefore; }
     public long getModifiedAfter() { return modifiedAfter; }
     public void setModifiedAfter(final long modifiedAfter) { this.modifiedAfter = modifiedAfter; }
     public long getModifiedBefore() { return modifiedBefore; }
@@ -100,7 +92,6 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
         // First check if there is any there is any indication that this does not contain the whole other
         if (maxResults>other.maxResults ||
                 isWider(eepIds, other.eepIds) || isWider(cpIds, other.cpIds) || isWider(caIds, other.caIds) ||
-                createdAfter<other.createdAfter || createdBefore>other.createdBefore ||
                 modifiedAfter<other.modifiedAfter || modifiedBefore>other.modifiedBefore ||
                 !genericSearchString.contains(other.genericSearchString) ||
                 isWider(statuses, other.statuses) || isWider(tokenTypes, other.tokenTypes)) {
@@ -110,7 +101,6 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
         // Next check if this object is more narrow than the other
         if (maxResults<other.maxResults ||
                 isMoreNarrow(eepIds, other.eepIds) || isMoreNarrow(cpIds, other.cpIds) || isMoreNarrow(caIds, other.caIds) ||
-                createdAfter>other.createdAfter || createdBefore<other.createdBefore ||
                 modifiedAfter>other.modifiedAfter || modifiedBefore<other.modifiedBefore ||
                 (genericSearchString.contains(other.genericSearchString) && !other.genericSearchString.contains(genericSearchString)) ||
                 isMoreNarrow(statuses, other.statuses) || isMoreNarrow(tokenTypes, other.tokenTypes)) {

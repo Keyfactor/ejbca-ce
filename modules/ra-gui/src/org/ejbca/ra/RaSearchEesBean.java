@@ -37,7 +37,6 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.ValidityDate;
@@ -62,7 +61,6 @@ public class RaSearchEesBean implements Serializable {
         private final String eepName;
         private final String cpName;
         private final String caName;
-        private final String created;
         private final String modified;
         private final int status;
         private final int tokenType;
@@ -88,7 +86,6 @@ public class RaSearchEesBean implements Serializable {
                 this.eepName = raLocaleBean.getMessage("search_ees_page_info_missingeep", eepId);
             }
             this.caName = String.valueOf(caIdToNameMap.get(endEntity.getCAId()));
-            this.created = ValidityDate.formatAsISO8601ServerTZ(endEntity.getTimeCreated().getTime(), TimeZone.getDefault());
             this.modified = ValidityDate.formatAsISO8601ServerTZ(endEntity.getTimeModified().getTime(), TimeZone.getDefault());
             this.status = endEntity.getStatus();
             this.tokenType = endEntity.getTokenType();
@@ -98,10 +95,9 @@ public class RaSearchEesBean implements Serializable {
         public String getSubjectAn() { return subjectAn; }
         public String getCaName() { return caName; }
         public String getCpName() { return cpName; }
+        public boolean isCpNameSameAsEepName() { return eepName.equals(cpName); }
         public String getEepName() { return eepName; }
-        public String getCreated() { return created; }
         public String getModified() { return modified; }
-        public boolean isActive() { return status==CertificateConstants.CERT_ACTIVE || status==CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION; }
         public String getStatus() {
             switch (status) {
             case EndEntityConstants.STATUS_FAILED:
@@ -158,8 +154,6 @@ public class RaSearchEesBean implements Serializable {
     private RaEndEntitySearchRequest lastExecutedRequest = null;
     private RaEndEntitySearchResponse lastExecutedResponse = null;
 
-    private String createdAfter = "";
-    private String createdBefore = "";
     private String modifiedAfter = "";
     private String modifiedBefore = "";
 
@@ -240,16 +234,6 @@ public class RaSearchEesBean implements Serializable {
                 }
                 if (stagedRequest.getModifiedBefore()>0L) {
                     if (endEntity.getTimeModified().getTime()>stagedRequest.getModifiedBefore()) {
-                        continue;
-                    }
-                }
-                if (stagedRequest.getCreatedAfter()<Long.MAX_VALUE) {
-                    if (endEntity.getTimeCreated().getTime()<stagedRequest.getCreatedAfter()) {
-                        continue;
-                    }
-                }
-                if (stagedRequest.getCreatedBefore()>0L) {
-                    if (endEntity.getTimeCreated().getTime()>stagedRequest.getCreatedBefore()) {
                         continue;
                     }
                 }
@@ -339,10 +323,6 @@ public class RaSearchEesBean implements Serializable {
         stagedRequest.setMaxResults(RaEndEntitySearchRequest.DEFAULT_MAX_RESULTS);
         stagedRequest.setModifiedAfter(Long.MAX_VALUE);
         stagedRequest.setModifiedBefore(0L);
-        stagedRequest.setCreatedAfter(Long.MAX_VALUE);
-        stagedRequest.setCreatedBefore(0L);
-        createdAfter = "";
-        createdBefore = "";
         modifiedAfter = "";
         modifiedBefore = "";
         searchAndFilterCommon();
@@ -436,20 +416,6 @@ public class RaSearchEesBean implements Serializable {
         return availableCas;
     }
 
-    public String getCreatedAfter() {
-        return getDateAsString(createdAfter, stagedRequest.getCreatedAfter(), Long.MAX_VALUE);
-    }
-    public void setCreatedAfter(final String createdAfter) {
-        this.createdAfter = createdAfter;
-        stagedRequest.setCreatedAfter(parseDateAndUseDefaultOnFail(createdAfter, Long.MAX_VALUE));
-    }
-    public String getCreatedBefore() {
-        return getDateAsString(createdBefore, stagedRequest.getCreatedBefore(), 0L);
-    }
-    public void setCreatedBefore(final String createdBefore) {
-        this.createdBefore = createdBefore;
-        stagedRequest.setCreatedBefore(parseDateAndUseDefaultOnFail(createdBefore, 0L));
-    }
     public String getModifiedAfter() {
         return getDateAsString(modifiedAfter, stagedRequest.getModifiedAfter(), Long.MAX_VALUE);
     }
