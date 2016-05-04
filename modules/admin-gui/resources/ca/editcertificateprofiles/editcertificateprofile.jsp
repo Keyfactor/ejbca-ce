@@ -411,7 +411,7 @@
 									title="#{web.text.EXT_PKIX_CP_POLICYQUALID}"/>
 							</h:panelGrid>
 							<h:inputText id="textareapolicynoticeunotice" rendered="#{certProfileBean.newCertificatePolicyQualifierIdUserNotice}"
-								value="#{certProfileBean.newCertificatePolicy.qualifier}" size="45" maxlength="255" title="#{web.text.FORMAT_STRING}"
+								value="#{certProfileBean.newCertificatePolicy.qualifier}" size="45" maxlength="200" title="#{web.text.FORMAT_STRING}"
 								disabled="#{certProfilesBean.viewOnly}"/>
 							<h:inputText id="textfielpolicynoticedcpsurl" rendered="#{certProfileBean.newCertificatePolicyQualifierIdCpsUri}"
 								value="#{certProfileBean.newCertificatePolicy.qualifier}" size="45" maxlength="255" title="#{web.text.FORMAT_URI}"
