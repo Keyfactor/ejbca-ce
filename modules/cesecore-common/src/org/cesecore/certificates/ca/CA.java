@@ -932,7 +932,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * 
      * @return Encoded signed certificate chain, suitable for use in SCEP.
      */
-    public abstract byte[] createPKCS7Rollover(CryptoToken cryptoToken, int caid) throws SignRequestSignatureException;
+    public abstract byte[] createPKCS7Rollover(CryptoToken cryptoToken) throws SignRequestSignatureException;
 
     /**
      * Creates a certificate signature request CSR), that can be sent to an external Root CA. Request format can vary depending on the type of CA. For

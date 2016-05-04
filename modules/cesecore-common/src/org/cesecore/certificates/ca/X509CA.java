@@ -585,7 +585,7 @@ public class X509CA extends CA implements Serializable {
     }
     
     @Override
-    public byte[] createPKCS7Rollover(CryptoToken cryptoToken, int caid) throws SignRequestSignatureException {
+    public byte[] createPKCS7Rollover(CryptoToken cryptoToken) throws SignRequestSignatureException {
         List<Certificate> nextChain = getRolloverCertificateChain();
         if (nextChain == null) {
             log.debug("CA does not have a rollover chain, returning empty PKCS#7");
