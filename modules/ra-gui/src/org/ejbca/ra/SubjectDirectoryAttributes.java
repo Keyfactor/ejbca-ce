@@ -20,43 +20,23 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
 
 /**
- * Contains SubjectDN attributes
+ * Contains Subject Directory attributes
  * @version $Id$
  *
  */
-public class SubjectDn {
-
+public class SubjectDirectoryAttributes {
     private List<EndEntityProfile.FieldInstance> fieldInstances;
     public final static List<String> COMPONENTS;
     static{
         COMPONENTS = new ArrayList<>();
-        COMPONENTS.add(DnComponents.DNEMAILADDRESS);
-        COMPONENTS.add(DnComponents.DNQUALIFIER);
-        COMPONENTS.add(DnComponents.UID);
-        COMPONENTS.add(DnComponents.COMMONNAME);
-        COMPONENTS.add(DnComponents.DNSERIALNUMBER);
-        COMPONENTS.add(DnComponents.GIVENNAME);
-        COMPONENTS.add(DnComponents.INITIALS);
-        COMPONENTS.add(DnComponents.SURNAME);
-        COMPONENTS.add(DnComponents.TITLE);
-        COMPONENTS.add(DnComponents.ORGANIZATIONALUNIT);
-        COMPONENTS.add(DnComponents.ORGANIZATION);
-        COMPONENTS.add(DnComponents.LOCALITY);
-        COMPONENTS.add(DnComponents.STATEORPROVINCE);
-        COMPONENTS.add(DnComponents.DOMAINCOMPONENT);
-        COMPONENTS.add(DnComponents.COUNTRY);
-        COMPONENTS.add(DnComponents.UNSTRUCTUREDADDRESS);
-        COMPONENTS.add(DnComponents.UNSTRUCTUREDNAME);
-        COMPONENTS.add(DnComponents.POSTALCODE);
-        COMPONENTS.add(DnComponents.BUSINESSCATEGORY);
-        COMPONENTS.add(DnComponents.POSTALADDRESS);
-        COMPONENTS.add(DnComponents.TELEPHONENUMBER);
-        COMPONENTS.add(DnComponents.PSEUDONYM);
-        COMPONENTS.add(DnComponents.STREETADDRESS);
-        COMPONENTS.add(DnComponents.NAME);
+        COMPONENTS.add(DnComponents.DATEOFBIRTH);
+        COMPONENTS.add(DnComponents.PLACEOFBIRTH);
+        COMPONENTS.add(DnComponents.GENDER);
+        COMPONENTS.add(DnComponents.COUNTRYOFCITIZENSHIP);
+        COMPONENTS.add(DnComponents.COUNTRYOFRESIDENCE);
     }
 
-    public SubjectDn(EndEntityProfile endEntityProfile) {
+    public SubjectDirectoryAttributes(EndEntityProfile endEntityProfile) {
         fieldInstances = new ArrayList<EndEntityProfile.FieldInstance>();
         for (String key : COMPONENTS) {
             Field field = endEntityProfile.new Field(key);
@@ -82,5 +62,4 @@ public class SubjectDn {
 
         return "";//TODO
     }
-
 }

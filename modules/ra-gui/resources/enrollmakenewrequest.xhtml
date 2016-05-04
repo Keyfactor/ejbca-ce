@@ -174,8 +174,6 @@
 					</h:panelGrid>
 					<h:panelGrid frame="border" layout="block">
 						<h:outputText value="#{msg.enroll_subject_dn_attributes}" />
-						<h:outputText value="&#160;" />
-
 						<h:dataTable var="instance"
 							value="#{enrollMakeNewRequestBean.subjectDn.getFieldInstances()}">
 							<h:column>
@@ -187,12 +185,45 @@
 							<h:column>
 								<h:inputText value="#{instance.value}"
 									rendered="#{instance.isUsed()}"
-									required="#{instance.isRequired()}"
 									disabled="#{!instance.isModifiable()}" />
 							</h:column>
 						</h:dataTable>
 					</h:panelGrid>
-
+					<h:panelGrid frame="border" layout="block">
+						<h:outputText value="#{msg.enroll_subject_alternative_name_attributes}" />
+						<h:dataTable var="instance"
+							value="#{enrollMakeNewRequestBean.subjectAlternativeName.getFieldInstances()}">
+							<h:column>
+								<component:endEntityOutputText
+									value="#{enrollMakeNewRequestBean.getSubjectAlternativeNameFieldOutputName(instance.getName())}"
+									required="#{instance.isRequired()}"
+									rendered="#{instance.isUsed()}" />
+							</h:column>
+							<h:column>
+								<h:inputText value="#{instance.value}"
+									rendered="#{instance.isUsed()}"
+									disabled="#{!instance.isModifiable()}" />
+							</h:column>
+						</h:dataTable>
+					</h:panelGrid>
+					<h:panelGrid frame="border" layout="block">
+						<h:outputText value="#{msg.enroll_subject_directory_attributes}" />
+						<h:dataTable var="instance"
+							value="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.getFieldInstances()}">
+							<h:column>
+								<component:endEntityOutputText
+									value="#{enrollMakeNewRequestBean.getSubjectDirectoryAttributesFieldOutputName(instance.getName())}"
+									required="#{instance.isRequired()}"
+									rendered="#{instance.isUsed()}" />
+							</h:column>
+							<h:column>
+								<h:inputText value="#{instance.value}"
+									rendered="#{instance.isUsed()}"
+									disabled="#{!instance.isModifiable()}" />
+							</h:column>
+						</h:dataTable>
+					</h:panelGrid>
+					
 					<br />
 				</h:panelGroup>
 			</h:panelGrid>
