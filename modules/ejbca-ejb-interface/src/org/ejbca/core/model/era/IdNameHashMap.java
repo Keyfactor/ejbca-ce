@@ -27,7 +27,8 @@ public class IdNameHashMap<T> implements Serializable{
 	private static final long serialVersionUID = 1L;
 
     public class Tuple implements Serializable{
-		private int id;
+		private static final long serialVersionUID = 1L;
+        private int id;
 		private String name;
 		private T value;
 		public Tuple(Integer id, String name, T value){
