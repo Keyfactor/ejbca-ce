@@ -126,7 +126,7 @@ public abstract class CvcCA extends CA implements Serializable {
 	}
 	
 	@Override
-	public byte[] createPKCS7Rollover(CryptoToken cryptoToken, int caid) {
+	public byte[] createPKCS7Rollover(CryptoToken cryptoToken) {
 	    log.info(intres.getLocalizedMessage("cvc.info.nocvcpkcs7"));
         return null;
 	}

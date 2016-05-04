@@ -224,7 +224,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             }
             CA ca = caSession.getCA(admin, caId);
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-            byte[] returnval = ca.createPKCS7Rollover(cryptoToken, caId);
+            byte[] returnval = ca.createPKCS7Rollover(cryptoToken);
             log.trace("<createPKCS7Rollover()");
             return returnval;
         } catch (SignRequestSignatureException e) {
