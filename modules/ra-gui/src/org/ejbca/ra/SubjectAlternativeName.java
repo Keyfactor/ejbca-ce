@@ -20,43 +20,32 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
 
 /**
- * Contains SubjectDN attributes
+ * Contains Subject Alternative Name attributes
  * @version $Id$
  *
  */
-public class SubjectDn {
-
+public class SubjectAlternativeName {
     private List<EndEntityProfile.FieldInstance> fieldInstances;
     public final static List<String> COMPONENTS;
     static{
         COMPONENTS = new ArrayList<>();
-        COMPONENTS.add(DnComponents.DNEMAILADDRESS);
-        COMPONENTS.add(DnComponents.DNQUALIFIER);
-        COMPONENTS.add(DnComponents.UID);
-        COMPONENTS.add(DnComponents.COMMONNAME);
-        COMPONENTS.add(DnComponents.DNSERIALNUMBER);
-        COMPONENTS.add(DnComponents.GIVENNAME);
-        COMPONENTS.add(DnComponents.INITIALS);
-        COMPONENTS.add(DnComponents.SURNAME);
-        COMPONENTS.add(DnComponents.TITLE);
-        COMPONENTS.add(DnComponents.ORGANIZATIONALUNIT);
-        COMPONENTS.add(DnComponents.ORGANIZATION);
-        COMPONENTS.add(DnComponents.LOCALITY);
-        COMPONENTS.add(DnComponents.STATEORPROVINCE);
-        COMPONENTS.add(DnComponents.DOMAINCOMPONENT);
-        COMPONENTS.add(DnComponents.COUNTRY);
-        COMPONENTS.add(DnComponents.UNSTRUCTUREDADDRESS);
-        COMPONENTS.add(DnComponents.UNSTRUCTUREDNAME);
-        COMPONENTS.add(DnComponents.POSTALCODE);
-        COMPONENTS.add(DnComponents.BUSINESSCATEGORY);
-        COMPONENTS.add(DnComponents.POSTALADDRESS);
-        COMPONENTS.add(DnComponents.TELEPHONENUMBER);
-        COMPONENTS.add(DnComponents.PSEUDONYM);
-        COMPONENTS.add(DnComponents.STREETADDRESS);
-        COMPONENTS.add(DnComponents.NAME);
+        COMPONENTS.add(DnComponents.RFC822NAME);
+        COMPONENTS.add(DnComponents.DNSNAME);
+        COMPONENTS.add(DnComponents.IPADDRESS);
+        COMPONENTS.add(DnComponents.UNIFORMRESOURCEID);
+        COMPONENTS.add(DnComponents.DIRECTORYNAME);
+        COMPONENTS.add(DnComponents.UPN);
+        COMPONENTS.add(DnComponents.GUID);
+        COMPONENTS.add(DnComponents.KRB5PRINCIPAL);
+        COMPONENTS.add(DnComponents.PERMANENTIDENTIFIER);
+        // Below are altNames that are not implemented yet
+        COMPONENTS.add(DnComponents.OTHERNAME);
+        COMPONENTS.add(DnComponents.X400ADDRESS);
+        COMPONENTS.add(DnComponents.EDIPARTYNAME);
+        COMPONENTS.add(DnComponents.REGISTEREDID);
     }
 
-    public SubjectDn(EndEntityProfile endEntityProfile) {
+    public SubjectAlternativeName(EndEntityProfile endEntityProfile) {
         fieldInstances = new ArrayList<EndEntityProfile.FieldInstance>();
         for (String key : COMPONENTS) {
             Field field = endEntityProfile.new Field(key);
@@ -82,5 +71,4 @@ public class SubjectDn {
 
         return "";//TODO
     }
-
 }
