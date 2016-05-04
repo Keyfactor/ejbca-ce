@@ -418,7 +418,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 CAInfo caInfo;
                 try {
                     caInfo = getCAInfoInternal(caId);
-                    if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
+                    if (caInfo.getStatus() == CAConstants.CA_ACTIVE || caInfo.getStatus() == CAConstants.CA_UNINITIALIZED) {
                         returnval.put(caInfo.getCAId(), caInfo.getName());
                     }
                 } catch (CADoesntExistsException e) {
