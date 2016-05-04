@@ -13,6 +13,8 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.math.BigInteger;
+import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,11 +76,13 @@ public class RaSearchCertsBean implements Serializable {
         private String updated;
         public RaSearchCertificate(final CertificateDataWrapper cdw) {
             this.fingerprint = cdw.getCertificateData().getFingerprint();
-            this.serialnumber = CertTools.getSerialNumberAsString(cdw.getCertificate());
             this.serialnumberRaw = cdw.getCertificateData().getSerialNumber();
-            this.username = cdw.getCertificateData().getUsername();
+            this.serialnumber = new BigInteger(this.serialnumberRaw).toString(16);
+            final String username = cdw.getCertificateData().getUsername();
+            this.username = username==null ? "" : username;
             this.subjectDn = cdw.getCertificateData().getSubjectDN();
-            this.subjectAn = CertTools.getSubjectAlternativeName(cdw.getCertificate());
+            final Certificate certificate = cdw.getCertificate();
+            this.subjectAn = certificate==null ? "" : CertTools.getSubjectAlternativeName(certificate);
             final Integer cpId = cdw.getCertificateData().getCertificateProfileId();
             if (cpId != null && cpId.intValue()==EndEntityInformation.NO_CERTIFICATEPROFILE) {
                 this.cpName = raLocaleBean.getMessage("search_certs_page_info_unknowncp");
@@ -95,8 +99,13 @@ public class RaSearchCertsBean implements Serializable {
             } else {
                 this.eepName = raLocaleBean.getMessage("search_certs_page_info_missingeep", eepId);
             }
-            this.caName = String.valueOf(caSubjectToNameMap.get(cdw.getCertificateData().getIssuerDN()));
-            this.created = ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(cdw.getCertificate()).getTime(), TimeZone.getDefault());
+            final String issuerDn = cdw.getCertificateData().getIssuerDN();
+            if (issuerDn != null && caSubjectToNameMap.containsKey(issuerDn)) {
+                this.caName = String.valueOf(caSubjectToNameMap.get(issuerDn));
+            } else {
+                this.caName = String.valueOf(issuerDn);
+            }
+            this.created = certificate==null ? "-" : ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(certificate).getTime(), TimeZone.getDefault());
             this.expires = ValidityDate.formatAsISO8601ServerTZ(cdw.getCertificateData().getExpireDate(), TimeZone.getDefault());
             this.status = cdw.getCertificateData().getStatus();
             this.revocationReason = cdw.getCertificateData().getRevocationReason();
