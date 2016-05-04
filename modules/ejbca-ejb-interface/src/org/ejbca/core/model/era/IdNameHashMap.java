@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,9 +22,11 @@ import java.util.Set;
  * Provides looking up operation with two separate keys (id or name) over a map.
  * @version $Id$
  */
-public class IdNameHashMap<T> {
+public class IdNameHashMap<T> implements Serializable{
 	
-	public class Tuple{
+	private static final long serialVersionUID = 1L;
+
+    public class Tuple{
 		private int id;
 		private String name;
 		private T value;
