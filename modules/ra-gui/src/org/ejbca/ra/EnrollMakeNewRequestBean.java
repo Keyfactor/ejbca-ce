@@ -44,7 +44,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page
@@ -121,7 +120,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private EndEntityInformation endEntityInformation;
     private String confirmPassword;
     private SubjectDn subjectDn;
-
+    private SubjectAlternativeName subjectAlternativeName;
+    private SubjectDirectoryAttributes subjectDirectoryAttributes;
+    
     @PostConstruct
     private void postContruct() {
         initAuthorizedEndEntityProfiles();
@@ -278,6 +279,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private void initEndEntityProfileMetadata() {
         endEntityInformation = new EndEntityInformation();
         subjectDn = new SubjectDn(getEndEntityProfile());
+        subjectAlternativeName = new SubjectAlternativeName(getEndEntityProfile());
+        subjectDirectoryAttributes = new SubjectDirectoryAttributes(getEndEntityProfile());
     }
     
     //-----------------------------------------------------------------------------------------------
@@ -285,15 +288,24 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public String getSubjectDnFieldOutputName(String keyName){
         return raLocaleBean.getMessage("subject_dn_" + keyName);
     }
+    
+    public String getSubjectAlternativeNameFieldOutputName(String keyName){
+        return raLocaleBean.getMessage("subject_alternative_name_" + keyName);
+    }
+    
+    public String getSubjectDirectoryAttributesFieldOutputName(String keyName){
+        return raLocaleBean.getMessage("subject_directory_attributes_" + keyName);
+    }
 
     //-----------------------------------------------------------------------------------------------
     //All reset* methods should be able to clear/reset states that have changed during init* methods.
     //Always make sure that reset methods are chained!
 
     public final void reset() {
-        initAuthorizedEndEntityProfiles();
-
+        availableEndEntityProfiles.clear();
         resetCertificateProfile();
+        
+        initAuthorizedEndEntityProfiles();
     }
 
     private final void resetCertificateProfile() {
@@ -331,6 +343,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private final void resetEndEntityMetadata() {
         endEntityInformation = null;
         subjectDn = null;
+        subjectAlternativeName = null;
+        subjectDirectoryAttributes = null;
     }
 
     /**
@@ -758,5 +772,33 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public void setSubjectDn(SubjectDn subjectDn) {
         this.subjectDn = subjectDn;
+    }
+
+    /**
+     * @return the subjectAlternativeName
+     */
+    public SubjectAlternativeName getSubjectAlternativeName() {
+        return subjectAlternativeName;
+    }
+
+    /**
+     * @param subjectAlternativeName the subjectAlternativeName to set
+     */
+    public void setSubjectAlternativeName(SubjectAlternativeName subjectAlternativeName) {
+        this.subjectAlternativeName = subjectAlternativeName;
+    }
+
+    /**
+     * @return the subjectDirectoryAttributes
+     */
+    public SubjectDirectoryAttributes getSubjectDirectoryAttributes() {
+        return subjectDirectoryAttributes;
+    }
+
+    /**
+     * @param subjectDirectoryAttributes the subjectDirectoryAttributes to set
+     */
+    public void setSubjectDirectoryAttributes(SubjectDirectoryAttributes subjectDirectoryAttributes) {
+        this.subjectDirectoryAttributes = subjectDirectoryAttributes;
     }
 }
