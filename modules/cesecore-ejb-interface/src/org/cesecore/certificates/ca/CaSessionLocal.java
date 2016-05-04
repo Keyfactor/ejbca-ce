@@ -165,7 +165,7 @@ public interface CaSessionLocal extends CaSession {
     
     /**
      * Returns a HashMap containing mappings of caid (Integer) to CA name
-     * (String) of all active CAs in the system that the admin is authorized to.
+     * (String) of all active and uninitialized CAs in the system that the admin is authorized to.
      * 
      * @return HashMap with Integer->String mappings
      */
