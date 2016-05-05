@@ -75,6 +75,24 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		this.certificateSerialNumber = null;
 		this.issuerDN = null;
 	}
+	
+	private RevocationApprovalRequest(int approvalType, String username,
+	            int reason, String issuerDN,  AuthenticationToken requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId, 
+	            ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
+	    super(requestAdmin, null, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId, approvalProfile, 
+	            secondApprovalProfile);
+	    this.approvalType = approvalType;
+	    this.username = username;
+	    this.reason = reason;
+	    this.certificateSerialNumber = null;
+	    this.issuerDN = issuerDN;  
+	}
+	
+	public RevocationApprovalRequest getRequestCloneForSecondApprovalProfile() {
+	    RevocationApprovalRequest req = new RevocationApprovalRequest(this.approvalType, this.username, this.reason, this.issuerDN, 
+	            getRequestAdmin(), 0, getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
+	    return req;
+	}
 
 	/**
 	 * A main function of the ApprovalRequest, the execute() method
@@ -128,14 +146,16 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * same thing twice should result in the same approvalId.
 	 */
 	public int generateApprovalId() {
-		return generateApprovalId(getApprovalType(), username, reason, certificateSerialNumber, issuerDN);
+		return generateApprovalId(getApprovalType(), username, reason, certificateSerialNumber, issuerDN, getApprovalProfile().getProfileName());
 	}
 
-	static public int generateApprovalId(int approvalType, String username, int reason, BigInteger certificateSerialNumber, String issuerDN) {
+	static public int generateApprovalId(int approvalType, String username, int reason, BigInteger certificateSerialNumber, String issuerDN, 
+	        String approvalProfileName) {
 		String idString = approvalType + ";" + username + ";" + reason +";";
 		if ( certificateSerialNumber != null && issuerDN != null ) {
 			idString += certificateSerialNumber + ";" + issuerDN + ";";
 		}
+		idString += ";" + approvalProfileName;
 		return idString.hashCode();
 	}
 

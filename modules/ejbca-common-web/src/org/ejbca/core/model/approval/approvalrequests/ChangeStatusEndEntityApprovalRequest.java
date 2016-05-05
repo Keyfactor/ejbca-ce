@@ -63,6 +63,12 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 		this.newstatus = newstatus;
 	}
 
+	public ChangeStatusEndEntityApprovalRequest getRequestCloneForSecondApprovalProfile() {
+	    ChangeStatusEndEntityApprovalRequest req = new ChangeStatusEndEntityApprovalRequest(username, oldstatus, newstatus, 
+	            getRequestAdmin(), getRequestSignature(), 0, getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
+	    return req;
+	}
+
 	/** Overrides ApprovalRequest.isAllowedTransition()
 	 * @see ApprovalRequest#isAllowedTransition()
 	 */
@@ -174,7 +180,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
      * Approval Id is generated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
 	public int generateApprovalId() {		
-		return new String(getApprovalType() + ";" + username).hashCode();
+		return new String(getApprovalType() + ";" + username + ";" + getApprovalProfile().getProfileName()).hashCode();
 	}
 
 	public int getApprovalType() {		

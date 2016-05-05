@@ -147,14 +147,16 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     public ListDataModel<ApprovalStepGuiInfo> getApprovalStepsList() {
         if (approvalStepsList == null) {
             final List<ApprovalStepGuiInfo> guiParts = new ArrayList<ApprovalStepGuiInfo>();
-            final ApprovalStep nextStep = getApproveRequestData().getApprovalRequest().getNextUnhandledAppprovalStep();
-            if(nextStep.canSeePreviousSteps()) {
-                final List<ApprovalStep> approvedSteps = getApproveRequestData().getApprovalRequest().getApprovedApprovalSteps();
-                for(ApprovalStep step : approvedSteps) {
-                    guiParts.add(new ApprovalStepGuiInfo(step));
+            final ApprovalStep nextStep = getApproveRequestData().getApprovalRequest().getNextUnhandledApprovalStepByAdmin(getAdmin());
+            if(nextStep != null) {
+                if(nextStep.canSeePreviousSteps()) {
+                    final List<ApprovalStep> approvedSteps = getApproveRequestData().getApprovalRequest().getApprovedApprovalSteps();
+                    for(ApprovalStep step : approvedSteps) {
+                        guiParts.add(new ApprovalStepGuiInfo(step));
+                    }
                 }
+                guiParts.add(new ApprovalStepGuiInfo(nextStep));
             }
-            guiParts.add(new ApprovalStepGuiInfo(nextStep));
             approvalStepsList = new ListDataModel<ApprovalStepGuiInfo>(guiParts);
             currentStepId = nextStep.getStepId();
         }

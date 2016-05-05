@@ -36,6 +36,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.LocalJvmOnlyAuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.EjbcaConfiguration;
@@ -106,11 +107,13 @@ public abstract class ApprovalRequest implements Externalizable {
 
         this.approvalProfile = firstApprovalProfile;
         this.secondApprovalProfile = secondApprovalProfile;
-        initApprovalSteps();
-
         this.numOfRequiredApprovals = 0;
-        if(this.approvalProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
-            this.numOfRequiredApprovals = this.approvalProfile.getNumberOfApprovals();
+        if(this.approvalProfile != null) {
+            initApprovalSteps();
+        
+            if(this.approvalProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+                this.numOfRequiredApprovals = this.approvalProfile.getNumberOfApprovals();
+            }
         }
     }
 
@@ -133,16 +136,25 @@ public abstract class ApprovalRequest implements Externalizable {
         setRequestAdmin(requestAdmin);
         this.requestSignature = requestSignature;
         this.approvalRequestType = approvalRequestType;
-        this.numOfRequiredApprovals = numOfRequiredApprovals;
         this.cAId = cAId;
         this.endEntityProfileId = endEntityProfileId;
-        this.approvalStepsNrOfApprovals = new boolean[numberOfSteps];
-        for (int i = 0; i < numberOfSteps; i++) {
-            this.approvalStepsNrOfApprovals[i] = false;
-        }
+        
         this.approvalProfile = firstApprovalProfile;
         this.secondApprovalProfile = secondApprovalProfile;
-        initApprovalSteps();
+        this.numOfRequiredApprovals = 0;
+        this.approvalStepsNrOfApprovals = new boolean[0];
+        
+        if(this.approvalProfile != null) {
+            initApprovalSteps();
+        
+            if(this.approvalProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+                this.numOfRequiredApprovals = this.approvalProfile.getNumberOfApprovals();
+                this.approvalStepsNrOfApprovals = new boolean[numberOfSteps];
+                for (int i = 0; i < numberOfSteps; i++) {
+                    this.approvalStepsNrOfApprovals[i] = false;
+                }
+            }
+        }
     }
 
     /** Constuctor used in externaliziation only */
@@ -152,7 +164,7 @@ public abstract class ApprovalRequest implements Externalizable {
     private void initApprovalSteps() {
         approvalSteps = new HashMap<Integer, ApprovalStep>();
         approvalStepsHandledMap = new HashMap<Integer, Boolean>();
-        
+            
         if(approvalProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
             final int requiredNrOfApprovals = approvalProfile.getNumberOfApprovals();
             for(int i=0; i<requiredNrOfApprovals; i++) {
@@ -160,7 +172,7 @@ public abstract class ApprovalRequest implements Externalizable {
                 approvalSteps.put(Integer.valueOf(step.getStepId()), step);
                 approvalStepsHandledMap.put(Integer.valueOf(step.getStepId()), Boolean.valueOf(false));
             }
-            
+                
         } else {
             Map<Integer, ApprovalStep> steps = approvalProfile.getApprovalSteps();
             for(ApprovalStep step : steps.values()) {
@@ -198,7 +210,7 @@ public abstract class ApprovalRequest implements Externalizable {
         step.updateMetadataValue(optionValue, optionNote);
         approvalSteps.put(stepId, step);
     }
-    public ApprovalStep getNextUnhandledAppprovalStep() {
+    public ApprovalStep getNextUnhandledApprovalStep() {
         for(ApprovalStep step : approvalSteps.values()) {
             boolean nextStep = true;
             for(Integer dependStepId : step.getPreviousStepsDependency()) {
@@ -215,6 +227,28 @@ public abstract class ApprovalRequest implements Externalizable {
         }
         return null;
     }
+    
+    public ApprovalStep getNextUnhandledApprovalStepByAdmin(AuthenticationToken admin) {
+        for(ApprovalStep step : approvalSteps.values()) {
+            boolean nextStep = true;
+            for(Integer dependStepId : step.getPreviousStepsDependency()) {
+                if(!approvalStepsHandledMap.get(dependStepId).booleanValue()) {
+                    nextStep = false;
+                    break;
+                }
+            }
+            if(nextStep) {
+                try {
+                    if((!approvalStepsHandledMap.get(step.getStepId()).booleanValue()) && 
+                            approvalProfile.getApprovalProfileType().isAdminAllowedToApproveStep(admin, step, approvalProfile)) {
+                        return step;
+                    }
+                } catch (AuthorizationDeniedException e) { }
+            }
+        }
+        return null;
+    }
+    
     public List<ApprovalStep> getApprovedApprovalSteps() {
         ArrayList<ApprovalStep> approvedSteps = new ArrayList<ApprovalStep>();
         for(Integer stepId : approvalSteps.keySet()) {
@@ -227,6 +261,15 @@ public abstract class ApprovalRequest implements Externalizable {
         }
         return approvedSteps;
     }
+    
+    
+    /**
+     * Returns a copy of this request as a new request to be approved according to the second 
+     * approval profile
+     * 
+     * @return a copy of this request with the second approval profile as the primary approval profile
+     */
+    public abstract ApprovalRequest getRequestCloneForSecondApprovalProfile();
 
     /**
      * Should return true if the request if of the type that should be executed by the last approver.

@@ -75,6 +75,12 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		this.orguserdata = orguserdata;
 	}
 
+	public EditEndEntityApprovalRequest getRequestCloneForSecondApprovalProfile() {
+	    EditEndEntityApprovalRequest req = new EditEndEntityApprovalRequest(newuserdata, clearpwd, orguserdata, getRequestAdmin(), 
+	            getRequestSignature(), 0, getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
+	    return req;
+	}
+
 	@Override
 	public void execute() throws ApprovalRequestExecutionException {
 		throw new RuntimeException("This execution requires additional bean references.");
@@ -103,7 +109,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
      * Approval Id is genereated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
 	public int generateApprovalId() {		
-		return new String(getApprovalType() + ";" + newuserdata.getUsername()).hashCode();
+		return new String(getApprovalType() + ";" + newuserdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
 	}
 
 	public int getApprovalType() {		

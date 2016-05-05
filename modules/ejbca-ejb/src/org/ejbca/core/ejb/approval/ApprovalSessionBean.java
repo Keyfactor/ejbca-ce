@@ -443,13 +443,10 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         final List<ApprovalDataVO> returnData = new ArrayList<ApprovalDataVO>(approvalDataList.size());
         for (ApprovalData approvalData : approvalDataList) {
             final ApprovalDataVO advo = getApprovalDataVO(approvalData);
-            final ApprovalStep approvalStep = advo.getApprovalRequest().getNextUnhandledAppprovalStep();
-            ApprovalProfile approvalProfile = advo.getApprovalRequest().getApprovalProfile();
-            try {
-                if(approvalProfile.getApprovalProfileType().isAdminAllowedToApproveStep(admin, approvalStep, approvalProfile)) {
-                    returnData.add(advo);
-                }
-            } catch(AuthorizationDeniedException e) {}
+            final ApprovalStep approvalStep = advo.getApprovalRequest().getNextUnhandledApprovalStepByAdmin(admin);
+            if(approvalStep != null) {
+                returnData.add(advo);
+            }
         }
         log.trace("<query()");
         return returnData;

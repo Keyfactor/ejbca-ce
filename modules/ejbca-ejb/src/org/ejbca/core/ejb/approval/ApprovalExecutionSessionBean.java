@@ -41,6 +41,8 @@ import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalExecutorUtil;
+import org.ejbca.core.model.approval.ApprovalOveradableClassName;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
@@ -170,39 +172,104 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
 		} else {
 		    approvalSession.addApprovalToApprovalStep(approvalData, approval, approvalStep);
 		    final ApprovalRequest approvalRequest = approvalSession.getApprovalRequest(approvalData);
-		    readyToCheckExecution = approvalRequest.getNextUnhandledAppprovalStep() == null;
+		    readyToCheckExecution = approvalRequest.getNextUnhandledApprovalStep() == null;
 		}
 		
 		if(readyToCheckExecution){
 			final ApprovalRequest approvalRequest = approvalSession.getApprovalRequest(approvalData);
-			if(approvalRequest.isExecutable()){
-				try{
-					if (approvalRequest instanceof ActivateCATokenApprovalRequest) {
-						((ActivateCATokenApprovalRequest)approvalRequest).execute(caAdminSession);
-					} else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-						((AddEndEntityApprovalRequest)approvalRequest).execute(endEntityManagementSession);
-					} else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
-						((ChangeStatusEndEntityApprovalRequest)approvalRequest).execute(endEntityManagementSession);
-					} else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-						((EditEndEntityApprovalRequest)approvalRequest).execute(endEntityManagementSession);
-					} else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
-						((KeyRecoveryApprovalRequest)approvalRequest).execute(endEntityManagementSession);
-					} else if (approvalRequest instanceof RevocationApprovalRequest) {
-						((RevocationApprovalRequest)approvalRequest).execute(endEntityManagementSession);
-					} else {
-						approvalRequest.execute();
-					}
-					approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTED);
-				} catch(ApprovalRequestExecutionException e){
-					approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTIONFAILED);
-					throw e;
-				}
-				approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTED);
-				approvalData.setExpireDate(new Date());
-			}else{
-				approvalData.setStatus(ApprovalDataVO.STATUS_APPROVED);
-				approvalData.setExpiredate((new Date()).getTime() + approvalRequest.getApprovalValidity());
+			
+			// TODO check that both if-statements are actually needed. Probably only one of them is needed
+			if(approvalRequest.getSecondApprovalProfile()!=null) {
+			    ApprovalRequest newApprovalRequest = getCopyOfApprovalRequest(approvalRequest);
+			    if (ApprovalExecutorUtil.requireApproval(newApprovalRequest, getApprovalOveradableClassName())) {
+			        newApprovalRequest.generateApprovalId();
+			        approvalSession.addApprovalRequest(newApprovalRequest.getRequestAdmin(), newApprovalRequest);
+			    }
+			                
+			} else {
+			
+			    if(approvalRequest.isExecutable()){
+			        try{
+			            if (approvalRequest instanceof ActivateCATokenApprovalRequest) {
+			                ((ActivateCATokenApprovalRequest)approvalRequest).execute(caAdminSession);
+			            } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
+			                ((AddEndEntityApprovalRequest)approvalRequest).execute(endEntityManagementSession);
+			            } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
+			                ((ChangeStatusEndEntityApprovalRequest)approvalRequest).execute(endEntityManagementSession);
+			            } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
+			                ((EditEndEntityApprovalRequest)approvalRequest).execute(endEntityManagementSession);
+			            } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
+			                ((KeyRecoveryApprovalRequest)approvalRequest).execute(endEntityManagementSession);
+			            } else if (approvalRequest instanceof RevocationApprovalRequest) {
+			                ((RevocationApprovalRequest)approvalRequest).execute(endEntityManagementSession);
+			            } else {
+			                approvalRequest.execute();
+			            }
+			            approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTED);
+			        } catch(ApprovalRequestExecutionException e){
+			            approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTIONFAILED);
+			            throw e;
+			        }
+			        approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTED);
+			        approvalData.setExpireDate(new Date());
+			    }else{
+			        approvalData.setStatus(ApprovalDataVO.STATUS_APPROVED);
+			        approvalData.setExpiredate((new Date()).getTime() + approvalRequest.getApprovalValidity());
+			    }
 			}
 		}
 	}
+	
+	private ApprovalRequest getCopyOfApprovalRequest(final ApprovalRequest approvalRequest) {
+	    
+	    ApprovalRequest copyRequest = null;
+	    
+        if (approvalRequest instanceof ActivateCATokenApprovalRequest) {
+            ActivateCATokenApprovalRequest activeCAReq = (ActivateCATokenApprovalRequest) approvalRequest;
+            copyRequest = activeCAReq.getRequestCloneForSecondApprovalProfile();
+            setApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest.class.getName());
+        
+        } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
+            AddEndEntityApprovalRequest addEEReq = (AddEndEntityApprovalRequest) approvalRequest;
+            copyRequest = addEEReq.getRequestCloneForSecondApprovalProfile();
+            setApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest.class.getName());
+        
+        } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
+            ChangeStatusEndEntityApprovalRequest changeStatusReq = (ChangeStatusEndEntityApprovalRequest) approvalRequest;
+            copyRequest = changeStatusReq.getRequestCloneForSecondApprovalProfile();
+            setApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest.class.getName());
+
+        } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
+            EditEndEntityApprovalRequest editEEReq = (EditEndEntityApprovalRequest) approvalRequest;
+            copyRequest = editEEReq.getRequestCloneForSecondApprovalProfile();
+            setApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest.class.getName());
+
+        } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
+            KeyRecoveryApprovalRequest keyRecReq = (KeyRecoveryApprovalRequest) approvalRequest;
+            copyRequest = keyRecReq.getRequestCloneForSecondApprovalProfile();
+            setApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest.class.getName());
+
+        } else if (approvalRequest instanceof RevocationApprovalRequest) {
+            RevocationApprovalRequest revReq = (RevocationApprovalRequest) approvalRequest;
+            copyRequest = revReq.getRequestCloneForSecondApprovalProfile();
+            setApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest.class.getName());
+
+        } else {
+            copyRequest = null;
+        }
+        return copyRequest;
+	}
+	
+	private ApprovalOveradableClassName[] approvalOveradableClassName;
+	
+	private ApprovalOveradableClassName[] getApprovalOveradableClassName() {
+	    return approvalOveradableClassName;
+	}
+	
+    private void setApprovalOveradableClassName(String className) {
+        ApprovalOveradableClassName[] classname = { new ApprovalOveradableClassName(className, null), };
+        approvalOveradableClassName = classname;
+    }
+
+	
 }

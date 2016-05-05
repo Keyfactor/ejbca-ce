@@ -113,6 +113,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -122,6 +123,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
@@ -169,6 +171,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private final static String WS_TEST_CERTIFICATE_PROFILE_NAME = "WSTESTPROFILE"; 
     private static final String KEY_RECOVERY_EEP = "KEYRECOVERY";
     
+    private final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
     private final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
     private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private final CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
@@ -506,6 +509,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         final String ERRORNOTSENTFORAPPROVAL = "The request was never sent for approval.";
         final String ERRORNOTSUPPORTEDSUCCEEDED = "Reactivation of users is not supported, but succeeded anyway.";
 
+        final String approvalProfileName = this.getClass().getName() + "-NrOfApprovalsProfile";
+        
         // Generate random username and CA name
         String randomPostfix = Integer.toString(secureRandom.nextInt(999999));
         String caname = "wsRevocationCA" + randomPostfix;
@@ -513,6 +518,11 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         int cryptoTokenId = 0;
         int caID = -1;
         try {
+            
+            ApprovalProfile approvalProfile = new ApprovalProfile(approvalProfileName);
+            approvalProfile.setNumberOfApprovals(1);
+            approvalProfileSession.addApprovalProfile(intAdmin, approvalProfileName, approvalProfile);
+            
             cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSessionRemote, caSession, catoken);
@@ -544,7 +554,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
                 // Approve revocation and verify success
                 approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
-                        ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, approvalExecutionSession, caID);
+                        ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, approvalExecutionSession, caID, 
+                        approvalProfile);
                 // Try to unrevoke certificate
                 try {
                     ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.NOT_REVOKED);
@@ -558,7 +569,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 }
                 // Approve revocation and verify success
                 approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.NOT_REVOKED, ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE,
-                        certificateStoreSession, approvalSession, approvalExecutionSession, caID);
+                        certificateStoreSession, approvalSession, approvalExecutionSession, caID, approvalProfile);
                 // Revoke user
                 try {
                     ejbcaraws.revokeUser(username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, false);
@@ -572,7 +583,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 }
                 // Approve revocation and verify success
                 approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
-                        ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, certificateStoreSession, approvalSession, approvalExecutionSession, caID);
+                        ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, certificateStoreSession, approvalSession, approvalExecutionSession, caID, 
+                        approvalProfile);
                 // Try to reactivate user
                 try {
                     ejbcaraws.revokeUser(username, RevokedCertInfo.NOT_REVOKED, false);
@@ -599,11 +611,13 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 }
                 // Approve actions and verify success
                 approveRevocation(intAdmin, approvingAdmin, TOKENUSERNAME, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
-                        ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, approvalExecutionSession, caID);
+                        ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, approvalExecutionSession, caID, 
+                        approvalProfile);
             } finally {
                 hardTokenSessionRemote.removeHardToken(intAdmin, TOKENSERIALNUMBER);
             }
         } finally {
+            approvalProfileSession.removeApprovalProfile(intAdmin, approvalProfileName);
             // Nuke CA
             try {
                 caAdminSessionRemote.revokeCA(intAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);

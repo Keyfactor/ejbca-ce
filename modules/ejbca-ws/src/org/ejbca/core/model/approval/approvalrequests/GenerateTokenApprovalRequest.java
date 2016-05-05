@@ -62,6 +62,13 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 		this.tokenTypeLabel = tokenTypeLabel;
 	}
 
+    @Override
+    public GenerateTokenApprovalRequest getRequestCloneForSecondApprovalProfile() {
+        GenerateTokenApprovalRequest req = new GenerateTokenApprovalRequest(username, dn, tokenTypeLabel, getRequestAdmin(), 
+                getRequestSignature(), 0, getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
+        return req;
+    }
+	
 	@Override
 	public void execute() throws ApprovalRequestExecutionException {
 		// This is a non-executable approval
@@ -71,7 +78,8 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
      * Approval Id is generated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
 	public int generateApprovalId() {					
-		return new String(getApprovalType() + ";" + username + ";" + CertTools.getFingerprintAsString(getRequestAdminCert())).hashCode();
+		return new String(getApprovalType() + ";" + username + ";" + CertTools.getFingerprintAsString(getRequestAdminCert()) + 
+		        ";" + getApprovalProfile().getProfileName()).hashCode();
 	}
 
 	public int getApprovalType() {		

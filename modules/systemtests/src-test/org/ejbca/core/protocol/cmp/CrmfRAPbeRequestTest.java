@@ -70,12 +70,14 @@ import org.cesecore.util.FileTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSession;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSession;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -119,6 +121,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     final private CmpConfiguration cmpConfiguration;
     final static private String ALIAS = "CrmfRAPbeRequestTestConfigAlias";
     
+    final private ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
     final private ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
     final private ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     final private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
@@ -440,11 +443,16 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         String randomPostfix = Integer.toString((new Random(new Date().getTime() + 4711)).nextInt(999999));
         String caname = "cmpRevocationCA" + randomPostfix;
         String username = "cmpRevocationUser" + randomPostfix;
+        String approvalProfileName = this.getClass().getName() + "-NrOfApprovalsProfile";
         X509CAInfo cainfo = null;
         int cryptoTokenId = 0;
         List<File> fileHandles = new ArrayList<File>();
 
         try {
+            ApprovalProfile approvalProfile = new ApprovalProfile(approvalProfileName);
+            approvalProfile.setNumberOfApprovals(1);
+            approvalProfileSession.addApprovalProfile(ADMIN, approvalProfileName, approvalProfile);
+            
             // Generate CA with approvals for revocation enabled
             cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(ADMIN, caname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -501,7 +509,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 
             approveRevocation(ADMIN, ADMIN, username, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION,
                     ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, this.certificateStoreSession, this.approvalSession, this.approvalExecutionSession,
-                    cainfo.getCAId());
+                    cainfo.getCAId(), approvalProfile);
             // try to revoke the now revoked cert via CMP and verify error
             nonce = CmpMessageHelper.createSenderNonce();
             transid = CmpMessageHelper.createSenderNonce();
@@ -519,6 +527,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             checkCmpFailMessage(resp, "Already revoked.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, ResponseStatus.FAILURE.getValue(), 
                                                                     PKIFailureInfo.certRevoked);
         } finally {
+            approvalProfileSession.removeApprovalProfile(ADMIN, approvalProfileName);
+            
             // Delete user
             this.endEntityManagementSession.deleteUser(ADMIN, username);
             if ( cainfo!=null ) {
@@ -574,7 +584,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     @Override
     protected int approveRevocation(AuthenticationToken admin, AuthenticationToken approvingAdmin, String username, int reason,
             int approvalType, CertificateStoreSession certStoreSession, ApprovalSession approvalS,
-            ApprovalExecutionSession approvalExecSession, int approvalCAID) throws Exception {
+            ApprovalExecutionSession approvalExecSession, int approvalCAID, final ApprovalProfile approvalProfile) throws Exception {
         Collection<java.security.cert.Certificate> userCerts = EJBTools.unwrapCertCollection(certStoreSession.findCertificatesByUsername(username));
         Iterator<java.security.cert.Certificate> i = userCerts.iterator();
         int approvedRevocations = 0;
@@ -586,9 +596,11 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             if ((reason != RevokedCertInfo.NOT_REVOKED && !isRevoked) || (reason == RevokedCertInfo.NOT_REVOKED && isRevoked)) {
                 int approvalID;
                 if (approvalType == ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE) {
-                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, serialNumber, issuer);
+                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, serialNumber, issuer, 
+                            approvalProfile.getProfileName());
                 } else {
-                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, null, null);
+                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, null, null, 
+                            approvalProfile.getProfileName());
                 }
                 Query q = new Query(Query.TYPE_APPROVALQUERY);
                 q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));

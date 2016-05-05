@@ -71,6 +71,13 @@ public class DummyApprovalRequest extends ApprovalRequest {
     /** Constuctor used in externaliziation only */
     public DummyApprovalRequest() {
     }
+
+    @Override
+    public DummyApprovalRequest getRequestCloneForSecondApprovalProfile() {
+        DummyApprovalRequest req = new DummyApprovalRequest(getRequestAdmin(), getRequestSignature(), getCAId(), getEndEntityProfileId(), 
+                executable, getSecondApprovalProfile());
+        return req;
+    }
     
 	/**
 	 * Should return true if the request if of the type that should be executed
@@ -104,7 +111,8 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	 * same thing twice should result in the same approvalId.
 	 */
 	public  int generateApprovalId(){
-		return (CertTools.getFingerprintAsString(getRequestAdminCert()) + getApprovalType() + getCAId() + getEndEntityProfileId()).hashCode(); 
+		return (CertTools.getFingerprintAsString(getRequestAdminCert()) + getApprovalType() + getCAId() + 
+		        getEndEntityProfileId() + getApprovalProfile().getProfileName()).hashCode(); 
 	}
 
 	@Override
