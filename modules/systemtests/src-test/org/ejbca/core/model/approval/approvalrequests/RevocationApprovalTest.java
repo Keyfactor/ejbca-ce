@@ -61,6 +61,7 @@ import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -69,6 +70,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -98,6 +100,7 @@ public class RevocationApprovalTest extends CaTestCase {
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
     private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = EjbRemoteHelper.INSTANCE
             .getRemoteSession(ApprovalExecutionSessionRemote.class);
     private ApprovalSessionRemote approvalSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
@@ -261,7 +264,12 @@ public class RevocationApprovalTest extends CaTestCase {
     @Test
     public void test02RevokeUser() throws Exception {
         String username = genRandomUserName("test02Revocation");
+        String approvalProfileName = this.getClass().getName() + "-NrOfApprovalsProfile";
         try {
+            ApprovalProfile approvalProfile = new ApprovalProfile(approvalProfileName);
+            approvalProfile.setNumberOfApprovals(1);
+            approvalProfileSession.addApprovalProfile(internalAdmin, approvalProfileName, approvalProfile);
+            
             createUser(internalAdmin, username, approvalCAID);
             try {
                 endEntityManagementSession.revokeUser(requestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
@@ -279,19 +287,25 @@ public class RevocationApprovalTest extends CaTestCase {
             }
             approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED,
                     ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, certificateStoreSession, approvalSessionRemote, approvalExecutionSessionRemote,
-                    approvalCAID);
+                    approvalCAID, approvalProfile);
             // Make sure userstatus changed to revoked
             EndEntityInformation userdata = endEntityAccessSession.findUser(internalAdmin, username);
             assertTrue("User was not revoked when last cert was.", userdata.getStatus() == EndEntityConstants.STATUS_REVOKED);
         } finally {
             endEntityManagementSession.deleteUser(internalAdmin, username);
+            approvalProfileSession.removeApprovalProfile(internalAdmin, approvalProfileName);
         }
     } // test02RevokeUser
 
     @Test
     public void test03RevokeAndDeleteUser() throws Exception {
         String username = genRandomUserName("test03Revocation");
+        String approvalProfileName = this.getClass().getName() + "-NrOfApprovalsProfile";
         try {
+            ApprovalProfile approvalProfile = new ApprovalProfile(approvalProfileName);
+            approvalProfile.setNumberOfApprovals(1);
+            approvalProfileSession.addApprovalProfile(internalAdmin, approvalProfileName, approvalProfile);
+            
             createUser(internalAdmin, username, approvalCAID);
             try {
                 endEntityManagementSession.revokeAndDeleteUser(requestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
@@ -309,8 +323,9 @@ public class RevocationApprovalTest extends CaTestCase {
             }
             approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED,
                     ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY, certificateStoreSession, approvalSessionRemote,
-                    approvalExecutionSessionRemote, approvalCAID);
+                    approvalExecutionSessionRemote, approvalCAID, approvalProfile);
         } finally {
+            approvalProfileSession.removeApprovalProfile(internalAdmin, approvalProfileName);
             try {
                 endEntityManagementSession.deleteUser(internalAdmin, username);
             } catch (NotFoundException e) {
@@ -325,7 +340,13 @@ public class RevocationApprovalTest extends CaTestCase {
         final String ERRORNOTSENTFORAPPROVAL = "The request was never sent for approval.";
         final String ERRORNONEXISTINGAPPROVALREPORTED = "Reporting that approval request exists, when it does not.";
         final String ERRORALLOWMORETHANONE = "Allowing more than one identical approval requests.";
+        String approvalProfileName = this.getClass().getName() + "-NrOfApprovalsProfile";
+
         try {
+            ApprovalProfile approvalProfile = new ApprovalProfile(approvalProfileName);
+            approvalProfile.setNumberOfApprovals(1);
+            approvalProfileSession.addApprovalProfile(internalAdmin, approvalProfileName, approvalProfile);
+            
             createUser(internalAdmin, username, approvalCAID);
             X509Certificate usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username)).iterator().next();
             try {
@@ -346,7 +367,7 @@ public class RevocationApprovalTest extends CaTestCase {
             }
             approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
                     ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSessionRemote, approvalExecutionSessionRemote,
-                    approvalCAID);
+                    approvalCAID, approvalProfile);
             // Unrevoke
             try {
                 endEntityManagementSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(),
@@ -365,9 +386,10 @@ public class RevocationApprovalTest extends CaTestCase {
                 assertTrue(ERRORALLOWMORETHANONE, false);
             }
             approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.NOT_REVOKED, ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE,
-                    certificateStoreSession, approvalSessionRemote, approvalExecutionSessionRemote, approvalCAID);
+                    certificateStoreSession, approvalSessionRemote, approvalExecutionSessionRemote, approvalCAID, approvalProfile);
         } finally {
             endEntityManagementSession.deleteUser(internalAdmin, username);
+            approvalProfileSession.removeApprovalProfile(internalAdmin, approvalProfileName);
         }
     } // test04RevokeAndUnrevokeCertificateOnHold
 

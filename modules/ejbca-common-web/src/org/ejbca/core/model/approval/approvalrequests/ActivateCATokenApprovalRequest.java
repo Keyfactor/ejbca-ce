@@ -71,6 +71,13 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 		this.cAName = cAName;
 		this.authenticationCode = authenticationCode;
 	}
+	
+	
+	public ActivateCATokenApprovalRequest getRequestCloneForSecondApprovalProfile() {
+	    ActivateCATokenApprovalRequest req = new ActivateCATokenApprovalRequest(cAName, authenticationCode, getRequestAdmin(), 0, 
+	            getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
+	    return req;
+	}
 
 	@Override
 	public void execute() throws ApprovalRequestExecutionException {
@@ -107,7 +114,7 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * same thing twice should result in the same approvalId.
 	 */
 	public int generateApprovalId() {
-		String idString = getApprovalType() + ";" + cAName;
+		String idString = getApprovalType() + ";" + cAName + ";" + getApprovalProfile().getProfileName();
 		return idString.hashCode();
 	}
 

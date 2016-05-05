@@ -66,6 +66,13 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 		this.cert = cert;
 		this.recoverNewestCert = recoverNewestCert;
 	}
+	
+	public KeyRecoveryApprovalRequest getRequestCloneForSecondApprovalProfile() {
+	    KeyRecoveryApprovalRequest req = new KeyRecoveryApprovalRequest(cert, username, recoverNewestCert, 
+	            getRequestAdmin(), getRequestSignature(), 0, getCAId(), getEndEntityProfileId(), 
+	            getSecondApprovalProfile(), null);
+	    return req;
+	}
 
 	@Override
 	public void execute() throws ApprovalRequestExecutionException {
@@ -93,7 +100,7 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
      * Approval Id is generated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
 	public int generateApprovalId() {		
-		return new String(getApprovalType() + ";" + username).hashCode();
+		return new String(getApprovalType() + ";" + username + ";" + getApprovalProfile().getProfileName()).hashCode();
 	}
 
 	public int getApprovalType() {		

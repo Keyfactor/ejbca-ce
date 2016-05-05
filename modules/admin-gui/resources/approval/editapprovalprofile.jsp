@@ -140,6 +140,10 @@
 					
 					<h:outputLabel value="Notification Email"/>
 					<h:outputText value="#{step.email}"/>
+					
+					<h:outputLabel value="Depends On"/>
+					<h:outputText value="#{step.dependOn}"/>
+					
 			
 				</h:panelGrid>
 	

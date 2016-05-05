@@ -57,6 +57,13 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
 		this.viewpuk = viewPUK;
 	}
 
+    @Override
+    public ViewHardTokenDataApprovalRequest getRequestCloneForSecondApprovalProfile() {
+        ViewHardTokenDataApprovalRequest req = new ViewHardTokenDataApprovalRequest(username, dn, tokensn, viewpuk, getRequestAdmin(), 
+                getRequestSignature(), 0, getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
+        return req;
+    }
+	
 	@Override
 	public void execute() throws ApprovalRequestExecutionException {
 		// This is a non-executable approval
@@ -66,7 +73,8 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
      * Approval Id is generated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
 	public int generateApprovalId() {		
-		return new String(getApprovalType() + ";" + username + ";" + tokensn +";"+ CertTools.getFingerprintAsString(getRequestAdminCert())).hashCode();
+		return new String(getApprovalType() + ";" + username + ";" + tokensn +";"+ 
+		            CertTools.getFingerprintAsString(getRequestAdminCert()) + ";" + getApprovalProfile().getProfileName()).hashCode();
 	}
 
 	public int getApprovalType() {		
@@ -115,4 +123,5 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
             viewpuk = in.readBoolean();
         }
 	}
+
 }
