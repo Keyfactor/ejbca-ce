@@ -33,6 +33,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.approval.ApprovalProfile;
@@ -61,6 +62,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         private int nrOfApprovals;
         private boolean canSeePreviousSteps;
         private String email;
+        private String dependOn;
         public ApprovalStepGuiInfo(final ApprovalStep step) {
             stepId = step.getStepId();
             stepAuthorizationObject = step.getStepAuthorizationObject();
@@ -88,6 +90,15 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             nrOfApprovals = step.getRequiredNumberOfApproval();
             canSeePreviousSteps = step.canSeePreviousSteps();
             email = step.getNotificationEmail();
+            
+            List<Integer> dependList = step.getPreviousStepsDependency();
+            dependOn = "";
+            for(Integer id : dependList) {
+                dependOn += id.intValue() + ", ";
+            }
+            if(StringUtils.isNotEmpty(dependOn)){
+                dependOn = dependOn.substring(0, dependOn.lastIndexOf(","));
+            }
         }
         
         public int getStepId() {return stepId; }
@@ -99,7 +110,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         public int getNrOfApprovals() { return nrOfApprovals; }
         public boolean getCanSeePreviousSteps() { return canSeePreviousSteps; }
         public String getEmail() { return email; }
-
+        public String getDependOn() { return dependOn; }
     }
     
     

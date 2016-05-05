@@ -68,6 +68,12 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		this.userdata = userdata;
 		this.clearpwd = clearpwd;
 	}
+    
+    public AddEndEntityApprovalRequest getRequestCloneForSecondApprovalProfile() {
+        AddEndEntityApprovalRequest req = new AddEndEntityApprovalRequest(userdata, clearpwd, getRequestAdmin(), getRequestSignature(), 0, 
+                getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
+        return req;
+    }
 
 	@Override
 	public void execute() throws ApprovalRequestExecutionException {
@@ -101,7 +107,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
      * Approval Id is generated for this approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
 	public int generateApprovalId() {		
-		return new String(getApprovalType() + ";" + userdata.getUsername()).hashCode();
+		return new String(getApprovalType() + ";" + userdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
 	}
 
 	public int getApprovalType() {		

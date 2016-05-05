@@ -84,6 +84,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
@@ -451,7 +452,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      */
     protected int approveRevocation(AuthenticationToken internalAdmin, AuthenticationToken approvingAdmin, String username, int reason,
             int approvalType, CertificateStoreSession certificateStoreSession, ApprovalSession approvalSession,
-            ApprovalExecutionSession approvalExecutionSession, int approvalCAID) throws Exception {
+            ApprovalExecutionSession approvalExecutionSession, int approvalCAID, final ApprovalProfile approvalProfile) throws Exception {
         log.debug("approvingAdmin=" + approvingAdmin.toString() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType
                 + " approvalCAID=" + approvalCAID);
         Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
@@ -465,9 +466,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             if ((reason != RevokedCertInfo.NOT_REVOKED && !isRevoked) || (reason == RevokedCertInfo.NOT_REVOKED && isRevoked)) {
                 int approvalID;
                 if (approvalType == ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE) {
-                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, serialNumber, issuerDN);
+                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, serialNumber, issuerDN, approvalProfile.getProfileName());
                 } else {
-                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, null, null);
+                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, null, null, approvalProfile.getProfileName());
                 }
                 Query q = new Query(Query.TYPE_APPROVALQUERY);
                 q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
