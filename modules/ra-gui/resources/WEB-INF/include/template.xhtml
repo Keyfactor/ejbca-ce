@@ -56,14 +56,6 @@
 				<ui:include src="/WEB-INF/include/menu.xhtml" />
 			</ui:insert>
 		</div>
-		<!-- move this into the menu -->
-		<h:panelGroup layout="block" id="templateLocale">
-			<h:form>
-		    	<ui:repeat value="#{raLocaleBean.supportedLocales}" var="supportedLocale">
-		        	<h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" value="#{supportedLocale.language}"/>
-		      	</ui:repeat>
-		     </h:form>
-		</h:panelGroup>
 
 		<h:panelGroup layout="block" id="globalMessages">
 	  		<h:messages id="messages" class="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
