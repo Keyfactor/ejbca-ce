@@ -760,6 +760,10 @@ mysql> GRANT ALL PRIVILEGES ON ejbca.* TO 'ejbca'@'localhost' IDENTIFIED BY 'ejb
 You should define secure passwords for your database in production.
 You can also improve the security by limiting access to tables. See for <a href="security.html#Database privileges">Database privileges</a> for more information about that.
 </p>
+<note>
+If you don't set utf8 as character set EJBCA may not start because of index limitations if using the default charset 'utf8mb4' in some configurations of MariaDB/MySQL. 
+It will result in an error 'Specified key was too long; max key length is 767 bytes'.
+</note>
 </subsubsection>
 
 <subsubsection name="Add datasource">
@@ -845,7 +849,7 @@ ant deploy-keystore
 <p>Update the keystore alias to match httpsserver.hostname in web.properties.  Also, update the keystore-password for keystore.jks to match httpsserver.password and the keystore-password for truststore.jks to match java.truststore in web.properties.</p>
 <source>
 /core-service=management/security-realm=SSLRealm:add()
-/core-service=management/security-realm=SSLRealm/server-identity=ssl:add(keystore-path="${jboss.server.config.dir}/keystore/keystore.jks", keystore-password="serverpwd", alias="prod-ica1")
+/core-service=management/security-realm=SSLRealm/server-identity=ssl:add(keystore-path="${jboss.server.config.dir}/keystore/keystore.jks", keystore-password="serverpwd", alias="localhost")
 /core-service=management/security-realm=SSLRealm/authentication=truststore:add(keystore-path="${jboss.server.config.dir}/keystore/truststore.jks", keystore-password="changeit")
 /socket-binding-group=standard-sockets/socket-binding=httpspriv:add(port="8443",interface="httpspriv")
 /socket-binding-group=standard-sockets/socket-binding=httpspub:add(port="8442", interface="httpspub")
