@@ -101,6 +101,13 @@ img.menu_logo {
     width: auto;
 }
 
+.language_button {
+	border: none;
+	padding: 15px 32px;
+	text-align: center;
+    text-decoration: none;
+}
+
 /* CSS Specific for the bottom menu */
 
 .footer {
