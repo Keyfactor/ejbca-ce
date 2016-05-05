@@ -100,8 +100,8 @@
                     </ul>
                 </h:panelGroup>
             </h:panelGroup>
-            <h:panelGroup layout="block" class="pure-u-1 pure-u-lg-1-3">
-                <h:panelGroup layout="block" class="pure-menu pure-menu-horizontal align-right">
+            <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-3">
+                <h:panelGroup layout="block" styleClass="pure-menu pure-menu-horizontal" style="text-align: #{raLocaleBean.reverseIndentationDirection}">
 	             
                     <ul class="pure-menu-list">
                     	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
@@ -110,13 +110,14 @@
                         		<h:form>
 	                        		<ui:repeat value="#{raLocaleBean.supportedLocales}" var="supportedLocale">
 	                        			<li class="pure-menu-item">
-	                        				<h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" label="#{supportedLocale.language}" value="#{supportedLocale.displayLanguage}"  styleClass="pure-menu-item language_button"/> 
+	                        				<h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" label="#{supportedLocale.language}" 
+	                        					value="#{supportedLocale.displayLanguage}" styleClass="pure-menu-item language_button"/> 
 	                        			</li>         			
 	                        		</ui:repeat>
                         		</h:form>
                         	</ul>
                         </li>
-                        <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover"><a href="#" class="pure-menu-link">Documentation</a></li>
+                        <li class="pure-menu-item pure-menu-allow-hover"><a href="#" class="pure-menu-link">Documentation</a></li>
                         <ui:fragment rendered="#{raAuthenticationBean.publicUser}">
                             <li class="pure-menu-item"><a href="#" class="pure-menu-link">Login</a></li>
                         </ui:fragment>
