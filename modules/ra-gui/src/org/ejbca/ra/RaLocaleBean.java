@@ -39,6 +39,9 @@ import org.apache.log4j.Logger;
 @SessionScoped
 public class RaLocaleBean implements Serializable {
 
+    private static final String LEFT_TO_RIGHT = "ltr";
+    private static final String RIGHT_TO_LEFT = "rtl";
+    
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaLocaleBean.class);
     
@@ -96,12 +99,17 @@ public class RaLocaleBean implements Serializable {
 
     /** @return true if the language direction is left to right */
     public String getDirection() {
-        return directionLeftToRight ? "ltr" : "rtl";
+        return directionLeftToRight ? LEFT_TO_RIGHT : RIGHT_TO_LEFT;
     }
 
     /** @return true if the language direction is left to right */
     public String getIndentionDirection() {
         return directionLeftToRight ? "left" : "right";
+    }
+    
+    /** @returns the reverse of the standard value, for cases when text needs to be aligned to the other side. */
+    public String getReverseIndentationDirection() {
+        return !directionLeftToRight ? "left" : "right";
     }
 
     /** Add a faces message with the localized message summary with level FacesMessage.SEVERITY_ERROR. */
