@@ -167,7 +167,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
 		} else {
 		    approvalSession.addApprovalToApprovalStep(approvalData, approvalStep);
 		    final ApprovalRequest approvalRequest = approvalSession.getApprovalRequest(approvalData);
-		    readyToCheckExecution = approvalRequest.getNextUnhandledApprovalStep() == null;
+		    readyToCheckExecution = approvalRequest.areAllStepsApproved();
 		}
 
         final Collection<Approval> approvals = approvalSession.getApprovals(approvalData);

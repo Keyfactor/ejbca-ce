@@ -222,40 +222,33 @@ public abstract class ApprovalRequest implements Externalizable {
         step.updateMetadataValue(optionValue, optionNote);
         approvalSteps.put(stepId, step);
     }
-    public ApprovalStep getNextUnhandledApprovalStep() {
-        for(ApprovalStep step : approvalSteps.values()) {
-            boolean nextStep = true;
-            for(Integer dependStepId : step.getPreviousStepsDependency()) {
-                if(!approvalStepsHandledMap.get(dependStepId).booleanValue()) {
-                    nextStep = false;
-                    break;
-                }
-            }
-            if(nextStep) {
-                if(!approvalStepsHandledMap.get(step.getStepId()).booleanValue()) {
-                    return step;
-                }
+    public boolean areAllStepsApproved() {
+        for(Boolean approved : approvalStepsHandledMap.values()) {
+            if(!approved.booleanValue()) {
+                return false;
             }
         }
-        return null;
+        return true;
     }
     
     public ApprovalStep getNextUnhandledApprovalStepByAdmin(AuthenticationToken admin) {
         for(ApprovalStep step : approvalSteps.values()) {
-            boolean nextStep = true;
-            for(Integer dependStepId : step.getPreviousStepsDependency()) {
-                if(!approvalStepsHandledMap.get(dependStepId).booleanValue()) {
-                    nextStep = false;
-                    break;
-                }
-            }
-            if(nextStep) {
-                try {
-                    if((!approvalStepsHandledMap.get(step.getStepId()).booleanValue()) && 
-                            approvalProfile.getApprovalProfileType().isAdminAllowedToApproveStep(admin, step, approvalProfile)) {
-                        return step;
+            if(!approvalStepsHandledMap.get(step.getStepId()).booleanValue()) {
+            	boolean isNextStep = true;
+            	for(Integer dependStepId : step.getPreviousStepsDependency()) {
+                    if(!approvalStepsHandledMap.get(dependStepId).booleanValue()) {
+                        isNextStep = false;
+                        break;
                     }
-                } catch (AuthorizationDeniedException e) { }
+                }
+            
+                if(isNextStep) {
+                    try {
+                        if(approvalProfile.getApprovalProfileType().isAdminAllowedToApproveStep(admin, step, approvalProfile)) {
+                            return step;
+                        }
+                    } catch (AuthorizationDeniedException e) { }
+                }
             }
         }
         return null;

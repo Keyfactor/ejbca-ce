@@ -684,6 +684,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         }
     }
     
+    @Override
     public void addApprovalToApprovalStep(final ApprovalData approvalData, final ApprovalStep approvalStep) {
         final ApprovalRequest approvalRequest = getApprovalRequest(approvalData);
         approvalRequest.updateApprovalStepMetadata(approvalStep.getStepId(), approvalStep.getMetadata());
