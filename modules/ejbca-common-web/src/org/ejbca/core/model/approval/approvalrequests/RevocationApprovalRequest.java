@@ -5,6 +5,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.EJBException;
@@ -17,6 +18,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -88,9 +90,10 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	    this.issuerDN = issuerDN;  
 	}
 	
-	public RevocationApprovalRequest getRequestCloneForSecondApprovalProfile() {
+	public RevocationApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
 	    RevocationApprovalRequest req = new RevocationApprovalRequest(this.approvalType, this.username, this.reason, this.issuerDN, 
 	            getRequestAdmin(), 0, getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
+	    req.setOldApprovals(oldApprovals);
 	    return req;
 	}
 

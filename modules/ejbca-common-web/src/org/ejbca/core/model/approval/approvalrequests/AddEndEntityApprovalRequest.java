@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.EJBException;
@@ -35,6 +36,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -69,9 +71,10 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		this.clearpwd = clearpwd;
 	}
     
-    public AddEndEntityApprovalRequest getRequestCloneForSecondApprovalProfile() {
+    public AddEndEntityApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
         AddEndEntityApprovalRequest req = new AddEndEntityApprovalRequest(userdata, clearpwd, getRequestAdmin(), getRequestSignature(), 0, 
                 getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
+        req.setOldApprovals(oldApprovals);
         return req;
     }
 
