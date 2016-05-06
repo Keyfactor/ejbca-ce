@@ -16,11 +16,13 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalProfile;
@@ -73,9 +75,10 @@ public class DummyApprovalRequest extends ApprovalRequest {
     }
 
     @Override
-    public DummyApprovalRequest getRequestCloneForSecondApprovalProfile() {
+    public DummyApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
         DummyApprovalRequest req = new DummyApprovalRequest(getRequestAdmin(), getRequestSignature(), getCAId(), getEndEntityProfileId(), 
                 executable, getSecondApprovalProfile());
+        req.setOldApprovals(oldApprovals);
         return req;
     }
     

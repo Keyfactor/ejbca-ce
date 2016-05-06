@@ -95,7 +95,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         	log.info(msg, e);
             throw e;
         }
-        approvalSession.checkExecutionPossibility(admin, adl, approvalStep);
+        approvalSession.checkExecutionPossibility(admin, adl);
 		approval.setApprovalAdmin(true, admin);
         try {
             approve(adl, approval, approvalStep, isNrOfApprovalsProfile);
@@ -163,24 +163,23 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
 		        throw new ApprovalException("Error already enough approvals have been done on this request.");
 		    }
 		    approvalData.setRemainingapprovals(numberofapprovalsleft);
-		     
-		    final Collection<Approval> approvals = approvalSession.getApprovals(approvalData);
-		    approvals.add(approval);
-		    approvalSession.setApprovals(approvalData, approvals);
-
 		    readyToCheckExecution = numberofapprovalsleft == 0;
 		} else {
-		    approvalSession.addApprovalToApprovalStep(approvalData, approval, approvalStep);
+		    approvalSession.addApprovalToApprovalStep(approvalData, approvalStep);
 		    final ApprovalRequest approvalRequest = approvalSession.getApprovalRequest(approvalData);
 		    readyToCheckExecution = approvalRequest.getNextUnhandledApprovalStep() == null;
 		}
+
+        final Collection<Approval> approvals = approvalSession.getApprovals(approvalData);
+        approvals.add(approval);
+        approvalSession.setApprovals(approvalData, approvals);
 		
 		if(readyToCheckExecution){
 			final ApprovalRequest approvalRequest = approvalSession.getApprovalRequest(approvalData);
 			
 			// TODO check that both if-statements are actually needed. Probably only one of them is needed
 			if(approvalRequest.getSecondApprovalProfile()!=null) {
-			    ApprovalRequest newApprovalRequest = getCopyOfApprovalRequest(approvalRequest);
+			    ApprovalRequest newApprovalRequest = getCopyOfApprovalRequest(approvalRequest, approvals);
 			    if (ApprovalExecutorUtil.requireApproval(newApprovalRequest, getApprovalOveradableClassName())) {
 			        newApprovalRequest.generateApprovalId();
 			        approvalSession.addApprovalRequest(newApprovalRequest.getRequestAdmin(), newApprovalRequest);
@@ -220,38 +219,38 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
 		}
 	}
 	
-	private ApprovalRequest getCopyOfApprovalRequest(final ApprovalRequest approvalRequest) {
+	private ApprovalRequest getCopyOfApprovalRequest(final ApprovalRequest approvalRequest, final Collection<Approval> oldApprovals) {
 	    
 	    ApprovalRequest copyRequest = null;
 	    
         if (approvalRequest instanceof ActivateCATokenApprovalRequest) {
             ActivateCATokenApprovalRequest activeCAReq = (ActivateCATokenApprovalRequest) approvalRequest;
-            copyRequest = activeCAReq.getRequestCloneForSecondApprovalProfile();
+            copyRequest = activeCAReq.getRequestCloneForSecondApprovalProfile(oldApprovals);
             setApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest.class.getName());
         
         } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
             AddEndEntityApprovalRequest addEEReq = (AddEndEntityApprovalRequest) approvalRequest;
-            copyRequest = addEEReq.getRequestCloneForSecondApprovalProfile();
+            copyRequest = addEEReq.getRequestCloneForSecondApprovalProfile(oldApprovals);
             setApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest.class.getName());
         
         } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
             ChangeStatusEndEntityApprovalRequest changeStatusReq = (ChangeStatusEndEntityApprovalRequest) approvalRequest;
-            copyRequest = changeStatusReq.getRequestCloneForSecondApprovalProfile();
+            copyRequest = changeStatusReq.getRequestCloneForSecondApprovalProfile(oldApprovals);
             setApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest.class.getName());
 
         } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
             EditEndEntityApprovalRequest editEEReq = (EditEndEntityApprovalRequest) approvalRequest;
-            copyRequest = editEEReq.getRequestCloneForSecondApprovalProfile();
+            copyRequest = editEEReq.getRequestCloneForSecondApprovalProfile(oldApprovals);
             setApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest.class.getName());
 
         } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
             KeyRecoveryApprovalRequest keyRecReq = (KeyRecoveryApprovalRequest) approvalRequest;
-            copyRequest = keyRecReq.getRequestCloneForSecondApprovalProfile();
+            copyRequest = keyRecReq.getRequestCloneForSecondApprovalProfile(oldApprovals);
             setApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest.class.getName());
 
         } else if (approvalRequest instanceof RevocationApprovalRequest) {
             RevocationApprovalRequest revReq = (RevocationApprovalRequest) approvalRequest;
-            copyRequest = revReq.getRequestCloneForSecondApprovalProfile();
+            copyRequest = revReq.getRequestCloneForSecondApprovalProfile(oldApprovals);
             setApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest.class.getName());
 
         } else {

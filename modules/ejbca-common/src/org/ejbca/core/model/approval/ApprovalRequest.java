@@ -22,6 +22,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -84,6 +85,7 @@ public abstract class ApprovalRequest implements Externalizable {
     private Map<Integer, ApprovalStep> approvalSteps;
     private Map<Integer, Boolean> approvalStepsHandledMap;
     
+    private Collection<Approval> oldApprovals;
     /**
      * Main constructor of an approval request for standard one step approval request.
      * 
@@ -115,6 +117,7 @@ public abstract class ApprovalRequest implements Externalizable {
                 this.numOfRequiredApprovals = this.approvalProfile.getNumberOfApprovals();
             }
         }
+        this.oldApprovals = new ArrayList<Approval>();
     }
 
     /**
@@ -155,6 +158,7 @@ public abstract class ApprovalRequest implements Externalizable {
                 }
             }
         }
+        this.oldApprovals = new ArrayList<Approval>();
     }
 
     /** Constuctor used in externaliziation only */
@@ -182,6 +186,14 @@ public abstract class ApprovalRequest implements Externalizable {
         }
     }
     
+    public Collection<Approval> getOldApprovals() {
+        return oldApprovals;
+    }
+    
+    public void setOldApprovals(final Collection<Approval> approvals) {
+        oldApprovals = approvals;
+    }
+    
     /**   
      * The different approval parts. Could either be already approved or not approved yet
      */
@@ -191,9 +203,9 @@ public abstract class ApprovalRequest implements Externalizable {
     public ApprovalStep getApprovalStep(final int stepId) {
         return approvalSteps.get(Integer.valueOf(stepId));
     }
-    public void addApprovalToStep(final int stepId, final Approval approval) {
+    public void addApprovalToStep(final int stepId) {
         ApprovalStep step = approvalSteps.get(stepId);
-        step.addApproval(approval);
+        step.addApproval();
         approvalSteps.put(stepId, step);
         if(step.getApprovalStatus()==ApprovalDataVO.STATUS_APPROVED) {
             approvalStepsHandledMap.put(stepId, Boolean.TRUE);
@@ -269,7 +281,7 @@ public abstract class ApprovalRequest implements Externalizable {
      * 
      * @return a copy of this request with the second approval profile as the primary approval profile
      */
-    public abstract ApprovalRequest getRequestCloneForSecondApprovalProfile();
+    public abstract ApprovalRequest getRequestCloneForSecondApprovalProfile(Collection<Approval> oldApprovals);
 
     /**
      * Should return true if the request if of the type that should be executed by the last approver.
@@ -472,6 +484,11 @@ public abstract class ApprovalRequest implements Externalizable {
             out.writeObject(stepId);
             out.writeBoolean(approvalStepsHandledMap.get(stepId));
         }
+        
+        out.writeInt(this.oldApprovals.size());
+        for (Approval approval : oldApprovals) {
+            out.writeObject(approval);
+        }
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -621,6 +638,14 @@ public abstract class ApprovalRequest implements Externalizable {
                 Boolean handled = in.readBoolean();
                 approvalStepsHandledMap.put(stepId, handled);
             }
+            
+            this.oldApprovals = new ArrayList<Approval>();
+            length = in.readInt(); 
+            for (int i = 0; i < length; i++) {
+                Approval approval = (Approval)in.readObject();
+                oldApprovals.add(approval);
+            }
+
         }
     }
 

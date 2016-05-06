@@ -16,10 +16,12 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalProfile;
@@ -58,9 +60,10 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
 	}
 
     @Override
-    public ViewHardTokenDataApprovalRequest getRequestCloneForSecondApprovalProfile() {
+    public ViewHardTokenDataApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
         ViewHardTokenDataApprovalRequest req = new ViewHardTokenDataApprovalRequest(username, dn, tokensn, viewpuk, getRequestAdmin(), 
                 getRequestSignature(), 0, getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
+        req.setOldApprovals(oldApprovals);
         return req;
     }
 	

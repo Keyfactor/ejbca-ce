@@ -204,7 +204,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             throw e1;
         }
 
-        checkExecutionPossibility(admin, adl, null);
+        checkExecutionPossibility(admin, adl);
         approval.setApprovalAdmin(false, admin);
 
         try {
@@ -230,7 +230,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public void checkExecutionPossibility(AuthenticationToken admin, ApprovalData adl, ApprovalStep approvalStep) throws AdminAlreadyApprovedRequestException {
+    public void checkExecutionPossibility(AuthenticationToken admin, ApprovalData adl) throws AdminAlreadyApprovedRequestException {
         // Check that the approver's principals don't exist among the existing usernames.
         ApprovalDataVO data = getApprovalDataVO(adl);
         int approvalId = data.getApprovalId();
@@ -244,14 +244,18 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 throw new AdminAlreadyApprovedRequestException(msg);
             }
         }
-        // Check that his admin has not approved this this request before
-        Collection<Approval> approvals = new ArrayList<Approval>();
-        if(approvalStep==null) { // Approvals by number
-            approvals = data.getApprovals();
-        } else {
-            approvals = approvalStep.getApprovals();
+        // Check that his admin has not approved this request before
+        Collection<Approval> approvals = data.getApprovals();
+        for (Approval next : approvals) {
+            if (next.getAdmin().equals(admin)) {
+                String msg = intres.getLocalizedMessage("approval.error.alreadyapproved", approvalId);
+                log.info(msg);
+                throw new AdminAlreadyApprovedRequestException(msg);
+            }
         }
         
+        // Check that his admin has not approved the old request before
+        approvals = data.getApprovalRequest().getOldApprovals();
         for (Approval next : approvals) {
             if (next.getAdmin().equals(admin)) {
                 String msg = intres.getLocalizedMessage("approval.error.alreadyapproved", approvalId);
@@ -680,10 +684,10 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         }
     }
     
-    public void addApprovalToApprovalStep(final ApprovalData approvalData, final Approval approval, final ApprovalStep approvalStep) {
+    public void addApprovalToApprovalStep(final ApprovalData approvalData, final ApprovalStep approvalStep) {
         final ApprovalRequest approvalRequest = getApprovalRequest(approvalData);
         approvalRequest.updateApprovalStepMetadata(approvalStep.getStepId(), approvalStep.getMetadata());
-        approvalRequest.addApprovalToStep(approvalStep.getStepId(), approval);
+        approvalRequest.addApprovalToStep(approvalStep.getStepId());
         setApprovalRequest(approvalData, approvalRequest);
     }
 }
