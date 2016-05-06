@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.EJBException;
@@ -25,6 +26,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -73,9 +75,10 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	}
 	
 	
-	public ActivateCATokenApprovalRequest getRequestCloneForSecondApprovalProfile() {
+	public ActivateCATokenApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
 	    ActivateCATokenApprovalRequest req = new ActivateCATokenApprovalRequest(cAName, authenticationCode, getRequestAdmin(), 0, 
 	            getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
+	    req.setOldApprovals(oldApprovals);
 	    return req;
 	}
 

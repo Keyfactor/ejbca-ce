@@ -13,7 +13,6 @@
 package org.ejbca.core.model.approval;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,7 +38,7 @@ public class ApprovalStep implements Serializable {
     
     // Approval data
     private int approvalStatus;
-    private List<Approval> approvals;
+    private int numberOfApprovals;
     
     public ApprovalStep(final int id, final String stepAuthObject, final String instruction, 
             final List<String> options, final int optionsType, final int nrOfApprovals, 
@@ -52,7 +51,7 @@ public class ApprovalStep implements Serializable {
         this.notificationEmail = email;
         this.previousStepsDependency = previousStepsDependency;
         this.approvalStatus = ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
-        this.approvals = new ArrayList<Approval>();
+        this.numberOfApprovals = 0;
     }
 
     public int getStepId() {
@@ -96,23 +95,17 @@ public class ApprovalStep implements Serializable {
         this.previousStepsDependency = previousStepsDependency;
     }
     
-    public List<Approval> getApprovals() {
-        return approvals;
+    public int getNumberOfApprovals() {
+        return numberOfApprovals;
     }
     
-    public void addApproval(final Approval approval) {
-        approvals.add(approval);
-        updateApprovalStatus();
+    public void addApproval() {
+        numberOfApprovals++;
+        updateStepApprovalStatus();
     }
     
-    private void updateApprovalStatus() {
-        int nrOfApprovals = 0;
-        for(Approval approval : approvals) {
-            if(approval.isApproved()) {
-                nrOfApprovals++;
-            }
-        }
-        if(nrOfApprovals == requiredNumberOfApprovals) {
+    private void updateStepApprovalStatus() {
+        if(getNumberOfApprovals() == requiredNumberOfApprovals) {
             approvalStatus = ApprovalDataVO.STATUS_APPROVED;
         }
     }

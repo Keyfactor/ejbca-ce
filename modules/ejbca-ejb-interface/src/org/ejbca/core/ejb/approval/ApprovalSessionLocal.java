@@ -65,7 +65,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
      * @throws AdminAlreadyApprovedRequestException if the admin has already approved the action before
      * @throws SelfApprovalException if the administrator performing the approval is the same as the one requesting the original action. 
      */
-	void checkExecutionPossibility(AuthenticationToken admin, ApprovalData adl, ApprovalStep approvalStep) throws AdminAlreadyApprovedRequestException, SelfApprovalException;
+	void checkExecutionPossibility(AuthenticationToken admin, ApprovalData adl) throws AdminAlreadyApprovedRequestException, SelfApprovalException;
 
 	/** Method that returns the approval data value object. */
 	ApprovalDataVO getApprovalDataVO(ApprovalData adl);
@@ -82,7 +82,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
 	 */
 	void setApprovals(ApprovalData approvalData, Collection<Approval> approvals);
 	
-	void addApprovalToApprovalStep(ApprovalData approvalData, Approval approval, ApprovalStep approvalStep);
+	void addApprovalToApprovalStep(ApprovalData approvalData, ApprovalStep approvalStep);
 
 	ApprovalRequest getApprovalRequest(ApprovalData approvalData);
 }

@@ -19,6 +19,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.EJBException;
@@ -29,6 +30,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
+import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -67,10 +69,11 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 		this.recoverNewestCert = recoverNewestCert;
 	}
 	
-	public KeyRecoveryApprovalRequest getRequestCloneForSecondApprovalProfile() {
+	public KeyRecoveryApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
 	    KeyRecoveryApprovalRequest req = new KeyRecoveryApprovalRequest(cert, username, recoverNewestCert, 
 	            getRequestAdmin(), getRequestSignature(), 0, getCAId(), getEndEntityProfileId(), 
 	            getSecondApprovalProfile(), null);
+	    req.setOldApprovals(oldApprovals);
 	    return req;
 	}
 
