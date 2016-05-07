@@ -13,7 +13,10 @@
 package org.ejbca.core.model.approval;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Holds data of one approval step
@@ -30,7 +33,7 @@ public class ApprovalStep implements Serializable {
     
     private int stepId; // Equivalent to property key
     private String stepAuthorizationObject; // Equivalent to property value, for example, the AdminRole name
-    private ApprovalStepMetadata metadata;
+    private Map<Integer, ApprovalStepMetadata> metadata;
     private int requiredNumberOfApprovals;
     private boolean canSeePreviousSteps;
     private String notificationEmail;
@@ -40,12 +43,11 @@ public class ApprovalStep implements Serializable {
     private int approvalStatus;
     private int numberOfApprovals;
     
-    public ApprovalStep(final int id, final String stepAuthObject, final String instruction, 
-            final List<String> options, final int optionsType, final int nrOfApprovals, 
+    public ApprovalStep(final int id, final String stepAuthObject, final int nrOfApprovals, 
             final boolean canSeePreviousSteps, final String email, final List<Integer> previousStepsDependency) {
         this.stepId = id;
         this.stepAuthorizationObject = stepAuthObject;
-        this.metadata = new ApprovalStepMetadata(instruction, options, optionsType);
+        this.metadata = new HashMap<Integer, ApprovalStepMetadata>();
         this.requiredNumberOfApprovals = nrOfApprovals;
         this.canSeePreviousSteps = canSeePreviousSteps;
         this.notificationEmail = email;
@@ -53,7 +55,25 @@ public class ApprovalStep implements Serializable {
         this.approvalStatus = ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
         this.numberOfApprovals = 0;
     }
-
+    
+    public ApprovalStep(final int id, final String stepAuthObject, final List<ApprovalStepMetadata> metadata, 
+            final int nrOfApprovals, 
+            final boolean canSeePreviousSteps, final String email, final List<Integer> previousStepsDependency) {
+        this.stepId = id;
+        this.stepAuthorizationObject = stepAuthObject;
+        this.requiredNumberOfApprovals = nrOfApprovals;
+        this.canSeePreviousSteps = canSeePreviousSteps;
+        this.notificationEmail = email;
+        this.previousStepsDependency = previousStepsDependency;
+        this.approvalStatus = ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
+        this.numberOfApprovals = 0;
+        
+        this.metadata = new HashMap<Integer, ApprovalStepMetadata>();
+        for(ApprovalStepMetadata md : metadata) {
+            this.metadata.put(Integer.valueOf(md.getMetadataId()), md);
+        }
+    }
+    
     public int getStepId() {
         return stepId;
     }
@@ -70,13 +90,19 @@ public class ApprovalStep implements Serializable {
         return canSeePreviousSteps;
     }
 
-    public ApprovalStepMetadata getMetadata() {
-        return metadata;
+    public Collection<ApprovalStepMetadata> getMetadata() {
+        return metadata.values();
     }
     
-    public void updateMetadataValue(final String optionValue, final String optionNote) {
-        metadata.setOptionValue(optionValue);
-        metadata.setOptionNote(optionNote);
+    public void updateOneMetadataValue(final Integer metadataId, final String optionValue, final String optionNote) {
+        ApprovalStepMetadata md = metadata.get(metadataId);
+        md.setOptionValue(optionValue);
+        md.setOptionNote(optionNote);
+        metadata.put(metadataId, md);
+    }
+    
+    public void updateOneMetadata(final ApprovalStepMetadata metadata) {
+        this.metadata.put(metadata.getMetadataId(), metadata);
     }
     
     public String getNotificationEmail() {

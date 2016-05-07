@@ -122,7 +122,7 @@
 				
 					<h:outputLabel value="Authorization Object"/>
 					<h:outputText value="#{step.stepAuthorizationObject}"/>
-					
+					<%-- 
 					<h:outputLabel value="Metadata Instruction"/>
 					<h:outputText value="#{step.metadataInstruction}"/>
 					
@@ -131,7 +131,7 @@
 					
 					<h:outputLabel value="Metadata Options Type"/>
 					<h:outputText value="#{step.metadataOptionTypeString}"/>
-					
+					--%>
 					<h:outputLabel value="Required Number of Approvals"/>
 					<h:outputText value="#{step.nrOfApprovals}"/>
 					
@@ -149,10 +149,8 @@
 	
 			</h:column>
 			<h:column>
-				<h:commandButton value="Delete" action="#{approvalProfileMBean.addNewStep}" disabled="#{approvalProfilesMBean.viewOnly}" />
-				<h:commandButton value="Edit" action="#{approvalProfileMBean.addNewStep}" disabled="#{approvalProfilesMBean.viewOnly}" />
-				<h:commandButton value="Move UP" action="#{approvalProfileMBean.addNewStep}" disabled="#{approvalProfilesMBean.viewOnly}" />
-				<h:commandButton value="Move Down" action="#{approvalProfileMBean.addNewStep}" disabled="#{approvalProfilesMBean.viewOnly}" />
+				<h:commandButton value="Delete" action="#{approvalProfileMBean.deleteStep}" disabled="#{approvalProfilesMBean.viewOnly}" />
+				<h:commandButton value="Edit" action="#{approvalProfileMBean.EditStep}" disabled="#{approvalProfilesMBean.viewOnly}" />
 			</h:column>
 	
 	
@@ -221,20 +219,20 @@
 		
 		
 		<h:outputLabel for="addStepMetadata" value="Metadata" styleClass="subItem"/>
+		<%--
 		<h:panelGroup>
-			<h:inputText id="textfieldcaissueruri" value="#{approvalProfileMBean.newStepMetadataInstruction}" size="45" maxlength="255" title="#{web.text.FORMAT_URI}"/>
+			<h:inputText value="#{approvalProfileMBean.newStepMetadataInstruction}" size="45" maxlength="255" title="#{web.text.FORMAT_URI}"/>
 			<h:selectOneMenu value="#{approvalProfileMBean.newStepMetadataOptionsType}">
 						<f:selectItems value="#{approvalProfileMBean.optionTypesAvailable}"/>
 			</h:selectOneMenu>
 			<h:inputText value="#{approvalProfileMBean.newStepMetadataOptions}" size="45" maxlength="255" title="#{web.text.FORMAT_URI}"/>
 		</h:panelGroup>
-		
-		<%--
-		<h:dataTable id="addStepMetadata" value="#{approvalProfileMBean.newMetadataList}" var="mt">
+        --%>
+		<h:dataTable id="addStepMetadata" value="#{approvalProfileMBean.metadataList}" var="mt">
 			<h:column>
-				<h:outputText value="#{mt.description}"/>
+				<h:outputText value="#{mt.instruction}"/>
 				<f:facet name="footer">
-					<h:inputText id="textfieldcaissueruri" value="#{approvalProfileMBean.newMetadataDescription}" size="45" maxlength="255" title="#{web.text.FORMAT_URI}"
+					<h:inputText value="#{approvalProfileMBean.newMetadataInstruction}" size="45" maxlength="255" title="#{web.text.FORMAT_URI}"
 						/>
 				</f:facet>
 			</h:column>
@@ -242,7 +240,7 @@
 				<h:outputText value="#{mt.optionTypeString}"/>
 				<f:facet name="footer">
 					<h:selectOneMenu value="#{approvalProfileMBean.newMetadataOptionsType}">
-						<f:selectItems value="#{approvalProfileMBean.metadataTypesAvailable}"/>
+						<f:selectItems value="#{approvalProfileMBean.optionTypesAvailable}"/>
 					</h:selectOneMenu>
 				</f:facet>
 			</h:column>
@@ -262,7 +260,7 @@
 				</f:facet>
 			</h:column>
 		</h:dataTable>
-		 --%>
+		 
 		
 		
 		

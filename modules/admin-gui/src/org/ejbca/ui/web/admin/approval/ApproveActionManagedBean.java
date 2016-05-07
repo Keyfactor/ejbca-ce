@@ -32,6 +32,7 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.ApprovalStep;
+import org.ejbca.core.model.approval.ApprovalStepMetadata;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.RAAuthorization;
@@ -51,37 +52,34 @@ import org.ejbca.util.query.Query;
  */
 public class ApproveActionManagedBean extends BaseManagedBean {
 
-    public class ApprovalStepGuiInfo {
-        private int stepId;
-        private String metadataInstruction;
-        private int metadataOptionsType;
-        private List<String> metadataOptions;
-        private String metadataOptionValue;
-        private List<String> metadataOptionValueList;
-        private String metadataNote;
-        private boolean approved;
-        
-        public ApprovalStepGuiInfo(ApprovalStep step) {
-            this.stepId = step.getStepId();
-            this.metadataInstruction = step.getMetadata().getInstruction();
-            this.metadataOptions = step.getMetadata().getOptions();
-            this.metadataOptionsType = step.getMetadata().getOptionsType();
-            this.metadataOptionValue = step.getMetadata().getOptionValue();
-            this.metadataNote = step.getMetadata().getOptionNote();
-            this.approved = (step.getApprovalStatus()==ApprovalDataVO.STATUS_APPROVED);
+    public class MetadataGuiInfo {
+        private int metadataId;
+        private String instruction;
+        private int optionsType;
+        private List<String> options;
+        private String optionValue;
+        private List<String> optionValueList;
+        private String note;
+        public MetadataGuiInfo(final ApprovalStepMetadata metadata) {
+            this.metadataId = metadata.getMetadataId();
+            this.instruction = metadata.getInstruction();
+            this.options = metadata.getOptions();
+            this.optionsType = metadata.getOptionsType();
+            this.optionValue = metadata.getOptionValue();
+            this.note = metadata.getOptionNote();            
         }
+        public int getMetadataId() { return metadataId; }
+        public String getInstruction() { return instruction; }
+        public int getOptionsType() { return optionsType; }
+        public List<String> getOptions() { return options; }
+        public String getOptionValue() { return optionValue; }
+        public void setOptionValue(String value) { optionValue=value; }
+        public List<String> getOptionValueList() { return optionValueList; }
+        public void setOptionValueList(List<String> value) { optionValueList=value; }
+        public String getNote() { return note; }
+        public void setNote(String note) { this.note=note; }
+
         
-        public int getStepId() { return stepId; }
-        public String getMetadataInstruction() { return metadataInstruction; }
-        public int getMetadataOptionsType() { return metadataOptionsType; }
-        public List<String> getMetadataOptions() { return metadataOptions; }
-        public String getMetadataOptionValue() { return metadataOptionValue; }
-        public void setMetadataOptionValue(String value) { metadataOptionValue=value; }
-        public List<String> getMetadataOptionValueList() { return metadataOptionValueList; }
-        public void setMetadataOptionValueList(List<String> value) { metadataOptionValueList=value; }
-        public String getMetadataNote() { return metadataNote; }
-        public void setMetadataNote(String note) { metadataNote=note; }
-        public boolean getApproved() { return approved; }
     }
     
     private static final long serialVersionUID = 1940920496104779323L;
@@ -90,8 +88,9 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 	private String comment = "";
 	private ApprovalDataVOView approveRequestData = new ApprovalDataVOView();      
 	private HashMap<Integer, String> statustext = null;
-	private ListDataModel<ApprovalStepGuiInfo> approvalStepsList = null;
-	private int currentStepId = 0;
+	private ApprovalStep currentApprovalStep = null;
+	private ListDataModel<MetadataGuiInfo> metadataList = null;
+	private ListDataModel<MetadataGuiInfo> previousMetadataList = null;
 
 	public  HashMap<Integer, String> getStatusText(){
 	    if(statustext == null){
@@ -140,29 +139,59 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     	return approveRequestData.getApproveActionDataVO().getApprovals().size() >0;
     }
 
-    public boolean isExistApprovalSteps() {
-        return getApprovalStepsList().iterator().hasNext();
+    public boolean getExistCurrentApprovalStep() {
+        if(currentApprovalStep==null) {
+            getMetadataList();
+        }
+        return currentApprovalStep!=null;
     }
     
-    public ListDataModel<ApprovalStepGuiInfo> getApprovalStepsList() {
-        if (approvalStepsList == null) {
-            final List<ApprovalStepGuiInfo> guiParts = new ArrayList<ApprovalStepGuiInfo>();
-            final ApprovalStep nextStep = getApproveRequestData().getApprovalRequest().getNextUnhandledApprovalStepByAdmin(getAdmin());
-            if(nextStep != null) {
-                if(nextStep.canSeePreviousSteps()) {
-                    final List<ApprovalStep> approvedSteps = getApproveRequestData().getApprovalRequest().getApprovedApprovalSteps();
-                    for(ApprovalStep step : approvedSteps) {
-                        guiParts.add(new ApprovalStepGuiInfo(step));
+    public boolean getExistPreviousMetadata() {
+        if(previousMetadataList==null) {
+            getMetadataList();
+        }
+        return previousMetadataList.getRowCount() > 0;
+    }
+    
+    
+    public ListDataModel<MetadataGuiInfo> getMetadataList() {
+        if(metadataList==null) {
+            if(currentApprovalStep==null) {
+                currentApprovalStep = getApproveRequestData().getApprovalRequest().getNextUnhandledApprovalStepByAdmin(getAdmin());
+            }
+            if(currentApprovalStep==null) {
+                addErrorMessage("AUTHORIZATIONDENIED");
+                return null;
+            }
+            
+            ArrayList<MetadataGuiInfo> previousMdGuis = new ArrayList<MetadataGuiInfo>();
+            if(currentApprovalStep.canSeePreviousSteps()) {
+                final List<ApprovalStep> approvedSteps = getApproveRequestData().getApprovalRequest().getApprovedApprovalSteps();
+                for(ApprovalStep previousStep : approvedSteps) {
+                    for(ApprovalStepMetadata md : previousStep.getMetadata()) {
+                        previousMdGuis.add(new MetadataGuiInfo(md));
                     }
                 }
-                guiParts.add(new ApprovalStepGuiInfo(nextStep));
             }
-            approvalStepsList = new ListDataModel<ApprovalStepGuiInfo>(guiParts);
-            currentStepId = nextStep.getStepId();
+            previousMetadataList = new ListDataModel<MetadataGuiInfo>(previousMdGuis);
+            
+            ArrayList<MetadataGuiInfo> currentMdGuis = new ArrayList<MetadataGuiInfo>();
+            for(ApprovalStepMetadata md : currentApprovalStep.getMetadata()) {
+                currentMdGuis.add(new MetadataGuiInfo(md));
+            }
+            metadataList = new ListDataModel<MetadataGuiInfo>(currentMdGuis);
+            
         }
-        return approvalStepsList;
+        return metadataList;
     }
     
+    public ListDataModel<MetadataGuiInfo> getPreviousMetadataList() {
+        if(previousMetadataList==null) {
+            getMetadataList();
+        }
+        return previousMetadataList;
+    }
+        
     public boolean isApprovable(){
     	if(approveRequestData.getApproveActionDataVO().getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL){
     		return true;
@@ -221,25 +250,26 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         if(getApproveRequestData().getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
             return null;
         }
-        ListDataModel<ApprovalStepGuiInfo> guiSteps = getApprovalStepsList();
+        
         ApprovalRequest approvalRequest = getApproveRequestData().getApprovalRequest();
-        for(ApprovalStepGuiInfo guiStep : guiSteps) {
-            if(guiStep.getStepId() == currentStepId) {
+        if(currentApprovalStep!=null) {
+            for(MetadataGuiInfo mdGui : metadataList) {
                 String metadataOptionsValue = "";
-                if(guiStep.getMetadataOptionsType()==ApprovalStep.METADATATYPE_CHECKBOX) {
-                    List<String> data = guiStep.getMetadataOptionValueList();
+                if(mdGui.getOptionsType()==ApprovalStep.METADATATYPE_CHECKBOX) {
+                    List<String> data = mdGui.getOptionValueList();
                     for(String p : data) {
                         metadataOptionsValue += p + "; " ;
                     }
                     metadataOptionsValue = metadataOptionsValue.substring(0, metadataOptionsValue.length()-3);
                 } else {
-                    metadataOptionsValue = guiStep.getMetadataOptionValue();
+                    metadataOptionsValue = mdGui.getOptionValue();
                 }
-                approvalRequest.updateApprovalStepMetadata(currentStepId, 
-                        guiStep.getMetadataOptionValue(), guiStep.getMetadataNote());
-                return approvalRequest.getApprovalStep(currentStepId);
+                currentApprovalStep.updateOneMetadataValue(mdGui.getMetadataId(), metadataOptionsValue, mdGui.getNote());
             }
+            approvalRequest.updateApprovalStepMetadata(currentApprovalStep.getStepId(), currentApprovalStep.getMetadata());
+            return approvalRequest.getApprovalStep(currentApprovalStep.getStepId());
         }
+        
         return null;
     }
     

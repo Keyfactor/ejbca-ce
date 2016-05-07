@@ -127,32 +127,46 @@ function viewcert(link){
 
 
 
-	<h3><h:outputText value="Approval Steps:"/></h3>
-  <h:dataTable id="approvalPartsTable" value="#{approvalActionManagedBean.approvalStepsList}" var="step" width="100%">
+  <h3><h:outputText value="Previous Approval Steps:" rendered="#{approvalActionManagedBean.existPreviousMetadata}"/></h3>
+  <h:dataTable value="#{approvalActionManagedBean.previousMetadataList}" var="previousMD" width="100%" 
+  						rendered="#{approvalActionManagedBean.existPreviousMetadata}">
     <h:column>
-		<h:panelGroup>
-			<h:outputLabel for="approvedpart" value="#{step.metadataInstruction} "/>
-		</h:panelGroup>
+		<h:outputLabel value="#{previousMD.instruction} "/>
+    </h:column>
+    <h:column>
+		<h:outputLabel value="#{previousMD.optionValue}"/>
+    </h:column>
+	<h:column>
+		<h:outputLabel value="#{previousMD.note}" />
+	</h:column>
+
+  </h:dataTable>   
+  
+   <h3><h:outputText value="Current Step:" rendered="#{approvalActionManagedBean.existCurrentApprovalStep}"/></h3>
+  <h:dataTable id="currentApprovalMetadataTable" value="#{approvalActionManagedBean.metadataList}" var="md" width="100%" 
+  					rendered="#{approvalActionManagedBean.existCurrentApprovalStep}" >
+    <h:column>
+			<h:outputLabel value="#{md.instruction} "/>
     </h:column>
     <h:column>
     	<h:panelGroup>
-   			<h:selectManyListbox value="#{step.metadataOptionValueList}" size="5" rendered="#{step.metadataOptionsType==1}"  disabled="#{step.approved}">
-				<f:selectItems value="#{step.metadataOptions}"/>
+   			<h:selectManyListbox value="#{md.optionValueList}" size="5" rendered="#{md.optionsType==1}">
+				<f:selectItems value="#{md.options}"/>
 			</h:selectManyListbox>
    			
-   			<h:selectOneMenu value="#{step.metadataOptionValue}"  rendered="#{step.metadataOptionsType==2}"  disabled="#{step.approved}">
-				<f:selectItems value="#{step.metadataOptions}"/>
+   			<h:selectOneMenu value="#{md.optionValue}"  rendered="#{md.optionsType==2}">
+				<f:selectItems value="#{md.options}"/>
 			</h:selectOneMenu>
 			
-			<h:inputText value="#{step.metadataOptionValue}" title="#{web.text.FORMAT_ID_STR}" size="25" maxlength="255" 
-		  										rendered="#{step.metadataOptionsType==3}"  disabled="#{step.approved}"/>
+			<h:inputText value="#{md.optionValue}" title="#{web.text.FORMAT_ID_STR}" size="25" maxlength="255" 
+		  										rendered="#{md.optionsType==3}"/>
 		  	
    		</h:panelGroup>
     </h:column>
     
 	<h:column>
-		<h:inputText value="#{step.metadataNote}" title="#{web.text.FORMAT_ID_STR}" size="25" maxlength="255" 
-												rendered="#{step.metadataOptionsType!=3}"  disabled="#{step.approved}"/>
+		<h:inputText value="#{md.note}" title="#{web.text.FORMAT_ID_STR}" size="25" maxlength="255" 
+												rendered="#{md.optionsType!=3}"/>
 	</h:column>
 
   </h:dataTable>   
