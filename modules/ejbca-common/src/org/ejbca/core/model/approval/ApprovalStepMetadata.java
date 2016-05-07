@@ -10,13 +10,16 @@ import java.util.List;
  */
 public class ApprovalStepMetadata implements Serializable {
     private static final long serialVersionUID = -8320579875930271365L;
+    
+    private int metadataId;
     private String instruction;
     private List<String> options;
     private int optionsType;
     private String optionValue;
     private String optionNote;
     
-    public ApprovalStepMetadata(final String instruction, final List<String> options, final int type) {
+    public ApprovalStepMetadata(final int id, final String instruction, final List<String> options, final int type) {
+        this.metadataId = id;
         this.instruction = instruction;
         this.options = options;
         this.optionsType = type;
@@ -24,6 +27,7 @@ public class ApprovalStepMetadata implements Serializable {
         this.optionNote = "";
     }
     
+    public int getMetadataId() { return metadataId; }
     public String getInstruction() { return instruction; }
     public void setDescription(final String instruction) { this.instruction = instruction; }
     public List<String> getOptions() {return options; }

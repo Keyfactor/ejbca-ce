@@ -41,6 +41,7 @@ import org.ejbca.core.model.approval.ApprovalProfileByAdminRoles;
 import org.ejbca.core.model.approval.ApprovalProfileNumberOfApprovals;
 import org.ejbca.core.model.approval.ApprovalProfileType;
 import org.ejbca.core.model.approval.ApprovalStep;
+import org.ejbca.core.model.approval.ApprovalStepMetadata;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -52,61 +53,74 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
 
     private static final long serialVersionUID = -3751383340600251434L;
     
-    public class ApprovalStepGuiInfo {
-        private int stepId;
-        private String stepAuthorizationObject;
-        private String metadataInstruction;
-        private String metadataOptions;
-        private int metadataOptionsType;
-        private String metadataOptionTypeString;
-        private int nrOfApprovals;
-        private boolean canSeePreviousSteps;
-        private String email;
-        private String dependOn;
-        public ApprovalStepGuiInfo(final ApprovalStep step) {
-            stepId = step.getStepId();
-            stepAuthorizationObject = step.getStepAuthorizationObject();
-            metadataInstruction = step.getMetadata().getInstruction();
-            
-            List<String> mtoptions = step.getMetadata().getOptions();
+    public class MetadataGuiInfo {
+        private int metadataId;
+        private String instruction;
+        private String options;
+        private int optionsType;
+        private String optionTypeString;
+        public MetadataGuiInfo(final ApprovalStepMetadata metadata) {
+            metadataId = metadata.getMetadataId();
+            instruction = metadata.getInstruction();
+
+            List<String> mtoptions = metadata.getOptions();
             StringBuilder optionsBuilder = new StringBuilder("");
             for(String option : mtoptions) {
                 optionsBuilder.append(option + ", ");
             }
             optionsBuilder.deleteCharAt(optionsBuilder.length()-2);
-            metadataOptions = optionsBuilder.toString();
+            options = optionsBuilder.toString();
             
-            metadataOptionsType = step.getMetadata().getOptionsType();
-            if(metadataOptionsType == ApprovalStep.METADATATYPE_CHECKBOX) {
-                metadataOptionTypeString = "Check Boxes";
-            } else if(metadataOptionsType == ApprovalStep.METADATATYPE_RADIOBUTTON) {
-                metadataOptionTypeString = "Radio Buttons";
-            } else if(metadataOptionsType == ApprovalStep.METADATATYPE_TEXTBOX) {
-                metadataOptionTypeString = "Text Box";
+            optionsType = metadata.getOptionsType();
+            if(optionsType == ApprovalStep.METADATATYPE_CHECKBOX) {
+                optionTypeString = "Check Boxes";
+            } else if(optionsType == ApprovalStep.METADATATYPE_RADIOBUTTON) {
+                optionTypeString = "Radio Buttons";
+            } else if(optionsType == ApprovalStep.METADATATYPE_TEXTBOX) {
+                optionTypeString = "Text Box";
             } else {
-                metadataOptionTypeString = "Type unknown";
+                optionTypeString = "Type unknown";
             }
+        }
+        public int getMetadataId() { return metadataId; }
+        public String getInstruction() { return instruction; }
+        public String getOptions() { return options; }
+        public int getOptionsType() { return optionsType; }
+        public String getOptionTypeString() {return optionTypeString;}
+        
+    }
+    
+    public class ApprovalStepGuiInfo {
+        private int stepId;
+        private String stepAuthorizationObject;
+        private MetadataGuiInfo metadata;
+        private int nrOfApprovals;
+        private boolean canSeePreviousSteps;
+        private String email;
+        private String dependOn;
+        public ApprovalStepGuiInfo(final ApprovalStep step) {
+        	if(step != null) {
+        	    stepId = step.getStepId();
+        	    stepAuthorizationObject = step.getStepAuthorizationObject();
+                metadata = new MetadataGuiInfo(step.getMetadata().iterator().next());
+                nrOfApprovals = step.getRequiredNumberOfApproval();
+                canSeePreviousSteps = step.canSeePreviousSteps();
+                email = step.getNotificationEmail();
             
-            nrOfApprovals = step.getRequiredNumberOfApproval();
-            canSeePreviousSteps = step.canSeePreviousSteps();
-            email = step.getNotificationEmail();
-            
-            List<Integer> dependList = step.getPreviousStepsDependency();
-            dependOn = "";
-            for(Integer id : dependList) {
-                dependOn += id.intValue() + ", ";
-            }
-            if(StringUtils.isNotEmpty(dependOn)){
-                dependOn = dependOn.substring(0, dependOn.lastIndexOf(","));
-            }
+                List<Integer> dependList = step.getPreviousStepsDependency();
+                dependOn = "";
+                for(Integer id : dependList) {
+                    dependOn += id.intValue() + ", ";
+                }
+                if(StringUtils.isNotEmpty(dependOn)){
+                    dependOn = dependOn.substring(0, dependOn.lastIndexOf(","));
+                }
+        	}
         }
         
         public int getStepId() {return stepId; }
         public String getStepAuthorizationObject() { return stepAuthorizationObject; }
-        public String getMetadataInstruction() { return metadataInstruction; }
-        public String getMetadataOptions() { return metadataOptions; }
-        public int getMetadataOptionsType() { return metadataOptionsType; }
-        public String getMetadataOptionTypeString() {return metadataOptionTypeString;}
+        public MetadataGuiInfo getMetadata() { return metadata; }
         public int getNrOfApprovals() { return nrOfApprovals; }
         public boolean getCanSeePreviousSteps() { return canSeePreviousSteps; }
         public String getEmail() { return email; }
@@ -339,15 +353,74 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         return approvalStepsList;
     }
     
+    // ----------------------- Add new Metadata in Step -------------------
+    
+    private ListDataModel<MetadataGuiInfo> metadataList = null;
+    private ArrayList<ApprovalStepMetadata> currentNewStepMetadataList = new ArrayList<ApprovalStepMetadata>();
+    private String newMetadataInstruction = "";
+    private String newMetadataOptions = "";
+    private int newMetadataOptionsType = 1;
+    
+    public ListDataModel<MetadataGuiInfo> getMetadataList() {
+        if(metadataList==null) {
+            ArrayList<MetadataGuiInfo> metadataGuis = new ArrayList<MetadataGuiInfo>();
+            for(ApprovalStepMetadata md : currentNewStepMetadataList) {
+                MetadataGuiInfo mdgui = new MetadataGuiInfo(md);
+                metadataGuis.add(mdgui);
+                
+            }
+            metadataList = new ListDataModel<MetadataGuiInfo>(metadataGuis);
+        }
+        return metadataList;
+        
+    }
+    public String getNewMetadataInstruction() { return newMetadataInstruction; }
+    public void setNewMetadataInstruction(String instruction) { newMetadataInstruction=instruction; }
+    public String getNewMetadataOptions() { return newMetadataOptions; }
+    public void setNewMetadataOptions(String options) { newMetadataOptions=options; }
+    public int getNewMetadataOptionsType() { return newMetadataOptionsType; }
+    public void setNewMetadataOptionsType(int type) { newMetadataOptionsType=type; }
+    public List<SelectItem> getOptionTypesAvailable() {
+        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        ret.add(new SelectItem(ApprovalStep.METADATATYPE_CHECKBOX, "Check boxes"));
+        ret.add(new SelectItem(ApprovalStep.METADATATYPE_RADIOBUTTON, "Radio buttons"));
+        ret.add(new SelectItem(ApprovalStep.METADATATYPE_TEXTBOX, "Text field"));
+        return ret;
+    }
+    public void addMetadata() {
+        // TODO make sure that this ID does not already exist
+        final int newMetadataId = currentNewStepMetadataList.size()+1;
+        
+        String[] options = getNewMetadataOptions().split(";");
+        ArrayList<String> optionsList = new ArrayList<String>();
+        for(String option : options) {
+            optionsList.add(option);
+        }
+        
+        ApprovalStepMetadata metadata = new ApprovalStepMetadata(newMetadataId, getNewMetadataInstruction(), optionsList, getNewMetadataOptionsType());
+        currentNewStepMetadataList.add(metadata);
+        resetNewMetadata();
+    }
+    
+    public void deleteMetadata() {
+        MetadataGuiInfo mdToRemove = metadataList.getRowData();
+        currentNewStepMetadataList.remove(mdToRemove);
+        metadataList = null;
+    }
+    
+    private void resetNewMetadata() {
+        metadataList = null;
+        newMetadataInstruction = "";
+        newMetadataOptions = "";
+        newMetadataOptionsType = 1;
+    }
+    
     
     // ---------------------- Add new Approval Step ------------------
     
     
     private boolean addingNewStep = false;
     private String newStepAuthorizationObject = "";
-    private String newStepMetadataInstruction = "";
-    private String newStepMetadataOptions = "";
-    private int newStepMetadataOptionsType = 1;
     private int newStepNrOfApprovals = 1;
     private boolean newStepCanSeePreviousSteps = false;
     private String newStepEmail = "";
@@ -361,19 +434,6 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     
     public String getNewStepAuthorizationObject() { return newStepAuthorizationObject; }
     public void setNewStepAuthorizationObject(String object) { newStepAuthorizationObject=object; }
-    public String getNewStepMetadataInstruction() { return newStepMetadataInstruction; }
-    public void setNewStepMetadataInstruction(String instruction) { newStepMetadataInstruction=instruction; }
-    public String getNewStepMetadataOptions() { return newStepMetadataOptions; }
-    public void setNewStepMetadataOptions(String options) { newStepMetadataOptions=options; }
-    public int getNewStepMetadataOptionsType() { return newStepMetadataOptionsType; }
-    public void setNewStepMetadataOptionsType(int type) { newStepMetadataOptionsType=type; }
-    public List<SelectItem> getOptionTypesAvailable() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
-        ret.add(new SelectItem(ApprovalStep.METADATATYPE_CHECKBOX, "Check boxes"));
-        ret.add(new SelectItem(ApprovalStep.METADATATYPE_RADIOBUTTON, "Radio buttons"));
-        ret.add(new SelectItem(ApprovalStep.METADATATYPE_TEXTBOX, "Text field"));
-        return ret;
-    }
     public int getNewStepNrOfApprovals() { return newStepNrOfApprovals; }
     public void setNewStepNrOfApprovals(int nrOfApprovals) { newStepNrOfApprovals=nrOfApprovals; }
     public List<SelectItem> getNrOfApprovalsAvailable() {
@@ -399,37 +459,35 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     
     
     public void addNewStep() {
-        String[] options = getNewStepMetadataOptions().split(";");
-        ArrayList<String> optionsList = new ArrayList<String>();
-        for(String option : options) {
-            optionsList.add(option);
-        }
         
         ArrayList<Integer> dependencyList = new ArrayList<Integer>();
         for(String id : getNewStepPreviousStepsDependency()) {
             dependencyList.add(new Integer(id));
         }
-        ApprovalStep step = new ApprovalStep(getNewStepId(), getNewStepAuthorizationObject(), getNewStepMetadataInstruction(), 
-                optionsList, getNewStepMetadataOptionsType(), getNewStepNrOfApprovals(), getNewStepCanSeePreviousSteps(), 
-                getNewStepEmail(), dependencyList);
+        ApprovalStep step = new ApprovalStep(getNewStepId(), getNewStepAuthorizationObject(), currentNewStepMetadataList, 
+                getNewStepNrOfApprovals(), getNewStepCanSeePreviousSteps(), getNewStepEmail(), dependencyList);
         getApprovalProfile().addApprovalStep(step);
         currentApprovalSteps.put(step.getStepId(), step);
         resetSteps();
+        resetNewMetadata();
     }
+    
+    public void deleteStep() { }
+    
+    public void EditStep() { }
     
     private void resetSteps() {
         addingNewStep = false;
         
         newStepAuthorizationObject = "";
-        newStepMetadataInstruction = "";
-        newStepMetadataOptions = "";
-        newStepMetadataOptionsType = 1;
         newStepNrOfApprovals = 1;
         newStepCanSeePreviousSteps = false;
         newStepEmail = "";
         newStepPreviousStepsDependency = new ArrayList<String>();
         
         approvalStepsList = null;
+        resetNewMetadata();
+        currentNewStepMetadataList = new ArrayList<ApprovalStepMetadata>();
     }
     
  // Actions ----------------------------------------------------------------------------------

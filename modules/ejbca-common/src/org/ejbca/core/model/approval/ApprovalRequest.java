@@ -172,7 +172,7 @@ public abstract class ApprovalRequest implements Externalizable {
         if(approvalProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
             final int requiredNrOfApprovals = approvalProfile.getNumberOfApprovals();
             for(int i=0; i<requiredNrOfApprovals; i++) {
-                ApprovalStep step = new ApprovalStep(approvalProfile.getNewStepId(), null, null, null, 0, 1, false, null, new ArrayList<Integer>());
+                ApprovalStep step = new ApprovalStep(approvalProfile.getNewStepId(), null, new ArrayList<ApprovalStepMetadata>(), 1, false, null, new ArrayList<Integer>());
                 approvalSteps.put(Integer.valueOf(step.getStepId()), step);
                 approvalStepsHandledMap.put(Integer.valueOf(step.getStepId()), Boolean.valueOf(false));
             }
@@ -211,15 +211,20 @@ public abstract class ApprovalRequest implements Externalizable {
             approvalStepsHandledMap.put(stepId, Boolean.TRUE);
         }
     }
-    public void updateApprovalStepMetadata(final int stepId, final ApprovalStepMetadata metadata) {
+    public void updateApprovalStepMetadata(final int stepId, final Collection<ApprovalStepMetadata> metadata) {
+        for(ApprovalStepMetadata md : metadata) {
+            updateOneApprovalStepMetadata(stepId, md);
+        }
+    }
+    public void updateOneApprovalStepMetadata(final int stepId, final ApprovalStepMetadata metadata) {
         ApprovalStep step = approvalSteps.get(stepId);
-        step.updateMetadataValue(metadata.getOptionValue(), metadata.getOptionNote());
+        step.updateOneMetadata(metadata);
         approvalSteps.put(stepId, step);
     }
-    public void updateApprovalStepMetadata(final int stepId, final String optionValue, 
+    public void updateOneApprovalStepMetadata(final int stepId, final int metadataId, final String optionValue, 
             final String optionNote) {
         ApprovalStep step = approvalSteps.get(stepId);
-        step.updateMetadataValue(optionValue, optionNote);
+        step.updateOneMetadataValue(metadataId, optionValue, optionNote);
         approvalSteps.put(stepId, step);
     }
     public boolean areAllStepsApproved() {
