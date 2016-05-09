@@ -57,6 +57,20 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * Required flags are stored as 20000+100*parameternumber+parameter, so the first REQUIRED_COMMONNAME value is 20105, the second 20205 etc.
  * Modifyable flags are stored as 30000+100*parameternumber+parameter, so the first MODIFYABLE_COMMONNAME value is 30105, the second 30205 etc.
  *
+ * Parsing an exported End Entity Profile XML:
+ * In the EndEntityProfile XML there is for example a field SUBJECTDNFIELDORDER which contains the defined DN components. 
+ * The algorithm is:
+ * 100*parameter + size
+ * 
+ * So for example if SUBJECTDNFIELDORDER contains the two values "500, 1100" this means there is one CN and one OU. 
+ * Numbers are defined in src/java/profilemappings.properties and CN=5 and OU=11, so 100*5+0 = 500 and 100*11+0 = 1100.
+ * If there would be two OU fields there would also be one 1101 (100*11+1) in the SUBJECTDNFIELDORDER.
+ *
+ * You can see if the first CN field is required by finding a key in the XML with the formula:
+ * 20000+100*0+5 = 20005
+ * if the value of this key is true, the first CN field is required and not optional.
+ * etc, for the second CN field (if there was a second one in SUBJECTDNFIELDORDER) it would be 20000+100*1+5.
+ *
  * @version $Id$
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
