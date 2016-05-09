@@ -89,7 +89,7 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
 /**
  * Session bean that handles adding and editing services as displayed in EJBCA. This bean manages the service configuration as stored in the database,
- * but is not used for running the services.
+ * and executes services at timeouts triggered by the timeoutHandler.
  * 
  * @version $Id$
  */
