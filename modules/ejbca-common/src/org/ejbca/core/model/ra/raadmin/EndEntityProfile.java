@@ -57,19 +57,27 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * Required flags are stored as 20000+100*parameternumber+parameter, so the first REQUIRED_COMMONNAME value is 20105, the second 20205 etc.
  * Modifyable flags are stored as 30000+100*parameternumber+parameter, so the first MODIFYABLE_COMMONNAME value is 30105, the second 30205 etc.
  *
- * Parsing an exported End Entity Profile XML:
- * In the EndEntityProfile XML there is for example a field SUBJECTDNFIELDORDER which contains the defined DN components. 
+ * Parsing an exported End Entity Profile XML (or from the getProfile method in the web service):
+ * The End Entity Profile XML data is encoded using the standard Java XMLEncoder. To decode it you can use the SecureXMLDecoder class,
+ * which is part of CESeCore. The result will be a Map<Object,Object>.
+ * 
+ * In the map there's for example a field SUBJECTDNFIELDORDER which contains a list of defined DN components, as integers. 
  * The algorithm is:
- * 100*parameter + size
+ * 100*parameter + index
  * 
  * So for example if SUBJECTDNFIELDORDER contains the two values "500, 1100" this means there is one CN and one OU. 
  * Numbers are defined in src/java/profilemappings.properties and CN=5 and OU=11, so 100*5+0 = 500 and 100*11+0 = 1100.
  * If there would be two OU fields there would also be one 1101 (100*11+1) in the SUBJECTDNFIELDORDER.
  *
- * You can see if the first CN field is required by finding a key in the XML with the formula:
+ * For getting more detailed information (e.g. whether the field is required) or to look up a non-DN field (such as username), you will need to compute
+ * and index and get that key from the map (instead of SUBJECTDNFIELDORDER). For example you can see if the first
+ * CN field is required by finding a key in the XML with the formula:
  * 20000+100*0+5 = 20005
  * if the value of this key is true, the first CN field is required and not optional.
  * etc, for the second CN field (if there was a second one in SUBJECTDNFIELDORDER) it would be 20000+100*1+5.
+ * 
+ * Instead of 20000 you may use the values X*10000 where X may be (0 = value, 1 = use, 2 = required, 3 = modifiable, 4 = validation regexp).
+ * If you want to access a field which is not a DN field, see the "dataConstants.put" lines below (e.g. Available CAs = 38)
  *
  * @version $Id$
  */
