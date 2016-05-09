@@ -33,7 +33,7 @@ public class ApprovalProfileByAdminRoles extends ApprovalProfileType {
 
     @Override
     public String getTypeName() {
-        return this.getClass().getSimpleName();
+        return "Approval Profile by Administrator Roles";
     }
     
     public long getDefaultRequestExpirationPeriod() {
