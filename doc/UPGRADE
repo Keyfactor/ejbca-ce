@@ -3,32 +3,30 @@ $Id$
 UPGRADE
 =======
  
-This document describes procedures needed to upgrade from one 
-version of EJBCA to a new version.
-Upgrades within a major version, from 3.6.1 to 3.6.2 for example, are 
-usually plug-in upgrades and can be made simply by deploying the new 
-software. See doc/RELEASE_NOTES for info about such upgrades.
+This document describes procedures needed to upgrade from one version of EJBCA to a new version.
 
-If you use the patch file to upgrade use a command like:
-- Have old version of ejbca unzipped to directory ejbca.
-- Go to directory ejbca and apply patch with:
-- patch --strip=0 -u < ../patch-6_4_2_6_5_0.txt
-(change name of patch file depending on which version you are upgrading)
+Generic upgrade instructions:
+Simply copy conf/*.properties from the earlier installation (if not using an ejbca-custom directory).
+Merge changes (if there are any) from *.properties.sample into your *.properties.
+Copy the directory 'p12' from the earlier installation and do 
 
-After this you must do:
-- ant clean
-- ant deploy
+$ ant deployear
 
-If you have switched the application server (either for a new version, or just
-unpacked fresh installation of it), you must in addition run the commands:
+with the new version. Note that the command deployear that only deploys a new ejbca.ear application, and does not configuration of the 
+application server.
 
-- ant deploy-keystore
-- ant web-configure
+Note the possibility to use 'ejbca-custom' directory since EJBCA 3.5.x, this can simplify upgrades. See Admin Guide for details.
 
-All database upgrades require CREATE and ALTER TABLE privileges besides the regular SELECT, UPDATE,
-INSERT and DELETE. The SQL executed by database upgrades code is available in
-"src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
+Read the RELEASE_NOTES and this document carefully in order to see if any particular changes might effect your upgrade particularly.
 
+If you have switched the application server (either for a new version, or just unpacked fresh installation of it), you must in addition run the 
+commands:
+
+$ ant deploy-keystore
+$ ant web-configure
+
+All database upgrades require CREATE and ALTER TABLE privileges besides the regular SELECT, UPDATE, INSERT and DELETE. The SQL executed by 
+database upgrades code is available in "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
 From EJBCA 6.5.x to EJBCA 6.6.0
 -------------------------------
@@ -308,16 +306,6 @@ Upgrade from EJBCA 6.0 to 6.1 consists of a simple database change in the table 
 If the database user used for EJBCA has alter table privileges the upgrade will be done automatically when deploying the new 
 version of EJBCA (plug-in upgrade) and starting JBoss.
 If you prefer to do the database upgrade manually, see src/upgrade for SQL scripts for your specific database.
-
-Generic upgrade instructions:
-Simply copy conf/*.properties from the earlier installation (if not using an ejbca-custom directory).
-Merge changes (if there are any) from *.properties.sample into your *.properties.
-Copy the directory 'p12' from the earlier installation and do 'ant deployear' with the new version.
-(note the new command deployear that only deploys a new ejbca.ear application, and does no configuration of the application server)
-
-Note the possibility to use 'ejbca-custom' directory since EJBCA 3.5.x, this can simplify upgrades. See Admin Guide for details.
-
-Read RELEASE_NOTES carefully in order to see if any particular changes might effect your upgrade particularly.
 
 100% up-time upgrade notes:
 There should be no issues moving between EJBCA 6.0 and 6.1, older versions of EJBCA will run with the additional database columns 
