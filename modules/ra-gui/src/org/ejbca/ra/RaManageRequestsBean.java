@@ -57,15 +57,28 @@ public class RaManageRequestsBean implements Serializable {
     private List<RaApprovalRequestInfo> resultsFiltered = new ArrayList<>();
     
     private enum ViewTab { NEEDS_APPROVAL, PENDING_APPROVAL, PROCESSED, CUSTOM_SEARCH };
-    private ViewTab viewTab = ViewTab.NEEDS_APPROVAL;
+    private ViewTab viewTab; // TODO show the NEEDS_APPROVAL tab automatically?
     
     private enum SortBy { REQUEST_DATE };
     private SortBy sortBy = SortBy.REQUEST_DATE;
     private boolean sortAscending = true;
 
+    /** Returns the currently viewed tab, and initializes and shows the "Needs Approval" tab if no tab has been clicked */ 
+    private ViewTab getViewedTab() {
+        if (viewTab == null) {
+            viewTab = ViewTab.NEEDS_APPROVAL;
+            searchAndFilter();
+        }
+        return viewTab;
+    }
+    
     public void viewNeedsApproval() {
         viewTab = ViewTab.NEEDS_APPROVAL;
         searchAndFilter();
+    }
+    
+    public boolean isViewingNeedsApproval() {
+        return getViewedTab() == ViewTab.NEEDS_APPROVAL;
     }
     
     public void viewPendingApproval() {
@@ -73,15 +86,28 @@ public class RaManageRequestsBean implements Serializable {
         searchAndFilter();
     }
     
+    public boolean isViewingPendingApproval() {
+        return getViewedTab() == ViewTab.PENDING_APPROVAL;
+    }
+    
     public void viewProcessed() {
         viewTab = ViewTab.PROCESSED;
         searchAndFilter();
     }
+
+    public boolean isViewingProcessed() {
+        return getViewedTab() == ViewTab.PROCESSED;
+    }
     
-    public void viewAll() {
+    public void viewCustom() {
         viewTab = ViewTab.CUSTOM_SEARCH;
         searchAndFilter();
     }
+    
+    public boolean isViewingCustom() {
+        return getViewedTab() == ViewTab.CUSTOM_SEARCH;
+    }
+    
     
     private void searchAndFilter() {
         final RaRequestsSearchRequest searchRequest = new RaRequestsSearchRequest();
@@ -108,10 +134,12 @@ public class RaManageRequestsBean implements Serializable {
     }
     
     public List<RaApprovalRequestInfo> getFilteredResults() {
+        getViewedTab(); // make sure we have all data
         return resultsFiltered;
     }
     
     public boolean isMoreResultsAvailable() {
+        getViewedTab(); // make sure we have all data
         return lastExecutedResponse != null && lastExecutedResponse.isMightHaveMoreResults();
     }
     
