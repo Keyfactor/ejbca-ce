@@ -12,8 +12,10 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.ejb.EJB;
@@ -22,7 +24,10 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.RaRequestsSearchRequest;
+import org.ejbca.core.model.era.RaRequestsSearchResponse;
 
 /**
  * Backing bean for Manage Requests page. 
@@ -31,19 +36,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
  */
 @ManagedBean
 @ViewScoped
-public class RaManageRequestsBean {
-
-    public class RaRequest {
-        private final Date requestDate;
-        
-        public RaRequest(final Date requestDate) {
-            this.requestDate = requestDate;
-        }
-        
-        public Date getRequestDate() {
-            return this.requestDate;
-        }
-    }
+public class RaManageRequestsBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaSearchCertsBean.class);
@@ -59,10 +52,12 @@ public class RaManageRequestsBean {
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
-    private final List<RaRequest> resultsFiltered = new ArrayList<>();
+    private RaRequestsSearchResponse lastExecutedResponse = null;
     
-    private enum ViewTab { NEEDS_APPROVAL, PENDING_APPROVAL, PROCESSED, ALL };
-    private ViewTab viewTab;
+    private List<RaApprovalRequestInfo> resultsFiltered = new ArrayList<>();
+    
+    private enum ViewTab { NEEDS_APPROVAL, PENDING_APPROVAL, PROCESSED, CUSTOM_SEARCH };
+    private ViewTab viewTab = ViewTab.NEEDS_APPROVAL;
     
     private enum SortBy { REQUEST_DATE };
     private SortBy sortBy = SortBy.REQUEST_DATE;
@@ -70,30 +65,73 @@ public class RaManageRequestsBean {
 
     public void viewNeedsApproval() {
         viewTab = ViewTab.NEEDS_APPROVAL;
+        searchAndFilter();
     }
     
     public void viewPendingApproval() {
         viewTab = ViewTab.PENDING_APPROVAL;
+        searchAndFilter();
     }
     
     public void viewProcessed() {
         viewTab = ViewTab.PROCESSED;
+        searchAndFilter();
     }
     
     public void viewAll() {
-        viewTab = ViewTab.ALL;
+        viewTab = ViewTab.CUSTOM_SEARCH;
+        searchAndFilter();
     }
     
-    public List<RaRequest> getFilteredResults() {
+    private void searchAndFilter() {
+        final RaRequestsSearchRequest searchRequest = new RaRequestsSearchRequest();
+        switch (viewTab) {
+        case CUSTOM_SEARCH:
+            // TODO
+            searchRequest.setSearchingWaitingForMe(true);
+            searchRequest.setSearchingPending(true);
+            searchRequest.setSearchingHistorical(true);
+            break;
+        case NEEDS_APPROVAL:
+            searchRequest.setSearchingWaitingForMe(true);
+            break;
+        case PENDING_APPROVAL:
+            searchRequest.setSearchingPending(true);
+            break;
+        case PROCESSED:
+            searchRequest.setSearchingHistorical(true);
+            break;
+        }
+        lastExecutedResponse = raMasterApiProxyBean.searchForApprovalRequests(raAuthenticationBean.getAuthenticationToken(), searchRequest);
+        resultsFiltered = lastExecutedResponse.getApprovalRequests();
+        sort();
+    }
+    
+    public List<RaApprovalRequestInfo> getFilteredResults() {
         return resultsFiltered;
     }
     
     public boolean isMoreResultsAvailable() {
-        return false; // TODO
+        return lastExecutedResponse != null && lastExecutedResponse.isMightHaveMoreResults();
     }
     
     // Sorting
+    private void sort() {
+        Collections.sort(resultsFiltered, new Comparator<RaApprovalRequestInfo>() {
+            @Override
+            public int compare(RaApprovalRequestInfo o1, RaApprovalRequestInfo o2) {
+                switch (sortBy) {
+                case REQUEST_DATE:
+                default:
+                    return o1.getRequestDate().compareTo(o2.getRequestDate()) * (sortAscending ? 1 : -1);
+                }
+            }
+        });
+    }
     
+    public String getSortedByRequestDate() { return getSortedBy(SortBy.REQUEST_DATE); }
+    public void sortByRequestDate() { sortBy(SortBy.REQUEST_DATE, false); }
+	
     private String getSortedBy(final SortBy sortBy) {
         if (this.sortBy.equals(sortBy)) {
             return sortAscending ? "\u25bc" : "\u25b2";
@@ -109,11 +147,8 @@ public class RaManageRequestsBean {
             sortAscending = defaultAscending;
         }
         this.sortBy = sortBy;
-        //sort(); // TODO
+        sort();
     }
     
-    public String getSortedByRequestDate() { return getSortedBy(SortBy.REQUEST_DATE); }
-    public void sortByRequestDate() { sortBy(SortBy.REQUEST_DATE, false); }
-	
     
 }
