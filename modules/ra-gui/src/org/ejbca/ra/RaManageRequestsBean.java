@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -24,6 +25,10 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.util.ValidityDate;
+import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRequestsSearchRequest;
@@ -41,6 +46,61 @@ public class RaManageRequestsBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaSearchCertsBean.class);
 
+    public class ApprovalRequestGUIInfo {
+        private final RaApprovalRequestInfo request;
+        private final String requestDate;
+        private final String caName;
+        private final String type;
+        private final String displayName;
+        private final String detail;
+        private final String status;
+        
+        public ApprovalRequestGUIInfo(final RaApprovalRequestInfo request, final IdNameHashMap<CAInfo> caIdInfos) {
+            this.request = request;
+            requestDate = ValidityDate.formatAsISO8601ServerTZ(request.getRequestDate().getTime(), TimeZone.getDefault());
+            caName = caIdInfos.get(request.getCAId()).getName();
+            
+            switch (request.getType()) {
+            case ApprovalDataVO.APPROVALTYPE_ADDENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_add_end_entity"); break;
+            case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE: type = raLocaleBean.getMessage("manage_requests_type_revoke_certificate"); break;
+            case ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_revoke_end_entity"); break;
+            default:
+                log.info("Invalid/unsupported type of approval request: " + request.getType());
+                type = "???";
+            }
+            
+            /*username = request.getUsername();
+            subjectDN = request.getSubjectDN();*/
+            /*String cn = CertTools.getPartFromDN(subjectDN, "CN");
+            if (cn == null) {
+                cn = subjectDN;
+            }*/
+            displayName = "TODO"; // TODO could show CN or fall back to Subject DN for End Entity approval requests
+            detail = "TODO"; // TODO could show full DN for End Entity approval requests
+            
+            switch (request.getStatus()) {
+            case ApprovalDataVO.STATUS_APPROVED: status = raLocaleBean.getMessage("manage_requests_status_approved"); break;
+            case ApprovalDataVO.STATUS_EXECUTED: status = raLocaleBean.getMessage("manage_requests_status_executed"); break;
+            case ApprovalDataVO.STATUS_EXECUTIONDENIED: status = raLocaleBean.getMessage("manage_requests_status_execution_denied"); break;
+            case ApprovalDataVO.STATUS_EXECUTIONFAILED: status = raLocaleBean.getMessage("manage_requests_status_execution_failed"); break;
+            case ApprovalDataVO.STATUS_EXPIRED: status = raLocaleBean.getMessage("manage_requests_status_expired"); break;
+            case ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED: status = raLocaleBean.getMessage("manage_requests_status_expired_and_notified"); break;
+            case ApprovalDataVO.STATUS_REJECTED: status = raLocaleBean.getMessage("manage_requests_status_rejected"); break;
+            case ApprovalDataVO.STATUS_WAITINGFORAPPROVAL: status = raLocaleBean.getMessage("manage_requests_status_waiting_for_approval"); break;
+            default:
+                log.info("Invalid status of approval request: " + request.getStatus());
+                status = "???";
+            }
+        }
+        
+        public String getRequestDate() { return requestDate; }
+        public String getCa() { return caName; }
+        public String getType() { return type; }
+        public String getDisplayName() { return displayName; }
+        public String getDetail() { return detail; }
+        public String getStatus() { return status; }
+    }
+    
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
@@ -54,12 +114,12 @@ public class RaManageRequestsBean implements Serializable {
 
     private RaRequestsSearchResponse lastExecutedResponse = null;
     
-    private List<RaApprovalRequestInfo> resultsFiltered = new ArrayList<>();
+    private List<ApprovalRequestGUIInfo> resultsFiltered = new ArrayList<>();
     
     private enum ViewTab { NEEDS_APPROVAL, PENDING_APPROVAL, PROCESSED, CUSTOM_SEARCH };
     private ViewTab viewTab; // TODO show the NEEDS_APPROVAL tab automatically?
     
-    private enum SortBy { REQUEST_DATE };
+    private enum SortBy { REQUEST_DATE, CA, TYPE, DISPLAY_NAME, STATUS };
     private SortBy sortBy = SortBy.REQUEST_DATE;
     private boolean sortAscending = true;
 
@@ -129,11 +189,17 @@ public class RaManageRequestsBean implements Serializable {
             break;
         }
         lastExecutedResponse = raMasterApiProxyBean.searchForApprovalRequests(raAuthenticationBean.getAuthenticationToken(), searchRequest);
-        resultsFiltered = lastExecutedResponse.getApprovalRequests();
+        final List<RaApprovalRequestInfo> reqInfos = lastExecutedResponse.getApprovalRequests();
+        final List<ApprovalRequestGUIInfo> guiInfos = new ArrayList<>();
+        final IdNameHashMap<CAInfo> caIdInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
+        for (final RaApprovalRequestInfo reqInfo : reqInfos) {
+            guiInfos.add(new ApprovalRequestGUIInfo(reqInfo, caIdInfos));
+        }
+        resultsFiltered = guiInfos;
         sort();
     }
     
-    public List<RaApprovalRequestInfo> getFilteredResults() {
+    public List<ApprovalRequestGUIInfo> getFilteredResults() {
         getViewedTab(); // make sure we have all data
         return resultsFiltered;
     }
@@ -145,13 +211,17 @@ public class RaManageRequestsBean implements Serializable {
     
     // Sorting
     private void sort() {
-        Collections.sort(resultsFiltered, new Comparator<RaApprovalRequestInfo>() {
+        Collections.sort(resultsFiltered, new Comparator<ApprovalRequestGUIInfo>() {
             @Override
-            public int compare(RaApprovalRequestInfo o1, RaApprovalRequestInfo o2) {
+            public int compare(ApprovalRequestGUIInfo o1, ApprovalRequestGUIInfo o2) {
                 switch (sortBy) {
+                case CA: return o1.caName.compareTo(o2.caName);
+                case TYPE: return o1.type.compareTo(o2.type);
+                case DISPLAY_NAME: return o1.displayName.compareTo(o2.detail);
+                case STATUS: return o1.status.compareTo(o2.status);
                 case REQUEST_DATE:
                 default:
-                    return o1.getRequestDate().compareTo(o2.getRequestDate()) * (sortAscending ? 1 : -1);
+                    return o1.request.getRequestDate().compareTo(o2.request.getRequestDate()) * (sortAscending ? 1 : -1);
                 }
             }
         });
@@ -159,6 +229,14 @@ public class RaManageRequestsBean implements Serializable {
     
     public String getSortedByRequestDate() { return getSortedBy(SortBy.REQUEST_DATE); }
     public void sortByRequestDate() { sortBy(SortBy.REQUEST_DATE, false); }
+    public String getSortedByCA() { return getSortedBy(SortBy.CA); }
+    public void sortByCA() { sortBy(SortBy.CA, true); }
+    public String getSortedByType() { return getSortedBy(SortBy.TYPE); }
+    public void sortByType() { sortBy(SortBy.TYPE, true); }
+    public String getSortedByDisplayName() { return getSortedBy(SortBy.DISPLAY_NAME); }
+    public void sortByDisplayName() { sortBy(SortBy.DISPLAY_NAME, true); }
+    public String getSortedByStatus() { return getSortedBy(SortBy.STATUS); }
+    public void sortByStatus() { sortBy(SortBy.STATUS, true); }
 	
     private String getSortedBy(final SortBy sortBy) {
         if (this.sortBy.equals(sortBy)) {

@@ -79,6 +79,18 @@ public class RaApprovalRequestInfo implements Serializable {
         return requestDate;
     }
     
+    public int getCAId() {
+        return caId;
+    }
+    
+    public int getStatus() {
+        return status;
+    }
+    
+    public int getType() {
+        return approvalType;
+    }
+    
     /** Is waiting for the given admin to do something */
     public boolean isWaitingForMe() {
         if (requestedByMe) {
