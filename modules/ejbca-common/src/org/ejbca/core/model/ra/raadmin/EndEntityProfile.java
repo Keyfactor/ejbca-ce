@@ -2169,17 +2169,26 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         private String name;
         private int number;
         private String value;
+        private String defaultValue;
+        private int profileId;
         public FieldInstance(String name, int number){
             this.name = name;
             this.number = number;
-            this.value = EndEntityProfile.this.getValue(name, number);
+            this.defaultValue = EndEntityProfile.this.getValue(name, number);
+            this.value = defaultValue.contains(";") ? "" : defaultValue;
+            this.profileId = EndEntityProfile.dataConstants.get(name);
         }
         public boolean isUsed() {return EndEntityProfile.this.getUse(name, number);}
         public boolean isRequired() {return EndEntityProfile.this.isRequired(name, number);}
         public boolean isModifiable() {return EndEntityProfile.this.isModifyable(name, number);}
         public String getValue(){return value;}
         public void setValue(String value){this.value = value;}
+        public String getDefaultValue(){return defaultValue;}
+        public void setDefaultValue(String value){this.defaultValue = value;}
         public String getName(){return name;}
+        @Override
+        public int hashCode(){return name.hashCode();}
+        public int getProfileId(){return profileId;}
     }
     
     /** 

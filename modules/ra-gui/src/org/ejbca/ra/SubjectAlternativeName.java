@@ -15,6 +15,7 @@ package org.ejbca.ra;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
@@ -44,6 +45,8 @@ public class SubjectAlternativeName {
         COMPONENTS.add(DnComponents.EDIPARTYNAME);
         COMPONENTS.add(DnComponents.REGISTEREDID);
     }
+    
+    private String value;
 
     public SubjectAlternativeName(EndEntityProfile endEntityProfile) {
         fieldInstances = new ArrayList<EndEntityProfile.FieldInstance>();
@@ -53,6 +56,22 @@ public class SubjectAlternativeName {
                 fieldInstances.add(fieldInstance);
             }
         }
+    }
+    
+    public void updateValue(){
+        StringBuilder subjectAlternativeName = new StringBuilder();
+        for(EndEntityProfile.FieldInstance fieldInstance : fieldInstances){
+            if(!fieldInstance.getValue().isEmpty()){
+                int dnId = DnComponents.profileIdToDnId(fieldInstance.getProfileId());
+                String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, DNFieldExtractor.TYPE_SUBJECTALTNAME) + fieldInstance.getValue().trim();
+                //TODO nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart);
+                if(subjectAlternativeName.length() != 0){
+                    subjectAlternativeName.append(", ");
+                }
+                subjectAlternativeName.append(nameValueDnPart);
+            }
+        }
+        value = subjectAlternativeName.toString();
     }
 
     public List<EndEntityProfile.FieldInstance> getFieldInstances() {
@@ -65,10 +84,21 @@ public class SubjectAlternativeName {
 
     @Override
     public String toString() {
-        if (fieldInstances == null) {
-            return "";
-        }
+        return getValue();
+    }
 
-        return "";//TODO
+    /**
+     * @return the value
+     */
+    public String getValue() {
+        if(value == null){
+            updateValue();
+        }
+        return value;
+    }
+
+    @SuppressWarnings("unused")
+    private void setValue(String value) {
+        this.value = value;
     }
 }
