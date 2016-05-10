@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,17 +34,26 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.ValueChangeEvent;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page
@@ -116,13 +126,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private boolean algorithmChanged;
 
     //6. End-entity metadata
-    private boolean endEntityMetadataSubmitted;
     private EndEntityInformation endEntityInformation;
     private String confirmPassword;
     private SubjectDn subjectDn;
     private SubjectAlternativeName subjectAlternativeName;
     private SubjectDirectoryAttributes subjectDirectoryAttributes;
-    
+
     @PostConstruct
     private void postContruct() {
         initAuthorizedEndEntityProfiles();
@@ -130,13 +139,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     //-----------------------------------------------------------
     //All init* methods should contain ONLY application logic 
-    
+
     public void initAuthorizedEndEntityProfiles() {
         setAuthorizedEndEntityProfiles(raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken()));
         setAuthorizedCertificateProfiles(raMasterApiProxyBean.getAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken()));
         setAuthorizedCAInfos(raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken()));
 
-        for(IdNameHashMap<EndEntityProfile>.Tuple tuple : authorizedEndEntityProfiles.values()){
+        for (IdNameHashMap<EndEntityProfile>.Tuple tuple : authorizedEndEntityProfiles.values()) {
             availableEndEntityProfiles.put(tuple.getName(), tuple.getName());
         }
     }
@@ -151,15 +160,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
             IdNameHashMap<CertificateProfile>.Tuple tuple = authorizedCertificateProfiles.get(Integer.parseInt(id));
             if (tuple != null) {
                 String defaultCertProfileId = endEntityProfile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
-                if(id.equalsIgnoreCase(defaultCertProfileId)){
+                if (id.equalsIgnoreCase(defaultCertProfileId)) {
                     availableCertificateProfiles.put(tuple.getName(), tuple.getName() + " (default)");
-                }else{
+                } else {
                     availableCertificateProfiles.put(tuple.getName(), tuple.getName());
                 }
             }
         }
-        String defaultCertProfileId = endEntityProfile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
-        selectedCertificateProfile = authorizedCertificateProfiles.get(Integer.parseInt(defaultCertProfileId)).getName();
     }
 
     private void initAvailableCertificateAuthorities() {
@@ -170,31 +177,26 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         String[] availableCAsFromEEPArray = endEntityProfile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
         boolean anyCAAvailableFromEEP = availableCAsFromEEPArray.length == 1 && availableCAsFromEEPArray[0].equalsIgnoreCase(SecConst.ALLCAS + "");
-        
+
         //Get all available CAs from the selected CP
         CertificateProfile certificateProfile = authorizedCertificateProfiles.get(selectedCertificateProfile).getValue();
         if (certificateProfile == null) {
             return;
         }
         List<Integer> availableCAsFromCP = certificateProfile.getAvailableCAs();
-        boolean anyCAAvailableFromCP = availableCAsFromCP.size() == 1 && availableCAsFromCP.iterator().next() == CertificateProfile.ANYCA; 
-        
+        boolean anyCAAvailableFromCP = availableCAsFromCP.size() == 1 && availableCAsFromCP.iterator().next() == CertificateProfile.ANYCA;
+
         //Intersect both with authorized CAs
-        for(IdNameHashMap<CAInfo>.Tuple tuple : authorizedCAInfos.values()){
-            if((anyCAAvailableFromEEP || Arrays.asList(availableCAsFromEEPArray).contains(tuple.getId()+"")) &&
-                (anyCAAvailableFromCP || availableCAsFromCP.contains(tuple.getId()))){
+        for (IdNameHashMap<CAInfo>.Tuple tuple : authorizedCAInfos.values()) {
+            if ((anyCAAvailableFromEEP || Arrays.asList(availableCAsFromEEPArray).contains(tuple.getId() + ""))
+                    && (anyCAAvailableFromCP || availableCAsFromCP.contains(tuple.getId()))) {
                 String defaultCAId = endEntityProfile.getValue(EndEntityProfile.DEFAULTCA, 0);
-                if(!defaultCAId.isEmpty() && tuple.getId() == Integer.parseInt(defaultCAId)){
+                if (!defaultCAId.isEmpty() && tuple.getId() == Integer.parseInt(defaultCAId)) {
                     availableCertificateAuthorities.put(tuple.getName(), tuple.getName() + " (default)");
-                }else{
+                } else {
                     availableCertificateAuthorities.put(tuple.getName(), tuple.getName());
                 }
             }
-        }
-        
-        String defaultCertAuthorityId = endEntityProfile.getValue(EndEntityProfile.DEFAULTCA, 0);
-        if(!defaultCertAuthorityId.isEmpty()){
-            selectedCertificateAuthority = authorizedCAInfos.get(Integer.parseInt(defaultCertAuthorityId)).getName();
         }
     }
 
@@ -282,18 +284,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
         subjectAlternativeName = new SubjectAlternativeName(getEndEntityProfile());
         subjectDirectoryAttributes = new SubjectDirectoryAttributes(getEndEntityProfile());
     }
-    
+
     //-----------------------------------------------------------------------------------------------
     // Helpers
-    public String getSubjectDnFieldOutputName(String keyName){
+    public String getSubjectDnFieldOutputName(String keyName) {
         return raLocaleBean.getMessage("subject_dn_" + keyName);
     }
-    
-    public String getSubjectAlternativeNameFieldOutputName(String keyName){
+
+    public String getSubjectAlternativeNameFieldOutputName(String keyName) {
         return raLocaleBean.getMessage("subject_alternative_name_" + keyName);
     }
-    
-    public String getSubjectDirectoryAttributesFieldOutputName(String keyName){
+
+    public String getSubjectDirectoryAttributesFieldOutputName(String keyName) {
         return raLocaleBean.getMessage("subject_directory_attributes_" + keyName);
     }
 
@@ -304,7 +306,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public final void reset() {
         availableEndEntityProfiles.clear();
         resetCertificateProfile();
-        
+
         initAuthorizedEndEntityProfiles();
     }
 
@@ -363,18 +365,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
             selectKeyPairGeneration();
         } else if (algorithmChanged) {
             selectAlgorithm();
-        } else if (endEntityMetadataSubmitted) {
-            submitEndEntityMetadata();
         } else {
-            if(selectedAlgorithm != null){
+            if (endEntityInformation != null) {
+                submitEndEntityMetadata();
+            } else if (selectedAlgorithm != null) {
                 selectAlgorithm();
-            }else if(selectedKeyPairGeneration != null){
+            } else if (selectedKeyPairGeneration != null) {
                 selectKeyPairGeneration();
-            }else if(selectedCertificateAuthority != null){
+            } else if (selectedCertificateAuthority != null) {
                 selectCertificateAuthority();
-            }else if(selectedCertificateProfile != null){
+            } else if (selectedCertificateProfile != null) {
                 selectCertificateProfile();
-            }else{
+            } else {
                 selectEndEntityProfile();
             }
         }
@@ -438,7 +440,32 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     private final void submitEndEntityMetadata() {
-        raLocaleBean.addMessageInfo("somefunction_testok", "endEntityMetadataSubmitted", endEntityMetadataSubmitted);
+        endEntityInformation.setCAId(getCAInfo().getCAId());
+        endEntityInformation.setCardNumber(""); //TODO Card Number
+        endEntityInformation.setCertificateProfileId(authorizedCertificateProfiles.get(selectedCertificateProfile).getId());
+        endEntityInformation.setDN(subjectDn.toString());
+        endEntityInformation.setEndEntityProfileId(authorizedEndEntityProfiles.get(selectedEndEntityProfile).getId());
+        endEntityInformation.setExtendedinformation(null);//TODO don't know anything about it...
+        endEntityInformation.setHardTokenIssuerId(0); //TODO not sure....
+        endEntityInformation.setKeyRecoverable(false); //TODO not sure...
+        endEntityInformation.setPrintUserData(false); // TODO not sure...
+        endEntityInformation.setSendNotification(false); // TODO will be updated
+        endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
+        endEntityInformation.setSubjectAltName(subjectAlternativeName.toString());
+        endEntityInformation.setTimeCreated(new Date());
+        endEntityInformation.setTimeModified(new Date());
+        endEntityInformation.setTokenType(SecConst.TOKEN_SOFT_P12); //TODO make it configurable
+        endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
+        //TODO how to set subject directory attributes?
+        try {
+            raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, true);//TODO clear password config
+            raLocaleBean.addMessageInfo("enroll_end_entity_has_been_successfully_added", endEntityInformation.getUsername());
+        } catch (EndEntityExistsException | CADoesntExistsException | AuthorizationDeniedException | EjbcaException
+                | UserDoesntFullfillEndEntityProfile | WaitingForApprovalException e) {
+            raLocaleBean.addMessageInfo("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage());
+            log.error(raLocaleBean.getMessage("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage()), e);
+        } 
+        
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -470,8 +497,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public final void certificateProfileAjaxListener(final AjaxBehaviorEvent event) {
         selectCertificateProfile();
     }
-    
-    public final void certificateAuthorityAjaxListener(final AjaxBehaviorEvent event){
+
+    public final void certificateAuthorityAjaxListener(final AjaxBehaviorEvent event) {
         selectCertificateAuthority();
     }
 
@@ -507,10 +534,24 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public EndEntityProfile getEndEntityProfile() {
-        if(selectedEndEntityProfile == null){
+        if (selectedEndEntityProfile == null) {
             return null;
         }
         return authorizedEndEntityProfiles.get(selectedEndEntityProfile).getValue();
+    }
+    
+    public CertificateProfile getCertificateProfile(){
+        if(selectedCertificateProfile == null){
+            return null;
+        }
+        return authorizedCertificateProfiles.get(selectedCertificateProfile).getValue();
+    }
+    
+    public CAInfo getCAInfo(){
+        if(selectedCertificateAuthority == null){
+            return null;
+        }
+        return authorizedCAInfos.get(selectedCertificateAuthority).getValue();
     }
 
     /**

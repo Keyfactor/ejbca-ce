@@ -36,7 +36,8 @@
 					<h:selectOneMenu id="selectEEPOneMenu"
 						value="#{enrollMakeNewRequestBean.selectedEndEntityProfile}"
 						valueChangeListener="#{enrollMakeNewRequestBean.endEntityProfileChangedListener}"
-						disabled="#{enrollMakeNewRequestBean.availableEndEntityProfiles.size()==1}">
+						disabled="#{enrollMakeNewRequestBean.availableEndEntityProfiles.size()==1}"
+						rendered="#{!enrollMakeNewRequestBean.availableEndEntityProfiles.isEmpty()}">
 						<c:if
 							test="#{enrollMakeNewRequestBean.selectedEndEntityProfile == null}">
 							<f:selectItem itemLabel="Select..." itemValue="#{null}"
@@ -50,6 +51,9 @@
 							event="change" render=":globalMessages :enrollMakeNewRequestForm"
 							listener="#{enrollMakeNewRequestBean.endEntityProfileAjaxListener}" />
 					</h:selectOneMenu>
+					<h:outputText
+						rendered="#{enrollMakeNewRequestBean.availableEndEntityProfiles.isEmpty()}"
+						value="#{msg.enroll_no_available_certificate_types}" />
 					<br />
 
 					<h:outputText value="#{msg.enroll_certificate_subtype}"
@@ -57,8 +61,14 @@
 					<h:selectOneMenu id="selectCPOneMenu"
 						value="#{enrollMakeNewRequestBean.selectedCertificateProfile}"
 						valueChangeListener="#{enrollMakeNewRequestBean.certificateProfileChangedListener}"
-						rendered="#{!enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty()}"
+						rendered="#{!enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty() and
+										enrollMakeNewRequestBean.selectedEndEntityProfile != null}"
 						disabled="#{enrollMakeNewRequestBean.availableCertificateProfiles.size()==1}">
+						<c:if
+							test="#{enrollMakeNewRequestBean.selectedCertificateProfile == null}">
+							<f:selectItem itemLabel="Select..." itemValue="#{null}"
+								itemDisabled="true" />
+						</c:if>
 						<f:selectItems
 							value="#{enrollMakeNewRequestBean.availableCertificateProfiles.entrySet()}"
 							var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}"
@@ -67,6 +77,10 @@
 							event="change" render=":globalMessages :enrollMakeNewRequestForm"
 							listener="#{enrollMakeNewRequestBean.certificateProfileAjaxListener}" />
 					</h:selectOneMenu>
+					<h:outputText
+						rendered="#{enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty() and
+										enrollMakeNewRequestBean.selectedEndEntityProfile != null}"
+						value="#{msg.enroll_no_available_certificate_subtypes}" />
 					<br />
 
 					<h:outputText value="#{msg.enroll_certificate_authority}"
@@ -74,8 +88,14 @@
 					<h:selectOneMenu id="selectCAOneMenu"
 						value="#{enrollMakeNewRequestBean.selectedCertificateAuthority}"
 						valueChangeListener="#{enrollMakeNewRequestBean.certificateAuthorityChangedListener}"
-						rendered="#{!enrollMakeNewRequestBean.availableCertificateAuthorities.isEmpty()}"
+						rendered="#{!enrollMakeNewRequestBean.availableCertificateAuthorities.isEmpty() and
+										enrollMakeNewRequestBean.selectedCertificateProfile != null}"
 						disabled="#{enrollMakeNewRequestBean.availableCertificateAuthorities.size()==1}">
+						<c:if
+							test="#{enrollMakeNewRequestBean.selectedCertificateAuthority == null}">
+							<f:selectItem itemLabel="Select..." itemValue="#{null}"
+								itemDisabled="true" />
+						</c:if>
 						<f:selectItems
 							value="#{enrollMakeNewRequestBean.availableCertificateAuthorities.entrySet()}"
 							var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}"
@@ -84,6 +104,10 @@
 							event="change" render=":globalMessages :enrollMakeNewRequestForm"
 							listener="#{enrollMakeNewRequestBean.certificateAuthorityAjaxListener}" />
 					</h:selectOneMenu>
+					<h:outputText
+						rendered="#{enrollMakeNewRequestBean.availableCertificateAuthorities.isEmpty() and
+										enrollMakeNewRequestBean.selectedCertificateProfile != null}"
+						value="#{msg.enroll_no_available_certificate_authorities}" />
 					<br />
 				</h:panelGrid>
 				<br />
@@ -190,7 +214,8 @@
 						</h:dataTable>
 					</h:panelGrid>
 					<h:panelGrid frame="border" layout="block">
-						<h:outputText value="#{msg.enroll_subject_alternative_name_attributes}" />
+						<h:outputText
+							value="#{msg.enroll_subject_alternative_name_attributes}" />
 						<h:dataTable var="instance"
 							value="#{enrollMakeNewRequestBean.subjectAlternativeName.getFieldInstances()}">
 							<h:column>
@@ -223,7 +248,7 @@
 							</h:column>
 						</h:dataTable>
 					</h:panelGrid>
-					
+
 					<br />
 				</h:panelGroup>
 			</h:panelGrid>
