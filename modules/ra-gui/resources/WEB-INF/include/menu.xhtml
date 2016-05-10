@@ -68,7 +68,7 @@
                         </ui:fragment>
                         <ui:fragment rendered="#{raAccessBean.authorizedToManageRequests}">
                         	<li class="pure-menu-item">
-                            	<a href="#" id="requestManagement" class="pure-menu-link">Manage Requests</a>
+                            	<h:outputLink value="managerequests.xhtml" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_manage_requests}"/></h:outputLink>
                             </li>
                         </ui:fragment>
                         <ui:fragment rendered="#{raAccessBean.authorizedToSearch}">
