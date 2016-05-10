@@ -196,6 +196,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED));
         }
         if (request.isSearchingWaitingForMe() || request.isSearchingPending()) {
+            if (request.isSearchingHistorical()) {
+                query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
+            }
             query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL));
             query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
             // Certain requests (not add end entity) can require the requesting admin to retry the action

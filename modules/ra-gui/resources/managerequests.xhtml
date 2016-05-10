@@ -37,10 +37,10 @@
                 
                 <h:panelGroup layout="block">
                     <!-- or use links.  the active tab should appear as selected -->
-                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewNeedsApproval}" value="#{msg.manage_requests_page_view_needs_approval}" />
-                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewPendingApproval}" value="#{msg.manage_requests_page_view_pending_approval}" />
-                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewProcessed}" value="#{msg.manage_requests_page_view_processed}" />
-                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewAll}" value="#{msg.manage_requests_page_view_all}" />
+                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewNeedsApproval}" disabled="#{raManageRequestsBean.viewingNeedsApproval}" value="#{msg.manage_requests_page_view_needs_approval}" />
+                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewPendingApproval}" disabled="#{raManageRequestsBean.viewingPendingApproval}" value="#{msg.manage_requests_page_view_pending_approval}" />
+                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewProcessed}" disabled="#{raManageRequestsBean.viewingProcessed}" value="#{msg.manage_requests_page_view_processed}" />
+                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewCustom}" disabled="#{raManageRequestsBean.viewingCustom}" value="#{msg.manage_requests_page_view_custom}" />
                 </h:panelGroup>
                 
                 <!-- todo might be useful to have searching/filtering -->
