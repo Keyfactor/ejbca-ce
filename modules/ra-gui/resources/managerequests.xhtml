@@ -43,8 +43,10 @@
                     <h:commandButton immediate="true" action="#{raManageRequestsBean.viewCustom}" disabled="#{raManageRequestsBean.viewingCustom}" value="#{msg.manage_requests_page_view_custom}" />
                 </h:panelGroup>
                 
-                <!-- todo might be useful to have searching/filtering -->
-                <!-- todo should limit to things you have access to -->
+                <h:panelGroup layout="block" rendered="#{raManageRequestsBean.viewingCustom}">
+                    <!-- todo might be useful to have searching/filtering. should limit to things you have access to -->
+                    <h:outputText value="Custom searches: TODO. Currently displaying everything"/>
+                </h:panelGroup>
 
                 <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
                     <h:outputText styleClass="fineprint" rendered="#{empty raManageRequestsBean.filteredResults}" value="#{msg.manage_requests_page_info_noresult}"/>
@@ -60,7 +62,51 @@
                                         onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
-                            <h:outputText styleClass="fineprint" value="#{raRequest.requestDate}"/>
+                            <h:outputText value="#{raRequest.requestDate}" title="${msg.generic_timeformat_iso}"/>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortCA" value="#{msg.manage_requests_page_colhead_ca} #{raManageRequestsBean.sortedByCA}"/>
+                                <h:commandButton id="sortCA" action="#{raManageRequestsBean.sortByCA}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText value="#{raRequest.ca}" />
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortType" value="#{msg.manage_requests_page_colhead_type} #{raManageRequestsBean.sortedByType}"/>
+                                <h:commandButton id="sortType" action="#{raManageRequestsBean.sortByType}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText value="#{raRequest.type}" />
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortDisplayName" value="#{msg.manage_requests_page_colhead_name} #{raManageRequestsBean.sortedByDisplayName}"/>
+                                <h:commandButton id="sortDisplayName" action="#{raManageRequestsBean.sortByDisplayName}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText value="#{raRequest.displayName}" title="#{raRequest.detail}" />
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortStatus" value="#{msg.manage_requests_page_colhead_request_status} #{raManageRequestsBean.sortedByStatus}"/>
+                                <h:commandButton id="sortStatus" action="#{raManageRequestsBean.sortByStatus}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText value="#{raRequest.status}" />
                         </h:column>
                     </h:dataTable>
                 </h:panelGroup>
