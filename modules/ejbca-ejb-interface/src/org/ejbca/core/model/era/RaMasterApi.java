@@ -19,11 +19,16 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
  * TODO: Implement with proper methods. Keep in mind that there is latency, so batch things.
@@ -79,4 +84,19 @@ public interface RaMasterApi {
 
     /** @return map of authorized certificate profiles for the provided authentication token*/
     IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken);
+    
+    /**
+     * Adds (end entity) user
+     * @param admin authentication token
+     * @param endEntity end entity data as EndEntityInformation object
+     * @param clearpwd 
+     * @throws AuthorizationDeniedException
+     * @throws EjbcaException
+     * @throws EndEntityExistsException
+     * @throws UserDoesntFullfillEndEntityProfile
+     * @throws WaitingForApprovalException
+     * @throws CADoesntExistsException
+     */
+    void addUser(AuthenticationToken admin, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException,
+            EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException;
 }

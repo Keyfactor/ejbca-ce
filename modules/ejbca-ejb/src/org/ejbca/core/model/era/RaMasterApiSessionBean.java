@@ -53,9 +53,13 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
  * Implementation of the RaMasterApi that invokes functions at the local node.
@@ -80,6 +84,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSessionLocal;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
@@ -506,6 +512,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         return authorizedCAInfos;
+    }
+    
+    @Override
+    public void addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd) throws AuthorizationDeniedException,
+        EjbcaException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException{
+        endEntityManagementSessionLocal.addUser(admin, endEntity, clearpwd);
     }
 
     private GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
