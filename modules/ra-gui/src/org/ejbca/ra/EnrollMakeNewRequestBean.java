@@ -125,12 +125,33 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String selectedAlgorithm;
     private boolean algorithmChanged;
 
-    //6. End-entity metadata
-    private EndEntityInformation endEntityInformation;
-    private String confirmPassword;
+    //6. Certificate data
     private SubjectDn subjectDn;
     private SubjectAlternativeName subjectAlternativeName;
     private SubjectDirectoryAttributes subjectDirectoryAttributes;
+    private boolean certificateDataReady;
+
+    //7. Download credentials data
+    private EndEntityInformation endEntityInformation;
+    private String confirmPassword;
+
+    public enum DownloadCredentialsType {
+        NO_CREDENTIALS_DIRECT_DOWNLOAD("No credentials (direct download)"), USERNAME_PASSWORD("Username and password credentials"), EMAIL(
+                "Download credentials will be sent to the specified email");
+        private String value;
+
+        private DownloadCredentialsType(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    private Map<String, DownloadCredentialsType> availableDownloadCredentials = new HashMap<String, DownloadCredentialsType>();
+    private String selectedDownloadCredentialsType;
+    private boolean downloadCredentialsChanged;
 
     @PostConstruct
     private void postContruct() {
@@ -278,11 +299,21 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
-    private void initEndEntityProfileMetadata() {
-        endEntityInformation = new EndEntityInformation();
+    private void initCertificateData() {
         subjectDn = new SubjectDn(getEndEntityProfile());
         subjectAlternativeName = new SubjectAlternativeName(getEndEntityProfile());
         subjectDirectoryAttributes = new SubjectDirectoryAttributes(getEndEntityProfile());
+    }
+
+    private void initDownloadCredentialsType() {
+        availableDownloadCredentials.put(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue(),
+                DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD);
+        availableDownloadCredentials.put(DownloadCredentialsType.USERNAME_PASSWORD.getValue(), DownloadCredentialsType.USERNAME_PASSWORD);
+        availableDownloadCredentials.put(DownloadCredentialsType.EMAIL.getValue(), DownloadCredentialsType.EMAIL);
+    }
+
+    private void initDownloadCredentialsData() {
+        endEntityInformation = new EndEntityInformation();
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -297,6 +328,20 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public String getSubjectDirectoryAttributesFieldOutputName(String keyName) {
         return raLocaleBean.getMessage("subject_directory_attributes_" + keyName);
+    }
+
+    public boolean getUsernameRendered() {
+        return selectedDownloadCredentialsType != null
+                && selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue());
+    }
+    
+    public boolean getPasswordRendered() {
+        return getUsernameRendered();
+    }
+    
+    public boolean getEmailRendered() {
+        return selectedDownloadCredentialsType != null
+                && !selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue());
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -339,14 +384,26 @@ public class EnrollMakeNewRequestBean implements Serializable {
         selectedAlgorithm = null;
         algorithmChanged = false;
 
-        resetEndEntityMetadata();
+        resetCertificateData();
     }
 
-    private final void resetEndEntityMetadata() {
-        endEntityInformation = null;
+    private final void resetCertificateData() {
         subjectDn = null;
         subjectAlternativeName = null;
         subjectDirectoryAttributes = null;
+        certificateDataReady = false;
+
+        resetDownloadCredentialsType();
+    }
+
+    private final void resetDownloadCredentialsType() {
+        availableDownloadCredentials.clear();
+
+        resetDownloadCredentialsData();
+    }
+
+    private final void resetDownloadCredentialsData() {
+        endEntityInformation = null;
     }
 
     /**
@@ -365,9 +422,15 @@ public class EnrollMakeNewRequestBean implements Serializable {
             selectKeyPairGeneration();
         } else if (algorithmChanged) {
             selectAlgorithm();
+        } else if (downloadCredentialsChanged) {
+            selectDownloadCredentialsType();
         } else {
             if (endEntityInformation != null) {
-                submitEndEntityMetadata();
+                submitDownloadCredentialsData();
+            } else if (selectedDownloadCredentialsType != null) {
+                selectDownloadCredentialsType();
+            } else if (subjectDn != null) {
+                finalizeCertificateData();
             } else if (selectedAlgorithm != null) {
                 selectAlgorithm();
             } else if (selectedKeyPairGeneration != null) {
@@ -434,12 +497,26 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private final void selectAlgorithm() {
         setAlgorithmChanged(false);
 
-        resetEndEntityMetadata();
-        initEndEntityProfileMetadata();
+        resetCertificateData();
+        initCertificateData();
         raLocaleBean.addMessageInfo("somefunction_testok", "selectedAlgorithm", selectedAlgorithm);
     }
 
-    private final void submitEndEntityMetadata() {
+    private final void finalizeCertificateData() {
+        certificateDataReady = true;
+
+        initDownloadCredentialsType();
+    }
+
+    private final void selectDownloadCredentialsType() {
+        setDownloadCredentialsChanged(false);
+
+        resetDownloadCredentialsData();
+        initDownloadCredentialsData();
+        raLocaleBean.addMessageInfo("somefunction_testok", "selectedDownloadCredentials", selectedDownloadCredentialsType);
+    }
+
+    private final void submitDownloadCredentialsData() {
         endEntityInformation.setCAId(getCAInfo().getCAId());
         endEntityInformation.setCardNumber(""); //TODO Card Number
         endEntityInformation.setCertificateProfileId(authorizedCertificateProfiles.get(selectedCertificateProfile).getId());
@@ -452,8 +529,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setSendNotification(false); // TODO will be updated
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation.setSubjectAltName(subjectAlternativeName.toString());
-        endEntityInformation.setTimeCreated(new Date());
-        endEntityInformation.setTimeModified(new Date());
+        endEntityInformation.setTimeCreated(new Date());//TODO client vs server time issues?
+        endEntityInformation.setTimeModified(new Date());//TODO client vs server time issues?
         endEntityInformation.setTokenType(SecConst.TOKEN_SOFT_P12); //TODO make it configurable
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
         //TODO how to set subject directory attributes?
@@ -464,8 +541,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 | UserDoesntFullfillEndEntityProfile | WaitingForApprovalException e) {
             raLocaleBean.addMessageInfo("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage());
             log.error(raLocaleBean.getMessage("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage()), e);
-        } 
-        
+        }
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -489,6 +565,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public final void algorithmChangedListener(ValueChangeEvent e) {
         setAlgorithmChanged(true);
     }
+    
+    public final void downloadCredentialsTypeChangedListener(ValueChangeEvent e){
+        setDownloadCredentialsChanged(true);
+    }
 
     public final void endEntityProfileAjaxListener(final AjaxBehaviorEvent event) {
         selectEndEntityProfile();
@@ -508,6 +588,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public final void algorithmAjaxListener(final AjaxBehaviorEvent event) {
         selectAlgorithm();
+    }
+
+    public final void downloadCredentialsTypeAjaxListener(final AjaxBehaviorEvent event) {
+        selectDownloadCredentialsType();
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -539,16 +623,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         return authorizedEndEntityProfiles.get(selectedEndEntityProfile).getValue();
     }
-    
-    public CertificateProfile getCertificateProfile(){
-        if(selectedCertificateProfile == null){
+
+    public CertificateProfile getCertificateProfile() {
+        if (selectedCertificateProfile == null) {
             return null;
         }
         return authorizedCertificateProfiles.get(selectedCertificateProfile).getValue();
     }
-    
-    public CAInfo getCAInfo(){
-        if(selectedCertificateAuthority == null){
+
+    public CAInfo getCAInfo() {
+        if (selectedCertificateAuthority == null) {
             return null;
         }
         return authorizedCAInfos.get(selectedCertificateAuthority).getValue();
@@ -841,5 +925,61 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public void setSubjectDirectoryAttributes(SubjectDirectoryAttributes subjectDirectoryAttributes) {
         this.subjectDirectoryAttributes = subjectDirectoryAttributes;
+    }
+
+    /**
+     * @return the certificateDataReady
+     */
+    public boolean isCertificateDataReady() {
+        return certificateDataReady;
+    }
+
+    /**
+     * @param certificateDataReady the certificateDataReady to set
+     */
+    public void setCertificateDataReady(boolean certificateDataReady) {
+        this.certificateDataReady = certificateDataReady;
+    }
+
+    /**
+     * @return the availableDownloadCredentials
+     */
+    public Map<String, DownloadCredentialsType> getAvailableDownloadCredentials() {
+        return availableDownloadCredentials;
+    }
+
+    /**
+     * @param availableDownloadCredentials the availableDownloadCredentials to set
+     */
+    public void setAvailableDownloadCredentials(Map<String, DownloadCredentialsType> availableDownloadCredentials) {
+        this.availableDownloadCredentials = availableDownloadCredentials;
+    }
+
+    /**
+     * @return the selectedDownloadCredentials
+     */
+    public String getSelectedDownloadCredentialsType() {
+        return selectedDownloadCredentialsType;
+    }
+
+    /**
+     * @param selectedDownloadCredentialsType the selectedDownloadCredentials to set
+     */
+    public void setSelectedDownloadCredentialsType(String selectedDownloadCredentialsType) {
+        this.selectedDownloadCredentialsType = selectedDownloadCredentialsType;
+    }
+
+    /**
+     * @return the downloadCredentialsChanged
+     */
+    public boolean isDownloadCredentialsChanged() {
+        return downloadCredentialsChanged;
+    }
+
+    /**
+     * @param downloadCredentialsChanged the downloadCredentialsChanged to set
+     */
+    public void setDownloadCredentialsChanged(boolean downloadCredentialsChanged) {
+        this.downloadCredentialsChanged = downloadCredentialsChanged;
     }
 }

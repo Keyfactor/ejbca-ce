@@ -30,7 +30,8 @@
 	<ui:define name="content">
 		<h:form id="enrollMakeNewRequestForm">
 			<h:panelGrid id="enrollMain" columns="1">
-				<h:outputText value="#{msg.enroll_step_1_select_certificate_type}" />
+				<h:outputText
+					value="#{msg.enroll_step_1_select_certificate_type_and_ca}" />
 				<h:panelGrid columns="3" frame="border">
 					<h:outputText value="#{msg.enroll_certificate_type}" />
 					<h:selectOneMenu id="selectEEPOneMenu"
@@ -114,7 +115,8 @@
 
 				<h:panelGroup layout="block"
 					rendered="#{!enrollMakeNewRequestBean.availableKeyPairGenerations.isEmpty()}">
-					<h:outputText value="#{msg.enroll_step_2_provide_a_key_pair}" />
+					<h:outputText
+						value="#{msg.enroll_step_2_provide_a_key_pair_information}" />
 					<h:panelGrid columns="1" frame="border">
 						<h:outputText value="#{msg.enroll_keypair_generation}" />
 						<h:selectOneRadio id="selectKeyPairGenerationOneMenu"
@@ -156,46 +158,9 @@
 					<br />
 				</h:panelGroup>
 				<h:panelGroup layout="block"
-					rendered="#{enrollMakeNewRequestBean.endEntityInformation != null}">
-					<h:outputText
-						value="#{msg.enroll_step_3_enter_general_information}" />
-					<h:panelGrid columns="2" frame="border">
-						<h:outputText value="#{msg.enroll_user_credentials}" />
-						<h:outputText value="&#160;" />
+					rendered="#{enrollMakeNewRequestBean.subjectDn != null}">
+					<h:outputText value="#{msg.enroll_step_3_enter_certificate_data}" />
 
-						<component:endEntityOutputText value="#{msg.enroll_username}"
-							required="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isRequired()}"
-							modifiable="#{true}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isUsed()}" />
-						<h:inputText
-							value="#{enrollMakeNewRequestBean.endEntityInformation.username}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isUsed()}" />
-
-						<component:endEntityOutputText value="#{msg.enroll_password}"
-							required="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isRequired()}"
-							modifiable="#{true}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isUsed()}" />
-						<h:inputSecret
-							value="#{enrollMakeNewRequestBean.endEntityInformation.password}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isUsed()}" />
-
-						<component:endEntityOutputText
-							value="#{msg.enroll_confirm_password}"
-							required="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isRequired()}"
-							modifiable="#{true}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isUsed()}" />
-						<h:inputSecret value="#{enrollMakeNewRequestBean.confirmPassword}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isUsed()}" />
-
-						<component:endEntityOutputText value="#{msg.enroll_email}"
-							required="#{enrollMakeNewRequestBean.endEntityProfile.email.instances.get(0).isRequired()}"
-							modifiable="#{true}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.email.instances.get(0).isUsed()}" />
-						<h:inputText
-							value="#{enrollMakeNewRequestBean.endEntityInformation.email}"
-							rendered="#{enrollMakeNewRequestBean.endEntityProfile.email.instances.get(0).isUsed()}" />
-
-					</h:panelGrid>
 					<h:panelGrid frame="border" layout="block">
 						<h:outputText value="#{msg.enroll_subject_dn_attributes}" />
 						<h:dataTable var="instance"
@@ -247,6 +212,69 @@
 									disabled="#{!instance.isModifiable()}" />
 							</h:column>
 						</h:dataTable>
+					</h:panelGrid>
+
+					<br />
+				</h:panelGroup>
+
+				<h:panelGroup layout="block"
+					rendered="#{enrollMakeNewRequestBean.certificateDataReady}">
+					<h:outputText
+						value="#{msg.enroll_step_4_enter_download_credentials}" />
+					<h:panelGrid columns="2" frame="border">
+						<h:outputText value="#{msg.enroll_user_credentials}" />
+						<h:outputText value="&#160;" />
+						
+						<h:outputText value="#{msg.enroll_download_credentials_type}" />
+						
+						<h:selectOneMenu id="selectDownloadCredentialsOneMenu"
+							value="#{enrollMakeNewRequestBean.selectedDownloadCredentialsType}"
+							valueChangeListener="#{enrollMakeNewRequestBean.downloadCredentialsTypeChangedListener}">
+							<c:if
+								test="#{enrollMakeNewRequestBean.availableDownloadCredentials.size()>1}">
+								<f:selectItem itemLabel="Select..." itemValue="#{null}"
+									itemDisabled="true" itemLabelEscaped="true" />
+							</c:if>
+							<f:selectItems
+								value="#{enrollMakeNewRequestBean.availableDownloadCredentials.keySet()}" />
+							<f:ajax
+								execute=":enrollMakeNewRequestForm:selectDownloadCredentialsOneMenu"
+								event="change"
+								render=":globalMessages :enrollMakeNewRequestForm"
+								listener="#{enrollMakeNewRequestBean.downloadCredentialsTypeAjaxListener}" />
+						</h:selectOneMenu>
+
+						<component:endEntityOutputText value="#{msg.enroll_username}"
+							required="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isRequired()}"
+							modifiable="#{true}"
+							rendered="#{enrollMakeNewRequestBean.getUsernameRendered()}" />
+						<h:inputText
+							value="#{enrollMakeNewRequestBean.endEntityInformation.username}"
+							rendered="#{enrollMakeNewRequestBean.getUsernameRendered()}" />
+
+						<component:endEntityOutputText value="#{msg.enroll_password}"
+							required="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isRequired()}"
+							modifiable="#{true}"
+							rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}" />
+						<h:inputSecret
+							value="#{enrollMakeNewRequestBean.endEntityInformation.password}"
+							rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}" />
+
+						<component:endEntityOutputText
+							value="#{msg.enroll_confirm_password}"
+							required="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isRequired()}"
+							modifiable="#{true}"
+							rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}" />
+						<h:inputSecret value="#{enrollMakeNewRequestBean.confirmPassword}"
+							rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}" />
+
+						<component:endEntityOutputText value="#{msg.enroll_email}"
+							required="#{enrollMakeNewRequestBean.endEntityProfile.email.instances.get(0).isRequired()}"
+							modifiable="#{true}"
+							rendered="#{enrollMakeNewRequestBean.getEmailRendered()}" />
+						<h:inputText
+							value="#{enrollMakeNewRequestBean.endEntityInformation.email}"
+							rendered="#{enrollMakeNewRequestBean.getEmailRendered()}" />
 					</h:panelGrid>
 
 					<br />
