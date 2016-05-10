@@ -52,6 +52,9 @@ public interface RaMasterApi {
     /** @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise*/
     CertificateDataWrapper searchForCertificate(AuthenticationToken authenticationToken, String fingerprint);
 
+    /** @return list of approval requests from the specified search criteria */
+    RaRequestsSearchResponse searchForApprovalRequests(AuthenticationToken authenticationToken, RaRequestsSearchRequest raRequestsSearchRequest);
+    
     /** @return list of certificates from the specified search criteria*/
     RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest);
 

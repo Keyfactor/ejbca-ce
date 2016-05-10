@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,6 +33,7 @@ import javax.persistence.Query;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -52,14 +54,19 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.util.query.ApprovalMatch;
+import org.ejbca.util.query.BasicMatch;
+import org.ejbca.util.query.IllegalQueryException;
 
 /**
  * Implementation of the RaMasterApi that invokes functions at the local node.
@@ -72,6 +79,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     private static final Logger log = Logger.getLogger(RaMasterApiSessionBean.class);
 
+    @EJB
+    private ApprovalSessionLocal approvalSession;
     @EJB
     private AccessControlSessionLocal accessControlSession;
     @EJB
@@ -145,6 +154,96 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         // TODO: Check EEP authorization once this is implemented
         return cdw;
+    }
+    
+    @Override
+    public RaRequestsSearchResponse searchForApprovalRequests(final AuthenticationToken authenticationToken, final RaRequestsSearchRequest request) {
+        final RaRequestsSearchResponse response = new RaRequestsSearchResponse();
+        final List<CAInfo> authorizedCas = getAuthorizedCas(authenticationToken);
+        if (authorizedCas.size() == 0) {
+            return response; // not authorized to any CAs. return empty response
+        }
+        
+        if (!request.isSearchingWaitingForMe() && !request.isSearchingPending() && !request.isSearchingHistorical()) {
+            return response; // not searching for anything. return empty response
+        }
+        
+        // The values are used to check if a request belongs to us or not
+        String adminCertSerial = null; 
+        String adminCertIssuer = null;
+        if (authenticationToken instanceof X509CertificateAuthenticationToken) {
+            final X509CertificateAuthenticationToken certAuth = (X509CertificateAuthenticationToken) authenticationToken;
+            final X509Certificate cert = certAuth.getCertificate();
+            adminCertSerial = CertTools.getSerialNumberAsString(cert);
+            adminCertIssuer = CertTools.getIssuerDN(cert);
+        }
+        
+        // Filtering
+        final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
+        // TODO should we limit to add/revoke end entity requests also?
+        if (request.isSearchingHistorical()) {
+            // Everything except waiting and "approved" (which means approved but not excecuted)
+            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXECUTED));
+            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
+            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXECUTIONDENIED));
+            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
+            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXECUTIONFAILED));
+            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
+            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_REJECTED));
+            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
+            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXPIRED));
+            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
+            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED));
+        }
+        if (request.isSearchingWaitingForMe() || request.isSearchingPending()) {
+            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL));
+            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
+            // Certain requests (not add end entity) can require the requesting admin to retry the action
+            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_APPROVED));
+        }
+        
+        // Build CA authorization string (a part of the query) 
+        StringBuilder sb = new StringBuilder();
+        sb.append("caId IN (");
+        boolean first = true;
+        for (CAInfo ca : authorizedCas) {
+            if (!first) {
+                sb.append(',');
+            }
+            sb.append(ca.getCAId());
+            first = false;
+        }
+        sb.append(')');
+        final String caAuthorizationString = sb.toString();
+        
+        final String endEntityProfileAuthorizationString = ""; // TODO
+        final String approvalProfileAuthorizationString = ""; // TODO
+        
+        // TODO use a more efficient method that doesn't use a starting index?
+        //      perhaps modify the query method?
+        //      or create a query manually? (in this case we need to construct either the ApprovalDataVO, or the RaApprovalRequestInfo directly)
+        final List<ApprovalDataVO> approvals;
+        try {
+            approvals = approvalSession.query(authenticationToken, query, 0, 100, caAuthorizationString, endEntityProfileAuthorizationString, approvalProfileAuthorizationString);
+        } catch (AuthorizationDeniedException e) {
+            // Not currently ever thrown by query()
+            throw new IllegalStateException(e);
+        } catch (IllegalQueryException e) {
+            throw new IllegalStateException("Query for approval requests failed: " + e.getMessage(), e);
+        }
+        
+        if (approvals.size() >= 100) {
+            response.setMightHaveMoreResults(true);
+        }
+        
+        for (final ApprovalDataVO advo : approvals) {
+            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(adminCertSerial, adminCertIssuer, advo);
+            if (!ari.isPending() && request.isSearchingPending()) { continue; } // XXX untested code!
+            if (!ari.isWaitingForMe() && request.isSearchingWaitingForMe()) { continue; }
+            // XXX It seems that the query() method filters out approvals that the current admin isn't involved in. How to handle historical steps in this case? And pending steps?
+            response.getApprovalRequests().add(ari);
+        }
+        return response;
     }
 
     @Override
@@ -482,7 +581,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public IdNameHashMap<EndEntityProfile> getAuthorizedEndEntityProfiles(AuthenticationToken authenticationToken){
         Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.EDIT_END_ENTITY);
         Map<Integer, String> idToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
-        IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();
+        IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
         for(Integer id: ids){
             authorizedEndEntityProfiles.put(id, idToNameMap.get(id), endEntityProfileSession.getEndEntityProfile(id));
         }
@@ -491,7 +590,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken){
-        IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<CertificateProfile>();
+        IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
         List<Integer> authorizedCertificateProfileIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, CertificateConstants.CERTTYPE_ENDENTITY);
         for(Integer certificateProfileId : authorizedCertificateProfileIds){
             CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
@@ -504,7 +603,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken) {
-        IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<CAInfo>();
+        IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
         List<CAInfo> authorizedCAInfosList = caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
         for(CAInfo caInfo : authorizedCAInfosList){
             if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
