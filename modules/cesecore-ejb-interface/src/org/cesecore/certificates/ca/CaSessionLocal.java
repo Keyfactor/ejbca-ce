@@ -134,18 +134,6 @@ public interface CaSessionLocal extends CaSession {
      * @throws AuthorizationDeniedException
      */
     void editCA(final AuthenticationToken admin, final CA ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException;
-
-    /** Changes a CA in the database. Can change everything except caid. When editing a CA the CA token will usually be taken off line.
-     * So you need to activate the CA token after editing, if auto-activation of the CA token is not enabled. 
-     * 
-     * @param admin AuthenticationToken of admin
-     * @param ca the CA to edit
-     * @param auditlog if audit logging of the edit should be done or not, not needed if called from other internal methods that already does audit logging.
-     * @throws CADoesntExistsException
-     * @throws AuthorizationDeniedException
-     */
-    void editCAWithNewName(final AuthenticationToken admin, final CA ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException;
-
     
     /**
      * Verify that a CA exists.
