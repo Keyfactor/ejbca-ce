@@ -2412,6 +2412,41 @@ Additionally <code>/cryptotoken/keys/generate/[CTName]</code> is required if key
 </p>
 </subsubsection>
 </subsection>
+<subsection name="Example Peer System setup work-flow">
+<p>
+This is an example of a work-flow to set up a Peer System from a CA to a VA. The example doesn't show every detail, but should give an overview of the steps needed and approximately in which order they should be performed.
+</p>
+<p>
+On the CA:
+</p>
+<ul>
+<li>Create a Crypto Token for a Key Binding (RSA2048 for example for a TLS session using RSA).</li>
+<li>Create a user to issue a TLS certificate to the Key Binding, for the remote host, the VA.</li>
+</ul>
+<note>
+It is important to use the correct hostname/ip in TLS certificates (CN and altName )on both the CA and the VA, otherwise the TLS connection will fail.
+This is a bit tricky, and hard for the non-initiated to debug.
+</note>
+<ul>
+<li>Create an AuthenticationKeyBinding</li>
+<li>Click CSR to generate a CSR.</li>
+<li>Go to public web and issue the certificate.</li>
+<li>Edit AuthenticationKeyBinding, click Update to load the issued certificate, click enable to enable the key binding.</li>
+<li>Add an outgoing Peer System using the above created key binding. URL is something like https://10.172.10.40:8443/ejbca/peer/v1.</li> 
+<li>Click Ping. You should get message "Unable to connect to peer. Unauthorized", because we haven't configured authorization on the VA.</li>
+</ul>
+TODO: what does connection pool status mean?
+<p>
+On the VA:
+</p>
+<ul>
+<li>Create a new Role for the incoming Peer, of you don't want to use the Super Administrator Role.</li>
+<li>Go to Peer Systems:</li>
+<li>Click 'allow incoming connections'.</li>
+<li>You should get an entry in the list of incoming connections. Click "Create authorization", select a role and save.</li>
+</ul>
+
+</subsection>
 </section>
 
 <section name="EJBCA client toolbox">
