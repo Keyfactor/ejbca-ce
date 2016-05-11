@@ -88,7 +88,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public static final String CATYPE = "catype";
     protected static final String SUBJECTDN = "subjectdn";
     protected static final String CAID = "caid";
-    protected static final String NAME = "name";
+    public static final String NAME = "name";
     protected static final String VALIDITY = "validity";
     protected static final String EXPIRETIME = "expiretime";
     protected static final String CERTIFICATECHAIN = "certificatechain";

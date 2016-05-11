@@ -15,7 +15,9 @@ package org.ejbca.ui.cli.ca;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
@@ -76,17 +78,29 @@ public class CaEditCaCommand extends BaseCaAdminCommand {
             final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), name);
             // List fields, get values or set value
             try {
-                if (!fieldEditor.listGetOrSet(listOnly, getOnly, name, field, value, cainfo)) {
-                    log.info("Storing modified CA info for CA '" + name + "'...");
-                    EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).editCA(getAuthenticationToken(), cainfo);
-                    // Verify our new value.
-                    // If the CA Subject DN was changed, then the CA Id might have changed at this point,
-                    // so we have to do the lookup by name!
-                    log.info("Reading modified value for verification...");
-                    final CAInfo cainfomod = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),
-                            name);
-                    // Print return value
-                    fieldEditor.getBeanValue(field, cainfomod);
+                if(field.equals(CA.NAME)) {
+                    // The CA name field is a bit of a special case. Since there's a CESeCore method specifically for it, we should use
+                    // it instead
+                    try {
+                        EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).renameCA(getAuthenticationToken(), cainfo.getName(), value);
+                        log.info("Renamed CA by the name  '" + cainfo.getName() + "' to '" + value + "'");
+                    } catch (CAExistsException e) {
+                        log.error("A CA by the name of " + value + " already exists.");
+                        return CommandResult.FUNCTIONAL_FAILURE;
+                    }
+                } else {                
+                    if (!fieldEditor.listGetOrSet(listOnly, getOnly, name, field, value, cainfo)) {                     
+                        log.info("Storing modified CA info for CA '" + name + "'...");
+                        EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).editCA(getAuthenticationToken(), cainfo);
+                        // Verify our new value.
+                        // If the CA Subject DN was changed, then the CA Id might have changed at this point,
+                        // so we have to do the lookup by name!
+                        log.info("Reading modified value for verification...");
+                        final CAInfo cainfomod = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),
+                                name);
+                        // Print return value
+                        fieldEditor.getBeanValue(field, cainfomod);
+                    }
                 }
                 return CommandResult.SUCCESS;
             } catch (FieldNotFoundException e) {

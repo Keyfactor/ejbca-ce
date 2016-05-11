@@ -164,7 +164,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     			if (cainfo.getCAToken() != null) {
     			    newCryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
     			}
-                assertAuthorizationAndTarget(admin, cainfo.getName(), cainfo.getSubjectDN(), newCryptoTokenId, ca, /*withCANameChange=*/false);
+                assertAuthorizationAndTarget(admin, cainfo.getName(), cainfo.getSubjectDN(), newCryptoTokenId, ca);
                 @SuppressWarnings("unchecked")
                 final Map<Object, Object> orgmap = (Map<Object, Object>)ca.saveData();
                 AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
@@ -200,22 +200,13 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     
     @Override
     public void editCA(final AuthenticationToken admin, final CA ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException {
-        editCA(admin, ca, auditlog, /*withCANameChange=*/false);
-    }
-    
-    @Override
-    public void editCAWithNewName(final AuthenticationToken admin, final CA ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException {
-        editCA(admin, ca, auditlog, /*withCANameChange=*/true);   
-    }
-    
-    private void editCA(final AuthenticationToken admin, final CA ca, boolean auditlog, boolean withCARename) throws CADoesntExistsException, AuthorizationDeniedException {
         if (ca != null) {
             if (log.isTraceEnabled()) {
                 log.trace(">editCA (CA): "+ca.getName());
             }
             final CA orgca = getCAInternal(ca.getCAId(), null, true);
             // Check if we can edit the CA (also checks authorization)
-            assertAuthorizationAndTarget(admin, ca.getName(), ca.getSubjectDN(), ca.getCAToken().getCryptoTokenId(), orgca, withCARename);
+            assertAuthorizationAndTarget(admin, ca.getName(), ca.getSubjectDN(), ca.getCAToken().getCryptoTokenId(), orgca);
             if (auditlog) {
                 // Get the diff of what changed
                 final Map<Object, Object> diff = orgca.diff(ca);
@@ -250,7 +241,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
 	/** Ensure that the caller is authorized to the CA we are about to edit and that the CA name and subjectDN matches. */
-	private void assertAuthorizationAndTarget(AuthenticationToken admin, final String name, final String subjectDN, final int cryptoTokenId, final CA ca, boolean withCANameChange)
+	private void assertAuthorizationAndTarget(AuthenticationToken admin, final String name, final String subjectDN, final int cryptoTokenId, final CA ca)
 			throws CADoesntExistsException, AuthorizationDeniedException {
         // Check if we are authorized to edit CA and authorization to specific CA
         if (cryptoTokenId == ca.getCAToken().getCryptoTokenId() || cryptoTokenId==0) {
@@ -268,9 +259,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 		// The CA needs the same name and subject DN in order to store it
 		if (name == null || subjectDN == null) {
 		    throw new CADoesntExistsException("Null CA name or SubjectDN");
-		} else if (!withCANameChange && !StringUtils.equals(name, ca.getName())) {
+		} else if (!StringUtils.equals(name, ca.getName())) {
 		    throw new CADoesntExistsException("Not same CA name.");
-		} else if (!withCANameChange && !StringUtils.equals(subjectDN, ca.getSubjectDN()) && ca.getCAInfo().getStatus() != CAConstants.CA_UNINITIALIZED) {
+		} else if (!StringUtils.equals(subjectDN, ca.getSubjectDN()) && ca.getCAInfo().getStatus() != CAConstants.CA_UNINITIALIZED) {
             throw new CADoesntExistsException("Not same CA subject DN.");
         }
 	}
@@ -385,7 +376,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             throw new AuthorizationDeniedException(msg);
         }
         if (CAData.findByName(entityManager, newname) == null) {
-            // new CA doesn't exits, it's ok to rename old one.
+            // The new CA doesn't exist, it's okay to rename old one.
             cadata.setName(newname);
             // Invalidate CA cache to refresh information
             int caid = cadata.getCaId().intValue();

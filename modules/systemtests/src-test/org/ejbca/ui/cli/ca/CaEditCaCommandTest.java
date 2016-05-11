@@ -14,9 +14,12 @@
 package org.ejbca.ui.cli.ca;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -34,13 +37,15 @@ import org.junit.Test;
  */
 public class CaEditCaCommandTest {
 
-    private static final String CA_NAME = "1327editca2";
+    private static final String CA_NAME = "CaEditCaCommandTest";
     private static final String[] HAPPY_PATH_ARGS = { CA_NAME, "CRLPeriod", "2592000000"};
 
     private CaEditCaCommand caEditCommand;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaEditCommandTest"));
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    
+    int caid = 0;
 
     @Before
     public void setUp() throws Exception {
@@ -48,11 +53,12 @@ public class CaEditCaCommandTest {
         caEditCommand = new CaEditCaCommand();
         CaTestCase.removeTestCA(CA_NAME);
         CaTestCase.createTestCA(CA_NAME);
+        caid = caSession.getCAInfo(admin, CA_NAME).getCAId();
     }
 
     @After
     public void tearDown() throws Exception {
-        CaTestCase.removeTestCA(CA_NAME);
+        CaTestCase.removeTestCA(caid);
     }
 
     /** Test trivial happy path for execute, i.e, edit an ordinary CA. */
@@ -63,6 +69,20 @@ public class CaEditCaCommandTest {
         caEditCommand.execute(HAPPY_PATH_ARGS);
         info = caSession.getCAInfo(admin, CA_NAME);
         assertEquals("CRLPeriod of a edited CA is incorrect. Edit did not work?", 2592000000L, info.getCRLPeriod());
+    }
+    
+    @Test
+    public void testRenameCa() throws AuthorizationDeniedException {
+        final String newName = "CaEditCaCommandTestNewName";
+        final String[] changeCaNameArgs = { CA_NAME, "name", newName};
+        caEditCommand.execute(changeCaNameArgs);
+        try {
+            CAInfo info = caSession.getCAInfo(admin, caid);
+            assertEquals("CA name change did not happen.", newName, info.getName());
+        } catch (CADoesntExistsException e) {
+            fail("CA could not be found after name change");
+        }
+        
     }
     
 }
