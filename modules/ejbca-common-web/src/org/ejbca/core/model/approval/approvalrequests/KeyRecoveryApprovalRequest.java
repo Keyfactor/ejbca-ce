@@ -27,6 +27,7 @@ import javax.ejb.EJBException;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
@@ -95,6 +96,8 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
         } catch (ApprovalException e) {
             throw new EJBException("This should never happen", e);
         } catch (WaitingForApprovalException e) {
+            throw new EJBException("This should never happen", e);
+        } catch (CADoesntExistsException e) {
             throw new EJBException("This should never happen", e);
         }
     }

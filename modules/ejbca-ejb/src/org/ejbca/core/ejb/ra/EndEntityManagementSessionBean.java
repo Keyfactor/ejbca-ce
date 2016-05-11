@@ -108,6 +108,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
 import org.ejbca.core.model.approval.ApprovalProfile;
+import org.ejbca.core.model.approval.ApprovalUtils;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
@@ -343,7 +344,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (caInfo.isUseUserStorage()) {
             final int numOfApprovalsRequired = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid,
                     endEntity.getCertificateProfileId());
-            final ApprovalProfile approvalProfiles[] = getApprovalProfiles(caInfo, endEntity.getCertificateProfileId());
+            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntity.getCertificateProfileId());
+            final ApprovalProfile approvalProfiles[] = ApprovalUtils.getApprovalProfiles(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caInfo, 
+                    certProfile, approvalProfileSession);
             if (approvalProfiles[0]!=null) {
                 AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(endEntity, clearpwd, admin, null, numOfApprovalsRequired, caid,
                         endEntityProfileId, approvalProfiles[0], approvalProfiles[1]);
@@ -451,35 +454,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
     }
     
-    private ApprovalProfile[] getApprovalProfiles(final CAInfo cainfo, final int certProfileId) {
-            ApprovalProfile profiles[] = new ApprovalProfile[2];
-            ApprovalProfile profileFromCA = null;
-            ApprovalProfile profileFromCP = null;
-            
-            int approvalProfileId = cainfo.getApprovalProfile();
-            if(approvalProfileId > -1) {
-                profileFromCA = approvalProfileSession.getApprovalProfile(approvalProfileId);
-            }
-
-            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
-            if(certProfile != null) {
-                approvalProfileId = certProfile.getApprovalProfileID();
-                if(approvalProfileId > -1) {
-                    profileFromCP = approvalProfileSession.getApprovalProfile(approvalProfileId);
-                }            
-            }
-            
-            if(profileFromCA != null) {
-                profiles[0] = profileFromCA;
-                profiles[1] = profileFromCP;
-            } else {
-                profiles[0] = profileFromCP;
-                profiles[1] = null;
-            }
-            
-            return profiles;
-    }
-
     /* Does not check authorization. Calling code is responsible for this. */
     private boolean isSubjectDnSerialnumberUnique(final int caid, final String subjectDN, final String username) {
         final String serialnumber = CertTools.getPartFromDN(subjectDN, "SN");
@@ -752,7 +726,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Check if approvals is required.
         final int numOfApprovalsRequired = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, endEntityInformation.getCertificateProfileId());
         final CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
-        final ApprovalProfile approvalProfiles[] = getApprovalProfiles(cainfo, endEntityInformation.getCertificateProfileId());
+        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
+        final ApprovalProfile approvalProfiles[] = ApprovalUtils.getApprovalProfiles(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, cainfo, 
+                certificateProfile, approvalProfileSession);
         if ((numOfApprovalsRequired > 0) || (approvalProfiles[0]!=null)) {
             final EndEntityInformation orguserdata = userData.toEndEntityInformation();
             final EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(endEntityInformation, clearpwd, orguserdata, admin, null,
@@ -1212,7 +1188,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final String username = data1.getUsername();
         final int endEntityProfileId = data1.getEndEntityProfileId();
         // Check if approvals is required.
-        final ApprovalProfile approvalProfiles[] = getApprovalProfiles(cainfo, data1.getCertificateProfileId());
+        final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(data1.getCertificateProfileId());
+        final ApprovalProfile approvalProfiles[] = ApprovalUtils.getApprovalProfiles(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, cainfo, 
+                certProfile, approvalProfileSession);
         final int numOfApprovalsRequired = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, data1.getCertificateProfileId());
         if ((numOfApprovalsRequired > 0) || (approvalProfiles[0]!=null)) {
             final ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status, admin,
@@ -1423,7 +1401,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             if (data.getStatus() != EndEntityConstants.STATUS_REVOKED) {
                 // Check if approvals is required.
                 final CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
-                final ApprovalProfile approvalProfiles[] = getApprovalProfiles(cainfo, data.getCertificateProfileId());
+                final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(data.getCertificateProfileId());
+                final ApprovalProfile approvalProfiles[] = ApprovalUtils.getApprovalProfiles(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, 
+                        certProfile, approvalProfileSession);
                 final int numOfReqApprovals = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_REVOCATION, caid, data.getCertificateProfileId());
                 if ((numOfReqApprovals > 0) || (approvalProfiles[0]!=null)) {
                     final RevocationApprovalRequest ar = new RevocationApprovalRequest(true, username, reason, admin, numOfReqApprovals, caid,
@@ -1481,7 +1461,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         } catch (CADoesntExistsException e1) {
             throw new FinderException("CA with ID " + caid + " not found.");
         }
-        final ApprovalProfile approvalProfiles[] = getApprovalProfiles(cainfo, userData.getCertificateProfileId());
+        final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(userData.getCertificateProfileId());
+        final ApprovalProfile approvalProfiles[] = ApprovalUtils.getApprovalProfiles(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, certProfile, 
+                approvalProfileSession);
         final int numOfReqApprovals = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_REVOCATION, caid, userData.getCertificateProfileId());
         if ((numOfReqApprovals > 0) || (approvalProfiles[0]!=null)) {
             final RevocationApprovalRequest ar = new RevocationApprovalRequest(false, username, reason, admin, numOfReqApprovals, caid,
@@ -1634,7 +1616,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             } catch (CADoesntExistsException e) {
                 throw new FinderException("CA with ID " + caid + " not found.");
             }
-            final ApprovalProfile approvalProfiles[] = getApprovalProfiles(cainfo, data.getCertificateProfileId());
+            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(data.getCertificateProfileId());
+            final ApprovalProfile approvalProfiles[] = ApprovalUtils.getApprovalProfiles(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, 
+                    certProfile, approvalProfileSession);
             final int numOfReqApprovals = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_REVOCATION, caid, certificateProfileId);
             if ((numOfReqApprovals > 0) || (approvalProfiles[0]!=null)) {
                 final RevocationApprovalRequest ar = new RevocationApprovalRequest(certserno, issuerdn, username, reason, admin, numOfReqApprovals,
@@ -2134,7 +2118,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @Override
     public boolean prepareForKeyRecovery(AuthenticationToken admin, String username, int endEntityProfileId, Certificate certificate)
-            throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
+            throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, CADoesntExistsException {
         boolean ret;
         if (certificate == null) {
             ret = keyRecoverySession.markNewestAsRecoverable(admin, username, endEntityProfileId);

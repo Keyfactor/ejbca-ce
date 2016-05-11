@@ -28,6 +28,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.config.GlobalConfiguration;
@@ -83,7 +84,8 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     @Override
     public void approve(AuthenticationToken admin, int approvalId, Approval approval, ApprovalStep approvalStep, 
             final boolean isNrOfApprovalsProfile) throws ApprovalRequestExpiredException,
-            ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, ApprovalException, SelfApprovalException {
+            ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, 
+            ApprovalException, SelfApprovalException {
         if (log.isTraceEnabled()) {
             log.trace(">approve: "+approvalId);
         }
@@ -145,9 +147,11 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
 	 * @throws ApprovalRequestExpiredException 
 	 * @throws ApprovalRequestExecutionException 
 	 * @throws ApprovalException 
+	 * @throws CADoesntExistsException 
 	 */
 	private void approve(final ApprovalData approvalData, final Approval approval, final ApprovalStep approvalStep, 
-	        final boolean isNrOfApprovalProfile) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, ApprovalException {
+	        final boolean isNrOfApprovalProfile) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, 
+	        ApprovalException{
 	    
 		if(approvalData.hasRequestOrApprovalExpired()){
 			throw new ApprovalRequestExpiredException();
