@@ -20,8 +20,10 @@ import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -41,6 +43,7 @@ public class CaEditCertificateProfileCommandTest {
     private static final String[] HAPPY_PATH_ARGS2 = { PROFILE_NAME, "caIssuers", "--value", "http://my-ca.issuer.com/ca" };
     private static final String[] HAPPY_PATH_ARGS3 = { PROFILE_NAME, "useOcspNoCheck", "--value", "true" };
     private static final String[] HAPPY_PATH_ARGS4 = { PROFILE_NAME, "numOfReqApprovals", "--value", "5" };
+
     private static final String[] HAPPY_PATH_GETVALUE_ARGS = { PROFILE_NAME, "-getValue", "caIssuers" };
     private static final String[] HAPPY_PATH_LISTFIELDS_ARGS = { PROFILE_NAME, "-listFields" };
     private static final String[] MISSING_ARGS = { PROFILE_NAME };
@@ -93,6 +96,24 @@ public class CaEditCertificateProfileCommandTest {
         }
     }
 
+    @Test
+    public void testChangeAvailableCas() throws AuthorizationDeniedException, CertificateProfileExistsException {
+        final String[] availableCasArguments = { PROFILE_NAME, "availableCAs", "--value", "-1" };     
+        try {
+            CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            profileSession.addCertificateProfile(admin, PROFILE_NAME, profile);
+            command.execute(availableCasArguments);
+            // Check that we edited
+            CertificateProfile retrievedProfile = profileSession.getCertificateProfile(PROFILE_NAME);
+            List<Integer> availableCas = retrievedProfile.getAvailableCAs();
+            assertEquals("Changing availble CAs failed", 1, availableCas.size());
+            assertEquals("Changing availble CAs failed", Integer.valueOf(-1), availableCas.get(0));
+        } finally {
+            profileSession.removeCertificateProfile(admin, PROFILE_NAME);
+        }
+
+    }
+    
     @Test
     public void testExecuteWithMissingArgs() throws Exception {
         try {
