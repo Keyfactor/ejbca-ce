@@ -16,7 +16,7 @@
 .content {
 	background: #fff3e6;
 	height: 100%;
-	margin: 50px 0 30px 0;	
+	margin: 50px 10% 30px 10%;	
 	border-radius: 15px;
 }
 
@@ -35,17 +35,20 @@
 	}
 	
 .content-body {
-    margin-bottom: 50px;
+    margin-left: auto;
+    margin-right: auto;
     line-height: 1.6em;
     text-align: left;
     padding: 0em 1.5em 1em; 
 }
-
-
-
+	.content-body h2 {
+	    margin: 0.2em 0.5em;
+	    font-size: 1.3em;
+	    font-weight: 300;
+	}
 	
-	.content-body pure-form {
-	  max-width:100%;
+	.content-body h3 {
+	    margin: 0.2em 0.5em;
 	}
 	
 	.content-body pure-table td,
@@ -58,9 +61,29 @@
     overflow: visible; /*to make ths where the title is really long work*/
 }
 
-	
 .content-body-subhead {
     margin: 0 1.5em 0;
+}
+
+.internal-frame {
+	border-style: solid;
+	border-width: 1px;
+	border-color: #373737;
+	min-width: 50%;
+	background: #fffbf6;
+	text-align: left;
+	padding: 0.2em 0.5em;
+}
+	.internal-frame fieldset {
+		padding: 0;
+	}
+
+.radio-button-table {
+	margin-left: 3em;
+}
+	
+.required-input {
+	border: 1px solid #f30513;
 }
 
 .vertical-align-center {
@@ -74,6 +97,11 @@
 .align-right {
     text-align: right;
 }
+
+.pure-control-group {
+	padding: 0 0.5em;
+}
+
 
 /* CSS specific for the top menu */
 
