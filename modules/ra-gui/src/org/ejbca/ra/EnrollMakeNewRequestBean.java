@@ -155,7 +155,15 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     @PostConstruct
     private void postContruct() {
+        initAll();
+    }
+    
+    public void initAll(){
         initAuthorizedEndEntityProfiles();
+        if (availableEndEntityProfiles.size() == 1) {
+            setSelectedEndEntityProfile(availableEndEntityProfiles.keySet().iterator().next());
+            selectEndEntityProfile();
+        }
     }
 
     //-----------------------------------------------------------
@@ -172,7 +180,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     private void initAvailableCertificateProfiles() {
-        EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(selectedEndEntityProfile).getValue();
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile == null) {
             return;
         }
@@ -192,7 +200,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private void initAvailableCertificateAuthorities() {
         //Get all available CAs from the selected EEP
-        EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(selectedEndEntityProfile).getValue();
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile == null) {
             return;
         }
@@ -222,7 +230,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     private void initAvailableKeyPairGeneration() {
-        EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(selectedEndEntityProfile).getValue();
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if (endEntityProfile == null) {
+            return;
+        }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
         //TOKEN_SOFT_BROWSERGEN = 1;
         //TOKEN_SOFT_P12 = 2;
@@ -238,7 +249,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     private void initAvailableAlgorithms() {
-        CertificateProfile certificateProfile = authorizedCertificateProfiles.get(getSelectedCertificateProfile()).getValue();
+        CertificateProfile certificateProfile = getCertificateProfile();
         final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
         final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
         if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
@@ -300,9 +311,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     private void initCertificateData() {
-        subjectDn = new SubjectDn(getEndEntityProfile());
-        subjectAlternativeName = new SubjectAlternativeName(getEndEntityProfile());
-        subjectDirectoryAttributes = new SubjectDirectoryAttributes(getEndEntityProfile());
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if (endEntityProfile == null) {
+            return;
+        }
+        subjectDn = new SubjectDn(endEntityProfile);
+        subjectAlternativeName = new SubjectAlternativeName(endEntityProfile);
+        subjectDirectoryAttributes = new SubjectDirectoryAttributes(endEntityProfile);
     }
 
     private void initDownloadCredentialsType() {
@@ -350,9 +365,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public final void reset() {
         availableEndEntityProfiles.clear();
+        selectedEndEntityProfile = null;
+        endEntityProfileChanged = false;
         resetCertificateProfile();
 
-        initAuthorizedEndEntityProfiles();
+        initAll();
     }
 
     private final void resetCertificateProfile() {
@@ -398,6 +415,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private final void resetDownloadCredentialsType() {
         availableDownloadCredentials.clear();
+        selectedDownloadCredentialsType = null;
 
         resetDownloadCredentialsData();
     }
@@ -621,21 +639,33 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (selectedEndEntityProfile == null) {
             return null;
         }
-        return authorizedEndEntityProfiles.get(selectedEndEntityProfile).getValue();
+        IdNameHashMap<EndEntityProfile>.Tuple temp = authorizedEndEntityProfiles.get(selectedEndEntityProfile);
+        if(temp == null){
+            return null;
+        }
+        return temp.getValue();
     }
 
     public CertificateProfile getCertificateProfile() {
         if (selectedCertificateProfile == null) {
             return null;
         }
-        return authorizedCertificateProfiles.get(selectedCertificateProfile).getValue();
+        IdNameHashMap<CertificateProfile>.Tuple temp = authorizedCertificateProfiles.get(selectedCertificateProfile);
+        if(temp == null){
+            return null;
+        }
+        return temp.getValue();
     }
 
     public CAInfo getCAInfo() {
         if (selectedCertificateAuthority == null) {
             return null;
         }
-        return authorizedCAInfos.get(selectedCertificateAuthority).getValue();
+        IdNameHashMap<CAInfo>.Tuple temp = authorizedCAInfos.get(selectedCertificateAuthority);
+        if(temp == null){
+            return null;
+        }
+        return temp.getValue();
     }
 
     /**

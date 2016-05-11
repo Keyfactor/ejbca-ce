@@ -219,41 +219,31 @@
 							</h:selectOneMenu>
 							
 							<fieldset >
-								<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isUsed()}">
-									<h:outputLabel for="usernameField" value="#{msg.enroll_username}"/>
+								<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}">
+									<h:outputLabel for="usernameField" value="#{msg.enroll_username}" />
 									<h:inputText id="usernameField"
 										styleClass="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isRequired() ? 'required-input' : ''}"
-										value="#{enrollMakeNewRequestBean.endEntityInformation.username}"						
-										required="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isRequired()}" />
+										value="#{enrollMakeNewRequestBean.endEntityInformation.username}" />
 								</h:panelGroup>
 							</fieldset>
 							<fieldset>
-								<h:panelGroup layout="block" styleClass="pure-control-group">
-									<h:outputLabel for="passwordField" value="#{msg.enroll_password}"
-										rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isUsed()}"/>
+								<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}">
+									<h:outputLabel for="passwordField" value="#{msg.enroll_password}"/>
 									<h:inputSecret id="passwordField"
-										value="#{enrollMakeNewRequestBean.endEntityInformation.password}"
-										rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isUsed()}"
-										required="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isRequired()}" />
+										value="#{enrollMakeNewRequestBean.endEntityInformation.password}"/>
 								</h:panelGroup>
 							</fieldset>
 							<fieldset>
-								<h:panelGroup layout="block" styleClass="pure-control-group">
-									<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password}"
-										rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isUsed()}"/>
-									<h:inputSecret id="passwordConfirmField" value="#{enrollMakeNewRequestBean.confirmPassword}"
-										rendered="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isUsed()}" 
-										required="#{enrollMakeNewRequestBean.endEntityProfile.password.instances.get(0).isRequired()}" />
+								<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}">
+									<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password}"/>
+									<h:inputSecret id="passwordConfirmField" value="#{enrollMakeNewRequestBean.confirmPassword}"/>
 								</h:panelGroup>
 							</fieldset>
 							<fieldset>
-								<h:panelGroup layout="block" styleClass="pure-control-group">
-									<h:outputLabel for="emailField" value="#{msg.enroll_email}"
-										rendered="#{enrollMakeNewRequestBean.endEntityProfile.email.instances.get(0).isUsed()}"/>
+								<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.getEmailRendered()}">
+									<h:outputLabel for="emailField" value="#{msg.enroll_email}"/>
 									<h:inputText id="emailField"
-										value="#{enrollMakeNewRequestBean.endEntityInformation.email}"
-										rendered="#{enrollMakeNewRequestBean.endEntityProfile.email.instances.get(0).isUsed()}" 
-										required="#{enrollMakeNewRequestBean.endEntityProfile.email.instances.get(0).isRequired()}" />
+										value="#{enrollMakeNewRequestBean.endEntityInformation.email}"/>
 								</h:panelGroup>
 							</fieldset>
 						</h:panelGroup>
