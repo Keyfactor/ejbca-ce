@@ -165,7 +165,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
 		    approvalData.setRemainingapprovals(numberofapprovalsleft);
 		    readyToCheckExecution = numberofapprovalsleft == 0;
 		} else {
-		    approvalSession.addApprovalToApprovalStep(approvalData, approvalStep);
+		    approvalSession.addApprovalToApprovalStep(approvalData, approvalStep, true);
 		    final ApprovalRequest approvalRequest = approvalSession.getApprovalRequest(approvalData);
 		    readyToCheckExecution = approvalRequest.areAllStepsApproved();
 		}
