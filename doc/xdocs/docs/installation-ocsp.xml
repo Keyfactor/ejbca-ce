@@ -107,8 +107,10 @@ and that there is already a remote identity representing the CA among the "Incom
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings -> OcspKeyBindings tab and create a new OcspKeyBinding that references the Crypto Token and key pair.</li>
 <li>Go to AdminGUI of OCSP -> Peer Systems -> Click on "Modify Authorization" for the peer connector representing the CA and set access rules for the newly 
 created OcspKeyBinding ("view only" or "Renew certificate").</li>
-<li>Go to AdminGUI of OCSP -> Peer Systems -> Click "Manage" for the peer connector representing the CA -> Remote Key Bindings, fill in the credentials for 
-an OCSP signing certificate in the newly created OcspKeyBinding and click "Issue Signing Certificate".</li>  
+<li>Go to AdminGUI of CA -> Add End Entity, create an End Entity for issuing the OCSP signing certificate (use an OCSP Signer certificate profile).</li>
+<li>Go to AdminGUI of CA -> Peer Systems -> Click "Manage" for the peer connector representing the VA -> Remote Key Bindings, fill in the credentials for 
+the OCSP signing End Entity in the newly created OcspKeyBinding and click "Issue Signing Certificate".</li>
+<li>Go to Admin GUI of OCSP -> Internal Key Binding -> OcspKeyBindings tab and verify that the OCSP key binding have a certificate and has been activated.</li>  
 </ol>
 </subsubsection>
 </subsection>
