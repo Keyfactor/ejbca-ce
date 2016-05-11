@@ -155,7 +155,7 @@ function getPasswordAndSubmit(formname) {
        Certificate[] certificatechain = (Certificate[]) cainfo.getCertificateChain().toArray(new Certificate[0]);
        int chainsize = certificatechain.length;
  %>
-       <H3><%= ejbcawebbean.getText("BASICFUNCTIONSFOR") + " : " + caname%> &nbsp; <a href="<%=THIS_FILENAME%>"  onClick="viewcacert(<%=caid%>); return false;"><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;
+       <H3><%= ejbcawebbean.getText("BASICFUNCTIONSFOR") + " : "%> <c:out value="<%= caname %>" /> &nbsp; <a href="<%=THIS_FILENAME%>"  onClick="viewcacert(<%=caid%>); return false;"><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;
                                                                             <a href="<%=THIS_FILENAME%>"  onClick="viewcainfo(<%=caid%>); return false;"><%= ejbcawebbean.getText("VIEWINFO")%></a></H3>    
  
         <table> 
