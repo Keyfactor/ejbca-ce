@@ -56,6 +56,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
 import org.ejbca.core.model.approval.ApprovalProfile;
+import org.ejbca.core.model.approval.ApprovalUtils;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -137,15 +138,19 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @param checkNewest 
      * @throws ApprovalException 
      * @throws WaitingForApprovalException 
+     * @throws CADoesntExistsException 
      */
     private void checkIfApprovalRequired(AuthenticationToken admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) 
-            throws ApprovalException, WaitingForApprovalException{    	
+            throws ApprovalException, WaitingForApprovalException, CADoesntExistsException{    	
         final int caid = CertTools.getIssuerDN(certificate).hashCode();
-		final CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(certificate));
-		final int certProfileId = certinfo.getCertificateProfileId();
+		final CAInfo cainfo = caSession.getCAInfoInternal(caid);
+        final CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(certificate));
+		final CertificateProfile certProfile = certProfileSession.getCertificateProfile(certinfo.getCertificateProfileId());
+		
         // Check if approvals is required.
-		final ApprovalProfile approvalProfiles[] = getApprovalProfiles(caid, certProfileId);
-        int numOfApprovalsRequired = caAdminSession.getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_KEYRECOVER, caid, certProfileId);
+		final ApprovalProfile approvalProfiles[] = ApprovalUtils.getApprovalProfiles(CAInfo.REQ_APPROVAL_KEYRECOVER, cainfo, certProfile, 
+		        approvalProfileSession);
+        int numOfApprovalsRequired = caAdminSession.getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_KEYRECOVER, caid, certinfo.getCertificateProfileId());
         if ((numOfApprovalsRequired > 0) || (approvalProfiles[0] != null)) {    
 			KeyRecoveryApprovalRequest ar = new KeyRecoveryApprovalRequest(certificate,username,checkNewest, admin,null,numOfApprovalsRequired,caid,
 			        endEntityProfileId, approvalProfiles[0], approvalProfiles[1]);
@@ -155,38 +160,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
 				throw new WaitingForApprovalException(msg, ar.generateApprovalId());
 			}
         } 
-    }
-    
-    private ApprovalProfile[] getApprovalProfiles(final int caid, final int certProfileId) {
-        ApprovalProfile profiles[] = new ApprovalProfile[2];
-        ApprovalProfile profileFromCA = null;
-        ApprovalProfile profileFromCP = null;
-        
-        try {
-            final CAInfo cainfo = caSession.getCAInfoInternal(caid);
-            final int approvalProfileId = cainfo.getApprovalProfile();
-            if(approvalProfileId > -1) {
-                profileFromCA = approvalProfileSession.getApprovalProfile(approvalProfileId);
-            }
-        } catch (CADoesntExistsException e) { }
-
-        final CertificateProfile certProfile = certProfileSession.getCertificateProfile(certProfileId);
-        if(certProfile != null) {
-            final int approvalProfileId = certProfile.getApprovalProfileID();
-            if(approvalProfileId > -1) {
-                profileFromCP = approvalProfileSession.getApprovalProfile(approvalProfileId);
-            }            
-        }
-        
-        if(profileFromCA != null) {
-            profiles[0] = profileFromCA;
-            profiles[1] = profileFromCP;
-        } else {
-            profiles[0] = profileFromCP;
-            profiles[1] = null;
-        }
-        
-        return profiles;
     }
     
     @Override
@@ -395,7 +368,8 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
 	};
 	
 	@Override
-    public boolean markNewestAsRecoverable(AuthenticationToken admin, String username, int endEntityProfileId) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
+    public boolean markNewestAsRecoverable(AuthenticationToken admin, String username, int endEntityProfileId) throws AuthorizationDeniedException, 
+                        ApprovalException, WaitingForApprovalException, CADoesntExistsException {
     	if (log.isTraceEnabled()) {
             log.trace(">markNewestAsRecoverable(user: " + username + ")");
     	}
@@ -449,7 +423,8 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
 
 	@Override
-    public boolean markAsRecoverable(AuthenticationToken admin, Certificate certificate, int endEntityProfileId) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {        
+    public boolean markAsRecoverable(AuthenticationToken admin, Certificate certificate, int endEntityProfileId) throws AuthorizationDeniedException, 
+                            WaitingForApprovalException, ApprovalException, CADoesntExistsException {        
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
         final String dn = CertTools.getIssuerDN(certificate);        
     	if (log.isTraceEnabled()) {

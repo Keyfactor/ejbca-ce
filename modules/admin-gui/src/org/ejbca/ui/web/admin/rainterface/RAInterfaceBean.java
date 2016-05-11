@@ -796,7 +796,8 @@ public class RAInterfaceBean implements Serializable {
     	return returnval && keyrecoverysession.existsKeys(cert) && !keyrecoverysession.isUserMarked(username);
     }
 
-    public void markForRecovery(String username, Certificate cert) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
+    public void markForRecovery(String username, Certificate cert) throws AuthorizationDeniedException, ApprovalException, 
+                    WaitingForApprovalException, CADoesntExistsException {
     	boolean authorized = true;
     	int endEntityProfileId = endEntityAccessSession.findUser(administrator, username).getEndEntityProfileId();
     	if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()){

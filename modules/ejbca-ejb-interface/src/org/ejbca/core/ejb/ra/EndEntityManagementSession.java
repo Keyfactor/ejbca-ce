@@ -426,7 +426,7 @@ public interface EndEntityManagementSession {
      * @return true if the operation was successful
      */
     boolean prepareForKeyRecovery(AuthenticationToken admin, String username, int endEntityProfileId, Certificate certificate)
-    		throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException;
+    		throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, CADoesntExistsException;
     
     /**
      * Selects a list of specific list of EndEntityInformation entities, as filtered by
