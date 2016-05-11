@@ -275,8 +275,10 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 if (caInfo instanceof X509CAInfo) { // ignore CVC CAs
                     // Quick and dirty cast
                     Collection<Certificate> certificateChain = caInfo.getCertificateChain();
-                    Collection<X509Certificate> x509CertificateChain = new ArrayList<>(Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));                
-                    trustedCerts.add(x509CertificateChain);
+                    Collection<X509Certificate> x509CertificateChain = new ArrayList<>(Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
+                    if (!x509CertificateChain.isEmpty()) {
+                        trustedCerts.add(x509CertificateChain);
+                    }
                 }
             }
             
