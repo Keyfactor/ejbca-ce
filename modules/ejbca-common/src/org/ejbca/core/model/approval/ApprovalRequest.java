@@ -203,9 +203,9 @@ public abstract class ApprovalRequest implements Externalizable {
     public ApprovalStep getApprovalStep(final int stepId) {
         return approvalSteps.get(Integer.valueOf(stepId));
     }
-    public void addApprovalToStep(final int stepId) {
+    public void addApprovalToStep(final int stepId, final boolean approved) throws ApprovalException {
         ApprovalStep step = approvalSteps.get(stepId);
-        step.addApproval();
+        step.addApproval(approved);
         approvalSteps.put(stepId, step);
         if(step.getApprovalStatus()==ApprovalDataVO.STATUS_APPROVED) {
             approvalStepsHandledMap.put(stepId, Boolean.TRUE);

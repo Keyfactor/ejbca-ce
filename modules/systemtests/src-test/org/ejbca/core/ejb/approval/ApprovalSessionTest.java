@@ -549,7 +549,7 @@ public class ApprovalSessionTest extends CaTestCase {
             assertTrue(next.getRemainingApprovals() == 1);
 
             Approval rejection = new Approval("rejectiontest");
-            approvalSessionRemote.reject(admin2, nonExecutableRequest.generateApprovalId(), rejection);
+            approvalSessionRemote.reject(admin2, nonExecutableRequest.generateApprovalId(), rejection, null, true);
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             next = (ApprovalDataVO) result.iterator().next();
             assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_REJECTED);
@@ -561,7 +561,7 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
 
             rejection = new Approval("rejectiontest2");
-            approvalSessionRemote.reject(admin1, nonExecutableRequest.generateApprovalId(), rejection);
+            approvalSessionRemote.reject(admin1, nonExecutableRequest.generateApprovalId(), rejection, null, true);
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             next = (ApprovalDataVO) result.iterator().next();
             assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_REJECTED);
@@ -585,7 +585,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
             // Try to reject an expired request
             try {
-                approvalSessionRemote.reject(admin2, nonExecutableRequest.generateApprovalId(), rejection);
+                approvalSessionRemote.reject(admin2, nonExecutableRequest.generateApprovalId(), rejection, null, true);
                 fail("It shouln't be possible to reject and expired request");
             } catch (ApprovalException e) {
             }

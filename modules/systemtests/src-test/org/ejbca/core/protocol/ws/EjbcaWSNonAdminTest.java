@@ -342,7 +342,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
                 } catch (WaitingForApprovalException_Exception e) {
                     // NOPMD: desired
                 }
-                approvalSession.reject(admin1, approvalRequest.generateApprovalId(), approval1);
+                approvalSession.reject(admin1, approvalRequest.generateApprovalId(), approval1, null, true);
                 try {
                     getHardTokenData(serialNumber, true);
                     fail("should not work");
@@ -434,7 +434,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         } catch (WaitingForApprovalException_Exception e) {
         }
 
-        approvalSession.reject(admin1, ar.generateApprovalId(), approval1);
+        approvalSession.reject(admin1, ar.generateApprovalId(), approval1, null, true);
 
         try {
             genTokenCertificates(true);

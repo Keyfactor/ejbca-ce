@@ -82,7 +82,14 @@ public interface ApprovalSessionLocal extends ApprovalSession {
 	 */
 	void setApprovals(ApprovalData approvalData, Collection<Approval> approvals);
 	
-	void addApprovalToApprovalStep(ApprovalData approvalData, ApprovalStep approvalStep);
+	/**
+	 * Adds an approval to a specific approval step
+	 * @param approvalData the approval data
+	 * @param approvalStep the step to add the approval to
+	 * @param approved whether the approval is to approve or to reject the step
+	 * @throws ApprovalException if the step already has enough approvals (the required number of approvals has already been reached)
+	 */
+	void addApprovalToApprovalStep(ApprovalData approvalData, ApprovalStep approvalStep, boolean approved) throws ApprovalException;
 
 	ApprovalRequest getApprovalRequest(ApprovalData approvalData);
 }

@@ -192,12 +192,12 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public void reject(AuthenticationToken admin, int approvalId, Approval approval)
+    public void reject(AuthenticationToken admin, int approvalId, Approval approval, final ApprovalStep approvalStep, final boolean isNrOfApprovalsProfile)
             throws ApprovalRequestExpiredException, AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException {
         log.trace(">reject");
         ApprovalData adl;
         try {
-            adl = isAuthorizedBeforeApproveOrReject(admin, approvalId, null);
+            adl = isAuthorizedBeforeApproveOrReject(admin, approvalId, approvalStep);
         } catch (ApprovalException e1) {
             String msg = intres.getLocalizedMessage("approval.notexist", approvalId);
             log.info(msg);
@@ -208,7 +208,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         approval.setApprovalAdmin(false, admin);
 
         try {
-            reject(adl, approval);
+            reject(adl, approval, approvalStep, isNrOfApprovalsProfile);
             final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             if (gc.getUseApprovalNotifications()) {
                 final ApprovalDataVO approvalDataVO = getApprovalDataVO(adl);
@@ -555,18 +555,23 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     /**
      * Method that rejects an approval. After someone have rejected the request no-one else can approve it
      */
-    private void reject(final ApprovalData approvalData, final Approval approval) throws ApprovalRequestExpiredException, ApprovalException {
+    private void reject(final ApprovalData approvalData, final Approval approval, final ApprovalStep approvalStep, 
+            final boolean isNrOfApprovalProfile) throws ApprovalRequestExpiredException, ApprovalException {
         if (approvalData.hasRequestOrApprovalExpired()) {
             throw new ApprovalRequestExpiredException();
         }
         if (approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
             throw new ApprovalException("Wrong status of approval request.");
         }
-        final int numberofapprovalsleft = approvalData.getRemainingapprovals() - 1;
-        if (numberofapprovalsleft < 0) {
-            throw new ApprovalException("Error already enough approvals have been done on this request.");
+        if(isNrOfApprovalProfile) {
+            final int numberofapprovalsleft = approvalData.getRemainingapprovals() - 1;
+            if (numberofapprovalsleft < 0) {
+                throw new ApprovalException("Error already enough approvals have been done on this request.");
+            }
+            approvalData.setRemainingapprovals(0);
+        } else {
+            addApprovalToApprovalStep(approvalData, approvalStep, false);
         }
-        approvalData.setRemainingapprovals(0);
         final Collection<Approval> approvals = getApprovals(approvalData);
         approvals.add(approval);
         setApprovals(approvalData, approvals);
@@ -685,10 +690,10 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
     
     @Override
-    public void addApprovalToApprovalStep(final ApprovalData approvalData, final ApprovalStep approvalStep) {
+    public void addApprovalToApprovalStep(final ApprovalData approvalData, final ApprovalStep approvalStep, final boolean approved) throws ApprovalException {
         final ApprovalRequest approvalRequest = getApprovalRequest(approvalData);
         approvalRequest.updateApprovalStepMetadata(approvalStep.getStepId(), approvalStep.getMetadata());
-        approvalRequest.addApprovalToStep(approvalStep.getStepId());
+        approvalRequest.addApprovalToStep(approvalStep.getStepId(), approved);
         setApprovalRequest(approvalData, approvalRequest);
     }
 }
