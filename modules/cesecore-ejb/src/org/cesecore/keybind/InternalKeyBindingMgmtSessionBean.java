@@ -60,6 +60,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
@@ -271,10 +272,12 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             List<Integer> allCAs = caSession.getAllCaIds();
             for(int caid : allCAs) {
                 final CAInfo caInfo = caSession.getCAInfoInternal(caid);
-                //Quick and dirty cast
-                Collection<Certificate> certificateChain = caInfo.getCertificateChain();
-                Collection<X509Certificate> x509CertificateChain = new ArrayList<>(Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));                
-                trustedCerts.add(x509CertificateChain);
+                if (caInfo instanceof X509CAInfo) { // ignore CVC CAs
+                    // Quick and dirty cast
+                    Collection<Certificate> certificateChain = caInfo.getCertificateChain();
+                    Collection<X509Certificate> x509CertificateChain = new ArrayList<>(Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));                
+                    trustedCerts.add(x509CertificateChain);
+                }
             }
             
             if(log.isDebugEnabled()) {
