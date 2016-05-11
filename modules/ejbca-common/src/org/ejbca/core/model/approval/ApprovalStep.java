@@ -125,14 +125,21 @@ public class ApprovalStep implements Serializable {
         return numberOfApprovals;
     }
     
-    public void addApproval() {
+    public void addApproval(final boolean approved) throws ApprovalException {
+        if(numberOfApprovals >= requiredNumberOfApprovals) {
+            throw new ApprovalException("Error already enough approvals have been done on this step.");
+        }
         numberOfApprovals++;
-        updateStepApprovalStatus();
+        updateStepApprovalStatus(approved);
     }
     
-    private void updateStepApprovalStatus() {
-        if(getNumberOfApprovals() == requiredNumberOfApprovals) {
-            approvalStatus = ApprovalDataVO.STATUS_APPROVED;
+    private void updateStepApprovalStatus(final boolean approved) {
+        if(approved) {
+            if(getNumberOfApprovals() == requiredNumberOfApprovals) {
+                approvalStatus = ApprovalDataVO.STATUS_APPROVED;
+            }
+        } else {
+            approvalStatus = ApprovalDataVO.STATUS_REJECTED;
         }
     }
 } 

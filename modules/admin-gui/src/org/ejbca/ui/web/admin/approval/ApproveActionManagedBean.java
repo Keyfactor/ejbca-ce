@@ -229,21 +229,29 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
 
     public String reject(){
-    	final Approval approval = new Approval(comment);
-    	try {
-    		final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
-    		ejb.getApprovalSession().reject(admin,  approveRequestData.getApprovalId(), approval);
-    		updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
-    	} catch (ApprovalRequestExpiredException e) {
-    		addErrorMessage("APPROVALREQUESTEXPIRED");
-    	} catch (AuthorizationDeniedException e) {
-    		addErrorMessage("AUTHORIZATIONDENIED");
-    	} catch (ApprovalException e) {
-    		addErrorMessage("ERRORHAPPENDWHENAPPROVING");
-    	} catch (AdminAlreadyApprovedRequestException e) {
-    		addErrorMessage(e.getMessage());
-    	}
-    	return "approveaction";
+        
+        final boolean isNrOfApprovalProfile = getApproveRequestData().getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals;
+        ApprovalStep step = getApprovalStep();
+
+        if((step==null) && (!isNrOfApprovalProfile)) {
+            addErrorMessage("No Approval Steps were found");
+        } else {
+            final Approval approval = new Approval(comment);
+            try {
+                final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
+                ejb.getApprovalSession().reject(admin,  approveRequestData.getApprovalId(), approval, step, isNrOfApprovalProfile);
+                updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
+            } catch (ApprovalRequestExpiredException e) {
+                addErrorMessage("APPROVALREQUESTEXPIRED");
+            } catch (AuthorizationDeniedException e) {
+                addErrorMessage("AUTHORIZATIONDENIED");
+            } catch (ApprovalException e) {
+                addErrorMessage("ERRORHAPPENDWHENAPPROVING");
+            } catch (AdminAlreadyApprovedRequestException e) {
+                addErrorMessage(e.getMessage());
+            }
+        }
+        return "approveaction";
     }
     
     private ApprovalStep getApprovalStep() {
