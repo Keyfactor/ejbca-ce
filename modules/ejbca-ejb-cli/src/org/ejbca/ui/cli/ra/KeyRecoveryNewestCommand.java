@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.ra;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -85,6 +86,8 @@ public class KeyRecoveryNewestCommand extends BaseRaCommand {
         } catch (ApprovalException e) {
             log.error("ERROR: " + e.getMessage());
         } catch (WaitingForApprovalException e) {
+            log.error("ERROR: " + e.getMessage());
+        } catch (CADoesntExistsException e) {
             log.error("ERROR: " + e.getMessage());
         }
         return CommandResult.FUNCTIONAL_FAILURE;

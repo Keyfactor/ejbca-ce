@@ -17,6 +17,7 @@ import java.security.cert.X509Certificate;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.keys.util.KeyPairWrapper;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -97,7 +98,7 @@ public interface KeyRecoverySession {
      *         user, or user already marked.
      */
     boolean markNewestAsRecoverable(AuthenticationToken admin, String username, int endEntityProfileId)
-            throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException;
+            throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, CADoesntExistsException;
 
     /**
      * Marks a users certificate for key recovery.
@@ -107,7 +108,7 @@ public interface KeyRecoverySession {
      * @return true if operation went successful or false if  certificate couldn't be found.
      */
     boolean markAsRecoverable(AuthenticationToken admin, Certificate certificate, int endEntityProfileId)
-            throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException;
+            throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException, CADoesntExistsException;
 
     /** Resets keyrecovery mark for a user. */
     void unmarkUser(AuthenticationToken admin, String username);
