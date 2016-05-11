@@ -19,11 +19,10 @@ import org.apache.commons.beanutils.ConvertingWrapDynaBean;
 import org.apache.commons.beanutils.DynaBean;
 import org.apache.commons.beanutils.DynaProperty;
 import org.apache.commons.beanutils.WrapDynaBean;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 
 /**
- * Lists and accesses getters/setters dynamically in Beans.
  *
  * @version $Id$
  */
@@ -117,7 +116,8 @@ public class FieldEditor {
                 // If the value can be converted into an integer, we will use an ArrayList<Integer>
                 // Our problem here is that the type of a collection (<Integer>, <String>) is only compile time, it can not be determined in runtime.
                 List<Object> arr = new ArrayList<Object>();
-                if (StringUtils.isNumeric(value)) {
+                
+                if (NumberUtils.isNumber(value)) {
                     logger.info("using Integer value.");
                     arr.add(Integer.valueOf(value));
                 } else {
