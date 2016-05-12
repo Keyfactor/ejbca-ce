@@ -13,7 +13,9 @@
 package org.ejbca.ra;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.util.DNFieldExtractor;
@@ -30,6 +32,7 @@ public class SubjectDn {
 
     private static final Logger log = Logger.getLogger(SubjectDn.class);
     private List<EndEntityProfile.FieldInstance> fieldInstances;
+    private Map<String, EndEntityProfile.FieldInstance> fieldInstancesMap;
     public final static List<String> COMPONENTS;
     static{
         COMPONENTS = new ArrayList<>();
@@ -63,10 +66,12 @@ public class SubjectDn {
 
     public SubjectDn(EndEntityProfile endEntityProfile) {
         fieldInstances = new ArrayList<EndEntityProfile.FieldInstance>(COMPONENTS.size());
+        fieldInstancesMap = new HashMap<String, EndEntityProfile.FieldInstance>(COMPONENTS.size());
         for (String key : COMPONENTS) {
             Field field = endEntityProfile.new Field(key);
             for (EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
                 fieldInstances.add(fieldInstance);
+                fieldInstancesMap.put(key, fieldInstance);
             }
         }
     }
@@ -79,6 +84,14 @@ public class SubjectDn {
         this.fieldInstances = fieldInstances;
     }
     
+    public Map<String, EndEntityProfile.FieldInstance> getFieldInstancesMap() {
+        return fieldInstancesMap;
+    }
+
+    public void setFieldInstancesMap(Map<String, EndEntityProfile.FieldInstance> fieldInstancesMap) {
+        this.fieldInstancesMap = fieldInstancesMap;
+    }
+
     public void updateValue(){
         StringBuilder subjectDn = new StringBuilder();
         for(EndEntityProfile.FieldInstance fieldInstance : fieldInstances){

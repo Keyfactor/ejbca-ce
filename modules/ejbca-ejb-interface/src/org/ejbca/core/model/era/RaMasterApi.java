@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.util.List;
 import java.util.Map;
 
@@ -89,17 +91,27 @@ public interface RaMasterApi {
     IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken);
     
     /**
-     * Adds (end entity) user
+     * Adds (end entity) user.
      * @param admin authentication token
      * @param endEntity end entity data as EndEntityInformation object
      * @param clearpwd 
      * @throws AuthorizationDeniedException
      * @throws EjbcaException
-     * @throws EndEntityExistsException
+     * @throws EndEntityExistsException if end entity already exists
      * @throws UserDoesntFullfillEndEntityProfile
-     * @throws WaitingForApprovalException
-     * @throws CADoesntExistsException
+     * @throws WaitingForApprovalException if approval is required to finalize the adding of the end entity
+     * @throws CADoesntExistsException if CA doesn't exists
      */
     void addUser(AuthenticationToken admin, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException,
             EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException;
+
+    /**
+     * Generates keystore for the speicified end entity.
+     * @param admin authentication token
+     * @param endEntity holds end entity information (including user's password)
+     * @return generated keystore
+     * @throws AuthorizationDeniedException
+     * @throws KeyStoreException if something went wrong with keystore creation
+     */
+    KeyStore generateKeystore(AuthenticationToken admin, EndEntityInformation endEntity) throws AuthorizationDeniedException, KeyStoreException;
 }
