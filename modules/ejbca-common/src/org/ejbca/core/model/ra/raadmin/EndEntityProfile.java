@@ -2212,5 +2212,4 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public Field getUsername(){return new Field(EndEntityProfile.USERNAME);};
     public Field getPassword(){return new Field(EndEntityProfile.PASSWORD);};
     public Field getEmail(){return new Field(EndEntityProfile.EMAIL);};
-    public Field getStateOrProvince(){return new Field(DnComponents.STATEORPROVINCE);}
 }
