@@ -25,8 +25,10 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -57,8 +59,10 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -77,6 +81,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -90,6 +95,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -127,19 +133,24 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     @EJB
     private CertificateCreateSessionLocal certificateCreateSession;
     @EJB
+    private CrlStoreSessionLocal crlStoreSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
-    private CrlStoreSessionLocal crlStoreSession;
-    @EJB
-    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
-    @EJB
-    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    private RevocationSessionLocal revocationSession;
+
+
+
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -834,7 +845,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      *             missing unique index in database, or certificate profile does not allow it
      * @throws IllegalNameException if the certificate request contained an illegal name 
      */
-    private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca, final PublicKey pk,
+    private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final CA ca, final PublicKey pk,
             final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence)
             throws IllegalKeyException, CertificateCreateException, AuthorizationDeniedException, CertificateExtensionException,
             IllegalNameException, CustomCertificateSerialNumberException, CertificateRevokeException, CertificateSerialNumberException,
@@ -843,10 +854,30 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace(">createCertificate(pk, ku, notAfter)");
         }
         final long updateTime = System.currentTimeMillis();
+        //Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal. 
+        //We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing. 
+        final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
+        if (certProfile.isSingleActiveCertificateConstraint()) {
+            // Only get not yet expired certificates with status CERT_ACTIVE, CERT_NOTIFIEDABOUTEXPIRATION, CERT_REVOKED
+            final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(endEntityInformation.getUsername(),
+                    true, Arrays.asList(CertificateConstants.CERT_ARCHIVED, CertificateConstants.CERT_INACTIVE,
+                            CertificateConstants.CERT_ROLLOVERPENDING, CertificateConstants.CERT_UNASSIGNED));
+            List<Integer> publishers = certProfile.getPublisherList();
+            for (final CertificateDataWrapper cdw : cdws) {
+                final CertificateData certificateData = cdw.getCertificateData();
+                if (certificateData.getStatus() == CertificateConstants.CERT_REVOKED && certificateData.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
+                    continue;
+                }          
+                //Go directly to RevocationSession and not via EndEntityManagementSession because we don't care about approval checks and so forth, 
+                //the certificate must be revoked nonetheless. 
+                revocationSession.revokeCertificate(admin, cdw, publishers, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED, endEntityInformation.getDN());
+            }
+        }
+        
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
-        final CertificateDataWrapper certWrapper = certificateCreateSession.createCertificate(admin, data, ca, null, pk, keyusage, notBefore, notAfter, extensions,
+        final CertificateDataWrapper certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, keyusage, notBefore, notAfter, extensions,
                 sequence, fetchCertGenParams(), updateTime);
-        postCreateCertificate(admin, data, ca, certWrapper);
+        postCreateCertificate(admin, endEntityInformation, ca, certWrapper);
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(pk, ku, notAfter)");
         }

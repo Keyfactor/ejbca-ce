@@ -386,13 +386,17 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             // Before storing the new certificate, check if single active certificate constraint is active, and if so let's revoke all active and unexpired certificates
             if (certProfile.isSingleActiveCertificateConstraint()) {
                 // Only get not yet expired certificates with status CERT_ACTIVE, CERT_NOTIFIEDABOUTEXPIRATION, CERT_REVOKED
-                final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(endEntityInformation.getUsername(), true, Arrays.asList(
-                    CertificateConstants.CERT_ARCHIVED, CertificateConstants.CERT_INACTIVE, CertificateConstants.CERT_ROLLOVERPENDING, CertificateConstants.CERT_UNASSIGNED));
+                final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(endEntityInformation.getUsername(),
+                        true, Arrays.asList(CertificateConstants.CERT_ARCHIVED, CertificateConstants.CERT_INACTIVE,
+                                CertificateConstants.CERT_ROLLOVERPENDING, CertificateConstants.CERT_UNASSIGNED));
                 for (final CertificateDataWrapper cdw : cdws) {
                     final CertificateData certificateData = cdw.getCertificateData();
                     if (certificateData.getStatus() == CertificateConstants.CERT_REVOKED && certificateData.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
+                        // It's possible that revocation may have been already called from a higher level bean (such as SignSession) which had to 
+                        // perform operations (such as publishing) which are out of scope of this method. This check is performed twice in order 
+                        // to ensure that operations entirely contained within CESeCore follow this constraint as well. 
                         continue;
-                    }
+                    }                  
                     // Authorization to the CA was already checked at the head of this method, so no need to do so now
                     certificateStoreSession.setRevokeStatusNoAuth(admin, certificateData, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
                 }
