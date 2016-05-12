@@ -346,6 +346,7 @@ public class AuditorManagedBean implements Serializable {
     
     private void onConditionChanged() {
         reloadResultsNextView = isAutomaticReload();
+        first();
     }
 
     public void reload()  {
@@ -392,17 +393,17 @@ public class AuditorManagedBean implements Serializable {
 		return columnNameMap;
 	}
 
-	public void first() throws AuthorizationDeniedException {
+	public void first() {
 		setStartIndex(1);
 		reloadResultsNextView = true;
 	}
 
-	public void next() throws AuthorizationDeniedException {
+	public void next(){
 		setStartIndex(startIndex + maxResults);
 		reloadResultsNextView = true;
 	}
 
-	public void previous() throws AuthorizationDeniedException {
+	public void previous() {
 		setStartIndex(startIndex - maxResults);
 		reloadResultsNextView = true;
 	}
