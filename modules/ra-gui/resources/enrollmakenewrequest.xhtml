@@ -162,7 +162,7 @@
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<h3><h:outputText value="#{msg.enroll_subject_dn_attributes}" /></h3>						
 						<ui:repeat value="#{enrollMakeNewRequestBean.subjectDn.getFieldInstances()}" var="instance">
-							<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:panelGroup id="subjectDnPanel" layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="subjectDnField" value="#{enrollMakeNewRequestBean.getSubjectDnFieldOutputName(instance.getName())}"
 										rendered="#{instance.isUsed()}"/>
 								<h:inputText id="subjectDnField" value="#{instance.value}"
@@ -174,7 +174,7 @@
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<h3><h:outputText value="#{msg.enroll_subject_alternative_name_attributes}" /></h3>
 						<ui:repeat value="#{enrollMakeNewRequestBean.subjectAlternativeName.getFieldInstances()}" var="instance">
-							<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:panelGroup id="subjectAlternativeNamePanel" layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="subjectAltNameField" value="#{enrollMakeNewRequestBean.getSubjectAlternativeNameFieldOutputName(instance.getName())}"
 										rendered="#{instance.isUsed()}"/>
 								<h:inputText id="subjectAltNameField" value="#{instance.value}"
@@ -186,7 +186,7 @@
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<h3><h:outputText value="#{msg.enroll_subject_directory_attributes}" /></h3>
 						<ui:repeat value="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.getFieldInstances()}" var="instance">
-							<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:panelGroup id="subjectDirectoryAttributesPanel" layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="subjectDirectoryField" value="#{enrollMakeNewRequestBean.getSubjectDirectoryAttributesFieldOutputName(instance.getName())}"
 										rendered="#{instance.isUsed()}"/>
 								<h:inputText id="subjectDirectoryField" value="#{instance.value}"
@@ -246,6 +246,12 @@
 										value="#{enrollMakeNewRequestBean.endEntityInformation.email}"/>
 								</h:panelGroup>
 							</fieldset>
+							<h:panelGroup layout="block"
+								rendered="#{enrollMakeNewRequestBean.getDownloadRendered()}">
+								<h:commandButton id="downloadButton" value="#{msg.generic_download}"
+									action="#{enrollMakeNewRequestBean.download()}">
+								</h:commandButton>
+							</h:panelGroup>
 						</h:panelGroup>
 					</h:panelGroup>				
 				</h:panelGroup>

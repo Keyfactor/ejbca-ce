@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -372,11 +374,27 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             try {
                 if (raMasterApi.isBackendAvailable()) {
                     raMasterApi.addUser(admin, endEntity, clearpwd);
-                    break;
+                    break;//TODO check with Johan if this is ok?
                 }
             } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                 // Just try next implementation
             }
         }
+    }
+
+    @Override
+    public KeyStore generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity)
+            throws AuthorizationDeniedException, KeyStoreException {
+        final KeyStore ret = null;
+        for(final RaMasterApi raMasterApi : raMasterApis){
+            if(raMasterApi.isBackendAvailable()){
+                try{
+                    return raMasterApi.generateKeystore(authenticationToken, endEntity);//TODO check with Johan if this is ok?
+                }catch  (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
     }
 }
