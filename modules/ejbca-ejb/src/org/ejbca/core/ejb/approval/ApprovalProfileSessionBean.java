@@ -62,6 +62,8 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     private AccessControlSessionLocal accessSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
+    @EJB
+    private ApprovalProfileCacheBean approvalProfileCache;
     
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -246,7 +248,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         if (LOG.isTraceEnabled()) {
             LOG.trace(">flushProfileCache");
         }
-        ApprovalProfileCache.INSTANCE.updateProfileCache(entityManager, true);
+        approvalProfileCache.updateProfileCache(entityManager, true);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Flushed profile cache.");
         }
@@ -265,12 +267,12 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
 
     @Override
     public Map<Integer, ApprovalProfile> getAllApprovalProfiles() {
-        return ApprovalProfileCache.INSTANCE.getProfileCache(entityManager);
+        return approvalProfileCache.getProfileCache(entityManager);
     }
 
     @Override
     public Collection<ApprovalProfile> getApprovalProfilesList() {
-        Map<Integer, ApprovalProfile> allProfiles = ApprovalProfileCache.INSTANCE.getProfileCache(entityManager);
+        Map<Integer, ApprovalProfile> allProfiles = approvalProfileCache.getProfileCache(entityManager);
         
         
         ArrayList<ApprovalProfile> profiles = new ArrayList<ApprovalProfile>();
@@ -291,7 +293,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         }
         ApprovalProfile returnval = null;
         // We need to clone the profile, otherwise the cache contents will be modifiable from the outside
-        final ApprovalProfile aprofile = ApprovalProfileCache.INSTANCE.getProfileCache(entityManager).get(Integer.valueOf(id));
+        final ApprovalProfile aprofile = approvalProfileCache.getProfileCache(entityManager).get(Integer.valueOf(id));
         try {
             if (aprofile != null) {
                 returnval = aprofile.clone();
@@ -309,7 +311,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
 
     @Override
     public ApprovalProfile getApprovalProfile(String name) {
-        final Integer id = ApprovalProfileCache.INSTANCE.getNameIdMapCache(entityManager).get(name);
+        final Integer id = approvalProfileCache.getNameIdMapCache(entityManager).get(name);
         if (id == null) {
             return null;
         } else {
@@ -323,7 +325,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             LOG.trace(">getApprovalProfileId: " + name);
         }
         
-        final Integer id = ApprovalProfileCache.INSTANCE.getNameIdMapCache(entityManager).get(name);
+        final Integer id = approvalProfileCache.getNameIdMapCache(entityManager).get(name);
         if (id != null) {
             final int returnval = id.intValue();
             if (LOG.isTraceEnabled()) {
@@ -339,7 +341,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getApprovalProfileName: " + id);
         }
-        final String returnval = ApprovalProfileCache.INSTANCE.getIdNameMapCache(entityManager).get(Integer.valueOf(id));
+        final String returnval = approvalProfileCache.getIdNameMapCache(entityManager).get(Integer.valueOf(id));
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getApprovalProfileName: " + id + "): " + returnval);
         }
@@ -351,7 +353,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         if (LOG.isTraceEnabled()) {
             LOG.trace("><getApprovalProfileIdToNameMap");
         }
-        return ApprovalProfileCache.INSTANCE.getIdNameMapCache(entityManager);
+        return approvalProfileCache.getIdNameMapCache(entityManager);
     }
     
     
