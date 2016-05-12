@@ -14,6 +14,7 @@ package org.ejbca.ui.web.admin.configuration;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -432,9 +433,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getAvailableCAs() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         Set<String> cas = informationmemory.getAllCANames().keySet();
-        Iterator<String> itr = cas.iterator();
-        while (itr.hasNext()) {
-            String caname = (String) itr.next();
+        for (String caname : cas) {
             ret.add(new SelectItem(caname, caname));
         }
         return ret;
@@ -442,12 +441,12 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
     /** @return a list of EndEntity profiles that this admin is authorized to */
     public List<SelectItem> getAuthorizedEEProfileNames() {
-        Set<String> eeps = this.informationmemory.getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY).keySet();
+        Collection<Integer> endEntityProfileIds = endentityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
+        Map<Integer, String> nameMap = endentityProfileSession.getEndEntityProfileIdToNameMap();
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        Iterator<String> itr = eeps.iterator();
-        while (itr.hasNext()) {
-            String eep = (String) itr.next();
-            ret.add(new SelectItem(eep, eep));
+        for (Integer id: endEntityProfileIds) {
+            String name = nameMap.get(id);
+            ret.add(new SelectItem(name, name));
         }
         return ret;
     }
@@ -459,12 +458,9 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             eep = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
         }
         EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
-
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        ArrayList<String> cpids = (ArrayList<String>) p.getAvailableCertificateProfileIds();
-        Iterator<String> itr = cpids.iterator();
-        while (itr.hasNext()) {
-            String cpid = itr.next();
+        Collection<String> cpids = p.getAvailableCertificateProfileIds();
+        for(String cpid : cpids) {
             String cpname = certProfileSession.getCertificateProfileName(Integer.parseInt(cpid));
             ret.add(new SelectItem(cpname, cpname));
         }
