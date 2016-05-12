@@ -17,7 +17,9 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalProfileSession;
 import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
@@ -126,17 +128,17 @@ public class ApprovalExecutorUtil {
 	    
 	    final int[] actionsRequireApproval = approvalProfile.getActionsRequireApproval();
         if (approvalRequest instanceof ActivateCATokenApprovalRequest) {
-            return ApprovalUtils.arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ACTIVATECA);
+            return arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ACTIVATECA);
         } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-            return ApprovalUtils.arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY);
+            return arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY);
         } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
-            return ApprovalUtils.arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY);
+            return arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY);
         } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-            return ApprovalUtils.arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY);
+            return arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY);
         } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
-            return ApprovalUtils.arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_KEYRECOVER);
+            return arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_KEYRECOVER);
         } else if (approvalRequest instanceof RevocationApprovalRequest) {
-            return ApprovalUtils.arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_REVOCATION);
+            return arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_REVOCATION);
         }
         return false;
 	}
@@ -165,4 +167,61 @@ public class ApprovalExecutorUtil {
 	    }
 	    return false;
 	}
+	
+    public static ApprovalProfile[] getApprovalProfiles(final int action, final CAInfo cainfo, final CertificateProfile certProfile, 
+            final ApprovalProfileSession approvalProfileSession) {
+            ApprovalProfile profiles[] = new ApprovalProfile[2];
+            ApprovalProfile firstProfile = null;
+            ApprovalProfile secondProfile = null;
+            
+            if(cainfo != null) {
+                int approvalProfileId = cainfo.getApprovalProfile();
+                if(approvalProfileId != -1) {
+                    ApprovalProfile profile = approvalProfileSession.getApprovalProfile(approvalProfileId);
+                    if(arrayContainsValue(profile.getActionsRequireApproval(), action)) {
+                        firstProfile = profile;
+                    }
+                }
+            }
+
+            if(certProfile != null) {
+                int approvalProfileId = certProfile.getApprovalProfileID();
+                if(approvalProfileId != -1) {
+                    ApprovalProfile profile = approvalProfileSession.getApprovalProfile(approvalProfileId);
+                    if(arrayContainsValue(profile.getActionsRequireApproval(), action)) {
+                        secondProfile = profile;
+                    }
+                }            
+            }
+            
+            if(firstProfile != null && secondProfile != null) {
+                if(firstProfile.equals(secondProfile)) {
+                    secondProfile = null;
+                } else if((firstProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) && 
+                           secondProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+                    if(secondProfile.getNumberOfApprovals() > firstProfile.getNumberOfApprovals()) {
+                        firstProfile = secondProfile;
+                    }
+                    secondProfile = null;
+                }
+            } else if((firstProfile==null) && (secondProfile != null)){
+                firstProfile = secondProfile;
+                secondProfile = null;
+            }
+            
+            profiles[0] = firstProfile;
+            profiles[1] = secondProfile;
+            
+            return profiles;
+    }
+    
+    private static boolean arrayContainsValue(final int[] array, final int value) {
+        for(int v : array) {
+            if(v==value) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }

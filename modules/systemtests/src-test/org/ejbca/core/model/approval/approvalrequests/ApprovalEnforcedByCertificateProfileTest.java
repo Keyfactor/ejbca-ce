@@ -177,7 +177,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         cryptoTokenId3 = CryptoTokenTestUtils.createCryptoTokenForCA(admin1, "ca3", "1024");
         final CAToken catoken3 = CaTestUtils.createCaToken(cryptoTokenId3, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
 
-        approvalCAID = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_ApprovalCA", new Integer[] {},
+        approvalCAID = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_ApprovalCA", -1,
                 caAdminSession, caSession, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, catoken1);
 
         // Create certificate profiles
@@ -211,9 +211,9 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         certProfileIdAllApprovals = createCertificateProfile(admin1, CERTPROFILE5, approvalProfileIdAllApprovals, CertificateConstants.CERTTYPE_ENDENTITY);
         
         // Other CAs
-        anotherCAID1 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA1", new Integer[] {},
+        anotherCAID1 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA1", -1,
                 caAdminSession, caSession, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, catoken2);
-        anotherCAID2 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA2", new Integer[] {},
+        anotherCAID2 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA2", -1,
                 caAdminSession, caSession, certProfileIdActivateCATokensApprovals, catoken3);
 
         // Create an end entity profile with the certificate profiles
@@ -482,11 +482,8 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         return certProfileId;
     }
 
-    public static int createCA(AuthenticationToken internalAdmin, String nameOfCA, Integer[] approvalRequirementTypes,
+    public static int createCA(AuthenticationToken internalAdmin, String nameOfCA, int approvalProfileID,
             CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, int certProfileId, CAToken catoken) throws Exception {
-        final List<Integer> approvalSettings = approvalRequirementTypes.length == 0 ? new ArrayList<Integer>() : Arrays.asList(approvalRequirementTypes);
-        log.info("approvalSettings: " + approvalSettings);
-
         ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -494,7 +491,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         cainfo.setExpireTime(new Date(System.currentTimeMillis() + 364 * 24 * 3600 * 1000));
         cainfo.setDescription("Used for testing approvals");
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
-        cainfo.setApprovalSettings(approvalSettings);
+        cainfo.setApprovalProfile(approvalProfileID);
         int caID = cainfo.getCAId();
         try {
             caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);

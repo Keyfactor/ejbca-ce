@@ -56,7 +56,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
 import org.ejbca.core.model.approval.ApprovalProfile;
-import org.ejbca.core.model.approval.ApprovalUtils;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -148,10 +147,10 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
 		final CertificateProfile certProfile = certProfileSession.getCertificateProfile(certinfo.getCertificateProfileId());
 		
         // Check if approvals is required.
-		final ApprovalProfile approvalProfiles[] = ApprovalUtils.getApprovalProfiles(CAInfo.REQ_APPROVAL_KEYRECOVER, cainfo, certProfile, 
+		final ApprovalProfile approvalProfiles[] = ApprovalExecutorUtil.getApprovalProfiles(CAInfo.REQ_APPROVAL_KEYRECOVER, cainfo, certProfile, 
 		        approvalProfileSession);
         int numOfApprovalsRequired = caAdminSession.getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_KEYRECOVER, caid, certinfo.getCertificateProfileId());
-        if ((numOfApprovalsRequired > 0) || (approvalProfiles[0] != null)) {    
+        if (approvalProfiles[0] != null) {    
 			KeyRecoveryApprovalRequest ar = new KeyRecoveryApprovalRequest(certificate,username,checkNewest, admin,null,numOfApprovalsRequired,caid,
 			        endEntityProfileId, approvalProfiles[0], approvalProfiles[1]);
 			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_KEYRECOVERY)){

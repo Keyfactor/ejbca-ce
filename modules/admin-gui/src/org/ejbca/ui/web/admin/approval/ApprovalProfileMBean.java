@@ -304,7 +304,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 String nrOfApprovals = Integer.toString(getApprovalProfile().getNumberOfApprovals());
                 ret.add(new SelectItem(nrOfApprovals, nrOfApprovals));
             } else {
-                for(int i=0; i<10; i++) {
+                for(int i=1; i<10; i++) {
                     ret.add(new SelectItem(i, ""+i));
                 }
             }
