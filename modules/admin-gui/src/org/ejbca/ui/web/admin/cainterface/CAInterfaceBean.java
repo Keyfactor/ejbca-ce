@@ -833,6 +833,7 @@ public class CAInterfaceBean implements Serializable {
 	                        finishUser, extendedcaservices,
 	                        approvalsettings,
 	                        numofreqapprovals,
+	                        approvalProfileID,
 	                        false, // Do not automatically include new CAs in health-check
 	                        isDoEnforceUniquePublicKeys,
 	                        isDoEnforceUniqueDistinguishedName,
@@ -1044,6 +1045,7 @@ public class CAInterfaceBean implements Serializable {
                        finishUser, extendedcaservices,
                        approvalsettings,
                        numofreqapprovals,
+                       approvalProfileID,
                        includeInHealthCheck,
                        isDoEnforceUniquePublicKeys,
                        isDoEnforceUniqueDistinguishedName,

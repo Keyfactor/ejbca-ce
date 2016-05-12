@@ -1616,7 +1616,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             } catch (CADoesntExistsException e) {
                 throw new FinderException("CA with ID " + caid + " not found.");
             }
-            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(data.getCertificateProfileId());
+            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
             final ApprovalProfile approvalProfiles[] = ApprovalUtils.getApprovalProfiles(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, 
                     certProfile, approvalProfileSession);
             final int numOfReqApprovals = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_REVOCATION, caid, certificateProfileId);

@@ -55,6 +55,7 @@ public class CVCCAInfo extends CAInfo {
                 new ArrayList<ExtendedCAServiceInfo>(), // Extended CA services
                 new ArrayList<Integer>(), // Approval settings
                 1, // Number of request approvals
+                -1, // ApprovalProfileID
                 true, // includeInHealthCheck 
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
@@ -74,7 +75,7 @@ public class CVCCAInfo extends CAInfo {
 			CAToken catoken, String description, int revocationReason, Date revocationDate,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
 			Collection<Integer> crlpublishers,boolean finishuser,Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
-			Collection<Integer> approvalSettings, int numOfReqApprovals,
+			Collection<Integer> approvalSettings, int numOfReqApprovals, final int approvalProfileID,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
 			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {
@@ -102,6 +103,7 @@ public class CVCCAInfo extends CAInfo {
 		this.extendedcaserviceinfos = extendedcaserviceinfos; 
 		this.approvalSettings = approvalSettings;
 		this.numOfReqApprovals = numOfReqApprovals;
+		this.approvalProfile = approvalProfileID;
 		this.includeInHealthCheck = includeInHealthCheck;
 		this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
 		this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;
@@ -119,7 +121,7 @@ public class CVCCAInfo extends CAInfo {
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
 			Collection<Integer> crlpublishers,
 			boolean finishuser, Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
-			Collection<Integer> approvalSettings, int numOfReqApprovals,
+			Collection<Integer> approvalSettings, int numOfReqApprovals, final int approvalProfileID,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
 			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {        
@@ -136,6 +138,7 @@ public class CVCCAInfo extends CAInfo {
 		this.extendedcaserviceinfos = extendedcaserviceinfos; 
 		this.approvalSettings = approvalSettings;
 		this.numOfReqApprovals = numOfReqApprovals;
+		this.approvalProfile = approvalProfileID;
 		this.includeInHealthCheck = includeInHealthCheck;
 		this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
 		this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;
