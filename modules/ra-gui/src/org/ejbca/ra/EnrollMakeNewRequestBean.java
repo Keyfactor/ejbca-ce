@@ -16,10 +16,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,10 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -66,7 +64,6 @@ import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.model.util.GenerateToken;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page
@@ -221,7 +218,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         boolean anyCAAvailableFromEEP = availableCAsFromEEPArray.length == 1 && availableCAsFromEEPArray[0].equalsIgnoreCase(SecConst.ALLCAS + "");
 
         //Get all available CAs from the selected CP
-        CertificateProfile certificateProfile = authorizedCertificateProfiles.get(selectedCertificateProfile).getValue();
+        CertificateProfile certificateProfile = getCertificateProfile();
         if (certificateProfile == null) {
             return;
         }
@@ -372,14 +369,28 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 && !selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue());
     }
 
-    public boolean getDownloadRendered() {
+    public boolean getGenerateJksButtonRendered() {
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if(endEntityProfile == null){
+            return false;
+        }
+        String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
         return selectedDownloadCredentialsType != null
                 && (selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue()) ||
-                        selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()));//TODO probably will need to get updated once approvals are implemented in kickassra
+                        selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()))
+                && availableKeyStores.contains(SecConst.TOKEN_SOFT_JKS+"");//TODO probably will need to get updated once approvals are implemented in kickassra
     }
-
-    public String getDownloadButtonValue() {
-        return raLocaleBean.getMessage("generic_download", "p12");
+    
+    public boolean getGenerateP12ButtonRendered() {
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if(endEntityProfile == null){
+            return false;
+        }
+        String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
+        return selectedDownloadCredentialsType != null
+                && (selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue()) ||
+                        selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()))
+                && availableKeyStores.contains(SecConst.TOKEN_SOFT_P12+"");//TODO probably will need to get updated once approvals are implemented in kickassra
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -570,17 +581,26 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setSubjectAltName(subjectAlternativeName.toString());
         endEntityInformation.setTimeCreated(new Date());//TODO client vs server time issues?
         endEntityInformation.setTimeModified(new Date());//TODO client vs server time issues?
-        endEntityInformation.setTokenType(SecConst.TOKEN_SOFT_P12); //TODO make it configurable
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
         //TODO how to set subject directory attributes?
     }
-
-    public final void download() {
+    
+    public final void generateP12(){
+        generateKeyStore(SecConst.TOKEN_SOFT_P12, "PKCS#12", "application/x-pkcs12", ".p12");
+    }
+    
+    public final void generateJks(){
+        generateKeyStore(SecConst.TOKEN_SOFT_JKS, "JKS", "application/octet-stream", ".jks");
+    }
+    
+    public final void generateKeyStore(int keystoreType, String keystoreName, String responseContentType, String fileExtension) {
         //Update the EndEntityInformation data
         subjectDn.updateValue();
         subjectAlternativeName.updateValue();
         subjectDirectoryAttributes.updateValue();
         setDownloadCredentialsData();
+        endEntityInformation.setTokenType(keystoreType);
+        
         
         //Enter temporary credentials
         if(selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue())){
@@ -603,8 +623,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         //Generate keystore
         KeyStore keystore = null;
         try {
-            keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);//TODO clear password config
-            log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", "PKCS #12", endEntityInformation.getUsername()));
+            keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+            log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", keystoreName, endEntityInformation.getUsername()));
         } catch (KeyStoreException| AuthorizationDeniedException e) {
             raLocaleBean.addMessageInfo("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
             log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
@@ -623,10 +643,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
         FacesContext fc = FacesContext.getCurrentInstance();
         ExternalContext ec = fc.getExternalContext();
         ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
-        ec.setResponseContentType("application/x-pkcs12");
+        ec.setResponseContentType(responseContentType);
         ec.setResponseContentLength(buffer.size());
         ec.setResponseHeader("Content-Disposition",
-                "attachment; filename=\"" + StringTools.stripFilename(endEntityInformation.getUsername() + ".p12") + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+                "attachment; filename=\"" + StringTools.stripFilename(endEntityInformation.getUsername() + fileExtension) + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
         OutputStream output = null;
         try {
             output = ec.getResponseOutputStream();
