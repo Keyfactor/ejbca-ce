@@ -17,6 +17,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.DependsOn;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
@@ -25,8 +32,7 @@ import org.ejbca.core.ejb.profiles.ProfileData;
 import org.ejbca.core.model.approval.ApprovalProfile;
 
 /**
- * Class Holding cache variable. Needed because EJB spec does not allow volatile, non-final fields
- * in session beans.
+ * Class Holding cache variable.
  * 
  * This cache is designed so only one thread at the time will update the cache if it is too old. Other
  * threads will happily return a bit too old object. If a cache update is forced, for example when
@@ -39,11 +45,14 @@ import org.ejbca.core.model.approval.ApprovalProfile;
  * 
  * @version $Id$
  */
-public enum ApprovalProfileCache {
+@Singleton
+@Startup
+@DependsOn("StartupSingletonBean")
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+@TransactionManagement(TransactionManagementType.BEAN)
+public class ApprovalProfileCacheBean {
 
-    INSTANCE;
-
-    private final Logger LOG = Logger.getLogger(ApprovalProfileCache.class);
+    private final Logger LOG = Logger.getLogger(ApprovalProfileCacheBean.class);
 
     /*
      * Cache of profiles, with Id as keys. This cache may be
@@ -65,8 +74,6 @@ public enum ApprovalProfileCache {
     private final HashMap<String, Integer> nameIdMapCacheTemplate = new HashMap<String, Integer>();
 
     private final ReentrantLock lock = new ReentrantLock(false);
-
-    private ApprovalProfileCache() {}
 
     /**
      * Fetch all profiles from the database, unless cache is enabled, valid and we do not force an update.
