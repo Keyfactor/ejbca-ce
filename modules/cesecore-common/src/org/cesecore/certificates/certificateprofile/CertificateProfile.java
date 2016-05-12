@@ -643,7 +643,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * If DN override by End Entity Information is allowed, the X509 subject DN extension created in a certificate can
+     * If DN override is allowed, the X509 subject DN extension created in a certificate can
      * come directly from the CSR in the request sent by the user. This is instead of the normal way where the user's
      * registered DN is used.
      */
