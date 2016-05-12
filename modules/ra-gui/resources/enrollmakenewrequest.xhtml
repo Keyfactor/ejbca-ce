@@ -246,10 +246,12 @@
 										value="#{enrollMakeNewRequestBean.endEntityInformation.email}"/>
 								</h:panelGroup>
 							</fieldset>
-							<h:panelGroup layout="block"
-								rendered="#{enrollMakeNewRequestBean.getDownloadRendered()}">
-								<h:commandButton id="downloadButton" value="#{msg.generic_download}"
-									action="#{enrollMakeNewRequestBean.download()}">
+							<h:panelGroup layout="block">
+								<h:commandButton id="generateJks" value="#{msg.enroll_generate_jks}"
+									action="#{enrollMakeNewRequestBean.generateJks()}" rendered="#{enrollMakeNewRequestBean.getGenerateJksButtonRendered()}">
+								</h:commandButton>
+								<h:commandButton id="generateP12" value="#{msg.enroll_generate_p12}"
+									action="#{enrollMakeNewRequestBean.generateP12()}" rendered="#{enrollMakeNewRequestBean.getGenerateP12ButtonRendered()}">
 								</h:commandButton>
 							</h:panelGroup>
 						</h:panelGroup>
@@ -264,6 +266,9 @@
 						action="#{enrollMakeNewRequestBean.reset()}">
 					</h:commandButton>
 				</h:panelGroup>
+				<script>
+					document.getElementById('enrollMakeNewRequestForm:nextButton').focus();	<!-- temp solution. proper highlighting solution is needed -->	
+				</script>
 			</h:form>
 		</h:panelGroup>			
 	</ui:define>
