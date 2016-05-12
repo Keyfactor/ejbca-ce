@@ -244,7 +244,8 @@ public final class CAIdTools {
      */
     public static boolean updateCAIds(final GlobalOcspConfiguration ocspConfig, final int fromId, final int toId, final String toSubjectDN) {
         boolean changed = false;
-        if (ocspConfig.getOcspDefaultResponderReference().hashCode() == fromId) {
+        if (ocspConfig.getOcspDefaultResponderReference() != null &&
+                ocspConfig.getOcspDefaultResponderReference().hashCode() == fromId) {
             ocspConfig.setOcspDefaultResponderReference(toSubjectDN);
             changed = true;
         }
