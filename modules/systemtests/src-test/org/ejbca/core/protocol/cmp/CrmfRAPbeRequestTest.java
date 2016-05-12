@@ -450,13 +450,14 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 
         try {
             ApprovalProfile approvalProfile = new ApprovalProfile(approvalProfileName);
+            approvalProfile.setActionsRequireApproval(new int[] {CAInfo.REQ_APPROVAL_REVOCATION});
             approvalProfile.setNumberOfApprovals(1);
-            approvalProfileSession.addApprovalProfile(ADMIN, approvalProfileName, approvalProfile);
+            final int approvalProfileId = approvalProfileSession.addApprovalProfile(ADMIN, approvalProfileName, approvalProfile);
             
             // Generate CA with approvals for revocation enabled
             cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(ADMIN, caname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            int caID = RevocationApprovalTest.createApprovalCA(ADMIN, caname, CAInfo.REQ_APPROVAL_REVOCATION, this.caAdminSession, this.caSession, catoken);
+            int caID = RevocationApprovalTest.createApprovalCA(ADMIN, caname, approvalProfileId, this.caAdminSession, this.caSession, catoken);
             // Get CA cert
             cainfo = (X509CAInfo) this.caSession.getCAInfo(ADMIN, caID);
             assertNotNull(cainfo);
