@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -223,8 +224,9 @@ public class EjbcaWebBean implements Serializable {
             final String sernostr = CertTools.getSerialNumberAsString(certificates[0]);
             final BigInteger serno = CertTools.getSerialNumber(certificates[0]);
             certificatefingerprint = CertTools.getFingerprintAsString(certificates[0]);
+            // Check if certificate belongs to a user. checkIfCertificateBelongToUser will always return true if WebConfiguration.getRequireAdminCertificateInDatabase is set to false (in properties file)
             if (!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
-                throw new RuntimeException("Certificate with SN " + serno + " and issuerDN '" + issuerDN+ "' did not belong to any user in the database.");
+                throw new AuthenticationFailedException("Certificate with SN " + serno + " and issuerDN '" + issuerDN+ "' did not belong to any user in the database.");
             }
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serno) == null) {
@@ -236,6 +238,15 @@ public class EjbcaWebBean implements Serializable {
             if (WebConfiguration.getAdminLogForwardedFor()) {
                 details.put("forwardedip", StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For")));
             }
+            // Also check if this administrator is present in any role, if not, login failed
+            final List<String> roles = roleAccessSession.getRolesMatchingAuthenticationToken(administrator);
+            if (roles.isEmpty()) {
+                details.put("reason", "Certificate has no access");
+                auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
+                        administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
+                throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificates[0]));
+            }
+            // Continue with login
             if (details.isEmpty()) {
                 details = null;
             }
