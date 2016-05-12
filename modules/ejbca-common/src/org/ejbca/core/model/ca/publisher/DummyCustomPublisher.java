@@ -13,12 +13,15 @@
  
 package org.ejbca.core.model.ca.publisher;
 
+import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.util.EJBTools;
 
 
 /**
@@ -28,10 +31,15 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
  *
  * @version $Id$
  */
-public class DummyCustomPublisher implements ICustomPublisher{
+public class DummyCustomPublisher implements ICustomPublisher, Serializable {
     		
+    private static final long serialVersionUID = 1L;
+
     private static Logger log = Logger.getLogger(DummyCustomPublisher.class);
 
+    private CertificateWrapper certificate = null;
+
+    
     /**
      * Creates a new instance of DummyCustomPublisher
      */
@@ -49,9 +57,13 @@ public class DummyCustomPublisher implements ICustomPublisher{
 	 */
 	public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
         log.debug("DummyCustomPublisher, Storing Certificate for user: " + username);	
-		return true;
-	}
-
+        this.certificate = EJBTools.wrap(incert);
+        return true;
+    }
+    
+    public Certificate getStoredCertificate() {
+        return EJBTools.unwrap(certificate);
+    }
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCRL(org.cesecore.authentication.tokens.AuthenticationToken, byte[], java.lang.String, int)
 	 */

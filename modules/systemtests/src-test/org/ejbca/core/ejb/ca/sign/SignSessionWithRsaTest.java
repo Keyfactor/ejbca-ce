@@ -21,6 +21,8 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -31,6 +33,8 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+
+import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -52,18 +56,34 @@ import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -74,6 +94,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.certificates.util.cert.QCStatementExtension;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -81,16 +102,29 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.cert.SeisCardNumberExtension;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -158,13 +192,19 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
 
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
+    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateProfileSessionRemote.class);
     private CertReqHistoryProxySessionRemote certReqHistoryProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertReqHistoryProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
+    private PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private static KeyPair rsakeys;
     private static int rsacaid;
@@ -655,6 +695,81 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             endEntityManagementSession.deleteUser(internalAdmin, qcCertEndEntityName);
         }
         log.trace("<test10TestQcCert()");
+    }
+
+    /**
+     * SignSessionBean tests for Single Active Certificate constraints as well as CertificateCreateSession, with focus on making sure that
+     * auto-revoked certificates have their statuses published. 
+     */
+    @Test
+    public void testSingleActiveCertificateConstraintPublishing() throws CertificateProfileExistsException, AuthorizationDeniedException,
+            InvalidAlgorithmParameterException, CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException,
+            CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException, CertificateRevokeException,
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException,
+            PublisherExistsException, NoSuchEndEntityException, SignRequestException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile,
+            WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, EndEntityProfileNotFoundException {
+        final String profileName = "testSingleActiveCertificateConstraintPublishing";
+        final String publisherName = "testSingleActiveCertificateConstraintPublishing";
+        final String username = "testSingleActiveCertificateConstraintPublishing";
+        //Set up a mock publisher
+        final CustomPublisherContainer publisher = new CustomPublisherContainer();
+        publisher.setClassPath(DummyCustomPublisher.class.getName());
+        publisher.setDescription("Used in Junit Test 'testSingleActiveCertificateConstraintPublishing'. Remove this one.");
+        int publisherId = publisherProxySession.addPublisher(internalAdmin, publisherName, publisher);
+        BigInteger certificatoriginalCertificateeSerialNumber = null;
+        BigInteger newCertificateSerialNumber = null;
+        try {
+            // Set up the profile 
+            CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            profile.setAllowValidityOverride(true);
+            profile.setSingleActiveCertificateConstraint(true);
+            profile.setPublisherList(Arrays.asList(publisherId));
+            int certificateProfileId = certificateProfileSession.addCertificateProfile(internalAdmin, profileName, profile);
+            EndEntityProfile endEntityProfile = new EndEntityProfile();
+            endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+            endEntityProfile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+            endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, endEntityProfile);
+            int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(profileName);
+            EndEntityInformation endEntity = new EndEntityInformation(username, "CN=" + username, rsacaid, null, null,
+                    new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            endEntity.setStatus(EndEntityConstants.STATUS_NEW);
+            endEntity.setPassword("foo123");
+            endEntityManagementSession.addUser(internalAdmin, endEntity, false);
+            //Create the original certificate 
+           
+            KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), endEntity.getUsername(), endEntity.getPassword());
+            // First certificate, meant to be revoked. 
+
+            X509ResponseMessage responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(internalAdmin, endEntity, req,
+                    X509ResponseMessage.class, signSession.fetchCertGenParams());
+            certificatoriginalCertificateeSerialNumber = CertTools.getSerialNumber(responseMessage.getCertificate());
+            //Create a new certificate, it should be valid. 
+            responseMessage = (X509ResponseMessage) signSession.createCertificate(internalAdmin, req, X509ResponseMessage.class, endEntity);
+            newCertificateSerialNumber = CertTools.getSerialNumber(responseMessage.getCertificate());
+            String testCaSubjectDn = caSession.getCAInfo(internalAdmin, getTestCAName()).getSubjectDN();
+            //Make the standard checks 
+            assertEquals("New certificate was revoked.", CertificateStatus.OK,
+                    certificateStoreSession.getStatus(testCaSubjectDn, newCertificateSerialNumber));
+            assertEquals("Old certificate was not revoked.", CertificateStatus.REVOKED,
+                    certificateStoreSession.getStatus(testCaSubjectDn, certificatoriginalCertificateeSerialNumber));
+            DummyCustomPublisher mockPublisher = (DummyCustomPublisher) ((CustomPublisherContainer) publisherSession.getPublisher(publisherId))
+                    .getCustomPublisher();
+            assertNotNull("Certificate was not sent to publisher", mockPublisher.getStoredCertificate());
+        } finally {
+
+            certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
+            internalCertStoreSession.removeCertificate(certificatoriginalCertificateeSerialNumber);
+            internalCertStoreSession.removeCertificate(newCertificateSerialNumber);
+            publisherSession.removePublisher(internalAdmin, publisherName);
+            try {
+                endEntityManagementSession.deleteUser(internalAdmin, username);
+            } catch (RemoveException | NotFoundException e) {
+                //NOPMD Ignore...
+            }
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
+        }
+
     }
 
     /**
