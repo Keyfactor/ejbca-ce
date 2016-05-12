@@ -32,7 +32,7 @@ import org.cesecore.util.QueryResultWrapper;
 import org.ejbca.core.model.approval.ApprovalProfile;
 
 /**
- * A class to access the "ProfileData" tabel in the database
+ * A class to access the "ProfileData" table in the database
  * 
  * @version $Id$
  */
