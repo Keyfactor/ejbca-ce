@@ -16,7 +16,14 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 
 /**
  * Util class with methods to get information about calling classes
@@ -90,7 +97,7 @@ public class ApprovalExecutorUtil {
             log.trace(">requireApproval: "+req.getClass().getName());            
         }
 		boolean ret = true;
-		if ((req.getNumOfRequiredApprovals() > 0) || (req.getApprovalProfile() != null)) {
+		if ((req.getNumOfRequiredApprovals() > 0) || isApprovalProfileRelevant(req)) {
 			ret = !isCalledByOveridableClassnames(getGloballyAllowed());
 			// If we were not found in the globally allowed list, check the passed in list
 			if (ret && (overridableClassNames != null)) {
@@ -108,6 +115,30 @@ public class ApprovalExecutorUtil {
             log.trace("<requireApproval: "+ret);
         }
 		return ret;
+	}
+	
+	private static boolean isApprovalProfileRelevant(ApprovalRequest approvalRequest) {
+	    final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
+	    if((approvalProfile == null) || (approvalProfile.getNumberOfApprovals()==0) || 
+	            (approvalProfile.getApprovalSteps().size()==0)) {
+	        return false;
+	    }
+	    
+	    final int[] actionsRequireApproval = approvalProfile.getActionsRequireApproval();
+        if (approvalRequest instanceof ActivateCATokenApprovalRequest) {
+            return ApprovalUtils.arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ACTIVATECA);
+        } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
+            return ApprovalUtils.arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY);
+        } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
+            return ApprovalUtils.arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY);
+        } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
+            return ApprovalUtils.arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY);
+        } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
+            return ApprovalUtils.arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_KEYRECOVER);
+        } else if (approvalRequest instanceof RevocationApprovalRequest) {
+            return ApprovalUtils.arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_REVOCATION);
+        }
+        return false;
 	}
 	
 	private static ApprovalOveradableClassName[] getGloballyAllowed() {

@@ -19,6 +19,7 @@ import static org.junit.Assert.assertTrue;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
 import org.junit.Before;
@@ -39,6 +40,7 @@ public class ApprovalExecutorUtilTest {
 	public void testNoOfApprovals() {
 		int numOfApprovalsRequired = 1;
 		ApprovalProfile nrOfApprovalsApprovalProfile = new ApprovalProfile("nrOfApprovalApprovalProfile");
+		nrOfApprovalsApprovalProfile.setActionsRequireApproval(new int[] {CAInfo.REQ_APPROVAL_ADDEDITENDENTITY});
 		nrOfApprovalsApprovalProfile.setNumberOfApprovals(numOfApprovalsRequired);
 		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, 
 		        EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
@@ -56,6 +58,7 @@ public class ApprovalExecutorUtilTest {
 	public void testGloballyExcludedClasses() {
 		int numOfApprovalsRequired = 1;
 		ApprovalProfile nrOfApprovalsApprovalProfile = new ApprovalProfile("nrOfApprovalApprovalProfile");
+		nrOfApprovalsApprovalProfile.setActionsRequireApproval(new int[] {CAInfo.REQ_APPROVAL_ADDEDITENDENTITY});
 		nrOfApprovalsApprovalProfile.setNumberOfApprovals(numOfApprovalsRequired);
 		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, 
 		        EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
@@ -85,6 +88,7 @@ public class ApprovalExecutorUtilTest {
 
 		int numOfApprovalsRequired = 1;
 		ApprovalProfile nrOfApprovalsApprovalProfile = new ApprovalProfile("nrOfApprovalApprovalProfile");
+		nrOfApprovalsApprovalProfile.setActionsRequireApproval(new int[] {CAInfo.REQ_APPROVAL_ADDEDITENDENTITY});
 		nrOfApprovalsApprovalProfile.setNumberOfApprovals(numOfApprovalsRequired);
 		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, 
 		        EndEntityConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);
@@ -133,6 +137,7 @@ public class ApprovalExecutorUtilTest {
 	public void testAllowedTransitions() {
 		int numOfApprovalsRequired = 1;
 		ApprovalProfile nrOfApprovalsApprovalProfile = new ApprovalProfile("nrOfApprovalApprovalProfile");
+		nrOfApprovalsApprovalProfile.setActionsRequireApproval(new int[] {CAInfo.REQ_APPROVAL_ADDEDITENDENTITY});
 		nrOfApprovalsApprovalProfile.setNumberOfApprovals(numOfApprovalsRequired);
 		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_NEW, 
 		        EndEntityConstants.STATUS_INPROCESS, admin, null, numOfApprovalsRequired, 1, 1, nrOfApprovalsApprovalProfile, null);

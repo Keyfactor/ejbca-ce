@@ -71,7 +71,7 @@ public class ApprovalUtils {
             return profiles;
     }
     
-    private static boolean arrayContainsValue(final int[] array, final int value) {
+    public static boolean arrayContainsValue(final int[] array, final int value) {
         for(int v : array) {
             if(v==value) {
                 return true;
