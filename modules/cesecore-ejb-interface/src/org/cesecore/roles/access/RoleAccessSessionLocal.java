@@ -29,10 +29,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 public interface RoleAccessSessionLocal extends RoleAccessSession {
 
     /**
-     * Get a list of role that match the given authentication token
+     * Get a list of role that match the given authentication token, i.e. roles that the authentication token is part of
      * 
      * @param authenticationToken a token to match with
-     * @return a list of role that match the given authentication token
+     * @return a list of role that match the given authentication token, can be an empty list but not null
      * @throws AuthenticationFailedException if any errors were found with the authentication token
      */
     List<String> getRolesMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException;
