@@ -27,6 +27,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -42,6 +43,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
+import org.cesecore.util.QueryResultWrapper;
 import org.ejbca.core.ejb.profiles.ProfileData;
 import org.ejbca.core.model.approval.ApprovalProfile;
 
@@ -79,7 +81,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         authorizedToEditProfile(admin, profile, id);
 
         if (isFreeApprovalProfileId(id)) {
-            if (ProfileData.findByApprovalProfileName(entityManager, name) == null) {
+            if (findByApprovalProfileName(name) == null) {
                 entityManager.persist(new ProfileData(Integer.valueOf(id), name, profile));
                 flushProfileCache();
                 final String msg = INTRES.getLocalizedMessage("store.addedprofile", name);
@@ -102,23 +104,19 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
 
     private boolean isFreeApprovalProfileId(final int id) {
         boolean foundfree = false;
-        if (ProfileData.findByIdAndType(entityManager, Integer.valueOf(id), ApprovalProfile.TYPE) == null) {
+        if (findByIdAndType(Integer.valueOf(id), ApprovalProfile.TYPE) == null) {
             foundfree = true;
         }
         return foundfree;
     }
-    
-    
-    
-    
-    
+     
     
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void changeApprovalProfile(final AuthenticationToken admin, final String name, final ApprovalProfile profile)
             throws AuthorizationDeniedException {
 
-        final ProfileData pdl = ProfileData.findByNameAndType(entityManager, name, ApprovalProfile.TYPE);
+        final ProfileData pdl = findByNameAndType( name, ApprovalProfile.TYPE);
         if (pdl == null) {
             LOG.info(INTRES.getLocalizedMessage("store.erroreditapprovalprofile", name) + ". No such profile was found");
         } else {
@@ -138,7 +136,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeApprovalProfile(final AuthenticationToken admin, final String name) throws AuthorizationDeniedException {
-        final ProfileData pdl = ProfileData.findByNameAndType(entityManager, name, ApprovalProfile.TYPE);
+        final ProfileData pdl = findByNameAndType(name, ApprovalProfile.TYPE);
         if (pdl == null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Trying to remove an approval profile that does not exist: " + name);
@@ -155,7 +153,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeApprovalProfile(final AuthenticationToken admin, final int id) throws AuthorizationDeniedException {
-        final ProfileData pdl = ProfileData.findByIdAndType(entityManager, id, ApprovalProfile.TYPE);
+        final ProfileData pdl = findByIdAndType(id, ApprovalProfile.TYPE);
         if (pdl == null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Trying to remove an approval profile that does not exist. ID: " + id);
@@ -174,8 +172,8 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void renameApprovalProfile(final AuthenticationToken admin, final String oldname, final String newname)
             throws ApprovalProfileExistsException, ApprovalProfileDoesNotExistException, AuthorizationDeniedException {
-        if (ProfileData.findByNameAndType(entityManager, newname, ApprovalProfile.TYPE) == null) {
-            final ProfileData pdl = ProfileData.findByNameAndType(entityManager, oldname, ApprovalProfile.TYPE);
+        if (findByNameAndType(newname, ApprovalProfile.TYPE) == null) {
+            final ProfileData pdl = findByNameAndType(oldname, ApprovalProfile.TYPE);
             if (pdl == null) {
                 final String msg = INTRES.getLocalizedMessage("store.errorprofilenotexist", oldname);
                 throw new ApprovalProfileDoesNotExistException(msg);
@@ -212,7 +210,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
 
             authorizedToEditProfile(admin, profile, origProfileId);
 
-            if (ProfileData.findByNameAndType(entityManager, newname, ApprovalProfile.TYPE) == null) {
+            if (findByNameAndType(newname, ApprovalProfile.TYPE) == null) {
                 entityManager.persist(new ProfileData(findFreeApprovalProfileId(), newname, profile));
                 flushProfileCache();
                 final String msg = INTRES.getLocalizedMessage("store.addedprofilewithtempl", newname, orgname);
@@ -225,6 +223,19 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             // If this happens it's a programming error. Throw an exception!
             throw new IllegalStateException(f);
         }
+    }
+    
+    @Override
+    public ProfileData findByIdAndType(final int id, final String type) {
+        Query query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.id=:id AND a.profileType=:profileType");
+        query.setParameter("id", id);
+        query.setParameter("profileType", ApprovalProfile.TYPE);
+        return (ProfileData) QueryResultWrapper.getSingleResult(query);
+    } 
+    
+    @Override
+    public ProfileData findById(int id) {
+        return entityManager.find(ProfileData.class, id);
     }
 
     
@@ -248,7 +259,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         if (LOG.isTraceEnabled()) {
             LOG.trace(">flushProfileCache");
         }
-        approvalProfileCache.updateProfileCache(entityManager, true);
+        approvalProfileCache.updateProfileCache(true);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Flushed profile cache.");
         }
@@ -259,20 +270,45 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
             public boolean isFree(int i) {
-                return ProfileData.findByIdAndType(entityManager, Integer.valueOf(i), ApprovalProfile.TYPE)==null;
+                return findByIdAndType(Integer.valueOf(i), ApprovalProfile.TYPE)==null;
             }
         };
         return ProfileID.getNotUsedID(db);
     }
 
     @Override
+    public ProfileData findByApprovalProfileName(String profileName) {
+        Query query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.profileName=:profileName AND a.profileType=:profileType");
+        query.setParameter("profileName", profileName);
+        query.setParameter("profileType", ApprovalProfile.TYPE);
+        return (ProfileData) QueryResultWrapper.getSingleResult(query);
+    }
+    
+    @Override
+    public ProfileData findByNameAndType(final String name, final String type) {
+        Query query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.profileName=:name AND a.profileType=:profileType");
+        query.setParameter("name", name);
+        query.setParameter("profileType", ApprovalProfile.TYPE);
+        return (ProfileData) QueryResultWrapper.getSingleResult(query);
+    }
+    
+    @Override
+    public List<ProfileData> findAllApprovalProfiles() {
+        Query query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.profileType=:profileType");
+        query.setParameter("profileType", ApprovalProfile.TYPE);
+        @SuppressWarnings("unchecked")
+        List<ProfileData> ret = query.getResultList();
+        return ret;
+    }
+    
+    @Override
     public Map<Integer, ApprovalProfile> getAllApprovalProfiles() {
-        return approvalProfileCache.getProfileCache(entityManager);
+        return approvalProfileCache.getProfileCache();
     }
 
     @Override
     public Collection<ApprovalProfile> getApprovalProfilesList() {
-        Map<Integer, ApprovalProfile> allProfiles = approvalProfileCache.getProfileCache(entityManager);
+        Map<Integer, ApprovalProfile> allProfiles = approvalProfileCache.getProfileCache();
         
         
         ArrayList<ApprovalProfile> profiles = new ArrayList<ApprovalProfile>();
@@ -293,7 +329,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         }
         ApprovalProfile returnval = null;
         // We need to clone the profile, otherwise the cache contents will be modifiable from the outside
-        final ApprovalProfile aprofile = approvalProfileCache.getProfileCache(entityManager).get(Integer.valueOf(id));
+        final ApprovalProfile aprofile = approvalProfileCache.getProfileCache().get(Integer.valueOf(id));
         try {
             if (aprofile != null) {
                 returnval = aprofile.clone();
@@ -311,7 +347,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
 
     @Override
     public ApprovalProfile getApprovalProfile(String name) {
-        final Integer id = approvalProfileCache.getNameIdMapCache(entityManager).get(name);
+        final Integer id = approvalProfileCache.getNameIdMapCache().get(name);
         if (id == null) {
             return null;
         } else {
@@ -325,7 +361,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             LOG.trace(">getApprovalProfileId: " + name);
         }
         
-        final Integer id = approvalProfileCache.getNameIdMapCache(entityManager).get(name);
+        final Integer id = approvalProfileCache.getNameIdMapCache().get(name);
         if (id != null) {
             final int returnval = id.intValue();
             if (LOG.isTraceEnabled()) {
@@ -341,7 +377,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getApprovalProfileName: " + id);
         }
-        final String returnval = approvalProfileCache.getIdNameMapCache(entityManager).get(Integer.valueOf(id));
+        final String returnval = approvalProfileCache.getIdNameMapCache().get(Integer.valueOf(id));
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getApprovalProfileName: " + id + "): " + returnval);
         }
@@ -353,7 +389,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         if (LOG.isTraceEnabled()) {
             LOG.trace("><getApprovalProfileIdToNameMap");
         }
-        return approvalProfileCache.getIdNameMapCache(entityManager);
+        return approvalProfileCache.getIdNameMapCache();
     }
     
     

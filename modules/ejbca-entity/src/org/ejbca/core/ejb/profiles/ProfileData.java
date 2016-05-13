@@ -15,11 +15,8 @@ package org.ejbca.core.ejb.profiles;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -28,11 +25,10 @@ import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.JBossUnmarshaller;
-import org.cesecore.util.QueryResultWrapper;
 import org.ejbca.core.model.approval.ApprovalProfile;
 
 /**
- * A class to access the "ProfileData" table in the database
+ * Implementation of the "ProfileData" table in the database
  * 
  * @version $Id$
  */
@@ -158,57 +154,5 @@ public class ProfileData extends ProtectedData implements Serializable {
         }
         return returnval;
     }
-
-    //
-    // Search functions. 
-    //
-
-    /** @return the found entity instance or null if the entity does not exist */
-    public static ProfileData findById(EntityManager entityManager, int id) {
-        return entityManager.find(ProfileData.class, id);
-    }
-    
-    /**
-     * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
-     * @return the found entity instance or null if the entity does not exist
-     */
-    public static ProfileData findByIdAndType(EntityManager entityManager, final int id, final String type) {
-        Query query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.id=:id AND a.profileType=:profileType");
-        query.setParameter("id", id);
-        query.setParameter("profileType", ApprovalProfile.TYPE);
-        return (ProfileData) QueryResultWrapper.getSingleResult(query);
-    }
-
-    /**
-     * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
-     * @return the found entity instance or null if the entity does not exist
-     */
-    public static ProfileData findByNameAndType(EntityManager entityManager, final String name, final String type) {
-        Query query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.profileName=:name AND a.profileType=:profileType");
-        query.setParameter("name", name);
-        query.setParameter("profileType", ApprovalProfile.TYPE);
-        return (ProfileData) QueryResultWrapper.getSingleResult(query);
-    }
-
-    
-    /**
-     * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
-     * @return the found entity instance or null if the entity does not exist
-     */
-    public static ProfileData findByApprovalProfileName(EntityManager entityManager, String profileName) {
-        Query query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.profileName=:profileName AND a.profileType=:profileType");
-        query.setParameter("profileName", profileName);
-        query.setParameter("profileType", ApprovalProfile.TYPE);
-        return (ProfileData) QueryResultWrapper.getSingleResult(query);
-    }
-
-    /** @return return the query results as a List. */
-    @SuppressWarnings("unchecked")
-    public static List<ProfileData> findAllApprovalProfiles(EntityManager entityManager) {
-        Query query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.profileType=:profileType");
-        query.setParameter("profileType", ApprovalProfile.TYPE);
-        List<ProfileData> ret = query.getResultList();
-        return ret;
-    }
-    
+     
 }
