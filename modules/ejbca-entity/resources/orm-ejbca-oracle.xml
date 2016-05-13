@@ -187,7 +187,7 @@
             <id name="id"><column name="id" column-definition="NUMBER(10)"/></id>
             <basic fetch="EAGER" name="approvalid"><column name="approvalId" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="approvaltype"><column name="approvalType" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="approvalprofileid"><column name="approvalProfileId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="approvalprofileid"><column name="approvalProfileId" column-definition="NUMBER(10)" nullable="true"/></basic>
             <basic fetch="EAGER" name="endentityprofileid"><column name="endEntityProfileId" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="caid"><column name="cAId" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="reqadmincertissuerdn"><column name="reqAdminCertIssuerDn" column-definition="VARCHAR2(255 byte)"/></basic>
