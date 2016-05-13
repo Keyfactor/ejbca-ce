@@ -109,9 +109,11 @@ public interface RaMasterApi {
      * Generates keystore for the speicified end entity.
      * @param admin authentication token
      * @param endEntity holds end entity information (including user's password)
+     * @param keyLength key length for non-EC or curve name for EC(etc. 1024, 2048,.. or brainpoolP224r1, prime239v1, secp 256k1,..)
+     * @param keyAlg token key algorithm (DSA, ECDSA or RSA)
      * @return generated keystore
      * @throws AuthorizationDeniedException
      * @throws KeyStoreException if something went wrong with keystore creation
      */
-    KeyStore generateKeystore(AuthenticationToken admin, EndEntityInformation endEntity) throws AuthorizationDeniedException, KeyStoreException;
+    KeyStore generateKeystore(AuthenticationToken admin, EndEntityInformation endEntity, String keyLength, String keyAlg) throws AuthorizationDeniedException, KeyStoreException;
 }
