@@ -78,6 +78,10 @@ public class ApprovalProfileCacheBean {
 
     private final ReentrantLock lock = new ReentrantLock(false);
 
+    public ApprovalProfileCacheBean() {
+        
+    }
+    
     /**
      * Fetch all profiles from the database, unless cache is enabled, valid and we do not force an update.
      * 
