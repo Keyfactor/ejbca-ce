@@ -31,8 +31,10 @@ package org.ejbca.util.query;
 public class ApprovalMatch extends BasicMatch {
     // Public Constants
 
-	private static final long serialVersionUID = -4891299802473333801L;
+    private static final long serialVersionUID = -4891299802473333801L;
+    /** Match with the id column (the primary key), for looking up a particular approval */
     public static final int MATCH_WITH_UNIQUEID                      = 0;
+    /** Match with the computed id for the approval, for searching for identical approvals */
     public static final int MATCH_WITH_APPROVALID                    = 1;
     public static final int MATCH_WITH_APPROVALTYPE                  = 2;
     public static final int MATCH_WITH_ENDENTITYPROFILEID            = 3;

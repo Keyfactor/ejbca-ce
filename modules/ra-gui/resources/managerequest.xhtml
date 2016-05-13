@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:component="http://java.sun.com/jsf/composite/component"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+<ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     version: $Id$
+     -->
+</ui:remove>
+<ui:composition template="/WEB-INF/include/template.xhtml">
+<ui:define name="content">
+    <h:panelGroup layout="block" class="header" id="title">
+        <h1><h:outputText value="#{raManageRequestBean.pageTitle}"/></h1>
+    </h:panelGroup>
+    <h:outputText value="#{msg.manage_requests_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToManageRequests}"/>
+    <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToManageRequests}">
+        <h:form id="contentForm" class="pure-form">
+            
+            <h:panelGroup layout="block">
+                <h2><h:outputText value="#{msg.view_request_page_request_data_header}"/></h2>
+                <h:dataTable value="#{raManageRequestBean.requestData}" var="row" styleClass="pure-table" rowClasses=",pure-table-odd">
+                    <h:column>
+                        <h:outputText value="#{row.nameText}"/>
+                    </h:column>
+                    <h:column>
+                        <h:outputText value="#{row.valueText}"/>
+                    </h:column>
+                </h:dataTable>
+            </h:panelGroup>
+            
+            <h:panelGroup layout="block">
+                <h2><h:outputText value="#{msg.view_request_page_request_status_header}"/></h2>
+            </h:panelGroup>
+            
+            <h:panelGroup layout="block">
+                <h2><h:outputText value="#{msg.view_request_page_approval_header}"/></h2>
+                
+                <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.hasNextStep}">
+                    <h:outputText value="#{raManageRequestBean.request.stepText}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.checkboxStep}">
+                    
+                </h:panelGroup>
+                <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.radiobuttonStep}">
+                    
+                </h:panelGroup>
+                <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.textboxStep}">
+                    
+                </h:panelGroup>
+                
+                
+                <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.canApprove}">
+                    <h:commandButton id="commandApprove" action="#{raManageRequestBean.approve}" value="#{msg.view_request_approve_command}" />
+                    <h:commandButton id="commandReject" action="#{raManageRequestBean.reject}" value="#{msg.view_request_reject_command}" />
+                </h:panelGroup>
+                
+                <h:panelGroup layout="block" rendered="#{not raManageRequestBean.request.canApprove}">
+                    <!-- TODO show a different text if the request has already been approved, and yet another text for auditors -->
+                    <h:outputText value="#{msg.view_request_cannot_approve}"/>
+                </h:panelGroup>
+            </h:panelGroup>
+        </h:form>
+    </h:panelGroup>
+</ui:define>
+</ui:composition>
+</html>
