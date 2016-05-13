@@ -15,8 +15,10 @@ package org.ejbca.core.ejb.approval;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.DependsOn;
@@ -73,11 +75,19 @@ public class ApprovalProfileCacheBean {
     private volatile long lastUpdate = 0;
 
     /* Create template maps with all static constants */
-    private final HashMap<Integer, String> idNameMapCacheTemplate = new HashMap<Integer, String>();
-    private final HashMap<String, Integer> nameIdMapCacheTemplate = new HashMap<String, Integer>();
+    private HashMap<Integer, String> idNameMapCacheTemplate;
+    private HashMap<String, Integer> nameIdMapCacheTemplate;
 
-    private final ReentrantLock lock = new ReentrantLock(false);
+    private ReentrantLock lock;
 
+    
+    @PostConstruct
+    public void initialize() {
+        lock = new ReentrantLock(false);
+        idNameMapCacheTemplate = new HashMap<Integer, String>();
+        nameIdMapCacheTemplate = new HashMap<String, Integer>();
+    }
+    
     public ApprovalProfileCacheBean() {
         
     }
