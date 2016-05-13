@@ -33,7 +33,7 @@ import org.junit.Test;
 
 /**
  * Test to externalize an approval
- * @author Philip Vendil
+ * 
  * $Id$
  */
 
