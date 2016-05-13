@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.TimeZone;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -26,8 +25,6 @@ import javax.faces.bean.ViewScoped;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.util.ValidityDate;
-import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -35,8 +32,9 @@ import org.ejbca.core.model.era.RaRequestsSearchRequest;
 import org.ejbca.core.model.era.RaRequestsSearchResponse;
 
 /**
- * Backing bean for Manage Requests page. 
+ * Backing bean for Manage Requests page (for a list of requests)
  * 
+ * @see RaManageRequestBean
  * @version $Id$
  */
 @ManagedBean
@@ -44,63 +42,8 @@ import org.ejbca.core.model.era.RaRequestsSearchResponse;
 public class RaManageRequestsBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(RaSearchCertsBean.class);
+    private static final Logger log = Logger.getLogger(RaManageRequestsBean.class);
 
-    public class ApprovalRequestGUIInfo {
-        private final RaApprovalRequestInfo request;
-        private final String requestDate;
-        private final String caName;
-        private final String type;
-        private final String displayName;
-        private final String detail;
-        private final String status;
-        
-        public ApprovalRequestGUIInfo(final RaApprovalRequestInfo request, final IdNameHashMap<CAInfo> caIdInfos) {
-            this.request = request;
-            requestDate = ValidityDate.formatAsISO8601ServerTZ(request.getRequestDate().getTime(), TimeZone.getDefault());
-            caName = caIdInfos.get(request.getCAId()).getName();
-            
-            switch (request.getType()) {
-            case ApprovalDataVO.APPROVALTYPE_ADDENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_add_end_entity"); break;
-            case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE: type = raLocaleBean.getMessage("manage_requests_type_revoke_certificate"); break;
-            case ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_revoke_end_entity"); break;
-            default:
-                log.info("Invalid/unsupported type of approval request: " + request.getType());
-                type = "???";
-            }
-            
-            /*username = request.getUsername();
-            subjectDN = request.getSubjectDN();*/
-            /*String cn = CertTools.getPartFromDN(subjectDN, "CN");
-            if (cn == null) {
-                cn = subjectDN;
-            }*/
-            displayName = "TODO"; // TODO could show CN or fall back to Subject DN for End Entity approval requests
-            detail = "TODO"; // TODO could show full DN for End Entity approval requests
-            
-            switch (request.getStatus()) {
-            case ApprovalDataVO.STATUS_APPROVED: status = raLocaleBean.getMessage("manage_requests_status_approved"); break;
-            case ApprovalDataVO.STATUS_EXECUTED: status = raLocaleBean.getMessage("manage_requests_status_executed"); break;
-            case ApprovalDataVO.STATUS_EXECUTIONDENIED: status = raLocaleBean.getMessage("manage_requests_status_execution_denied"); break;
-            case ApprovalDataVO.STATUS_EXECUTIONFAILED: status = raLocaleBean.getMessage("manage_requests_status_execution_failed"); break;
-            case ApprovalDataVO.STATUS_EXPIRED: status = raLocaleBean.getMessage("manage_requests_status_expired"); break;
-            case ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED: status = raLocaleBean.getMessage("manage_requests_status_expired_and_notified"); break;
-            case ApprovalDataVO.STATUS_REJECTED: status = raLocaleBean.getMessage("manage_requests_status_rejected"); break;
-            case ApprovalDataVO.STATUS_WAITINGFORAPPROVAL: status = raLocaleBean.getMessage("manage_requests_status_waiting_for_approval"); break;
-            default:
-                log.info("Invalid status of approval request: " + request.getStatus());
-                status = "???";
-            }
-        }
-        
-        public String getRequestDate() { return requestDate; }
-        public String getCa() { return caName; }
-        public String getType() { return type; }
-        public String getDisplayName() { return displayName; }
-        public String getDetail() { return detail; }
-        public String getStatus() { return status; }
-    }
-    
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
@@ -191,9 +134,8 @@ public class RaManageRequestsBean implements Serializable {
         lastExecutedResponse = raMasterApiProxyBean.searchForApprovalRequests(raAuthenticationBean.getAuthenticationToken(), searchRequest);
         final List<RaApprovalRequestInfo> reqInfos = lastExecutedResponse.getApprovalRequests();
         final List<ApprovalRequestGUIInfo> guiInfos = new ArrayList<>();
-        final IdNameHashMap<CAInfo> caIdInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
         for (final RaApprovalRequestInfo reqInfo : reqInfos) {
-            guiInfos.add(new ApprovalRequestGUIInfo(reqInfo, caIdInfos));
+            guiInfos.add(new ApprovalRequestGUIInfo(reqInfo, raLocaleBean));
         }
         resultsFiltered = guiInfos;
         sort();
@@ -214,14 +156,17 @@ public class RaManageRequestsBean implements Serializable {
         Collections.sort(resultsFiltered, new Comparator<ApprovalRequestGUIInfo>() {
             @Override
             public int compare(ApprovalRequestGUIInfo o1, ApprovalRequestGUIInfo o2) {
+                int sortDir = (sortAscending ? 1 : -1);
                 switch (sortBy) {
-                case CA: return o1.caName.compareTo(o2.caName);
-                case TYPE: return o1.type.compareTo(o2.type);
-                case DISPLAY_NAME: return o1.displayName.compareTo(o2.detail);
-                case STATUS: return o1.status.compareTo(o2.status);
+                // TODO locale-aware sorting
+                case CA: return o1.getCa().compareTo(o2.getCa()) * sortDir;
+                case TYPE: return o1.getType().compareTo(o2.getType()) * sortDir;
+                case DISPLAY_NAME: return o1.getDisplayName().compareTo(o2.getDetail()) * sortDir;
+                case STATUS: return o1.getStatus().compareTo(o2.getStatus()) * sortDir;
                 case REQUEST_DATE:
                 default:
-                    return o1.request.getRequestDate().compareTo(o2.request.getRequestDate()) * (sortAscending ? 1 : -1);
+                    // We compare the date objects (o1.request.getRequestDate()) and not the strings (o1.getRequestDate())
+                    return o1.request.getRequestDate().compareTo(o2.request.getRequestDate()) * sortDir;
                 }
             }
         });

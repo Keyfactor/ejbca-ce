@@ -33,7 +33,7 @@
         </h:panelGroup>
         <h:outputText value="#{msg.manage_requests_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToManageRequests}"/>
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToManageRequests}">
-            <h:form id="contentForm" class="pure-form" rendered="#{raAccessBean.authorizedToManageRequests}">
+            <h:form id="contentForm" class="pure-form">
                 
                 <h:panelGroup layout="block">
                     <!-- or use links.  the active tab should appear as selected -->
@@ -107,6 +107,12 @@
                                 </h:commandButton>
                             </f:facet>
                             <h:outputText value="#{raRequest.status}" />
+                        </h:column>
+                        <h:column>
+                            <h:outputLink value="managerequest.xhtml">
+                                <f:param name="id" value="#{raRequest.id}"/>
+                                <h:outputText value="#{msg.manage_requests_page_view_more_command}"/>
+                            </h:outputLink>
                         </h:column>
                     </h:dataTable>
                 </h:panelGroup>

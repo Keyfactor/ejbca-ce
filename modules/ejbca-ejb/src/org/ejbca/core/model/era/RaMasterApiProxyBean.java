@@ -166,6 +166,37 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return new ArrayList<>(caInfoMap.values());
     }
+    
+    @Override
+    public RaApprovalRequestInfo getApprovalRequest(AuthenticationToken authenticationToken, int id) {
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            // TODO can we use System.identityHashCode to track where we got the approvalRequest from, when the user wants to approve it later on?
+            try {
+                RaApprovalRequestInfo reqInfo = raMasterApi.getApprovalRequest(authenticationToken, id);
+                if (reqInfo != null) {
+                    return reqInfo;
+                }
+            } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                // Just try next implementation
+            }
+        }
+        return null;
+    }
+    
+    @Override
+    public RaRequestsSearchResponse searchForApprovalRequests(AuthenticationToken authenticationToken, RaRequestsSearchRequest raRequestsSearchRequest) {
+        final RaRequestsSearchResponse ret = new RaRequestsSearchResponse();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    ret.merge(raMasterApi.searchForApprovalRequests(authenticationToken, raRequestsSearchRequest));
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
 
     @Override
     public CertificateDataWrapper searchForCertificate(final AuthenticationToken authenticationToken, final String fingerprint) {
@@ -177,21 +208,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     if (ret!=null) {
                         break;
                     }
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        return ret;
-    }
-    
-    @Override
-    public RaRequestsSearchResponse searchForApprovalRequests(AuthenticationToken authenticationToken, RaRequestsSearchRequest raRequestsSearchRequest) {
-        final RaRequestsSearchResponse ret = new RaRequestsSearchResponse();
-        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable()) {
-                try {
-                    ret.merge(raMasterApi.searchForApprovalRequests(authenticationToken, raRequestsSearchRequest));
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }

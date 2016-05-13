@@ -157,18 +157,60 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public List<CAInfo> getAuthorizedCas(AuthenticationToken authenticationToken) {
         return caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
     }
-
+    
     @Override
-    public CertificateDataWrapper searchForCertificate(final AuthenticationToken authenticationToken, final String fingerprint) {
-        final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(fingerprint);
-        if (cdw==null) {
+    public RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final int id) {
+        // The values are used to check if a request belongs to us or not
+        String adminCertSerial = null; 
+        String adminCertIssuer = null;
+        if (authenticationToken instanceof X509CertificateAuthenticationToken) {
+            final X509CertificateAuthenticationToken certAuth = (X509CertificateAuthenticationToken) authenticationToken;
+            final X509Certificate cert = certAuth.getCertificate();
+            adminCertSerial = CertTools.getSerialNumberAsString(cert);
+            adminCertIssuer = CertTools.getIssuerDN(cert);
+        }
+        
+        final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
+        query.add(ApprovalMatch.MATCH_WITH_UNIQUEID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(id));
+        
+        final List<ApprovalDataVO> approvals;
+        try {
+            approvals = approvalSession.query(authenticationToken, query, 0, 100, "", "", ""); // authorization checks are performed afterwards
+        } catch (AuthorizationDeniedException e) {
+            // Not currently ever thrown by query()
+            throw new IllegalStateException(e);
+        } catch (IllegalQueryException e) {
+            throw new IllegalStateException("Query for approval request failed: " + e.getMessage(), e);
+        }
+        
+        if (approvals.isEmpty()) {
             return null;
         }
-        if (!caSession.authorizedToCANoLogging(authenticationToken, cdw.getCertificateData().getIssuerDN().hashCode())) {
-            return null;
+        
+        final ApprovalDataVO advo = approvals.iterator().next();
+        
+        // By getting the CA we perform an implicit auth check
+        final String caName;
+        if (advo.getCAId() == ApprovalDataVO.ANY_CA) {
+            caName = null;
+        } else {
+            try {
+                final CAInfo cainfo = caSession.getCAInfo(authenticationToken, advo.getCAId());
+                caName = cainfo.getName();
+            } catch (AuthorizationDeniedException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Authorization to CA " + advo.getCAId() + " was denied. Returning null instead of the approval with id " + id);
+                }
+                return null;
+            } catch (CADoesntExistsException e) {
+                throw new IllegalStateException("Appproval request references CA id " + advo.getCAId() + " which doesn't exist");
+            }
         }
-        // TODO: Check EEP authorization once this is implemented
-        return cdw;
+        
+        // TODO perform ee profile and approval profile authorization checks also
+        
+        return new RaApprovalRequestInfo(adminCertSerial, adminCertIssuer, caName, advo);
+        
     }
     
     @Override
@@ -177,6 +219,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final List<CAInfo> authorizedCas = getAuthorizedCas(authenticationToken);
         if (authorizedCas.size() == 0) {
             return response; // not authorized to any CAs. return empty response
+        }
+        final Map<Integer,String> caIdToNameMap = new HashMap<>();
+        for (final CAInfo cainfo : authorizedCas) {
+            caIdToNameMap.put(cainfo.getCAId(), cainfo.getName());
         }
         
         if (!request.isSearchingWaitingForMe() && !request.isSearchingPending() && !request.isSearchingHistorical()) {
@@ -234,8 +280,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         sb.append(')');
         final String caAuthorizationString = sb.toString();
         
-        final String endEntityProfileAuthorizationString = ""; // TODO
-        final String approvalProfileAuthorizationString = ""; // TODO
+        // TODO perform ee profile and approval profile authorization checks
+        final String endEntityProfileAuthorizationString = "";
+        final String approvalProfileAuthorizationString = "";
         
         // TODO use a more efficient method that doesn't use a starting index?
         //      perhaps modify the query method?
@@ -255,7 +302,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         for (final ApprovalDataVO advo : approvals) {
-            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(adminCertSerial, adminCertIssuer, advo);
+            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(adminCertSerial, adminCertIssuer, caIdToNameMap.get(advo.getCAId()), advo);
             if (!ari.isPending() && request.isSearchingPending()) { continue; } // XXX untested code!
             if (!ari.isWaitingForMe() && request.isSearchingWaitingForMe()) { continue; }
             // XXX It seems that the query() method filters out approvals that the current admin isn't involved in. How to handle historical steps in this case? And pending steps?
@@ -264,6 +311,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return response;
     }
 
+    @Override
+    public CertificateDataWrapper searchForCertificate(final AuthenticationToken authenticationToken, final String fingerprint) {
+        final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(fingerprint);
+        if (cdw==null) {
+            return null;
+        }
+        if (!caSession.authorizedToCANoLogging(authenticationToken, cdw.getCertificateData().getIssuerDN().hashCode())) {
+            return null;
+        }
+        // TODO: Check EEP authorization once this is implemented
+        return cdw;
+    }
+    
     @Override
     public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest request) {
         final RaCertificateSearchResponse response = new RaCertificateSearchResponse();

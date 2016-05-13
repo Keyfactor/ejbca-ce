@@ -51,11 +51,14 @@ public interface RaMasterApi {
     /** @return a list with information about non-external CAs that the caller is authorized to see. */
     List<CAInfo> getAuthorizedCas(AuthenticationToken authenticationToken);
 
-    /** @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise*/
-    CertificateDataWrapper searchForCertificate(AuthenticationToken authenticationToken, String fingerprint);
+    /** @return the approval request with the given id, or null if it doesn't exist or if authorization was denied */
+    RaApprovalRequestInfo getApprovalRequest(AuthenticationToken authenticationToken, int id);
 
     /** @return list of approval requests from the specified search criteria */
     RaRequestsSearchResponse searchForApprovalRequests(AuthenticationToken authenticationToken, RaRequestsSearchRequest raRequestsSearchRequest);
+    
+    /** @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise*/
+    CertificateDataWrapper searchForCertificate(AuthenticationToken authenticationToken, String fingerprint);
     
     /** @return list of certificates from the specified search criteria*/
     RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest);
