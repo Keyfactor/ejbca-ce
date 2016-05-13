@@ -66,7 +66,7 @@ to manage your Public Key Infrastructure, we recommend EJBCA.
 Example uses cases (non-exhaustive) where EJBCA is used to issue certificates are:
 </p>
 <ul>
-<li>PKI Trust and Certificate service providers, WebTrust and ETSI/eIDAS.</li>
+<li>PKI Trust and Certificate service providers, WebTrust and ETSI (including eIDAS) compliant.</li>
 <li>Strong authentication for users accessing your intranet/extranet/internet resources.</li>
 <li>Secure communication with SSL/TLS servers and SSL/TLS clients. EJBCA is an excellent SSL PKI.</li>
 <li><a href="complementary.html#Token Management">Smart card and token management</a>.</li>
