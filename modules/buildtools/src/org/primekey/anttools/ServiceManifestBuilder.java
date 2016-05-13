@@ -159,8 +159,8 @@ public class ServiceManifestBuilder {
             throw new IOException("Could not read/write to directory " + location);
         }
         for (Class<?> interfaceClass : interfaceClasses) {
-            if (!interfaceClass.isInterface()) {
-                throw new IllegalArgumentException("Class " + interfaceClass.getName() + " was not an interface.");
+            if (!interfaceClass.isInterface() && ! Modifier.isAbstract( interfaceClass.getModifiers())) {
+                throw new IllegalArgumentException("Class " + interfaceClass.getName() + " was not an interface or an asbtract class.");
             }
             List<Class<?>> implementingClasses = getImplementingClasses(location, location, interfaceClass);
             System.out.println("Added " + implementingClasses.size() + " implementations of " + interfaceClass.getName());
