@@ -20,11 +20,11 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.DependsOn;
+import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
@@ -54,6 +54,9 @@ public class ApprovalProfileCacheBean {
 
     private final Logger LOG = Logger.getLogger(ApprovalProfileCacheBean.class);
 
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;
+    
     /*
      * Cache of profiles, with Id as keys. This cache may be
      * unsynchronized between multiple instances of EJBCA, but is common to all
@@ -81,7 +84,7 @@ public class ApprovalProfileCacheBean {
      * @param entityManager is required for reading the profiles from the database if we need to update the cache
      * @param force if true, this will force an update even if the cache is not yet invalid
      */
-    public void updateProfileCache(final EntityManager entityManager, final boolean force) {
+    public void updateProfileCache(final boolean force) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateProfileCache");
         }
@@ -105,7 +108,7 @@ public class ApprovalProfileCacheBean {
         final Map<String, Integer> nameIdCache = new HashMap<String, Integer>(nameIdMapCacheTemplate);
         final Map<Integer, ApprovalProfile> profCache = new HashMap<Integer, ApprovalProfile>();
         try {
-            final List<ProfileData> result = ProfileData.findAllApprovalProfiles(entityManager);
+            final List<ProfileData> result = approvalProfileSession.findAllApprovalProfiles();
             for (final ProfileData current : result) {
                 final Integer id = current.getId();
                 final String approvalProfileName = current.getProfileName();
@@ -125,20 +128,20 @@ public class ApprovalProfileCacheBean {
     }
 
     /** @return the latest object from the cache or a current database representation if no caching is used. */
-    public Map<Integer, ApprovalProfile> getProfileCache(final EntityManager entityManager) {
-        updateProfileCache(entityManager, false);
+    public Map<Integer, ApprovalProfile> getProfileCache() {
+        updateProfileCache(false);
         return profileCache;
     }
 
     /** @return the latest object from the cache or a current database representation if no caching is used. */
-    public Map<Integer, String> getIdNameMapCache(final EntityManager entityManager) {
-        updateProfileCache(entityManager, false);
+    public Map<Integer, String> getIdNameMapCache() {
+        updateProfileCache(false);
         return idNameMapCache;
     }
 
     /** @return the latest object from the cache or a current database representation if no caching is used. */
-    public Map<String, Integer> getNameIdMapCache(final EntityManager entityManager) {
-        updateProfileCache(entityManager, false);
+    public Map<String, Integer> getNameIdMapCache() {
+        updateProfileCache(false);
         return nameIdMapCache;
     }
 }
