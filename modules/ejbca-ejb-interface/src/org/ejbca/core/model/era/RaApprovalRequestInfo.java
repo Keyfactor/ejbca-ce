@@ -32,6 +32,7 @@ public class RaApprovalRequestInfo implements Serializable {
     private final int approvalCalculatedUniqueId; // to detect identical requests
     private final int approvalType;
     private final int caId;
+    private final String caName; // to avoid unnecessary lookups. not present in ApprovalDataVO
     private final int endEntityProfileId;
     private final Date expireDate;
     private final int remainingApprovals;
@@ -48,11 +49,12 @@ public class RaApprovalRequestInfo implements Serializable {
     // Approval Profile information
     // TODO do we need any info from this?
     
-    public RaApprovalRequestInfo(final String adminCertIssuer, final String adminCertSerial, final ApprovalDataVO approval) {
+    public RaApprovalRequestInfo(final String adminCertIssuer, final String adminCertSerial, final String caName, final ApprovalDataVO approval) {
         id = approval.getId();
         approvalCalculatedUniqueId = approval.getApprovalId();
         approvalType = approval.getApprovalType();
         caId = approval.getCAId();
+        this.caName = caName;
         endEntityProfileId = approval.getEndEntityProfileiId();
         expireDate = approval.getExpireDate();
         remainingApprovals = approval.getRemainingApprovals();
@@ -79,8 +81,12 @@ public class RaApprovalRequestInfo implements Serializable {
         return requestDate;
     }
     
-    public int getCAId() {
+    public int getCaId() {
         return caId;
+    }
+    
+    public String getCaName() {
+        return caName;
     }
     
     public int getStatus() {
