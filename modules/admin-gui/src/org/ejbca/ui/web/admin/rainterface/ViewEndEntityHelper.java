@@ -151,6 +151,8 @@ public class ViewEndEntityHelper implements Serializable{
     	      notauthorized = !getUserDatas(username);
     	      currentuserindex = this.getTimeStampIndex(timestamp);
     	      if ( userdatas == null || userdatas.length < 1 ) {
+    	    	  // Make sure possibly cached value is removed
+    	          userdata = null;
     			  throw new ServletException("Could not find any history for this user.");
     	      }
 			  userdata = userdatas[currentuserindex];
@@ -170,9 +172,11 @@ public class ViewEndEntityHelper implements Serializable{
         			  if(userdata!=null) {
         				  profile = rabean.getEndEntityProfile(userdata.getEndEntityProfileId());
         			  }
+    			  } else {
+    				  // Make sure possibly cached value is removed
+    			      userdata = null;
     			  }
     		  }else{
-				  
     			  if( action != null && request.getParameter(USER_PARAMETER)!=null){
         			  username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
     				  if(request.getParameter(BUTTON_VIEW_NEWER)!=null){
@@ -204,7 +208,7 @@ public class ViewEndEntityHelper implements Serializable{
 
     
     /* returns false if the admin isn't authorized to view user
-     * Sets the vaiable userdatas of current and previous values
+     * Sets the available userdatas of current and previous values
      */
     
     private boolean getUserDatas(String username) throws Exception{
