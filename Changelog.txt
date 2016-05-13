@@ -1,3 +1,29 @@
+EJBCA 6.5.2, 2016-05-13
+---
+Bug
+    [ECA-4684] - Possible to enter more pages than there are results in View Audit Logs page
+    [ECA-5020] - Statedump bash script is unintentionally included with release zip
+    [ECA-5021] - Regression: Statedump is no longer able to import crypto tokens without activating them
+    [ECA-5022] - CMP: Unable to find existing end entity profiles
+    [ECA-5030] - Can't select uninitialised root CA as signer for local uninitialised sub-CA
+    [ECA-5033] - Role display issue adding end entities
+    [ECA-5034] - Can't use negative values in FieldEditor / editcertificateprofile command
+    [ECA-5043] - If the folder defined by cmp.backend.extracertissuer does not exist, an NPE is thrown. 
+    [ECA-5048] - Single Active Certificate Constraint does not cause publishing 
+    [ECA-5069] - editca CLI command fails when renaming a CA
+    [ECA-5071] - NPE thrown when importing statedump with prefix for CA CN field in subject DN
+    [ECA-5073] - Security Issue
+    [ECA-5075] - Possible session caching issues on SCEP alias page 
+    [ECA-5081] - Viewing deleted userdata may show session cached value of previously viewed user
+
+Improvement
+    [ECA-5007] - Use last full CRL generation date as input to certificate expiration
+    [ECA-5024] - Don't log error when cAId column does not exist in AdminGroupData
+    [ECA-5076] - Log as failed login event if certificate does not belong to any role
+
+New Feature
+    [ECA-4610] - eIDAS: New ETSI DN attribute "organizationIdentifier"
+
 EJBCA 6.5.1, 2016-04-15
 ---
 Bug

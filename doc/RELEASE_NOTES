@@ -1,3 +1,35 @@
+EJBCA 6.5.2
+-----------
+Winter is coming they say, but in the PrimeKey offices in Stockholm it seems to be a far way away. While we're busy toiling away at our new feature
+set for this autumn, we're ever intent on making sure that the 6.5 branch of EJBCA is the best it can be in terms of stability and performance. This
+release makes EJBCA 6.5.2 fully eIDAS compliant, fixes a breakage in CMP introduced in 6.5.1, patches one minor security issue and fixes a slew of 
+user input handling improvements in the UI. All in all, this release contains 18 bug fixes, features and improvements. 
+
+Administration UI:
+	- A minor script injection vector has been plugged.
+	- Administrators attempting to log in without having access to a Role (but having a valid certificate) will be audit logged as failed attempts. 
+
+CMP:
+	- A bug fix in 6.5.1 caused a major breakage in CMP. 	
+	
+eIDAS:
+	- Added the new ETSI DN attribute "organizationIdentifier"
+	
+OCSP:
+	- Certificates revoked by being under the Single Active Certificate Constraint certificate profile setting weren't published
+
+Read the full change log for details, and see the UPGRADE document for all functionality changes and upgrade instructions.
+
+-  A selection of known issues:
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*	End entity profiles can't be deleted in high volume databases: https://jira.primekey.se/browse/ECA-4158
+	* 	Some ECDSA key specifiers missing in drop down menu for crypto tokens using PKCS#11 after JDK update: https://jira.primekey.se/browse/ECA-4251	
+    *	Race condition when multiple RA threads are requesting certificates for the same user: https://jira.primekey.se/browse/ECA-4347
+    * 	ClientToolBox is unable to verify signature when testing more exotic EC keys in HSM: https://jira.primekey.se/browse/ECA-4596
+    *	Profiles export fail if hard tokens are enabled: https://jira.primekey.se/browse/ECA-5003
+    *	Root access required to save system configuration: https://jira.primekey.se/browse/ECA-5005
+    *	KeyBindings do not work if there's a CVC CA or uninitialized CA available: https://jira.primekey.se/browse/ECA-5072
+
 EJBCA 6.5.1
 -----------
 Spring is in the air, and we here at PrimeKey are busy working on a very exciting new feature to be released with EJBCA 6.6.0 in Q3 of 2016. 
