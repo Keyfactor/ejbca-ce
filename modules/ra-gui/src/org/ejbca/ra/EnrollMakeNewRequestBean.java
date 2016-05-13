@@ -392,6 +392,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()))
                 && availableKeyStores.contains(SecConst.TOKEN_SOFT_P12+"");//TODO probably will need to get updated once approvals are implemented in kickassra
     }
+    
+    public boolean getNextButtonRendered() {
+        return !getGenerateJksButtonRendered() && !getGenerateP12ButtonRendered();
+    }
 
     //-----------------------------------------------------------------------------------------------
     //All reset* methods should be able to clear/reset states that have changed during init* methods.
@@ -620,10 +624,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return;
         }
 
+        
+        //Parse token's algorithm
+        final String[] tokenKeySpecSplit = selectedAlgorithm.split("_");
+        String keyAlg = tokenKeySpecSplit[0];
+        String keyLength = tokenKeySpecSplit[1];
+        
+        
         //Generate keystore
         KeyStore keystore = null;
         try {
-            keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+            keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, keyLength, keyAlg);
             log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", keystoreName, endEntityInformation.getUsername()));
         } catch (KeyStoreException| AuthorizationDeniedException e) {
             raLocaleBean.addMessageInfo("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());

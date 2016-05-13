@@ -383,13 +383,13 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public KeyStore generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity)
+    public KeyStore generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity, String keyLength, String keyAlg)
             throws AuthorizationDeniedException, KeyStoreException {
         final KeyStore ret = null;
         for(final RaMasterApi raMasterApi : raMasterApis){
             if(raMasterApi.isBackendAvailable()){
                 try{
-                    return raMasterApi.generateKeystore(authenticationToken, endEntity);//TODO check with Johan if this is ok?
+                    return raMasterApi.generateKeystore(authenticationToken, endEntity, keyLength, keyAlg);//TODO check with Johan if this is ok?
                 }catch  (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
