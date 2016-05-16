@@ -96,7 +96,13 @@ public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
         } else {
             // List fields, get values or set value
             try {
-                if (!fieldEditor.listGetOrSet(listOnly, getOnly, name, field, value, profile)) {
+                if(listOnly) {
+                    fieldEditor.listSetMethods(profile);
+                } else if(getOnly) {
+                    fieldEditor.getBeanValue(field, profile);
+                }
+                else {
+                    fieldEditor.setValue(name, field, value, profile);             
                     log.info("Storing modified profile '" + name + "'...");
                     EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).changeCertificateProfile(
                             getAuthenticationToken(), name, profile);
@@ -104,7 +110,6 @@ public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
                     log.info("Reading modified value for verification...");
                     final CertificateProfile modprof = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
                             .getCertificateProfile(name);
-
                     // Print return value
                     fieldEditor.getBeanValue(field, modprof);
                 }

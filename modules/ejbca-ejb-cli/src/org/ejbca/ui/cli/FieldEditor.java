@@ -79,9 +79,14 @@ public class FieldEditor {
      * @param field the field to get
      * @param obj the bran to get the value from
      * @return the value
+     * @throws FieldNotFoundException if field doesn't exist.
      */
-    public Object getBeanValue(final String field, final Object obj) {
+    public Object getBeanValue(final String field, final Object obj) throws FieldNotFoundException {
         final DynaBean moddb = new WrapDynaBean(obj);
+        DynaProperty prop = moddb.getDynaClass().getDynaProperty(field);
+        if (prop == null) {
+            throw new FieldNotFoundException("Field '" + field + "' does not exist. Did you use correct case for every character of the field?");
+        }
         final Object gotValue = moddb.get(field);
         logger.info(field+" returned value '"+gotValue+"'.");
         return gotValue;
@@ -89,50 +94,41 @@ public class FieldEditor {
     
     /** Lists, Gets or sets fields in a Bean.
      * 
-     * @param listOnly if true, fields will be listed, and nothing more will happen.
-     * @param getOnly if true (and listOnly is false), will get the value of a field and nothing else will happen
      * @param name the name of the Bean to be modified
      * @param field the field name to get or set
      * @param value the value to set, of we should set a new value
      * @param obj the Bean to list, get or set fields
-     * @return true if we only listed or got a value, i.e. if nothing was modified, false is we set a value.
+     * 
      * @throws FieldNotFoundException if field was not found. 
      */
-    public boolean listGetOrSet(boolean listOnly, boolean getOnly, final String name, final String field, final String value, final Object obj) throws FieldNotFoundException{
-        if (listOnly) {
-            listSetMethods(obj);
-        } else if (getOnly) {
-            getBeanValue(field, obj);
-        } else {
-            Object val = value;
-            logger.info("Modifying '"+name+"'...");
-            final ConvertingWrapDynaBean db = new ConvertingWrapDynaBean(obj);
-            DynaProperty prop = db.getDynaClass().getDynaProperty(field);
-            if (prop == null) {
-                throw new FieldNotFoundException("Field '"+field+"' does not exist. Did you use correct case for every character of the field?");
-            }
-            if (prop.getType().isInterface()) {
-                logger.info("Converting value '"+value+"' to type '"+ArrayList.class+"', ");
-                // If the value can be converted into an integer, we will use an ArrayList<Integer>
-                // Our problem here is that the type of a collection (<Integer>, <String>) is only compile time, it can not be determined in runtime.
-                List<Object> arr = new ArrayList<Object>();
-                
-                if (NumberUtils.isNumber(value)) {
-                    logger.info("using Integer value.");
-                    arr.add(Integer.valueOf(value));
-                } else {
-                    // Make it into an array of String
-                    logger.info("using String value.");
-                    arr.add(value);
-                }
-                val = arr;
-            }
-            final Object gotValue = db.get(field);
-            logger.info("Current value of "+field+" is '"+gotValue+"'.");
-            db.set(field, val);
+    public void setValue(final String name, final String field, final String value, final Object obj) throws FieldNotFoundException {
+
+        Object val = value;
+        logger.info("Modifying '" + name + "'...");
+        final ConvertingWrapDynaBean db = new ConvertingWrapDynaBean(obj);
+        DynaProperty prop = db.getDynaClass().getDynaProperty(field);
+        if (prop == null) {
+            throw new FieldNotFoundException("Field '" + field + "' does not exist. Did you use correct case for every character of the field?");
         }
-        // return true of we only listed
-        return listOnly || getOnly;
+        if (prop.getType().isInterface()) {
+            logger.info("Converting value '" + value + "' to type '" + ArrayList.class + "', ");
+            // If the value can be converted into an integer, we will use an ArrayList<Integer>
+            // Our problem here is that the type of a collection (<Integer>, <String>) is only compile time, it can not be determined in runtime.
+            List<Object> arr = new ArrayList<Object>();
+
+            if (NumberUtils.isNumber(value)) {
+                logger.info("using Integer value.");
+                arr.add(Integer.valueOf(value));
+            } else {
+                // Make it into an array of String
+                logger.info("using String value.");
+                arr.add(value);
+            }
+            val = arr;
+        }
+        final Object gotValue = db.get(field);
+        logger.info("Current value of " + field + " is '" + gotValue + "'.");
+        db.set(field, val);
     }
 
 
