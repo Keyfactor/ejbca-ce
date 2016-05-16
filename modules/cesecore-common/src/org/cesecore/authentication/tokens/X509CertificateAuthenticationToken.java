@@ -47,7 +47,7 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
     
     private static final Logger log = Logger.getLogger(X509CertificateAuthenticationToken.class);
     
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 1097165653913865515L;
 
     private static final Pattern serialPattern = Pattern.compile("\\bSERIALNUMBER=", Pattern.CASE_INSENSITIVE);
 
