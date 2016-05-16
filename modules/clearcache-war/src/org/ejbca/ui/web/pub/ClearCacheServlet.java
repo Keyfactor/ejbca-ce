@@ -63,25 +63,26 @@ public class ClearCacheServlet extends HttpServlet {
 	@EJB
 	private AccessControlSessionLocal accessControlSession;
 	@EJB
+	private ApprovalProfileSessionLocal approvalprofilesession;
+	@EJB
 	private CaSessionLocal caSession;
 	@EJB
 	private CAAdminSessionLocal caAdminSession;
 	@EJB
-	private GlobalConfigurationSessionLocal globalconfigurationsession;
-	@EJB
-	private EndEntityProfileSessionLocal endentitysession;
-	@EJB
 	private CertificateProfileSessionLocal certificateprofilesession;
-	@EJB
-	private ApprovalProfileSessionLocal approvalprofilesession;
 	@EJB
 	private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
-    private PublisherSessionLocal publisherSession;
+    private EndEntityProfileSessionLocal endentitysession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalconfigurationsession;
     @EJB
     private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
+    @EJB
+    private PublisherSessionLocal publisherSession;
+
     @EJB
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
 	
@@ -131,7 +132,7 @@ public class ClearCacheServlet extends HttpServlet {
         			log.debug("Certificate Profile cache cleared");
         		}
         		
-        		approvalprofilesession.flushProfileCache();
+        		approvalprofilesession.forceProfileCacheExpire();
         		if(log.isDebugEnabled()) {
                     log.debug("Approval Profile cache cleared");
                 }

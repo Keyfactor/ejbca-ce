@@ -190,7 +190,6 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
             try {
                 ApprovalProfileSessionLocal approvalProfileSession = getEjbcaWebBean().getEjb().getApprovalProfileSession(); 
                 approvalProfileSession.removeApprovalProfile(getAdmin(), getSelectedApprovalProfileId());
-                approvalProfileSession.flushProfileCache();
                 getEjbcaWebBean().getInformationMemory().approvalProfilesEdited();
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage("Not authorized to remove approval profile.");
