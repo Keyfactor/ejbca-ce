@@ -83,7 +83,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         if (isFreeApprovalProfileId(id)) {
             if (findByApprovalProfileName(name) == null) {
                 entityManager.persist(new ProfileData(Integer.valueOf(id), name, profile));
-                flushProfileCache();
+                approvalProfileCache.forceCacheExpiration();
                 final String msg = INTRES.getLocalizedMessage("store.addedprofile", name);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -127,7 +127,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             LOG.info(INTRES.getLocalizedMessage("store.editedapprovalprofile", name));
 
         }
-        flushProfileCache();
+        approvalProfileCache.forceCacheExpiration();
     }
     
     
@@ -145,7 +145,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             authorizedToEditProfile(admin, pdl.getProfile(), pdl.getId());
 
             entityManager.remove(pdl);
-            flushProfileCache();
+            approvalProfileCache.forceCacheExpiration();
             LOG.info(INTRES.getLocalizedMessage("store.removedprofile", name));
         }
     }
@@ -163,7 +163,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
 
             final String name = pdl.getProfileName();
             entityManager.remove(pdl);
-            flushProfileCache();
+            approvalProfileCache.forceCacheExpiration();
             LOG.info(INTRES.getLocalizedMessage("store.removedprofile", name));
         }
     } 
@@ -181,7 +181,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
                 authorizedToEditProfile(admin, pdl.getProfile(), pdl.getId());
 
                 pdl.setProfileName(newname);
-                flushProfileCache();
+                approvalProfileCache.forceCacheExpiration();
                 final String msg = INTRES.getLocalizedMessage("store.renamedprofile", oldname, newname);
                 LOG.info(msg);
             }
@@ -212,7 +212,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
 
             if (findByNameAndType(newname, ApprovalProfile.TYPE) == null) {
                 entityManager.persist(new ProfileData(findFreeApprovalProfileId(), newname, profile));
-                flushProfileCache();
+                approvalProfileCache.forceCacheExpiration();
                 final String msg = INTRES.getLocalizedMessage("store.addedprofilewithtempl", newname, orgname);
                 LOG.info(msg);
             } else {
@@ -252,19 +252,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         }
         return ret;
     }    
-
-    
-    @Override
-    public void flushProfileCache() {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace(">flushProfileCache");
-        }
-        approvalProfileCache.updateProfileCache(true);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Flushed profile cache.");
-        }
-    } // flushProfileCache
-
     
     private int findFreeApprovalProfileId() {
         final ProfileID.DB db = new ProfileID.DB() {
@@ -398,6 +385,11 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             final String msg = INTRES.getLocalizedMessage("store.editapprovalprofilenotauthorized", admin.toString(), id);
             throw new AuthorizationDeniedException(msg);
         }
+    }
+
+    @Override
+    public void forceProfileCacheExpire() {
+       approvalProfileCache.forceCacheExpiration();
     }
 
 }

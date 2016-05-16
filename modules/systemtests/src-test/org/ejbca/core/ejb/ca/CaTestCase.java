@@ -456,12 +456,11 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         log.debug("approvingAdmin=" + approvingAdmin.toString() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType
                 + " approvalCAID=" + approvalCAID);
         Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
-        Iterator<Certificate> i = userCerts.iterator();
         int approvedRevocations = 0;
-        while (i.hasNext()) {
-            X509Certificate cert = (X509Certificate) i.next();
-            String issuerDN = cert.getIssuerDN().toString();
-            BigInteger serialNumber = cert.getSerialNumber();
+        for(Certificate cert : userCerts) {
+            X509Certificate x509Certificate = (X509Certificate) cert;
+            String issuerDN = x509Certificate.getIssuerDN().toString();
+            BigInteger serialNumber = x509Certificate.getSerialNumber();
             boolean isRevoked = certificateStoreSession.isRevoked(issuerDN, serialNumber);
             if ((reason != RevokedCertInfo.NOT_REVOKED && !isRevoked) || (reason == RevokedCertInfo.NOT_REVOKED && isRevoked)) {
                 int approvalID;
@@ -472,16 +471,19 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 }
                 Query q = new Query(Query.TYPE_APPROVALQUERY);
                 q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
-                ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId=" + approvalCAID,
-                        "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")", "").get(0));
-                Approval approval = new Approval("Approved during testing.");
-                approvalExecutionSession.approve(approvingAdmin, approvalID, approval, null, true);
-                approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
-                Assert.assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
-                CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);
-                Assert.assertEquals(status.revocationReason, reason);
-                approvalSession.removeApprovalRequest(internalAdmin, approvalData.getId());
-                approvedRevocations++;
+                List<ApprovalDataVO> queryResults = approvalSession.query(internalAdmin, q, 0, 1, "cAId=" + approvalCAID,
+                        "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")", "");
+                if (queryResults.size() > 0) {
+                    ApprovalDataVO approvalData = queryResults.get(0);
+                    Approval approval = new Approval("Approved during testing.");
+                    approvalExecutionSession.approve(approvingAdmin, approvalID, approval, null, true);
+                    approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
+                    Assert.assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
+                    CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);
+                    Assert.assertEquals(status.revocationReason, reason);
+                    approvalSession.removeApprovalRequest(internalAdmin, approvalData.getId());
+                    approvedRevocations++;
+                }
             }
         }
         return approvedRevocations;

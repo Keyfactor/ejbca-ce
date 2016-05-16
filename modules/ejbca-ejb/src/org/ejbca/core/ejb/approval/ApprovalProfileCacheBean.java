@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.approval;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
@@ -86,10 +85,18 @@ public class ApprovalProfileCacheBean {
         lock = new ReentrantLock(false);
         idNameMapCacheTemplate = new HashMap<Integer, String>();
         nameIdMapCacheTemplate = new HashMap<String, Integer>();
+        updateProfileCache(true);
     }
     
     public ApprovalProfileCacheBean() {
         
+    }
+    
+    /**
+     * This method sets the update time back down to zero, effectively forcing the cache to be reloaded on next read. 
+     */
+    public void forceCacheExpiration() {
+        lastUpdate = 0;
     }
     
     /**
@@ -121,18 +128,15 @@ public class ApprovalProfileCacheBean {
         final Map<Integer, String> idNameCache = new HashMap<Integer, String>(idNameMapCacheTemplate);
         final Map<String, Integer> nameIdCache = new HashMap<String, Integer>(nameIdMapCacheTemplate);
         final Map<Integer, ApprovalProfile> profCache = new HashMap<Integer, ApprovalProfile>();
-        try {
-            final List<ProfileData> result = approvalProfileSession.findAllApprovalProfiles();
-            for (final ProfileData current : result) {
-                final Integer id = current.getId();
-                final String approvalProfileName = current.getProfileName();
-                idNameCache.put(id, approvalProfileName);
-                nameIdCache.put(approvalProfileName, id);
-                profCache.put(id, current.getProfile());
-            }
-        } catch (Exception e) {
-            LOG.error("Error reading certificate profiles: ", e);
+        final List<ProfileData> result = approvalProfileSession.findAllApprovalProfiles();
+        for (final ProfileData current : result) {
+            final Integer id = current.getId();
+            final String approvalProfileName = current.getProfileName();
+            idNameCache.put(id, approvalProfileName);
+            nameIdCache.put(approvalProfileName, id);
+            profCache.put(id, current.getProfile());
         }
+
         idNameMapCache = idNameCache;
         nameIdMapCache = nameIdCache;
         profileCache = profCache;
