@@ -83,8 +83,13 @@ public class CaEditPublisherCommand extends BaseCaAdminCommand {
                 if(field == null && !listOnly) {
                     log.error("ERROR: No field value set.");
                     return CommandResult.FUNCTIONAL_FAILURE;
-                }      
-                if (!fieldEditor.listGetOrSet(listOnly, getOnly, name, field, value, pub)) {
+                }  
+                if(listOnly) {
+                    fieldEditor.listSetMethods(pub);
+                } else if(getOnly) {
+                    fieldEditor.getBeanValue(field, pub);
+                } else {
+                    fieldEditor.setValue(name, field, value, pub);
                     // Store the modifies object
                     log.info("Storing modified publisher '" + name + "'...");
                     EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).changePublisher(getAuthenticationToken(), name, pub);
