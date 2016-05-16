@@ -1294,6 +1294,9 @@ public class CertificateData extends ProtectedData implements Serializable {
         build.append(getFingerprint()).append(getIssuerDN()).append(getSubjectDN()).append(getCaFingerprint()).append(getStatus()).append(getType())
                 .append(getSerialNumber()).append(getExpireDate()).append(getRevocationDate()).append(getRevocationReason()).append(getBase64Cert())
                 .append(getUsername()).append(getTag()).append(getCertificateProfileId()).append(getUpdateTime()).append(getSubjectKeyId());
+        if (version>1) {
+            build.append(String.valueOf(getEndEntityProfileId()));
+        }
         if (log.isDebugEnabled()) {
             // Some profiling
             if (build.length() > 3000) {
@@ -1306,7 +1309,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 1;
+        return 2;
     }
 
     @PrePersist
