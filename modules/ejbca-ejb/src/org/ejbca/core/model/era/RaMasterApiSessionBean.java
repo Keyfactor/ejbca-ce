@@ -327,7 +327,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest request) {
         final RaCertificateSearchResponse response = new RaCertificateSearchResponse();
-        final boolean rootAccessAvailable = accessControlSession.isAuthorizedNoLogging(authenticationToken, true, StandardRules.ROLE_ROOT.resource());
         final List<Integer> authorizedLocalCaIds = new ArrayList<>(caSession.getAuthorizedCaIds(authenticationToken));
         // Only search a subset of the requested CAs if requested
         if (!request.getCaIds().isEmpty()) {
@@ -351,6 +350,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         // Check Certificate Profile authorization
         final List<Integer> authorizedCpIds = new ArrayList<>(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, 0));
+        final boolean accessAnyCpAvailable = authorizedCpIds.containsAll(certificateProfileSession.getCertificateProfileIdToNameMap().keySet());
         if (!request.getCpIds().isEmpty()) {
             authorizedCpIds.retainAll(request.getCpIds());
         }
@@ -363,6 +363,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         // Check End Entity Profile authorization
         final Collection<Integer> authorizedEepIds = new ArrayList<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY));
+        final boolean accessAnyEepAvailable = authorizedEepIds.containsAll(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
         if (!request.getEepIds().isEmpty()) {
             authorizedEepIds.retainAll(request.getEepIds());
         }
@@ -408,29 +409,29 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         // Don't constrain results to certain end entity profiles if root access is available and "any" CP is requested
-        if (!rootAccessAvailable || !request.getCpIds().isEmpty()) {
+        if (!accessAnyCpAvailable || !request.getCpIds().isEmpty()) {
             sb.append(" AND (a.certificateProfileId IN (:certificateProfileId))");
         }
         // Don't constrain results to certain end entity profiles if root access is available and "any" EEP is requested
-        if (!rootAccessAvailable || !request.getEepIds().isEmpty()) {
+        if (!accessAnyEepAvailable || !request.getEepIds().isEmpty()) {
             sb.append(" AND (a.endEntityProfileId IN (:endEntityProfileId))");
         }
         final Query query = entityManager.createQuery(sb.toString());
         query.setParameter("issuerDN", issuerDns);
-        if (!rootAccessAvailable || !request.getCpIds().isEmpty()) {
+        if (!accessAnyCpAvailable || !request.getCpIds().isEmpty()) {
             query.setParameter("certificateProfileId", authorizedCpIds);
         }
-        if (!rootAccessAvailable || !request.getEepIds().isEmpty()) {
+        if (!accessAnyEepAvailable || !request.getEepIds().isEmpty()) {
             query.setParameter("endEntityProfileId", authorizedEepIds);
         }
         if (log.isDebugEnabled()) {
             log.debug(" issuerDN: " + Arrays.toString(issuerDns.toArray()));
-            if (!rootAccessAvailable || !request.getEepIds().isEmpty()) {
+            if (!accessAnyCpAvailable || !request.getCpIds().isEmpty()) {
                 log.debug(" certificateProfileId: " + Arrays.toString(authorizedCpIds.toArray()));
             } else {
                 log.debug(" certificateProfileId: Any (even deleted) profile(s) due to root access.");
             }
-            if (!rootAccessAvailable || !request.getEepIds().isEmpty()) {
+            if (!accessAnyEepAvailable || !request.getEepIds().isEmpty()) {
                 log.debug(" endEntityProfileId: " + Arrays.toString(authorizedEepIds.toArray()));
             } else {
                 log.debug(" endEntityProfileId: Any (even deleted) profile(s) due to root access.");
