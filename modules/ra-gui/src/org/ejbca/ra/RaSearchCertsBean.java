@@ -86,7 +86,7 @@ public class RaSearchCertsBean implements Serializable {
             final Integer cpId = cdw.getCertificateData().getCertificateProfileId();
             if (cpId != null && cpId.intValue()==EndEntityInformation.NO_CERTIFICATEPROFILE) {
                 this.cpName = raLocaleBean.getMessage("search_certs_page_info_unknowncp");
-            } else if (cpId != null && cpIdToNameMap.containsKey(cpId)) {
+            } else if (cpId != null && cpIdToNameMap!=null && cpIdToNameMap.containsKey(cpId)) {
                 this.cpName = String.valueOf(cpIdToNameMap.get(cpId));
             } else {
                 this.cpName = raLocaleBean.getMessage("search_certs_page_info_missingcp", cpId);
@@ -94,7 +94,7 @@ public class RaSearchCertsBean implements Serializable {
             final int eepId = cdw.getCertificateData().getEndEntityProfileIdOrZero();
             if (eepId==EndEntityInformation.NO_ENDENTITYPROFILE) {
                 this.eepName = raLocaleBean.getMessage("search_certs_page_info_unknowneep", eepId);
-            } else if (eepIdToNameMap.containsKey(Integer.valueOf(eepId))) {
+            } else if (eepIdToNameMap!=null && eepIdToNameMap.containsKey(Integer.valueOf(eepId))) {
                 this.eepName = String.valueOf(eepIdToNameMap.get(Integer.valueOf(eepId)));
             } else {
                 this.eepName = raLocaleBean.getMessage("search_certs_page_info_missingeep", eepId);
@@ -271,6 +271,9 @@ public class RaSearchCertsBean implements Serializable {
                     continue;
                 }
                 resultsFiltered.add(new RaSearchCertificate(cdw));
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Filtered " + lastExecutedResponse.getCdws().size() + " responses down to " + resultsFiltered.size() + " results.");
             }
             sort();
         }
