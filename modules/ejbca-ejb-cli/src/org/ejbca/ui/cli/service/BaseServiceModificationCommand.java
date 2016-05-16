@@ -84,7 +84,7 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
         boolean found = false;
         try {
             // Try to call the setter 
-            fieldEditor.listGetOrSet(false, false, ServiceConfiguration.class.getName(), field, value, serviceConfig);
+            fieldEditor.setValue(ServiceConfiguration.class.getName(), field, value, serviceConfig);
             getLogger().info("Updated field: " + field);
             getLogger().info("New field value: " + fieldEditor.getBeanValue(field, serviceConfig));
             found = true;
