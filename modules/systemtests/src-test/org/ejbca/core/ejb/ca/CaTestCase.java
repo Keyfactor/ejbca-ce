@@ -458,9 +458,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
         int approvedRevocations = 0;
         for(Certificate cert : userCerts) {
-            X509Certificate x509Certificate = (X509Certificate) cert;
-            String issuerDN = x509Certificate.getIssuerDN().toString();
-            BigInteger serialNumber = x509Certificate.getSerialNumber();
+            String issuerDN = CertTools.getIssuerDN(cert);
+            BigInteger serialNumber = CertTools.getSerialNumber(cert);
             boolean isRevoked = certificateStoreSession.isRevoked(issuerDN, serialNumber);
             if ((reason != RevokedCertInfo.NOT_REVOKED && !isRevoked) || (reason == RevokedCertInfo.NOT_REVOKED && isRevoked)) {
                 int approvalID;
