@@ -39,7 +39,6 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -49,14 +48,12 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
@@ -489,7 +486,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest request) {
         final RaEndEntitySearchResponse response = new RaEndEntitySearchResponse();
-        final boolean rootAccessAvailable = accessControlSession.isAuthorizedNoLogging(authenticationToken, true, StandardRules.ROLE_ROOT.resource());
         final List<Integer> authorizedLocalCaIds = new ArrayList<>(caSession.getAuthorizedCaIds(authenticationToken));
         // Only search a subset of the requested CAs if requested
         if (!request.getCaIds().isEmpty()) {
@@ -504,6 +500,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         // Check Certificate Profile authorization
         final List<Integer> authorizedCpIds = new ArrayList<>(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, 0));
+        final boolean accessAnyCpAvailable = authorizedCpIds.containsAll(certificateProfileSession.getCertificateProfileIdToNameMap().keySet());
         if (!request.getCpIds().isEmpty()) {
             authorizedCpIds.retainAll(request.getCpIds());
         }
@@ -516,6 +513,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         // Check End Entity Profile authorization
         final Collection<Integer> authorizedEepIds = new ArrayList<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY));
+        final boolean accessAnyEepAvailable = authorizedEepIds.containsAll(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
         if (!request.getEepIds().isEmpty()) {
             authorizedEepIds.retainAll(request.getEepIds());
         }
@@ -541,29 +539,29 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             sb.append(" AND (a.status IN (:status))");
         }
         // Don't constrain results to certain end entity profiles if root access is available and "any" CP is requested
-        if (!rootAccessAvailable || !request.getCpIds().isEmpty()) {
+        if (!accessAnyCpAvailable || !request.getCpIds().isEmpty()) {
             sb.append(" AND (a.certificateProfileId IN (:certificateProfileId))");
         }
         // Don't constrain results to certain end entity profiles if root access is available and "any" EEP is requested
-        if (!rootAccessAvailable || !request.getEepIds().isEmpty()) {
+        if (!accessAnyEepAvailable || !request.getEepIds().isEmpty()) {
             sb.append(" AND (a.endEntityProfileId IN (:endEntityProfileId))");
         }
         final Query query = entityManager.createQuery(sb.toString());
         query.setParameter("caId", authorizedLocalCaIds);
-        if (!rootAccessAvailable || !request.getCpIds().isEmpty()) {
+        if (!accessAnyCpAvailable || !request.getCpIds().isEmpty()) {
             query.setParameter("certificateProfileId", authorizedCpIds);
         }
-        if (!rootAccessAvailable || !request.getEepIds().isEmpty()) {
+        if (!accessAnyEepAvailable || !request.getEepIds().isEmpty()) {
             query.setParameter("endEntityProfileId", authorizedEepIds);
         }
         if (log.isDebugEnabled()) {
             log.debug(" CA IDs: " + Arrays.toString(authorizedLocalCaIds.toArray()));
-            if (!rootAccessAvailable || !request.getEepIds().isEmpty()) {
+            if (!accessAnyCpAvailable || !request.getCpIds().isEmpty()) {
                 log.debug(" certificateProfileId: " + Arrays.toString(authorizedCpIds.toArray()));
             } else {
                 log.debug(" certificateProfileId: Any (even deleted) profile(s) due to root access.");
             }
-            if (!rootAccessAvailable || !request.getEepIds().isEmpty()) {
+            if (!accessAnyEepAvailable || !request.getEepIds().isEmpty()) {
                 log.debug(" endEntityProfileId: " + Arrays.toString(authorizedEepIds.toArray()));
             } else {
                 log.debug(" endEntityProfileId: Any (even deleted) profile(s) due to root access.");
