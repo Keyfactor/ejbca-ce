@@ -15,13 +15,14 @@ package org.ejbca.core.ejb.approval;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.DependsOn;
 import javax.ejb.EJB;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.TransactionManagement;
@@ -49,7 +50,7 @@ import org.ejbca.core.model.approval.ApprovalProfile;
 @Singleton
 @Startup
 @DependsOn("StartupSingletonBean")
-@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+@ConcurrencyManagement(ConcurrencyManagementType.CONTAINER)
 @TransactionManagement(TransactionManagementType.BEAN)
 public class ApprovalProfileCacheBean {
 
@@ -65,24 +66,20 @@ public class ApprovalProfileCacheBean {
      */
 
     /** Cache of mappings between profileId and profileName */
-    private volatile Map<Integer, String> idNameMapCache = null;
+    private Map<Integer, String> idNameMapCache = null;
     /** Cache of mappings between profileName and profileId */
-    private volatile Map<String, Integer> nameIdMapCache = null;
+    private Map<String, Integer> nameIdMapCache = null;
     /** Cache of approval profiles, with Id as keys */
-    private volatile Map<Integer, ApprovalProfile> profileCache = null;
+    private Map<Integer, ApprovalProfile> profileCache = null;
 
-    private volatile long lastUpdate = 0;
+    private long lastUpdate = 0;
 
     /* Create template maps with all static constants */
     private HashMap<Integer, String> idNameMapCacheTemplate;
     private HashMap<String, Integer> nameIdMapCacheTemplate;
-
-    private ReentrantLock lock;
-
     
     @PostConstruct
     public void initialize() {
-        lock = new ReentrantLock(false);
         idNameMapCacheTemplate = new HashMap<Integer, String>();
         nameIdMapCacheTemplate = new HashMap<String, Integer>();
         updateProfileCache(true);
@@ -95,6 +92,7 @@ public class ApprovalProfileCacheBean {
     /**
      * This method sets the update time back down to zero, effectively forcing the cache to be reloaded on next read. 
      */
+    @Lock(LockType.WRITE)
     public void forceCacheExpiration() {
         lastUpdate = 0;
     }
@@ -105,26 +103,19 @@ public class ApprovalProfileCacheBean {
      * @param entityManager is required for reading the profiles from the database if we need to update the cache
      * @param force if true, this will force an update even if the cache is not yet invalid
      */
+    @Lock(LockType.WRITE)
     public void updateProfileCache(final boolean force) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateProfileCache");
-        }
-        
+        }       
         final long cacheApprovalProfileTime = EjbcaConfiguration.getCacheApprovalProfileTime();
         final long now = System.currentTimeMillis();
-        // Check before acquiring lock
+  
         if (!force && cacheApprovalProfileTime != 0 && lastUpdate + cacheApprovalProfileTime > now) {
             return; // We don't need to update cache
         }
-        try {
-            lock.lock();
-            if (!force && cacheApprovalProfileTime != 0 && lastUpdate + cacheApprovalProfileTime > now) {
-                return; // We don't need to update cache
-            }
-            lastUpdate = now; // make sure next thread does not also pass the update test
-        } finally {
-            lock.unlock();
-        }
+        lastUpdate = now; // make sure next thread does not also pass the update test
+
         final Map<Integer, String> idNameCache = new HashMap<Integer, String>(idNameMapCacheTemplate);
         final Map<String, Integer> nameIdCache = new HashMap<String, Integer>(nameIdMapCacheTemplate);
         final Map<Integer, ApprovalProfile> profCache = new HashMap<Integer, ApprovalProfile>();
@@ -136,7 +127,6 @@ public class ApprovalProfileCacheBean {
             nameIdCache.put(approvalProfileName, id);
             profCache.put(id, current.getProfile());
         }
-
         idNameMapCache = idNameCache;
         nameIdMapCache = nameIdCache;
         profileCache = profCache;
@@ -146,18 +136,21 @@ public class ApprovalProfileCacheBean {
     }
 
     /** @return the latest object from the cache or a current database representation if no caching is used. */
+    @Lock(LockType.READ)
     public Map<Integer, ApprovalProfile> getProfileCache() {
         updateProfileCache(false);
         return profileCache;
     }
 
     /** @return the latest object from the cache or a current database representation if no caching is used. */
+    @Lock(LockType.READ)
     public Map<Integer, String> getIdNameMapCache() {
         updateProfileCache(false);
         return idNameMapCache;
     }
 
     /** @return the latest object from the cache or a current database representation if no caching is used. */
+    @Lock(LockType.READ)
     public Map<String, Integer> getNameIdMapCache() {
         updateProfileCache(false);
         return nameIdMapCache;
