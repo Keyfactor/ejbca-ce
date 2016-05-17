@@ -15,14 +15,13 @@ package org.ejbca.core.ejb.approval;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.DependsOn;
 import javax.ejb.EJB;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.TransactionManagement;
@@ -50,7 +49,7 @@ import org.ejbca.core.model.approval.ApprovalProfile;
 @Singleton
 @Startup
 @DependsOn("StartupSingletonBean")
-@ConcurrencyManagement(ConcurrencyManagementType.CONTAINER)
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 @TransactionManagement(TransactionManagementType.BEAN)
 public class ApprovalProfileCacheBean {
 
@@ -58,7 +57,7 @@ public class ApprovalProfileCacheBean {
 
     @EJB
     private ApprovalProfileSessionLocal approvalProfileSession;
-    
+
     /*
      * Cache of profiles, with Id as keys. This cache may be
      * unsynchronized between multiple instances of EJBCA, but is common to all
@@ -66,22 +65,26 @@ public class ApprovalProfileCacheBean {
      */
 
     /** Cache of mappings between profileId and profileName */
-    private Map<Integer, String> idNameMapCache = null;
+    private volatile Map<Integer, String> idNameMapCache = null;
     /** Cache of mappings between profileName and profileId */
-    private Map<String, Integer> nameIdMapCache = null;
+    private volatile Map<String, Integer> nameIdMapCache = null;
     /** Cache of approval profiles, with Id as keys */
-    private Map<Integer, ApprovalProfile> profileCache = null;
+    private volatile Map<Integer, ApprovalProfile> profileCache = null;
 
-    private long lastUpdate = 0;
+    private volatile long lastUpdate = 0;
 
+    private ReentrantLock lock;
+    
     /* Create template maps with all static constants */
     private HashMap<Integer, String> idNameMapCacheTemplate;
     private HashMap<String, Integer> nameIdMapCacheTemplate;
-    
+
     @PostConstruct
     public void initialize() {
         idNameMapCacheTemplate = new HashMap<Integer, String>();
         nameIdMapCacheTemplate = new HashMap<String, Integer>();
+        lock = new ReentrantLock(false);
+
         try {
             updateProfileCache(true);
         } catch (RuntimeException e) {
@@ -90,38 +93,43 @@ public class ApprovalProfileCacheBean {
             LOG.error(e);
         }
     }
-    
+
     public ApprovalProfileCacheBean() {
-        
+
     }
-    
+
     /**
      * This method sets the update time back down to zero, effectively forcing the cache to be reloaded on next read. 
      */
-    @Lock(LockType.WRITE)
     public void forceCacheExpiration() {
         lastUpdate = 0;
     }
-    
+
     /**
      * Fetch all profiles from the database, unless cache is enabled, valid and we do not force an update.
      * 
      * @param entityManager is required for reading the profiles from the database if we need to update the cache
      * @param force if true, this will force an update even if the cache is not yet invalid
      */
-    @Lock(LockType.WRITE)
     public void updateProfileCache(final boolean force) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateProfileCache");
-        }       
+        }
         final long cacheApprovalProfileTime = EjbcaConfiguration.getCacheApprovalProfileTime();
         final long now = System.currentTimeMillis();
-  
+        // Check before acquiring lock
         if (!force && cacheApprovalProfileTime != 0 && lastUpdate + cacheApprovalProfileTime > now) {
             return; // We don't need to update cache
         }
-        lastUpdate = now; // make sure next thread does not also pass the update test
-
+        try {
+            lock.lock();
+            if (!force && cacheApprovalProfileTime != 0 && lastUpdate + cacheApprovalProfileTime > now) {
+                return; // We don't need to update cache
+            }
+            lastUpdate = now; // make sure next thread does not also pass the update test
+        } finally {
+            lock.unlock();
+        }
         final Map<Integer, String> idNameCache = new HashMap<Integer, String>(idNameMapCacheTemplate);
         final Map<String, Integer> nameIdCache = new HashMap<String, Integer>(nameIdMapCacheTemplate);
         final Map<Integer, ApprovalProfile> profCache = new HashMap<Integer, ApprovalProfile>();
@@ -142,21 +150,18 @@ public class ApprovalProfileCacheBean {
     }
 
     /** @return the latest object from the cache or a current database representation if no caching is used. */
-    @Lock(LockType.READ)
     public Map<Integer, ApprovalProfile> getProfileCache() {
         updateProfileCache(false);
         return profileCache;
     }
 
     /** @return the latest object from the cache or a current database representation if no caching is used. */
-    @Lock(LockType.READ)
     public Map<Integer, String> getIdNameMapCache() {
         updateProfileCache(false);
         return idNameMapCache;
     }
 
     /** @return the latest object from the cache or a current database representation if no caching is used. */
-    @Lock(LockType.READ)
     public Map<String, Integer> getNameIdMapCache() {
         updateProfileCache(false);
         return nameIdMapCache;
