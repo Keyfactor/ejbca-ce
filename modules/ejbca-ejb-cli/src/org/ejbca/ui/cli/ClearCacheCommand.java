@@ -150,7 +150,7 @@ public class ClearCacheCommand extends EjbcaCommandBase {
         if(approvalProfileCache) {
             log.info("Flushing Approval Profile Cache");
             final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
-            approvalProfileSession.forceProfileCacheExpire();
+            approvalProfileSession.forceProfileCacheRebuild();
         }
           
         return CommandResult.SUCCESS;
