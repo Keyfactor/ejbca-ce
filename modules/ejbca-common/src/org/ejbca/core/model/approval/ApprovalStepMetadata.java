@@ -11,6 +11,10 @@ import java.util.List;
 public class ApprovalStepMetadata implements Serializable {
     private static final long serialVersionUID = -8320579875930271365L;
     
+    public static final int METADATATYPE_CHECKBOX = 1;
+    public static final int METADATATYPE_RADIOBUTTON = 2;
+    public static final int METADATATYPE_TEXTBOX = 3;
+    
     private int metadataId;
     private String instruction;
     private List<String> options;

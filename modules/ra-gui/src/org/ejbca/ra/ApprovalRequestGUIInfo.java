@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalStep;
+import org.ejbca.core.model.approval.ApprovalStepMetadata;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 
 /**
@@ -132,9 +133,9 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     public boolean isHasNextStep() { return hasNextStep && canApprove; }
     public String getStepText() { return stepText; }
-    public boolean isCheckboxStep() { return isHasNextStep() && stepType == ApprovalStep.METADATATYPE_CHECKBOX; }
-    public boolean isRadiobuttonStep() { return isHasNextStep() && stepType == ApprovalStep.METADATATYPE_RADIOBUTTON; }
-    public boolean isTextboxStep() { return isHasNextStep() && stepType == ApprovalStep.METADATATYPE_TEXTBOX; }
+    public boolean isCheckboxStep() { return isHasNextStep() && stepType == ApprovalStepMetadata.METADATATYPE_CHECKBOX; }
+    public boolean isRadiobuttonStep() { return isHasNextStep() && stepType == ApprovalStepMetadata.METADATATYPE_RADIOBUTTON; }
+    public boolean isTextboxStep() { return isHasNextStep() && stepType == ApprovalStepMetadata.METADATATYPE_TEXTBOX; }
     public List<StepOption> getStepOptions() { return stepOptions; }
 
     public boolean isCanApprove() { return canApprove; }

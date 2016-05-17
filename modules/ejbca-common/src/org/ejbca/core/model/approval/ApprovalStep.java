@@ -27,10 +27,6 @@ public class ApprovalStep implements Serializable {
 
     private static final long serialVersionUID = 8652607031017119847L;
     
-    public static final int METADATATYPE_CHECKBOX = 1;
-    public static final int METADATATYPE_RADIOBUTTON = 2;
-    public static final int METADATATYPE_TEXTBOX = 3;
-    
     private int stepId; // Equivalent to property key
     private String stepAuthorizationObject; // Equivalent to property value, for example, the AdminRole name
     private Map<Integer, ApprovalStepMetadata> metadata;
