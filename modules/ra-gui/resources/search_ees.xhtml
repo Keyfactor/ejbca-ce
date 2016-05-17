@@ -89,13 +89,13 @@
                         
                         <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
                             <h:commandButton rendered="#{raSearchEesBean.moreOptions}" action="#{raSearchEesBean.moreOptionsAction}" value="#{msg.search_ees_page_lessoptions_command}"
-                                styleClass="pure-button pure-button-primary">
+                                styleClass="pure-button ra-button">
                                 <f:ajax execute="@this" render=":contentForm:basic :contentForm:more :contentForm:filteredResults"
                                     onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');if(data.status=='success'){jsTouchUpDocument();}"
                                     onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
                             </h:commandButton>
                             <h:commandButton rendered="#{!raSearchEesBean.moreOptions}" action="#{raSearchEesBean.moreOptionsAction}" value="#{msg.search_ees_page_moreoptions_command}"
-                                styleClass="pure-button pure-button-primary">
+                                styleClass="pure-button ra-button">
                                 <f:ajax execute="@this" render=":contentForm:basic :contentForm:more"
                                     onevent="function(data){if(data.status=='success'){jsTouchUpDocument();}}"/>
                             </h:commandButton>
