@@ -23,6 +23,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.ScepConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -49,6 +50,8 @@ public class ClearCacheCommand extends EjbcaCommandBase {
     private static final String AUTHORIZATION = "-authorization";
     private static final String CA_CACHE = "-ca";
     private static final String CT_CACHE = "-ct";
+    private static final String APPROVAL_PROFILE_CACHE = "--approvalprofile";
+
 
     //Register parameters 
     {
@@ -63,6 +66,8 @@ public class ClearCacheCommand extends EjbcaCommandBase {
                 "Clear Authorization cache."));
         registerParameter(new Parameter(CA_CACHE, "CA Cache", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Clear CA cache."));
         registerParameter(new Parameter(CT_CACHE, "CT Cache", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Clear CT caches (OCSP and Fail Fast cache)."));
+        registerParameter(Parameter.createFlag(APPROVAL_PROFILE_CACHE, "Clear the approval profile cache."));
+
     }
 
     @Override
@@ -91,6 +96,8 @@ public class ClearCacheCommand extends EjbcaCommandBase {
         final boolean authorization = (parameters.get(AUTHORIZATION) != null) || all;
         final boolean cacache = (parameters.get(CA_CACHE) != null) || all;
         final boolean ctcache = (parameters.get(CT_CACHE) != null) || all;
+        final boolean approvalProfileCache = (parameters.get(APPROVAL_PROFILE_CACHE) != null) || all;
+
 
         if (!(all || globalconf || eeprofile || certprofile || authorization || cacache || ctcache)) {
             log.error("ERROR: No caches were flushed because no parameters were specified.");
@@ -140,7 +147,12 @@ public class ClearCacheCommand extends EjbcaCommandBase {
             ocspResponseGeneratorSession.reloadOcspExtensionsCache();
             ocspResponseGeneratorSession.clearCTFailFastCache();
         }
-        
+        if(approvalProfileCache) {
+            log.info("Flushing Approval Profile Cache");
+            final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
+            approvalProfileSession.forceProfileCacheExpire();
+        }
+          
         return CommandResult.SUCCESS;
 
     }
