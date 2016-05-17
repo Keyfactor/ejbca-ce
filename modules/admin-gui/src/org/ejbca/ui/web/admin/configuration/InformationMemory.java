@@ -37,6 +37,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSession;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.management.RoleManagementSession;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
@@ -67,6 +68,8 @@ import org.ejbca.ui.web.admin.rainterface.EndEntityProfileNameProxy;
  */
 public class InformationMemory implements Serializable {
 
+    private static final InternalResources intres = InternalResources.getInstance();
+    
     private static final long serialVersionUID = 2L;
     // Private fields
     private AuthenticationToken administrator;
@@ -89,7 +92,6 @@ public class InformationMemory implements Serializable {
     Map<Integer, String> caidtonamemap = null;
     Map<Integer, HashMap<Integer, List<Integer>>> endentityavailablecas = null;
     Map<Integer, String> publisheridtonamemap = null;
-    Map<Integer, String> approvalprofilemap = null;
 
     TreeMap<String, Integer> authRoles = null;
     TreeMap<String, Integer> publishernames = null;
@@ -300,11 +302,22 @@ public class InformationMemory implements Serializable {
      * @return the approvalprofiles-id-to-name-map (HashMap)
      */
     public Map<Integer, String> getApprovalProfileIdToNameMap() {
-        if(approvalprofilemap == null) {
-            approvalprofilemap = approvalProfileSession.getApprovalProfileIdToNameMap();
-            approvalprofilemap.put(-1, "None");
-        }
-        return approvalprofilemap;
+        Map<Integer, String> approvalProfileMap = approvalProfileSession.getApprovalProfileIdToNameMap();
+        approvalProfileMap.put(-1, intres.getLocalizedMessage("general.none"));
+        return approvalProfileMap;
+    }
+    
+    public List<Integer> getSortedApprovalProfileIds() {
+        Map<String, Integer> sortedTreeMap = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.compareTo(o2);
+            }
+        });
+        sortedTreeMap.putAll(approvalProfileSession.getApprovalProfileNameToIdMap());
+        List<Integer> result = new ArrayList<>(sortedTreeMap.values());
+        result.add(0, -1);
+        return result;
     }
 
     
@@ -533,10 +546,6 @@ public class InformationMemory implements Serializable {
         raauthorization.clear();
         caauthorization.clear();
         hardtokenauthorization.clear();
-    }
-    
-    public void approvalProfilesEdited() {
-        approvalprofilemap = null;
     }
 
     /**

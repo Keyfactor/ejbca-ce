@@ -182,7 +182,6 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         try {
             final ApprovalProfile approvalProfile = getApprovalProfile();
             getEjbcaWebBean().getEjb().getApprovalProfileSession().changeApprovalProfile(getAdmin(), getSelectedApprovalProfileName(), approvalProfile);
-            getEjbcaWebBean().getInformationMemory().approvalProfilesEdited();
             addInfoMessage("APPROVALPROFILESAVED");
             reset();
             return "done";  // Outcome defined in faces-config.xml
