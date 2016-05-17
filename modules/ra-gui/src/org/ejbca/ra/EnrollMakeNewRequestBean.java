@@ -16,16 +16,23 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,9 +49,12 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.ValueChangeEvent;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -55,6 +65,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -76,6 +87,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EnrollMakeNewRequestBean.class);
+    private static final String PEM_CSR_BEGIN = "-----BEGIN CERTIFICATE REQUEST-----";
+    private static final String PEM_CSR_END = "-----END CERTIFICATE REQUEST-----";
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
@@ -125,7 +138,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return value;
         }
     }
-
     private Map<String, KeyPairGeneration> availableKeyPairGenerations = new HashMap<String, KeyPairGeneration>();
     private String selectedKeyPairGeneration;
     private boolean keyPairGenerationChanged;
@@ -134,6 +146,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private Map<String, String> availableAlgorithms = new TreeMap<String, String>();
     private String selectedAlgorithm;
     private boolean algorithmChanged;
+    private String certificateRequest;
+    public enum TokenDownloadType {
+        PEM(1), PEM_FULL_CHAIN(2), PKCS7(3), P12(4), JKS(5), DER(6);
+        private int value;
+
+        private TokenDownloadType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
 
     //6. Certificate data
     private SubjectDn subjectDn;
@@ -245,20 +270,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        //TOKEN_SOFT_BROWSERGEN = 1;
-        //TOKEN_SOFT_P12 = 2;
-        //TOKEN_SOFT_JKS = 3;
-        //TOKEN_SOFT_PEM = 4;
-        if (availableKeyStores.contains("2") || availableKeyStores.contains("3") || availableKeyStores.contains("4")) {
+        if (availableKeyStores.contains(SecConst.TOKEN_SOFT_P12 + "") || availableKeyStores.contains(SecConst.TOKEN_SOFT_JKS + "")
+                || availableKeyStores.contains(SecConst.TOKEN_SOFT_PEM + "")) {
             availableKeyPairGenerations.put(KeyPairGeneration.ON_SERVER.getValue(), KeyPairGeneration.ON_SERVER);
         }
-        if (availableKeyStores.contains("1")) {
+        if (availableKeyStores.contains(SecConst.TOKEN_SOFT_BROWSERGEN + "")) {
             availableKeyPairGenerations.put(KeyPairGeneration.BY_BROWSER_CLIENT.getValue(), KeyPairGeneration.BY_BROWSER_CLIENT);
             availableKeyPairGenerations.put(KeyPairGeneration.PROVIDED_BY_USER.getValue(), KeyPairGeneration.PROVIDED_BY_USER);
         }
     }
 
-    private void initAvailableAlgorithms() {
+    private void initAvailableAndAlgorithms() {
         CertificateProfile certificateProfile = getCertificateProfile();
         final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
         final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
@@ -320,14 +342,47 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
+    private void initCsrUpload() {
+        certificateRequest = PEM_CSR_BEGIN + "\n...base 64 encoded request...\n" + PEM_CSR_END;
+    }
+
     private void initCertificateData() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile == null) {
             return;
         }
+
         subjectDn = new SubjectDn(endEntityProfile);
         subjectAlternativeName = new SubjectAlternativeName(endEntityProfile);
         subjectDirectoryAttributes = new SubjectDirectoryAttributes(endEntityProfile);
+
+        //If PROVIDED BY USER key generation is selected, keyAlg and keySpec have to be extracted and Subject DN fields could be parsed from CSR
+        if (selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
+            PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest);   //pkcs10CertificateRequest will not be null at this point
+            List<String> subjectDnFieldsFromParsedCsr = CertTools.getX500NameComponents(pkcs10CertificateRequest.getSubject().toString());
+            for (String subjectDnField : subjectDnFieldsFromParsedCsr) {
+                String[] nameValue = subjectDnField.split("=");
+                if (nameValue != null && nameValue.length == 2) {
+                    Integer dnId = DnComponents.getDnIdFromDnName(nameValue[0]);
+                    if (dnId != null) {
+                        String profileName = DnComponents.dnIdToProfileName(dnId);
+                        if (profileName != null) {
+                            EndEntityProfile.FieldInstance fieldInstance = subjectDn.getFieldInstancesMap().get(profileName);
+                            if (fieldInstance != null) {
+                                fieldInstance.setValue(nameValue[1]);
+                                subjectDn.getFieldInstancesMap().put(profileName, fieldInstance);
+                                if (log.isDebugEnabled()) {
+                                    log.debug(raLocaleBean.getMessage("enroll_subject_dn_field_successfully_parsed_from_csr", subjectDnField));
+                                }
+                                continue;
+                            }
+                        }
+                    }
+                }
+                log.info(raLocaleBean.getMessage("enroll_unparsable_subject_dn_field_from_csr", subjectDnField));
+            }
+            subjectDn.update();
+        }
     }
 
     private void initDownloadCredentialsType() {
@@ -342,7 +397,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     //-----------------------------------------------------------------------------------------------
-    // Helpers
+    // Helpers and get*Rendered() methods
     public String getSubjectDnFieldOutputName(String keyName) {
         return raLocaleBean.getMessage("subject_dn_" + keyName);
     }
@@ -353,6 +408,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public String getSubjectDirectoryAttributesFieldOutputName(String keyName) {
         return raLocaleBean.getMessage("subject_directory_attributes_" + keyName);
+    }
+
+    public boolean getCsrUploadRendered() {
+        return selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue());
     }
 
     public boolean getUsernameRendered() {
@@ -371,28 +430,43 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public boolean getGenerateJksButtonRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
-        if(endEntityProfile == null){
+        if (endEntityProfile == null) {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
         return selectedDownloadCredentialsType != null
-                && (selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue()) ||
-                        selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()))
-                && availableKeyStores.contains(SecConst.TOKEN_SOFT_JKS+"");//TODO probably will need to get updated once approvals are implemented in kickassra
+                && (selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue())
+                        || selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()))
+                && availableKeyStores.contains(SecConst.TOKEN_SOFT_JKS + "")
+                && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue());//TODO probably will need to get updated once approvals are implemented in kickassra
     }
-    
+
     public boolean getGenerateP12ButtonRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
-        if(endEntityProfile == null){
+        if (endEntityProfile == null) {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
         return selectedDownloadCredentialsType != null
-                && (selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue()) ||
-                        selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()))
-                && availableKeyStores.contains(SecConst.TOKEN_SOFT_P12+"");//TODO probably will need to get updated once approvals are implemented in kickassra
+                && (selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue())
+                        || selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()))
+                && availableKeyStores.contains(SecConst.TOKEN_SOFT_P12 + "")
+                && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue());//TODO probably will need to get updated once approvals are implemented in kickassra
     }
     
+    public boolean getGenerateFromCsrButtonRendered() {
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if (endEntityProfile == null) {
+            return false;
+        }
+        String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
+        return selectedDownloadCredentialsType != null
+                && (selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue())
+                        || selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()))
+                && availableKeyStores.contains(EndEntityConstants.TOKEN_USERGEN + "")
+                && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue());//TODO probably will need to get updated once approvals are implemented in kickassra
+    }
+
     public boolean getNextButtonRendered() {
         return !getGenerateJksButtonRendered() && !getGenerateP12ButtonRendered();
     }
@@ -431,13 +505,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
         selectedKeyPairGeneration = null;
         keyPairGenerationChanged = false;
 
-        resetAlgorithm();
+        resetAlgorithmCsrUpload();
     }
 
-    private final void resetAlgorithm() {
+    private final void resetAlgorithmCsrUpload() {
         availableAlgorithms.clear();
         selectedAlgorithm = null;
         algorithmChanged = false;
+        certificateRequest = null;
 
         resetCertificateData();
     }
@@ -485,6 +560,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 selectDownloadCredentialsType();
             } else if (subjectDn != null) {
                 finalizeCertificateData();
+            } else if (certificateRequest != null) {
+                enterCsr();
             } else if (selectedAlgorithm != null) {
                 selectAlgorithm();
             } else if (selectedKeyPairGeneration != null) {
@@ -541,9 +618,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private final void selectKeyPairGeneration() {
         setKeyPairGenerationChanged(false);
 
-        resetAlgorithm();
+        resetAlgorithmCsrUpload();
         if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
-            initAvailableAlgorithms();
+            initAvailableAndAlgorithms();
+        } else if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
+            initCsrUpload();
         }
         raLocaleBean.addMessageInfo("somefunction_testok", "selectedKeyPairGeneration", selectedKeyPairGeneration);
     }
@@ -554,6 +633,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
         resetCertificateData();
         initCertificateData();
         raLocaleBean.addMessageInfo("somefunction_testok", "selectedAlgorithm", selectedAlgorithm);
+    }
+
+    private final void enterCsr() {
+        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest);
+        if(pkcs10CertificateRequest == null){
+            raLocaleBean.addMessageError("enroll_invalid_certificate_request");
+            return;
+        }
+        
+        resetCertificateData();
+        initCertificateData();
     }
 
     private final void finalizeCertificateData() {
@@ -589,25 +679,48 @@ public class EnrollMakeNewRequestBean implements Serializable {
         //TODO how to set subject directory attributes?
     }
     
-    public final void generateP12(){
-        generateKeyStore(SecConst.TOKEN_SOFT_P12, "PKCS#12", "application/x-pkcs12", ".p12");
+    public final void addEndEntityAndGenerateCertificeDer(){
+        addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "DER", "application/octet-stream", ".der", TokenDownloadType.DER);
     }
     
-    public final void generateJks(){
-        generateKeyStore(SecConst.TOKEN_SOFT_JKS, "JKS", "application/octet-stream", ".jks");
+    public final void addEndEntityAndGenerateCertificePksc7(){
+        addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "PKCS#7", "application/octet-stream", ".p7b", TokenDownloadType.PKCS7);
     }
     
-    public final void generateKeyStore(int keystoreType, String keystoreName, String responseContentType, String fileExtension) {
+    public final void addEndEntityAndGenerateCertificePemFullChain(){
+        addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "PEM", "application/octet-stream", ".pem", TokenDownloadType.PEM_FULL_CHAIN);
+    }
+    
+    public final void addEndEntityAndGenerateCertificePem(){
+        addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "PEM", "application/octet-stream", ".pem", TokenDownloadType.PEM);
+    }
+    
+    public final void addEndEntityAndGenerateP12() {
+        addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_P12, "PKCS#12", "application/x-pkcs12", ".p12", TokenDownloadType.P12);
+    }
+
+    public final void addEndEntityAndGenerateJks() {
+        addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_JKS, "JKS", "application/octet-stream", ".jks", TokenDownloadType.JKS);
+    }
+
+    /**
+     * Adds end entity and creates its token that will be downloaded
+     * @param tokenType the type of the token that will be created (one of: TOKEN_USERGEN, TOKEN_SOFT_P12, TOKEN_SOFT_JKS from EndEntityConstants)
+     * @param tokenName the name of the token. It will be used only in messages and logs
+     * @param responseContentType the MIME type of the token to be downloaded (etc. "application/octet-stream", "application/x-pkcs12",..)
+     * @param fileExtension the file extension that will be added to the end of the downlaoded token file
+     * @param tokenDownloadType the download type/format of the token. This is used only with TOKEN_USERGEN since this is the only one that have different formats: PEM, DER,...)
+     */
+    private final void addEndEntityAndGenerateToken(int tokenType, String tokenName, String responseContentType, String fileExtension, TokenDownloadType tokenDownloadType) {
         //Update the EndEntityInformation data
-        subjectDn.updateValue();
+        subjectDn.update();
         subjectAlternativeName.updateValue();
         subjectDirectoryAttributes.updateValue();
         setDownloadCredentialsData();
-        endEntityInformation.setTokenType(keystoreType);
-        
-        
+        endEntityInformation.setTokenType(tokenType);
+
         //Enter temporary credentials
-        if(selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue())){
+        if (selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue())) {
             String commonName = subjectDn.getFieldInstancesMap().get(DnComponents.COMMONNAME).getValue(); //Common Name has to be required field
             endEntityInformation.setUsername(commonName);
             endEntityInformation.setPassword(commonName);
@@ -624,33 +737,98 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return;
         }
 
-        
-        //Parse token's algorithm
-        final String[] tokenKeySpecSplit = selectedAlgorithm.split("_");
-        String keyAlg = tokenKeySpecSplit[0];
-        String keyLength = tokenKeySpecSplit[1];
-        
-        
-        //Generate keystore
-        KeyStore keystore = null;
-        try {
-            keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, keyLength, keyAlg);
-            log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", keystoreName, endEntityInformation.getUsername()));
-        } catch (KeyStoreException| AuthorizationDeniedException e) {
-            raLocaleBean.addMessageInfo("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-            log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
-            return;
+        //Get token's algorithm from CSR (PROVIDED_BY_USER) or it can be specified directly (ON_SERVER)
+        String keyAlg = null;
+        String keyLength = null;
+        if(selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())){
+            PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest);
+            if (pkcs10CertificateRequest == null) {
+                raLocaleBean.addMessageError("enroll_invalid_certificate_request");
+                return;
+            }
+            JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(CertTools.getCertificateRequestFromPem(certificateRequest));
+            PublicKey publicKey;
+            try {
+                publicKey = jcaPKCS10CertificationRequest.getPublicKey();
+            } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+                log.warn(raLocaleBean.getMessage("enroll_csr_public_key_could_not_be_extracted"));
+                raLocaleBean.addMessageError("enroll_csr_public_key_could_not_be_extracted");
+                return;
+            }
+            keyAlg = AlgorithmTools.getKeyAlgorithm(publicKey);
+            keyLength = AlgorithmTools.getKeySpecification(publicKey);
+        }else if(selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())){
+            final String[] tokenKeySpecSplit = selectedAlgorithm.split("_");
+            keyAlg = tokenKeySpecSplit[0];
+            keyLength = tokenKeySpecSplit[1];
         }
+
+        //Generates a keystore token if user has specified "ON SERVER" key pair generation.
+        //Generates a certificate token if user has specified "PROVIDED_BY_USER" key pair generation
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        try {
-            keystore.store(buffer, endEntityInformation.getPassword().toCharArray());
-        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-            raLocaleBean.addMessageInfo("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-            log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
-            return;
+        if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
+            KeyStore keystore = null;
+            try {
+                keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, keyLength,
+                        keyAlg);
+                log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", tokenName, endEntityInformation.getUsername()));
+
+                keystore.store(buffer, endEntityInformation.getPassword().toCharArray());
+            } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | AuthorizationDeniedException e) {
+                raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
+                log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
+                return;
+            } finally {
+                if (buffer != null) {
+                    try {
+                        buffer.close();
+                    } catch (IOException e) {
+                    }
+                }
+            }
+        } else if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
+            byte[] certificateDataToDownload = null;
+            try {
+                certificateDataToDownload = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(), endEntityInformation,
+                        CertTools.getCertificateRequestFromPem(certificateRequest));
+                if(certificateDataToDownload == null){
+                    raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername());
+                    return;
+                }
+
+                if (tokenDownloadType == TokenDownloadType.PEM_FULL_CHAIN) {
+                    X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
+                    LinkedList<Certificate> chain = new LinkedList<Certificate>(getCAInfo().getCertificateChain());
+                    chain.addFirst(certificate);
+                    certificateDataToDownload = CertTools.getPemFromCertificateChain(chain);
+                } else if (tokenDownloadType == TokenDownloadType.PKCS7) {
+                    X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
+                    certificateDataToDownload = raMasterApiProxyBean.createPkcs7(raAuthenticationBean.getAuthenticationToken(), certificate, true);
+                    certificateDataToDownload = CertTools.getPemFromPkcs7(certificateDataToDownload);
+                } else if(tokenDownloadType == TokenDownloadType.PEM){
+                    X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
+                    certificateDataToDownload = CertTools.getPemFromCertificateChain(Arrays.asList((Certificate)certificate));
+                }
+
+                buffer.write(certificateDataToDownload);
+            } catch (CertificateParsingException | CertificateEncodingException | AuthorizationDeniedException
+                    | IOException e) {
+                raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
+                log.error(raLocaleBean.getMessage("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()),
+                        e);
+                return;
+            } finally {
+                if (buffer != null) {
+                    try {
+                        buffer.close();
+                    } catch (IOException e) {
+                    }
+                }
+            }
         }
         
-        //Download
+
+        //Download the token
         FacesContext fc = FacesContext.getCurrentInstance();
         ExternalContext ec = fc.getExternalContext();
         ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
@@ -720,6 +898,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public final void algorithmAjaxListener(final AjaxBehaviorEvent event) {
         selectAlgorithm();
+    }
+
+    public final void csrInputTextAjaxListener(final AjaxBehaviorEvent event) {
+        enterCsr();
     }
 
     public final void downloadCredentialsTypeAjaxListener(final AjaxBehaviorEvent event) {
@@ -1125,5 +1307,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public void setDownloadCredentialsChanged(boolean downloadCredentialsChanged) {
         this.downloadCredentialsChanged = downloadCredentialsChanged;
+    }
+
+    /**
+     * @return the certificateRequest
+     */
+    public String getCertificateRequest() {
+        return certificateRequest;
+    }
+
+    /**
+     * @param certificateRequest the certificateRequest to set
+     */
+    public void setCertificateRequest(String certificateRequest) {
+        this.certificateRequest = certificateRequest;
     }
 }

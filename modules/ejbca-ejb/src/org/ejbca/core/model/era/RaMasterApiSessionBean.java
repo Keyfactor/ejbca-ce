@@ -12,14 +12,19 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,8 +36,10 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.security.cert.CertificateException;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -42,16 +49,34 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
@@ -62,11 +87,14 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.GenerateToken;
@@ -700,11 +728,48 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public KeyStore generateKeystore(final AuthenticationToken admin, final EndEntityInformation endEntity, String keyLength, String keyAlg) throws AuthorizationDeniedException, KeyStoreException{
         GenerateToken tgen = new GenerateToken(endEntityAuthenticationSessionLocal, endEntityAccessSession, endEntityManagementSessionLocal, caSession, keyRecoverySessionLocal, signSessionLocal);
         try {
-            
             KeyStore ks = tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), keyLength, keyAlg, endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
             return ks;
         } catch (Exception e) {
             throw new KeyStoreException(e);
+        }
+    }
+    
+    @Override
+    public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, PKCS10CertificationRequest certificateRequest)throws AuthorizationDeniedException{
+        PKCS10RequestMessage req = null;
+        try {
+            req = RequestMessageUtils.genPKCS10RequestMessage(certificateRequest.getEncoded());
+            req.setUsername(endEntity.getUsername());
+            req.setPassword(endEntity.getPassword());
+        } catch (IOException e) {
+            throw new IllegalStateException("Internal error with creating PKCS10RequestMessage");
+        }
+        
+        ResponseMessage resp;
+        try {
+            resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
+            X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
+            return cert.getEncoded();
+        } catch (NoSuchEndEntityException | CustomCertificateSerialNumberException | CryptoTokenOfflineException | IllegalKeyException
+                | CADoesntExistsException | SignRequestException | SignRequestSignatureException | AuthStatusException | AuthLoginException
+                | IllegalNameException | CertificateCreateException | CertificateRevokeException | CertificateSerialNumberException
+                | IllegalValidityException | CAOfflineException | InvalidAlgorithmException | CertificateExtensionException e) {
+            log.error(e);
+        } catch (CertificateParsingException | CertificateEncodingException e) {
+            throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage");
+        }
+        
+        return null;
+    }
+    
+    @Override
+    public byte[] createPkcs7(AuthenticationToken authenticationToken, X509Certificate certificate, boolean includeChain) throws AuthorizationDeniedException{
+        try {
+            return signSessionLocal.createPKCS7(authenticationToken, certificate, includeChain);
+        } catch (CADoesntExistsException | SignRequestSignatureException e) {
+            log.error(e);
+            return null;
         }
     }
 

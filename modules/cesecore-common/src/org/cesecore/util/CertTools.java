@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -126,6 +128,7 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidatorException;
+import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
@@ -133,6 +136,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -249,6 +253,8 @@ public abstract class CertTools {
     public static final String END_PRIVATE_KEY = "-----END PRIVATE KEY-----";
     public static final String BEGIN_X509_CRL_KEY = "-----BEGIN X509 CRL-----";
     public static final String END_X509_CRL_KEY = "-----END X509 CRL-----";
+    public static final  String BEGIN_PKCS7  = "-----BEGIN PKCS7-----";
+    public static final  String END_PKCS7     = "-----END PKCS7-----";
 
     /**
      * See stringToBcX500Name(String, X500NameStyle, boolean), this method uses the default name style (CeSecoreNameStyle) and ldap
@@ -1381,6 +1387,18 @@ public abstract class CertTools {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try ( final PrintStream printStream = new PrintStream(baos) ) {
             writeAsPemEncoded(printStream, certificateRequestBytes, BEGIN_CERTIFICATE_REQUEST, END_CERTIFICATE_REQUEST);
+        }
+        return baos.toByteArray();
+    }
+    
+    /** 
+     * Generates PEM from binary pkcs#7 data.
+     * @param pkcs7binary pkcs#7 binary data
+     * @return a pkcs#7 PEM encoded */
+    public static byte[] getPemFromPkcs7(final byte[] pkcs7Binary) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try ( final PrintStream printStream = new PrintStream(baos) ) {
+            writeAsPemEncoded(printStream, pkcs7Binary, BEGIN_PKCS7, END_PKCS7);
         }
         return baos.toByteArray();
     }
@@ -3740,6 +3758,41 @@ public abstract class CertTools {
             throw new IllegalArgumentException("dumpCertificateAsString: Certificate of type " + cert.getType() + " is not implemented");
         }
         return ret;
+    }
+    
+    /**
+     * Creates PKCS10CertificateRequest object from PEM encoded certificate request
+     * @param pemEncodedCsr PEM encoded CSR
+     * @return PKCS10CertificateRequest object
+     */
+    public static PKCS10CertificationRequest getCertificateRequestFromPem(final String pemEncodedCsr){
+        PKCS10CertificationRequest csr = null;
+        ByteArrayInputStream pemStream = null;
+        try {
+            pemStream = new ByteArrayInputStream(pemEncodedCsr.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+            log.warn("UnsupportedEncodingException while decoding certificate request from PEM", ex);
+        }
+
+        Reader pemReader = new BufferedReader(new InputStreamReader(pemStream));
+        PEMParser pemParser = new PEMParser(pemReader);
+        try {
+            Object parsedObj = pemParser.readObject();
+            if (parsedObj instanceof PKCS10CertificationRequest) {
+                csr = (PKCS10CertificationRequest) parsedObj;
+            }
+        } catch (IOException | DecoderException ex) {//IOException that will be wrapped as (runtime) DecoderException
+            log.warn("IOException while decoding certificate request from PEM", ex);
+        } finally{
+            if(pemParser != null){
+                try {
+                    pemParser.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+
+        return csr;
     }
 
     /**

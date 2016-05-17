@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
 public class SubjectDn {
 
     private static final Logger log = Logger.getLogger(SubjectDn.class);
-    private List<EndEntityProfile.FieldInstance> fieldInstances;
+    private Collection<EndEntityProfile.FieldInstance> fieldInstances;
     private Map<String, EndEntityProfile.FieldInstance> fieldInstancesMap;
     public final static List<String> COMPONENTS;
     static{
@@ -65,34 +66,49 @@ public class SubjectDn {
     private String value;
 
     public SubjectDn(EndEntityProfile endEntityProfile) {
-        fieldInstances = new ArrayList<EndEntityProfile.FieldInstance>(COMPONENTS.size());
+        fieldInstances = new ArrayList<>(COMPONENTS.size());
         fieldInstancesMap = new HashMap<String, EndEntityProfile.FieldInstance>(COMPONENTS.size());
         for (String key : COMPONENTS) {
             Field field = endEntityProfile.new Field(key);
             for (EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
-                fieldInstances.add(fieldInstance);
                 fieldInstancesMap.put(key, fieldInstance);
             }
         }
+        
+        update();
     }
-
-    public List<EndEntityProfile.FieldInstance> getFieldInstances() {
+    
+    public Collection<EndEntityProfile.FieldInstance> getFieldInstances() {
         return fieldInstances;
     }
-
-    public void setFieldInstances(List<EndEntityProfile.FieldInstance> fieldInstances) {
-        this.fieldInstances = fieldInstances;
+    
+    private void setFieldInstances(){
+        fieldInstances.clear();
+        fieldInstances.addAll(fieldInstancesMap.values());
     }
     
     public Map<String, EndEntityProfile.FieldInstance> getFieldInstancesMap() {
         return fieldInstancesMap;
     }
 
+    /**
+     * Set the field instances map. Make sure you invoke update() after you have been using this method to change some entries.
+     * This method is useful when SubjectDN values should be set from CSR.
+     * @param fieldInstancesMap
+     * @see SubjectDn.update()
+     * @see EnrollMakeNewRequestBean.initCertificateData()
+     */
     public void setFieldInstancesMap(Map<String, EndEntityProfile.FieldInstance> fieldInstancesMap) {
         this.fieldInstancesMap = fieldInstancesMap;
+        
     }
 
-    public void updateValue(){
+    /**
+     * Updates the field instances arraylist and string value.
+     */
+    public void update(){
+        setFieldInstances();
+        
         StringBuilder subjectDn = new StringBuilder();
         for(EndEntityProfile.FieldInstance fieldInstance : fieldInstances){
             if(!fieldInstance.getValue().isEmpty()){
@@ -119,7 +135,7 @@ public class SubjectDn {
      */
     public String getValue() {
         if(value == null){
-            updateValue();
+            update();
         }
         return value;
     }
