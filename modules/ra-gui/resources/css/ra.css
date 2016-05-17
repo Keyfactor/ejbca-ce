@@ -53,12 +53,25 @@
 	
 	.content-body pure-table td,
 	.content-body pure-table th {
-    border-left: 1px solid #cbcbcb;/*  inner column border */
-    border-width: 0 0 0 1px;
-    font-size: inherit;
-    margin: 0;
-    padding: 0px 10px; /* cell padding */    
-    overflow: visible; /*to make ths where the title is really long work*/
+	    border-left: 1px solid #cbcbcb;/*  inner column border */
+	    border-width: 0 0 0 1px;
+	    font-size: inherit;
+	    margin: 0;
+	    padding: 0px 10px; /* cell padding */    
+	    overflow: visible; /*to make ths where the title is really long work*/
+	}
+	
+.button-group {
+	padding: 0 0.5em;   	 
+}
+
+#enrollMakeNewRequestContentBody {
+	text-align: center;
+}
+
+/* A specific button group on enrollmakenewrequest.xhtml */
+#enrollMakeNewRequestForm:keyGenerationButtonGroup {
+	text-align: center;
 }
 
 .content-body-subhead {
@@ -72,7 +85,7 @@
 	min-width: 50%;
 	background: #fffbf6;
 	text-align: left;
-	padding: 0.2em 0.5em;
+	padding: 0.5em 0.5em;
 	margin-bottom: 0.5em;
 	
 }
@@ -100,8 +113,15 @@
     text-align: right;
 }
 
+.ra-button {
+	margin: 0 0.25em;
+ 	background: #003366;
+   	color: #f2f2f2;
+}
+
 .pure-control-group {
 	padding: 0 0.5em;
+	margin: 0 0.25em;
 }
 
 

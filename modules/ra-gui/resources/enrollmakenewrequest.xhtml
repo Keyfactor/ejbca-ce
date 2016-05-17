@@ -33,9 +33,8 @@
 				<h:outputText value="#{msg.make_requests_page_title}" />
 			</h1>
 		</h:panelGroup>
-		<h:panelGroup layout="block" styleClass="content-body align-center">
-			<h:form id="enrollMakeNewRequestForm"
-				styleClass="pure-form pure-form-aligned">
+		<h:panelGroup layout="block" id="enrollMakeNewRequestContentBody" styleClass="content-body">
+			<h:form id="enrollMakeNewRequestForm" styleClass="pure-form pure-form-aligned">
 				<h2>
 					<h:outputText value="#{msg.enroll_select_certificate_type_and_ca}" />
 				</h2>
@@ -123,8 +122,7 @@
 					</h:panelGroup>
 				</h:panelGroup>
 
-				<h:panelGroup layout="block"
-					rendered="#{!enrollMakeNewRequestBean.availableKeyPairGenerations.isEmpty()}">
+				<h:panelGroup layout="block" rendered="#{!enrollMakeNewRequestBean.availableKeyPairGenerations.isEmpty()}">
 					<h2>
 						<h:outputText value="#{msg.enroll_provide_a_key_pair_information}" />
 					</h2>
@@ -242,25 +240,26 @@
 							<h3>
 								<h:outputText value="#{msg.enroll_user_credentials}" />
 							</h3>
-							<h:outputLabel for="selectDownloadCredentialsOneMenu"
-								value="#{msg.enroll_download_credentials_type}" />
-							<h:selectOneMenu id="selectDownloadCredentialsOneMenu"
-								value="#{enrollMakeNewRequestBean.selectedDownloadCredentialsType}"
-								valueChangeListener="#{enrollMakeNewRequestBean.downloadCredentialsTypeChangedListener}">
-								<c:if
-									test="#{enrollMakeNewRequestBean.availableDownloadCredentials.size()>1}">
-									<f:selectItem itemLabel="Select..." itemValue="#{null}"
-										itemDisabled="true" itemLabelEscaped="true" />
-								</c:if>
-								<f:selectItems
-									value="#{enrollMakeNewRequestBean.availableDownloadCredentials.keySet()}" />
-								<f:ajax
-									execute=":enrollMakeNewRequestForm:selectDownloadCredentialsOneMenu"
-									event="change"
-									render=":globalMessages :enrollMakeNewRequestForm"
-									listener="#{enrollMakeNewRequestBean.downloadCredentialsTypeAjaxListener}" />
-							</h:selectOneMenu>
-
+							<h:panelGroup layout="block" styleClass="pure-control-group">
+								<h:outputLabel for="selectDownloadCredentialsOneMenu"
+									value="#{msg.enroll_download_credentials_type}" />
+								<h:selectOneMenu id="selectDownloadCredentialsOneMenu"
+									value="#{enrollMakeNewRequestBean.selectedDownloadCredentialsType}"
+									valueChangeListener="#{enrollMakeNewRequestBean.downloadCredentialsTypeChangedListener}">
+									<c:if
+										test="#{enrollMakeNewRequestBean.availableDownloadCredentials.size()>1}">
+										<f:selectItem itemLabel="Select..." itemValue="#{null}"
+											itemDisabled="true" itemLabelEscaped="true" />
+									</c:if>
+									<f:selectItems
+										value="#{enrollMakeNewRequestBean.availableDownloadCredentials.keySet()}" />
+									<f:ajax
+										execute=":enrollMakeNewRequestForm:selectDownloadCredentialsOneMenu"
+										event="change"
+										render=":globalMessages :enrollMakeNewRequestForm"
+										listener="#{enrollMakeNewRequestBean.downloadCredentialsTypeAjaxListener}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
 							<fieldset>
 								<h:panelGroup layout="block" styleClass="pure-control-group"
 									rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}">
@@ -297,28 +296,31 @@
 										value="#{enrollMakeNewRequestBean.endEntityInformation.email}" />
 								</h:panelGroup>
 							</fieldset>
-							<h:panelGroup layout="block">
+							
+							<h:panelGroup layout="block" id="keyGenerationButtonGroup">
 								<h:commandButton id="generateJks"
 									value="#{msg.enroll_generate_jks}"
 									action="#{enrollMakeNewRequestBean.generateJks()}"
-									rendered="#{enrollMakeNewRequestBean.getGenerateJksButtonRendered()}">
+									rendered="#{enrollMakeNewRequestBean.getGenerateJksButtonRendered()}"
+									styleClass="pure-button ra-button">
 								</h:commandButton>
 								<h:commandButton id="generateP12"
 									value="#{msg.enroll_generate_p12}"
 									action="#{enrollMakeNewRequestBean.generateP12()}"
-									rendered="#{enrollMakeNewRequestBean.getGenerateP12ButtonRendered()}">
+									rendered="#{enrollMakeNewRequestBean.getGenerateP12ButtonRendered()}"
+									styleClass="pure-button ra-button">
 								</h:commandButton>
 							</h:panelGroup>
 						</h:panelGroup>
 					</h:panelGroup>
 				</h:panelGroup>
 
-				<h:panelGroup layout="block">
-					<h:commandButton id="nextButton" value="#{msg.generic_next}"
+				<h:panelGroup layout="block" id="navigationButtonGroup">
+					<h:commandButton id="nextButton" value="#{msg.generic_next}" styleClass="pure-button ra-button"
 						action="#{enrollMakeNewRequestBean.next()}"
 						rendered="#{enrollMakeNewRequestBean.getNextButtonRendered()}">
 					</h:commandButton>
-					<h:commandButton id="resetButton" value="#{msg.generic_reset}"
+					<h:commandButton id="resetButton" value="#{msg.generic_reset}" styleClass="pure-button ra-button"
 						action="#{enrollMakeNewRequestBean.reset()}">
 					</h:commandButton>
 				</h:panelGroup>
