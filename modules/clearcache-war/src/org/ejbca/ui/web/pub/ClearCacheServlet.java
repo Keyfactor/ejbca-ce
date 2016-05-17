@@ -132,7 +132,7 @@ public class ClearCacheServlet extends HttpServlet {
         			log.debug("Certificate Profile cache cleared");
         		}
         		
-        		approvalprofilesession.forceProfileCacheExpire();
+        		approvalprofilesession.forceProfileCacheRebuild();
         		if(log.isDebugEnabled()) {
                     log.debug("Approval Profile cache cleared");
                 }
