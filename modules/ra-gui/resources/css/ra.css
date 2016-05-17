@@ -14,7 +14,7 @@
 /* version: $Id$ */
 
 .content {
-	background: #fff3e6;
+	background: #ffffff;
 	height: 100%;
 	margin: 50px 10% 30px 10%;	
 	border-radius: 15px;
@@ -32,6 +32,7 @@
 	    margin: 0.2em 0;
 	    font-size: 3em;
 	    font-weight: 300;
+	    color: #1f589f;
 	}
 	
 .content-body {
@@ -39,16 +40,18 @@
     margin-right: auto;
     line-height: 1.6em;
     text-align: left;
-    padding: 0em 1.5em 1em; 
+    padding: 1em 1.5em 1em; 
 }
 	.content-body h2 {
 	    margin: 0.2em 0.5em;
 	    font-size: 1.3em;
 	    font-weight: 300;
+	    color: #1f589f;
 	}
 	
 	.content-body h3 {
 	    margin: 0.2em 0.5em;
+	    color: #1f589f;
 	}
 	
 	.content-body pure-table td,
@@ -62,32 +65,37 @@
 	}
 	
 .button-group {
-	padding: 0 0.5em;   	 
+	padding: 0.5em 0.5em;   	 
 }
 
 #enrollMakeNewRequestContentBody {
-	text-align: center;
+	text-align: left;
 }
 
 /* A specific button group on enrollmakenewrequest.xhtml */
-#enrollMakeNewRequestForm:keyGenerationButtonGroup {
+.keygeneration-button-group {
 	text-align: center;
 }
+
+.navigation-button-group {
+	text-align: center;
+}
+
 
 .content-body-subhead {
     margin: 0 1.5em 0;
 }
 
 .internal-frame {
-	border-style: solid;
-	border-width: 1px;
+	border-style: hidden;
+	border-width: 0px;
 	border-color: #373737;
 	min-width: 50%;
-	background: #fffbf6;
+	background: #BFBFBF;
 	text-align: left;
 	padding: 0.5em 0.5em;
-	margin-bottom: 0.5em;
-	
+	border-radius: 5px;
+	margin: 0.5em 0;
 }
 	.internal-frame fieldset {
 		padding: 0;
@@ -95,6 +103,7 @@
 
 .radio-button-table {
 	margin-left: 3em;
+	padding: 0 5em;
 }
 	
 .required-input {
@@ -114,9 +123,9 @@
 }
 
 .ra-button {
-	margin: 0 0.25em;
- 	background: #003366;
-   	color: #f2f2f2;
+	margin: 0.25em 0.25em;
+ 	background: #ededed;
+   	color: #212021;
 }
 
 .pure-control-group {
@@ -129,21 +138,37 @@
 
 .ejbca-menu {
     height: 2em;
-    background: #003366;
-   	color: #f2f2f2;	
+    background: #ededed;
+   	color: #212021;	
 }
 
 .pure-menu-link {
-   	color: #f2f2f2;	    
+   	color: #212021;	    
    	font-size: 0.875em; 	
 }
 
 .pure-menu-item {
-	background: #003366;
+	background: #ededed;
 }
 
 .pure-menu-link:hover, .pure-menu-link:focus  {
 	background: #336699;
+}
+
+.enroll-menu-link:hover, .enroll-menu-link:focus  {
+	background: #1f589f;
+}
+
+.cas-menu-link:hover, .cas-menu-link:focus  {
+	background: #fab929;
+}
+
+.requests-menu-link:hover, .requests-menu-link:focus  {
+	background: #e73d35;
+}
+
+.search-menu-link:hover, .search-menu-link:focus  {
+	background: #945048;
 }
 
 img.menu_logo {
@@ -158,11 +183,15 @@ img.menu_logo {
     text-decoration: none;
 }
 
+.language_button:hover, .language_button:focus{
+	background: #336699;
+}
+
 /* CSS Specific for the bottom menu */
 
 .footer {
-    background: #003366;
-   	color: #f2f2f2;
+    background: #ededed;
+   	color: #212021;
    	font-size: 0.875em; 
     padding: 1px;
    			
