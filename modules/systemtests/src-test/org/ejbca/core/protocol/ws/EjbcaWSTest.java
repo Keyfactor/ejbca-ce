@@ -520,12 +520,13 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         try {
             
             ApprovalProfile approvalProfile = new ApprovalProfile(approvalProfileName);
+            approvalProfile.setActionsRequireApproval(new int[] {CAInfo.REQ_APPROVAL_REVOCATION});
             approvalProfile.setNumberOfApprovals(1);
-            approvalProfileSession.addApprovalProfile(intAdmin, approvalProfileName, approvalProfile);
+            final int approvalProfileId = approvalProfileSession.addApprovalProfile(intAdmin, approvalProfileName, approvalProfile);
             
             cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSessionRemote, caSession, catoken);
+            caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, approvalProfileId, caAdminSessionRemote, caSession, catoken);
             X509Certificate adminCert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME)).iterator().next();
             Set<X509Certificate> credentials = new HashSet<X509Certificate>();
             credentials.add(adminCert);
