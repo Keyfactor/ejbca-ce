@@ -169,6 +169,44 @@
 								</h:selectOneMenu>
 							</h:panelGroup>
 						</h:panelGroup>
+
+						<h:panelGroup layout="block" id="csrUploadPanel"
+							rendered="#{enrollMakeNewRequestBean.getCsrUploadRendered()}"
+							styleClass="pure-control-group">
+							<p id="marker" style="display: inline-block; max-width: 210px;"></p>
+							<ui:remove>
+								<!-- Pure JavaScript file upload, since non-JS fallback of pasting upload exists -->
+							</ui:remove>
+							<script>
+var newFileInput = document.createElement("input");
+newFileInput.type='file';
+newFileInput.id='newFileInputId';
+newFileInput.onchange = function() {
+	if (newFileInput.files.length != 0) {
+		var fileReader = new FileReader();
+		fileReader.onloadend = function(event) {
+			if (event.target.readyState == FileReader.DONE) {
+				document.getElementById('enrollMakeNewRequestForm:certificateRequest').value = event.target.result;
+				newFileInput.value = '';
+			}
+		};
+		fileReader.readAsText(newFileInput.files[0]);
+	}
+};
+document.getElementById("marker").appendChild(newFileInput);
+                			</script>
+						</h:panelGroup>
+						<br />
+						<h:panelGroup
+							rendered="#{enrollMakeNewRequestBean.getCsrUploadRendered()}">
+							<h:inputTextarea id="certificateRequest"
+								style="font-family:'Courier New', Courier, monospace;"
+								value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80"
+								rows="20">
+								<f:validateLength minimum="1" />
+							</h:inputTextarea>
+						</h:panelGroup>
+
 					</h:panelGroup>
 				</h:panelGroup>
 
@@ -184,8 +222,7 @@
 						<ui:repeat id="subjectDn"
 							value="#{enrollMakeNewRequestBean.subjectDn.getFieldInstances()}"
 							var="instance">
-							<h:panelGroup layout="block"
-								styleClass="pure-control-group">
+							<h:panelGroup layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="subjectDnField"
 									value="#{enrollMakeNewRequestBean.getSubjectDnFieldOutputName(instance.getName())}"
 									rendered="#{instance.isUsed()}" />
@@ -205,8 +242,7 @@
 						<ui:repeat id="subjectAlternativeName"
 							value="#{enrollMakeNewRequestBean.subjectAlternativeName.getFieldInstances()}"
 							var="instance">
-							<h:panelGroup layout="block"
-								styleClass="pure-control-group">
+							<h:panelGroup layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="subjectAltNameField"
 									value="#{enrollMakeNewRequestBean.getSubjectAlternativeNameFieldOutputName(instance.getName())}"
 									rendered="#{instance.isUsed()}" />
@@ -224,8 +260,7 @@
 						<ui:repeat id="subjectDirectoryAttributes"
 							value="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.getFieldInstances()}"
 							var="instance">
-							<h:panelGroup layout="block"
-								styleClass="pure-control-group">
+							<h:panelGroup layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="subjectDirectoryField"
 									value="#{enrollMakeNewRequestBean.getSubjectDirectoryAttributesFieldOutputName(instance.getName())}"
 									rendered="#{instance.isUsed()}" />
@@ -299,14 +334,38 @@
 							<h:panelGroup layout="block" styleClass="keygeneration-button-group">
 								<h:commandButton id="generateJks"
 									value="#{msg.enroll_generate_jks}"
-									action="#{enrollMakeNewRequestBean.generateJks()}"
+									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateJks()}"
 									rendered="#{enrollMakeNewRequestBean.getGenerateJksButtonRendered()}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
 								<h:commandButton id="generateP12"
 									value="#{msg.enroll_generate_p12}"
-									action="#{enrollMakeNewRequestBean.generateP12()}"
+									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateP12()}"
 									rendered="#{enrollMakeNewRequestBean.getGenerateP12ButtonRendered()}"
+									styleClass="pure-button ra-button">
+								</h:commandButton>
+								<h:commandButton id="generatePem"
+									value="#{msg.enroll_generate_pem}"
+									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePem()}"
+									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
+									styleClass="pure-button ra-button">
+								</h:commandButton>
+								<h:commandButton id="generatePemFullChain"
+									value="#{msg.enroll_generate_pem_full_chain}"
+									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePemFullChain()}"
+									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
+									styleClass="pure-button ra-button">
+								</h:commandButton>
+								<h:commandButton id="generatePkcs7"
+									value="#{msg.enroll_generate_pkcs7}"
+									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePksc7()}"
+									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
+									styleClass="pure-button ra-button">
+								</h:commandButton>
+								<h:commandButton id="generateDer"
+									value="#{msg.enroll_generate_der}"
+									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificeDer()}"
+									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
 							</h:panelGroup>

@@ -14,15 +14,18 @@ package org.ejbca.core.model.era;
 
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -119,4 +122,10 @@ public interface RaMasterApi {
      * @throws KeyStoreException if something went wrong with keystore creation
      */
     KeyStore generateKeystore(AuthenticationToken admin, EndEntityInformation endEntity, String keyLength, String keyAlg) throws AuthorizationDeniedException, KeyStoreException;
+
+    byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
+            PKCS10CertificationRequest certificateRequest) throws AuthorizationDeniedException;
+
+    byte[] createPkcs7(AuthenticationToken authenticationToken, X509Certificate certificate, boolean includeChain)
+            throws AuthorizationDeniedException;
 }
