@@ -73,11 +73,11 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             options = optionsBuilder.toString();
             
             optionsType = metadata.getOptionsType();
-            if(optionsType == ApprovalStep.METADATATYPE_CHECKBOX) {
+            if(optionsType == ApprovalStepMetadata.METADATATYPE_CHECKBOX) {
                 optionTypeString = "Check Boxes";
-            } else if(optionsType == ApprovalStep.METADATATYPE_RADIOBUTTON) {
+            } else if(optionsType == ApprovalStepMetadata.METADATATYPE_RADIOBUTTON) {
                 optionTypeString = "Radio Buttons";
-            } else if(optionsType == ApprovalStep.METADATATYPE_TEXTBOX) {
+            } else if(optionsType == ApprovalStepMetadata.METADATATYPE_TEXTBOX) {
                 optionTypeString = "Text Box";
             } else {
                 optionTypeString = "Type unknown";
@@ -385,9 +385,9 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public void setNewMetadataOptionsType(int type) { newMetadataOptionsType=type; }
     public List<SelectItem> getOptionTypesAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        ret.add(new SelectItem(ApprovalStep.METADATATYPE_CHECKBOX, "Check boxes"));
-        ret.add(new SelectItem(ApprovalStep.METADATATYPE_RADIOBUTTON, "Radio buttons"));
-        ret.add(new SelectItem(ApprovalStep.METADATATYPE_TEXTBOX, "Text field"));
+        ret.add(new SelectItem(ApprovalStepMetadata.METADATATYPE_CHECKBOX, "Check boxes"));
+        ret.add(new SelectItem(ApprovalStepMetadata.METADATATYPE_RADIOBUTTON, "Radio buttons"));
+        ret.add(new SelectItem(ApprovalStepMetadata.METADATATYPE_TEXTBOX, "Text field"));
         return ret;
     }
     public void addMetadata() {
