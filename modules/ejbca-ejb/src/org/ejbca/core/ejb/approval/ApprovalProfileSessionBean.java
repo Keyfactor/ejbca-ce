@@ -391,5 +391,10 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     public void forceProfileCacheExpire() {
        approvalProfileCache.forceCacheExpiration();
     }
+    
+    @Override
+    public void forceProfileCacheRebuild() {
+       approvalProfileCache.updateProfileCache(true);
+    }
 
 }

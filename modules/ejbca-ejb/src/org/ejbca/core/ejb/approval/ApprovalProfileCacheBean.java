@@ -82,7 +82,13 @@ public class ApprovalProfileCacheBean {
     public void initialize() {
         idNameMapCacheTemplate = new HashMap<Integer, String>();
         nameIdMapCacheTemplate = new HashMap<String, Integer>();
-        updateProfileCache(true);
+        try {
+            updateProfileCache(true);
+        } catch (RuntimeException e) {
+            //We don't want to murder the entire deployment if the database happens to be unresponsive during startup, it's something we might 
+            //recover from
+            LOG.error(e);
+        }
     }
     
     public ApprovalProfileCacheBean() {
