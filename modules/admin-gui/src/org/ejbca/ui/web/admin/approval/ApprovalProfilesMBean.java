@@ -190,7 +190,6 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
             try {
                 ApprovalProfileSessionLocal approvalProfileSession = getEjbcaWebBean().getEjb().getApprovalProfileSession(); 
                 approvalProfileSession.removeApprovalProfile(getAdmin(), getSelectedApprovalProfileId());
-                getEjbcaWebBean().getInformationMemory().approvalProfilesEdited();
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage("Not authorized to remove approval profile.");
             }
@@ -280,7 +279,6 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
             try {
                 getEjbcaWebBean().getEjb().getApprovalProfileSession()
                         .renameApprovalProfile(getAdmin(), getSelectedApprovalProfileName(), approvalProfileName);
-                getEjbcaWebBean().getInformationMemory().approvalProfilesEdited();
                 setApprovalProfileName("");
             } catch (ApprovalProfileExistsException | ApprovalProfileDoesNotExistException e) {
                 addErrorMessage(e.getLocalizedMessage());
@@ -318,7 +316,6 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
             try {
                 final ApprovalProfile approvalProfile = new ApprovalProfile(approvalProfileName);
                 getEjbcaWebBean().getEjb().getApprovalProfileSession().addApprovalProfile(getAdmin(), approvalProfileName, approvalProfile);
-                getEjbcaWebBean().getInformationMemory().approvalProfilesEdited();
                 setApprovalProfileName("");
             } catch (ApprovalProfileExistsException e) {
                 addErrorMessage("CERTIFICATEPROFILEALREADY");

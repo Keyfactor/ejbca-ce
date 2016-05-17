@@ -10,7 +10,7 @@
 
   Map<Integer,String> publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
   
-  Map<Integer, String> approvalprofilemap = ejbcawebbean.getInformationMemory().getApprovalProfileIdToNameMap();
+  Map<Integer, String> approvalProfileMap = ejbcawebbean.getInformationMemory().getApprovalProfileIdToNameMap();
 
   Collection<AvailableCryptoToken> availablecatokens = CryptoTokenFactory.instance().getAvailableCryptoTokens();
   String[] availablecatokentypes = new String[availablecatokens.size()];
@@ -1521,12 +1521,13 @@ function toggleCANameChange(){
        <select name="<%=SELECT_APPROVALPROFILE%>" size="1" <%= (hasEditRights ? "" : "disabled") %> >
           <%   int usedapprovalprofile = -1;
                if(editca) usedapprovalprofile = cainfo.getApprovalProfile(); 
-               for(Integer next : approvalprofilemap.keySet()) { %>
+               List<Integer> approvalProfileIds = ejbcawebbean.getInformationMemory().getSortedApprovalProfileIds();
+               for(Integer next : approvalProfileIds) { %>
           <option  value="<%= next %>" 
              <%    if(editca && usedapprovalprofile==next)
                      out.write(" selected ");
                  %>>
-             <c:out value="<%= approvalprofilemap.get(next) %>"/>                 
+             <c:out value="<%= approvalProfileMap.get(next) %>"/>                 
           </option>  
              <% } %>
        </select>
