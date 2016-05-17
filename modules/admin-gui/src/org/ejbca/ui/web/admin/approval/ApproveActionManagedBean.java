@@ -263,7 +263,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         if(currentApprovalStep!=null) {
             for(MetadataGuiInfo mdGui : metadataList) {
                 String metadataOptionsValue = "";
-                if(mdGui.getOptionsType()==ApprovalStep.METADATATYPE_CHECKBOX) {
+                if(mdGui.getOptionsType()==ApprovalStepMetadata.METADATATYPE_CHECKBOX) {
                     List<String> data = mdGui.getOptionValueList();
                     for(String p : data) {
                         metadataOptionsValue += p + "; " ;
