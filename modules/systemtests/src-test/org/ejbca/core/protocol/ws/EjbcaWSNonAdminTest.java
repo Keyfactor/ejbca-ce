@@ -62,7 +62,9 @@ import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
+import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -98,11 +100,13 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private static final Logger log = Logger.getLogger(EjbcaWSNonAdminTest.class);
 
     private static final String WS_ADMIN_ROLENAME = "WsNonAdminTestRole";
+    private static final String WS_APPROVAL_PROFILE_NAME = "WsApprovalProfile";
     
     private static String adminusername1 = null;
     private static X509Certificate admincert1 = null;
     private static AuthenticationToken admin1 = null;
     private static int caid;
+    private static ApprovalProfile approvalProfile = null;
 
     private List<AccessUserAspectData> adminEntities;
     private static final AuthenticationToken intadmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWSNonAdminTest"));
@@ -111,6 +115,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private final AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
     private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
+    private final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -118,6 +123,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     
     private static List<File> fileHandles = new ArrayList<File>();
     
@@ -139,11 +146,23 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+        
+        configurationSession.backupConfiguration();
+        configurationSession.updateProperty("jaxws.approvalprofile", WS_APPROVAL_PROFILE_NAME);
+        
+        if(approvalProfileSession.getApprovalProfile(WS_APPROVAL_PROFILE_NAME) != null) {
+            approvalProfileSession.removeApprovalProfile(intadmin, WS_APPROVAL_PROFILE_NAME);
+        }
+        approvalProfile = new ApprovalProfile(WS_APPROVAL_PROFILE_NAME);
+        approvalProfile.setNumberOfApprovals(1);
+        approvalProfileSession.addApprovalProfile(intadmin, WS_APPROVAL_PROFILE_NAME, approvalProfile);
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        configurationSession.restoreConfiguration();
+        approvalProfileSession.removeApprovalProfile(intadmin, WS_APPROVAL_PROFILE_NAME);
     }
     
     public String getRoleName() {
@@ -292,12 +311,13 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     public void test02GetHardTokenDataWithApprovals() throws Exception {
 
         final String serialNumber = "12344711";
-
+        
         setUpNonAdmin();
         setupApprovals();
 
-        ApprovalProfile approvalProfile = new ApprovalProfile();
-        approvalProfile.setNumberOfApprovals(1);
+        approvalProfile.setActionsRequireApproval(new int[] {ApprovalRequest.REQ_APPROVAL_VIEW_HARD_TOKEN});
+        approvalProfileSession.changeApprovalProfile(intadmin, WS_APPROVAL_PROFILE_NAME, approvalProfile);
+        
         ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, 
                 serialNumber, true, reqadmin, null, 1, 0, 0, approvalProfile, null);
 
@@ -357,7 +377,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         } finally {
             // Clean up hard token.
             hardTokenSessionRemote.removeHardToken(intadmin, serialNumber);
-
+            
             removeApprovalAdmins();
         }
     }
@@ -381,8 +401,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     @Test
     public void test03CleanGetHardTokenDataWithApprovals() throws Exception {
         setupApprovals();
-        ApprovalProfile approvalProfile = new ApprovalProfile();
-        approvalProfile.setNumberOfApprovals(1);
         ApprovalRequest ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", 
                 true, reqadmin, null, 1, 0, 0, approvalProfile, null);
 
@@ -400,6 +418,11 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     public void test04GenTokenCertificatesWithApprovals() throws Exception {
         setUpNonAdmin();
         setupApprovals();
+        
+        approvalProfile.setActionsRequireApproval(new int[] {ApprovalRequest.REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE, 
+                ApprovalRequest.REQ_APPROVAL_VIEW_HARD_TOKEN});
+        approvalProfileSession.changeApprovalProfile(intadmin, WS_APPROVAL_PROFILE_NAME, approvalProfile);
+        
         try {
             genTokenCertificates(true);
             assertTrue(false);
@@ -413,43 +436,47 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         }
 
         Approval approval1 = new Approval("ap1test");
-
-        ApprovalProfile approvalProfile = new ApprovalProfile();
-        approvalProfile.setNumberOfApprovals(1);
+        
         ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, 
                 reqadmin, null, 1, 0, 0, approvalProfile, null);
-        approvalExecutionSession.approve(admin1, ar.generateApprovalId(), approval1, null, true);
-
-        genTokenCertificates(true);
-
         try {
-            getHardTokenData("12345678", true);
-            assertTrue(false);
-        } catch (WaitingForApprovalException_Exception e) {
-        }
+            approvalExecutionSession.approve(admin1, ar.generateApprovalId(), approval1, null, true);
 
-        try {
             genTokenCertificates(true);
-            assertTrue(false);
-        } catch (WaitingForApprovalException_Exception e) {
+
+            try {
+                getHardTokenData("12345678", true);
+                assertTrue(false);
+            } catch (WaitingForApprovalException_Exception e) {
+            }
+
+            try {
+                genTokenCertificates(true);
+                assertTrue(false);
+            } catch (WaitingForApprovalException_Exception e) {
+            }
+
+            approvalSession.reject(admin1, ar.generateApprovalId(), approval1, null, true);
+
+            try {
+                genTokenCertificates(true);
+                assertTrue(false);
+            } catch (ApprovalRequestExecutionException_Exception e) {
+            }
+        } finally {
+            removeApprovalAdmins();
         }
-
-        approvalSession.reject(admin1, ar.generateApprovalId(), approval1, null, true);
-
-        try {
-            genTokenCertificates(true);
-            assertTrue(false);
-        } catch (ApprovalRequestExecutionException_Exception e) {
-        }
-
-        removeApprovalAdmins();
     }
 
     @Test
     public void test05CleanGenTokenCertificatesWithApprovals() throws Exception {
         setupApprovals();
-        ApprovalProfile approvalProfile = new ApprovalProfile();
-        approvalProfile.setNumberOfApprovals(1);
+        
+        approvalProfile.setActionsRequireApproval(new int[] {ApprovalRequest.REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE, 
+                    ApprovalRequest.REQ_APPROVAL_VIEW_HARD_TOKEN});
+        approvalProfileSession.changeApprovalProfile(intadmin, WS_APPROVAL_PROFILE_NAME, approvalProfile);
+        
+        
         ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, 
                 reqadmin, null, 1, 0, 0, approvalProfile, null);
 
