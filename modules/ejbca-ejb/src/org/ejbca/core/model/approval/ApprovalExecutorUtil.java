@@ -99,7 +99,7 @@ public class ApprovalExecutorUtil {
             log.trace(">requireApproval: "+req.getClass().getName());            
         }
 		boolean ret = true;
-		if ((req.getNumOfRequiredApprovals() > 0) || isApprovalProfileRelevant(req)) {
+		if (isApprovalProfileRelevant(req)) {
 			ret = !isCalledByOveridableClassnames(getGloballyAllowed());
 			// If we were not found in the globally allowed list, check the passed in list
 			if (ret && (overridableClassNames != null)) {
@@ -121,8 +121,8 @@ public class ApprovalExecutorUtil {
 	
 	private static boolean isApprovalProfileRelevant(ApprovalRequest approvalRequest) {
 	    final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
-	    if((approvalProfile == null) || (approvalProfile.getNumberOfApprovals()==0) || 
-	            (approvalProfile.getApprovalSteps().size()==0)) {
+	    if((approvalProfile == null) || 
+	       ( (approvalProfile.getNumberOfApprovals()==0) && (approvalProfile.getApprovalSteps().size()==0) ) ) {
 	        return false;
 	    }
 	    
