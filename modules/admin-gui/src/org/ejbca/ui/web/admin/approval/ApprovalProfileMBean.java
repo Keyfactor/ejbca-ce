@@ -40,6 +40,7 @@ import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalProfileByAdminRoles;
 import org.ejbca.core.model.approval.ApprovalProfileNumberOfApprovals;
 import org.ejbca.core.model.approval.ApprovalProfileType;
+import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalStep;
 import org.ejbca.core.model.approval.ApprovalStepMetadata;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -213,6 +214,9 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         for(Entry<Integer, String> entry : entries) {
             ret.add(new SelectItem(entry.getKey(), getEjbcaWebBean().getText(entry.getValue())));
         }
+        ret.add(new SelectItem(ApprovalRequest.REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE, getEjbcaWebBean().getText("APPROVEGENERATETOKENCERT")));
+        ret.add(new SelectItem(ApprovalRequest.REQ_APPROVAL_VIEW_HARD_TOKEN, getEjbcaWebBean().getText("APPROVEVIEWHARDTOKEN")));
+
         return ret;
     }
     public int[] getApprovalActions() {
