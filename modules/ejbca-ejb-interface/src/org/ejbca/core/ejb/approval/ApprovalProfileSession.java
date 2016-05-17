@@ -147,4 +147,9 @@ public interface ApprovalProfileSession {
      */
     void removeApprovalProfile(AuthenticationToken admin, int id) throws AuthorizationDeniedException;
 
+    /**
+     * Forces the profile cache to rebuild. 
+     */
+    void forceProfileCacheRebuild();
+
 }
