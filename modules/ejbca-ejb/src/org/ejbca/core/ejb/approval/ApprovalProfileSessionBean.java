@@ -397,4 +397,9 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
        approvalProfileCache.updateProfileCache(true);
     }
 
+    @Override
+    public Map<String, Integer> getApprovalProfileNameToIdMap() {
+        return approvalProfileCache.getNameIdMapCache();
+    }
+
 }

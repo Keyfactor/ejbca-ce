@@ -115,6 +115,8 @@ public interface ApprovalProfileSession {
      * @return a Map mapping profile id (Integer) to profile name (String) 
      */
     Map<Integer, String> getApprovalProfileIdToNameMap();
+    
+    Map<String, Integer> getApprovalProfileNameToIdMap();
 
     /**
      * Renames an approval profile

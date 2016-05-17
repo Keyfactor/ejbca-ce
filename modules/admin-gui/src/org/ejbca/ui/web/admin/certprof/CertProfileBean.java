@@ -48,6 +48,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
@@ -68,6 +69,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfileBean.class);
 
+    private static final InternalResources intres = InternalResources.getInstance();
+    
     // Declarations in faces-config.xml
     //@javax.faces.bean.ManagedProperty(value="#{certProfilesBean}")
     private CertProfilesBean certProfilesBean;
@@ -240,7 +243,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     
     public List<SelectItem> getAvailableApprovalProfiles() {
         List<SelectItem> ret = new ArrayList<SelectItem>();
-        ret.add(new SelectItem(-1, "None"));
         ApprovalProfileSession approvalProfileSession = getEjbcaWebBean().getEjb().getApprovalProfileSession();
         Map<Integer, String> approvalProfiles = approvalProfileSession.getApprovalProfileIdToNameMap();
         Set<Entry<Integer, String>> entries = approvalProfiles.entrySet();
@@ -255,7 +257,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 return a.getLabel().compareToIgnoreCase(b.getLabel());
             }
         });
-        
+        ret.add(0, new SelectItem(-1, intres.getLocalizedMessage("general.none")));   
         return ret;
     }
     
