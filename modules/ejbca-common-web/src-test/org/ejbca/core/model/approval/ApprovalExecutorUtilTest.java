@@ -13,6 +13,7 @@
 
 package org.ejbca.core.model.approval;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -21,7 +22,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -161,4 +164,26 @@ public class ApprovalExecutorUtilTest {
 		assertTrue(approvalRequired);
 		
 	}
+    
+    @Test
+    public void testRequireApprovalNonNrOfApprovalsProfile() throws Exception {
+        final String approvalProfileName = "nrOfApprovalProfile";
+        final ApprovalProfile approvalProfile = new ApprovalProfile(approvalProfileName);
+        approvalProfile.setActionsRequireApproval(new int[] {CAInfo.REQ_APPROVAL_REVOCATION, CAInfo.REQ_APPROVAL_ACTIVATECA});
+        assertEquals(0, approvalProfile.getNumberOfApprovals());
+        assertEquals(0, approvalProfile.getApprovalSteps().size());
+        assertEquals(2, approvalProfile.getActionsRequireApproval().length);
+        
+        RevocationApprovalRequest revReq = new RevocationApprovalRequest(null, "", "", 0, null, 0, 0, 0, approvalProfile, null);
+        assertFalse(ApprovalExecutorUtil.requireApproval(revReq, null));
+        AddEndEntityApprovalRequest addReq = new AddEndEntityApprovalRequest(null, false, null, "", 0, 0, 0, approvalProfile, null);
+        assertFalse(ApprovalExecutorUtil.requireApproval(addReq, null));
+        
+        approvalProfile.setNumberOfApprovals(1);
+        assertEquals(1, approvalProfile.getNumberOfApprovals());
+        revReq = new RevocationApprovalRequest(null, "", "", 0, null, 0, 0, 0, approvalProfile, null);
+        assertTrue(ApprovalExecutorUtil.requireApproval(revReq, null));
+        addReq = new AddEndEntityApprovalRequest(null, false, null, "", 0, 0, 0, approvalProfile, null);
+        assertFalse(ApprovalExecutorUtil.requireApproval(addReq, null));
+    }
 }
