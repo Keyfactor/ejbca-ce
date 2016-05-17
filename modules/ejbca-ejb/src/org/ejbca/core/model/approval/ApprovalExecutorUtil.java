@@ -178,7 +178,8 @@ public class ApprovalExecutorUtil {
                 int approvalProfileId = cainfo.getApprovalProfile();
                 if(approvalProfileId != -1) {
                     ApprovalProfile profile = approvalProfileSession.getApprovalProfile(approvalProfileId);
-                    if(arrayContainsValue(profile.getActionsRequireApproval(), action)) {
+                    if(arrayContainsValue(profile.getActionsRequireApproval(), action) && 
+                            ( (profile.getNumberOfApprovals() > 0) || (profile.getApprovalSteps().size() > 0) )) {
                         firstProfile = profile;
                     }
                 }
@@ -188,7 +189,8 @@ public class ApprovalExecutorUtil {
                 int approvalProfileId = certProfile.getApprovalProfileID();
                 if(approvalProfileId != -1) {
                     ApprovalProfile profile = approvalProfileSession.getApprovalProfile(approvalProfileId);
-                    if(arrayContainsValue(profile.getActionsRequireApproval(), action)) {
+                    if(arrayContainsValue(profile.getActionsRequireApproval(), action) &&
+                            ( (profile.getNumberOfApprovals() > 0) || (profile.getApprovalSteps().size() > 0) )) {
                         secondProfile = profile;
                     }
                 }            

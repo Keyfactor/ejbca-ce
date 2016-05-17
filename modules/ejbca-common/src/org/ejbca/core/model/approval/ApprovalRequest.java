@@ -62,6 +62,16 @@ public abstract class ApprovalRequest implements Externalizable {
     private static final int LATEST_BASE_VERSION = 5;
 
     /**
+     * Constants indicating approval settings for viewing hard token through WS
+     */
+    public static final int REQ_APPROVAL_VIEW_HARD_TOKEN = 5;
+
+    /**
+     * Constants indicating approval settings for generating token certificate through WS
+     */
+    public static final int REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE = 6;
+    
+    /**
      * Simple request type means that the approver will only see new data about the action and will not compare it to old data
      */
     public static final int REQUESTTYPE_SIMPLE = 1;

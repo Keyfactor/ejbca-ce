@@ -13,8 +13,6 @@
 
 package org.ejbca.config;
 
-import org.apache.log4j.Logger;
-
 /**
  * Configuration from jaxws.properties
  * 
@@ -22,37 +20,13 @@ import org.apache.log4j.Logger;
  */
 public class WebServiceConfiguration {
 
-	private static final Logger log = Logger.getLogger(WebServiceConfiguration.class);
-	
 	/**
-	 * Indicating if a call to getHardTokenData for non-authorized users should result in an
-	 * approval request instead of an authorized denied exception.
-	 */
-	public static boolean getApprovalForHardTokenData() {
-		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString("jaxws.approval.gethardtoken"));
-	}
-
-	/**
-	 * Indicating if a call to genTokenCertificates for non-authorized users should result in an
-	 * approval request instead of an authorized denied exception.
-	 */
-	public static boolean getApprovalForGenTokenCertificates() {
-		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString("jaxws.approval.gentokencerts"));
-	}
-
-	/**
-	 * Indicating the number of approvals required to allow an action for a non-authorized
-	 * administrator.
-	 */
-	public static int getNumberOfRequiredApprovals() {
-		int value = 1;
-		try {
-			value = Integer.parseInt(EjbcaConfigurationHolder.getString("jaxws.numberofrequiredapprovals"));
-		} catch( NumberFormatException e ) {
-			log.warn("\"jaxws.numberofrequiredapprovals\" is not a decimal number. Using default value: " + value);
-		}
-		return value;
-	}
+     * Indicating if a call to genTokenCertificates and/or viewHardToken for non-authorized users should result in an
+     * approval request instead of an authorized denied exception.
+     */
+    public static String getApprovalProfile() {
+      return EjbcaConfigurationHolder.getExpandedString("jaxws.approvalprofile");
+    }
 
 	/**
 	 * Authorization control on the fetchUserData call, making it possible for all with a valid

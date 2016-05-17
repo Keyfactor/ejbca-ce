@@ -84,7 +84,7 @@
 		</h:panelGroup>
 		
 		<h:outputLabel for="selectApprovalActions" value="#{web.text.APPROVALACTIONS}"/>
-		<h:selectManyListbox id="selectApprovalActions" value="#{approvalProfileMBean.approvalActions}" size="5" disabled="#{approvalProfilesMBean.viewOnly}">
+		<h:selectManyListbox id="selectApprovalActions" value="#{approvalProfileMBean.approvalActions}" size="6" disabled="#{approvalProfilesMBean.viewOnly}">
 			<f:selectItems value="#{approvalProfileMBean.approvalActionsAvailable}"/>
 		</h:selectManyListbox>
 		
