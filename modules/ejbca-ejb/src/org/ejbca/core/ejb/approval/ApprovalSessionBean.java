@@ -51,6 +51,7 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ProfileID;
+import org.cesecore.util.ValueExtractor;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -168,7 +169,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     public void removeApprovalRequest(AuthenticationToken admin, int id) throws ApprovalException {
         log.trace(">removeApprovalRequest");
         try {
-            ApprovalData ad = ApprovalData.findById(entityManager, Integer.valueOf(id));
+            ApprovalData ad = findById(Integer.valueOf(id));
             if (ad != null) {
                 entityManager.remove(ad);
                 final String detailsMsg = intres.getLocalizedMessage("approval.removed", id);
@@ -328,13 +329,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             log.trace(">isApproved, approvalId: " + approvalId);
         }
         int retval = ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED;
-        Collection<ApprovalData> result = ApprovalData.findByApprovalId(entityManager, approvalId);
+        Collection<ApprovalData> result = findByApprovalId(approvalId);
         if (result.size() == 0) {
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, "Approval request with id : " + approvalId + " does not exist");
         }
-        Iterator<ApprovalData> iter = result.iterator();
-        while (iter.hasNext()) {
-            ApprovalData adl = iter.next();
+        for(ApprovalData adl : result) {
             retval = isApproved(adl, step);
             if (adl.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL || adl.getStatus() == ApprovalDataVO.STATUS_APPROVED
                     || adl.getStatus() == ApprovalDataVO.STATUS_REJECTED) {
@@ -357,13 +356,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         if (log.isTraceEnabled()) {
             log.trace(">markAsStepDone, approvalId: " + approvalId + ", step " + step);
         }
-        Collection<ApprovalData> result = ApprovalData.findByApprovalId(entityManager, approvalId);
-        Iterator<ApprovalData> iter = result.iterator();
+        Collection<ApprovalData> result = findByApprovalId(approvalId);
         if (result.size() == 0) {
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, "Approval request with id : " + approvalId + " does not exist");
         }
-        while (iter.hasNext()) {
-            ApprovalData adl = iter.next();
+        for(ApprovalData adl : result) {
             markStepAsDone(adl, step);
         }
         log.trace("<markAsStepDone.");
@@ -382,7 +379,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     private ApprovalData findNonExpiredApprovalDataLocal(int approvalId) {
         ApprovalData retval = null;
-        Collection<ApprovalData> result = ApprovalData.findByApprovalIdNonExpired(entityManager, approvalId);
+        Collection<ApprovalData> result = findByApprovalIdNonExpired(approvalId);
         if (log.isDebugEnabled()) {
         	log.debug("Found number of approvalIdNonExpired: " + result.size());
         }
@@ -401,7 +398,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     public Collection<ApprovalDataVO> findApprovalDataVO(AuthenticationToken admin, int approvalId) {
         log.trace(">findApprovalDataVO");
         ArrayList<ApprovalDataVO> retval = new ArrayList<ApprovalDataVO>();
-        Collection<ApprovalData> result = ApprovalData.findByApprovalId(entityManager, approvalId);
+        Collection<ApprovalData> result = findByApprovalId(approvalId);
         for (ApprovalData adl : result) {
             retval.add(getApprovalDataVO(adl));
         }
@@ -443,7 +440,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             }
         }
         
-        final List<ApprovalData> approvalDataList = ApprovalData.findByCustomQuery(entityManager, index, numberofrows, customQuery);
+        final List<ApprovalData> approvalDataList = findByCustomQuery(index, numberofrows, customQuery);
         final List<ApprovalDataVO> returnData = new ArrayList<ApprovalDataVO>(approvalDataList.size());
         for (ApprovalData approvalData : approvalDataList) {
             final ApprovalDataVO approvalInformation = getApprovalDataVO(approvalData);
@@ -552,7 +549,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
             public boolean isFree(int i) {
-                return ApprovalData.findByApprovalId(ApprovalSessionBean.this.entityManager, i).size()==0;
+                return findByApprovalId(i).size() == 0;
             }
         };
         return Integer.valueOf( ProfileID.getNotUsedID(db) );
@@ -701,5 +698,50 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         approvalRequest.updateApprovalStepMetadata(approvalStep.getStepId(), approvalStep.getMetadata());
         approvalRequest.addApprovalToStep(approvalStep.getStepId(), approved);
         setApprovalRequest(approvalData, approvalRequest);
+    }
+    
+    /** @return the found entity instance or null if the entity does not exist */
+    private ApprovalData findById(final Integer id) {
+        return entityManager.find(ApprovalData.class, id);
+    }
+    
+    /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
+    private List<ApprovalData> findByApprovalId(final int approvalid) {
+        final javax.persistence.Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId");
+        query.setParameter("approvalId", approvalid);
+        return query.getResultList();
+    }
+    
+    /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
+    private List<ApprovalData> findByApprovalIdNonExpired(final int approvalid) {
+        final javax.persistence.Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId AND (a.status>"+ApprovalDataVO.STATUS_EXPIRED+")");
+        query.setParameter("approvalId", approvalid);
+        return query.getResultList();
+    }
+
+    /** @return return the query results as a List<ApprovalData>. */
+    private List<ApprovalData> findByCustomQuery(final int index, final int numberofrows, final String customQuery) {
+        final List<ApprovalData> ret = new ArrayList<ApprovalData>();
+        /* Hibernate on DB2 wont allow us to "SELECT *" in combination with setMaxResults.
+         * Ingres wont let us access a LOB in a List using a native query for all fields.
+         * -> So we will get a list of primary keys and the fetch the whole entities one by one...
+         * 
+         * As a sad little bonus, DB2 native queries returns a pair of {BigInteger, Integer}
+         * where the first value is row and the second is the value.
+         * As another sad little bonus, Oracle native queries returns a pair of {BigDecimal, BigDecimal}
+         * where the first value is the value and the second is the row.
+         */
+        final javax.persistence.Query query = entityManager.createNativeQuery("SELECT id FROM ApprovalData WHERE " + customQuery);
+        query.setFirstResult(index);
+        query.setMaxResults(numberofrows);
+        @SuppressWarnings("unchecked")
+        final List<Object> ids = query.getResultList();
+        for (Object object : ids) {
+            final int id = ValueExtractor.extractIntValue(object);
+            ret.add(entityManager.find(ApprovalData.class, id));
+        }
+        return ret;
     }
 }
