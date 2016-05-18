@@ -181,18 +181,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
     }
     
-    @Override
-    public RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final int id) {
-        // The values are used to check if a request belongs to us or not
-        String adminCertSerial = null; 
-        String adminCertIssuer = null;
-        if (authenticationToken instanceof X509CertificateAuthenticationToken) {
-            final X509CertificateAuthenticationToken certAuth = (X509CertificateAuthenticationToken) authenticationToken;
-            final X509Certificate cert = certAuth.getCertificate();
-            adminCertSerial = CertTools.getSerialNumberAsString(cert);
-            adminCertIssuer = CertTools.getIssuerDN(cert);
-        }
-        
+    private ApprovalDataVO getApprovalData(AuthenticationToken authenticationToken, final int id) {
         final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
         query.add(ApprovalMatch.MATCH_WITH_UNIQUEID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(id));
         
@@ -210,7 +199,22 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return null;
         }
         
-        final ApprovalDataVO advo = approvals.iterator().next();
+        return approvals.iterator().next();
+    }
+    
+    @Override
+    public RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final int id) {
+        // The values are used to check if a request belongs to us or not
+        String adminCertSerial = null; 
+        String adminCertIssuer = null;
+        if (authenticationToken instanceof X509CertificateAuthenticationToken) {
+            final X509CertificateAuthenticationToken certAuth = (X509CertificateAuthenticationToken) authenticationToken;
+            final X509Certificate cert = certAuth.getCertificate();
+            adminCertSerial = CertTools.getSerialNumberAsString(cert);
+            adminCertIssuer = CertTools.getIssuerDN(cert);
+        }
+        
+        final ApprovalDataVO advo = getApprovalData(authenticationToken, id);
         
         // By getting the CA we perform an implicit auth check
         final String caName;
@@ -234,6 +238,30 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         
         return new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caName, advo);
         
+    }
+    
+    @Override
+    public boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse) throws AuthorizationDeniedException {
+        final ApprovalDataVO advo = getApprovalData(authenticationToken, requestResponse.getId());
+        if (advo == null) {
+            // Return false so the next master api backend can see if it can handle the approval
+            return false;
+        }
+        final boolean isPartitioned = requestResponse.getStepId() != -1;
+        switch (requestResponse.getAction()) {
+        case APPROVE:
+            // TODO
+            //approvalSession.addApprovalToApprovalStep(approvalData, approvalStep, approved);
+            return true;
+        case REJECT:
+            // TODO or should we call addApprovalToApprovalStep with approved==false for partitioned approvals?
+            //approvalSession.reject(authenticationToken, advo.getApprovalId(), approval, approvalStep, !isPartitioned);
+            return true;
+        case SAVE:
+            throw new UnsupportedOperationException("Saving without approving or rejecting is not yet implemented");
+        default:
+            throw new IllegalStateException("Invalid action");
+        }
     }
     
     @Override
