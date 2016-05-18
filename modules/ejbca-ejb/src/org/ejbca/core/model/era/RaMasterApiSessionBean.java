@@ -618,33 +618,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         response.setMightHaveMoreResults(usernames.size()==maxResults);
         return response;
     }
-
-    @Override
-    public String testCall(AuthenticationToken authenticationToken, String argument1, int argument2) throws AuthorizationDeniedException, EjbcaException {
-        // Simple example to prove that invocation of EJB works
-        if (endEntityAccessSession!=null) {
-            final EndEntityInformation eei = endEntityAccessSession.findUser("superadmin");
-            if (eei!=null) {
-                return eei.getDN();
-            }
-        }
-        return "unknown (local call)";
-    }
-
-    @Override
-    public String testCallPreferLocal(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException {
-        return "RaMasterApiLocalImpl.testCallPreferLocal";
-    }
-
-    @Override
-    public List<String> testCallMerge(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException {
-        return Arrays.asList(new String[] {"RaMasterApiLocalImpl.testCallMerge"});
-    }
-
-    @Override
-    public String testCallPreferCache(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException {
-        throw new UnsupportedOperationException();
-    }
     
     @Override
     public Map<Integer, String> getAuthorizedEndEntityProfileIdsToNameMap(AuthenticationToken authenticationToken) {

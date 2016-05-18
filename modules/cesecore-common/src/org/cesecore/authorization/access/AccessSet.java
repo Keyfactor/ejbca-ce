@@ -134,4 +134,12 @@ public final class AccessSet implements Serializable {
         }
     }
     
+    @Override
+    public boolean equals(final Object object) {
+        if (object instanceof AccessSet) {
+            AccessSet accessSet = (AccessSet) object;
+            return set.containsAll(accessSet.set) && accessSet.set.containsAll(set);
+        }
+        return false;
+    }
 }

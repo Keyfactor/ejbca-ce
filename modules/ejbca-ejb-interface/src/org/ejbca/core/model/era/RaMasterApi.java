@@ -32,7 +32,9 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
- * TODO: Implement with proper methods. Keep in mind that there is latency, so batch things.
+ * API of available methods on the CA that can be invoked by the RA.
+ * 
+ * Keep in mind that there is latency, so batch things.
  * 
  * @version $Id$
  */
@@ -64,18 +66,6 @@ public interface RaMasterApi {
 
     /** @return list of end entities from the specified search criteria*/
     RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest raEndEntitySearchRequest);
-
-    @Deprecated // PoC. Remove when we have real functions to invoke.
-    String testCall(AuthenticationToken authenticationToken, String argument1, int argument2) throws AuthorizationDeniedException, EjbcaException;
-
-    @Deprecated // PoC. Remove when we have real functions to invoke.
-    String testCallPreferLocal(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException;
-
-    @Deprecated // PoC. Remove when we have real functions to invoke.
-    List<String> testCallMerge(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException;
-
-    @Deprecated // PoC. Remove when we have real functions to invoke.
-    String testCallPreferCache(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException;
 
     /** @return map of authorized certificate profile Ids and each mapped name */
     Map<Integer, String> getAuthorizedCertificateProfileIdsToNameMap(AuthenticationToken authenticationToken);
