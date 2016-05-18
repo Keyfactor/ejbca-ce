@@ -69,7 +69,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
-import org.junit.Test;
 
 /**
  * Tests the unid-fnr plugin. Read the assert printout {@link #test01()} to understand how to set things up for the test.

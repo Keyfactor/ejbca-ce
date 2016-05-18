@@ -24,8 +24,6 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.CAInfo;
-import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRequestsSearchRequest;

@@ -22,7 +22,6 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
