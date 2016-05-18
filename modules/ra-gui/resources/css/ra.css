@@ -142,7 +142,7 @@
    	color: #212021;	
 }
 
-.pure-menu-link {
+.pure-menu-link, .language_button {
    	color: #212021;	    
    	font-size: 0.875em; 	
 }
