@@ -14,23 +14,18 @@
 package org.ejbca.core.ejb.approval;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.util.ValueExtractor;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 
 /**
@@ -317,71 +312,4 @@ s	 */
     //
     // End Database integrity protection methods
     //
-
-    //
-	// Search functions. 
-	//
-
-	/** @return the found entity instance or null if the entity does not exist */
-	public static ApprovalData findById(final EntityManager entityManager, final Integer id) {
-		return entityManager.find(ApprovalData.class, id);
-	}
-	
-	/** @return return the query results as a List. */
-	@SuppressWarnings("unchecked")
-    public static List<ApprovalData> findByApprovalId(final EntityManager entityManager, final int approvalid) {
-		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId");
-		query.setParameter("approvalId", approvalid);
-		return query.getResultList();
-	}
-	
-	/** @return return the query results as a List. */
-	@SuppressWarnings("unchecked")
-    public static List<ApprovalData> findByApprovalIdNonExpired(final EntityManager entityManager, final int approvalid) {
-		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId AND (a.status>"+ApprovalDataVO.STATUS_EXPIRED+")");
-		query.setParameter("approvalId", approvalid);
-		return query.getResultList();
-	}
-
-	/** @return return the query results as a List<Integer>. */
-	@SuppressWarnings("unchecked")
-    public static List<Integer> findByApprovalIdsByStatus(final EntityManager entityManager, final int status) {
-		final Query query = entityManager.createQuery("SELECT a.approvalid FROM ApprovalData a WHERE a.status=:status");
-		query.setParameter("status", status);
-		return query.getResultList();
-	}
-	
-	/** @return return the query results as a List. */
-    @SuppressWarnings("unchecked")
-    public static List<ApprovalData> findByStatusAndApprovalProfile(final EntityManager entityManager, final int status, final int approvalPorfileId) {
-        final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.status=:status AND a.approvalProfileId=:approvalProfileId");
-        query.setParameter("status", status);
-        query.setParameter("approvalProfileId", approvalPorfileId);
-        return query.getResultList();
-    }
-	
-
-	/** @return return the query results as a List<ApprovalData>. */
-	public static List<ApprovalData> findByCustomQuery(final EntityManager entityManager, final int index, final int numberofrows, final String customQuery) {
-		final List<ApprovalData> ret = new ArrayList<ApprovalData>();
-		/* Hibernate on DB2 wont allow us to "SELECT *" in combination with setMaxResults.
-		 * Ingres wont let us access a LOB in a List using a native query for all fields.
-		 * -> So we will get a list of primary keys and the fetch the whole entities one by one...
-		 * 
-		 * As a sad little bonus, DB2 native queries returns a pair of {BigInteger, Integer}
-		 * where the first value is row and the second is the value.
-		 * As another sad little bonus, Oracle native queries returns a pair of {BigDecimal, BigDecimal}
-		 * where the first value is the value and the second is the row.
-		 */
-		final Query query = entityManager.createNativeQuery("SELECT id FROM ApprovalData WHERE " + customQuery);
-		query.setFirstResult(index);
-		query.setMaxResults(numberofrows);
-		@SuppressWarnings("unchecked")
-        final List<Object> ids = query.getResultList();
-		for (Object object : ids) {
-			final int id = ValueExtractor.extractIntValue(object);
-			ret.add(entityManager.find(ApprovalData.class, id));
-		}
-		return ret;
-	}
 }
