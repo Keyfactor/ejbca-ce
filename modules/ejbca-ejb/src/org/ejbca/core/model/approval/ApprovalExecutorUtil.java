@@ -26,6 +26,7 @@ import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityAppro
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
+import org.ejbca.core.model.approval.type.AccumulativeApprovalProfile;
 
 /**
  * Util class with methods to get information about calling classes
@@ -199,8 +200,8 @@ public class ApprovalExecutorUtil {
             if(firstProfile != null && secondProfile != null) {
                 if(firstProfile.equals(secondProfile)) {
                     secondProfile = null;
-                } else if((firstProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) && 
-                           secondProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+                } else if((firstProfile.getApprovalProfileType() instanceof AccumulativeApprovalProfile) && 
+                           secondProfile.getApprovalProfileType() instanceof AccumulativeApprovalProfile) {
                     if(secondProfile.getNumberOfApprovals() > firstProfile.getNumberOfApprovals()) {
                         firstProfile = secondProfile;
                     }

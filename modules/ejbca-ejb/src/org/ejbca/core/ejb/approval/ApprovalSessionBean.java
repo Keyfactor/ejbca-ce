@@ -64,10 +64,10 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalNotificationParamGen;
 import org.ejbca.core.model.approval.ApprovalProfile;
-import org.ejbca.core.model.approval.ApprovalProfileNumberOfApprovals;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.ApprovalStep;
+import org.ejbca.core.model.approval.type.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
@@ -272,7 +272,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         if (retval != null) {
             ApprovalDataVO advo = getApprovalDataVO(retval);
             ApprovalProfile profile = advo.getApprovalRequest().getApprovalProfile();
-            if(profile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+            if(profile.getApprovalProfileType() instanceof AccumulativeApprovalProfile) {
                 checkNrOfApprovalAuthorization(admin, retval);
             } else {
                 if(!profile.getApprovalProfileType().isAdminAllowedToApproveStep(admin, approvalStep, profile)) {

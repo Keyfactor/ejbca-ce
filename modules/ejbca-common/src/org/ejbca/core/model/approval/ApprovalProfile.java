@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.ejbca.core.model.approval.type.AccumulativeApprovalProfile;
+import org.ejbca.core.model.approval.type.ApprovalProfileType;
 
 /**
  * A class handling approval profiles
@@ -70,7 +72,7 @@ public class ApprovalProfile extends UpgradeableDataHashMap implements Serializa
         
         ApprovalProfileType profileType = type;
         if(profileType==null) {
-            profileType = new ApprovalProfileNumberOfApprovals();
+            profileType = new AccumulativeApprovalProfile();
         }
         data.put(APPROVALPROFILETYPE, profileType);
         data.put(REQUEST_EXPIRATION_PERIOD, profileType.getDefaultRequestExpirationPeriod());
@@ -167,13 +169,13 @@ public class ApprovalProfile extends UpgradeableDataHashMap implements Serializa
     
     
     public void setNumberOfApprovals(int nrOfApprovals) {
-        if(getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+        if(getApprovalProfileType() instanceof AccumulativeApprovalProfile) {
             data.put(NUMBER_OF_APPROVALS_PROPERTY_NAME, nrOfApprovals);
         }
     }
     
     public int getNumberOfApprovals() {
-        if(getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+        if(getApprovalProfileType() instanceof AccumulativeApprovalProfile) {
             if(!data.containsKey(NUMBER_OF_APPROVALS_PROPERTY_NAME)) {
                 data.put(NUMBER_OF_APPROVALS_PROPERTY_NAME, 0);
             }
