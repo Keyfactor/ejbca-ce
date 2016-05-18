@@ -40,7 +40,6 @@ import org.ejbca.core.model.log.Admin;
  * 
  * Approvals is sorted by dates.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 
