@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.approval;
+package org.ejbca.core.model.approval.type;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -19,6 +19,8 @@ import java.util.Map;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.ejbca.core.model.approval.ApprovalProfile;
+import org.ejbca.core.model.approval.ApprovalStep;
 
 /**
  * A base class for approval profiles types. Any new approval profile type 

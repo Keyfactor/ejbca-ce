@@ -10,35 +10,35 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.approval;
+package org.ejbca.core.model.approval.type;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.approval.ApprovalProfile;
+import org.ejbca.core.model.approval.ApprovalStep;
 
 /**
- * The approval profile where the number of approvals is all that matters.
+ * This approval archetype represents the legacy method of approvals, i.e where a fixed number of administrators need to approve a request for it to 
+ * pass.
  * 
  * @version $Id$
  */
-public class ApprovalProfileNumberOfApprovals extends ApprovalProfileType {
+public class AccumulativeApprovalProfile extends ApprovalProfileType {
     
     private static final long serialVersionUID = 6432620040542676563L;
     
-    //private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-
-
     
-    public ApprovalProfileNumberOfApprovals() {
+    public AccumulativeApprovalProfile() {
         super();
         init();
     }
 
     @Override
     public String getTypeName() {
-        return "Approval Profile by Number of Approvals";
+        return "Accumulative Approvals";
     }
 
     @Override

@@ -27,13 +27,13 @@ import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.ApprovalProfileNumberOfApprovals;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.ApprovalStep;
 import org.ejbca.core.model.approval.ApprovalStepMetadata;
 import org.ejbca.core.model.approval.SelfApprovalException;
+import org.ejbca.core.model.approval.type.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -207,7 +207,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
    
     public String approve() {
         
-        final boolean isNrOfApprovalProfile = getApproveRequestData().getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals;
+        final boolean isNrOfApprovalProfile = getApproveRequestData().getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof AccumulativeApprovalProfile;
         ApprovalStep step = getApprovalStep();
 
         if((step==null) && (!isNrOfApprovalProfile)) {
@@ -235,7 +235,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 
     public String reject(){
         
-        final boolean isNrOfApprovalProfile = getApproveRequestData().getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals;
+        final boolean isNrOfApprovalProfile = getApproveRequestData().getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof AccumulativeApprovalProfile;
         ApprovalStep step = getApprovalStep();
 
         if((step==null) && (!isNrOfApprovalProfile)) {
@@ -260,7 +260,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
     
     private ApprovalStep getApprovalStep() {
-        if(getApproveRequestData().getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+        if(getApproveRequestData().getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof AccumulativeApprovalProfile) {
             return null;
         }
         
