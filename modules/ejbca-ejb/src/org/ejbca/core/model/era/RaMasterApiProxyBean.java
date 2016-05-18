@@ -407,18 +407,18 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public void addUser(AuthenticationToken admin, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException,
-            EjbcaException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException {
+    public boolean addUser(AuthenticationToken admin, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException,
+            EndEntityExistsException, WaitingForApprovalException {
         for (final RaMasterApi raMasterApi : raMasterApis) {
             try {
                 if (raMasterApi.isBackendAvailable()) {
-                    raMasterApi.addUser(admin, endEntity, clearpwd);
-                    break;//TODO check with Johan if this is ok?
+                    return raMasterApi.addUser(admin, endEntity, clearpwd); //TODO check with Johan if this is ok?
                 }
             } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                 // Just try next implementation
             }
         }
+        return false;
     }
 
     @Override
@@ -439,7 +439,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     
     @Override
     public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
-            PKCS10CertificationRequest certificateRequest) throws AuthorizationDeniedException {
+            byte[] certificateRequest) throws AuthorizationDeniedException {
         final byte[] ret = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {

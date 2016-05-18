@@ -12,10 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
-import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -24,7 +22,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,10 +33,8 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.security.cert.CertificateException;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -76,7 +71,6 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
@@ -719,9 +713,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public void addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd) throws AuthorizationDeniedException,
-        EjbcaException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException{
-        endEntityManagementSessionLocal.addUser(admin, endEntity, clearpwd);
+    public boolean addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd) throws AuthorizationDeniedException,
+        EndEntityExistsException, WaitingForApprovalException{
+        try {
+            endEntityManagementSessionLocal.addUser(admin, endEntity, clearpwd);
+        } catch (CADoesntExistsException | UserDoesntFullfillEndEntityProfile | EjbcaException e) {
+            log.error(e);
+            return false;
+        }
+        
+        return endEntityAccessSession.findUser(endEntity.getUsername()) != null;
     }
     
     @Override
@@ -736,15 +737,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, PKCS10CertificationRequest certificateRequest)throws AuthorizationDeniedException{
+    public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, byte[] certificateRequest)throws AuthorizationDeniedException{
         PKCS10RequestMessage req = null;
-        try {
-            req = RequestMessageUtils.genPKCS10RequestMessage(certificateRequest.getEncoded());
-            req.setUsername(endEntity.getUsername());
-            req.setPassword(endEntity.getPassword());
-        } catch (IOException e) {
-            throw new IllegalStateException("Internal error with creating PKCS10RequestMessage");
-        }
+        req = RequestMessageUtils.genPKCS10RequestMessage(certificateRequest);
+        req.setUsername(endEntity.getUsername());
+        req.setPassword(endEntity.getPassword());
         
         ResponseMessage resp;
         try {
@@ -759,7 +756,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (CertificateParsingException | CertificateEncodingException e) {
             throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage");
         }
-        
         return null;
     }
     
