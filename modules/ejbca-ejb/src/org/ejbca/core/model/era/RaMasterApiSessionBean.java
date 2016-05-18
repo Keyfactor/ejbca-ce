@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
+import javax.ejb.RemoveException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -89,6 +90,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.GenerateToken;
@@ -723,6 +725,20 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         return endEntityAccessSession.findUser(endEntity.getUsername()) != null;
+    }
+    
+    @Override
+    public void deleteUser(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException{
+        try {
+            endEntityManagementSessionLocal.deleteUser(admin, username);
+        } catch (NotFoundException | RemoveException e) {
+            log.error(e);
+        }
+    }
+    
+    @Override
+    public EndEntityInformation findUser(final AuthenticationToken admin, String username) throws AuthorizationDeniedException{
+        return endEntityAccessSession.findUser(username);
     }
     
     @Override

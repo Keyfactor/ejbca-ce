@@ -420,6 +420,37 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return false;
     }
+    
+    @Override
+    public void deleteUser(final AuthenticationToken authenticationToken, final String username) throws AuthorizationDeniedException{
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            try {
+                if (raMasterApi.isBackendAvailable()) {
+                    raMasterApi.deleteUser(authenticationToken, username); //TODO check with Johan if this is ok?
+                }
+            } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                // Just try next implementation
+            }
+        }
+    }
+    
+    @Override
+    public EndEntityInformation findUser(AuthenticationToken authenticationToken, String username) throws AuthorizationDeniedException{
+        final EndEntityInformation ret = new EndEntityInformation();
+        for(final RaMasterApi raMasterApi : raMasterApis){
+            if(raMasterApi.isBackendAvailable()){
+                try{
+                    final EndEntityInformation result = raMasterApi.findUser(authenticationToken, username);
+                    if (result != null) {
+                        return ret;
+                    }
+                }catch  (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
 
     @Override
     public KeyStore generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity, String keyLength, String keyAlg)

@@ -102,9 +102,17 @@ public interface RaMasterApi {
      * @throws WaitingForApprovalException if approval is required to finalize the adding of the end entity
      * @return true if used has been added, false otherwise
      */
-    boolean addUser(AuthenticationToken admin, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException,
+    boolean addUser(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException,
             EndEntityExistsException, WaitingForApprovalException;
 
+    /**
+     * Deletes (end entity) user. Does not propagate the exceptions but logs them.
+     * @param authenticationToken
+     * @param username the username of the end entity user about to delete
+     * @throws AuthorizationDeniedException
+     */
+    void deleteUser(final AuthenticationToken authenticationToken, final String username) throws AuthorizationDeniedException;
+    
     /**
      * Generates keystore for the specified end entity. Used for server side generated key pairs.
      * @param authenticationToken authentication token
@@ -129,7 +137,7 @@ public interface RaMasterApi {
             byte[] certificateRequest) throws AuthorizationDeniedException;
 
     /**
-     * Signs the certificate and returns it as PKCS#7. CA about the sign is going to be found using issuer DN from the certificate
+     * Signs the certificate and returns it as PKCS#7. CA about the sign is going to be found using issuer DN from the certificate.
      * @param authenticationToken authentication token
      * @param certificate certificate about to be signed
      * @param includeChain true if all chain should be included, false otherwise
@@ -138,4 +146,13 @@ public interface RaMasterApi {
      */
     byte[] createPkcs7(AuthenticationToken authenticationToken, X509Certificate certificate, boolean includeChain)
             throws AuthorizationDeniedException;
+
+    /**
+     * Finds end entity by its username.
+     * @param authenticationToken authentication token
+     * @param username username of the end entity
+     * @return end entity as EndEntityInformation
+     * @throws AuthorizationDeniedException
+     */
+    EndEntityInformation findUser(AuthenticationToken authenticationToken, String username) throws AuthorizationDeniedException;
 }
