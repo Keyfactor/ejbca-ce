@@ -52,9 +52,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -67,14 +65,12 @@ import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page
@@ -138,6 +134,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return value;
         }
     }
+
     private Map<String, KeyPairGeneration> availableKeyPairGenerations = new HashMap<String, KeyPairGeneration>();
     private String selectedKeyPairGeneration;
     private boolean keyPairGenerationChanged;
@@ -147,6 +144,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String selectedAlgorithm;
     private boolean algorithmChanged;
     private String certificateRequest;
+
     public enum TokenDownloadType {
         PEM(1), PEM_FULL_CHAIN(2), PKCS7(3), P12(4), JKS(5), DER(6);
         private int value;
@@ -358,7 +356,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
         //If PROVIDED BY USER key generation is selected, keyAlg and keySpec have to be extracted and Subject DN fields could be parsed from CSR
         if (selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
-            PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest);   //pkcs10CertificateRequest will not be null at this point
+            PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest); //pkcs10CertificateRequest will not be null at this point
             List<String> subjectDnFieldsFromParsedCsr = CertTools.getX500NameComponents(pkcs10CertificateRequest.getSubject().toString());
             for (String subjectDnField : subjectDnFieldsFromParsedCsr) {
                 String[] nameValue = subjectDnField.split("=");
@@ -453,7 +451,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 && availableKeyStores.contains(SecConst.TOKEN_SOFT_P12 + "")
                 && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue());//TODO probably will need to get updated once approvals are implemented in kickassra
     }
-    
+
     public boolean getGenerateFromCsrButtonRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile == null) {
@@ -468,7 +466,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public boolean getNextButtonRendered() {
-        return !getGenerateJksButtonRendered() && !getGenerateP12ButtonRendered();
+        return !getGenerateJksButtonRendered() && !getGenerateP12ButtonRendered() && !getGenerateFromCsrButtonRendered();
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -637,11 +635,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private final void enterCsr() {
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest);
-        if(pkcs10CertificateRequest == null){
+        if (pkcs10CertificateRequest == null) {
             raLocaleBean.addMessageError("enroll_invalid_certificate_request");
             return;
         }
-        
+
         resetCertificateData();
         initCertificateData();
     }
@@ -678,23 +676,23 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
         //TODO how to set subject directory attributes?
     }
-    
-    public final void addEndEntityAndGenerateCertificeDer(){
+
+    public final void addEndEntityAndGenerateCertificeDer() {
         addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "DER", "application/octet-stream", ".der", TokenDownloadType.DER);
     }
-    
-    public final void addEndEntityAndGenerateCertificePksc7(){
+
+    public final void addEndEntityAndGenerateCertificePksc7() {
         addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "PKCS#7", "application/octet-stream", ".p7b", TokenDownloadType.PKCS7);
     }
-    
-    public final void addEndEntityAndGenerateCertificePemFullChain(){
+
+    public final void addEndEntityAndGenerateCertificePemFullChain() {
         addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "PEM", "application/octet-stream", ".pem", TokenDownloadType.PEM_FULL_CHAIN);
     }
-    
-    public final void addEndEntityAndGenerateCertificePem(){
+
+    public final void addEndEntityAndGenerateCertificePem() {
         addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "PEM", "application/octet-stream", ".pem", TokenDownloadType.PEM);
     }
-    
+
     public final void addEndEntityAndGenerateP12() {
         addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_P12, "PKCS#12", "application/x-pkcs12", ".p12", TokenDownloadType.P12);
     }
@@ -704,14 +702,15 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     /**
-     * Adds end entity and creates its token that will be downloaded
+     * Adds end entity and creates its token that will be downloaded. This method is responsible for deleting the end entity if something goes wrong with token creation.
      * @param tokenType the type of the token that will be created (one of: TOKEN_USERGEN, TOKEN_SOFT_P12, TOKEN_SOFT_JKS from EndEntityConstants)
      * @param tokenName the name of the token. It will be used only in messages and logs
      * @param responseContentType the MIME type of the token to be downloaded (etc. "application/octet-stream", "application/x-pkcs12",..)
      * @param fileExtension the file extension that will be added to the end of the downlaoded token file
      * @param tokenDownloadType the download type/format of the token. This is used only with TOKEN_USERGEN since this is the only one that have different formats: PEM, DER,...)
      */
-    private final void addEndEntityAndGenerateToken(int tokenType, String tokenName, String responseContentType, String fileExtension, TokenDownloadType tokenDownloadType) {
+    private final void addEndEntityAndGenerateToken(int tokenType, String tokenName, String responseContentType, String fileExtension,
+            TokenDownloadType tokenDownloadType) {
         //Update the EndEntityInformation data
         subjectDn.update();
         subjectAlternativeName.updateValue();
@@ -728,25 +727,38 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
         //Add end-entity
         try {
-            raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, true);//TODO clear password config
-            log.info(raLocaleBean.getMessage("enroll_end_entity_has_been_successfully_added", endEntityInformation.getUsername()));
-        } catch (EndEntityExistsException | CADoesntExistsException | AuthorizationDeniedException | EjbcaException
-                | UserDoesntFullfillEndEntityProfile | WaitingForApprovalException e) {
-            raLocaleBean.addMessageInfo("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage());
-            log.error(raLocaleBean.getMessage("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage()), e);
+            if (raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, true)) {
+                log.info(raLocaleBean.getMessage("enroll_end_entity_has_been_successfully_added", endEntityInformation.getUsername()));
+            } else {
+                raLocaleBean.addMessageInfo("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername());
+                log.error(raLocaleBean.getMessage("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername()));
+                return;
+            }
+        } catch (EndEntityExistsException e) {
+            raLocaleBean.addMessageInfo("enroll_username_already_exists", endEntityInformation.getUsername(), e.getMessage());
+            log.error(raLocaleBean.getMessage("enroll_username_already_exists", endEntityInformation.getUsername(), e.getMessage()), e);
+            return;
+        } catch (AuthorizationDeniedException e) {
+            raLocaleBean.addMessageInfo("enroll_unauthorized_operation", endEntityInformation.getUsername(), e.getMessage());
+            log.error(raLocaleBean.getMessage("enroll_unauthorized_operation", endEntityInformation.getUsername(), e.getMessage()), e);
+            return;
+        } catch (WaitingForApprovalException e) {
+            //TODO
+            log.error(e);
             return;
         }
 
         //Get token's algorithm from CSR (PROVIDED_BY_USER) or it can be specified directly (ON_SERVER)
         String keyAlg = null;
         String keyLength = null;
-        if(selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())){
+        if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
             PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest);
             if (pkcs10CertificateRequest == null) {
                 raLocaleBean.addMessageError("enroll_invalid_certificate_request");
                 return;
             }
-            JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(CertTools.getCertificateRequestFromPem(certificateRequest));
+            JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(
+                    CertTools.getCertificateRequestFromPem(certificateRequest));
             PublicKey publicKey;
             try {
                 publicKey = jcaPKCS10CertificationRequest.getPublicKey();
@@ -757,7 +769,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
             keyAlg = AlgorithmTools.getKeyAlgorithm(publicKey);
             keyLength = AlgorithmTools.getKeySpecification(publicKey);
-        }else if(selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())){
+        } else if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
             final String[] tokenKeySpecSplit = selectedAlgorithm.split("_");
             keyAlg = tokenKeySpecSplit[0];
             keyLength = tokenKeySpecSplit[1];
@@ -789,9 +801,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         } else if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
             byte[] certificateDataToDownload = null;
             try {
-                certificateDataToDownload = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(), endEntityInformation,
-                        CertTools.getCertificateRequestFromPem(certificateRequest));
-                if(certificateDataToDownload == null){
+                certificateDataToDownload = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(),
+                        endEntityInformation, CertTools.getCertificateRequestFromPem(certificateRequest).getEncoded());
+                if (certificateDataToDownload == null) {
                     raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername());
                     return;
                 }
@@ -805,14 +817,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
                     certificateDataToDownload = raMasterApiProxyBean.createPkcs7(raAuthenticationBean.getAuthenticationToken(), certificate, true);
                     certificateDataToDownload = CertTools.getPemFromPkcs7(certificateDataToDownload);
-                } else if(tokenDownloadType == TokenDownloadType.PEM){
+                } else if (tokenDownloadType == TokenDownloadType.PEM) {
                     X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
-                    certificateDataToDownload = CertTools.getPemFromCertificateChain(Arrays.asList((Certificate)certificate));
+                    certificateDataToDownload = CertTools.getPemFromCertificateChain(Arrays.asList((Certificate) certificate));
                 }
 
                 buffer.write(certificateDataToDownload);
-            } catch (CertificateParsingException | CertificateEncodingException | AuthorizationDeniedException
-                    | IOException e) {
+            } catch (CertificateParsingException | CertificateEncodingException | AuthorizationDeniedException | IOException e) {
                 raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
                 log.error(raLocaleBean.getMessage("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()),
                         e);
@@ -826,7 +837,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             }
         }
-        
 
         //Download the token
         FacesContext fc = FacesContext.getCurrentInstance();
