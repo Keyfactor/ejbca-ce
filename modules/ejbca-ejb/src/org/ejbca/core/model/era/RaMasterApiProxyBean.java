@@ -270,58 +270,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public String testCall(AuthenticationToken authenticationToken, String argument1, int argument2) throws AuthorizationDeniedException, EjbcaException {
-        for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable()) {
-                try {
-                    return raMasterApi.testCall(authenticationToken, argument1, argument2);
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        throw new RaMasterBackendUnavailableException();
-    }
-
-    @Override
-    public String testCallPreferLocal(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException {
-        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable()) {
-                try {
-                    return raMasterApi.testCallPreferLocal(authenticationToken, requestData);
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        throw new RaMasterBackendUnavailableException();
-    }
-
-    @Override
-    public List<String> testCallMerge(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException {
-        final List<String> ret = new ArrayList<>();
-        for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable()) {
-                try {
-                    final List<String> result = raMasterApi.testCallMerge(authenticationToken, requestData);
-                    if (result != null) {
-                        ret.addAll(result);
-                    }
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        return ret;
-    }
-
-    @Override
-    public String testCallPreferCache(AuthenticationToken authenticationToken, String requestData) throws AuthorizationDeniedException {
-        // TODO: Ask module cache, module is responsible for getting bulk of info from master if needed
-        return "cached value";
-    }
-
-    @Override
     public Map<Integer, String> getAuthorizedCertificateProfileIdsToNameMap(final AuthenticationToken authenticationToken) {
         final Map<Integer, String> ret = new HashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApis) {

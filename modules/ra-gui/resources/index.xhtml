@@ -34,21 +34,10 @@
         	<h:panelGroup layout="block" class="content-body" id="content-body">
 				<h2 class="content-body-subhead">Generic Sample Text!</h2>
 	            <h:outputText value="#{msg.generic_sampleText}"/>
-	            <h:panelGrid columns="1">
-		 	    	<component:example componentId="value" componentLabel="#{msg.somefunction_value_label}" componentValue="#{raExampleBean.value}"/>
-		     	 </h:panelGrid>
 		       
 		       	 <h2 class="content-body-subhead">Other stuff!</h2>
 		       	  	
 		        <h:form>
-		            <h:panelGrid columns="2">
-		                <h:outputLabel for="value" value="#{msg.somefunction_value_label}"/>
-		                <h:inputText id="value" value="#{raExampleBean.value}"/>
-	    	        </h:panelGrid>
-	                <h:commandButton action="#{raExampleBean.testAction}" value="#{msg.somefunction_command}">
-	                    <f:ajax execute="@form" render="@form :messages"/>
-	                </h:commandButton>
-	                <h:commandButton action="#{raExampleBean.testActionAndRedirect}" value="#{msg.somefunctionprg_command}"/>
 	                <h:commandButton action="#{raExampleBean.throwException}" value="Throw Exception (to test error handling)"/>
 	            </h:form>
 		 	  	
