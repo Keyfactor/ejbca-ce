@@ -15,10 +15,10 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.approval.ApprovalProfile;
-import org.ejbca.core.model.approval.ApprovalProfileByAdminRoles;
-import org.ejbca.core.model.approval.ApprovalProfileNumberOfApprovals;
 import org.ejbca.core.model.approval.ApprovalStep;
 import org.ejbca.core.model.approval.ApprovalStepMetadata;
+import org.ejbca.core.model.approval.type.AccumulativeApprovalProfile;
+import org.ejbca.core.model.approval.type.PartitionedApprovalProfile;
 import org.junit.Test;
 
 public class ApprovalProfileTest {
@@ -39,7 +39,7 @@ public class ApprovalProfileTest {
             final int id = approvalProfileSession.addApprovalProfile(ADMIN, approvalProfileName, approvalProfile);
             ApprovalProfile addedApprovalProfile = approvalProfileSession.getApprovalProfile(id);
             assertNotNull(addedApprovalProfile);
-            assertTrue(addedApprovalProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals);
+            assertTrue(addedApprovalProfile.getApprovalProfileType() instanceof AccumulativeApprovalProfile);
             assertEquals(2, addedApprovalProfile.getNumberOfApprovals());
             assertEquals(0, addedApprovalProfile.getApprovalSteps().size());
             assertEquals(0, addedApprovalProfile.getActionsRequireApproval().length);
@@ -56,11 +56,11 @@ public class ApprovalProfileTest {
         }
         try {
             final ApprovalProfile approvalProfile = new ApprovalProfile(approvalProfileName);
-            approvalProfile.setApprovalProfileType(new ApprovalProfileByAdminRoles());
+            approvalProfile.setApprovalProfileType(new PartitionedApprovalProfile());
             final int id = approvalProfileSession.addApprovalProfile(ADMIN, approvalProfileName, approvalProfile);
             ApprovalProfile addedApprovalProfile = approvalProfileSession.getApprovalProfile(id);
             assertNotNull(addedApprovalProfile);
-            assertTrue(addedApprovalProfile.getApprovalProfileType() instanceof ApprovalProfileByAdminRoles);
+            assertTrue(addedApprovalProfile.getApprovalProfileType() instanceof PartitionedApprovalProfile);
             assertEquals(0, addedApprovalProfile.getApprovalSteps().size());
             assertEquals(0, addedApprovalProfile.getNumberOfApprovals());
             assertEquals(0, addedApprovalProfile.getActionsRequireApproval().length);
@@ -77,7 +77,7 @@ public class ApprovalProfileTest {
         }
         try {
             final ApprovalProfile approvalProfile = new ApprovalProfile(approvalProfileName);
-            final ApprovalProfileByAdminRoles adminsProfileType = new ApprovalProfileByAdminRoles();
+            final PartitionedApprovalProfile adminsProfileType = new PartitionedApprovalProfile();
             approvalProfile.setApprovalProfileType(adminsProfileType);
             
             final Map<Integer, String> mainObjectOptions = adminsProfileType.getMainAuthorizationObjectOptions();

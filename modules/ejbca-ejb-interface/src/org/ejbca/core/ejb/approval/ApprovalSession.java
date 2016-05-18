@@ -123,7 +123,7 @@ public interface ApprovalSession {
      * exists, throws an ApprovalRequestDoesntExistException otherwise
      * 
      * 2. check if the administrator is authorized using the following rules: 
-     *   2.1 If the approval profile is of type ApprovalProfileNumberOfApprovals:
+     *   2.1 If the approval profile is of type AccumulativeApprovalProfile:
      *      2.1.1 if getEndEntityProfile is ANY_ENDENTITYPROFILE then check if the admin is
      *            authorized to AccessRulesConstants.REGULAR_APPROVECAACTION otherwise
      *            AccessRulesConstants.REGULAR_APPORVEENDENTITY and APPROVAL_RIGHTS for the

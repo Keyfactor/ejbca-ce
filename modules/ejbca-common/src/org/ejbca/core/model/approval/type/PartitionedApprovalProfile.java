@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.approval;
+package org.ejbca.core.model.approval.type;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,16 +24,24 @@ import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.model.approval.ApprovalProfile;
+import org.ejbca.core.model.approval.ApprovalStep;
 
-public class ApprovalProfileByAdminRoles extends ApprovalProfileType {
+/**
+ * PartitionedApprovalProfile represents an approval archetype where each approval is partitioned into several subtasks, assigned to one or more roles. 
+ * 
+ * @version $Id$
+ *
+ */
+public class PartitionedApprovalProfile extends ApprovalProfileType {
 
     private static final long serialVersionUID = 6991912129797327010L;
 
-    public ApprovalProfileByAdminRoles() {}
+    public PartitionedApprovalProfile() {}
 
     @Override
     public String getTypeName() {
-        return "Approval Profile by Administrator Roles";
+        return "Partitioned Approvals";
     }
     
     public long getDefaultRequestExpirationPeriod() {

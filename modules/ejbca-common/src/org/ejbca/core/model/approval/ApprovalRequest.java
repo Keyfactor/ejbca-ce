@@ -43,6 +43,7 @@ import org.cesecore.util.CertTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenReferenceRegistry;
+import org.ejbca.core.model.approval.type.AccumulativeApprovalProfile;
 import org.ejbca.core.model.log.Admin;
 
 /**
@@ -123,7 +124,7 @@ public abstract class ApprovalRequest implements Externalizable {
         if(this.approvalProfile != null) {
             initApprovalSteps();
         
-            if(this.approvalProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+            if(this.approvalProfile.getApprovalProfileType() instanceof AccumulativeApprovalProfile) {
                 this.numOfRequiredApprovals = this.approvalProfile.getNumberOfApprovals();
             }
         }
@@ -160,7 +161,7 @@ public abstract class ApprovalRequest implements Externalizable {
         if(this.approvalProfile != null) {
             initApprovalSteps();
         
-            if(this.approvalProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+            if(this.approvalProfile.getApprovalProfileType() instanceof AccumulativeApprovalProfile) {
                 this.numOfRequiredApprovals = this.approvalProfile.getNumberOfApprovals();
                 this.approvalStepsNrOfApprovals = new boolean[numberOfSteps];
                 for (int i = 0; i < numberOfSteps; i++) {
@@ -179,7 +180,7 @@ public abstract class ApprovalRequest implements Externalizable {
         approvalSteps = new HashMap<Integer, ApprovalStep>();
         approvalStepsHandledMap = new HashMap<Integer, Boolean>();
             
-        if(approvalProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals) {
+        if(approvalProfile.getApprovalProfileType() instanceof AccumulativeApprovalProfile) {
             final int requiredNrOfApprovals = approvalProfile.getNumberOfApprovals();
             for(int i=0; i<requiredNrOfApprovals; i++) {
                 ApprovalStep step = new ApprovalStep(approvalProfile.getNewStepId(), null, new ArrayList<ApprovalStepMetadata>(), 1, false, null, new ArrayList<Integer>());

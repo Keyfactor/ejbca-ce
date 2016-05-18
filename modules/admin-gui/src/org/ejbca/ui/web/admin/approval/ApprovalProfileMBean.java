@@ -37,12 +37,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.approval.ApprovalProfile;
-import org.ejbca.core.model.approval.ApprovalProfileByAdminRoles;
-import org.ejbca.core.model.approval.ApprovalProfileNumberOfApprovals;
-import org.ejbca.core.model.approval.ApprovalProfileType;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalStep;
 import org.ejbca.core.model.approval.ApprovalStepMetadata;
+import org.ejbca.core.model.approval.type.AccumulativeApprovalProfile;
+import org.ejbca.core.model.approval.type.ApprovalProfileType;
+import org.ejbca.core.model.approval.type.PartitionedApprovalProfile;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -163,7 +163,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 log.error("Approval Profiles should be clonable, but this one was not!", e);
             }
             currentApprovalProfileTypeName = this.approvalProfile.getApprovalProfileType().getClass().getCanonicalName();
-            nrOfApprovalsProfileType = approvalProfile.getApprovalProfileType() instanceof ApprovalProfileNumberOfApprovals;
+            nrOfApprovalsProfileType = approvalProfile.getApprovalProfileType() instanceof AccumulativeApprovalProfile;
         }
         return approvalProfile;
     }
@@ -251,7 +251,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             ApprovalProfile profile = getApprovalProfile();
             profile.setApprovalProfileType(profileType);
             approvalProfile = profile;
-            nrOfApprovalsProfileType = profileType instanceof ApprovalProfileNumberOfApprovals;
+            nrOfApprovalsProfileType = profileType instanceof AccumulativeApprovalProfile;
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             String msg = "Could not get an ApprovalProfileType from " + typeName + ". " + e.getLocalizedMessage();
             log.info(msg);
@@ -275,8 +275,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public List<SelectItem> getMainAuthorizationObjectOptions() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         ApprovalProfileType type = getApprovalProfile().getApprovalProfileType();
-        if(type!=null && type instanceof ApprovalProfileByAdminRoles) {
-            ApprovalProfileByAdminRoles adminProfileType = (ApprovalProfileByAdminRoles) type;
+        if(type!=null && type instanceof PartitionedApprovalProfile) {
+            PartitionedApprovalProfile adminProfileType = (PartitionedApprovalProfile) type;
             Map<Integer, String> roles = adminProfileType.getMainAuthorizationObjectOptions();
             Set<Entry<Integer, String>> entries = roles.entrySet();
             for(Entry<Integer, String> role : entries) {
@@ -302,7 +302,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public List<SelectItem> getNumberOfApprovalsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         ApprovalProfileType type = getApprovalProfile().getApprovalProfileType();
-        if(type!=null && type instanceof ApprovalProfileNumberOfApprovals) {
+        if(type!=null && type instanceof AccumulativeApprovalProfile) {
             if(approvalProfilesMBean.getViewOnly()) {
                 String nrOfApprovals = Integer.toString(getApprovalProfile().getNumberOfApprovals());
                 ret.add(new SelectItem(nrOfApprovals, nrOfApprovals));
