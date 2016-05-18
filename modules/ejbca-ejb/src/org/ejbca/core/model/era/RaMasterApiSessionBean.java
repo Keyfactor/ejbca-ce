@@ -234,7 +234,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         
         // TODO perform ee profile and approval profile authorization checks also
         
-        return new RaApprovalRequestInfo(adminCertSerial, adminCertIssuer, caName, advo);
+        return new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caName, advo);
         
     }
     
@@ -327,7 +327,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         for (final ApprovalDataVO advo : approvals) {
-            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(adminCertSerial, adminCertIssuer, caIdToNameMap.get(advo.getCAId()), advo);
+            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caIdToNameMap.get(advo.getCAId()), advo);
             if (!ari.isPending() && request.isSearchingPending()) { continue; } // XXX untested code!
             if (!ari.isWaitingForMe() && request.isSearchingWaitingForMe()) { continue; }
             // XXX It seems that the query() method filters out approvals that the current admin isn't involved in. How to handle historical steps in this case? And pending steps?

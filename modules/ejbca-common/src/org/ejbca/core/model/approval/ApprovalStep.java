@@ -23,7 +23,7 @@ import java.util.Map;
  * 
  * @version $Id$
  */
-public class ApprovalStep implements Serializable {
+public class ApprovalStep implements Serializable, Comparable<ApprovalStep> {
 
     private static final long serialVersionUID = 8652607031017119847L;
     
@@ -137,5 +137,10 @@ public class ApprovalStep implements Serializable {
         } else {
             approvalStatus = ApprovalDataVO.STATUS_REJECTED;
         }
+    }
+
+    @Override
+    public int compareTo(final ApprovalStep o) {
+        return Integer.compare(stepId, o.stepId);
     }
 } 

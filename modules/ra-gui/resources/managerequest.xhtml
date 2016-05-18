@@ -54,19 +54,27 @@
             <h:panelGroup layout="block">
                 <h2><h:outputText value="#{msg.view_request_page_approval_header}"/></h2>
                 
-                <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.hasNextStep}">
-                    <h:outputText value="#{raManageRequestBean.request.stepText}"/>
-                </h:panelGroup>
-                
-                <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.checkboxStep}">
-                    
-                </h:panelGroup>
-                <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.radiobuttonStep}">
-                    
-                </h:panelGroup>
-                <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.textboxStep}">
-                    
-                </h:panelGroup>
+                <h:dataTable value="#{raManageRequestBean.nextStepControls}" var="control" rendered="#{raManageRequestBean.hasNextStep}">
+                    <h:column>
+                        <h:outputText value="#{control.instruction}"/>
+                        
+                        <h:panelGroup layout="block" rendered="#{control.checkbox}">
+                            <h:selectManyCheckbox value="#{control.checkboxValue}">
+                                <f:selectItems value="#{control.options}"/>
+                            </h:selectManyCheckbox>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" rendered="#{control.radiobutton}">
+                            <h:selectOneRadio value="#{control.radiobuttonValue}">
+                                <f:selectItems value="#{control.options}"/>
+                            </h:selectOneRadio>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" rendered="#{control.textbox}">
+                            <h:inputText value="#{control.textValue}" size="25"/>
+                        </h:panelGroup>
+                        
+                        <h:inputText value="#{control.optionNote}" size="25"/>
+                    </h:column>
+                </h:dataTable>
                 
                 
                 <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.canApprove}">

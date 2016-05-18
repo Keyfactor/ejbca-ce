@@ -94,6 +94,20 @@ public class RaManageRequestBean implements Serializable {
         return new ArrayList<>();
     }
     
+    public boolean isHasNextStep() {
+        initializeRequestInfo();
+        return requestInfo != null && requestInfo.getNextStep() != null;
+    }
+    
+    public List<ApprovalRequestGUIInfo.StepControl> getNextStepControls() {
+        initializeRequestInfo();
+        if (requestInfo != null && requestInfo.getNextStep() != null) {
+            return getRequest().getNextStep().getControls();
+        } else {
+            return null;
+        }
+    }
+    
     public void approve() {
         // TODO
     }

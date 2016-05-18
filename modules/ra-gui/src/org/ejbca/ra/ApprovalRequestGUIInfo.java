@@ -13,9 +13,12 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -33,7 +36,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ApprovalRequestGUIInfo.class);
     
-    public class StepOption {
+    public static class StepOption implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final String name;
         private Object value;
         
@@ -54,6 +58,60 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
     }
     
+    public static class StepControl implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private final int id;
+        /** Type of control, corresponds to ApprovalStep.METADATATYPE_* constants*/
+        private final int optionsType;
+        private final String instruction;
+        private final String[] options;
+        private String optionNote;
+        private String optionValue;
+        
+        public StepControl(final ApprovalStepMetadata metadata) {
+            id = metadata.getMetadataId();
+            instruction = metadata.getInstruction();
+            optionsType = metadata.getOptionsType();
+            final List<String> optionsList = metadata.getOptions();
+            options = optionsList.toArray(new String[optionsList.size()]);
+            optionNote = metadata.getOptionNote();
+        }
+        
+        public String getInstruction() { return instruction; }
+        public boolean isCheckbox() { return optionsType == ApprovalStepMetadata.METADATATYPE_CHECKBOX; }
+        public boolean isRadiobutton() { return optionsType == ApprovalStepMetadata.METADATATYPE_RADIOBUTTON; }
+        public boolean isTextbox() { return optionsType == ApprovalStepMetadata.METADATATYPE_TEXTBOX; }
+        
+        public String[] getOptions() { return options; }
+        public String getRadiobuttonValue() { return optionValue; }
+        public void setRadiobuttonValue(final String rbvalue) { optionValue = rbvalue; }
+        public String[] getCheckboxValue() { return (optionValue != null ? optionValue.split("; *") : ArrayUtils.EMPTY_STRING_ARRAY); }
+        public void setCheckboxValue(final String[] cbvalue) { optionValue = StringUtils.join(cbvalue, "; "); }
+        public String getTextValue() { return optionValue; }
+        public void setTextValue(final String textValue) { optionValue = textValue; }
+        
+        public String getOptionNote() { return optionNote; }
+        public void setOptionNote(final String optionNote) { this.optionNote = optionNote; }
+    }
+    
+    public static class Step implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private final int stepId;
+        private final List<StepControl> controls;
+        
+        public Step(final ApprovalStep approvalStep) {
+            controls = new ArrayList<>();
+            for (final ApprovalStepMetadata metadata : approvalStep.getMetadata()) {
+                controls.add(new StepControl(metadata));
+            }
+            stepId = approvalStep.getStepId();
+        }
+        
+        public List<StepControl> getControls() {
+            return controls;
+        }
+    }
+    
     // This field is package-internal so RaManageRequest(s)Bean can use it internally. This class is specific to these beans.
     final RaApprovalRequestInfo request;
     
@@ -64,13 +122,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private final String detail;
     private final String status;
     
-    // Information about the current step (if any)
-    private boolean hasNextStep;
-    private int stepId;
-    /** Type of step, corresponds to ApprovalStep.METADATATYPE_* constants*/
-    private int stepType;
-    private String stepText;
-    private List<StepOption> stepOptions;
+    private final Step nextStep;
+    private final List<Step> previousSteps;
     
     // Whether the current admin can approve this request
     private boolean canApprove;
@@ -119,7 +172,17 @@ public class ApprovalRequestGUIInfo implements Serializable {
             status = "???";
         }
         
-        //step = new ApprovalStepGUIInfo(stepId, indexInStep, type, nameText, options);
+        final ApprovalStep nextApprovalStep = request.getNextApprovalStep();
+        if (nextApprovalStep != null) {
+            nextStep = new Step(nextApprovalStep);
+            canApprove = true;
+        } else {
+            nextStep = null;
+            canApprove = false; // TODO can it be true in "number of approvals" mode?
+        }
+        
+        previousSteps = new ArrayList<>();
+        // TODO previous steps
     }
     
     public String getId() { return String.valueOf(request.getId()); }
@@ -130,13 +193,9 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public String getDisplayName() { return displayName; }
     public String getDetail() { return detail; }
     public String getStatus() { return status; }
-    
-    public boolean isHasNextStep() { return hasNextStep && canApprove; }
-    public String getStepText() { return stepText; }
-    public boolean isCheckboxStep() { return isHasNextStep() && stepType == ApprovalStepMetadata.METADATATYPE_CHECKBOX; }
-    public boolean isRadiobuttonStep() { return isHasNextStep() && stepType == ApprovalStepMetadata.METADATATYPE_RADIOBUTTON; }
-    public boolean isTextboxStep() { return isHasNextStep() && stepType == ApprovalStepMetadata.METADATATYPE_TEXTBOX; }
-    public List<StepOption> getStepOptions() { return stepOptions; }
 
+    public boolean isHasNextStep() { return nextStep != null && canApprove; }
+    public Step getNextStep() { return nextStep; }
     public boolean isCanApprove() { return canApprove; }
+    
 }

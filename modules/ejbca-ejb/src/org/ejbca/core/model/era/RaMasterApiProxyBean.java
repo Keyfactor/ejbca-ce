@@ -175,6 +175,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public RaApprovalRequestInfo getApprovalRequest(AuthenticationToken authenticationToken, int id) {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             // TODO can we use System.identityHashCode to track where we got the approvalRequest from, when the user wants to approve it later on?
+            // TODO should we merge requests with the same calculated approvalId?
             try {
                 RaApprovalRequestInfo reqInfo = raMasterApi.getApprovalRequest(authenticationToken, id);
                 if (reqInfo != null) {
