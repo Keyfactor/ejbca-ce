@@ -247,22 +247,24 @@ public abstract class ApprovalRequest implements Externalizable {
     }
     
     public ApprovalStep getNextUnhandledApprovalStepByAdmin(AuthenticationToken admin) {
-        for(ApprovalStep step : approvalSteps.values()) {
-            if(!approvalStepsHandledMap.get(step.getStepId()).booleanValue()) {
-            	boolean isNextStep = true;
-            	for(Integer dependStepId : step.getPreviousStepsDependency()) {
-                    if(!approvalStepsHandledMap.get(dependStepId).booleanValue()) {
-                        isNextStep = false;
-                        break;
-                    }
-                }
-            
-                if(isNextStep) {
-                    try {
-                        if(approvalProfile.getApprovalProfileType().isAdminAllowedToApproveStep(admin, step, approvalProfile)) {
-                            return step;
+        if (approvalSteps != null) {
+            for (ApprovalStep step : approvalSteps.values()) {
+                if (!approvalStepsHandledMap.get(step.getStepId()).booleanValue()) {
+                    boolean isNextStep = true;
+                    for (Integer dependStepId : step.getPreviousStepsDependency()) {
+                        if (!approvalStepsHandledMap.get(dependStepId).booleanValue()) {
+                            isNextStep = false;
+                            break;
                         }
-                    } catch (AuthorizationDeniedException e) { }
+                    }
+                    if (isNextStep) {
+                        try {
+                            if (approvalProfile.getApprovalProfileType().isAdminAllowedToApproveStep(admin, step, approvalProfile)) {
+                                return step;
+                            }
+                        } catch (AuthorizationDeniedException e) {
+                        }
+                    }
                 }
             }
         }

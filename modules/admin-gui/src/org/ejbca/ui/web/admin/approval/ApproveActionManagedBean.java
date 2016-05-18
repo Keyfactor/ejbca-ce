@@ -84,6 +84,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     
     private static final long serialVersionUID = 1940920496104779323L;
     private static final Logger log = Logger.getLogger(ApproveActionManagedBean.class);
+    
 	private final EjbLocalHelper ejb = new EjbLocalHelper();
 	private String comment = "";
 	private ApprovalDataVOView approveRequestData = new ApprovalDataVOView();      
@@ -149,6 +150,10 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     public boolean getExistPreviousMetadata() {
         if(previousMetadataList==null) {
             getMetadataList();
+        }
+        if(previousMetadataList == null) {
+            //Handles approvals created prior to 6.6.0
+            return false;
         }
         return previousMetadataList.getRowCount() > 0;
     }

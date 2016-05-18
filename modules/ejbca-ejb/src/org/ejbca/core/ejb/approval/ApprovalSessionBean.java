@@ -428,7 +428,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             customQuery += caAuthorizationString;
         }
         if (StringUtils.isNotEmpty(endEntityProfileAuthorizationString)) {
-            if (caAuthorizationString.equals("") && query == null) {
+            if (endEntityProfileAuthorizationString.equals("") && query == null) {
                 customQuery += endEntityProfileAuthorizationString;
             } else {
                 customQuery += " AND " + endEntityProfileAuthorizationString;
@@ -446,11 +446,17 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         final List<ApprovalData> approvalDataList = ApprovalData.findByCustomQuery(entityManager, index, numberofrows, customQuery);
         final List<ApprovalDataVO> returnData = new ArrayList<ApprovalDataVO>(approvalDataList.size());
         for (ApprovalData approvalData : approvalDataList) {
-            final ApprovalDataVO advo = getApprovalDataVO(approvalData);
-            final ApprovalStep approvalStep = advo.getApprovalRequest().getNextUnhandledApprovalStepByAdmin(admin);
-            if(approvalStep != null) {
-                returnData.add(advo);
+            final ApprovalDataVO approvalInformation = getApprovalDataVO(approvalData);
+            if(approvalData.getApprovalProfileId() != 0) {
+                //Let approvals created prior to 6.6.0 (which lack data in the profile ID column) pass 
+                final ApprovalStep approvalStep = approvalInformation.getApprovalRequest().getNextUnhandledApprovalStepByAdmin(admin);
+                if(approvalStep == null) {
+                    continue;
+                }
+
             }
+            returnData.add(approvalInformation);
+            
         }
         log.trace("<query()");
         return returnData;
