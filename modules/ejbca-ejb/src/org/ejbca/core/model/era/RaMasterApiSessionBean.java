@@ -33,7 +33,9 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.persistence.QueryTimeoutException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -345,6 +347,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return cdw;
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest request) {
         final RaCertificateSearchResponse response = new RaCertificateSearchResponse();
@@ -495,18 +498,36 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         final int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
         query.setMaxResults(maxResults);
-        @SuppressWarnings("unchecked")
-        final List<String> fingerprints = query.getResultList();
-        if (log.isDebugEnabled()) {
-            log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " → " + query.getResultList().size() + " results.");
+        /* Try to use the non-portable hint (depends on DB and JDBC driver) to specify how long in milliseconds the query may run. Possible behaviors:
+         * - The hint is ignored
+         * - A QueryTimeoutException is thrown
+         * - A PersistenceException is thrown (and the transaction which don't have here is marked for roll-back)
+         */
+        final long searchQueryTimeout = getGlobalCesecoreConfiguration().getMaximumSearchQueryTimeout();
+        if (searchQueryTimeout>0L) {
+            query.setHint("javax.persistence.query.timeout", String.valueOf(searchQueryTimeout));
         }
-        for (final String fingerprint : fingerprints) {
-            response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
+        final List<String> fingerprints;
+        try {
+            fingerprints = query.getResultList();
+            for (final String fingerprint : fingerprints) {
+                response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
+            }
+            response.setMightHaveMoreResults(fingerprints.size()==maxResults);
+            if (log.isDebugEnabled()) {
+                log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " → " + fingerprints.size() + " results.");
+            }
+        } catch (QueryTimeoutException e) {
+            log.info("Requested search query by " + authenticationToken +  " took too long. Query was " + e.getQuery().toString() + ". " + e.getMessage());
+            response.setMightHaveMoreResults(true);
+        } catch (PersistenceException e) {
+            log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " + e.getMessage());
+            response.setMightHaveMoreResults(true);
         }
-        response.setMightHaveMoreResults(fingerprints.size()==maxResults);
         return response;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest request) {
         final RaEndEntitySearchResponse response = new RaEndEntitySearchResponse();
@@ -607,15 +628,32 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         final int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
         query.setMaxResults(maxResults);
-        @SuppressWarnings("unchecked")
-        final List<String> usernames = query.getResultList();
-        if (log.isDebugEnabled()) {
-            log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " → " + query.getResultList().size() + " results.");
+        /* Try to use the non-portable hint (depends on DB and JDBC driver) to specify how long in milliseconds the query may run. Possible behaviors:
+         * - The hint is ignored
+         * - A QueryTimeoutException is thrown
+         * - A PersistenceException is thrown (and the transaction which don't have here is marked for roll-back)
+         */
+        final long searchQueryTimeout = getGlobalCesecoreConfiguration().getMaximumSearchQueryTimeout();
+        if (searchQueryTimeout>0L) {
+            query.setHint("javax.persistence.query.timeout", String.valueOf(searchQueryTimeout));
         }
-        for (final String username : usernames) {
-            response.getEndEntities().add(endEntityAccessSession.findUser(username));
+        final List<String> usernames;
+        try {
+            usernames = query.getResultList();
+            for (final String username : usernames) {
+                response.getEndEntities().add(endEntityAccessSession.findUser(username));
+            }
+            response.setMightHaveMoreResults(usernames.size()==maxResults);
+            if (log.isDebugEnabled()) {
+                log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " → " + usernames.size() + " results.");
+            }
+        } catch (QueryTimeoutException e) {
+            log.info("Requested search query by " + authenticationToken +  " took too long. Query was " + e.getQuery().toString() + ". " + e.getMessage());
+            response.setMightHaveMoreResults(true);
+        } catch (PersistenceException e) {
+            log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " + e.getMessage());
+            response.setMightHaveMoreResults(true);
         }
-        response.setMightHaveMoreResults(usernames.size()==maxResults);
         return response;
     }
     
