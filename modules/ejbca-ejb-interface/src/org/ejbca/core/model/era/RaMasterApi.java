@@ -18,14 +18,11 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 
-import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -33,7 +30,6 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
  * TODO: Implement with proper methods. Keep in mind that there is latency, so batch things.
@@ -102,18 +98,16 @@ public interface RaMasterApi {
      * @param endEntity end entity data as EndEntityInformation object
      * @param clearpwd 
      * @throws AuthorizationDeniedException
-     * @throws EjbcaException
      * @throws EndEntityExistsException if end entity already exists
-     * @throws UserDoesntFullfillEndEntityProfile
      * @throws WaitingForApprovalException if approval is required to finalize the adding of the end entity
-     * @throws CADoesntExistsException if CA doesn't exists
+     * @return true if used has been added, false otherwise
      */
-    void addUser(AuthenticationToken admin, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException,
-            EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException;
+    boolean addUser(AuthenticationToken admin, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException,
+            EndEntityExistsException, WaitingForApprovalException;
 
     /**
-     * Generates keystore for the speicified end entity.
-     * @param admin authentication token
+     * Generates keystore for the specified end entity. Used for server side generated key pairs.
+     * @param authenticationToken authentication token
      * @param endEntity holds end entity information (including user's password)
      * @param keyLength key length for non-EC or curve name for EC(etc. 1024, 2048,.. or brainpoolP224r1, prime239v1, secp 256k1,..)
      * @param keyAlg token key algorithm (DSA, ECDSA or RSA)
@@ -121,11 +115,27 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException
      * @throws KeyStoreException if something went wrong with keystore creation
      */
-    KeyStore generateKeystore(AuthenticationToken admin, EndEntityInformation endEntity, String keyLength, String keyAlg) throws AuthorizationDeniedException, KeyStoreException;
+    KeyStore generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity, String keyLength, String keyAlg) throws AuthorizationDeniedException, KeyStoreException;
 
+    /**
+     * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.
+     * @param authenticationToken authentication token
+     * @param endEntity end entity information
+     * @param certificateRequest CSR as PKCS10CertificateRequst object
+     * @return certificate binary data
+     * @throws AuthorizationDeniedException
+     */
     byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
-            PKCS10CertificationRequest certificateRequest) throws AuthorizationDeniedException;
+            byte[] certificateRequest) throws AuthorizationDeniedException;
 
+    /**
+     * Signs the certificate and returns it as PKCS#7. CA about the sign is going to be found using issuer DN from the certificate
+     * @param authenticationToken authentication token
+     * @param certificate certificate about to be signed
+     * @param includeChain true if all chain should be included, false otherwise
+     * @return PKCS#7 binary data
+     * @throws AuthorizationDeniedException
+     */
     byte[] createPkcs7(AuthenticationToken authenticationToken, X509Certificate certificate, boolean includeChain)
             throws AuthorizationDeniedException;
 }
