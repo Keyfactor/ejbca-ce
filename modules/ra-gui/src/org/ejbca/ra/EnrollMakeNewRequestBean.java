@@ -167,7 +167,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
     //7. Download credentials data
     private EndEntityInformation endEntityInformation;
     private String confirmPassword;
-
     public enum DownloadCredentialsType {
         NO_CREDENTIALS_DIRECT_DOWNLOAD("No credentials (direct download)"), USERNAME_PASSWORD("Username and password credentials"), EMAIL(
                 "Download credentials will be sent to the specified email");
@@ -181,7 +180,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return value;
         }
     }
-
     private Map<String, DownloadCredentialsType> availableDownloadCredentials = new HashMap<String, DownloadCredentialsType>();
     private String selectedDownloadCredentialsType;
     private boolean downloadCredentialsChanged;
@@ -747,120 +745,135 @@ public class EnrollMakeNewRequestBean implements Serializable {
             log.error(e);
             return;
         }
+        
+        //End entity has been added now! Make sure clean-up is done in this "try-finally" block if something goes wrong inside it
+        try{
 
-        //Get token's algorithm from CSR (PROVIDED_BY_USER) or it can be specified directly (ON_SERVER)
-        String keyAlg = null;
-        String keyLength = null;
-        if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
-            PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest);
-            if (pkcs10CertificateRequest == null) {
-                raLocaleBean.addMessageError("enroll_invalid_certificate_request");
-                return;
-            }
-            JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(
-                    CertTools.getCertificateRequestFromPem(certificateRequest));
-            PublicKey publicKey;
-            try {
-                publicKey = jcaPKCS10CertificationRequest.getPublicKey();
-            } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-                log.warn(raLocaleBean.getMessage("enroll_csr_public_key_could_not_be_extracted"));
-                raLocaleBean.addMessageError("enroll_csr_public_key_could_not_be_extracted");
-                return;
-            }
-            keyAlg = AlgorithmTools.getKeyAlgorithm(publicKey);
-            keyLength = AlgorithmTools.getKeySpecification(publicKey);
-        } else if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
-            final String[] tokenKeySpecSplit = selectedAlgorithm.split("_");
-            keyAlg = tokenKeySpecSplit[0];
-            keyLength = tokenKeySpecSplit[1];
-        }
-
-        //Generates a keystore token if user has specified "ON SERVER" key pair generation.
-        //Generates a certificate token if user has specified "PROVIDED_BY_USER" key pair generation
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
-            KeyStore keystore = null;
-            try {
-                keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, keyLength,
-                        keyAlg);
-                log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", tokenName, endEntityInformation.getUsername()));
-
-                keystore.store(buffer, endEntityInformation.getPassword().toCharArray());
-            } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | AuthorizationDeniedException e) {
-                raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-                log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
-                return;
-            } finally {
-                if (buffer != null) {
-                    try {
-                        buffer.close();
-                    } catch (IOException e) {
-                    }
-                }
-            }
-        } else if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
-            byte[] certificateDataToDownload = null;
-            try {
-                certificateDataToDownload = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(),
-                        endEntityInformation, CertTools.getCertificateRequestFromPem(certificateRequest).getEncoded());
-                if (certificateDataToDownload == null) {
-                    raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername());
+            //Get token's algorithm from CSR (PROVIDED_BY_USER) or it can be specified directly (ON_SERVER)
+            String keyAlg = null;
+            String keyLength = null;
+            if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
+                PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest);
+                if (pkcs10CertificateRequest == null) {
+                    raLocaleBean.addMessageError("enroll_invalid_certificate_request");
                     return;
                 }
-
-                if (tokenDownloadType == TokenDownloadType.PEM_FULL_CHAIN) {
-                    X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
-                    LinkedList<Certificate> chain = new LinkedList<Certificate>(getCAInfo().getCertificateChain());
-                    chain.addFirst(certificate);
-                    certificateDataToDownload = CertTools.getPemFromCertificateChain(chain);
-                } else if (tokenDownloadType == TokenDownloadType.PKCS7) {
-                    X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
-                    certificateDataToDownload = raMasterApiProxyBean.createPkcs7(raAuthenticationBean.getAuthenticationToken(), certificate, true);
-                    certificateDataToDownload = CertTools.getPemFromPkcs7(certificateDataToDownload);
-                } else if (tokenDownloadType == TokenDownloadType.PEM) {
-                    X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
-                    certificateDataToDownload = CertTools.getPemFromCertificateChain(Arrays.asList((Certificate) certificate));
+                JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(
+                        CertTools.getCertificateRequestFromPem(certificateRequest));
+                PublicKey publicKey;
+                try {
+                    publicKey = jcaPKCS10CertificationRequest.getPublicKey();
+                } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+                    log.warn(raLocaleBean.getMessage("enroll_csr_public_key_could_not_be_extracted"));
+                    raLocaleBean.addMessageError("enroll_csr_public_key_could_not_be_extracted");
+                    return;
                 }
-
-                buffer.write(certificateDataToDownload);
-            } catch (CertificateParsingException | CertificateEncodingException | AuthorizationDeniedException | IOException e) {
-                raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-                log.error(raLocaleBean.getMessage("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()),
-                        e);
-                return;
-            } finally {
-                if (buffer != null) {
-                    try {
-                        buffer.close();
-                    } catch (IOException e) {
+                keyAlg = AlgorithmTools.getKeyAlgorithm(publicKey);
+                keyLength = AlgorithmTools.getKeySpecification(publicKey);
+            } else if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
+                final String[] tokenKeySpecSplit = selectedAlgorithm.split("_");
+                keyAlg = tokenKeySpecSplit[0];
+                keyLength = tokenKeySpecSplit[1];
+            }
+    
+            //Generates a keystore token if user has specified "ON SERVER" key pair generation.
+            //Generates a certificate token if user has specified "PROVIDED_BY_USER" key pair generation
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
+                KeyStore keystore = null;
+                try {
+                    keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, keyLength,
+                            keyAlg);
+                    log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", tokenName, endEntityInformation.getUsername()));
+    
+                    keystore.store(buffer, endEntityInformation.getPassword().toCharArray());
+                } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | AuthorizationDeniedException e) {
+                    raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
+                    log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
+                    return;
+                } finally {
+                    if (buffer != null) {
+                        try {
+                            buffer.close();
+                        } catch (IOException e) {
+                        }
+                    }
+                }
+            } else if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
+                byte[] certificateDataToDownload = null;
+                try {
+                    certificateDataToDownload = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(),
+                            endEntityInformation, CertTools.getCertificateRequestFromPem(certificateRequest).getEncoded());
+                    if (certificateDataToDownload == null) {
+                        raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername());
+                        return;
+                    }
+    
+                    if (tokenDownloadType == TokenDownloadType.PEM_FULL_CHAIN) {
+                        X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
+                        LinkedList<Certificate> chain = new LinkedList<Certificate>(getCAInfo().getCertificateChain());
+                        chain.addFirst(certificate);
+                        certificateDataToDownload = CertTools.getPemFromCertificateChain(chain);
+                    } else if (tokenDownloadType == TokenDownloadType.PKCS7) {
+                        X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
+                        certificateDataToDownload = raMasterApiProxyBean.createPkcs7(raAuthenticationBean.getAuthenticationToken(), certificate, true);
+                        certificateDataToDownload = CertTools.getPemFromPkcs7(certificateDataToDownload);
+                    } else if (tokenDownloadType == TokenDownloadType.PEM) {
+                        X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
+                        certificateDataToDownload = CertTools.getPemFromCertificateChain(Arrays.asList((Certificate) certificate));
+                    }
+    
+                    buffer.write(certificateDataToDownload);
+                } catch (CertificateParsingException | CertificateEncodingException | AuthorizationDeniedException | IOException e) {
+                    raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
+                    log.error(raLocaleBean.getMessage("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()),
+                            e);
+                    return;
+                } finally {
+                    if (buffer != null) {
+                        try {
+                            buffer.close();
+                        } catch (IOException e) {
+                        }
                     }
                 }
             }
-        }
-
-        //Download the token
-        FacesContext fc = FacesContext.getCurrentInstance();
-        ExternalContext ec = fc.getExternalContext();
-        ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
-        ec.setResponseContentType(responseContentType);
-        ec.setResponseContentLength(buffer.size());
-        ec.setResponseHeader("Content-Disposition",
-                "attachment; filename=\"" + StringTools.stripFilename(endEntityInformation.getUsername() + fileExtension) + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
-        OutputStream output = null;
-        try {
-            output = ec.getResponseOutputStream();
-            buffer.writeTo(output);
-            output.flush();
-        } catch (IOException e) {
-            log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
-        } finally {
-            if (output != null) {
-                try {
-                    output.close();
-                } catch (IOException e) {
+    
+            //Download the token
+            FacesContext fc = FacesContext.getCurrentInstance();
+            ExternalContext ec = fc.getExternalContext();
+            ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
+            ec.setResponseContentType(responseContentType);
+            ec.setResponseContentLength(buffer.size());
+            ec.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"" + StringTools.stripFilename(endEntityInformation.getUsername() + fileExtension) + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+            OutputStream output = null;
+            try {
+                output = ec.getResponseOutputStream();
+                buffer.writeTo(output);
+                output.flush();
+            } catch (IOException e) {
+                log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
+            } finally {
+                if (output != null) {
+                    try {
+                        output.close();
+                    } catch (IOException e) {
+                    }
                 }
+                fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
             }
-            fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
+            
+        }finally{
+            //End entity clean-up must be done if enrollment could not be completed (but end-entity has been added)
+            try {
+                EndEntityInformation fromCA = raMasterApiProxyBean.findUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
+                if(fromCA != null && fromCA.getStatus() != EndEntityConstants.STATUS_GENERATED){
+                    raMasterApiProxyBean.deleteUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
+                }
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException(e);
+            }
         }
     }
 
