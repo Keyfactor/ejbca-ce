@@ -33,6 +33,7 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase {
     public static final String CESECORE_CONFIGURATION_ID = "CESECORE_CONFIGURATION";
     
     private static final String MAXIMUM_QUERY_COUNT_KEY = "maximum.query.count";
+    private static final String MAXIMUM_QUERY_TIME_KEY = "maximum.query.time";
     
     @Override
     public void upgrade() {
@@ -60,14 +61,28 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase {
      * @param maximumQueryCount the maximum query count
      * @throws InvalidConfigurationException if value was negative or above the limit set by {@link GlobalCesecoreConfiguration#MAXIMUM_QUERY_COUNT_KEY}
      */
-    public void setMaximumQueryCount(int maximumQueryCount) throws InvalidConfigurationException{ 
-        if(maximumQueryCount > FIXED_MAXIMUM_QUERY_COUNT) {
+    public void setMaximumQueryCount(int maximumQueryCount) throws InvalidConfigurationException { 
+        if (maximumQueryCount > FIXED_MAXIMUM_QUERY_COUNT) {
             throw new InvalidConfigurationException(intres.getLocalizedMessage("globalconfig.error.querysizetoolarge", maximumQueryCount, FIXED_MAXIMUM_QUERY_COUNT));
         }
-        if(maximumQueryCount < 1) {
+        if (maximumQueryCount < 1) {
             throw new InvalidConfigurationException(intres.getLocalizedMessage("globalconfig.error.querysizetoolow"));
         }
         data.put(MAXIMUM_QUERY_COUNT_KEY, Integer.valueOf(maximumQueryCount));
     }
 
+    /** @return database dependent query timeout hint in milliseconds or 0 if this is disabled. */
+    public long getMaximumSearchQueryTimeout() {
+        final Object num = data.get(MAXIMUM_QUERY_TIME_KEY);
+        return num==null ? 10000L : ((Long) num).intValue();
+    }
+
+    /** Set's the database dependent query timeout hint in milliseconds or 0 if this is disabled. */
+    public void setMaximumQueryTime(final long maximumQueryTimeMs) throws InvalidConfigurationException { 
+        if (maximumQueryTimeMs < 0L) {
+            data.put(MAXIMUM_QUERY_TIME_KEY, Long.valueOf(0));
+        } else {
+            data.put(MAXIMUM_QUERY_TIME_KEY, Long.valueOf(maximumQueryTimeMs));
+        }
+    }
 }

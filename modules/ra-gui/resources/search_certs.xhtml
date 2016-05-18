@@ -159,8 +159,9 @@
 	                </h:panelGroup>
 	
 	                <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
-	                    <h:outputText styleClass="fineprint" rendered="#{empty raSearchCertsBean.filteredResults}" value="#{msg.search_certs_page_info_noresult}"/>
-	                    <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.moreResultsAvailable}" value="#{msg.search_certs_page_info_moreresults}"/>
+	                    <h:outputText styleClass="fineprint" rendered="#{empty raSearchCertsBean.filteredResults and not raSearchCertsBean.moreResultsAvailable}" value="#{msg.search_certs_page_info_noresult}"/>
+	                    <h:outputText styleClass="fineprint" rendered="#{not empty raSearchCertsBean.filteredResults and raSearchCertsBean.moreResultsAvailable}" value="#{msg.search_certs_page_info_moreresults}"/>
+                        <h:outputText styleClass="fineprint" rendered="#{empty raSearchCertsBean.filteredResults and raSearchCertsBean.moreResultsAvailable}" value="#{msg.search_certs_page_info_timeout}"/>
 	                    <h:dataTable rendered="#{not empty raSearchCertsBean.filteredResults}" value="#{raSearchCertsBean.filteredResults}" var="raSearchCertificate"
 	                       styleClass="pure-table" rowClasses=",pure-table-odd" >
 	                        <h:column>
