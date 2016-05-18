@@ -16,11 +16,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
 import org.cesecore.internal.UpgradeableDataHashMap;
 
 /**
@@ -31,7 +29,6 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 public class ApprovalProfile extends UpgradeableDataHashMap implements Serializable, Cloneable{
     
     private static final long serialVersionUID = 250315209409187525L;
-    private static final Logger log = Logger.getLogger(ApprovalProfile.class);
 
     public static final String TYPE = "APPROVAL_PROFILE";
     
