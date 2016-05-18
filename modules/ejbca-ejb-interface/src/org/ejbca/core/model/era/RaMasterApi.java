@@ -55,6 +55,9 @@ public interface RaMasterApi {
     /** @return the approval request with the given id, or null if it doesn't exist or if authorization was denied */
     RaApprovalRequestInfo getApprovalRequest(AuthenticationToken authenticationToken, int id);
 
+    /** Approves, rejects or saves (not yet implemented) a step of an approval request */
+    boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse) throws AuthorizationDeniedException;
+    
     /** @return list of approval requests from the specified search criteria */
     RaRequestsSearchResponse searchForApprovalRequests(AuthenticationToken authenticationToken, RaRequestsSearchRequest raRequestsSearchRequest);
     

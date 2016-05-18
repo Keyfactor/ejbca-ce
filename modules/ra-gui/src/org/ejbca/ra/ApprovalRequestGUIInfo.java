@@ -60,7 +60,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     public static class StepControl implements Serializable {
         private static final long serialVersionUID = 1L;
-        private final int id;
+        private final int metadataId;
         /** Type of control, corresponds to ApprovalStep.METADATATYPE_* constants*/
         private final int optionsType;
         private final String instruction;
@@ -69,7 +69,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         private String optionValue;
         
         public StepControl(final ApprovalStepMetadata metadata) {
-            id = metadata.getMetadataId();
+            metadataId = metadata.getMetadataId();
             instruction = metadata.getInstruction();
             optionsType = metadata.getOptionsType();
             final List<String> optionsList = metadata.getOptions();
@@ -92,6 +92,11 @@ public class ApprovalRequestGUIInfo implements Serializable {
         
         public String getOptionNote() { return optionNote; }
         public void setOptionNote(final String optionNote) { this.optionNote = optionNote; }
+        
+        /** Returns the value to store in the database */
+        public String getOptionValue() { return optionValue; }
+        /** Returns the id */
+        public int getMetadataId() { return metadataId; }
     }
     
     public static class Step implements Serializable {
@@ -105,6 +110,10 @@ public class ApprovalRequestGUIInfo implements Serializable {
                 controls.add(new StepControl(metadata));
             }
             stepId = approvalStep.getStepId();
+        }
+        
+        public int getStepId() {
+            return stepId;
         }
         
         public List<StepControl> getControls() {

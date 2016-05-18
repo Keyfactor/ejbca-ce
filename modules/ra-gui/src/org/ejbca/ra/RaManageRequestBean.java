@@ -24,7 +24,10 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
+import org.ejbca.core.model.era.RaApprovalResponseRequest;
+import org.ejbca.core.model.era.RaApprovalResponseRequest.Action;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 /**
@@ -108,12 +111,33 @@ public class RaManageRequestBean implements Serializable {
         }
     }
     
-    public void approve() {
-        // TODO
+    private RaApprovalResponseRequest buildApprovalResponseRequest(final Action action) {
+        final List<ApprovalRequestGUIInfo.StepControl> controls = getNextStepControls();
+        final int id = getRequest().request.getId();
+        final int stepId = getRequest().getNextStep().getStepId();
+        final RaApprovalResponseRequest approval = new RaApprovalResponseRequest(id, stepId, "", action); // TODO comment field. should it be here for partitioned approvals?
+        for (final ApprovalRequestGUIInfo.StepControl control : controls) {
+            approval.addMetadata(control.getMetadataId(), control.getOptionValue(), control.getOptionNote());
+        }
+        return approval;
     }
     
-    public void reject() {
-        // TODO
+    public void approve() throws AuthorizationDeniedException {
+        final RaApprovalResponseRequest responseReq = buildApprovalResponseRequest(Action.APPROVE);
+        if (raMasterApiProxyBean.addRequestResponse(raAuthenticationBean.getAuthenticationToken(), responseReq)) {
+            // TODO add success message
+        } else {
+            // TODO this means that there was no backend available. add failure message
+        }
+    }
+    
+    public void reject() throws AuthorizationDeniedException {
+        final RaApprovalResponseRequest responseReq = buildApprovalResponseRequest(Action.REJECT);
+        if (raMasterApiProxyBean.addRequestResponse(raAuthenticationBean.getAuthenticationToken(), responseReq)) {
+            // TODO add success message
+        } else {
+            // TODO this means that there was no backend available. add failure message
+        }
     }
     
 }
