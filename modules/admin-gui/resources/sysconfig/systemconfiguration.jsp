@@ -389,6 +389,14 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</h:panelGroup>
 			<h:inputText id="maximumQueryCount" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.currentConfig.maximumQueryCount}"
 				 size="20" title="#{web.text.FORMAT_INTEGER}"/>
+            <h:panelGroup>
+                <h:outputLabel for="maximumQueryTimeout" value="#{web.text.MAXIMUM_QUERY_TIMEOUT}" styleClass="titles"/>
+                <%= ejbcawebbean.getHelpReference("/adminguide.html#Limiting%20Database%20Query%20Timeout") %>
+                <br/>
+                <h:outputText value="#{web.text.MAXIMUM_QUERY_TIMEOUT_HELP}" styleClass="help"/>
+            </h:panelGroup>
+            <h:inputText id="maximumQueryTimeout" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.currentConfig.maximumQueryTimeout}"
+                 size="20" title="#{web.text.FORMAT_MILLISECONDS}"/>
 			
 		</h:panelGrid>
 	

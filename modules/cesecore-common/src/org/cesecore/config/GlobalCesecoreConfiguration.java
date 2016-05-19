@@ -33,7 +33,7 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase {
     public static final String CESECORE_CONFIGURATION_ID = "CESECORE_CONFIGURATION";
     
     private static final String MAXIMUM_QUERY_COUNT_KEY = "maximum.query.count";
-    private static final String MAXIMUM_QUERY_TIME_KEY = "maximum.query.time";
+    private static final String MAXIMUM_QUERY_TIMEOUT_KEY = "maximum.query.timeout";
     
     @Override
     public void upgrade() {
@@ -72,17 +72,13 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase {
     }
 
     /** @return database dependent query timeout hint in milliseconds or 0 if this is disabled. */
-    public long getMaximumSearchQueryTimeout() {
-        final Object num = data.get(MAXIMUM_QUERY_TIME_KEY);
+    public long getMaximumQueryTimeout() {
+        final Object num = data.get(MAXIMUM_QUERY_TIMEOUT_KEY);
         return num==null ? 10000L : ((Long) num).intValue();
     }
 
     /** Set's the database dependent query timeout hint in milliseconds or 0 if this is disabled. */
-    public void setMaximumQueryTime(final long maximumQueryTimeMs) throws InvalidConfigurationException { 
-        if (maximumQueryTimeMs < 0L) {
-            data.put(MAXIMUM_QUERY_TIME_KEY, Long.valueOf(0));
-        } else {
-            data.put(MAXIMUM_QUERY_TIME_KEY, Long.valueOf(maximumQueryTimeMs));
-        }
+    public void setMaximumQueryTimeout(final long maximumQueryTimeoutMs) throws InvalidConfigurationException { 
+        data.put(MAXIMUM_QUERY_TIMEOUT_KEY, Long.valueOf(maximumQueryTimeoutMs < 0L ? 0 : maximumQueryTimeoutMs));
     }
 }

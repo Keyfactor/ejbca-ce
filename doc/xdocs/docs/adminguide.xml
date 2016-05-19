@@ -6680,6 +6680,22 @@ Certain types of queries can, whether intentionally or not, generate massive amo
 Should one want to lower or raise the query limit, one may do so under <i>System Configuration</i>. For safety, there is still a hard upper limit of 25,000 entries. 
 </p>
 </subsection>
+<subsection name="Limiting Database Query Timeout">
+<p>
+Certain types of searches can, whether intentionally or not, generate database heavy queries (even full table scans).
+In order to not overload the database, EJBCA will <bold>try</bold> to limit for how long a query is allowed to run for certain searches before aborting.
+For such limitations to work, both you database and Java DataBase Connector (JDBC) driver must support this.
+This setting currently affects the following searches:
+</p>
+<ul>
+<li>RA GUI Search for certificates</li>
+<li>RA GUI Search for end entities</li>
+</ul>
+<p>
+Should one want to lower or raise the default of 10000 ms (10 seconds) in the query timeout, one may do so under <i>System Configuration</i>.
+Setting the value to 0 mean that EJBCA will not try to enforce any query timeout and it will default to you appliaction server and database configuration.
+</p>
+</subsection>
 </section>
 
 
