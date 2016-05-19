@@ -1090,15 +1090,7 @@
 				<h:selectBooleanCheckbox id="approvalEnabledActivateCa" value="#{certProfileBean.approvalEnabledActivateCa}"
 					disabled="#{certProfilesBean.viewOnly}"/>
 				<h:outputLabel for="approvalEnabledActivateCa" value="#{web.text.APPROVEACTIVATECA}"/>
-			</h:panelGrid>
-			<h:panelGroup>
-				<h:outputLabel for="selectnumofrequiredapprovals" value="#{web.text.NUMOFREQUIREDAPPROVALS} "/>
-				<h:selectOneMenu id="selectnumofrequiredapprovals" value="#{certProfileBean.certificateProfile.numOfReqApprovals}" converter="javax.faces.Integer"
-					disabled="#{certProfilesBean.viewOnly}">
-					<f:selectItems value="#{certProfileBean.numOfReqApprovalsAvailable}"/>
-				</h:selectOneMenu>
-			</h:panelGroup>
-			
+			</h:panelGrid>			
 			<h:panelGroup>
 				<h:outputLabel for="selectApprovalProfile" value="#{web.text.APPROVALPROFILES} "/>
 				<h:selectOneMenu id="selectApprovalProfile" value="#{certProfileBean.certificateProfile.approvalProfileID}" converter="javax.faces.Integer"

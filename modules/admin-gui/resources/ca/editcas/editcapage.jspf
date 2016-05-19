@@ -1501,17 +1501,6 @@ function toggleCANameChange(){
             </select>        
         </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
-        <td width="50%" align="right"><%= ejbcawebbean.getText("NUMOFREQUIREDAPPROVALS") %></td>
-        <td width="50%">
-            <select name="<%=SELECT_NUMOFREQUIREDAPPROVALS%>" <%= (hasEditRights ? "" : "disabled") %> >
-            <% for (int i=1; i<=4; i++) {
-          	    final String itemSelected = (editca && cainfo.getNumOfReqApprovals() == i) ? " selected " : ""; %>
-                <option  value="<%=i%>" <%=itemSelected%>><%=i%></option>
-            <% } %>
-            </select>        
-        </td>
-    </tr>
     
    <tr  id="Row<%=row++%2%>"> 
      <td width="50%" align="right"> 

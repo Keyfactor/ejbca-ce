@@ -150,10 +150,10 @@ public class CertificateProfileTest {
         assertEquals(CertificateProfile.CVC_ACCESS_DG3DG4, prof.getCVCAccessRights());
         final Collection<Integer> ext = prof.getUsedCertificateExtensions();
         assertEquals(0, ext.size());
-        assertEquals(1, prof.getNumOfReqApprovals());
         final Collection<Integer> app = prof.getApprovalSettings();
         assertEquals(0, app.size());
         assertTrue(prof.isApplicableToAnyCA());
+        assertEquals("Default approval profile not set,", -1, prof.getApprovalProfileID());
 
     }
 

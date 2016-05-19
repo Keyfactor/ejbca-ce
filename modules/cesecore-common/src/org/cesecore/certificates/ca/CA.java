@@ -727,7 +727,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     /**
      * Returns the number of different administrators that needs to approve an action, default 1.
+     * @deprecated since 6.6.0, use the appropriate approval profile instead. 
      */
+    @Deprecated
     public int getNumOfRequiredApprovals() {
         if (data.get(NUMBEROFREQAPPROVALS) == null) {
             return 1;
@@ -737,7 +739,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     /**
      * The number of different administrators that needs to approve
+     * @deprecated since 6.6.0, use the appropriate approval profile instead. 
      */
+    @Deprecated
     public void setNumOfRequiredApprovals(int numOfReqApprovals) {
         data.put(NUMBEROFREQAPPROVALS, Integer.valueOf(numOfReqApprovals));
     }

@@ -505,7 +505,7 @@ public class CAInterfaceBean implements Serializable {
             String extendedServiceSignatureKeySpec,
             String keySequenceFormat, String keySequence, int catype, String subjectdn,
             String certificateProfileIdString, String signedByString, String description, String validityString,
-            String approvalSettingValues, String numofReqApprovalsParam, String approvalProfileParam, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
+            String approvalSettingValues, String approvalProfileParam, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
             boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
             boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String subjectaltname,
             String policyid, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
@@ -566,7 +566,7 @@ public class CAInterfaceBean implements Serializable {
             }
             return actionCreateCaMakeRequestInternal(caName, signatureAlgorithm, extendedServiceSignatureKeySpec,
                     keySequenceFormat, keySequence, catype, subjectdn, certificateProfileIdString, signedByString,
-                    description, validityString, approvalSettingValues, numofReqApprovalsParam, approvalProfileParam, finishUser,
+                    description, validityString, approvalSettingValues, approvalProfileParam, finishUser,
                     isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
                     useCertReqHistory, useUserStorage, useCertificateStorage, subjectaltname, policyid,
                     useauthoritykeyidentifier, authoritykeyidentifiercritical, crlperiod, crlIssueInterval,
@@ -594,7 +594,7 @@ public class CAInterfaceBean implements Serializable {
 	        String extendedServiceSignatureKeySpec,
 	        String keySequenceFormat, String keySequence, int catype, String subjectdn,
 	        String certificateProfileIdString, String signedByString, String description, String validityString,
-	        String approvalSettingValues, String numofReqApprovalsParam, String approvalProfileParam, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
+	        String approvalSettingValues, String approvalProfileParam, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
 	        boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
 	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String subjectaltname,
 	        String policyid, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
@@ -690,7 +690,6 @@ public class CAInterfaceBean implements Serializable {
 	                approvalsettings.add(Integer.valueOf(approvalSettingValues.split(";")[i]));
 	            }
 	        }
-            final int numofreqapprovals = (numofReqApprovalsParam==null ? 1 : Integer.parseInt(numofReqApprovalsParam));
             final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
 
 	        if (catype == CAInfo.CATYPE_X509) {
@@ -746,7 +745,7 @@ public class CAInterfaceBean implements Serializable {
 	                            finishUser, extendedcaservices,
 	                            useutf8policytext,
 	                            approvalsettings,
-	                            numofreqapprovals,
+	                            0, //Value has been deprecated in 6.6.0, but remains in the constructor for the value object for upgrade reasons.
 	                            approvalProfileID,
 	                            useprintablestringsubjectdn,
 	                            useldapdnorder,
@@ -792,7 +791,7 @@ public class CAInterfaceBean implements Serializable {
 	                            finishUser, extendedcaservices,
 	                            useutf8policytext,
 	                            approvalsettings,
-	                            numofreqapprovals,
+	                            0, //Value has been deprecated in 6.6.0, but remains in the constructor for the value object for upgrade reasons.
 	                            approvalProfileID,
 	                            useprintablestringsubjectdn,
 	                            useldapdnorder,
@@ -832,7 +831,7 @@ public class CAInterfaceBean implements Serializable {
 	                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
 	                        finishUser, extendedcaservices,
 	                        approvalsettings,
-	                        numofreqapprovals,
+                            0, //Value has been deprecated in 6.6.0, but remains in the constructor for the value object for upgrade reasons.
 	                        approvalProfileID,
 	                        false, // Do not automatically include new CAs in health-check
 	                        isDoEnforceUniquePublicKeys,
@@ -936,7 +935,7 @@ public class CAInterfaceBean implements Serializable {
 	        String keySequenceFormat, String keySequence, String signedByString, String description, String validityString,
 	        long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean finishUser,
 	        boolean isDoEnforceUniquePublicKeys, boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
-	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String approvalSettingValues, String numofReqApprovalsParam, 
+	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String approvalSettingValues,
 	        String approvalProfileParam,
 	        String availablePublisherValues, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical, boolean usecrlnumber,
 	        boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator, String authorityInformationAccessParam,
@@ -983,7 +982,6 @@ public class CAInterfaceBean implements Serializable {
                    approvalsettings.add(Integer.valueOf(approvalSettingValues.split(";")[i]));
                }
            }
-           final int numofreqapprovals = (numofReqApprovalsParam==null ? 1 : Integer.parseInt(numofReqApprovalsParam));
            final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
            final ArrayList<Integer> crlpublishers = new ArrayList<Integer>(); 
            if (availablePublisherValues != null) {
@@ -1018,7 +1016,7 @@ public class CAInterfaceBean implements Serializable {
                        finishUser,extendedcaservices,
                        useutf8policytext,
                        approvalsettings,
-                       numofreqapprovals,
+                       0, //Value has been deprecated in 6.6.0, but remains in the constructor for the value object for upgrade reasons.
                        approvalProfileID,
                        useprintablestringsubjectdn,
                        useldapdnorder,
@@ -1044,7 +1042,7 @@ public class CAInterfaceBean implements Serializable {
                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
                        finishUser, extendedcaservices,
                        approvalsettings,
-                       numofreqapprovals,
+                       0, //Value has been deprecated in 6.6.0, but remains in the constructor for the value object for upgrade reasons.
                        approvalProfileID,
                        includeInHealthCheck,
                        isDoEnforceUniquePublicKeys,

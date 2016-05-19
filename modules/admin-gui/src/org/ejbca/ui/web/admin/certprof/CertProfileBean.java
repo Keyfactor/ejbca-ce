@@ -951,13 +951,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setApprovalSettings(approvalSettings);
     }
 
-    public List<SelectItem/*<Integer,String*/> getNumOfReqApprovalsAvailable() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
-        for (int i=1; i<=4; i++) {
-            ret.add(new SelectItem(Integer.valueOf(i), String.valueOf(i)));
-        }
-        return ret;
-    }
 
     /** Redirect the client browser to the relevant section of certificate profile page */
     private void redirectToComponent(final String componentId) throws IOException {

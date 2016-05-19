@@ -47,7 +47,10 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      * @param caid of the ca to check
      * @param certprofile of the ca to check
      * @return 0 if no approvals is required otherwise the number of approvals
+     * 
+     * @deprecated since 6.6.0, use approval profiles instead
      */
+    @Deprecated
     int getNumOfApprovalRequired(int action, int caid, int certProfileId);
 
     /**
