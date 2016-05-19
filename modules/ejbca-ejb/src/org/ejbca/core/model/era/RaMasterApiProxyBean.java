@@ -401,20 +401,19 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     
     @Override
     public EndEntityInformation findUser(AuthenticationToken authenticationToken, String username) throws AuthorizationDeniedException{
-        final EndEntityInformation ret = new EndEntityInformation();
         for(final RaMasterApi raMasterApi : raMasterApis){
             if(raMasterApi.isBackendAvailable()){
                 try{
                     final EndEntityInformation result = raMasterApi.findUser(authenticationToken, username);
                     if (result != null) {
-                        return ret;
+                        return result;
                     }
                 }catch  (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        return ret;
+        return null;
     }
 
     @Override
