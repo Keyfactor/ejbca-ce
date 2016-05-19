@@ -93,7 +93,7 @@
 
 		<%-- Approval Profile by Number of Approvals Only --%>		
 		
-		<h:outputLabel for="selectNrOfApprovals" value="#{web.text.NUMBEROFAPPROVALS}" rendered="#{approvalProfileMBean.nrOfApprovalsProfileType}"/>
+		<h:outputLabel for="selectNrOfApprovals" value="#{web.text.NUMOFREQUIREDAPPROVALS}" rendered="#{approvalProfileMBean.nrOfApprovalsProfileType}"/>
 		<h:selectOneMenu id="selectNrOfApprovals" value="#{approvalProfileMBean.numberOfApprovals}" rendered="#{approvalProfileMBean.nrOfApprovalsProfileType}" 
 									disabled="#{approvalProfilesMBean.viewOnly}" >
 			<f:selectItems value="#{approvalProfileMBean.numberOfApprovalsAvailable}"/>

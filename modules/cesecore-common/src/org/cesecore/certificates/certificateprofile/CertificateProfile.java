@@ -165,6 +165,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String SUBJECTALTNAMESUBSET = "subjectaltnamesubset";
     protected static final String USEDCERTIFICATEEXTENSIONS = "usedcertificateextensions";
     protected static final String APPROVALSETTINGS = "approvalsettings";
+    /**
+     * @deprecated since 6.6.0, use the appropriate approval profile instead
+     */
+    @Deprecated
     protected static final String NUMOFREQAPPROVALS = "numofreqapprovals";
     protected static final String APPROVALPROFILE = "approvalProfile";
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
@@ -447,8 +451,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3DG4);
 
         setUsedCertificateExtensions(new ArrayList<Integer>());
-
-        setNumOfReqApprovals(1);
         List<Integer> emptyList = Collections.emptyList();
         setApprovalSettings(emptyList);
         setApprovalProfileID(-1);
@@ -1922,14 +1924,20 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /**
      * Returns the number of different administrators that needs to approve an action, default 1.
+     * 
+     * @deprecated since 6.6.0, use the appropriate approval profile instead
      */
+    @Deprecated
     public int getNumOfReqApprovals() {
         return ((Integer) data.get(NUMOFREQAPPROVALS)).intValue();
     }
 
     /**
      * The number of different administrators that needs to approve
+     * 
+     * @deprecated since 6.6.0, use the appropriate approval profile instead
      */
+    @Deprecated
     public void setNumOfReqApprovals(int numOfReqApprovals) {
         data.put(NUMOFREQAPPROVALS, Integer.valueOf(numOfReqApprovals));
     }

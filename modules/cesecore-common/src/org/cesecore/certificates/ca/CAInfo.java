@@ -110,6 +110,10 @@ public abstract class CAInfo implements Serializable {
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
     protected Collection<Integer> approvalSettings;
     protected int approvalProfile;
+    /**
+     * @deprecated in 6.6.0, kept only for upgrade reasons. 
+     */
+    @Deprecated
     protected int numOfReqApprovals;
     protected boolean includeInHealthCheck;
     protected boolean doEnforceUniquePublicKeys;
