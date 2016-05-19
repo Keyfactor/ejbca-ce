@@ -557,9 +557,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
          * - A QueryTimeoutException is thrown
          * - A PersistenceException is thrown (and the transaction which don't have here is marked for roll-back)
          */
-        final long searchQueryTimeout = getGlobalCesecoreConfiguration().getMaximumSearchQueryTimeout();
-        if (searchQueryTimeout>0L) {
-            query.setHint("javax.persistence.query.timeout", String.valueOf(searchQueryTimeout));
+        final long queryTimeout = getGlobalCesecoreConfiguration().getMaximumQueryTimeout();
+        if (queryTimeout>0L) {
+            query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
         }
         final List<String> fingerprints;
         try {
@@ -687,9 +687,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
          * - A QueryTimeoutException is thrown
          * - A PersistenceException is thrown (and the transaction which don't have here is marked for roll-back)
          */
-        final long searchQueryTimeout = getGlobalCesecoreConfiguration().getMaximumSearchQueryTimeout();
-        if (searchQueryTimeout>0L) {
-            query.setHint("javax.persistence.query.timeout", String.valueOf(searchQueryTimeout));
+        final long queryTimeout = getGlobalCesecoreConfiguration().getMaximumQueryTimeout();
+        if (queryTimeout>0L) {
+            query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
         }
         final List<String> usernames;
         try {
