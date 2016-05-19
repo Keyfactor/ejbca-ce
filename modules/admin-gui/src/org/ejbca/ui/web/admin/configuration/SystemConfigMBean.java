@@ -118,7 +118,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         
         //Database preferences
         private int maximumQueryCount;
-        
+        private long maximumQueryTimeout;
         
         private GuiInfo(GlobalConfiguration globalConfig, GlobalCesecoreConfiguration globalCesecoreConfiguration, AdminPreference adminPreference) {
             if(globalConfig == null) {
@@ -167,6 +167,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.entriesPerPage = adminPreference.getEntriesPerPage();
                 
                 this.maximumQueryCount = globalCesecoreConfiguration.getMaximumQueryCount();
+                this.maximumQueryTimeout= globalCesecoreConfiguration.getMaximumQueryTimeout(); 
             } catch (CADoesntExistsException e) {
                 log.error(e.getLocalizedMessage(), e);
             } catch (Exception e) {
@@ -235,8 +236,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         
         public int getMaximumQueryCount() { return maximumQueryCount; }
         public void setMaximumQueryCount(int maximumQueryCount) { this.maximumQueryCount = maximumQueryCount; }
-
-        
+        public long getMaximumQueryTimeout() { return maximumQueryTimeout; }
+        public void setMaximumQueryTimeout(final long maximumQueryTimeout) { this.maximumQueryTimeout = maximumQueryTimeout; }
     }
     
     public class EKUInfo {
@@ -658,6 +659,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 getEjbcaWebBean().saveGlobalConfiguration(globalConfig);
                 
                 globalCesecoreConfiguration.setMaximumQueryCount(currentConfig.getMaximumQueryCount());
+                globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
                 getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCesecoreConfiguration);
              
                 
