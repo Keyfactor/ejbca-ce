@@ -77,6 +77,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -87,11 +88,20 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
+import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
+import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.ApprovalStep;
+import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.type.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.era.RaApprovalResponseRequest.MetadataResponse;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -113,6 +123,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @EJB
     private ApprovalSessionLocal approvalSession;
+    @EJB
+    private ApprovalExecutionSessionLocal approvalExecutionSession;
     @EJB
     private AccessControlSessionLocal accessControlSession;
     @EJB
@@ -241,21 +253,35 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse) throws AuthorizationDeniedException {
+    public boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException, AdminAlreadyApprovedRequestException, SelfApprovalException {
         final ApprovalDataVO advo = getApprovalData(authenticationToken, requestResponse.getId());
         if (advo == null) {
             // Return false so the next master api backend can see if it can handle the approval
             return false;
         }
-        final boolean isPartitioned = requestResponse.getStepId() != -1;
+        final boolean isAccumulativeOnly = advo.getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof AccumulativeApprovalProfile;
+        final Approval approval = new Approval(requestResponse.getComment());
+        final ApprovalStep approvalStep;
+        if (isAccumulativeOnly) {
+            approvalStep = null;
+            if (requestResponse.getStepId() != -1) {
+                throw new IllegalStateException("An approval step was provided for a plain accumulative approval request");
+            }
+        } else {
+            if (requestResponse.getStepId() == -1) {
+                throw new IllegalStateException("No approval step was provided for partitioned approval request");
+            }
+            approvalStep = advo.getApprovalRequest().getApprovalStep(requestResponse.getStepId());
+            for (final MetadataResponse metadata : requestResponse.getMetadataList()) {
+                approvalStep.updateOneMetadataValue(metadata.getMetadataId(), metadata.getOptionValue(), metadata.getOptionNote());
+            }
+        }
         switch (requestResponse.getAction()) {
         case APPROVE:
-            // TODO
-            //approvalSession.addApprovalToApprovalStep(approvalData, approvalStep, approved);
+            approvalExecutionSession.approve(authenticationToken, advo.getApprovalId(), approval, approvalStep, isAccumulativeOnly);
             return true;
         case REJECT:
-            // TODO or should we call addApprovalToApprovalStep with approved==false for partitioned approvals?
-            //approvalSession.reject(authenticationToken, advo.getApprovalId(), approval, approvalStep, !isPartitioned);
+            approvalSession.reject(authenticationToken, advo.getApprovalId(), approval, approvalStep, isAccumulativeOnly);
             return true;
         case SAVE:
             throw new UnsupportedOperationException("Saving without approving or rejecting is not yet implemented");
