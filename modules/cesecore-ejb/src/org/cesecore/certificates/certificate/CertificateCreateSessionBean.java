@@ -389,6 +389,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(endEntityInformation.getUsername(),
                         true, Arrays.asList(CertificateConstants.CERT_ARCHIVED, CertificateConstants.CERT_INACTIVE,
                                 CertificateConstants.CERT_ROLLOVERPENDING, CertificateConstants.CERT_UNASSIGNED));
+                if (log.isDebugEnabled()) {
+                    log.debug("SingleActiveCertificateConstraint, found "+cdws.size()+" old (non expired, active) certificates.");
+                }
                 for (final CertificateDataWrapper cdw : cdws) {
                     final CertificateData certificateData = cdw.getCertificateData();
                     if (certificateData.getStatus() == CertificateConstants.CERT_REVOKED && certificateData.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
