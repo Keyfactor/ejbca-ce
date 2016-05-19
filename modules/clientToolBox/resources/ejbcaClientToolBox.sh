@@ -23,5 +23,5 @@ fi
 JAVA_OPT="${JAVA_OPT} -Djava.ext.dirs=${JAVA_EXT}"
 
 # Finally run java
-set -x
+#set -x
 ${javaCmd} ${JAVA_OPT} -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"
