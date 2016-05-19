@@ -40,12 +40,16 @@ import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.event.ComponentSystemEvent;
 import javax.faces.event.ValueChangeEvent;
 
 import org.apache.log4j.Logger;
@@ -930,7 +934,30 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public final void downloadCredentialsTypeAjaxListener(final AjaxBehaviorEvent event) {
         selectDownloadCredentialsType();
     }
-
+    
+    //-----------------------------------------------------------------------------------------------
+    //Validators
+    
+    public void validatePassword(ComponentSystemEvent event) {
+        if(selectedDownloadCredentialsType != null && !selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue())){
+            return;
+        }
+        FacesContext fc = FacesContext.getCurrentInstance();
+        UIComponent components = event.getComponent();
+        UIInput uiInputPassword = (UIInput) components.findComponent("passwordField");
+        String password = uiInputPassword.getLocalValue() == null ? "" : uiInputPassword.getLocalValue().toString();
+        UIInput uiInputConfirmPassword = (UIInput) components.findComponent("passwordConfirmField");
+        String confirmPassword = uiInputConfirmPassword.getLocalValue() == null ? "" : uiInputConfirmPassword.getLocalValue().toString();
+        if (password.isEmpty() || confirmPassword.isEmpty()) {
+            raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_password_can_not_be_empty"));
+            fc.renderResponse();
+            
+        }else if (!password.equals(confirmPassword)) {
+            raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_passwords_are_not_equal"));
+            fc.renderResponse();
+        }
+    }
+    
     //-----------------------------------------------------------------------------------------------
     //Automatically generated getters/setters
     /**
