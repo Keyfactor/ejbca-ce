@@ -54,6 +54,33 @@
             <h:panelGroup layout="block">
                 <h2><h:outputText value="#{msg.view_request_page_approval_header}"/></h2>
                 
+                <h:dataTable value="#{raManageRequestBean.request.previousSteps}" var="prevStep" rendered="#{not empty raManageRequestBean.request.previousSteps}">
+                    <h:column>
+                        <h:dataTable value="#{prevStep.controls}" var="control">
+                            <h:column>
+                                <h:outputText value="#{control.instruction}"/>
+                                
+                                <h:panelGroup layout="block" rendered="#{control.checkbox}">
+                                    <h:selectManyCheckbox value="#{control.checkboxValue}" disabled="true">
+                                        <f:selectItems value="#{control.options}"/>
+                                    </h:selectManyCheckbox>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" rendered="#{control.radiobutton}">
+                                    <h:selectOneRadio value="#{control.radiobuttonValue}" disabled="true">
+                                        <f:selectItems value="#{control.options}"/>
+                                    </h:selectOneRadio>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" rendered="#{control.textbox}">
+                                    <h:inputText value="#{control.textValue}" size="25" disabled="true" />
+                                </h:panelGroup>
+                                
+                                <h:inputText value="#{control.optionNote}" size="25" disabled="true" />
+                            </h:column>
+                        </h:dataTable>
+                    </h:column>
+                </h:dataTable>
+                
+                
                 <h:dataTable value="#{raManageRequestBean.nextStepControls}" var="control" rendered="#{raManageRequestBean.hasNextStep}">
                     <h:column>
                         <h:outputText value="#{control.instruction}"/>

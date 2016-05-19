@@ -74,6 +74,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
             optionsType = metadata.getOptionsType();
             final List<String> optionsList = metadata.getOptions();
             options = optionsList.toArray(new String[optionsList.size()]);
+            optionValue = metadata.getOptionValue();
             optionNote = metadata.getOptionNote();
         }
         
@@ -191,7 +192,9 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
         
         previousSteps = new ArrayList<>();
-        // TODO previous steps
+        for (final ApprovalStep prevApprovalStep : request.getPreviousApprovalSteps()) {
+            previousSteps.add(new Step(prevApprovalStep));
+        }
     }
     
     public String getId() { return String.valueOf(request.getId()); }
@@ -205,6 +208,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
 
     public boolean isHasNextStep() { return nextStep != null && canApprove; }
     public Step getNextStep() { return nextStep; }
+    public List<Step> getPreviousSteps() { return previousSteps; }
     public boolean isCanApprove() { return canApprove; }
     
 }
