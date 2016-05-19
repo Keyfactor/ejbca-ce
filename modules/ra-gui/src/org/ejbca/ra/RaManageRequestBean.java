@@ -25,6 +25,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
+import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalResponseRequest;
 import org.ejbca.core.model.era.RaApprovalResponseRequest.Action;
@@ -115,7 +120,7 @@ public class RaManageRequestBean implements Serializable {
         final List<ApprovalRequestGUIInfo.StepControl> controls = getNextStepControls();
         final int id = getRequest().request.getId();
         final int stepId = getRequest().getNextStep().getStepId();
-        final RaApprovalResponseRequest approval = new RaApprovalResponseRequest(id, stepId, "", action); // TODO comment field. should it be here for partitioned approvals?
+        final RaApprovalResponseRequest approval = new RaApprovalResponseRequest(id, stepId, "", action); // TODO comment field. should it be here for partitioned approvals also?
         for (final ApprovalRequestGUIInfo.StepControl control : controls) {
             approval.addMetadata(control.getMetadataId(), control.getOptionValue(), control.getOptionNote());
         }
@@ -124,19 +129,60 @@ public class RaManageRequestBean implements Serializable {
     
     public void approve() throws AuthorizationDeniedException {
         final RaApprovalResponseRequest responseReq = buildApprovalResponseRequest(Action.APPROVE);
-        if (raMasterApiProxyBean.addRequestResponse(raAuthenticationBean.getAuthenticationToken(), responseReq)) {
-            // TODO add success message
-        } else {
-            // TODO this means that there was no backend available. add failure message
+        try {
+            if (raMasterApiProxyBean.addRequestResponse(raAuthenticationBean.getAuthenticationToken(), responseReq)) {
+                raLocaleBean.addMessageInfo("view_request_page_success_approve");
+            } else {
+                raLocaleBean.addMessageError("generic_unexpected_no_backend");
+            }
+        } catch (ApprovalException e) {
+            raLocaleBean.addMessageError("view_request_page_error_approval_generic");
+            logException("approve", e);
+        } catch (ApprovalRequestExpiredException e) {
+            raLocaleBean.addMessageError("view_request_page_error_approval_expired");
+            logException("approve", e);
+        } catch (ApprovalRequestExecutionException e) {
+            raLocaleBean.addMessageError("view_request_page_error_approval_execution");
+            logException("approve", e);
+        } catch (AdminAlreadyApprovedRequestException e) {
+            raLocaleBean.addMessageError("view_request_page_error_already_approved");
+            logException("approve", e);
+        } catch (SelfApprovalException e) {
+            raLocaleBean.addMessageError("view_request_page_error_self_approval");
+            logException("approve", e);
         }
     }
     
     public void reject() throws AuthorizationDeniedException {
         final RaApprovalResponseRequest responseReq = buildApprovalResponseRequest(Action.REJECT);
-        if (raMasterApiProxyBean.addRequestResponse(raAuthenticationBean.getAuthenticationToken(), responseReq)) {
-            // TODO add success message
-        } else {
-            // TODO this means that there was no backend available. add failure message
+        try {
+            if (raMasterApiProxyBean.addRequestResponse(raAuthenticationBean.getAuthenticationToken(), responseReq)) {
+                raLocaleBean.addMessageInfo("view_request_page_success_reject");
+            } else {
+                raLocaleBean.addMessageError("generic_unexpected_no_backend");
+            } 
+        } catch (ApprovalException e) {
+            raLocaleBean.addMessageError("view_request_page_error_approval_generic_reject");
+            logException("reject", e);
+        } catch (ApprovalRequestExpiredException e) {
+            raLocaleBean.addMessageError("view_request_page_error_approval_expired");
+            logException("reject", e);
+        } catch (ApprovalRequestExecutionException e) {
+            raLocaleBean.addMessageError("view_request_page_error_approval_execution");
+            logException("reject", e);
+        } catch (AdminAlreadyApprovedRequestException e) {
+            raLocaleBean.addMessageError("view_request_page_error_already_approved");
+            logException("reject", e);
+        } catch (SelfApprovalException e) {
+            raLocaleBean.addMessageError("view_request_page_error_self_approval");
+            logException("reject", e);
+        }
+    }
+    
+    /** Logs the message of an exception, which usually contains some message. For example: "You may not approve an action which you requested yourself" */
+    private void logException(final String action, final Throwable t) {
+        if (log.isDebugEnabled()) {
+            log.debug("Got exception while trying to " + action + " an approval request: " + t.getMessage());
         }
     }
     
