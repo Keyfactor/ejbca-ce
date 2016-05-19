@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -85,10 +84,11 @@ public class RaApprovalRequestInfo implements Serializable {
                     previousApprovalSteps.add(step);
                 }
             }
-            Collections.sort(previousApprovalSteps);
         } else {
-            previousApprovalSteps = null;
+            previousApprovalSteps = new ArrayList<>();
         }
+        // TODO always add your own approval steps?
+        Collections.sort(previousApprovalSteps);
         
         requestedByMe = StringUtils.equals(requesterIssuerDN, adminCertIssuer) &&
                 StringUtils.equalsIgnoreCase(requesterSerialNumber, adminCertSerial);
