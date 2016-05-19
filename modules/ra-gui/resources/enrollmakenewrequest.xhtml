@@ -309,6 +309,7 @@ document.getElementById("marker").appendChild(newFileInput);
 										styleClass="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isRequired() ? 'required-input' : ''}"
 										value="#{enrollMakeNewRequestBean.endEntityInformation.username}" />
 								</h:panelGroup>
+								<f:event listener="#{enrollMakeNewRequestBean.validatePassword}" type="postValidate" />
 								<h:panelGroup layout="block" styleClass="pure-control-group"
 									rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}">
 									<h:outputLabel for="passwordField"
@@ -322,7 +323,7 @@ document.getElementById("marker").appendChild(newFileInput);
 										value="#{msg.enroll_confirm_password}" />
 									<h:inputSecret id="passwordConfirmField"
 										value="#{enrollMakeNewRequestBean.confirmPassword}" />
-								</h:panelGroup>						
+								</h:panelGroup>			
 								<h:panelGroup layout="block" styleClass="pure-control-group"
 									rendered="#{enrollMakeNewRequestBean.getEmailRendered()}">
 									<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
