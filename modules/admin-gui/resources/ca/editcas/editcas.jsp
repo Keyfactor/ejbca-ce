@@ -347,7 +347,6 @@ java.security.InvalidAlgorithmParameterException
                 final String description = requestMap.get(TEXTFIELD_DESCRIPTION);
                 final String validityString = requestMap.get(TEXTFIELD_VALIDITY);
                 final String approvalSettingValues = requestMap.get(SELECT_APPROVALSETTINGS);//request.getParameterValues(SELECT_APPROVALSETTINGS);
-                final String numofReqApprovalsParam = requestMap.get(SELECT_NUMOFREQUIREDAPPROVALS);
                 final String approvalProfileParam = requestMap.get(SELECT_APPROVALPROFILE);
                 final boolean finishUser = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_FINISHUSER));
                 final boolean isDoEnforceUniquePublicKeys = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS));
@@ -395,7 +394,7 @@ java.security.InvalidAlgorithmParameterException
                     illegaldnoraltname = cabean.actionCreateCaMakeRequest(caname, signatureAlgorithmParam,
                      signkeyspec, keySequenceFormatParam, keySequence,
                		 catype, subjectdn, certificateProfileIdString, signedByString, description, validityString,
-               		 approvalSettingValues, numofReqApprovalsParam, approvalProfileParam, finishUser, isDoEnforceUniquePublicKeys,
+               		 approvalSettingValues, approvalProfileParam, finishUser, isDoEnforceUniquePublicKeys,
                		 isDoEnforceUniqueDistinguishedName,
                		 isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage,
                		 subjectaltname, policyid, useauthoritykeyidentifier, authoritykeyidentifiercritical,
@@ -542,7 +541,6 @@ java.security.InvalidAlgorithmParameterException
                 final boolean useUserStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUSERSTORAGE));
                 final boolean useCertificateStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTIFICATESTORAGE));
                 final String approvalSettingValues = requestMap.get(SELECT_APPROVALSETTINGS);//request.getParameterValues(SELECT_APPROVALSETTINGS);
-                final String numofReqApprovalsParam = requestMap.get(SELECT_NUMOFREQUIREDAPPROVALS);
                 final String approvalProfileParam = requestMap.get(SELECT_APPROVALPROFILE);
                 final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
                 final boolean useauthoritykeyidentifier = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIER));
@@ -579,7 +577,7 @@ java.security.InvalidAlgorithmParameterException
             		keySequenceFormatParam, keySequence, signedByString, description, validityString,
             		crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, finishUser,
             		isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
-            		useCertReqHistory, useUserStorage, useCertificateStorage, approvalSettingValues, numofReqApprovalsParam, 
+            		useCertReqHistory, useUserStorage, useCertificateStorage, approvalSettingValues, 
             		approvalProfileParam,
             		availablePublisherValues, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber,
             		crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccess,
