@@ -174,9 +174,13 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     public ApprovalRequestGUIInfo(final RaApprovalRequestInfo request, final RaLocaleBean raLocaleBean) {
         this.request = request;
-        requestData = new ArrayList<>();
-        for (final ApprovalDataText dataText : request.getRequestData()) {
-            requestData.add(new RequestDataRow(raLocaleBean, dataText));
+        if (request.getRequestData() != null) {
+            requestData = new ArrayList<>();
+            for (final ApprovalDataText dataText : request.getRequestData()) {
+                requestData.add(new RequestDataRow(raLocaleBean, dataText));
+            }
+        } else {
+            requestData = null;
         }
         
         requestDate = ValidityDate.formatAsISO8601ServerTZ(request.getRequestDate().getTime(), TimeZone.getDefault());
@@ -198,6 +202,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
             type = "???";
         }
         
+        // These are currently unavailable in the listing page for performance reasons
         final String username = getRequestData("USERNAME");
         final String subjectDN = getRequestData("SUBJECTDN");
         final String cn = CertTools.getPartFromDN(subjectDN, "CN");
@@ -245,9 +250,11 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     public List<RequestDataRow> getRequestData() { return requestData; }
     private String getRequestData(final String key) {
-        for (final RequestDataRow row : requestData) {
-            if (row.getKey().equals(key)) {
-                return row.getData();
+        if (requestData != null) {
+            for (final RequestDataRow row : requestData) {
+                if (row.getKey().equals(key)) {
+                    return row.getData();
+                }
             }
         }
         return null;

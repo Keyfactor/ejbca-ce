@@ -403,8 +403,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         for (final ApprovalDataVO advo : approvals) {
-            final List<ApprovalDataText> requestData = getRequestDataAsText(authenticationToken, advo);
-            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caIdToNameMap.get(advo.getCAId()), advo, requestData);
+            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caIdToNameMap.get(advo.getCAId()), advo, null);
             if (!ari.isPending() && request.isSearchingPending()) { continue; } // XXX untested code!
             if (!ari.isWaitingForMe() && request.isSearchingWaitingForMe()) { continue; }
             // XXX It seems that the query() method filters out approvals that the current admin isn't involved in. How to handle historical steps in this case? And pending steps?
@@ -594,7 +593,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             response.setMightHaveMoreResults(fingerprints.size()==maxResults);
             if (log.isDebugEnabled()) {
-                log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " → " + fingerprints.size() + " results. queryTimeout=" + queryTimeout + "ms");
+                log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " \u2192 " + fingerprints.size() + " results. queryTimeout=" + queryTimeout + "ms");
             }
         } catch (QueryTimeoutException e) {
             log.info("Requested search query by " + authenticationToken +  " took too long. Query was " + e.getQuery().toString() + ". " + e.getMessage());
@@ -724,7 +723,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             response.setMightHaveMoreResults(usernames.size()==maxResults);
             if (log.isDebugEnabled()) {
-                log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " → " + usernames.size() + " results. queryTimeout=" + queryTimeout + "ms");
+                log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " \u2192 " + usernames.size() + " results. queryTimeout=" + queryTimeout + "ms");
             }
         } catch (QueryTimeoutException e) {
             log.info("Requested search query by " + authenticationToken +  " took too long. Query was " + e.getQuery().toString() + ". " + e.getMessage());
