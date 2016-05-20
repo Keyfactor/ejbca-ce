@@ -255,12 +255,12 @@ public class RaSearchCertsBean implements Serializable {
                     }
                 }
                 if (stagedRequest.getRevokedAfter()<Long.MAX_VALUE) {
-                    if (cdw.getCertificateData().getUpdateTime()<stagedRequest.getRevokedAfter()) {
+                    if (cdw.getCertificateData().getRevocationDate()<stagedRequest.getRevokedAfter()) {
                         continue;
                     }
                 }
                 if (stagedRequest.getRevokedBefore()>0L) {
-                    if (cdw.getCertificateData().getUpdateTime()>stagedRequest.getRevokedBefore()) {
+                    if (cdw.getCertificateData().getRevocationDate()>stagedRequest.getRevokedBefore()) {
                         continue;
                     }
                 }
