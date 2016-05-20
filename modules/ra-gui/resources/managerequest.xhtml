@@ -37,12 +37,12 @@
             
             <h:panelGroup layout="block">
                 <h2><h:outputText value="#{msg.view_request_page_request_data_header}"/></h2>
-                <h:dataTable value="#{raManageRequestBean.requestData}" var="row" styleClass="pure-table" rowClasses=",pure-table-odd">
+                <h:dataTable value="#{raManageRequestBean.request.requestData}" var="row" styleClass="pure-table" rowClasses=",pure-table-odd">
                     <h:column>
-                        <h:outputText value="#{row.nameText}"/>
+                        <h:outputText value="#{row.header}"/>
                     </h:column>
                     <h:column>
-                        <h:outputText value="#{row.valueText}"/>
+                        <h:outputText value="#{row.data}"/>
                     </h:column>
                 </h:dataTable>
             </h:panelGroup>

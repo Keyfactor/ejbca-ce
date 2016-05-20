@@ -81,10 +81,10 @@ public class RaManageRequestBean implements Serializable {
                     .getParameter("id");
             final int id = Integer.parseInt(idHttpParam);
             final RaApprovalRequestInfo request = raMasterApiProxyBean.getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), id);
-            requestInfo = new ApprovalRequestGUIInfo(request, raLocaleBean);
-            if (requestInfo == null) {
-                throw new IllegalStateException("Request does not exist");
+            if (request == null) {
+                throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
             }
+            requestInfo = new ApprovalRequestGUIInfo(request, raLocaleBean);
         }
     }
     
@@ -95,11 +95,6 @@ public class RaManageRequestBean implements Serializable {
     
     public String getPageTitle() {
         return raLocaleBean.getMessage("view_request_page_title", getRequest().getDisplayName());
-    }
-    
-    public List<ApprovalDataRow> getRequestData() {
-        // TODO
-        return new ArrayList<>();
     }
     
     public boolean isHasNextStep() {

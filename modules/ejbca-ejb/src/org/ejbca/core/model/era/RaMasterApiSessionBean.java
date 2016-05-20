@@ -81,6 +81,7 @@ import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -90,13 +91,17 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
+import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.ApprovalStep;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.type.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -141,6 +146,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private EndEntityManagementSessionLocal endEntityManagementSessionLocal;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private HardTokenSessionLocal hardTokenSession;
     @EJB
     private KeyRecoverySessionLocal keyRecoverySessionLocal;
     @EJB
@@ -214,6 +221,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return approvals.iterator().next();
     }
     
+    private List<ApprovalDataText> getRequestDataAsText(final AuthenticationToken authenticationToken, final ApprovalDataVO approval) {
+        final ApprovalRequest approvalRequest = approval.getApprovalRequest();
+        if (approvalRequest instanceof EditEndEntityApprovalRequest) {
+            return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(authenticationToken, caSession, endEntityProfileSession, certificateProfileSession, hardTokenSession);
+        } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
+            return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(authenticationToken, caSession, endEntityProfileSession, certificateProfileSession, hardTokenSession);
+        } else {
+            return approvalRequest.getNewRequestDataAsText(authenticationToken);
+        }
+    }
+    
     @Override
     public RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final int id) {
         // The values are used to check if a request belongs to us or not
@@ -227,6 +245,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         final ApprovalDataVO advo = getApprovalData(authenticationToken, id);
+        if (advo == null) {
+            return null;
+        }
         
         // By getting the CA we perform an implicit auth check
         final String caName;
@@ -246,9 +267,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         
+        // Get request data as text
+        final List<ApprovalDataText> requestData = getRequestDataAsText(authenticationToken, advo);
+        
         // TODO perform ee profile and approval profile authorization checks also
         
-        return new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caName, advo);
+        return new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caName, advo, requestData);
         
     }
     
@@ -379,7 +403,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         for (final ApprovalDataVO advo : approvals) {
-            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caIdToNameMap.get(advo.getCAId()), advo);
+            final List<ApprovalDataText> requestData = getRequestDataAsText(authenticationToken, advo);
+            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caIdToNameMap.get(advo.getCAId()), advo, requestData);
             if (!ari.isPending() && request.isSearchingPending()) { continue; } // XXX untested code!
             if (!ari.isWaitingForMe() && request.isSearchingWaitingForMe()) { continue; }
             // XXX It seems that the query() method filters out approvals that the current admin isn't involved in. How to handle historical steps in this case? And pending steps?
