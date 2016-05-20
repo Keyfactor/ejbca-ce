@@ -117,9 +117,20 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		return ApprovalDataVO.APPROVALTYPE_ADDENDENTITY;
 	}
 
+	
+	/** Returns a summary of the information in the request, without doing any database queries. See also the overloaded method */
 	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
-		throw new RuntimeException("This getNewRequestDataAsText requires additional bean references.");
+	    ArrayList<ApprovalDataText> retval = new ArrayList<>();
+        retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
+        retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(userdata.getDN()),true,false));
+        retval.add(getTextWithNoValueString("SUBJECTALTNAME",userdata.getSubjectAltName()));
+        String dirattrs = userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+        retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
+        retval.add(getTextWithNoValueString("EMAIL",userdata.getEmail()));
+        retval.add(new ApprovalDataText("KEYRECOVERABLE",userdata.getKeyRecoverable() ? "YES" : "NO",true,true));
+        retval.add(new ApprovalDataText("SENDNOTIFICATION",userdata.getSendNotification() ? "YES" : "NO",true,true));       
+        return retval;
 	}
 	
 	public List<ApprovalDataText> getNewRequestDataAsText(CaSessionLocal caSession, EndEntityProfileSession endEntityProfileSession,
