@@ -74,11 +74,11 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase {
     /** @return database dependent query timeout hint in milliseconds or 0 if this is disabled. */
     public long getMaximumQueryTimeout() {
         final Object num = data.get(MAXIMUM_QUERY_TIMEOUT_KEY);
-        return num==null ? 10000L : ((Long) num).intValue();
+        return num==null ? 10000L : ((Long) num).longValue();
     }
 
     /** Set's the database dependent query timeout hint in milliseconds or 0 if this is disabled. */
     public void setMaximumQueryTimeout(final long maximumQueryTimeoutMs) throws InvalidConfigurationException { 
-        data.put(MAXIMUM_QUERY_TIMEOUT_KEY, Long.valueOf(maximumQueryTimeoutMs < 0L ? 0 : maximumQueryTimeoutMs));
+        data.put(MAXIMUM_QUERY_TIMEOUT_KEY, Long.valueOf(maximumQueryTimeoutMs < 0L ? 0L : maximumQueryTimeoutMs));
     }
 }
