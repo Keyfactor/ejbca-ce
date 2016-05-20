@@ -316,7 +316,8 @@ public abstract class ApprovalRequest implements Externalizable {
 
     /**
      * This method should return the request data in text representation. This text is presented for the approving administrator in order for him to
-     * make a decision about the request.
+     * make a decision about the request. The AddEndEntityApprovalRequest and EditEndEntityApprovalRequest classes have a more detailed overloaded version,
+     * that performs database queries to fill in the CA and profile names, etc. 
      * 
      * Should return a List of ApprovalDataText, one for each row
      */

@@ -120,9 +120,31 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		return ApprovalDataVO.APPROVALTYPE_EDITENDENTITY;
 	}
 
+	/** Returns a summary of the information in the request, without doing any database queries. See also the overloaded method */
 	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
-		throw new RuntimeException("This getNewRequestDataAsText requires additional bean references.");
+	    ArrayList<ApprovalDataText> retval = new ArrayList<>();
+        retval.add(new ApprovalDataText("USERNAME",newuserdata.getUsername(),true,false));
+        String passwordtext = "NOTSHOWN";
+        if((newuserdata.getPassword() == null && !StringUtils.isEmpty(orguserdata.getPassword())) ||
+           (!StringUtils.isEmpty(newuserdata.getPassword()) && orguserdata.getPassword() == null)) {            
+            passwordtext = "NEWPASSWORD";           
+        }       
+        if(newuserdata.getPassword() != null && orguserdata.getPassword() != null){
+            if(!newuserdata.getPassword().equals(orguserdata.getPassword())){
+                passwordtext = "NEWPASSWORD";
+            }
+        }               
+        retval.add(new ApprovalDataText("PASSWORD",passwordtext,true,true));
+        retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(newuserdata.getDN()),true,false));
+        retval.add(getTextWithNoValueString("SUBJECTALTNAME",newuserdata.getSubjectAltName()));
+        String dirattrs = newuserdata.getExtendedinformation() != null ? newuserdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+        retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
+        retval.add(getTextWithNoValueString("EMAIL",newuserdata.getEmail()));
+        retval.add(new ApprovalDataText("KEYRECOVERABLE",newuserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
+        retval.add(new ApprovalDataText("SENDNOTIFICATION",newuserdata.getSendNotification() ? "YES" : "NO",true,true));
+        retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(newuserdata.getStatus()),true,true));
+        return retval;
 	}
 
 	public List<ApprovalDataText> getNewRequestDataAsText(CaSessionLocal caSession, EndEntityProfileSession endEntityProfileSession,
