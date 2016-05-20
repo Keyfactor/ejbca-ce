@@ -305,6 +305,19 @@ public class RaSearchCertsBean implements Serializable {
         });
     }
     
+    /** @return true if there were no matching search results for the current criteria. */
+    public boolean isResultsNone() {
+        return getFilteredResults().isEmpty() && !isMoreResultsAvailable();
+    }
+    /** @return true if there might be more search results for the current criteria than shown here. */
+    public boolean isResultsMoreAvailable() {
+        return !getFilteredResults().isEmpty() && isMoreResultsAvailable();
+    }
+    /** @return true if there more search results for the given criteria, but there are no result which we assume is caused by a search or peer timeout. */
+    public boolean isResultsTimeout() {
+        return getFilteredResults().isEmpty() && isMoreResultsAvailable();
+    }
+    
     public String getSortedByProfile() { return getSortedBy(SortOrder.PROFILE); }
     public void sortByProfile() { sortBy(SortOrder.PROFILE, true); }
     public String getSortedByCa() { return getSortedBy(SortOrder.CA); }

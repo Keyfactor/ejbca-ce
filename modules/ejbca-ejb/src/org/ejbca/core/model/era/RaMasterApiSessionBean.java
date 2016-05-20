@@ -594,7 +594,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             response.setMightHaveMoreResults(fingerprints.size()==maxResults);
             if (log.isDebugEnabled()) {
-                log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " → " + fingerprints.size() + " results.");
+                log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " → " + fingerprints.size() + " results. queryTimeout=" + queryTimeout + "ms");
             }
         } catch (QueryTimeoutException e) {
             log.info("Requested search query by " + authenticationToken +  " took too long. Query was " + e.getQuery().toString() + ". " + e.getMessage());
@@ -724,7 +724,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             response.setMightHaveMoreResults(usernames.size()==maxResults);
             if (log.isDebugEnabled()) {
-                log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " → " + usernames.size() + " results.");
+                log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " → " + usernames.size() + " results. queryTimeout=" + queryTimeout + "ms");
             }
         } catch (QueryTimeoutException e) {
             log.info("Requested search query by " + authenticationToken +  " took too long. Query was " + e.getQuery().toString() + ". " + e.getMessage());
