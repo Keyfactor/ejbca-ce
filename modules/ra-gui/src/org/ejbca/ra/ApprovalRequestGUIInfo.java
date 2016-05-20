@@ -20,7 +20,9 @@ import java.util.TimeZone;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalStep;
 import org.ejbca.core.model.approval.ApprovalStepMetadata;
@@ -36,7 +38,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ApprovalRequestGUIInfo.class);
     
-    public static class StepOption implements Serializable {
+    public static final class StepOption implements Serializable {
         private static final long serialVersionUID = 1L;
         private final String name;
         private Object value;
@@ -58,7 +60,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
     }
     
-    public static class StepControl implements Serializable {
+    public static final class StepControl implements Serializable {
         private static final long serialVersionUID = 1L;
         private final int metadataId;
         /** Type of control, corresponds to ApprovalStep.METADATATYPE_* constants*/
@@ -100,7 +102,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         public int getMetadataId() { return metadataId; }
     }
     
-    public static class Step implements Serializable {
+    public static final class Step implements Serializable {
         private static final long serialVersionUID = 1L;
         private final int stepId;
         private final List<StepControl> controls;
@@ -122,6 +124,36 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
     }
     
+    public static final class RequestDataRow implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private final ApprovalDataText approvalDataText;
+        private final RaLocaleBean raLocaleBean;
+        public RequestDataRow(final RaLocaleBean raLocaleBean, final ApprovalDataText approvalDataText) {
+            this.approvalDataText = approvalDataText;
+            this.raLocaleBean = raLocaleBean;
+        }
+        
+        public String getKey() {
+            return approvalDataText.getHeader();
+        }
+        
+        public String getHeader() {
+            if (approvalDataText.isHeaderTranslateable()) {
+                return raLocaleBean.getMessage("view_request_page_data_header_" + approvalDataText.getHeader());
+            } else {
+                return approvalDataText.getHeader();
+            }
+        }
+        
+        public String getData() {
+            if (approvalDataText.isDataTranslatable()) {
+                return raLocaleBean.getMessage("view_request_page_data_value_" + approvalDataText.getData());
+            } else {
+                return approvalDataText.getData();
+            }
+        }
+    }
+    
     // This field is package-internal so RaManageRequest(s)Bean can use it internally. This class is specific to these beans.
     final RaApprovalRequestInfo request;
     
@@ -132,6 +164,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private final String detail;
     private final String status;
     
+    private final List<RequestDataRow> requestData;
+    
     private final Step nextStep;
     private final List<Step> previousSteps;
     
@@ -140,6 +174,11 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     public ApprovalRequestGUIInfo(final RaApprovalRequestInfo request, final RaLocaleBean raLocaleBean) {
         this.request = request;
+        requestData = new ArrayList<>();
+        for (final ApprovalDataText dataText : request.getRequestData()) {
+            requestData.add(new RequestDataRow(raLocaleBean, dataText));
+        }
+        
         requestDate = ValidityDate.formatAsISO8601ServerTZ(request.getRequestDate().getTime(), TimeZone.getDefault());
         
         if (request.getCaId() == ApprovalDataVO.ANY_CA) {
@@ -159,14 +198,11 @@ public class ApprovalRequestGUIInfo implements Serializable {
             type = "???";
         }
         
-        /*username = request.getUsername();
-        subjectDN = request.getSubjectDN();*/
-        /*String cn = CertTools.getPartFromDN(subjectDN, "CN");
-        if (cn == null) {
-            cn = subjectDN;
-        }*/
-        displayName = "TODO"; // TODO could show CN or fall back to Subject DN for End Entity approval requests
-        detail = "TODO"; // TODO could show full DN for End Entity approval requests
+        final String username = getRequestData("USERNAME");
+        final String subjectDN = getRequestData("SUBJECTDN");
+        final String cn = CertTools.getPartFromDN(subjectDN, "CN");
+        displayName = (cn != null ? cn : username);
+        detail = subjectDN;
         
         switch (request.getStatus()) {
         case ApprovalDataVO.STATUS_APPROVED: status = raLocaleBean.getMessage("manage_requests_status_approved"); break;
@@ -182,6 +218,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
             status = "???";
         }
         
+        // Steps
         final ApprovalStep nextApprovalStep = request.getNextApprovalStep();
         if (nextApprovalStep != null) {
             nextStep = new Step(nextApprovalStep);
@@ -205,6 +242,16 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public String getDisplayName() { return displayName; }
     public String getDetail() { return detail; }
     public String getStatus() { return status; }
+    
+    public List<RequestDataRow> getRequestData() { return requestData; }
+    private String getRequestData(final String key) {
+        for (final RequestDataRow row : requestData) {
+            if (row.getKey().equals(key)) {
+                return row.getData();
+            }
+        }
+        return null;
+    }
 
     public boolean isHasNextStep() { return nextStep != null && canApprove; }
     public Step getNextStep() { return nextStep; }

@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
+import java.io.Serializable;
+
 /**
  * Class used in presenting approval data for the approving administrator
  * Contains a header and a data part and booleans if they should be
@@ -20,8 +22,11 @@ package org.ejbca.core.model.approval;
  *
  * @version $Id$
  */
-public class ApprovalDataText {
-	String header;
+public class ApprovalDataText implements Serializable {
+    /** Class is also used by the RA. Please keep serialization compatible (do not change the version number) */
+	private static final long serialVersionUID = 1L;
+	
+    String header;
 	String data;
 	boolean headerTranslateable;
 	boolean dataTranslatable;
