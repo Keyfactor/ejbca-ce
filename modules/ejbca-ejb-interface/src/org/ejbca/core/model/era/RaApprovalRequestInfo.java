@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalStep;
 
@@ -46,6 +47,9 @@ public class RaApprovalRequestInfo implements Serializable {
     private final Date requestDate;
     private final int status;
     
+    // Request data, as text
+    private final List<ApprovalDataText> requestData;
+    
     private final boolean requestedByMe;
     
     // Current approval step
@@ -54,13 +58,7 @@ public class RaApprovalRequestInfo implements Serializable {
     // Previous approval steps that are visible to the admin
     private final List<ApprovalStep> previousApprovalSteps;
     
-    // Request information from Request
-    // TODO do we need any info from this?
-    
-    // Approval Profile information
-    // TODO do we need any info from this?
-    
-    public RaApprovalRequestInfo(final AuthenticationToken authenticationToken, final String adminCertIssuer, final String adminCertSerial, final String caName, final ApprovalDataVO approval) {
+    public RaApprovalRequestInfo(final AuthenticationToken authenticationToken, final String adminCertIssuer, final String adminCertSerial, final String caName, final ApprovalDataVO approval, final List<ApprovalDataText> requestData) {
         id = approval.getId();
         approvalCalculatedUniqueId = approval.getApprovalId();
         approvalType = approval.getApprovalType();
@@ -73,6 +71,7 @@ public class RaApprovalRequestInfo implements Serializable {
         requesterSerialNumber = approval.getReqadmincertsn();
         requestDate = approval.getRequestDate();
         status = approval.getStatus();
+        this.requestData = requestData;
         
         nextApprovalStep = approval.getApprovalRequest().getNextUnhandledApprovalStepByAdmin(authenticationToken);
         if (nextApprovalStep != null && nextApprovalStep.canSeePreviousSteps()) {
@@ -93,7 +92,7 @@ public class RaApprovalRequestInfo implements Serializable {
         requestedByMe = StringUtils.equals(requesterIssuerDN, adminCertIssuer) &&
                 StringUtils.equalsIgnoreCase(requesterSerialNumber, adminCertSerial);
     }
-    
+
     public int getId() {
         return id;
     }
@@ -116,6 +115,10 @@ public class RaApprovalRequestInfo implements Serializable {
     
     public int getType() {
         return approvalType;
+    }
+    
+    public List<ApprovalDataText> getRequestData() {
+        return requestData;
     }
     
     public ApprovalStep getNextApprovalStep() {
