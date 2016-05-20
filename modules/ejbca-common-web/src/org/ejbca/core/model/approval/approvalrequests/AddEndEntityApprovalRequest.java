@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
@@ -122,9 +122,9 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		throw new RuntimeException("This getNewRequestDataAsText requires additional bean references.");
 	}
 	
-	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin, CaSession caSession, EndEntityProfileSession endEntityProfileSession,
+	public List<ApprovalDataText> getNewRequestDataAsText(CaSessionLocal caSession, EndEntityProfileSession endEntityProfileSession,
 			CertificateProfileSession certificateProfileSession, HardTokenSession hardTokenSession) {
-		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
+		ArrayList<ApprovalDataText> retval = new ArrayList<>();
 		retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
 		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(userdata.getDN()),true,false));
 		retval.add(getTextWithNoValueString("SUBJECTALTNAME",userdata.getSubjectAltName()));
@@ -133,11 +133,9 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(getTextWithNoValueString("EMAIL",userdata.getEmail()));
 		String caname;
 		try {
-			caname = caSession.getCAInfo(admin,  userdata.getCAId()).getName();
+			caname = caSession.getCAInfoInternal(userdata.getCAId()).getName();
 		} catch (CADoesntExistsException e) {
 			caname = "NotExist";
-		} catch (AuthorizationDeniedException e) {
-			caname = "AuthDenied";
 		}
 		retval.add(new ApprovalDataText("CA", caname, true, false));
 		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(userdata.getEndEntityProfileId()),true,false));		

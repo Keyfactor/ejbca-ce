@@ -27,6 +27,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -124,9 +125,9 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		throw new RuntimeException("This getNewRequestDataAsText requires additional bean references.");
 	}
 
-	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin, CaSession caSession, EndEntityProfileSession endEntityProfileSession,
+	public List<ApprovalDataText> getNewRequestDataAsText(CaSessionLocal caSession, EndEntityProfileSession endEntityProfileSession,
 			CertificateProfileSession certificateProfileSession, HardTokenSession hardTokenSession) {
-		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
+		ArrayList<ApprovalDataText> retval = new ArrayList<>();
 		retval.add(new ApprovalDataText("USERNAME",newuserdata.getUsername(),true,false));
 		String passwordtext = "NOTSHOWN";
 		if((newuserdata.getPassword() == null && !StringUtils.isEmpty(orguserdata.getPassword())) ||
@@ -146,11 +147,9 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(getTextWithNoValueString("EMAIL",newuserdata.getEmail()));
 		String caname;
 		try {
-			caname = caSession.getCAInfo(admin,  newuserdata.getCAId()).getName();
+			caname = caSession.getCAInfoInternal(newuserdata.getCAId()).getName();
 		} catch (CADoesntExistsException e) {
 			caname = "NotExist";
-		} catch (AuthorizationDeniedException e) {
-			caname = "AuthDenied";
 		}
 		retval.add(new ApprovalDataText("CA", caname, true, false));
 		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(newuserdata.getEndEntityProfileId()),true,false));		

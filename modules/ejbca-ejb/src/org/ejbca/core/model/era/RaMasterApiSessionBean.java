@@ -224,9 +224,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private List<ApprovalDataText> getRequestDataAsText(final AuthenticationToken authenticationToken, final ApprovalDataVO approval) {
         final ApprovalRequest approvalRequest = approval.getApprovalRequest();
         if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-            return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(authenticationToken, caSession, endEntityProfileSession, certificateProfileSession, hardTokenSession);
+            return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(caSession, endEntityProfileSession, certificateProfileSession, hardTokenSession);
         } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-            return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(authenticationToken, caSession, endEntityProfileSession, certificateProfileSession, hardTokenSession);
+            return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(caSession, endEntityProfileSession, certificateProfileSession, hardTokenSession);
         } else {
             return approvalRequest.getNewRequestDataAsText(authenticationToken);
         }

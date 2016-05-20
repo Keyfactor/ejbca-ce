@@ -387,10 +387,10 @@ public class ApprovalDataVOView implements Serializable {
     	ApprovalRequest approvalRequest = data.getApprovalRequest();
     	AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
     	if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-    		return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, ejbLocalHelper.getCaSession(),
+    		return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(ejbLocalHelper.getCaSession(),
     				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession(), ejbLocalHelper.getHardTokenSession());
     	} else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-    		return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, ejbLocalHelper.getCaSession(),
+    		return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(ejbLocalHelper.getCaSession(),
     				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession(), ejbLocalHelper.getHardTokenSession());
     	} else {
     		return approvalRequest.getNewRequestDataAsText(admin);
