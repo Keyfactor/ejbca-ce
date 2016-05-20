@@ -116,7 +116,7 @@
 	                        		<ui:repeat value="#{raLocaleBean.supportedLocales}" var="supportedLocale">
 	                        			<li class="pure-menu-item">
 	                        				<h:commandButton action="#{raLocaleBean.setLocale(supportedLocale)}" label="#{supportedLocale.language}" 
-	                        					value="#{supportedLocale.displayLanguage}" styleClass="pure-menu-item language_button"/> 
+	                        					value="#{supportedLocale.getDisplayLanguage(supportedLocale)}" styleClass="pure-menu-item language_button"/> 
 	                        			</li>         			
 	                        		</ui:repeat>
                         		</h:form>
