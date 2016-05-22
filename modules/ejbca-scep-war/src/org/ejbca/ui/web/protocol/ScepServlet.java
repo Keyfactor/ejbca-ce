@@ -448,8 +448,12 @@ public class ScepServlet extends HttpServlet {
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (AuthLoginException ae) {
-    		String errMsg = intres.getLocalizedMessage("scep.errorauth");
-            log.info(errMsg, ae);
+            if (log.isDebugEnabled()) {
+                // AuthLogin is logged as a security event already by inner layers, not need to log the exception at info level
+                // this is seens clearly in the info log already, more details is inly needed in debug level
+                final String errMsg = intres.getLocalizedMessage("scep.errorauth");
+                log.debug(errMsg, ae);
+            }
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (AuthStatusException ae) {
