@@ -55,6 +55,7 @@ public class RaCasPageBean implements Serializable {
         private String deltaCrlLink;
         private final int position;
         private final List<String> chainNames;
+        private boolean x509 = false;
         
         CaAndCrl(final String name, final String subjectDn, final int caId, final int position, final List<String> chainNames) {
             this.name = name;
@@ -70,6 +71,7 @@ public class RaCasPageBean implements Serializable {
         public String getCrlLink() { return crlLink; }
         public String getDeltaCrlLink() { return deltaCrlLink; }
         public int getPosition() { return position; }
+        public boolean isX509() { return x509; }
         
         @Override
         public int hashCode() { return subjectDn.hashCode(); }
@@ -130,6 +132,7 @@ public class RaCasPageBean implements Serializable {
                     final CaAndCrl caAndCrl = new CaAndCrl(name, subjectDn, chainNames.size()==chain.size()?caId:NO_CAID_AVAILABLE, chainNames.size()-1, new ArrayList<>(chainNames));
                     // Construct links to RFC4387 CRL Download Servlet
                     if (caCertificate instanceof X509Certificate) {
+                        caAndCrl.x509 = true;
                         final CRLInfo crlInfoFull = crlSession.getLastCRLInfo(subjectDn, false);
                         if (crlInfoFull!=null) {
                             atLeastOneCrlLinkPresent = true;

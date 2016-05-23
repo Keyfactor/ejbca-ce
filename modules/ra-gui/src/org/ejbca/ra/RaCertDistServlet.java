@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -59,6 +60,7 @@ public class RaCertDistServlet extends HttpServlet {
     private static final String PARAMETER_FORMAT_OPTION_PEM = "pem";    // Applies to both certificate chain and individual certificates download
     private static final String PARAMETER_FORMAT_OPTION_DER = "der";
     private static final String PARAMETER_FORMAT_OPTION_JKS = "jks";    // Applies only to certificate chain download
+    private static final String PARAMETER_FORMAT_OPTION_P7C = "pkcs7";  // Applies to both certificate chain and individual certificates download
     private static final String PARAMETER_CHAIN = "chain";
 
     @EJB
@@ -127,6 +129,11 @@ public class RaCertDistServlet extends HttpServlet {
                             filename += "-chain.jks";
                             break;
                         }
+                        case PARAMETER_FORMAT_OPTION_P7C: {
+                            response = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain));
+                            filename += "-chain.p7c";
+                            break;
+                        }
                         case PARAMETER_FORMAT_OPTION_PEM:
                         default: {
                             response = CertTools.getPemFromCertificateChain(chain);
@@ -146,6 +153,11 @@ public class RaCertDistServlet extends HttpServlet {
                             filename += (caCertificate instanceof CardVerifiableCertificate) ? ".cvcert" : ".crt";
                             break;
                         }
+                        case PARAMETER_FORMAT_OPTION_P7C: {
+                            response = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(Arrays.asList(new Certificate[]{ caCertificate })));
+                            filename += ".p7c";
+                            break;
+                        }
                         case PARAMETER_FORMAT_OPTION_PEM:
                         default: {
                             filename += ".pem";
@@ -155,8 +167,11 @@ public class RaCertDistServlet extends HttpServlet {
                         }
                     }
                     writeResponseBytes(httpServletResponse, filename, contentType, response);
-                } catch (NoSuchFieldException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+                } catch (NoSuchFieldException | KeyStoreException | NoSuchAlgorithmException | CertificateException | ClassCastException | CMSException e) {
                     httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unable to serve request due to internal error.");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Failed to provide certificate download to client. " + e.getMessage());
+                    }
                     return;
                 }
             }
