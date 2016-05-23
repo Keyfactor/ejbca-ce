@@ -73,13 +73,22 @@ public class RaApprovalRequestInfo implements Serializable {
         status = approval.getStatus();
         this.requestData = requestData;
         
-        nextApprovalStep = approval.getApprovalRequest().getNextUnhandledApprovalStepByAdmin(authenticationToken);
-        if (nextApprovalStep != null && nextApprovalStep.canSeePreviousSteps()) {
+        // Next steps
+        final ApprovalStep nextStep;
+        nextStep = approval.getApprovalRequest().getNextUnhandledApprovalStepByAdmin(authenticationToken);
+        if (nextStep != null && status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
+            nextApprovalStep = nextStep;
+        } else {
+            nextApprovalStep = null;
+        }
+            
+        // Previous steps
+        if (nextStep != null && nextStep.canSeePreviousSteps()) {
             // TODO check if we should check against currentApprovalStep.getPreviousStepsDependency()
             final List<ApprovalStep> steps = new ArrayList<>(approval.getApprovalRequest().getApprovalSteps().values());
             previousApprovalSteps = new ArrayList<>();
             for (final ApprovalStep step : steps) {
-                if (step.getStepId() <  nextApprovalStep.getStepId()) {
+                if (step.getStepId() < nextStep.getStepId()) {
                     previousApprovalSteps.add(step);
                 }
             }
