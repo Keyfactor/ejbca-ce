@@ -3877,6 +3877,10 @@ public abstract class CertTools {
      * @throws CMSException if there was a problem creating the certs-only CMS message
      */
     public static byte[] createCertsOnlyCMS(final List<X509Certificate> x509CertificateChain) throws CertificateEncodingException, CMSException {
+        if (log.isDebugEnabled()) {
+            final String subjectdn = ( (x509CertificateChain != null && x509CertificateChain.size() > 0) ? x509CertificateChain.get(0).getSubjectDN().toString() : "null");  
+            log.debug("Creating a certs-only CMS for " + subjectdn);
+        }
         final List<JcaX509CertificateHolder> certList = CertTools.convertToX509CertificateHolder(x509CertificateChain);
         final CMSSignedDataGenerator cmsSignedDataGenerator = new CMSSignedDataGenerator();
         cmsSignedDataGenerator.addCertificates(new CollectionStore<JcaX509CertificateHolder>(certList));
