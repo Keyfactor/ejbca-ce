@@ -504,47 +504,43 @@ public class X509CA extends CA implements Serializable {
     @Override
     public byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) throws SignRequestSignatureException {
         // First verify that we signed this certificate
-        try {
-            if (cert != null) {
+        final X509Certificate cacert = (X509Certificate) getCACertificate();
+        if (cert!=null) {
+            try {
                 final PublicKey verifyKey;
-                final X509Certificate cacert = (X509Certificate) getCACertificate();
                 if (cacert != null) {
                     verifyKey = cacert.getPublicKey();
                 } else {
-
                     verifyKey = cryptoToken.getPublicKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-
                 }
                 cert.verify(verifyKey);
+            } catch (CryptoTokenOfflineException e) {
+                throw new SignRequestSignatureException("The cryptotoken was not available, could not create a PKCS7", e);
+            } catch (InvalidKeyException e) {
+                throw new SignRequestSignatureException("The specified certificate contains the wrong public key.", e);
+            } catch (CertificateException e) {
+                throw new SignRequestSignatureException("An encoding error was encountered.", e);
+            } catch (NoSuchAlgorithmException e) {
+                throw new SignRequestSignatureException("The certificate provided was signed with an invalid algorithm.", e);
+            } catch (NoSuchProviderException e) {
+                throw new SignRequestSignatureException("The crypto provider was not found for verification of the certificate.", e);
+            } catch (SignatureException e) {
+                throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?", e);
             }
-        } catch (CryptoTokenOfflineException e) {
-            throw new SignRequestSignatureException("The cryptotoken was not available, could not create a PKCS7", e);
-        } catch (InvalidKeyException e) {
-            throw new SignRequestSignatureException("The specified certificate contains the wrong public key.", e);
-        } catch (CertificateException e) {
-            throw new SignRequestSignatureException("An encoding error was encountered.", e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new SignRequestSignatureException("The certificate provided was signed with an invalid algorithm.", e);
-        } catch (NoSuchProviderException e) {
-            throw new SignRequestSignatureException("The crypto provider was not found for verification of the certificate.", e);
-        } catch (SignatureException e) {
-            throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?", e);
         }
-       
-        Collection<Certificate> chain = getCertificateChain();
-        ArrayList<X509CertificateHolder> certList = new ArrayList<X509CertificateHolder>();
+        final List<X509Certificate> x509Chain = new ArrayList<X509Certificate>();
+        if (cert!=null) {
+            x509Chain.add(cert);
+        }
+        if (includeChain) {
+            x509Chain.addAll(CertTools.convertCertificateChainToX509Chain(getCertificateChain()));
+        }
+        List<JcaX509CertificateHolder> certList;
         try {
-            if (cert != null) {
-                certList.add(new JcaX509CertificateHolder(cert));
-            }
-            if (includeChain) {
-                for (Certificate certificate : chain) {
-                    certList.add(new JcaX509CertificateHolder((X509Certificate) certificate));
-                }
-            }
+            certList = CertTools.convertToX509CertificateHolder(x509Chain);
         } catch (CertificateEncodingException e) {
             throw new SignRequestSignatureException("Could not encode certificate", e);
-        } 
+        }
         try {
             CMSTypedData msg = new CMSProcessableByteArray(new byte[0]);
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
@@ -559,11 +555,11 @@ public class X509CA extends CA implements Serializable {
                 ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey);
                 JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
                 JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
-                gen.addSignerInfoGenerator(builder.build(contentSigner, (X509Certificate) getCACertificate()));
+                gen.addSignerInfoGenerator(builder.build(contentSigner, cacert));
             } catch (OperatorCreationException e) {
                 throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
             }            
-            gen.addCertificates(new CollectionStore<X509CertificateHolder>(certList));
+            gen.addCertificates(new CollectionStore<JcaX509CertificateHolder>(certList));
             CMSSignedData s = null;
             CAToken catoken = getCAToken();
             if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {

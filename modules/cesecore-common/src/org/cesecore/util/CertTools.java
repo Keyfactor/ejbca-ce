@@ -124,6 +124,10 @@ import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.bouncycastle.cms.CMSAbsentContent;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
@@ -136,6 +140,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.CollectionStore;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.IllegalNameException;
@@ -3864,6 +3869,26 @@ public abstract class CertTools {
     }
 
     /**
+     * Create a "certs-only" PKCS#7 / CMS from the provided chain.
+     * 
+     * @param x509CertificateChain chain of certificates with the leaf in the first position and root in the last or just a leaf certificate.
+     * @return a byte array containing the CMS
+     * @throws CertificateEncodingException if the provided list of certificates could not be parsed correctly
+     * @throws CMSException if there was a problem creating the certs-only CMS message
+     */
+    public static byte[] createCertsOnlyCMS(final List<X509Certificate> x509CertificateChain) throws CertificateEncodingException, CMSException {
+        final List<JcaX509CertificateHolder> certList = CertTools.convertToX509CertificateHolder(x509CertificateChain);
+        final CMSSignedDataGenerator cmsSignedDataGenerator = new CMSSignedDataGenerator();
+        cmsSignedDataGenerator.addCertificates(new CollectionStore<JcaX509CertificateHolder>(certList));
+        final CMSSignedData cmsSignedData = cmsSignedDataGenerator.generate(new CMSAbsentContent(), true);
+        try {
+            return cmsSignedData.getEncoded();
+        } catch (IOException e) {
+            throw new CMSException(e.getMessage());
+        }
+    }
+
+    /**
      * Generated Generates a ContentVerifierProvider.
      * 
      * @param pubkey
@@ -3874,6 +3899,27 @@ public abstract class CertTools {
         return new JcaContentVerifierProviderBuilder().build(pubkey);
     }
 
+    /**
+     * @return a Certificate Collection as a X509Certificate list
+     * @throws ClassCastException if one of the Certificates in the collection is not an X509Certificate
+     */
+    public static final List<X509Certificate> convertCertificateChainToX509Chain(final Collection<Certificate> chain) throws ClassCastException {
+        final List<X509Certificate> ret = new ArrayList<>();
+        for (final Certificate certificate : chain) {
+            ret.add((X509Certificate) certificate);
+        }
+        return ret;
+    }
+    
+    /** @return a X509Certificate Collection as a Certificate list */
+    public static final List<Certificate> convertCertificateChainToGenericChain(final Collection<X509Certificate> chain) {
+        final List<Certificate> ret = new ArrayList<>();
+        for (final Certificate certificate : chain) {
+            ret.add(certificate);
+        }
+        return ret;
+    }
+    
     /**
      * Converts a X509Certificate chain into a JcaX509CertificateHolder chain.
      * 
