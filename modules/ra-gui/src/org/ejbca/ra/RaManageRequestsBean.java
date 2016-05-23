@@ -60,7 +60,7 @@ public class RaManageRequestsBean implements Serializable {
     private enum ViewTab { NEEDS_APPROVAL, PENDING_APPROVAL, PROCESSED, CUSTOM_SEARCH };
     private ViewTab viewTab; // TODO show the NEEDS_APPROVAL tab automatically?
     
-    private enum SortBy { REQUEST_DATE, CA, TYPE, DISPLAY_NAME, STATUS };
+    private enum SortBy { REQUEST_DATE, CA, TYPE, DISPLAY_NAME, REQUESTER_NAME, STATUS };
     private SortBy sortBy = SortBy.REQUEST_DATE;
     private boolean sortAscending = true;
 
@@ -159,7 +159,8 @@ public class RaManageRequestsBean implements Serializable {
                 // TODO locale-aware sorting
                 case CA: return o1.getCa().compareTo(o2.getCa()) * sortDir;
                 case TYPE: return o1.getType().compareTo(o2.getType()) * sortDir;
-                case DISPLAY_NAME: return o1.getDisplayName().compareTo(o2.getDetail()) * sortDir;
+                case DISPLAY_NAME: return o1.getDisplayName().compareTo(o2.getDisplayName()) * sortDir;
+                case REQUESTER_NAME: return o1.getRequesterName().compareTo(o2.getRequesterName()) * sortDir;
                 case STATUS: return o1.getStatus().compareTo(o2.getStatus()) * sortDir;
                 case REQUEST_DATE:
                 default:
@@ -178,6 +179,8 @@ public class RaManageRequestsBean implements Serializable {
     public void sortByType() { sortBy(SortBy.TYPE, true); }
     public String getSortedByDisplayName() { return getSortedBy(SortBy.DISPLAY_NAME); }
     public void sortByDisplayName() { sortBy(SortBy.DISPLAY_NAME, true); }
+    public String getSortedByRequesterName() { return getSortedBy(SortBy.REQUESTER_NAME); }
+    public void sortByRequesterName() { sortBy(SortBy.REQUESTER_NAME, true); }
     public String getSortedByStatus() { return getSortedBy(SortBy.STATUS); }
     public void sortByStatus() { sortBy(SortBy.STATUS, true); }
 	

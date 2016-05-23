@@ -99,6 +99,17 @@
                         </h:column>
                         <h:column>
                             <f:facet name="header">
+                                <h:outputLabel for="sortRequesterName" value="#{msg.manage_requests_page_colhead_requester_name} #{raManageRequestsBean.sortedByRequesterName}"/>
+                                <h:commandButton id="sortRequesterName" action="#{raManageRequestsBean.sortByRequesterName}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText value="#{raRequest.requesterName}" title="#{raRequest.detail}" />
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
                                 <h:outputLabel for="sortStatus" value="#{msg.manage_requests_page_colhead_request_status} #{raManageRequestsBean.sortedByStatus}"/>
                                 <h:commandButton id="sortStatus" action="#{raManageRequestsBean.sortByStatus}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
                                     <f:ajax execute="@this" render=":contentForm:filteredResults"

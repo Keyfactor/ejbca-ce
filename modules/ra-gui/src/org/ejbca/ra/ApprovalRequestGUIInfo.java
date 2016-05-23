@@ -160,6 +160,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private final String requestDate;
     private final String caName;
     private final String type;
+    private final String requesterName;
     private final String displayName;
     private final String detail;
     private final String status;
@@ -193,6 +194,13 @@ public class ApprovalRequestGUIInfo implements Serializable {
             caName = request.getCaName();
         }
         
+        final String reqSubjDN = request.getRequesterSubjectDN();
+        if (reqSubjDN != null) {
+            requesterName = getCNOrFallback(reqSubjDN, reqSubjDN);
+        } else {
+            requesterName = "";
+        }
+        
         switch (request.getType()) {
         case ApprovalDataVO.APPROVALTYPE_ADDENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_add_end_entity"); break;
         case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE: type = raLocaleBean.getMessage("manage_requests_type_revoke_certificate"); break;
@@ -205,8 +213,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         // These are currently unavailable in the listing page for performance reasons
         final String username = getRequestData("USERNAME");
         final String subjectDN = getRequestData("SUBJECTDN");
-        final String cn = CertTools.getPartFromDN(subjectDN, "CN");
-        displayName = (cn != null ? cn : username);
+        displayName = getCNOrFallback(subjectDN, username);
         detail = subjectDN;
         
         switch (request.getStatus()) {
@@ -239,11 +246,23 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
     }
     
+    private String getCNOrFallback(final String subjectDN, final String fallback) {
+        final String cn = CertTools.getPartFromDN(subjectDN, "CN");
+        if (cn != null) {
+            return cn;
+        } else if (fallback != null) {
+            return fallback;
+        } else {
+            return "";
+        }
+    }
+    
     public String getId() { return String.valueOf(request.getId()); }
     public String getRequestDate() { return requestDate; }
     public boolean isHasCa() { return request.getCaId() != ApprovalDataVO.ANY_CA; }
     public String getCa() { return caName; }
     public String getType() { return type; }
+    public String getRequesterName() { return requesterName; }
     public String getDisplayName() { return displayName; }
     public String getDetail() { return detail; }
     public String getStatus() { return status; }

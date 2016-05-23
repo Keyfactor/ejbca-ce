@@ -13,6 +13,7 @@
 package org.ejbca.core.model.era;
 
 import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalStep;
@@ -44,6 +46,7 @@ public class RaApprovalRequestInfo implements Serializable {
     private final int remainingApprovals;
     private final String requesterIssuerDN;
     private final String requesterSerialNumber;
+    private final String requesterSubjectDN;
     private final Date requestDate;
     private final int status;
     
@@ -69,6 +72,8 @@ public class RaApprovalRequestInfo implements Serializable {
         remainingApprovals = approval.getRemainingApprovals();
         requesterIssuerDN = approval.getReqadmincertissuerdn();
         requesterSerialNumber = approval.getReqadmincertsn();
+        final Certificate requesterCert = approval.getApprovalRequest().getRequestAdminCert();
+        requesterSubjectDN = requesterCert != null ? CertTools.getSubjectDN(requesterCert) : null;
         requestDate = approval.getRequestDate();
         status = approval.getStatus();
         this.requestData = requestData;
@@ -124,6 +129,10 @@ public class RaApprovalRequestInfo implements Serializable {
     
     public int getType() {
         return approvalType;
+    }
+    
+    public String getRequesterSubjectDN() {
+        return requesterSubjectDN;
     }
     
     public List<ApprovalDataText> getRequestData() {
