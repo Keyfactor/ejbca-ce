@@ -387,7 +387,8 @@ public class CertDistServlet extends HttpServlet {
                 String filename = RequestHelper.getFileNameFromCertNoEnding(cacert, "ca");
                 byte[] enccert = null;
                 if (pkcs7) {
-                    enccert = signSession.createPKCS7(administrator, (X509Certificate) cacert, true);
+                    // Create a "certs-only" CMS / PKCS#7
+                    enccert = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(Arrays.asList(chain)));
                 } else {
                     enccert = cacert.getEncoded();
                 }
