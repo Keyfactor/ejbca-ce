@@ -73,7 +73,7 @@
 	                </h:column>
 	                <h:column>
 	                    <f:facet name="header"><h:outputText value="#{msg.cas_page_colhead_certchains}"/><h:outputText value="¹"/></f:facet>
-	                    <h:panelGrid columns="2" styleClass="nopadding noborder" rendered="#{caAndCrls.caId!=0}">
+	                    <h:panelGrid columns="3" styleClass="nopadding noborder" rendered="#{caAndCrls.caId!=0}">
 	                        <h:outputLink value="cert">
 	                            <f:param name="caid" value="#{caAndCrls.caId}"/>
 	                            <f:param name="chain" value="true"/>
@@ -86,6 +86,12 @@
 	                            <f:param name="format" value="jks"/>
 	                            <h:outputText value="#{msg.cas_page_link_download_cachain_jks}"/>
 	                        </h:outputLink>
+                            <h:outputLink value="cert" style="margin-#{raLocaleBean.indentionDirection}: 16px;">
+                                <f:param name="caid" value="#{caAndCrls.caId}"/>
+                                <f:param name="chain" value="true"/>
+                                <f:param name="format" value="pkcs7"/>
+                                <h:outputText value="#{msg.cas_page_link_download_cachain_pkcs7}"/>
+                            </h:outputLink>
 	                    </h:panelGrid>
 	                </h:column>
 	                <h:column>
