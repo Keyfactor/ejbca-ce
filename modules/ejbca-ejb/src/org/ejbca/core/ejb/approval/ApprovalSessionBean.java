@@ -126,7 +126,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 approvalData.setApprovalid(approvalRequest.generateApprovalId());
                 approvalData.setApprovaltype(approvalRequest.getApprovalType());
                 final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
-                approvalData.setApprovalProfileId(approvalProfileSession.getApprovalProfileId(approvalProfile.getProfileName()));
+                approvalData.setApprovalprofileid(approvalProfileSession.getApprovalProfileId(approvalProfile.getProfileName()));
                 approvalData.setEndentityprofileid(approvalRequest.getEndEntityProfileId());
                 approvalData.setCaid(approvalRequest.getCAId());
                 if (approvalRequest.getRequestAdminCert() != null) {
@@ -444,7 +444,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         final List<ApprovalDataVO> returnData = new ArrayList<ApprovalDataVO>(approvalDataList.size());
         for (ApprovalData approvalData : approvalDataList) {
             final ApprovalDataVO approvalInformation = getApprovalDataVO(approvalData);
-            if(approvalData.getApprovalProfileId() != 0) {
+            if(approvalData.getApprovalprofileid() != 0) {
                 //Let approvals created prior to 6.6.0 (which lack data in the profile ID column) pass 
                 final ApprovalStep approvalStep = approvalInformation.getApprovalRequest().getNextUnhandledApprovalStepByAdmin(admin);
                 if(approvalStep == null) {
