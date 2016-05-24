@@ -26,11 +26,11 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSException;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -374,8 +375,7 @@ public class CertDistServlet extends HttpServlet {
                 }else {
                     pkcs7 = true;
                 }// CA is level 0, next over root level 1 etc etc, -1 returns chain as PKCS7
-                Certificate[] chain = null;
-                chain = getCertificateChain(caid, issuerdn);
+                final Certificate[] chain = getCertificateChain(caid, issuerdn);
                 // chain.length-1 is last cert in chain (root CA)
                 if (chain.length < level) {
                     PrintStream ps = new PrintStream(res.getOutputStream());
@@ -531,27 +531,35 @@ public class CertDistServlet extends HttpServlet {
         if (StringUtils.equals(format, "PEM")) {
             RequestHelper.sendNewB64File(Base64.encode(cert, true), res, filename, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
         } else if (StringUtils.equals(format, "PKCS7")) {
-            byte[] pkcs7 = signSession.createPKCS7(administrator, (X509Certificate) certcert, true);
-            RequestHelper.sendNewB64File(Base64.encode(pkcs7, true), res, filename, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
+            try {
+                final byte[] pkcs7 = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(getFullChainOfCertificate(certcert)));
+                RequestHelper.sendNewB64File(Base64.encode(pkcs7, true), res, filename, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
+            } catch (ClassCastException | CMSException e) {
+                throw new CertificateEncodingException("Unable to create certs-only PKCS#7 / CMS.");
+            }
         } else if (StringUtils.equals(format, "chain")) {
-            int issuerCAId = CertTools.getIssuerDN(certcert).hashCode();
-            LinkedList<Certificate> chain = new LinkedList<>(signSession.getCertificateChain(issuerCAId));
-            chain.addFirst(certcert);
-            byte[] chainbytes = CertTools.getPemFromCertificateChain(chain);
+            final byte[] chainbytes = CertTools.getPemFromCertificateChain(getFullChainOfCertificate(certcert));
             RequestHelper.sendNewB64File(chainbytes, res, filename, "", ""); // chain includes begin/end already
         } else {
             res.setContentLength(cert.length);
             res.getOutputStream().write(cert);
         }
-    } 
+    }
 
-	private Certificate[] getCertificateChain(int caid, String issuerdn) {
-		Certificate[] chain;
-		if(caid != 0) {
-		    chain = signSession.getCertificateChain(caid).toArray(new Certificate[0]);
-		}
-		else {
-		    chain = signSession.getCertificateChain(issuerdn.hashCode()).toArray(new Certificate[0]);
+    /** @return the full leaf certificate chain of a certificate given that the IssuerDN hashCode fo the leaf will map to an existing CA Id. */
+    private List<Certificate> getFullChainOfCertificate(final Certificate certificate) {
+        final int caId = CertTools.getIssuerDN(certificate).hashCode();
+        final LinkedList<Certificate> certificateChain = new LinkedList<>(signSession.getCertificateChain(caId));
+        certificateChain.addFirst(certificate);
+        return certificateChain;
+    }
+    
+	private Certificate[] getCertificateChain(final int caId, final String issuerDn) {
+		final Certificate[] chain;
+		if (caId != 0) {
+		    chain = signSession.getCertificateChain(caId).toArray(new Certificate[0]);
+		} else {
+		    chain = signSession.getCertificateChain(issuerDn.hashCode()).toArray(new Certificate[0]);
 		}
 		return chain;
 	}
