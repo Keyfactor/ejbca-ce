@@ -112,11 +112,19 @@ public class RaAccessBean implements Serializable {
     }
     
     public boolean isAuthorizedToCas() {
-        return isAuthorized(StandardRules.CAVIEW.resource());
+        final boolean auth = isAuthorized(StandardRules.CAVIEW.resource());
+        if (!auth && log.isDebugEnabled()) {
+            log.debug("Not authorized to "+StandardRules.CAVIEW.resource());
+        }
+        return auth;
     }
     
     public boolean isAuthorizedToManageRequests() {
-        return isAuthorized(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+        final boolean auth = isAuthorized(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+        if (!auth && log.isDebugEnabled()) {
+            log.debug("Not authorized to "+AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+        }
+        return auth;
     }
 
     public boolean isAuthorizedToSearch() {
