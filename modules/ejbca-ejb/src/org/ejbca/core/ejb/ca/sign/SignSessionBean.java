@@ -226,17 +226,19 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final CA ca = caSession.getCA(admin, caId);
         final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
         final byte[] returnval = ca.createPKCS7(cryptoToken, cert, includeChain);
-        // Audit log that we used the CA's signing key to create a CMS signature
-        final String detailsMsg = intres.getLocalizedMessage("caadmin.signedcms", ca.getName());
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
-        if (cert!=null) {
-            details.put("leafSubject", CertTools.getSubjectDN(cert));
-            details.put("leafFingerprint", CertTools.getFingerprintAsString(cert));
+        if (returnval!=null) {
+            // Audit log that we used the CA's signing key to create a CMS signature
+            final String detailsMsg = intres.getLocalizedMessage("caadmin.signedcms", ca.getName());
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            if (cert!=null) {
+                details.put("leafSubject", CertTools.getSubjectDN(cert));
+                details.put("leafFingerprint", CertTools.getFingerprintAsString(cert));
+            }
+            details.put("includeChain", Boolean.toString(includeChain));
+            details.put("msg", detailsMsg);
+            securityEventsLoggerSession.log(EjbcaEventTypes.CA_SIGNCMS, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
+                    String.valueOf(caId), null, null, details);
         }
-        details.put("includeChain", Boolean.toString(includeChain));
-        details.put("msg", detailsMsg);
-        securityEventsLoggerSession.log(EjbcaEventTypes.CA_SIGNCMS, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
-                String.valueOf(caId), null, null, details);
         if (log.isTraceEnabled()) {
             log.trace("<createPKCS7()");
         }
