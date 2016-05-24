@@ -73,6 +73,22 @@ public class CertificateDataSerializationTest {
             "MGUwYzFlMGY3dAALQ049Y2VydHVzZXJwdAATMzUwNzY2NTg4NjI3NTcyOTY3NXQAC0NOPWNlcnR1" +
             "c2VydAAcUFg0eUc4cEs0b3JPZFBTU0hLMDMvOWtUcjBNPXBwdAAIY2VydHVzZXI=";
     
+    /** CertificateData object that has a non-existent field "testNonExistentClass" with of a non-existent type "org.cesecore.certificates.certificate.NonExistent" */
+    private static final String FUTURE_NEW_CLASS_DATA = "rO0ABXNyADVvcmcuY2VzZWNvcmUuY2VydGlmaWNhdGVzLmNlcnRpZmljYXRlLkNlcnRpZmljYXRl" +
+            "RGF0YYoibbY+5VZeAgAUSgAKZXhwaXJlRGF0ZUoADnJldm9jYXRpb25EYXRlSQAQcmV2b2NhdGlv" +
+            "blJlYXNvbkkACnJvd1ZlcnNpb25JAAZzdGF0dXNJAAR0eXBlSgAKdXBkYXRlVGltZUwACmJhc2U2" +
+            "NENlcnR0ABJMamF2YS9sYW5nL1N0cmluZztMAA1jQUZpbmdlcnByaW50cQB+AAFMABRjZXJ0aWZp" +
+            "Y2F0ZVByb2ZpbGVJZHQAE0xqYXZhL2xhbmcvSW50ZWdlcjtMABJlbmRFbnRpdHlQcm9maWxlSWRx" +
+            "AH4AAkwAC2ZpbmdlcnByaW50cQB+AAFMAAhpc3N1ZXJETnEAfgABTAANcm93UHJvdGVjdGlvbnEA" +
+            "fgABTAAMc2VyaWFsTnVtYmVycQB+AAFMAAlzdWJqZWN0RE5xAH4AAUwADHN1YmplY3RLZXlJZHEA" +
+            "fgABTAADdGFncQB+AAFMABR0ZXN0Tm9uRXhpc3RlbnRDbGFzc3QAI0xvcmcvY2VzZWNvcmUvaW50" +
+            "ZXJuYWwvTm9uRXhpc3RlbnQ7TAAIdXNlcm5hbWVxAH4AAXhwAAABnk5S8Nj///////////////8A" +
+            "AAAAAAAAFAAAAAEAAAFU4Wc5Z3B0ABAxMjM0NTY3ODEyMzQ1Njc4c3IAEWphdmEubGFuZy5JbnRl" +
+            "Z2VyEuKgpPeBhzgCAAFJAAV2YWx1ZXhyABBqYXZhLmxhbmcuTnVtYmVyhqyVHQuU4IsCAAB4cAAA" +
+            "AAFwdAAoNjlkOWEzYzI3N2ViYjg4ODZmMzQzYTRiNWEzM2ViYTVlNDJlZmEyM3QAC0NOPWNlcnR1" +
+            "c2VycHQAEzYyODQxMDQwODE0Mjg3NzQxMTJ0AAtDTj1jZXJ0dXNlcnQAHFdXaUJwdTZidFVTRzZZ" +
+            "RE4yT1dnazJsYi95ND1wcHQACGNlcnR1c2Vy";
+    
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -119,5 +135,17 @@ public class CertificateDataSerializationTest {
         ois.close();
         assertEquals("certuser", certData.getUsername()); // unrelated column. should not be affected
         log.trace("<testDeserializeFuture");
+    }
+    
+    @Test
+    public void testDeserializeFutureFieldNewClass() throws Exception {
+        log.trace(">testDeserializeFutureFieldNewClass");
+        final ByteArrayInputStream bais = new ByteArrayInputStream(FUTURE_NEW_CLASS_DATA.getBytes("US-ASCII"));
+        final Base64InputStream b64is = new Base64InputStream(bais);
+        final ObjectInputStream ois = new ObjectInputStream(b64is);
+        final CertificateData certData = (CertificateData) ois.readObject();
+        ois.close();
+        assertEquals("certuser", certData.getUsername()); // unrelated column. should not be affected
+        log.trace("<testDeserializeFutureFieldNewClass");
     }
 }
