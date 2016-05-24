@@ -535,6 +535,36 @@ public class ProtocolScepHttpTest {
             // Check that we got the right cert back
             assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
         }
+        
+        //
+        // Also test getCACertChain
+        {
+            String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACertChain&message=" + URLEncoder.encode(x509ca.getName(), "UTF-8");
+            URL url = new URL(reqUrl);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.getDoOutput();
+            con.connect();
+            assertEquals("Response code is not 200 (OK)", 200, con.getResponseCode());
+            // Some appserver (Weblogic) responds with
+            // "application/x-x509-ca-cert; charset=UTF-8"
+            assertTrue(con.getContentType().startsWith("application/x-x509-ca-ra-cert-chain"));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            // This works for small requests, and SCEP requests are small enough
+            InputStream in = con.getInputStream();
+            int b = in.read();
+            while (b != -1) {
+                baos.write(b);
+                b = in.read();
+            }
+            baos.flush();
+            in.close();
+            byte[] respBytes = baos.toByteArray();
+            assertNotNull("Response can not be null.", respBytes);
+            assertTrue(respBytes.length > 0);
+            // This is a PKCS#7, ignore trying to parse if for now. EJBCAINTER-120 suggests removing it
+        }
+        
     }
 
     @Test
