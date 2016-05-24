@@ -53,6 +53,8 @@ public enum EjbcaEventTypes implements EventType {
     CA_REVOKED,
     /** Certificate Authority signs (attests) a provided certificate signing request. */
     CA_SIGNREQUEST,
+    /** Certificate Authority signs (attests) a CMS / PKCS#7. */
+    CA_SIGNCMS,
     /** End entity authenticates using enrollment code. */
     CA_USERAUTH,
     /** Certificate Authority's signing certificate is not valid yet or not valid any longer. */
