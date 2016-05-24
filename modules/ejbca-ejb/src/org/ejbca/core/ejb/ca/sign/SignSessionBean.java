@@ -28,6 +28,7 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +45,10 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
@@ -93,6 +98,7 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
@@ -148,9 +154,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     private PublisherSessionLocal publisherSession;
     @EJB
     private RevocationSessionLocal revocationSession;
-
-
-
+    @EJB
+    private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -218,9 +223,20 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (log.isTraceEnabled()) {
             log.trace(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
         }
-        CA ca = caSession.getCA(admin, caId);
+        final CA ca = caSession.getCA(admin, caId);
         final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-        byte[] returnval = ca.createPKCS7(cryptoToken, cert, includeChain);
+        final byte[] returnval = ca.createPKCS7(cryptoToken, cert, includeChain);
+        // Audit log that we used the CA's signing key to create a CMS signature
+        final String detailsMsg = intres.getLocalizedMessage("caadmin.signedcms", ca.getName());
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        if (cert!=null) {
+            details.put("leafSubject", CertTools.getSubjectDN(cert));
+            details.put("leafFingerprint", CertTools.getFingerprintAsString(cert));
+        }
+        details.put("includeChain", Boolean.toString(includeChain));
+        details.put("msg", detailsMsg);
+        securityEventsLoggerSession.log(EjbcaEventTypes.CA_SIGNCMS, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
+                String.valueOf(caId), null, null, details);
         if (log.isTraceEnabled()) {
             log.trace("<createPKCS7()");
         }
