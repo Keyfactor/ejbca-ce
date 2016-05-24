@@ -108,11 +108,11 @@ public class ApprovalData extends ProtectedData implements Serializable {
      * The related approval profile id
      */
     //@Column
-    public int getApprovalProfileId() { return approvalProfileId; }
+    public int getApprovalprofileid() { return approvalProfileId; }
     /**
      * The related approval profile id     
      */
-    public void setApprovalProfileId(int approvalProfileId) { this.approvalProfileId = approvalProfileId; }
+    public void setApprovalprofileid(int approvalProfileId) { this.approvalProfileId = approvalProfileId; }
 
 	/**
 	 * For RA specific approval requests should the related end entity profile id be specified
