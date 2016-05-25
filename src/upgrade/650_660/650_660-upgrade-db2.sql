@@ -2,4 +2,5 @@
 -- ALTER TABLE CertificateData ADD endEntityProfileId INTEGER;
 -- CALL SYSPROC.ADMIN_CMD('REORG TABLE CertificateData');
 -- ALTER TABLE ApprovalData ADD approvalprofileid INTEGER DEFAULT 0;
+-- CALL SYSPROC.ADMIN_CMD('REORG TABLE ApprovalData');
 

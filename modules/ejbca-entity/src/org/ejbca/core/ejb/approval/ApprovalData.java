@@ -43,6 +43,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	private int id;
 	private int approvalId;
 	private int approvalType;
+	/** @since EJBCA 6.6.0 */
 	private int approvalProfileId;
 	private int endEntityProfileId;
 	private int cAId;
@@ -106,11 +107,13 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	
 	/**
      * The related approval profile id
+     * @since EJBCA 6.6.0
      */
     //@Column
     public int getApprovalprofileid() { return approvalProfileId; }
     /**
      * The related approval profile id     
+     * @since EJBCA 6.6.0
      */
     public void setApprovalprofileid(int approvalProfileId) { this.approvalProfileId = approvalProfileId; }
 
@@ -281,13 +284,16 @@ s	 */
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getId()).append(getApprovalid()).append(getApprovaltype()).append(getEndentityprofileid()).append(getCaid()).append(getReqadmincertissuerdn());
         build.append(getReqadmincertsn()).append(getStatus()).append(getApprovaldata()).append(getRequestdata()).append(getRequestdate()).append(getExpiredate()).append(getRemainingapprovals());
+        if (version>1) {
+            build.append(String.valueOf(getApprovalprofileid()));
+        }
         return build.toString();
     }
 
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 1;
+        return 2;
     }
 
     @PrePersist
