@@ -30,7 +30,7 @@
         <ui:define name="content">
         	<h:panelGroup layout="block" class="header" id="title">
 				<h1><h:outputText value="#{msg.search_certs_page_title}"/></h1>
-			</h:panelGroup>	
+			</h:panelGroup>
         	<h:panelGroup layout="block" styleClass="content-body">	  
                 <h:outputText value="#{msg.search_certs_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToSearchCerts}"/>        		       	        	
 	            <h:form id="contentForm" styleClass="pure-form pure-form-aligned foo-form" rendered="#{raAccessBean.authorizedToSearchCerts}">
@@ -256,13 +256,20 @@
 	                        </h:column>
 	                        <h:column>
 	                            <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_cert}"/></f:facet>
-	                            <h:outputLink styleClass="fineprintMono" value="cert" style="margin-#{raLocaleBean.indentionDirection}: 16px;">
+	                            <h:outputLink styleClass="fineprintMono" value="cert">
 	                                <f:param name="fp" value="#{raSearchCertificate.fingerprint}"/>
 	                                <f:param name="chain" value="true"/>
 	                                <f:param name="format" value="pem"/>
 	                                <h:outputText value="#{msg.search_certs_page_link_download_cert}"/>
 	                            </h:outputLink>
 	                        </h:column>
+                            <h:column>
+                                <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_action}"/></f:facet>
+                                <h:outputLink styleClass="fineprintMono" value="viewcert.xhtml">
+                                    <f:param name="fp" value="#{raSearchCertificate.fingerprint}"/>
+                                    <h:outputText value="#{msg.search_certs_page_link_view_cert}"/>
+                                </h:outputLink>
+                            </h:column>
 	                    </h:dataTable>
 	                </h:panelGroup>
 	            </h:form>
