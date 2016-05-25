@@ -44,6 +44,7 @@ CREATE TABLE ApprovalData (
     approvalId NUMBER(10) NOT NULL,
     approvalType NUMBER(10) NOT NULL,
     cAId NUMBER(10) NOT NULL,
+    approvalProfileId NUMBER(10),
     endEntityProfileId NUMBER(10) NOT NULL,
     expireDate NUMBER(19) NOT NULL,
     remainingApprovals NUMBER(10) NOT NULL,
