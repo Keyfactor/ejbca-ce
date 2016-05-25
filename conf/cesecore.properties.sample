@@ -17,8 +17,9 @@
 #ca.keystorepass=!secret!
 
 # Default Random Number Generator algorithm for certificate serial number generation.
-# Available algorithms are:
-# SHA1PRNG
+# Available algorithms are: SHA1PRNG
+# This value can be configured to the value "default" (or an empty value which is hard to set here) to use the OS:es default implementation, 
+# which may vary. See the documentation of SecureRandom for more information 
 #ca.rngalgorithm=SHA1PRNG
 
 # The length in octets of certificate serial numbers generated. 8 octets is a 64 bit serial number.
