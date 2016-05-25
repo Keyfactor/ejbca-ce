@@ -601,7 +601,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 if (log.isDebugEnabled()) {
                     log.debug("Found "+revcertinfos.size()+" revoked certificates.");
                 }
-                // Go through them and create a CRL, at the same time archive expired certificates
+                // Go through them and create a CRL, i.e. add to cert list to be included in CRL
                 certs = new CompressedCollection<RevokedCertInfo>();
                 for (final RevokedCertInfo ci : revcertinfos) {
                     if (ci.getRevocationDate() == null) {
