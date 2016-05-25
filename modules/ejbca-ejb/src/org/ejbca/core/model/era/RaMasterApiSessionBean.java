@@ -513,7 +513,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 sb.append(" AND (a.revocationReason IN (:revocationReason))");
             }
         }
-        // Don't constrain results to certain end entity profiles if root access is available and "any" CP is requested
+        // Don't constrain results to certain certificate profiles if root access is available and "any" CP is requested
         if (!accessAnyCpAvailable || !request.getCpIds().isEmpty()) {
             sb.append(" AND (a.certificateProfileId IN (:certificateProfileId))");
         }
