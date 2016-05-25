@@ -13,8 +13,6 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
-import java.math.BigInteger;
-import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,8 +40,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
@@ -58,90 +54,6 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 @ViewScoped
 public class RaSearchCertsBean implements Serializable {
 
-    /** UI representation of a result set item from the back end. */
-    public class RaSearchCertificate {
-        private final String fingerprint;
-        private final String username;
-        private final String serialnumber;
-        private final String serialnumberRaw;
-        private final String subjectDn;
-        private final String subjectAn;
-        private final String eepName;
-        private final String cpName;
-        private final String caName;
-        private final String created;
-        private final String expires;
-        private final int status;
-        private final int revocationReason;
-        private String updated;
-        public RaSearchCertificate(final CertificateDataWrapper cdw) {
-            this.fingerprint = cdw.getCertificateData().getFingerprint();
-            this.serialnumberRaw = cdw.getCertificateData().getSerialNumber();
-            this.serialnumber = new BigInteger(this.serialnumberRaw).toString(16);
-            final String username = cdw.getCertificateData().getUsername();
-            this.username = username==null ? "" : username;
-            this.subjectDn = cdw.getCertificateData().getSubjectDN();
-            final Certificate certificate = cdw.getCertificate();
-            this.subjectAn = certificate==null ? "" : CertTools.getSubjectAlternativeName(certificate);
-            final Integer cpId = cdw.getCertificateData().getCertificateProfileId();
-            if (cpId != null && cpId.intValue()==EndEntityInformation.NO_CERTIFICATEPROFILE) {
-                this.cpName = raLocaleBean.getMessage("search_certs_page_info_unknowncp");
-            } else if (cpId != null && cpIdToNameMap!=null && cpIdToNameMap.containsKey(cpId)) {
-                this.cpName = String.valueOf(cpIdToNameMap.get(cpId));
-            } else {
-                this.cpName = raLocaleBean.getMessage("search_certs_page_info_missingcp", cpId);
-            }
-            final int eepId = cdw.getCertificateData().getEndEntityProfileIdOrZero();
-            if (eepId==EndEntityInformation.NO_ENDENTITYPROFILE) {
-                this.eepName = raLocaleBean.getMessage("search_certs_page_info_unknowneep", eepId);
-            } else if (eepIdToNameMap!=null && eepIdToNameMap.containsKey(Integer.valueOf(eepId))) {
-                this.eepName = String.valueOf(eepIdToNameMap.get(Integer.valueOf(eepId)));
-            } else {
-                this.eepName = raLocaleBean.getMessage("search_certs_page_info_missingeep", eepId);
-            }
-            final String issuerDn = cdw.getCertificateData().getIssuerDN();
-            if (issuerDn != null && caSubjectToNameMap.containsKey(issuerDn)) {
-                this.caName = String.valueOf(caSubjectToNameMap.get(issuerDn));
-            } else {
-                this.caName = String.valueOf(issuerDn);
-            }
-            this.created = certificate==null ? "-" : ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(certificate).getTime(), TimeZone.getDefault());
-            this.expires = ValidityDate.formatAsISO8601ServerTZ(cdw.getCertificateData().getExpireDate(), TimeZone.getDefault());
-            this.status = cdw.getCertificateData().getStatus();
-            this.revocationReason = cdw.getCertificateData().getRevocationReason();
-            if (status==CertificateConstants.CERT_ARCHIVED || status==CertificateConstants.CERT_REVOKED) {
-                this.updated = ValidityDate.formatAsISO8601ServerTZ(cdw.getCertificateData().getRevocationDate(), TimeZone.getDefault());
-            } else {
-                this.updated = ValidityDate.formatAsISO8601ServerTZ(cdw.getCertificateData().getUpdateTime(), TimeZone.getDefault());
-            }
-        }
-        public String getFingerprint() { return fingerprint; }
-        public String getSerialnumber() { return serialnumber; }
-        public String getSerialnumberRaw() { return serialnumberRaw; }
-        public String getUsername() { return username; }
-        public String getSubjectDn() { return subjectDn; }
-        public String getSubjectAn() { return subjectAn; }
-        public String getCaName() { return caName; }
-        public String getCpName() { return cpName; }
-        public boolean isCpNameSameAsEepName() { return eepName.equals(cpName); }
-        public String getEepName() { return eepName; }
-        public String getCreated() { return created; }
-        public String getExpires() { return expires; }
-        public boolean isActive() { return status==CertificateConstants.CERT_ACTIVE || status==CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION; }
-        public String getStatus() {
-            switch (status) {
-            case CertificateConstants.CERT_ACTIVE:
-            case CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION:
-                return raLocaleBean.getMessage("search_certs_page_status_active");
-            case CertificateConstants.CERT_ARCHIVED:
-            case CertificateConstants.CERT_REVOKED:
-                return raLocaleBean.getMessage("search_certs_page_status_revoked_"+revocationReason);
-            }
-            return raLocaleBean.getMessage("search_certs_page_status_other");
-        }
-        public String getUpdated() { return updated; }
-    }
-    
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaSearchCertsBean.class);
 
@@ -156,7 +68,7 @@ public class RaSearchCertsBean implements Serializable {
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
-    private final List<RaSearchCertificate> resultsFiltered = new ArrayList<>();
+    private final List<RaCertificateDetails> resultsFiltered = new ArrayList<>();
     private Map<Integer,String> eepIdToNameMap = null;
     private Map<Integer,String> cpIdToNameMap = null;
     private Map<String,String> caSubjectToNameMap = new HashMap<>();
@@ -270,7 +182,7 @@ public class RaSearchCertsBean implements Serializable {
                 if (!stagedRequest.getRevocationReasons().isEmpty() && !stagedRequest.getRevocationReasons().contains(cdw.getCertificateData().getRevocationReason())) {
                     continue;
                 }
-                resultsFiltered.add(new RaSearchCertificate(cdw));
+                resultsFiltered.add(RaCertificateDetails.create(cdw, raLocaleBean, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap));
             }
             if (log.isDebugEnabled()) {
                 log.debug("Filtered " + lastExecutedResponse.getCdws().size() + " responses down to " + resultsFiltered.size() + " results.");
@@ -281,25 +193,25 @@ public class RaSearchCertsBean implements Serializable {
 
     /** Sort the filtered result set based on the select column and sort order. */
     private void sort() {
-        Collections.sort(resultsFiltered, new Comparator<RaSearchCertificate>() {
+        Collections.sort(resultsFiltered, new Comparator<RaCertificateDetails>() {
             @Override
-            public int compare(RaSearchCertificate o1, RaSearchCertificate o2) {
+            public int compare(RaCertificateDetails o1, RaCertificateDetails o2) {
                 switch (sortBy) {
                 case PROFILE:
-                    return o1.eepName.concat(o1.cpName).compareTo(o2.eepName.concat(o2.cpName)) * (sortAscending ? 1 : -1);
+                    return o1.getEepName().concat(o1.getCpName()).compareTo(o2.getEepName().concat(o2.getCpName())) * (sortAscending ? 1 : -1);
                 case CA:
-                    return o1.caName.compareTo(o2.caName) * (sortAscending ? 1 : -1);
+                    return o1.getCaName().compareTo(o2.getCaName()) * (sortAscending ? 1 : -1);
                 case SERIALNUMBER:
-                    return o1.serialnumber.compareTo(o2.serialnumber) * (sortAscending ? 1 : -1);
+                    return o1.getSerialnumber().compareTo(o2.getSerialnumber()) * (sortAscending ? 1 : -1);
                 case SUBJECT:
-                    return (o1.subjectDn+o1.subjectAn).compareTo(o2.subjectDn+o2.subjectAn) * (sortAscending ? 1 : -1);
+                    return (o1.getSubjectDn()+o1.getSubjectAn()).compareTo(o2.getSubjectDn()+o2.getSubjectAn()) * (sortAscending ? 1 : -1);
                 case EXPIRATION:
-                    return o1.expires.compareTo(o2.expires) * (sortAscending ? 1 : -1);
+                    return o1.getExpires().compareTo(o2.getExpires()) * (sortAscending ? 1 : -1);
                 case STATUS:
                     return o1.getStatus().compareTo(o2.getStatus()) * (sortAscending ? 1 : -1);
                 case USERNAME:
                 default:
-                    return o1.username.compareTo(o2.username) * (sortAscending ? 1 : -1);
+                    return o1.getUsername().compareTo(o2.getUsername()) * (sortAscending ? 1 : -1);
                 }
             }
         });
@@ -375,7 +287,7 @@ public class RaSearchCertsBean implements Serializable {
         searchAndFilterCommon();
     }
 
-    public List<RaSearchCertificate> getFilteredResults() {
+    public List<RaCertificateDetails> getFilteredResults() {
         return resultsFiltered;
     }
 

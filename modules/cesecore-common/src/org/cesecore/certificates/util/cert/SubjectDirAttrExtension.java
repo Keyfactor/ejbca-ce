@@ -14,6 +14,7 @@ package org.cesecore.certificates.util.cert;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,10 +72,11 @@ public class SubjectDirAttrExtension extends CertTools {
 	 * @return String containing directoryAttributes of form the form specified above or null if no directoryAttributes exist. 
 	 *   Values in returned String is from CertTools constants. 
 	 *   DirectoryAttributes not supported are simply not shown in the resulting string.  
-	 * @throws java.lang.Exception
+     *  
+	 * @throws java.text.ParseException when id_pda_dateOfBirth is malformed
 	 */
-	public static String getSubjectDirectoryAttributes(Certificate certificate) throws Exception {
-		log.debug("Search for SubjectAltName");
+	public static String getSubjectDirectoryAttributes(Certificate certificate) throws ParseException {
+		log.debug("Search for SubjectDirectoryAttributes");
         String result = "";
         if (certificate instanceof X509Certificate) {
 			X509Certificate x509cert = (X509Certificate) certificate;

@@ -22,4 +22,7 @@
 .fineprint { font-size: xx-small; }
 .fineprintMono { font-size: xx-small; font-family: monospace; }
 
+.monospace { font-family: monospace; }
+.ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 label.invalidInput { color: red; }
