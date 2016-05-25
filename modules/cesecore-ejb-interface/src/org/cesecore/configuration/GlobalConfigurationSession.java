@@ -49,7 +49,8 @@ public interface GlobalConfigurationSession {
     * @param admin an authentication token
     * @param globconf the new Configuration
     * 
-    * @throws AuthorizationDeniedException if admin was not authorized to "/"
+    * @throws AuthorizationDeniedException if admin was not authorized to edit the specific configuration
+    * @see GlobalConfigurationSessionBean#checkAuthorization
     */
    void saveConfiguration(AuthenticationToken admin, ConfigurationBase conf) throws AuthorizationDeniedException;
 
