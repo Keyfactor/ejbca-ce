@@ -35,7 +35,7 @@
     <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToManageRequests}">
         <h:form id="contentForm" class="pure-form">
             
-            <h:panelGroup layout="block">
+            <h:panelGroup layout="block" rendered="#{raManageRequestBean.viewDataVisible}">
                 <h2><h:outputText value="#{msg.view_request_page_request_data_header}"/></h2>
                 <h:dataTable value="#{raManageRequestBean.request.requestData}" var="row" styleClass="pure-table" rowClasses=",pure-table-odd">
                     <h:column>
@@ -45,13 +45,31 @@
                         <h:outputText value="#{row.data}"/>
                     </h:column>
                 </h:dataTable>
+                <h:commandButton id="commandEditData" action="#{raManageRequestBean.editData}" value="#{msg.view_request_page_edit_data_command}" />
             </h:panelGroup>
             
-            <h:panelGroup layout="block">
+            <h:panelGroup layout="block" rendered="#{raManageRequestBean.editDataVisible}">
+                <ui:remove>
+                <!-- TODO: edit view could be improved to show subject dn as separate text boxes, and could be refactored to not use switch statements -->
+                </ui:remove>  
+                <h2><h:outputText value="#{msg.view_request_page_request_data_header}"/></h2>
+                <h:dataTable value="#{raManageRequestBean.request.requestData}" var="row" styleClass="pure-table" rowClasses=",pure-table-odd">
+                    <h:column>
+                        <h:outputText value="#{row.header}"/>
+                    </h:column>
+                    <h:column>
+                        <h:outputText value="#{row.data}" rendered="#{not row.editingSupported}"/>
+                        <h:inputText value="#{row.editValue}" rendered="#{row.editingSupported}"/>
+                    </h:column>
+                </h:dataTable>
+                <h:commandButton id="commandSaveData" action="#{raManageRequestBean.saveData}" value="#{msg.view_request_page_save_data_command}" />
+            </h:panelGroup>
+            
+            <h:panelGroup layout="block" rendered="#{raManageRequestBean.statusVisible}">
                 <h2><h:outputText value="#{msg.view_request_page_request_status_header}"/></h2>
             </h:panelGroup>
             
-            <h:panelGroup layout="block">
+            <h:panelGroup layout="block" rendered="#{raManageRequestBean.approvalVisible}">
                 <h2><h:outputText value="#{msg.view_request_page_approval_header}"/></h2>
                 
                 <h:dataTable value="#{raManageRequestBean.request.previousSteps}" var="prevStep" rendered="#{not empty raManageRequestBean.request.previousSteps}">
@@ -105,13 +123,13 @@
                 
                 
                 <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.canApprove}">
-                    <h:commandButton id="commandApprove" action="#{raManageRequestBean.approve}" value="#{msg.view_request_approve_command}" />
-                    <h:commandButton id="commandReject" action="#{raManageRequestBean.reject}" value="#{msg.view_request_reject_command}" />
+                    <h:commandButton id="commandApprove" action="#{raManageRequestBean.approve}" value="#{msg.view_request_page_approve_command}" />
+                    <h:commandButton id="commandReject" action="#{raManageRequestBean.reject}" value="#{msg.view_request_page_reject_command}" />
                 </h:panelGroup>
                 
                 <h:panelGroup layout="block" rendered="#{not raManageRequestBean.request.canApprove}">
                     <!-- TODO show a different text if the request has already been approved, and yet another text for auditors -->
-                    <h:outputText value="#{msg.view_request_cannot_approve}"/>
+                    <h:outputText value="#{msg.view_request_page_cannot_approve}"/>
                 </h:panelGroup>
             </h:panelGroup>
         </h:form>

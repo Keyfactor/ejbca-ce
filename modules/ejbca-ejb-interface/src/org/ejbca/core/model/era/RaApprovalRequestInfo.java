@@ -50,8 +50,12 @@ public class RaApprovalRequestInfo implements Serializable {
     private final Date requestDate;
     private final int status;
     
-    // Request data, as text
+    /** Request data, as text. Not editable */
     private final List<ApprovalDataText> requestData;
+    /** Editable request data for end entity requests */
+    private final RaEditableRequestData editableData;
+    /** random number of last edit, to prevent race conditions */
+    //private final long lastEditId; // TODO
     
     private final boolean requestedByMe;
     
@@ -61,7 +65,8 @@ public class RaApprovalRequestInfo implements Serializable {
     // Previous approval steps that are visible to the admin
     private final List<ApprovalStep> previousApprovalSteps;
     
-    public RaApprovalRequestInfo(final AuthenticationToken authenticationToken, final String adminCertIssuer, final String adminCertSerial, final String caName, final ApprovalDataVO approval, final List<ApprovalDataText> requestData) {
+    public RaApprovalRequestInfo(final AuthenticationToken authenticationToken, final String adminCertIssuer, final String adminCertSerial, final String caName, final ApprovalDataVO approval,
+            final List<ApprovalDataText> requestData, final RaEditableRequestData editableData) {
         id = approval.getId();
         approvalCalculatedUniqueId = approval.getApprovalId();
         approvalType = approval.getApprovalType();
@@ -77,6 +82,7 @@ public class RaApprovalRequestInfo implements Serializable {
         requestDate = approval.getRequestDate();
         status = approval.getStatus();
         this.requestData = requestData;
+        this.editableData = editableData;
         
         // Next steps
         final ApprovalStep nextStep;
@@ -137,6 +143,10 @@ public class RaApprovalRequestInfo implements Serializable {
     
     public List<ApprovalDataText> getRequestData() {
         return requestData;
+    }
+    
+    public RaEditableRequestData getEditableData() {
+        return editableData.clone();
     }
     
     public ApprovalStep getNextApprovalStep() {

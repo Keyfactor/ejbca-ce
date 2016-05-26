@@ -14,7 +14,6 @@ package org.ejbca.core.model.era;
 
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -71,6 +70,7 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -234,6 +234,34 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
     }
     
+    private RaEditableRequestData getRequestEditableData(final AuthenticationToken authenticationToken, final ApprovalDataVO advo) {
+        final ApprovalRequest approvalRequest = advo.getApprovalRequest();
+        final RaEditableRequestData editableData = new RaEditableRequestData();
+        EndEntityInformation userdata = null;
+        
+        if (approvalRequest instanceof EditEndEntityApprovalRequest) {
+            final EditEndEntityApprovalRequest req = (EditEndEntityApprovalRequest)approvalRequest;
+            userdata = req.getNewEndEntityInformation();
+        } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
+            final AddEndEntityApprovalRequest req = (AddEndEntityApprovalRequest)approvalRequest;
+            userdata = req.getEndEntityInformation();
+        }
+        // TODO handle more types or approval requests?
+        
+        if (userdata != null) {
+            editableData.setUsername(userdata.getUsername());
+            editableData.setEmail(userdata.getEmail());
+            editableData.setSubjectDN(userdata.getDN());
+            editableData.setSubjectAltName(userdata.getSubjectAltName());
+            if (userdata.getExtendedinformation() != null) {
+                final ExtendedInformation ei = userdata.getExtendedinformation();
+                editableData.setSubjectDirAttrs(ei.getSubjectDirectoryAttributes());
+            }
+        }
+        
+        return editableData;
+    }
+
     @Override
     public RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final int id) {
         // The values are used to check if a request belongs to us or not
@@ -272,10 +300,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // Get request data as text
         final List<ApprovalDataText> requestData = getRequestDataAsText(authenticationToken, advo);
         
+        // Editable data
+        final RaEditableRequestData editableData = getRequestEditableData(authenticationToken, advo);
+        
         // TODO perform ee profile and approval profile authorization checks also
         
-        return new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caName, advo, requestData);
+        return new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caName, advo, requestData, editableData);
         
+    }
+
+    @Override
+    public boolean editApprovalRequest(AuthenticationToken authenticationToken, RaApprovalEditRequest edit) {
+        // TODO
+        return false;
     }
     
     @Override
@@ -405,8 +442,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         for (final ApprovalDataVO advo : approvals) {
-            final List<ApprovalDataText> requestDataLite = advo.getApprovalRequest().getNewRequestDataAsText(authenticationToken); // this method isn't guarantted to return the full information
-            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caIdToNameMap.get(advo.getCAId()), advo, requestDataLite);
+            final List<ApprovalDataText> requestDataLite = advo.getApprovalRequest().getNewRequestDataAsText(authenticationToken); // this method isn't guaranteed to return the full information
+            final RaEditableRequestData editableData = getRequestEditableData(authenticationToken, advo);
+            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caIdToNameMap.get(advo.getCAId()), advo, requestDataLite, editableData);
             if (!ari.isPending() && request.isSearchingPending()) { continue; } // XXX untested code!
             if (!ari.isWaitingForMe() && request.isSearchingWaitingForMe()) { continue; }
             // XXX It seems that the query() method filters out approvals that the current admin isn't involved in. How to handle historical steps in this case? And pending steps?
