@@ -13,7 +13,6 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.EJB;
@@ -30,10 +29,13 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.SelfApprovalException;
+import org.ejbca.core.model.era.RaApprovalEditRequest;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalResponseRequest;
+import org.ejbca.core.model.era.RaEditableRequestData;
 import org.ejbca.core.model.era.RaApprovalResponseRequest.Action;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.ra.ApprovalRequestGUIInfo.RequestDataRow;
 
 /**
  * Backing bean for Manage Request page (for individual requests).
@@ -48,19 +50,6 @@ public class RaManageRequestBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaManageRequestBean.class);
     
-    public class ApprovalDataRow {
-        private final String nameText;
-        private final String valueText;
-        
-        public ApprovalDataRow(final String name, final String value) {
-            nameText = name; // TODO
-            valueText = value; // TODO some values might need translation
-        }
-        
-        public String getNameText() { return nameText; }
-        public String getValueText() { return valueText; }
-    }
-    
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
@@ -74,17 +63,19 @@ public class RaManageRequestBean implements Serializable {
 
     
     private ApprovalRequestGUIInfo requestInfo;
+    private RaApprovalRequestInfo requestData;
+    private boolean editing = false;
     
     private void initializeRequestInfo() {
         if (requestInfo == null) {
             final String idHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
                     .getParameter("id");
             final int id = Integer.parseInt(idHttpParam);
-            final RaApprovalRequestInfo request = raMasterApiProxyBean.getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), id);
-            if (request == null) {
+            requestData = raMasterApiProxyBean.getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), id);
+            if (requestData == null) {
                 throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
             }
-            requestInfo = new ApprovalRequestGUIInfo(request, raLocaleBean);
+            requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean);
         }
     }
     
@@ -96,6 +87,11 @@ public class RaManageRequestBean implements Serializable {
     public String getPageTitle() {
         return raLocaleBean.getMessage("view_request_page_title", getRequest().getDisplayName());
     }
+    
+    public boolean isViewDataVisible() { return !editing; }
+    public boolean isEditDataVisible() { return editing; }
+    public boolean isStatusVisible() { return !editing; }
+    public boolean isApprovalVisible() { return !editing; }
     
     public boolean isHasNextStep() {
         initializeRequestInfo();
@@ -172,6 +168,47 @@ public class RaManageRequestBean implements Serializable {
             raLocaleBean.addMessageError("view_request_page_error_self_approval");
             logException("reject", e);
         }
+    }
+    
+    public void editData() {
+        editing = true;
+    }
+    
+    public void saveData() {
+        if (!editing) {
+            throw new IllegalStateException();
+        }
+        
+        final RaEditableRequestData editData = requestData.getEditableData();
+        for (final RequestDataRow dataRow : requestInfo.getRequestData()) {
+            switch (dataRow.getKey()) {
+            case "SUBJECTDN":
+                editData.setSubjectDN(getDN(dataRow));
+                break;
+            case "SUBJECTALTNAME":
+                editData.setSubjectAltName(getDN(dataRow));
+                break;
+            case "SUBJECTDIRATTRIBUTES":
+                editData.setSubjectDirAttrs(getDN(dataRow));
+                break;
+            case "EMAIL":
+                String email = (String) dataRow.getEditValue();
+                // TODO validation
+                editData.setEmail(email);
+                break;
+            }
+        }
+        
+        // TODO error handling
+        final RaApprovalEditRequest editReq = new RaApprovalEditRequest(requestData.getId(), editData);
+        raMasterApiProxyBean.editApprovalRequest(raAuthenticationBean.getAuthenticationToken(), editReq);
+        
+        editing = false;
+    }
+    
+    public String getDN(final RequestDataRow dataRow) {
+        // TODO validation
+        return (String) dataRow.getEditValue();
     }
     
     /** Logs the message of an exception, which usually contains some message. For example: "You may not approve an action which you requested yourself" */

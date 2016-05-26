@@ -78,6 +78,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		this.orguserdata = orguserdata;
 	}
 
+	@Override
 	public EditEndEntityApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
 	    EditEndEntityApprovalRequest req = new EditEndEntityApprovalRequest(newuserdata, clearpwd, orguserdata, getRequestAdmin(), 
 	            getRequestSignature(), 0, getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
@@ -112,13 +113,19 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
     /**
      * Approval Id is genereated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
+    @Override
 	public int generateApprovalId() {		
 		return new String(getApprovalType() + ";" + newuserdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
 	}
 
+    @Override
 	public int getApprovalType() {		
 		return ApprovalDataVO.APPROVALTYPE_EDITENDENTITY;
 	}
+    
+    public EndEntityInformation getNewEndEntityInformation() {
+        return newuserdata;
+    }
 
 	/** Returns a summary of the information in the request, without doing any database queries. See also the overloaded method */
 	@Override
@@ -198,7 +205,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 
 	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin, CaSession caSession, EndEntityProfileSession endEntityProfileSession,
 			CertificateProfileSession certificateProfileSession, HardTokenSession hardTokenSession) {
-		final List<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
+		final List<ApprovalDataText> retval = new ArrayList<>();
 		retval.add(new ApprovalDataText("USERNAME", orguserdata.getUsername(), true, false));
 		retval.add(new ApprovalDataText("PASSWORD", "NOTSHOWN", true, true));
 		retval.add(new ApprovalDataText("SUBJECTDN", CertTools.stringToBCDNString(orguserdata.getDN()), true, false));
@@ -225,10 +232,12 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		return retval;
 	}
 
+	@Override
 	public boolean isExecutable() {		
 		return true;
 	}
 	
+	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
 		out.writeInt(LATEST_VERSION);
@@ -237,6 +246,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		out.writeObject(orguserdata);
 	}
 
+	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {        
 		super.readExternal(in);
         int version = in.readInt();

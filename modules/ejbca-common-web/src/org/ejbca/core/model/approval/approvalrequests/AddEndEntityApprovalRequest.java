@@ -71,6 +71,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		this.clearpwd = clearpwd;
 	}
     
+    @Override
     public AddEndEntityApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
         AddEndEntityApprovalRequest req = new AddEndEntityApprovalRequest(userdata, clearpwd, getRequestAdmin(), getRequestSignature(), 0, 
                 getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
@@ -109,12 +110,18 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
     /**
      * Approval Id is generated for this approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
+	@Override
 	public int generateApprovalId() {		
 		return new String(getApprovalType() + ";" + userdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
 	}
 
+	@Override
 	public int getApprovalType() {		
 		return ApprovalDataVO.APPROVALTYPE_ADDENDENTITY;
+	}
+	
+	public EndEntityInformation getEndEntityInformation() {
+	    return userdata;
 	}
 
 	
@@ -170,10 +177,12 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		return null;
 	}
 
+	@Override
 	public boolean isExecutable() {		
 		return true;
 	}
 	
+	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
 		out.writeInt(LATEST_VERSION);
@@ -181,6 +190,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		out.writeBoolean(clearpwd);
 	}
 
+	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {        
 		super.readExternal(in);
         int version = in.readInt();
