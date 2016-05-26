@@ -27,6 +27,7 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalStep;
 import org.ejbca.core.model.approval.ApprovalStepMetadata;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
+import org.ejbca.core.model.era.RaEditableRequestData;
 
 /**
  * Keeps localized information about an approval request.
@@ -128,9 +129,15 @@ public class ApprovalRequestGUIInfo implements Serializable {
         private static final long serialVersionUID = 1L;
         private final ApprovalDataText approvalDataText;
         private final RaLocaleBean raLocaleBean;
-        public RequestDataRow(final RaLocaleBean raLocaleBean, final ApprovalDataText approvalDataText) {
+        private final boolean editingSupported;
+        private Object editValue; // TODO the column maps to a translation id. does it also map to something in the *ApprovalRequest data hashmap?
+        
+        
+        public RequestDataRow(final RaLocaleBean raLocaleBean, final ApprovalDataText approvalDataText, final boolean editingSupported, final Object editValue) {
             this.approvalDataText = approvalDataText;
             this.raLocaleBean = raLocaleBean;
+            this.editingSupported = editingSupported;
+            this.editValue = editValue;
         }
         
         public String getKey() {
@@ -151,6 +158,18 @@ public class ApprovalRequestGUIInfo implements Serializable {
             } else {
                 return approvalDataText.getData();
             }
+        }
+        
+        public boolean isEditingSupported() {
+            return editingSupported;
+        }
+        
+        public Object getEditValue() {
+            return editValue;
+        }
+        
+        public void setEditValue(final Object editValue) {
+            this.editValue = editValue;
         }
     }
     
@@ -177,8 +196,28 @@ public class ApprovalRequestGUIInfo implements Serializable {
         this.request = request;
         if (request.getRequestData() != null) {
             requestData = new ArrayList<>();
+            final RaEditableRequestData editData  = request.getEditableData();
             for (final ApprovalDataText dataText : request.getRequestData()) {
-                requestData.add(new RequestDataRow(raLocaleBean, dataText));
+                boolean editingSupported = true;
+                final Object editValue;
+                switch (dataText.getHeader()) {
+                case "SUBJECTDN":
+                    editValue = editData.getSubjectDN();
+                    break;
+                case "SUBJECTALTNAME":
+                    editValue = editData.getSubjectAltName();
+                    break;
+                case "SUBJECTDIRATTRIBUTES":
+                    editValue = editData.getSubjectDirAttrs();
+                    break;
+                case "EMAIL":
+                    editValue = editData.getEmail();
+                    break;
+                default:
+                    editingSupported = false;
+                    editValue = null;
+                }
+                requestData.add(new RequestDataRow(raLocaleBean, dataText, editingSupported, editValue));
             }
         } else {
             requestData = null;
