@@ -194,5 +194,7 @@ img.menu_logo {
    	color: #212021;
    	font-size: 0.875em; 
     padding: 1px;
-   			
 }
+
+.row-even { background-color: transparent; }
+.row-odd { background-color: #f2f2f2; }

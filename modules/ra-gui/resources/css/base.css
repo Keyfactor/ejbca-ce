@@ -24,5 +24,6 @@
 
 .monospace { font-family: monospace; }
 .ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pre { white-space: pre; }
 
 label.invalidInput { color: red; }

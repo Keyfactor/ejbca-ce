@@ -32,81 +32,197 @@
     <h:body>
         <composite:interface>
             <composite:attribute name="raCertificateDetails" required="true"/>
-            <composite:attribute name="styleLabel" required="false" default="pure-u-lg-1-2"/>
-            <composite:attribute name="styleValue" required="false" default="pure-u-lg-1-2"/>
+            <composite:attribute name="styleLabel" required="false" default="pure-u-lg-1-3"/>
+            <composite:attribute name="styleValue" required="false" default="pure-u-lg-2-3"/>
+            <composite:attribute name="styleFull" required="false" default="pure-u-lg-1"/>
+            <composite:attribute name="styleOdd" required="false" default="row-odd"/>
+            <composite:attribute name="styleEven" required="false" default="row-even"/>
         </composite:interface>
 
         <composite:implementation>
-            <h:outputLabel for="fingerprintSha1" value="#{msg.component_certdetails_field_fingerprint}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="fingerprintSha1" value="#{cc.attrs.raCertificateDetails.fingerprint}" styleClass="#{cc.attrs.styleValue} monospace"/>
-            <h:outputLabel for="fingerprintSha256" value="#{msg.component_certdetails_field_fingerprintSha256}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="fingerprintSha256" value="#{cc.attrs.raCertificateDetails.fingerprintSha256}" styleClass="#{cc.attrs.styleValue} monospace"/>
-            <h:outputLabel for="username" value="#{msg.component_certdetails_field_username}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="username" value="#{cc.attrs.raCertificateDetails.username}" styleClass="#{cc.attrs.styleValue}"/>
-            <h:outputLabel for="type" value="#{msg.component_certdetails_field_type}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="type" value="#{raViewCertBean.certificate.type} v#{raViewCertBean.certificate.typeVersion}" styleClass="#{cc.attrs.styleValue}"/>
-            <h:outputLabel for="serialnumber" value="#{msg.component_certdetails_field_serialnumber}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:panelGrid id="serialnumber" columns="2" styleClass="#{cc.attrs.styleValue} nopadding noborder">
-                <h:outputText value="#{raViewCertBean.certificate.serialnumber}" styleClass="monospace"/>
-                <h:outputText value=" (#{raViewCertBean.certificate.serialnumberRaw}) " styleClass="monospace"/>
-            </h:panelGrid>
-            <h:outputLabel for="caname" value="#{msg.component_certdetails_field_caname}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="caname" value="#{raViewCertBean.certificate.caName}" styleClass="#{cc.attrs.styleValue}"/>
-            <h:outputLabel for="issuerdn" value="#{msg.component_certdetails_field_issuerdn}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="issuerdn" value="#{raViewCertBean.certificate.issuerDn}" styleClass="#{cc.attrs.styleValue} monospace"/>
-            <h:outputLabel for="notbefore" value="#{msg.component_certdetails_field_notbefore}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="notbefore" value="#{raViewCertBean.certificate.created}" styleClass="#{cc.attrs.styleValue}"/>
-            <h:outputLabel for="notafter" value="#{msg.component_certdetails_field_notbefore}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="notafter" value="#{raViewCertBean.certificate.expires}" styleClass="#{cc.attrs.styleValue}"/>
-            <h:outputLabel for="subjectdn" value="#{msg.component_certdetails_field_subjectdn}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="subjectdn" value="#{raViewCertBean.certificate.subjectDn}" styleClass="#{cc.attrs.styleValue} monospace"/>
-            <h:outputLabel for="subjectan" value="#{msg.component_certdetails_field_subjectan}" styleClass="#{cc.attrs.styleLabel}"
-                rendered="#{raViewCertBean.certificate.typeX509}"/>
-            <h:outputText id="subjectan" value="#{raViewCertBean.certificate.subjectAn}" styleClass="#{cc.attrs.styleValue} monospace"
-                rendered="#{raViewCertBean.certificate.typeX509}"/>
-            <h:outputLabel for="subjectda" value="#{msg.component_certdetails_field_subjectda}" styleClass="#{cc.attrs.styleLabel}"
-                rendered="#{raViewCertBean.certificate.typeX509}"/>
-            <h:outputText id="subjectda" value="#{raViewCertBean.certificate.subjectDa}" styleClass="#{cc.attrs.styleValue} monospace"
-                rendered="#{raViewCertBean.certificate.typeX509}"/>
-            <h:outputLabel for="publickeyspec" value="#{msg.component_certdetails_field_publickeyspec}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:panelGrid id="publickeyspec" columns="2" styleClass="#{cc.attrs.styleValue} nopadding noborder">
-                <h:outputText value="#{raViewCertBean.certificate.publicKeyAlgorithm}"/>
+            <h:outputLabel for="caname" value="#{msg.component_certdetails_field_caname}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="caname" value="#{raViewCertBean.certificate.caName}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="issuerdn" value="#{msg.component_certdetails_field_issuerdn}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="issuerdn" value="#{raViewCertBean.certificate.issuerDn}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+
+            <h:outputLabel for="serialnumber" value="#{msg.component_certdetails_field_serialnumber}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup id="serialnumber"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                <h:outputText rendered="#{raViewCertBean.certificate.typeX509}" value="#{raViewCertBean.certificate.serialnumber} " styleClass="monospace"/>
+                <h:outputText rendered="#{raViewCertBean.certificate.typeX509}" value=" (#{raViewCertBean.certificate.serialnumberRaw}) " styleClass="monospace"/>
+                <h:outputText rendered="#{!raViewCertBean.certificate.typeX509}" value="#{raViewCertBean.certificate.serialnumberRaw}" styleClass="monospace"/>
+            </h:panelGroup>
+            <h:outputLabel for="subjectdn" value="#{msg.component_certdetails_field_subjectdn}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="subjectdn" value="#{raViewCertBean.certificate.subjectDn}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+            <h:outputLabel for="subjectan" value="#{msg.component_certdetails_field_subjectan}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{raViewCertBean.certificate.typeX509 and not empty raViewCertBean.certificate.subjectAn}"/>
+            <h:outputText id="subjectan" value="#{raViewCertBean.certificate.subjectAn}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
+                rendered="#{raViewCertBean.certificate.typeX509 and not empty raViewCertBean.certificate.subjectAn}"/>
+            <h:outputLabel for="subjectda" value="#{msg.component_certdetails_field_subjectda}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{raViewCertBean.certificate.typeX509 and not empty raViewCertBean.certificate.subjectDa}"/>
+            <h:outputText id="subjectda" value="#{raViewCertBean.certificate.subjectDa}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
+                rendered="#{raViewCertBean.certificate.typeX509 and not empty raViewCertBean.certificate.subjectDa}"/>
+
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+
+            <h:outputLabel for="publickeyspec" value="#{msg.component_certdetails_field_publickeyspec}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup id="publickeyspec"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                <h:outputText value="#{raViewCertBean.certificate.publicKeyAlgorithm} "/>
                 <h:outputText value=" #{raViewCertBean.certificate.publicKeySpecification} "/>
-            </h:panelGrid>
-            <h:outputLabel for="publickeymodulus" value="#{msg.component_certdetails_field_publickeymodulus}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="publickeymodulus" value="#{raViewCertBean.certificate.publicKeyModulus}" styleClass="#{cc.attrs.styleValue} monospace ellipsis"/>
-            <h:outputLabel for="subjectkeyid" value="#{msg.component_certdetails_field_subjectkeyid}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="subjectkeyid" value="#{raViewCertBean.certificate.subjectKeyId}" styleClass="#{cc.attrs.styleValue} monospace"/>
-            <h:outputLabel for="basicconstraints" value="#{msg.component_certdetails_field_basicconstraints}" styleClass="#{cc.attrs.styleLabel}"
+            </h:panelGroup>
+            <h:outputLabel for="signaturealgorithm" value="#{msg.component_certdetails_field_signaturealgorithm}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="signaturealgorithm" value="#{raViewCertBean.certificate.signatureAlgorithm}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
+            <h:outputLabel for="basicconstraints" value="#{msg.component_certdetails_field_basicconstraints}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{raViewCertBean.certificate.typeX509}"/>
-            <h:outputText id="basicconstraints" value="#{raViewCertBean.certificate.basicConstraints}" styleClass="#{cc.attrs.styleValue}"
+            <h:outputText id="basicconstraints" value="#{raViewCertBean.certificate.basicConstraints}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{raViewCertBean.certificate.typeX509}"/>
-            <h:outputLabel for="cvcauthorizationrole" value="#{msg.component_certdetails_field_cvcauthorizationrole}" styleClass="#{cc.attrs.styleLabel}"
+            <h:outputLabel for="cvcauthorizationrole" value="#{msg.component_certdetails_field_cvcauthorizationrole}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{raViewCertBean.certificate.typeCvc}"/>
-            <h:outputText id="cvcauthorizationrole" value="#{raViewCertBean.certificate.cvcAuthorizationRole}" styleClass="#{cc.attrs.styleValue}"
+            <h:outputText id="cvcauthorizationrole" value="#{raViewCertBean.certificate.cvcAuthorizationRole}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{raViewCertBean.certificate.typeCvc}"/>
-            <h:outputLabel for="cvcauthorizationaccessrights" value="#{msg.component_certdetails_field_cvcauthorizationaccessrights}" styleClass="#{cc.attrs.styleLabel}"
+            <h:outputLabel for="cvcauthorizationaccessrights" value="#{msg.component_certdetails_field_cvcauthorizationaccessrights}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{raViewCertBean.certificate.typeCvc}"/>
-            <h:outputText id="cvcauthorizationaccessrights" value="#{raViewCertBean.certificate.cvcAuthorizationAccessRights}" styleClass="#{cc.attrs.styleValue}"
+            <h:outputText id="cvcauthorizationaccessrights" value="#{raViewCertBean.certificate.cvcAuthorizationAccessRights}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{raViewCertBean.certificate.typeCvc}"/>
-            <h:outputLabel for="keyusage" value="#{msg.component_certdetails_field_keyusage}" styleClass="#{cc.attrs.styleLabel}"
+            <h:outputLabel for="keyusage" value="#{msg.component_certdetails_field_keyusage}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{raViewCertBean.certificate.typeX509}"/>
-            <h:outputText id="keyusage" value="#{raViewCertBean.certificate.keyUsage}" styleClass="#{cc.attrs.styleValue}"
+            <h:panelGroup id="keyusage"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{raViewCertBean.certificate.typeX509}">
+                <ui:repeat var="keyUsageIndex" value="#{raViewCertBean.certificate.keyUsages}" varStatus="status">
+                    <h:outputText value=", " rendered="#{status.index!=0}"/>
+                    <h:outputText value="#{msg['component_certdetails_field_keyusage_'.concat(keyUsageIndex)]}"/>
+                </ui:repeat>
+            </h:panelGroup>
+            <h:outputLabel for="extendedkeyusage" value="#{msg.component_certdetails_field_extendedkeyusage}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{raViewCertBean.certificate.typeX509}"/>
-            <h:outputLabel for="extendedkeyusage" value="#{msg.component_certdetails_field_extendedkeyusage}" styleClass="#{cc.attrs.styleLabel}"
-                rendered="#{raViewCertBean.certificate.typeX509}"/>
-            <h:outputText id="extendedkeyusage" value="#{raViewCertBean.certificate.extendedKeyUsage}" styleClass="#{cc.attrs.styleValue}"
-                rendered="#{raViewCertBean.certificate.typeX509}"/>
-            <h:outputLabel for="nameconstraints" value="#{msg.component_certdetails_field_nameconstraints}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="nameconstraints" value="#{raViewCertBean.certificate.nameConstraints}" styleClass="#{cc.attrs.styleValue}"/>
-            <h:outputLabel for="qcstatements" value="#{msg.component_certdetails_field_qcstatements}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="qcstatements" value="#{raViewCertBean.certificate.qcStatements}" styleClass="#{cc.attrs.styleValue}"/>
-            <h:outputLabel for="ctscts" value="#{msg.component_certdetails_field_ctscts}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="ctscts" value="#{raViewCertBean.certificate.certificateTransparencyScts}" styleClass="#{cc.attrs.styleValue}"/>
-            <h:outputLabel for="signaturealgorithm" value="#{msg.component_certdetails_field_signaturealgorithm}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="signaturealgorithm" value="#{raViewCertBean.certificate.signatureAlgorithm}" styleClass="#{cc.attrs.styleValue}"/>
-            <h:outputLabel for="status" value="#{msg.component_certdetails_field_status}" styleClass="#{cc.attrs.styleLabel}"/>
-            <h:outputText id="status" value="#{raViewCertBean.certificate.status}" styleClass="#{cc.attrs.styleValue}"/>
+            <h:panelGroup id="extendedkeyusage"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{raViewCertBean.certificate.typeX509}">
+                <ui:repeat var="extendedKeyUsageOid" value="#{raViewCertBean.certificate.extendedKeyUsages}" varStatus="status">
+                    <h:outputText value=", " rendered="#{status.index!=0}"/>
+                    <h:outputText value="#{extendedKeyUsageOid}"
+                        rendered="#{msg['extendedkeyusage_'.concat(extendedKeyUsageOid)].equals('???extendedkeyusage_'.concat(extendedKeyUsageOid).concat('???'))}"/>
+                    <h:outputText value="#{msg['extendedkeyusage_'.concat(extendedKeyUsageOid)]}"
+                        rendered="#{not msg['extendedkeyusage_'.concat(extendedKeyUsageOid)].equals('???extendedkeyusage_'.concat(extendedKeyUsageOid).concat('???'))}"/>
+                </ui:repeat>
+            </h:panelGroup>
+            <h:outputLabel for="nameconstraints" value="#{msg.component_certdetails_field_nameconstraints}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{raViewCertBean.certificate.typeX509 and not empty raViewCertBean.certificate.nameConstraints}"/>
+            <h:outputText id="nameconstraints" value="#{raViewCertBean.certificate.nameConstraints}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{raViewCertBean.certificate.typeX509 and not empty raViewCertBean.certificate.nameConstraints}"/>
+            <h:outputLabel for="qcstatements" value="#{msg.component_certdetails_field_qcstatements}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{raViewCertBean.certificate.typeX509 and not empty raViewCertBean.certificate.qcStatements}"/>
+            <h:outputText id="qcstatements" value="#{raViewCertBean.certificate.qcStatements}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{raViewCertBean.certificate.typeX509 and not empty raViewCertBean.certificate.qcStatements}"/>
+            <h:outputLabel for="ctscts" value="#{msg.component_certdetails_field_ctscts}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{raViewCertBean.certificate.typeX509 and not empty raViewCertBean.certificate.certificateTransparencyScts}"/>
+            <h:outputText id="ctscts" value="#{raViewCertBean.certificate.certificateTransparencyScts}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{raViewCertBean.certificate.typeX509 and not empty raViewCertBean.certificate.certificateTransparencyScts}"/>
+
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+
+            <h:outputLabel for="notbefore" value="#{msg.component_certdetails_field_notbefore}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="notbefore" value="#{raViewCertBean.certificate.created}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="notafter" value="#{msg.component_certdetails_field_notafter}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="notafter" value="#{raViewCertBean.certificate.expires}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="status" value="#{msg.component_certdetails_field_status}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="status" value="#{raViewCertBean.certificate.status}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+
+            <h:outputLabel for="username" value="#{msg.component_certdetails_field_username}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="username" value="#{cc.attrs.raCertificateDetails.username}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+
+            <h:panelGroup styleClass="#{cc.attrs.styleLabel}"/>
+            <h:panelGroup styleClass="#{cc.attrs.styleValue}">
+                <h:outputLink value="cert">
+                    <f:param name="fp" value="#{raViewCertBean.certificate.fingerprint}"/>
+                    <f:param name="chain" value="true"/>
+                    <f:param name="format" value="pem"/>
+                    <h:outputText value="#{msg.component_certdetails_link_download_pem}"/>
+                </h:outputLink>
+                <h:outputText value=" " styleClass="pre"/>
+                <h:commandButton value="#{raViewCertBean.certificate.more ? msg.component_certdetails_show_less : msg.component_certdetails_show_more}"
+                    action="#{raViewCertBean.certificate.actionToggleMore}">
+                    <f:ajax execute="@this" render="@this @form"/>
+                </h:commandButton>
+            </h:panelGroup>
+
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+
+            <h:panelGroup id="moreDetails" styleClass="#{cc.attrs.styleFull}" rendered="#{raViewCertBean.certificate.more}">
+                <h:outputLabel for="type" value="#{msg.component_certdetails_field_type}"
+                    styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:outputText id="type" value="#{raViewCertBean.certificate.type} v#{raViewCertBean.certificate.typeVersion}"
+                    styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+                <h:outputLabel for="fingerprintSha1" value="#{msg.component_certdetails_field_fingerprint}"
+                    styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:outputText id="fingerprintSha1" value="#{cc.attrs.raCertificateDetails.fingerprint}"
+                    styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+                <h:outputLabel for="fingerprintSha256" value="#{msg.component_certdetails_field_fingerprintSha256}"
+                    styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:outputText id="fingerprintSha256" value="#{cc.attrs.raCertificateDetails.fingerprintSha256}"
+                    styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+                <h:outputLabel for="publickeymodulus" value="#{msg.component_certdetails_field_publickeymodulus}"
+                    styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:outputText id="publickeymodulus" value="#{raViewCertBean.certificate.publicKeyModulus}"
+                    styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace ellipsis"/>
+                <h:outputLabel for="subjectkeyid" value="#{msg.component_certdetails_field_subjectkeyid}"
+                    styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:outputText id="subjectkeyid" value="#{raViewCertBean.certificate.subjectKeyId}"
+                    styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+
+                <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+
+                <h:outputLabel for="dump" value="#{msg.component_certdetails_field_dump}"
+                    styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:outputText id="dump" value="#{raViewCertBean.certificate.dump}"
+                    styleClass="#{cc.attrs.styleValue}  #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace ellipsis pre"/>
+            </h:panelGroup>
+
         </composite:implementation>
     </h:body>
     </f:view>
