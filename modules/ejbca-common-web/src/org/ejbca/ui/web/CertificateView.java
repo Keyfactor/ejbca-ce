@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.web;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
@@ -460,13 +459,7 @@ public class CertificateView implements Serializable {
         if (certificate==null) {
             return false;
         }
-    	boolean ret = false; 
-    	try {
-			ret = QCStatementExtension.hasQcStatement(certificate);
-		} catch (IOException e) {
-			ret = false;
-		}
-		return ret;
+    	return QCStatementExtension.hasQcStatement(certificate);
     }
 
     public boolean hasCertificateTransparencySCTs() {

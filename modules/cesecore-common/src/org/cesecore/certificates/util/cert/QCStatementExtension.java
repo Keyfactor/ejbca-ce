@@ -53,9 +53,8 @@ public final class QCStatementExtension extends CertTools {
      * 
      * @param cert Certificate containing the extension
      * @return true or false.
-     * @throws IOException if there is a problem parsing the certificate
      */
-    public static boolean hasQcStatement(final Certificate cert) throws IOException {
+    public static boolean hasQcStatement(final Certificate cert) {
     	boolean ret = false;
         if (cert instanceof X509Certificate) {
         	final X509Certificate x509cert = (X509Certificate) cert;
