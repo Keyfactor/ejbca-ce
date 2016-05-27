@@ -91,6 +91,8 @@ public class RaSearchCertsBean implements Serializable {
     private boolean sortAscending = true;
 
     private boolean moreOptions = false;
+    
+    private RaCertificateDetails currentCertificateDetails = null;
 
     /** Invoked action on search form post */
     public void searchAndFilterAction() {
@@ -137,6 +139,12 @@ public class RaSearchCertsBean implements Serializable {
     /** Perform in memory filtering using the current search criteria of the last result set from the back end. */
     private void filterTransformSort() {
         resultsFiltered.clear();
+        if (eepIdToNameMap==null || cpIdToNameMap==null || caSubjectToNameMap==null) {
+            // If the session has been discontinued we need to ensure that we repopulate the objects
+            getAvailableEeps();
+            getAvailableCps();
+            getAvailableCas();
+        }
         if (lastExecutedResponse != null) {
             for (final CertificateDataWrapper cdw : lastExecutedResponse.getCdws()) {
                 // ...we don't filter if the requested maxResults is lower than the search request
@@ -188,6 +196,7 @@ public class RaSearchCertsBean implements Serializable {
                 log.debug("Filtered " + lastExecutedResponse.getCdws().size() + " responses down to " + resultsFiltered.size() + " results.");
             }
             sort();
+            chain();
         }
     }
 
@@ -522,5 +531,34 @@ public class RaSearchCertsBean implements Serializable {
             }
         });
         return entrySetSorted;
+    }
+
+    /** Chain the results in the current order for certificate details navigation. */
+    private void chain() {
+        RaCertificateDetails previous = null;
+        for (final RaCertificateDetails current: resultsFiltered) {
+            current.setPrevious(previous);
+            if (previous!=null) {
+                previous.setNext(current);
+            }
+            previous = current;
+        }
+        resultsFiltered.get(resultsFiltered.size()-1).setNext(null);
+    }
+
+    public void openCertificateDetails(final RaCertificateDetails selected) {
+        currentCertificateDetails = selected;
+    }
+    public RaCertificateDetails getCurrentCertificateDetails() {
+        return currentCertificateDetails;
+    }
+    public void nextCertificateDetails() {
+        currentCertificateDetails = currentCertificateDetails.getNext();
+    }
+    public void previousCertificateDetails() {
+        currentCertificateDetails = currentCertificateDetails.getPrevious();
+    }
+    public void closeCertificateDetails() {
+        currentCertificateDetails = null;
     }
 }

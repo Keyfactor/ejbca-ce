@@ -32,8 +32,31 @@
 				<h1><h:outputText value="#{msg.search_certs_page_title}"/></h1>
 			</h:panelGroup>
         	<h:panelGroup layout="block" styleClass="content-body">	  
-                <h:outputText value="#{msg.search_certs_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToSearchCerts}"/>        		       	        	
-	            <h:form id="contentForm" styleClass="pure-form pure-form-aligned foo-form" rendered="#{raAccessBean.authorizedToSearchCerts}">
+                <h:outputText value="#{msg.search_certs_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToSearchCerts}"/>
+                <h:form id="detailsForm"
+                    rendered="#{raAccessBean.authorizedToSearchCerts and not empty raSearchCertsBean.currentCertificateDetails}">
+                    <h:panelGroup styleClass="pure-u-1">
+                        <h:panelGroup styleClass="pure-u-1-3">
+                            <h2><h:outputText value="#{msg.viewcert_page_title}"/></h2>
+                        </h:panelGroup>
+                        <h:panelGroup styleClass="pure-u-2-3">
+                            <h:commandButton action="#{raSearchCertsBean.previousCertificateDetails}" value="#{msg.search_certs_page_cdprevious_command}"
+                                rendered="#{not empty raSearchCertsBean.currentCertificateDetails.previous}"/>
+                            <h:commandButton action="#{raSearchCertsBean.closeCertificateDetails}" value="#{msg.search_certs_page_cdclose_command}"/>
+                            <h:commandButton action="#{raSearchCertsBean.nextCertificateDetails}" value="#{msg.search_certs_page_cdnext_command}"
+                                rendered="#{not empty raSearchCertsBean.currentCertificateDetails.next}"/>
+                            <h:outputLink styleClass="fineprintMono" value="viewcert.xhtml">
+                                <f:param name="fp" value="#{raSearchCertsBean.currentCertificateDetails.fingerprint}"/>
+                                <h:outputText value="#{msg.search_certs_page_link_view_cert}"/>
+                            </h:outputLink>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    <h:panelGroup styleClass="pure-u-1">
+                        <component:certdetails raCertificateDetails="#{raSearchCertsBean.currentCertificateDetails}"/>
+                    </h:panelGroup>
+                </h:form>
+	            <h:form id="contentForm" styleClass="pure-form pure-form-aligned foo-form"
+                    rendered="#{raAccessBean.authorizedToSearchCerts and empty raSearchCertsBean.currentCertificateDetails}">
 	                <ui:remove><!-- Add a hidden h:commandButton first in the form to ensure that hitting enter leads to a search --></ui:remove>
 	                <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" style="display: none;"/>
 	
@@ -269,6 +292,7 @@
                                     <f:param name="fp" value="#{raSearchCertificate.fingerprint}"/>
                                     <h:outputText value="#{msg.search_certs_page_link_view_cert}"/>
                                 </h:outputLink>
+                                <h:commandButton action="#{raSearchCertsBean.openCertificateDetails(raSearchCertificate)}" value="#{msg.search_certs_page_show_command}"/>
                             </h:column>
 	                    </h:dataTable>
 	                </h:panelGroup>
