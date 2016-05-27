@@ -70,7 +70,7 @@ public class RaViewCertBean implements Serializable {
                 for (final CAInfo caInfo : caInfos) {
                     caSubjectToNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
                 }
-                raCertificateDetails = RaCertificateDetails.create(cdw, raLocaleBean, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap);
+                raCertificateDetails = new RaCertificateDetails(cdw, raLocaleBean, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap);
             }
         }
     }

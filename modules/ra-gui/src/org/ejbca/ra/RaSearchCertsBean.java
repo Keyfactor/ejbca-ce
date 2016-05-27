@@ -182,7 +182,7 @@ public class RaSearchCertsBean implements Serializable {
                 if (!stagedRequest.getRevocationReasons().isEmpty() && !stagedRequest.getRevocationReasons().contains(cdw.getCertificateData().getRevocationReason())) {
                     continue;
                 }
-                resultsFiltered.add(RaCertificateDetails.create(cdw, raLocaleBean, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap));
+                resultsFiltered.add(new RaCertificateDetails(cdw, raLocaleBean, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap));
             }
             if (log.isDebugEnabled()) {
                 log.debug("Filtered " + lastExecutedResponse.getCdws().size() + " responses down to " + resultsFiltered.size() + " results.");
