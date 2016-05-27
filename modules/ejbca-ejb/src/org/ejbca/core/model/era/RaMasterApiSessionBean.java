@@ -264,6 +264,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final int id) {
+        final ApprovalDataVO advo = getApprovalData(authenticationToken, id);
+        if (advo == null) {
+            return null;
+        }
+        return getApprovalRequest(authenticationToken, advo);
+    }
+    
+    private RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final ApprovalDataVO advo) {
         // The values are used to check if a request belongs to us or not
         String adminCertSerial = null; 
         String adminCertIssuer = null;
@@ -272,11 +280,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final X509Certificate cert = certAuth.getCertificate();
             adminCertSerial = CertTools.getSerialNumberAsString(cert);
             adminCertIssuer = CertTools.getIssuerDN(cert);
-        }
-        
-        final ApprovalDataVO advo = getApprovalData(authenticationToken, id);
-        if (advo == null) {
-            return null;
         }
         
         // By getting the CA we perform an implicit auth check
@@ -289,7 +292,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 caName = cainfo.getName();
             } catch (AuthorizationDeniedException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Authorization to CA " + advo.getCAId() + " was denied. Returning null instead of the approval with id " + id);
+                    log.debug("Authorization to CA " + advo.getCAId() + " was denied. Returning null instead of the approval with id " + advo.getId());
                 }
                 return null;
             } catch (CADoesntExistsException e) {
@@ -310,9 +313,64 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public boolean editApprovalRequest(AuthenticationToken authenticationToken, RaApprovalEditRequest edit) {
-        // TODO
-        return false;
+    public RaApprovalRequestInfo editApprovalRequest(final AuthenticationToken authenticationToken, final RaApprovalEditRequest edit) {
+        // TODO perhaps move into ApprovalSessionBean?
+        // TODO fix audit logging. currently logs as remove + add
+        // TODO blacklist current admin (and remove existing blacklist, if any)
+        final int id = edit.getId();
+        final ApprovalDataVO advo = getApprovalData(authenticationToken, id);
+        if (advo == null) {
+            log.debug("Approval not found in editApprovalRequest");
+            return null;
+        }
+        if (advo.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
+            throw new IllegalStateException("Was not in waiting for approval state");
+        }
+        
+        final ApprovalRequest approvalRequest = advo.getApprovalRequest();
+        final RaEditableRequestData editData = edit.getEditableData();
+        
+        if (approvalRequest instanceof AddEndEntityApprovalRequest) {
+            // TODO validate the values and check that they aren't null?
+            final AddEndEntityApprovalRequest addReq = (AddEndEntityApprovalRequest) approvalRequest;
+            final EndEntityInformation userdata = addReq.getEndEntityInformation();
+            userdata.setUsername(editData.getUsername());
+            userdata.setEmail(editData.getEmail());
+            userdata.setDN(editData.getSubjectDN());
+            userdata.setSubjectAltName(editData.getSubjectAltName());
+            if (userdata.getExtendedinformation() == null && editData.getSubjectDirAttrs() != null) {
+                userdata.setExtendedinformation(new ExtendedInformation());
+            }
+            final ExtendedInformation ei = userdata.getExtendedinformation();
+            ei.setSubjectDirectoryAttributes(editData.getSubjectDirAttrs());
+        } else {
+            // TODO implement more types of requests
+            throw new IllegalStateException("Editing of this type of request is not implemented: " + approvalRequest.getClass().getName());
+        }
+        
+        // Remove the old approval
+        try {
+            approvalSession.removeApprovalRequest(authenticationToken, id);
+        } catch (ApprovalException e) {
+            // TODO remove and add to throws declaration
+            throw new RuntimeException(e);
+        }
+        
+        try {
+            // Re-add the approval. This should leave the requesting admin unchanged
+            approvalSession.addApprovalRequest(authenticationToken, approvalRequest);
+        } catch (ApprovalException e) {
+            // TODO remove and add to throws declaration
+            throw new RuntimeException(e);
+        }
+        
+        final int newCalculatedId = approvalRequest.generateApprovalId();
+        final Collection<ApprovalDataVO> advosNew = approvalSession.findApprovalDataVO(authenticationToken, newCalculatedId);
+        if (advosNew.isEmpty()) {
+            throw new IllegalStateException("Approval with calculated id (approvalId) " + newCalculatedId + " could not be found");
+        }
+        final ApprovalDataVO advoNew = advosNew.iterator().next();
+        return getApprovalRequest(authenticationToken, advoNew);
     }
     
     @Override

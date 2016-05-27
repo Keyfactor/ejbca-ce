@@ -54,8 +54,6 @@ public class RaApprovalRequestInfo implements Serializable {
     private final List<ApprovalDataText> requestData;
     /** Editable request data for end entity requests */
     private final RaEditableRequestData editableData;
-    /** random number of last edit, to prevent race conditions */
-    //private final long lastEditId; // TODO
     
     private final boolean requestedByMe;
     
@@ -180,7 +178,5 @@ public class RaApprovalRequestInfo implements Serializable {
     // TODO should there be a "not requested by me, but waiting for someone else" status also? on the other hand, one can use the adminweb for that. or the "all" tab.
     //      and perhaps we should rename the "all" tab to "custom search"?
     
-    
-    // TODO add more methods here. try to not expose to much implementation details and to be JSF-friendly
     
 }
