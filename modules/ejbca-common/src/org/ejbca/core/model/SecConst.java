@@ -71,7 +71,8 @@ public final class SecConst {
 
     public static final int EMPTY_ENDENTITYPROFILE = 1;
 
-    /** Used in end entity profiles and service workers */
+    /** Used in end entity profiles and service workers 
+     * This is duplicated in CAConstants */
     public static final int ALLCAS = 1;
         
     /**
