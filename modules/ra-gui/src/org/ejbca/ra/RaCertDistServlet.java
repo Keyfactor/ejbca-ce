@@ -192,9 +192,35 @@ public class RaCertDistServlet extends HttpServlet {
                                 chain.addAll(caInfo.getCertificateChain());
                             }
                             try {
-                                writeResponseBytes(httpServletResponse, fingerprint + ".pem", "application/octet-stream", CertTools.getPemFromCertificateChain(chain));
+                                byte[] response = null;
+                                String filename = "cert"+fingerprint;
+                                switch (httpServletRequest.getParameter(PARAMETER_FORMAT)) {
+                                case PARAMETER_FORMAT_OPTION_DER: {
+                                    response = chain.get(0).getEncoded();
+                                    filename += (chain.get(0) instanceof CardVerifiableCertificate) ? ".cvcert" : ".crt";
+                                    break;
+                                }
+                                case PARAMETER_FORMAT_OPTION_P7C: {
+                                    response = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain));
+                                    if (fullChain) {
+                                        filename += "-chain";
+                                    }
+                                    filename += ".p7c";
+                                    break;
+                                }
+                                case PARAMETER_FORMAT_OPTION_PEM:
+                                default: {
+                                    response = CertTools.getPemFromCertificateChain(chain);
+                                    if (fullChain) {
+                                        filename += "-chain";
+                                    }
+                                    filename += ".pem";
+                                    break;
+                                }
+                                }
+                                writeResponseBytes(httpServletResponse, filename, "application/octet-stream", response);
                                 return;
-                            } catch (CertificateEncodingException e) {
+                            } catch (CertificateEncodingException | ClassCastException | CMSException e) {
                                 log.warn("Failed to provide download of certificate with fingerprint " + fingerprint);
                             }
                         }

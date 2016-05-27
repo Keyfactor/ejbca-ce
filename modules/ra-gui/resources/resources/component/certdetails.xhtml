@@ -173,6 +173,14 @@
                 styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="username" value="#{cc.attrs.raCertificateDetails.username}"
                 styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="eep" value="#{msg.component_certdetails_field_eep}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="eep" value="#{cc.attrs.raCertificateDetails.eepName}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="cp" value="#{msg.component_certdetails_field_cp}"
+                styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="cp" value="#{cc.attrs.raCertificateDetails.cpName}"
+                styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
@@ -183,6 +191,20 @@
                     <f:param name="chain" value="true"/>
                     <f:param name="format" value="pem"/>
                     <h:outputText value="#{msg.component_certdetails_link_download_pem}"/>
+                </h:outputLink>
+                <h:outputText value=" " styleClass="pre"/>
+                <h:outputLink value="cert">
+                    <f:param name="fp" value="#{raViewCertBean.certificate.fingerprint}"/>
+                    <f:param name="chain" value="true"/>
+                    <f:param name="format" value="der"/>
+                    <h:outputText value="#{msg.component_certdetails_link_download_der}"/>
+                </h:outputLink>
+                <h:outputText value=" " styleClass="pre"/>
+                <h:outputLink value="cert">
+                    <f:param name="fp" value="#{raViewCertBean.certificate.fingerprint}"/>
+                    <f:param name="chain" value="false"/>
+                    <f:param name="format" value="pkcs7"/>
+                    <h:outputText value="#{msg.component_certdetails_link_download_pkcs7}"/>
                 </h:outputLink>
                 <h:outputText value=" " styleClass="pre"/>
                 <h:commandButton value="#{raViewCertBean.certificate.more ? msg.component_certdetails_show_less : msg.component_certdetails_show_more}"
@@ -206,9 +228,9 @@
                     styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                 <h:outputText id="fingerprintSha256" value="#{cc.attrs.raCertificateDetails.fingerprintSha256}"
                     styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
-                <h:outputLabel for="publickeymodulus" value="#{msg.component_certdetails_field_publickeymodulus}"
+                <h:outputLabel for="publickeyparameter" value="#{msg.component_certdetails_field_publickeyparameter}"
                     styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-                <h:outputText id="publickeymodulus" value="#{raViewCertBean.certificate.publicKeyModulus}"
+                <h:outputText id="publickeyparameter" value="#{raViewCertBean.certificate.publicKeyParameter}"
                     styleClass="#{cc.attrs.styleValue} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace ellipsis"/>
                 <h:outputLabel for="subjectkeyid" value="#{msg.component_certdetails_field_subjectkeyid}"
                     styleClass="#{cc.attrs.styleLabel} #{raViewCertBean.certificate.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
