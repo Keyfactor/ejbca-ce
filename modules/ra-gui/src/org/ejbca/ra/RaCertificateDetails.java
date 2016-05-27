@@ -94,6 +94,9 @@ public class RaCertificateDetails {
 
     private boolean more = false;
     private int callCounter = 1;
+    
+    private RaCertificateDetails next = null;
+    private RaCertificateDetails previous = null;
 
     public RaCertificateDetails(final CertificateDataWrapper cdw, final RaLocaleBean raLocaleBean, final Map<Integer, String> cpIdToNameMap,
             final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap) {
@@ -240,7 +243,7 @@ public class RaCertificateDetails {
     /** @return End Entity Profile Name from the provided EEP ID or a localized error String */
     public String getEepName() {
         if (eepId==EndEntityInformation.NO_ENDENTITYPROFILE) {
-            return raLocaleBean.getMessage("component_certdetails_info_unknowneep", eepId);
+            return raLocaleBean.getMessage("component_certdetails_info_unknowneep");
         }
         if (eepName!=null) {
             return eepName;
@@ -316,4 +319,10 @@ public class RaCertificateDetails {
         }
         return String.valueOf(issuerDn);
     }
+
+    public RaCertificateDetails getNext() { return next; }
+    public void setNext(RaCertificateDetails next) { this.next = next; }
+
+    public RaCertificateDetails getPrevious() { return previous; }
+    public void setPrevious(RaCertificateDetails previous) { this.previous = previous; }
 }
