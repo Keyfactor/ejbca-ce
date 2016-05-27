@@ -15,6 +15,9 @@ package org.ejbca.core.model.era;
 import java.io.Serializable;
 
 /**
+ * Editable data in an approval request (e.g. Subject DN in Add End Entity requests).
+ * Sent by the CA in e.g. {@link org.ejbca.core.model.era.RaMasterApi#getApprovalRequest}
+ * and returned to the CA in {@link org.ejbca.core.model.era.RaMasterApi#editApprovalRequest}
  * 
  * @version $Id$
  */
@@ -25,93 +28,16 @@ public final class RaApprovalEditRequest implements Serializable {
     private final int approvalId;
     private final RaEditableRequestData editableData;
     
-    /*// Add end entity requests (from AddEndEntityApprovalRequest)
-    private String username;
-    private String subjectDN;
-    private String subjectAltName;
-    private String subjectEmail;
-    private int status;
-    private int type;
-    private int endentityprofileid;
-    private int certificateprofileid;*/
-    
-    // TODO other types of requests
-    
     public RaApprovalEditRequest(final int approvalId, final RaEditableRequestData editableData) {
         this.approvalId = approvalId;
         this.editableData = editableData;
     }
     
-    public int getApprovalId() {
+    public int getId() {
         return approvalId;
     }
     
     public RaEditableRequestData getEditableData() {
         return editableData;
-    }
-
-    /*public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getSubjectDN() {
-        return subjectDN;
-    }
-
-    public void setSubjectDN(String subjectDN) {
-        this.subjectDN = subjectDN;
-    }
-
-    public String getSubjectAltName() {
-        return subjectAltName;
-    }
-
-    public void setSubjectAltName(String subjectAltName) {
-        this.subjectAltName = subjectAltName;
-    }
-
-    public String getSubjectEmail() {
-        return subjectEmail;
-    }
-
-    public void setSubjectEmail(String subjectEmail) {
-        this.subjectEmail = subjectEmail;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
-    public int getEndentityprofileid() {
-        return endentityprofileid;
-    }
-
-    public void setEndentityprofileid(int endentityprofileid) {
-        this.endentityprofileid = endentityprofileid;
-    }
-
-    public int getCertificateprofileid() {
-        return certificateprofileid;
-    }
-
-    public void setCertificateprofileid(int certificateprofileid) {
-        this.certificateprofileid = certificateprofileid;
-    }*/
-    
+    }    
 }

@@ -59,8 +59,11 @@ public interface RaMasterApi {
     /** @return the approval request with the given id, or null if it doesn't exist or if authorization was denied */
     RaApprovalRequestInfo getApprovalRequest(AuthenticationToken authenticationToken, int id);
 
-    /** Modifies an approval request and sets the current admin as a blacklisted admin */
-    boolean editApprovalRequest(AuthenticationToken authenticationToken, RaApprovalEditRequest edit);
+    /**
+     * Modifies an approval request and sets the current admin as a blacklisted admin.
+     * @return The new approval request (which may have a new id)
+     */
+    RaApprovalRequestInfo editApprovalRequest(AuthenticationToken authenticationToken, RaApprovalEditRequest edit);
     
     /** Approves, rejects or saves (not yet implemented) a step of an approval request
      * @throws SelfApprovalException 

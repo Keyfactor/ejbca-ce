@@ -45,7 +45,7 @@
                         <h:outputText value="#{row.data}"/>
                     </h:column>
                 </h:dataTable>
-                <h:commandButton id="commandEditData" action="#{raManageRequestBean.editData}" value="#{msg.view_request_page_edit_data_command}" />
+                <h:commandButton id="commandEditData" action="#{raManageRequestBean.editRequestData}" value="#{msg.view_request_page_edit_data_command}" rendered="#{raManageRequestBean.request.canApprove}"/>
             </h:panelGroup>
             
             <h:panelGroup layout="block" rendered="#{raManageRequestBean.editDataVisible}">
@@ -62,7 +62,7 @@
                         <h:inputText value="#{row.editValue}" rendered="#{row.editingSupported}"/>
                     </h:column>
                 </h:dataTable>
-                <h:commandButton id="commandSaveData" action="#{raManageRequestBean.saveData}" value="#{msg.view_request_page_save_data_command}" />
+                <h:commandButton id="commandSaveData" action="#{raManageRequestBean.saveRequestData}" value="#{msg.view_request_page_save_data_command}" />
             </h:panelGroup>
             
             <h:panelGroup layout="block" rendered="#{raManageRequestBean.statusVisible}">

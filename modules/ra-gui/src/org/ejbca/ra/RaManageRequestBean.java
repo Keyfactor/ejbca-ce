@@ -170,11 +170,11 @@ public class RaManageRequestBean implements Serializable {
         }
     }
     
-    public void editData() {
+    public void editRequestData() {
         editing = true;
     }
     
-    public void saveData() {
+    public void saveRequestData() {
         if (!editing) {
             throw new IllegalStateException();
         }
@@ -201,8 +201,11 @@ public class RaManageRequestBean implements Serializable {
         
         // TODO error handling
         final RaApprovalEditRequest editReq = new RaApprovalEditRequest(requestData.getId(), editData);
-        raMasterApiProxyBean.editApprovalRequest(raAuthenticationBean.getAuthenticationToken(), editReq);
-        
+        requestData = raMasterApiProxyBean.editApprovalRequest(raAuthenticationBean.getAuthenticationToken(), editReq);
+        if (requestData == null) {
+            throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
+        }
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean);
         editing = false;
     }
     
