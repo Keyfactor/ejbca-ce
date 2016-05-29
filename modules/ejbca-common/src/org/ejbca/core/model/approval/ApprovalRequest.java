@@ -96,6 +96,10 @@ public abstract class ApprovalRequest implements Externalizable {
     private Map<Integer, ApprovalStep> approvalSteps;
     private Map<Integer, Boolean> approvalStepsHandledMap;
     
+    /** Admin who last edited the request (or null if none). This admin will not be allowed to approve the request. */
+    private String blacklistedAdminSerial;
+    private String blacklistedAdminIssuerDN;
+    
     private Collection<Approval> oldApprovals;
     /**
      * Main constructor of an approval request for standard one step approval request.
@@ -439,6 +443,22 @@ public abstract class ApprovalRequest implements Externalizable {
     public AuthenticationToken getRequestAdmin() {
         return requestAdmin;
     }
+    
+    public String getBlacklistedAdminIssuerDN() {
+        return blacklistedAdminIssuerDN;
+    }
+    
+    public void setBlacklistedAdminIssuerDN(final String blacklistedAdminIssuerDN) {
+        this.blacklistedAdminIssuerDN = blacklistedAdminIssuerDN;
+    }
+    
+    public String getBlacklistedAdminSerial() {
+        return blacklistedAdminSerial;
+    }
+    
+    public void setBlacklistedAdminSerial(final String blacklistedAdminSerial) {
+        this.blacklistedAdminSerial = blacklistedAdminSerial;
+    }
 
     /**
      * Returns true if this step have been executed before.
@@ -465,6 +485,7 @@ public abstract class ApprovalRequest implements Externalizable {
         return approvalStepsNrOfApprovals.length;
     }
 
+    @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeInt(LATEST_BASE_VERSION);
         out.writeObject(this.requestAdmin);
@@ -501,8 +522,13 @@ public abstract class ApprovalRequest implements Externalizable {
         for (Approval approval : oldApprovals) {
             out.writeObject(approval);
         }
+        
+        // XXX Uncomment to try out blacklisting of the last admin that edited the request (if any)
+        //out.writeObject(this.blacklistedAdminIssuerDN);
+        //out.writeObject(this.blacklistedAdminSerial);
     }
 
+    @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         final int version = in.readInt();
         if (version == 1) {
@@ -553,9 +579,9 @@ public abstract class ApprovalRequest implements Externalizable {
             		token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(admin.getUsername()));
             	}
             } else {
-            	final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            	final Set<X509Certificate> credentials = new HashSet<>();
                 credentials.add(x509cert);
-                final Set<X500Principal> principals = new HashSet<X500Principal>();
+                final Set<X500Principal> principals = new HashSet<>();
                 principals.add(x509cert.getSubjectX500Principal());
                 token = new X509CertificateAuthenticationToken(principals, credentials);
             }
@@ -635,7 +661,7 @@ public abstract class ApprovalRequest implements Externalizable {
                 this.secondApprovalProfile = null;
             }
             
-            this.approvalSteps = new HashMap<Integer, ApprovalStep>();
+            this.approvalSteps = new HashMap<>();
             int length = in.readInt(); 
             for (int i = 0; i < length; i++) {
                 Integer stepId = (Integer)in.readObject();
@@ -643,7 +669,7 @@ public abstract class ApprovalRequest implements Externalizable {
                 approvalSteps.put(stepId, step);
             }
             
-            this.approvalStepsHandledMap = new HashMap<Integer, Boolean>();
+            this.approvalStepsHandledMap = new HashMap<>();
             length = in.readInt(); 
             for (int i = 0; i < length; i++) {
                 Integer stepId = (Integer)in.readObject();
@@ -651,13 +677,16 @@ public abstract class ApprovalRequest implements Externalizable {
                 approvalStepsHandledMap.put(stepId, handled);
             }
             
-            this.oldApprovals = new ArrayList<Approval>();
+            this.oldApprovals = new ArrayList<>();
             length = in.readInt(); 
             for (int i = 0; i < length; i++) {
                 Approval approval = (Approval)in.readObject();
                 oldApprovals.add(approval);
             }
-
+            
+            // XXX Uncomment to try out blacklisting of the last admin that edited the request (if any)
+            //this.blacklistedAdminIssuerDN = (String) in.readObject();
+            //this.blacklistedAdminSerial = (String) in.readObject();
         }
     }
 

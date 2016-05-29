@@ -45,7 +45,7 @@
                         <h:outputText value="#{row.data}"/>
                     </h:column>
                 </h:dataTable>
-                <h:commandButton id="commandEditData" action="#{raManageRequestBean.editRequestData}" value="#{msg.view_request_page_edit_data_command}" rendered="#{raManageRequestBean.request.canApprove}"/>
+                <h:commandButton id="commandEditData" action="#{raManageRequestBean.editRequestData}" value="#{msg.view_request_page_edit_data_command}" rendered="#{raManageRequestBean.request.canEdit}"/>
             </h:panelGroup>
             
             <h:panelGroup layout="block" rendered="#{raManageRequestBean.editDataVisible}">

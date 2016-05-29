@@ -308,15 +308,21 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         
         // TODO perform ee profile and approval profile authorization checks also
         
-        return new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caName, advo, requestData, editableData);
+        return new RaApprovalRequestInfo(authenticationToken, adminCertIssuer, adminCertSerial, caName, advo, requestData, editableData);
         
     }
 
     @Override
-    public RaApprovalRequestInfo editApprovalRequest(final AuthenticationToken authenticationToken, final RaApprovalEditRequest edit) {
+    public RaApprovalRequestInfo editApprovalRequest(final AuthenticationToken authenticationToken, final RaApprovalEditRequest edit) throws AuthorizationDeniedException {
+        if (!(authenticationToken instanceof X509CertificateAuthenticationToken)) {
+            throw new AuthorizationDeniedException("Can only edit an approval request with certificate authentication");
+        }
+        final X509CertificateAuthenticationToken x509admin = (X509CertificateAuthenticationToken) authenticationToken;
+        final String adminIssuerDN = CertTools.getIssuerDN(x509admin.getCertificate());
+        final String adminSerial = CertTools.getSerialNumberAsString(x509admin.getCertificate());
+        
         // TODO perhaps move into ApprovalSessionBean?
         // TODO fix audit logging. currently logs as remove + add
-        // TODO blacklist current admin (and remove existing blacklist, if any)
         final int id = edit.getId();
         final ApprovalDataVO advo = getApprovalData(authenticationToken, id);
         if (advo == null) {
@@ -325,6 +331,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         if (advo.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
             throw new IllegalStateException("Was not in waiting for approval state");
+        }
+        
+        if (!advo.getApprovals().isEmpty()) {
+            throw new IllegalStateException("Can't edit a request that has one or more approvals");
         }
         
         final ApprovalRequest approvalRequest = advo.getApprovalRequest();
@@ -358,6 +368,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         
         try {
             // Re-add the approval. This should leave the requesting admin unchanged
+            approvalRequest.setBlacklistedAdminIssuerDN(adminIssuerDN); // admins may not approve requests they have edited
+            approvalRequest.setBlacklistedAdminSerial(adminSerial);
             approvalSession.addApprovalRequest(authenticationToken, approvalRequest);
         } catch (ApprovalException e) {
             // TODO remove and add to throws declaration
@@ -502,7 +514,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         for (final ApprovalDataVO advo : approvals) {
             final List<ApprovalDataText> requestDataLite = advo.getApprovalRequest().getNewRequestDataAsText(authenticationToken); // this method isn't guaranteed to return the full information
             final RaEditableRequestData editableData = getRequestEditableData(authenticationToken, advo);
-            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, adminCertSerial, adminCertIssuer, caIdToNameMap.get(advo.getCAId()), advo, requestDataLite, editableData);
+            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, adminCertIssuer, adminCertSerial, caIdToNameMap.get(advo.getCAId()), advo, requestDataLite, editableData);
             if (!ari.isPending() && request.isSearchingPending()) { continue; } // XXX untested code!
             if (!ari.isWaitingForMe() && request.isSearchingWaitingForMe()) { continue; }
             // XXX It seems that the query() method filters out approvals that the current admin isn't involved in. How to handle historical steps in this case? And pending steps?
