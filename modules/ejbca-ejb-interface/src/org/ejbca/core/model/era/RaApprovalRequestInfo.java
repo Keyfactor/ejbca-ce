@@ -56,6 +56,7 @@ public class RaApprovalRequestInfo implements Serializable {
     private final RaEditableRequestData editableData;
     
     private final boolean requestedByMe;
+    private final boolean editedByMe;
     
     // Current approval step
     private final ApprovalStep nextApprovalStep;
@@ -82,10 +83,14 @@ public class RaApprovalRequestInfo implements Serializable {
         this.requestData = requestData;
         this.editableData = editableData;
         
+        editedByMe = StringUtils.equals(approval.getApprovalRequest().getBlacklistedAdminIssuerDN(), adminCertIssuer) &&
+                StringUtils.equalsIgnoreCase(approval.getApprovalRequest().getBlacklistedAdminSerial(), adminCertSerial);
+        // TODO show the Subject DN (or common name) of the admin who last edited the request? 
+        
         // Next steps
         final ApprovalStep nextStep;
         nextStep = approval.getApprovalRequest().getNextUnhandledApprovalStepByAdmin(authenticationToken);
-        if (nextStep != null && status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
+        if (nextStep != null && status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && !editedByMe) {
             nextApprovalStep = nextStep;
         } else {
             nextApprovalStep = null;
@@ -178,5 +183,8 @@ public class RaApprovalRequestInfo implements Serializable {
     // TODO should there be a "not requested by me, but waiting for someone else" status also? on the other hand, one can use the adminweb for that. or the "all" tab.
     //      and perhaps we should rename the "all" tab to "custom search"?
     
+    public boolean isEditedByMe() {
+        return editedByMe;
+    }
     
 }

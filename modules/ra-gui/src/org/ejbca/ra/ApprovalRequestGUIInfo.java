@@ -271,7 +271,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         
         // Steps
         final ApprovalStep nextApprovalStep = request.getNextApprovalStep();
-        if (nextApprovalStep != null) {
+        if (nextApprovalStep != null && !request.isEditedByMe()) {
             nextStep = new Step(nextApprovalStep);
             canApprove = true;
         } else {
@@ -322,5 +322,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public Step getNextStep() { return nextStep; }
     public List<Step> getPreviousSteps() { return previousSteps; }
     public boolean isCanApprove() { return canApprove; }
+    public boolean isCanEdit() { return canApprove && previousSteps.isEmpty(); }
     
 }

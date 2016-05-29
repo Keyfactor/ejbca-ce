@@ -66,17 +66,25 @@ public class RaManageRequestBean implements Serializable {
     private RaApprovalRequestInfo requestData;
     private boolean editing = false;
     
+    private void loadRequest(final int id) {
+        requestData = raMasterApiProxyBean.getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), id);
+        if (requestData == null) {
+            throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
+        }
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean);
+    }
+    
     private void initializeRequestInfo() {
         if (requestInfo == null) {
             final String idHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
                     .getParameter("id");
             final int id = Integer.parseInt(idHttpParam);
-            requestData = raMasterApiProxyBean.getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), id);
-            if (requestData == null) {
-                throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
-            }
-            requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean);
+            loadRequest(id);
         }
+    }
+    
+    private void reloadRequest() {
+        loadRequest(requestData.getId());
     }
     
     public ApprovalRequestGUIInfo getRequest() {
@@ -142,6 +150,8 @@ public class RaManageRequestBean implements Serializable {
             raLocaleBean.addMessageError("view_request_page_error_self_approval");
             logException("approve", e);
         }
+        
+        reloadRequest();
     }
     
     public void reject() throws AuthorizationDeniedException {
@@ -168,13 +178,15 @@ public class RaManageRequestBean implements Serializable {
             raLocaleBean.addMessageError("view_request_page_error_self_approval");
             logException("reject", e);
         }
+        
+        reloadRequest();
     }
     
     public void editRequestData() {
         editing = true;
     }
     
-    public void saveRequestData() {
+    public void saveRequestData() throws AuthorizationDeniedException {
         if (!editing) {
             throw new IllegalStateException();
         }

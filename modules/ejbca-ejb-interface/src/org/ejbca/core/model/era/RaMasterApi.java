@@ -63,7 +63,7 @@ public interface RaMasterApi {
      * Modifies an approval request and sets the current admin as a blacklisted admin.
      * @return The new approval request (which may have a new id)
      */
-    RaApprovalRequestInfo editApprovalRequest(AuthenticationToken authenticationToken, RaApprovalEditRequest edit);
+    RaApprovalRequestInfo editApprovalRequest(AuthenticationToken authenticationToken, RaApprovalEditRequest edit) throws AuthorizationDeniedException;
     
     /** Approves, rejects or saves (not yet implemented) a step of an approval request
      * @throws SelfApprovalException 

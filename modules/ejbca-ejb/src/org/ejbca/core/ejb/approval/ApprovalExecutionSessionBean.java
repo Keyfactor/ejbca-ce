@@ -23,14 +23,17 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -81,6 +84,20 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
+    private void checkNotApprovingSelfEdited(final AuthenticationToken admin, final ApprovalData ad) throws SelfApprovalException {
+        final ApprovalDataVO advo = approvalSession.getApprovalDataVO(ad);
+        final String blacklistedIssuerDN = advo.getApprovalRequest().getBlacklistedAdminIssuerDN();
+        final String blacklistedSerial = advo.getApprovalRequest().getBlacklistedAdminSerial();
+        if (blacklistedSerial != null && admin instanceof X509CertificateAuthenticationToken) {
+            final X509CertificateAuthenticationToken clientCertAuth = (X509CertificateAuthenticationToken) admin;
+            final String adminIssuerDN = CertTools.getIssuerDN(clientCertAuth.getCertificate());
+            final String adminSerial = CertTools.getSerialNumberAsString(clientCertAuth.getCertificate());
+            if (StringUtils.equalsIgnoreCase(adminSerial, blacklistedSerial) && StringUtils.equals(adminIssuerDN, blacklistedIssuerDN)) {
+                throw new SelfApprovalException("Can't approve request that has been edited by oneself");
+            }
+        }
+    }
+    
     @Override
     public void approve(AuthenticationToken admin, int approvalId, Approval approval, ApprovalStep approvalStep, 
             final boolean isNrOfApprovalsProfile) throws ApprovalRequestExpiredException,
@@ -98,6 +115,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             throw e;
         }
         approvalSession.checkExecutionPossibility(admin, adl);
+        checkNotApprovingSelfEdited(admin, adl);
 		approval.setApprovalAdmin(true, admin);
         try {
             approve(adl, approval, approvalStep, isNrOfApprovalsProfile);
