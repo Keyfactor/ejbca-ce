@@ -392,6 +392,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // Return false so the next master api backend can see if it can handle the approval
             return false;
         }
+        // Convert RA request steps into approval steps
         final boolean isAccumulativeOnly = advo.getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof AccumulativeApprovalProfile;
         final Approval approval = new Approval(requestResponse.getComment());
         final ApprovalStep approvalStep;
@@ -409,6 +410,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 approvalStep.updateOneMetadataValue(metadata.getMetadataId(), metadata.getOptionValue(), metadata.getOptionNote());
             }
         }
+        
         switch (requestResponse.getAction()) {
         case APPROVE:
             approvalExecutionSession.approve(authenticationToken, advo.getApprovalId(), approval, approvalStep, isAccumulativeOnly);
