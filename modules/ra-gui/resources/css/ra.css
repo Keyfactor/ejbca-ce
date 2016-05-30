@@ -156,19 +156,19 @@
 }
 
 .enroll-menu-link:hover, .enroll-menu-link:focus  {
-	background: #1f589f;
+	background: #336699;
 }
 
 .cas-menu-link:hover, .cas-menu-link:focus  {
-	background: #fab929;
+	background: #336699;
 }
 
 .requests-menu-link:hover, .requests-menu-link:focus  {
-	background: #e73d35;
+	background: #336699;
 }
 
 .search-menu-link:hover, .search-menu-link:focus  {
-	background: #945048;
+	background: #336699;
 }
 
 img.menu_logo {
