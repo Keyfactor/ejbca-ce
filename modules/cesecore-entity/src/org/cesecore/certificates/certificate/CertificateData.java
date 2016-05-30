@@ -112,7 +112,8 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param cafp CA certificate fingerprint, can be null
      * @param status status of the certificate, active, revoked etcc, i.e. CertificateConstants.CERT_ACTIVE etc
      * @param type the user type the certificate belongs to, i.e. EndEntityTypes.USER_ENDUSER etc
-     * @param certprofileid certificate profile id, can be 0
+     * @param certprofileid certificate profile id, can be 0 for "no profile"
+     * @param endEntityProfileId end entity profile id, can be 0 for "no profile"
      * @param tag a custom tag to map the certificate to any custom defined tag
      * @param updatetime the time the certificate was updated in the database, i.e. System.currentTimeMillis().
      * @param storeCertificate true if a special table is used for the encoded certificates, or if certificate data isn't supposed to be stored at all. NOTE: If true then the caller must store the certificate in Base64CertData as well. 
