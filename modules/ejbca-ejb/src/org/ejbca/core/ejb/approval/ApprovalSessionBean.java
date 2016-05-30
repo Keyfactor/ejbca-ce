@@ -444,10 +444,17 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         final List<ApprovalDataVO> returnData = new ArrayList<ApprovalDataVO>(approvalDataList.size());
         for (ApprovalData approvalData : approvalDataList) {
             final ApprovalDataVO approvalInformation = getApprovalDataVO(approvalData);
+            // Let approvals created prior to 6.6.0 (which lack data in the profile ID column) pass 
             if(approvalData.getApprovalprofileid() != 0) {
-                //Let approvals created prior to 6.6.0 (which lack data in the profile ID column) pass 
-                final ApprovalStep approvalStep = approvalInformation.getApprovalRequest().getNextUnhandledApprovalStepByAdmin(admin);
-                if(approvalStep == null) {
+                // Only return approvals that the given admin either can approve, or has approved.
+                final ApprovalStep nextStep = approvalInformation.getApprovalRequest().getNextUnhandledApprovalStepByAdmin(admin);
+                boolean hasPreviousApprovalByAdmin = false;
+                for (final Approval prevApproval : approvalInformation.getApprovals()) {
+                    if (prevApproval.getAdmin().equals(admin)) {
+                        hasPreviousApprovalByAdmin = true;
+                    }
+                }
+                if (nextStep == null && !hasPreviousApprovalByAdmin) {
                     continue;
                 }
 
