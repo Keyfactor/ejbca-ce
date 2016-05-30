@@ -223,12 +223,18 @@ document.getElementById("marker").appendChild(newFileInput);
 							value="#{enrollMakeNewRequestBean.subjectDn.getFieldInstances()}"
 							var="instance">
 							<h:panelGroup layout="block" styleClass="pure-control-group">
-								<h:outputLabel for="subjectDnField"
+								<h:outputText
 									value="#{enrollMakeNewRequestBean.getSubjectDnFieldOutputName(instance.getName())}"
 									rendered="#{instance.isUsed()}" />
+								<h:outputText value="#{instance.getName()}" style="display: none"/>
 								<h:inputText id="subjectDnField" value="#{instance.value}"
 									rendered="#{instance.isUsed()}"
-									disabled="!#{instance.isModifiable()}" />
+									disabled="!#{instance.isModifiable()}"
+									required="#{instance.isRequired()}" >
+									<f:validator validatorId="extendedRegexValidator" />
+    								<f:attribute name="pattern" value="#{instance.getRegexPattern()}" />
+								</h:inputText>
+								<h:message for="subjectDnField"/>
 							</h:panelGroup>
 						</ui:repeat>
 					</h:panelGroup>
@@ -248,7 +254,11 @@ document.getElementById("marker").appendChild(newFileInput);
 									rendered="#{instance.isUsed()}" />
 								<h:inputText id="subjectAltNameField" value="#{instance.value}"
 									rendered="#{instance.isUsed()}"
-									disabled="!#{instance.isModifiable()}" />
+									disabled="!#{instance.isModifiable()}" >
+									<f:validator validatorId="extendedRegexValidator" />
+    								<f:attribute name="pattern" value="#{instance.getRegexPattern()}" />
+								</h:inputText>
+								<h:message for="subjectAltNameField"/>
 							</h:panelGroup>
 						</ui:repeat>
 					</h:panelGroup>
@@ -266,7 +276,11 @@ document.getElementById("marker").appendChild(newFileInput);
 									rendered="#{instance.isUsed()}" />
 								<h:inputText id="subjectDirectoryField"
 									value="#{instance.value}" rendered="#{instance.isUsed()}"
-									disabled="!#{instance.isModifiable()}" />
+									disabled="!#{instance.isModifiable()}" >
+									<f:validator validatorId="extendedRegexValidator" />
+    								<f:attribute name="pattern" value="#{instance.getRegexPattern()}" />
+								</h:inputText>
+								<h:message for="subjectDirectoryAttributes"/>
 							</h:panelGroup>
 						</ui:repeat>
 					</h:panelGroup>
@@ -283,7 +297,7 @@ document.getElementById("marker").appendChild(newFileInput);
 							<fieldset>
 								<h:panelGroup layout="block" styleClass="pure-control-group">
 									<h:outputLabel for="selectDownloadCredentialsOneMenu"
-										value="#{msg.enroll_download_credentials_type}" />
+										value="#{msg.enroll_credentials_for_download}" />
 									<h:selectOneMenu id="selectDownloadCredentialsOneMenu"
 										value="#{enrollMakeNewRequestBean.selectedDownloadCredentialsType}"
 										valueChangeListener="#{enrollMakeNewRequestBean.downloadCredentialsTypeChangedListener}">
@@ -380,7 +394,7 @@ document.getElementById("marker").appendChild(newFileInput);
 						rendered="#{enrollMakeNewRequestBean.getNextButtonRendered()}">
 					</h:commandButton>
 					<h:commandButton id="resetButton" value="#{msg.generic_reset}" styleClass="pure-button ra-button"
-						action="#{enrollMakeNewRequestBean.reset()}">
+						action="#{enrollMakeNewRequestBean.reset()}" immediate="true">
 					</h:commandButton>
 				</h:panelGroup>
 				<script>
