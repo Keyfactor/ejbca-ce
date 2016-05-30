@@ -117,7 +117,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param updatetime the time the certificate was updated in the database, i.e. System.currentTimeMillis().
      * @param storeCertificate true if a special table is used for the encoded certificates, or if certificate data isn't supposed to be stored at all. NOTE: If true then the caller must store the certificate in Base64CertData as well. 
      */
-    public CertificateData(Certificate incert, PublicKey enrichedpubkey, String username, String cafp, int status, int type, int certprofileid, Integer endEntityProfileId,
+    public CertificateData(Certificate incert, PublicKey enrichedpubkey, String username, String cafp, int status, int type, int certprofileid, int endEntityProfileId,
             String tag, long updatetime, boolean storeCertificate) {
         // Extract all fields to store with the certificate.
         try {
@@ -146,7 +146,7 @@ public class CertificateData extends ProtectedData implements Serializable {
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             setUpdateTime(updatetime); // (new Date().getTime());
             setCertificateProfileId(certprofileid);
-            setEndEntityProfileId(endEntityProfileId);
+            setEndEntityProfileId(Integer.valueOf(endEntityProfileId));
             // Create a key identifier
             PublicKey pubk = incert.getPublicKey();
             if (enrichedpubkey != null) {
