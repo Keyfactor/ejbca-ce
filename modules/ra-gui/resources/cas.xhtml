@@ -32,8 +32,8 @@
 				<h1><h:outputText value="#{msg.cas_page_title}"/></h1>
 			</h:panelGroup>	       
         	<h:panelGroup layout="block" class="content-body" id="content-body">	 
-	            <h:outputText rendered="#{empty raCasPageBean.casAndCrlItems}" value="#{msg.cas_page_info_nocas}"/>
-	            <h:dataTable rendered="#{not empty raCasPageBean.casAndCrlItems}" value="#{raCasPageBean.casAndCrlItems}" var="caAndCrls" styleClass="pure-table"
+	            <h:outputText rendered="#{!raAccessBean.authorizedToCas or empty raCasPageBean.casAndCrlItems}" value="#{msg.cas_page_info_nocas}"/>
+	            <h:dataTable rendered="#{raAccessBean.authorizedToCas and not empty raCasPageBean.casAndCrlItems}" value="#{raCasPageBean.casAndCrlItems}" var="caAndCrls" styleClass="pure-table"
 	                rowClasses=",pure-table-odd">
 	                <h:column>
 	                    <f:facet name="header"><h:outputText value="#{msg.cas_page_colhead_cas}"/></f:facet>
@@ -112,7 +112,7 @@
 	                    </h:panelGrid>
 	                </h:column>
 	            </h:dataTable>
-	            <h:outputText value="¹ #{msg.cas_page_link_download_cachain_jks_hint}" rendered="#{not empty raCasPageBean.casAndCrlItems}"/>	            
+	            <h:outputText value="¹ #{msg.cas_page_link_download_cachain_jks_hint}" rendered="#{raAccessBean.authorizedToCas and not empty raCasPageBean.casAndCrlItems}"/>	            
    			</h:panelGroup>	                
         </ui:define>
     </ui:composition>
