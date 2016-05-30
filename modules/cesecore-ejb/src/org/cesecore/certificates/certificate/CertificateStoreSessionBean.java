@@ -65,6 +65,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.OcspConfiguration;
@@ -139,7 +140,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public CertificateDataWrapper storeCertificate(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
-            int certificateProfileId, final Integer endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException {
+            int certificateProfileId, final int endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException {
     	// Check that user is authorized to the CA that issued this certificate
     	int caid = CertTools.getIssuerDN(incert).hashCode();
         authorizedToCA(admin, caid);
@@ -149,7 +150,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void storeCertificateRemote(AuthenticationToken admin, CertificateWrapper wrappedCert, String username, String cafp, int status, int type,
-            int certificateProfileId, final Integer endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException {
+            int certificateProfileId, final int endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException {
         Certificate incert = EJBTools.unwrap(wrappedCert);
         // Check that user is authorized to the CA that issued this certificate
         int caid = CertTools.getIssuerDN(incert).hashCode();
@@ -161,7 +162,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type,
-            int certificateProfileId, final Integer endEntityProfileId, String tag, long updateTime) {
+            int certificateProfileId, final int endEntityProfileId, String tag, long updateTime) {
         if (log.isTraceEnabled()) {
             log.trace(">storeCertificateNoAuth(" + username + ", " + cafp + ", " + status + ", " + type + ")");
         }
@@ -1356,7 +1357,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             if (c1 == null) {// storing initial certificate if no test certificate created.
                 try {
                     // needs to call using "certificateStoreSession." in order to honor the transaction annotations
-                    certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction(admin, cert1, userName, "abcdef0123456789", CertificateConstants.CERT_INACTIVE, 0, 0, null, "", new Date().getTime());
+                    certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction(admin, cert1, userName, "abcdef0123456789",
+                            CertificateConstants.CERT_INACTIVE, 0, EndEntityInformation.NO_CERTIFICATEPROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, "", new Date().getTime());
                 } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
                     throw new RuntimeException("It should always be possible to store initial dummy certificate.", e);
                 }
@@ -1365,7 +1367,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             if (c2 == null) { // storing a second certificate with same issuer 
                 try { 
                     // needs to call using "certificateStoreSession." in order to honor the transaction annotations
-                    certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction(admin, cert2, userName, "fedcba9876543210", CertificateConstants.CERT_INACTIVE, 0, 0, null, "", new Date().getTime());
+                    certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction(admin, cert2, userName, "fedcba9876543210",
+                            CertificateConstants.CERT_INACTIVE, 0, EndEntityInformation.NO_CERTIFICATEPROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, "", new Date().getTime());
                 } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
                     log.info("certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction threw Throwable (normal if there is a unique issuerDN/serialNumber index): "+e.getMessage());
                     log.info("Unique index in CertificateData table for certificate serial number");
@@ -1394,7 +1397,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void checkForUniqueCertificateSerialNumberIndexInTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
-            int certificateProfileId, final Integer endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException {
+            int certificateProfileId, final int endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException {
         storeCertificate(admin, incert, username, cafp, status, type, certificateProfileId, endEntityProfileId, tag, updateTime);
     }
 

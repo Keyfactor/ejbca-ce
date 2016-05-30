@@ -58,7 +58,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @throws AuthorizationDeniedException if admin was not authorized to store certificate in database
      */
     CertificateDataWrapper storeCertificate(AuthenticationToken admin, Certificate incert, String username,
-            String cafp, int status, int type, int certificateProfileId, Integer endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
+            String cafp, int status, int type, int certificateProfileId, int endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
 
     /**
      * Stores a certificate without checking authorization. This should be used from other methods where authorization to
@@ -75,7 +75,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * 
      */
     CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken admin, Certificate incert, String username,
-            String cafp, int status, int type, int certificateProfileId, Integer endEntityProfileId, String tag, long updateTime);
+            String cafp, int status, int type, int certificateProfileId, int endEntityProfileId, String tag, long updateTime);
 
     /** 
      * Retrieve the full wrapped CertificateData and Base64CertData objects.
@@ -150,7 +150,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
     /** Checks for present certificate serial number unique index in a new transaction in order to avoid rollback, since we can expect SQL exceptions here. 
      * Should not be used externally. */
     void checkForUniqueCertificateSerialNumberIndexInTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
-            int certificateProfileId, Integer endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
+            int certificateProfileId, int endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
 
     /** Removed certificates created during checks for present certificate serial number unique index. 
      * Should not be used externally. */

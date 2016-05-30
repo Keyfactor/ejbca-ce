@@ -42,7 +42,7 @@ public interface CertificateStoreSessionRemote extends CertificateStoreSession {
      * @throws AuthorizationDeniedException if admin was not authorized to store certificate in database
      */
     void storeCertificateRemote(AuthenticationToken admin, CertificateWrapper cert, String username, String cafp, int status, int type,
-            int certificateProfileId, Integer endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
+            int certificateProfileId, int endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
 
     /**
      * Finds a certificate by fingerprint (remote EJB interface, supports unnamed ECC and Brainpool)
