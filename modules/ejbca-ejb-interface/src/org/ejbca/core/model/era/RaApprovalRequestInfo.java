@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalStep;
@@ -57,6 +58,7 @@ public class RaApprovalRequestInfo implements Serializable {
     
     private final boolean requestedByMe;
     private final boolean editedByMe;
+    private boolean approvedByMe;
     
     // Current approval step
     private final ApprovalStep nextApprovalStep;
@@ -86,6 +88,14 @@ public class RaApprovalRequestInfo implements Serializable {
         editedByMe = StringUtils.equals(approval.getApprovalRequest().getBlacklistedAdminIssuerDN(), adminCertIssuer) &&
                 StringUtils.equalsIgnoreCase(approval.getApprovalRequest().getBlacklistedAdminSerial(), adminCertSerial);
         // TODO show the Subject DN (or common name) of the admin who last edited the request? 
+        
+        // Check if approved by self
+        approvedByMe = false;
+        for (final Approval prevApproval : approval.getApprovals()) {
+            if (authenticationToken.equals(prevApproval.getAdmin())) {
+                approvedByMe = true;
+            }
+        }
         
         // Next steps
         final ApprovalStep nextStep;
@@ -163,7 +173,11 @@ public class RaApprovalRequestInfo implements Serializable {
     /** Is waiting for the given admin to do something */
     public boolean isWaitingForMe() {
         if (requestedByMe) {
+            // There are approval types that do not get executed automatically on approval.
+            // These go into APPROVED (instead of EXECUTED) state and need to executed again by the requester
             return status == ApprovalDataVO.STATUS_APPROVED;
+        } else if (approvedByMe) {
+            return false; // Already approved by me, so not "waiting for me"
         } else {
             // TODO need to check if I can approve this. or does the query method do that?
             return status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
@@ -172,10 +186,11 @@ public class RaApprovalRequestInfo implements Serializable {
     
     /** Is waiting for someone else to do something */
     public boolean isPending() {
-        if (requestedByMe) {
+        if (requestedByMe || approvedByMe) {
+            // Pending if waiting for other admins to approve it
             return status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
         } else {
-            // TODO need to check if I have approved this
+            // If the request is in APPROVED state in this case, then another admin must execute it again manually for it to go through. 
             return status == ApprovalDataVO.STATUS_APPROVED;
         }
     }
