@@ -543,7 +543,9 @@ public class RaSearchCertsBean implements Serializable {
             }
             previous = current;
         }
-        resultsFiltered.get(resultsFiltered.size()-1).setNext(null);
+        if (!resultsFiltered.isEmpty()) {
+            resultsFiltered.get(resultsFiltered.size()-1).setNext(null);
+        }
     }
 
     public void openCertificateDetails(final RaCertificateDetails selected) {
