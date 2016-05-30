@@ -46,6 +46,7 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
+import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
@@ -2171,12 +2172,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         private String value;
         private String defaultValue;
         private int profileId;
+        String regexPattern;
         public FieldInstance(String name, int number){
             this.name = name;
             this.number = number;
             this.defaultValue = EndEntityProfile.this.getValue(name, number);
             this.value = defaultValue.contains(";") ? "" : defaultValue;
             this.profileId = EndEntityProfile.dataConstants.get(name);
+            HashMap<String, Serializable> temp = EndEntityProfile.this.getValidation(name, number);
+            if(temp != null){
+                this.regexPattern =  (String)temp.get(RegexFieldValidator.class.getName());
+            }
         }
         public boolean isUsed() {return EndEntityProfile.this.getUse(name, number);}
         public boolean isRequired() {return EndEntityProfile.this.isRequired(name, number);}
@@ -2186,6 +2192,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public String getDefaultValue(){return defaultValue;}
         public void setDefaultValue(String value){this.defaultValue = value;}
         public String getName(){return name;}
+        public String getRegexPattern(){return regexPattern;}
         @Override
         public int hashCode(){return name.hashCode();}
         public int getProfileId(){return profileId;}
