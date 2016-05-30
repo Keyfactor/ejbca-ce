@@ -140,7 +140,7 @@
                 </h:panelGroup>
     
                     <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
-                        <h:outputText styleClass="fineprint" rendered="#{raSearchEesBean.resultsNone}" value="#{msg.search_ees_info_noresult}"/>
+                        <h:outputText styleClass="fineprint" rendered="#{raSearchEesBean.resultsNone}" value="#{msg.search_ees_page_info_noresult}"/>
                         <h:outputText styleClass="fineprint" rendered="#{raSearchEesBean.resultsMoreAvailable}" value="#{msg.search_ees_page_info_moreresults}"/>
                         <h:outputText styleClass="fineprint" rendered="#{raSearchEesBean.resultsTimeout}" value="#{msg.search_ees_page_info_timeout}"/>
                         <h:dataTable rendered="#{not empty raSearchEesBean.filteredResults}" value="#{raSearchEesBean.filteredResults}" var="raSearchEndEntity"
