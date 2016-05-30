@@ -46,13 +46,14 @@
 <li>Key recovery to store private keys for recovery for selected users and certificates.</li>
 </ul>    
 </subsection>
-  <subsection name="ePassport PKI features">
+  <subsection name="ePassport, eID and eDL PKI features">
 <ul>
 <li>Support for BAC PKI, Country Signing CA (CSCA) and Document Signer (DS) certificates.</li>
 <li>Integration with <a href="https://www.signserver.org" target="signserver">SignServer</a> as Document Signer creating Security Objects (SOD).</li>
 <li>Support for EAC PKI (EJBCA Enterprise only).</li>
 <li>Integration with PrimeKey SPOC for a Single Point of Contact between countries.</li>
-<li>Publisher for ICAO PKD, publishing DS certificates and CSCA CRLs to ICAO PKD LDAP directory.</li> 
+<li>Publisher for ICAO PKD, publishing DS certificates and CSCA CRLs to ICAO PKD LDAP directory.</li>
+<li>Support ISO 18013 Amendment 2 eDL (Driver License).</li> 
 </ul>
   </subsection>  
   <subsection name="Integration features">
