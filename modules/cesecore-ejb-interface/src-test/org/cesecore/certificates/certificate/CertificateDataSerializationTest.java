@@ -100,7 +100,8 @@ public class CertificateDataSerializationTest {
         log.trace(">testSerializeCurrent");
         final KeyPair kp = KeyTools.genKeys("1024", "RSA");
         final Certificate cert = CertTools.genSelfCert("CN=certuser", 10*365, null, kp.getPrivate(), kp.getPublic(), "SHA256withRSA", false);
-        final CertificateData certData = new CertificateData(cert, kp.getPublic(), "certuser", "1234567812345678", CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, new Date().getTime(), false);
+        final CertificateData certData = new CertificateData(cert, kp.getPublic(), "certuser", "1234567812345678", CertificateConstants.CERT_ACTIVE,
+                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, null, new Date().getTime(), false);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final Base64OutputStream b64os = new Base64OutputStream(baos);
         final ObjectOutputStream oos = new ObjectOutputStream(b64os);

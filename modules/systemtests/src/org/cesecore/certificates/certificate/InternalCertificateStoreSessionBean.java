@@ -234,7 +234,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
 
     @Override
     public CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type,
-            int certificateProfileId, final Integer endEntityProfileId, String tag, long updateTime) {
+            int certificateProfileId, final int endEntityProfileId, String tag, long updateTime) {
         return certStore.storeCertificateNoAuth(adminForLogging, incert, username, cafp, status, type, certificateProfileId, endEntityProfileId, tag, updateTime);
     }
 
