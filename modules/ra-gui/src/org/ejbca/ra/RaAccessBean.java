@@ -145,6 +145,6 @@ public class RaAccessBean implements Serializable {
     }
 
     public boolean isAuthorizedToRevokeCertificates() {
-        return isAuthorized(AccessRulesConstants.REVOKE_END_ENTITY);
+        return isAuthorized(AccessRulesConstants.REGULAR_REVOKEENDENTITY);
     }
 }
