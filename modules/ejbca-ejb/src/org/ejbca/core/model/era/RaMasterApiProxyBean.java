@@ -480,4 +480,24 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return ret;
     }
+
+    @Override
+    public boolean changeCertificateStatus(final AuthenticationToken authenticationToken, final String fingerprint, final int newStatus, final int newRevocationReason)
+            throws ApprovalException, WaitingForApprovalException {
+        boolean ret = false;
+        // Try remote first, since the certificate might be present in the RA database but the admin might not authorized to revoke it there
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    ret = raMasterApi.changeCertificateStatus(authenticationToken, fingerprint, newStatus, newRevocationReason);
+                    if (ret) {
+                        break;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
 }

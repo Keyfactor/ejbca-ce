@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.CertificateEncodingException;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
+import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -108,6 +110,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.era.RaApprovalResponseRequest.MetadataResponse;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -537,7 +540,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!caSession.authorizedToCANoLogging(authenticationToken, cdw.getCertificateData().getIssuerDN().hashCode())) {
             return null;
         }
-        // TODO: Check EEP authorization once this is implemented
+        // Check EEP authorization (allow an highly privileged admin, e.g. superadmin, that can access all profiles to ignore this check
+        // so certificates can still be accessed by this admin even after a EEP has been removed.
+        final Collection<Integer> authorizedEepIds = new ArrayList<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY));
+        final boolean accessAnyEepAvailable = authorizedEepIds.containsAll(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
+        if (!accessAnyEepAvailable && !authorizedEepIds.contains(Integer.valueOf(cdw.getCertificateData().getEndEntityProfileIdOrZero()))) {
+            return null;
+        }
         return cdw;
     }
     
@@ -988,6 +997,33 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             log.error(e);
             return null;
         }
+    }
+    
+    @Override
+    public boolean changeCertificateStatus(final AuthenticationToken authenticationToken, final String fingerprint, final int newStatus, final int newRevocationReason)
+            throws ApprovalException, WaitingForApprovalException {
+        final CertificateDataWrapper cdw = searchForCertificate(authenticationToken, fingerprint);
+        if (cdw!=null) {
+            final BigInteger serialNumber = new BigInteger(cdw.getCertificateData().getSerialNumber());
+            final String issuerDn = cdw.getCertificateData().getIssuerDN();
+            try {
+                // This call checks CA authorization and /ra_functionality/revoke_end_entity
+                endEntityManagementSessionLocal.revokeCert(authenticationToken, serialNumber, issuerDn, newRevocationReason);
+                return true;
+            } catch (AlreadyRevokedException e) {
+                // If it is already revoked, great! The client got what the client wanted.. (almost at least, since reason might differ)
+                log.info("Client '"+authenticationToken+"' requested status change of when status was already set for certificate '"+fingerprint+"'. Considering operation successful.");
+                return true;
+            } catch (AuthorizationDeniedException e) {
+                log.info("Client '"+authenticationToken+"' requested status change of certificate '"+fingerprint+"' but is not authorized to revoke certificates.");
+            } catch (FinderException e) {
+                // The certificate did exist a few lines ago, but must have been removed since then. Treat this like it never existed
+                log.info("Client '"+authenticationToken+"' requested status change of certificate '"+fingerprint+"' that does not exist.");
+            }
+        } else {
+            log.info("Client '"+authenticationToken+"' requested status change of certificate '"+fingerprint+"' that does not exist or the client is not authorized to see.");
+        }
+        return false;
     }
 
     private GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {

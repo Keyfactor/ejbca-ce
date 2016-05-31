@@ -41,9 +41,12 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.ra.RaCertificateDetails.Callbacks;
 
 /**
  * Backing bean for Search Certificates page. 
@@ -93,6 +96,24 @@ public class RaSearchCertsBean implements Serializable {
     private boolean moreOptions = false;
     
     private RaCertificateDetails currentCertificateDetails = null;
+
+    private final Callbacks raCertificateDetailsCallbacks = new RaCertificateDetails.Callbacks() {
+        @Override
+        public RaLocaleBean getRaLocaleBean() {
+            return raLocaleBean;
+        }
+        @Override
+        public boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason) throws ApprovalException, WaitingForApprovalException {
+            final boolean ret = raMasterApiProxyBean.changeCertificateStatus(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint(),
+                    newStatus, newRevocationReason);
+            if (ret) {
+                // Re-initialize object if status has changed
+                final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint());
+                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap);
+            }
+            return ret;
+        }
+    };
 
     /** Invoked action on search form post */
     public void searchAndFilterAction() {
@@ -190,7 +211,7 @@ public class RaSearchCertsBean implements Serializable {
                 if (!stagedRequest.getRevocationReasons().isEmpty() && !stagedRequest.getRevocationReasons().contains(cdw.getCertificateData().getRevocationReason())) {
                     continue;
                 }
-                resultsFiltered.add(new RaCertificateDetails(cdw, raLocaleBean, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap));
+                resultsFiltered.add(new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap));
             }
             if (log.isDebugEnabled()) {
                 log.debug("Filtered " + lastExecutedResponse.getCdws().size() + " responses down to " + resultsFiltered.size() + " results.");

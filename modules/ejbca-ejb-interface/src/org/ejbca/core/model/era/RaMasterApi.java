@@ -164,4 +164,19 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException
      */
     EndEntityInformation findUser(AuthenticationToken authenticationToken, String username) throws AuthorizationDeniedException;
+
+    /**
+     * Request status change of a certificate (revoke or reactivate).
+     * Requires authorization to CA, EEP for the certificate and '/ra_functionality/revoke_end_entity'.
+     * 
+     * @param authenticationToken of the requesting administrator or client
+     * @param fingerprint of the certificate
+     * @param newStatus CertificateConstants.CERT_REVOKED (40) or CertificateConstants.CERT_ACTIVE (20)
+     * @param newRevocationReason One of RevokedCertInfo.REVOCATION_REASON_...
+     * @return true if the operation was successful, false if the certificate could not be revoked for example since it did not exist
+     * @throws ApprovalException if there was a problem creating the approval request
+     * @throws WaitingForApprovalException if the request has been sent for approval
+     */
+    boolean changeCertificateStatus(AuthenticationToken authenticationToken, String fingerprint, int newStatus, int newRevocationReason)
+            throws ApprovalException, WaitingForApprovalException;
 }

@@ -24,9 +24,12 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+
+import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -38,12 +41,15 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.cert.QCStatementExtension;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.cvc.AuthorizationField;
 import org.ejbca.cvc.CVCertificateBody;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -53,31 +59,39 @@ import org.ejbca.cvc.CardVerifiableCertificate;
  */
 public class RaCertificateDetails {
     
+    public interface Callbacks {
+        RaLocaleBean getRaLocaleBean();
+        boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason) throws ApprovalException, WaitingForApprovalException;
+    }
+    
     private static final Logger log = Logger.getLogger(RaCertificateDetails.class);
 
-    private final RaLocaleBean raLocaleBean;
-    private final CertificateDataWrapper cdw;
-    private final String fingerprint;
+    private final Callbacks callbacks;
+
+    private CertificateDataWrapper cdw;
+    private String fingerprint;
     private String fingerprintSha256 = "";
-    private final String username;
+    private String username;
     private String type = "";
     private String typeVersion = "";
     private String serialnumber;
-    private final String serialnumberRaw;
-    private final String subjectDn;
+    private String serialnumberRaw;
+    private String subjectDn;
     private String subjectAn = "";
     private String subjectDa = "";
-    private final Integer eepId;
-    private final String eepName;
-    private final Integer cpId;
-    private final String cpName;
-    private final String issuerDn;
-    private final String caName;
+    private Integer eepId;
+    private String eepName;
+    private Integer cpId;
+    private String cpName;
+    private String issuerDn;
+    private String caName;
     private String created = "-";
-    private final String expires;
-    private final int status;
-    private final int revocationReason;
+    private long expireDate;
+    private String expires;
+    private int status;
+    private int revocationReason;
     private String updated;
+    private String revocationDate = "";
     private String publicKeyAlgorithm = "";
     private String publicKeySpecification = "";
     private String publicKeyParameter = "";
@@ -90,18 +104,22 @@ public class RaCertificateDetails {
     private boolean hasNameConstraints = false;
     private boolean hasQcStatements = false;
     private boolean hasCertificateTransparencyScts = false;
-    private final String signatureAlgorithm;
+    private String signatureAlgorithm;
 
     private boolean more = false;
-    private int callCounter = 1;
+    private int styleRowCallCounter = 0;
     
     private RaCertificateDetails next = null;
     private RaCertificateDetails previous = null;
 
-    public RaCertificateDetails(final CertificateDataWrapper cdw, final RaLocaleBean raLocaleBean, final Map<Integer, String> cpIdToNameMap,
-            final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap) {
-        // Save reference to localization. (So we can update values if the locale is changed while viewing.)
-        this.raLocaleBean = raLocaleBean;
+    public RaCertificateDetails(final CertificateDataWrapper cdw, final Callbacks callbacks,
+            final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap) {
+        this.callbacks = callbacks;
+        reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap);
+    }
+
+    public void reInitialize(final CertificateDataWrapper cdw,
+            final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap) {
         this.cdw = cdw;
         final CertificateData certificateData = cdw.getCertificateData();
         this.cpId = certificateData.getCertificateProfileId();
@@ -148,6 +166,7 @@ public class RaCertificateDetails {
                 this.publicKeyParameter = ((ECPublicKey)publicKey).getW().getAffineX().toString(16) + " " + ((ECPublicKey)publicKey).getW().getAffineY().toString(16);
             }
             this.created = ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(certificate).getTime(), TimeZone.getDefault());
+            this.signatureAlgorithm = AlgorithmTools.getCertSignatureAlgorithmNameAsString(certificate);
             if (certificate instanceof X509Certificate) {
                 final X509Certificate x509Certificate = (X509Certificate)certificate;
                 this.typeVersion = Integer.toString(x509Certificate.getVersion());
@@ -163,16 +182,18 @@ public class RaCertificateDetails {
                 if (basicConstraints==Integer.MAX_VALUE) {
                     this.basicConstraints = "";
                 } else if (basicConstraints == -1) {
-                    this.basicConstraints = raLocaleBean.getMessage("component_certdetails_info_basicconstraints_ee");
+                    this.basicConstraints = callbacks.getRaLocaleBean().getMessage("component_certdetails_info_basicconstraints_ee");
                 } else {
-                    this.basicConstraints = raLocaleBean.getMessage("component_certdetails_info_basicconstraints_ca", basicConstraints);
+                    this.basicConstraints = callbacks.getRaLocaleBean().getMessage("component_certdetails_info_basicconstraints_ca", basicConstraints);
                 }
+                keyUsages.clear();
                 final boolean[] keyUsageArray = x509Certificate.getKeyUsage();
                 for (int i=0; i<keyUsageArray.length; i++) {
                     if (keyUsageArray[i]) {
                         keyUsages.add(String.valueOf(i));
                     }
                 }
+                extendedKeyUsages.clear();
                 try {
                     final List<String> extendedKeyUsages = x509Certificate.getExtendedKeyUsage();
                     if (extendedKeyUsages != null) {
@@ -203,9 +224,11 @@ public class RaCertificateDetails {
                 }
             }
         }
-        this.expires = ValidityDate.formatAsISO8601ServerTZ(certificateData.getExpireDate(), TimeZone.getDefault());
+        this.expireDate = certificateData.getExpireDate();
+        this.expires = ValidityDate.formatAsISO8601ServerTZ(expireDate, TimeZone.getDefault());
         if (status==CertificateConstants.CERT_ARCHIVED || status==CertificateConstants.CERT_REVOKED) {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getRevocationDate(), TimeZone.getDefault());
+            this.revocationDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getRevocationDate(), TimeZone.getDefault());
         } else {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getUpdateTime(), TimeZone.getDefault());
         }
@@ -213,7 +236,7 @@ public class RaCertificateDetails {
         if (subjectKeyIdB64!=null) {
             this.subjectKeyId = new String(Hex.encode(Base64.decode(subjectKeyIdB64.getBytes())));
         }
-        this.signatureAlgorithm = AlgorithmTools.getCertSignatureAlgorithmNameAsString(certificate);
+        styleRowCallCounter = 0;    // Reset
     }
 
     public String getFingerprint() { return fingerprint; }
@@ -233,40 +256,49 @@ public class RaCertificateDetails {
     /** @return Certificate Profile Name from the provided CP ID or a localized error String */
     public String getCpName() {
         if (cpId != null && cpId.intValue()==EndEntityInformation.NO_CERTIFICATEPROFILE) {
-            return raLocaleBean.getMessage("component_certdetails_info_unknowncp");
+            return callbacks.getRaLocaleBean().getMessage("component_certdetails_info_unknowncp");
         } else if (cpName!=null) {
             return cpName;
         }
-        return raLocaleBean.getMessage("component_certdetails_info_missingcp", cpId);
+        return callbacks.getRaLocaleBean().getMessage("component_certdetails_info_missingcp", cpId);
     }
     public boolean isCpNameSameAsEepName() { return getEepName().equals(getCpName()); }
     /** @return End Entity Profile Name from the provided EEP ID or a localized error String */
     public String getEepName() {
         if (eepId==EndEntityInformation.NO_ENDENTITYPROFILE) {
-            return raLocaleBean.getMessage("component_certdetails_info_unknowneep");
+            return callbacks.getRaLocaleBean().getMessage("component_certdetails_info_unknowneep");
         }
         if (eepName!=null) {
             return eepName;
         }
-        return raLocaleBean.getMessage("component_certdetails_info_missingeep", eepId);
+        return callbacks.getRaLocaleBean().getMessage("component_certdetails_info_missingeep", eepId);
     }
     public String getCreated() { return created; }
     public String getExpires() { return expires; }
-    public boolean isActive() { return status==CertificateConstants.CERT_ACTIVE || status==CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION; }
+
+    public boolean isExpired() { return expireDate<System.currentTimeMillis(); }
+    public boolean isActive() {
+        return status==CertificateConstants.CERT_ACTIVE || status==CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION;
+    }
+    public boolean isSuspended() {
+        return status == CertificateConstants.CERT_REVOKED && revocationReason == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD;
+    }
+    
     /** @return a localized certificate (revocation) status string */
     public String getStatus() {
         switch (status) {
         case CertificateConstants.CERT_ACTIVE:
         case CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION:
-            return raLocaleBean.getMessage("component_certdetails_status_active");
+            return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_active");
         case CertificateConstants.CERT_ARCHIVED:
         case CertificateConstants.CERT_REVOKED:
-            return raLocaleBean.getMessage("component_certdetails_status_revoked_"+revocationReason);
+            return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_"+revocationReason);
         default:
-            return raLocaleBean.getMessage("component_certdetails_status_other");
+            return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_other");
         }
     }
     public String getUpdated() { return updated; }
+    public String getRevocationDate() { return revocationDate; }
     public String getPublicKeyAlgorithm() { return publicKeyAlgorithm; }
     public String getPublicKeySpecification() { return publicKeySpecification; }
     public String getPublicKeyParameter() { return publicKeyParameter; }
@@ -276,9 +308,9 @@ public class RaCertificateDetails {
     public String getCvcAuthorizationAccessRights() { return cvcAuthorizationAccessRights; }
     public List<String> getKeyUsages() { return keyUsages; }
     public List<String> getExtendedKeyUsages() { return extendedKeyUsages; }
-    public String getNameConstraints() { return hasNameConstraints ? raLocaleBean.getMessage("component_certdetails_info_present") : ""; }
-    public String getQcStatements() { return hasQcStatements ? raLocaleBean.getMessage("component_certdetails_info_present") : ""; }
-    public String getCertificateTransparencyScts() { return hasCertificateTransparencyScts ? raLocaleBean.getMessage("component_certdetails_info_present") : ""; }
+    public String getNameConstraints() { return hasNameConstraints ? callbacks.getRaLocaleBean().getMessage("component_certdetails_info_present") : ""; }
+    public String getQcStatements() { return hasQcStatements ? callbacks.getRaLocaleBean().getMessage("component_certdetails_info_present") : ""; }
+    public String getCertificateTransparencyScts() { return hasCertificateTransparencyScts ? callbacks.getRaLocaleBean().getMessage("component_certdetails_info_present") : ""; }
     public String getSignatureAlgorithm() { return signatureAlgorithm; }
 
     public String getDump() {
@@ -303,13 +335,13 @@ public class RaCertificateDetails {
     public boolean isMore() { return more; }
     public void actionToggleMore() {
         more = !more;
-        callCounter = 1;    // Reset
+        styleRowCallCounter = 0;    // Reset
     }
 
     /** @return true every twice starting with every forth call */
     public boolean isEven() {
-        callCounter++;
-        return callCounter / 2 % 2 == 0;
+        styleRowCallCounter++;
+        return (styleRowCallCounter+1) / 2 % 2 == 0;
     }
 
     /** @return CA Name from the provided issuer DN or the IssuerDN itself if no name is known */
@@ -325,4 +357,53 @@ public class RaCertificateDetails {
 
     public RaCertificateDetails getPrevious() { return previous; }
     public void setPrevious(RaCertificateDetails previous) { this.previous = previous; }
+
+    public List<SelectItem> getNewRevocationReasons() {
+        final List<SelectItem> ret = new ArrayList<>();
+        ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_0")));
+        ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_1")));
+        ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_2")));
+        ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_3")));
+        ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_SUPERSEDED), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_4")));
+        ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_5")));
+        ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_6")));
+        ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_8")));
+        ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_9")));
+        ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_10")));
+        return ret;
+    }
+
+    private int newRevocationReason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
+    public Integer getNewRevocationReason() { return Integer.valueOf(newRevocationReason); }
+    public void setNewRevocationReason(final Integer newRevocationReason) { this.newRevocationReason = newRevocationReason.intValue(); }
+
+    public void actionRevoke() {
+        log.info("DEVELOP: newRevocationReason="+newRevocationReason);
+        try {
+            if (callbacks.changeStatus(this, CertificateConstants.CERT_REVOKED, newRevocationReason)) {
+                callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_info_revocation_successful");
+            } else {
+                callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");
+            }
+        } catch (ApprovalException e) {
+            callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_approvalrequest");
+        } catch (WaitingForApprovalException e) {
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_info_revocation_approvalrequest", e.getApprovalId());
+        }
+        styleRowCallCounter = 0;    // Reset
+    }
+    public void actionReactivate() {
+        try {
+            if (callbacks.changeStatus(this, CertificateConstants.CERT_ACTIVE, RevokedCertInfo.NOT_REVOKED)) {
+                callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_info_reactivation_successful");
+            } else {
+                callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_reactivation_failed");
+            }
+        } catch (ApprovalException e) {
+            callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_reactivation_approvalrequest");
+        } catch (WaitingForApprovalException e) {
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_info_reactivation_approvalrequest", e.getApprovalId());
+        }
+        styleRowCallCounter = 0;    // Reset
+    }
 }
