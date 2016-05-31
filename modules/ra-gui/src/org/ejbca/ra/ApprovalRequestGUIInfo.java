@@ -323,5 +323,12 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public List<Step> getPreviousSteps() { return previousSteps; }
     public boolean isCanApprove() { return canApprove; }
     public boolean isCanEdit() { return canApprove && previousSteps.isEmpty(); }
+    public boolean isEditedByMe() { return request.isEditedByMe(); }
+    public boolean isPending() { return request.isPending(); }
+    public boolean isPendingExecution() { return request.getStatus() == ApprovalDataVO.STATUS_APPROVED; /* = approved but not executed */ }
+    public boolean isExecuted() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTED; }
+    public boolean isExecutionFailed() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTIONDENIED || request.getStatus() == ApprovalDataVO.STATUS_EXECUTIONFAILED; }
+    public boolean isWaitingForMe() { return request.isWaitingForMe(); }
+    public boolean isWaitingForApproval() { return request.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL; }
     
 }
