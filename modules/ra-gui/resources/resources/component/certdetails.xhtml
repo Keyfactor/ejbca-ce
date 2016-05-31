@@ -160,12 +160,35 @@
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputLabel for="notafter" value="#{msg.component_certdetails_field_notafter}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="notafter" value="#{cc.attrs.raCertificateDetails.expires}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup id="notafter"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                <h:outputText value="#{cc.attrs.raCertificateDetails.expires}"/>
+                <h:outputText value=" #{msg.component_certdetails_status_expired}" rendered="#{cc.attrs.raCertificateDetails.expired}" style="color: red;"/>
+            </h:panelGroup>
             <h:outputLabel for="status" value="#{msg.component_certdetails_field_status}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="status" value="#{cc.attrs.raCertificateDetails.status}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="revocationdate" value="#{msg.component_certdetails_field_revocationdate}" rendered="#{!cc.attrs.raCertificateDetails.active}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="revocationdate" value="#{cc.attrs.raCertificateDetails.revocationDate}" rendered="#{!cc.attrs.raCertificateDetails.active}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
+            <h:panelGroup styleClass="#{cc.attrs.styleLabel}"/>
+            <h:panelGroup styleClass="#{cc.attrs.styleValue}">
+                <h:selectOneMenu id="newRevocationReason" value="#{cc.attrs.raCertificateDetails.newRevocationReason}"
+                    rendered="#{cc.attrs.raCertificateDetails.active and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}">
+                    <f:selectItems value="#{cc.attrs.raCertificateDetails.newRevocationReasons}"/>
+                </h:selectOneMenu>
+                <h:commandButton value="#{msg.component_certdetails_changestatus_revoke}" action="#{cc.attrs.raCertificateDetails.actionRevoke}"
+                    rendered="#{cc.attrs.raCertificateDetails.active and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}">
+                    <f:ajax execute="newRevocationReason @this" render="@form"/>
+                </h:commandButton>
+                <h:commandButton value="#{msg.component_certdetails_changestatus_reactivate}" action="#{cc.attrs.raCertificateDetails.actionReactivate}"
+                    rendered="#{cc.attrs.raCertificateDetails.suspended and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}">
+                    <f:ajax execute="newRevocationReason @this" render="@form"/>
+                </h:commandButton>
+            </h:panelGroup>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
@@ -209,7 +232,7 @@
                 <h:outputText value=" " styleClass="pre"/>
                 <h:commandButton value="#{cc.attrs.raCertificateDetails.more ? msg.component_certdetails_show_less : msg.component_certdetails_show_more}"
                     action="#{cc.attrs.raCertificateDetails.actionToggleMore}">
-                    <f:ajax execute="@this" render="@this @form"/>
+                    <f:ajax execute="@this" render="@form"/>
                 </h:commandButton>
             </h:panelGroup>
 
