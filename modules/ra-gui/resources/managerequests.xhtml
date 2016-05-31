@@ -35,12 +35,12 @@
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToManageRequests}">
             <h:form id="contentForm" class="pure-form">
                 
-                <h:panelGroup layout="block">
+                <h:panelGroup layout="block" styleClass="tabButtonBar">
                     <!-- or use links.  the active tab should appear as selected -->
-                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewNeedsApproval}" disabled="#{raManageRequestsBean.viewingNeedsApproval}" value="#{msg.manage_requests_page_view_needs_approval}" />
-                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewPendingApproval}" disabled="#{raManageRequestsBean.viewingPendingApproval}" value="#{msg.manage_requests_page_view_pending_approval}" />
-                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewProcessed}" disabled="#{raManageRequestsBean.viewingProcessed}" value="#{msg.manage_requests_page_view_processed}" />
-                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewCustom}" disabled="#{raManageRequestsBean.viewingCustom}" value="#{msg.manage_requests_page_view_custom}" />
+                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewNeedsApproval}" disabled="#{raManageRequestsBean.viewingNeedsApproval}" styleClass="tabButton #{raManageRequestsBean.viewingNeedsApproval ? 'active' : ''}" value="#{msg.manage_requests_page_view_needs_approval}" />
+                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewPendingApproval}" disabled="#{raManageRequestsBean.viewingPendingApproval}" styleClass="tabButton #{raManageRequestsBean.viewingPendingApproval ? 'active' : ''}" value="#{msg.manage_requests_page_view_pending_approval}" />
+                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewProcessed}" disabled="#{raManageRequestsBean.viewingProcessed}" styleClass="tabButton #{raManageRequestsBean.viewingProcessed ? 'active' : ''}" value="#{msg.manage_requests_page_view_processed}" />
+                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewCustom}" disabled="#{raManageRequestsBean.viewingCustom}" styleClass="tabButton #{raManageRequestsBean.viewingCustom ? 'active' : ''}" value="#{msg.manage_requests_page_view_custom}" />
                 </h:panelGroup>
                 
                 <h:panelGroup layout="block" rendered="#{raManageRequestsBean.viewingCustom}">
@@ -49,7 +49,7 @@
                 </h:panelGroup>
 
                 <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
-                    <h:outputText styleClass="fineprint" rendered="#{empty raManageRequestsBean.filteredResults}" value="#{msg.manage_requests_page_info_noresult}"/>
+                    <h:outputText rendered="#{empty raManageRequestsBean.filteredResults}" value="#{msg.manage_requests_page_info_noresult}"/>
                     <h:outputText styleClass="fineprint" rendered="#{raManageRequestsBean.moreResultsAvailable}" value="#{msg.manage_requests_page_info_moreresults}"/>
                     <h:dataTable rendered="#{not empty raManageRequestsBean.filteredResults}" value="#{raManageRequestsBean.filteredResults}" var="raRequest"
                         styleClass="pure-table" rowClasses=",pure-table-odd">

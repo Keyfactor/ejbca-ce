@@ -333,6 +333,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean isPending() { return request.isPending(); }
     public boolean isPendingExecution() { return request.getStatus() == ApprovalDataVO.STATUS_APPROVED; /* = approved but not executed */ }
     public boolean isExecuted() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTED; }
+    public boolean isSuccessful() { return isExecuted() || isPendingExecution(); }
+    public boolean isUnsuccessful() { return !isWaitingForApproval() && !isSuccessful(); }
     public boolean isExecutionFailed() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTIONDENIED || request.getStatus() == ApprovalDataVO.STATUS_EXECUTIONFAILED; }
     public boolean isWaitingForMe() { return request.isWaitingForMe(); }
     public boolean isWaitingForApproval() { return request.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL; }
