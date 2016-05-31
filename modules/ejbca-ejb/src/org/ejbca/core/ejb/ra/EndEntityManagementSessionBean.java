@@ -1562,7 +1562,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             // We could use userdata later, so try to find it
             data = UserData.findByUsername(entityManager, username);
         }
-        int endEntityProfileId = -1;
+        int endEntityProfileId = certificateData.getEndEntityProfileId()==null ? -1 : certificateData.getEndEntityProfileIdOrZero();
         if (certReqHistory != null) {
             // Get the EEP that was used in the original issuance, if we can find it
             endEntityProfileId = certReqHistory.getEndEntityInformation().getEndEntityProfileId();
