@@ -28,7 +28,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.ra.RaCertificateDetails.Callbacks;
 
 /**
  * Backing bean for certificate details view.
@@ -57,7 +60,25 @@ public class RaViewCertBean implements Serializable {
     private Map<Integer, String> eepIdToNameMap = null;
     private Map<Integer, String> cpIdToNameMap = null;
     private Map<String,String> caSubjectToNameMap = new HashMap<>();
-    
+
+    private final Callbacks raCertificateDetailsCallbacks = new RaCertificateDetails.Callbacks() {
+        @Override
+        public RaLocaleBean getRaLocaleBean() {
+            return raLocaleBean;
+        }
+        @Override
+        public boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason) throws ApprovalException, WaitingForApprovalException {
+            final boolean ret = raMasterApiProxyBean.changeCertificateStatus(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint(),
+                    newStatus, newRevocationReason);
+            if (ret) {
+                // Re-initialize object if status has changed
+                final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint());
+                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap);
+            }
+            return ret;
+        }
+    };
+
     @PostConstruct
     public void postConstruct() {
         fingerprint = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("fp");
@@ -70,7 +91,7 @@ public class RaViewCertBean implements Serializable {
                 for (final CAInfo caInfo : caInfos) {
                     caSubjectToNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
                 }
-                raCertificateDetails = new RaCertificateDetails(cdw, raLocaleBean, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap);
+                raCertificateDetails = new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap);
             }
         }
     }
