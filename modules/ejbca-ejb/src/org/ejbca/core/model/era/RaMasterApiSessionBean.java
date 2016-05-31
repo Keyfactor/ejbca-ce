@@ -523,10 +523,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final List<ApprovalDataText> requestDataLite = advo.getApprovalRequest().getNewRequestDataAsText(authenticationToken); // this method isn't guaranteed to return the full information
             final RaEditableRequestData editableData = getRequestEditableData(authenticationToken, advo);
             final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, adminCertIssuer, adminCertSerial, caIdToNameMap.get(advo.getCAId()), advo, requestDataLite, editableData);
-            if (!ari.isPending() && request.isSearchingPending()) { continue; } // XXX untested code!
-            if (!ari.isWaitingForMe() && request.isSearchingWaitingForMe()) { continue; }
-            // XXX It seems that the query() method filters out approvals that the current admin isn't involved in. How to handle historical steps in this case? And pending steps?
-            response.getApprovalRequests().add(ari);
+            
+            if ((request.isSearchingWaitingForMe() && ari.isWaitingForMe()) ||
+                    (request.isSearchingPending() && ari.isPending()) ||
+                    (request.isSearchingHistorical() && ari.isProcessed())) {
+                // This approval should be included in the search results
+                response.getApprovalRequests().add(ari);
+            }
         }
         return response;
     }
