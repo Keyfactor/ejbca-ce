@@ -283,7 +283,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         // By getting the CA we perform an implicit auth check
-        final String caName;
+        String caName;
         if (advo.getCAId() == ApprovalDataVO.ANY_CA) {
             caName = null;
         } else {
@@ -296,7 +296,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 }
                 return null;
             } catch (CADoesntExistsException e) {
-                throw new IllegalStateException("Appproval request references CA id " + advo.getCAId() + " which doesn't exist");
+                if (log.isDebugEnabled()) {
+                    log.debug("Appproval request " + advo.getId() + " references CA id " + advo.getCAId() + " which doesn't exist");
+                }
+                caName = "Missing CA id " + advo.getCAId();
             }
         }
         
