@@ -277,7 +277,7 @@ public abstract class ApprovalRequest implements Externalizable {
     }
     
     public List<ApprovalStep> getApprovedApprovalSteps() {
-        ArrayList<ApprovalStep> approvedSteps = new ArrayList<ApprovalStep>();
+        ArrayList<ApprovalStep> approvedSteps = new ArrayList<>();
         for(Integer stepId : approvalSteps.keySet()) {
             if(approvalStepsHandledMap.get(stepId)) {
                 ApprovalStep step = approvalSteps.get(stepId);
@@ -523,9 +523,8 @@ public abstract class ApprovalRequest implements Externalizable {
             out.writeObject(approval);
         }
         
-        // XXX Uncomment to try out blacklisting of the last admin that edited the request (if any)
-        //out.writeObject(this.blacklistedAdminIssuerDN);
-        //out.writeObject(this.blacklistedAdminSerial);
+        out.writeObject(this.blacklistedAdminIssuerDN);
+        out.writeObject(this.blacklistedAdminSerial);
     }
 
     @Override
@@ -684,9 +683,8 @@ public abstract class ApprovalRequest implements Externalizable {
                 oldApprovals.add(approval);
             }
             
-            // XXX Uncomment to try out blacklisting of the last admin that edited the request (if any)
-            //this.blacklistedAdminIssuerDN = (String) in.readObject();
-            //this.blacklistedAdminSerial = (String) in.readObject();
+            this.blacklistedAdminIssuerDN = (String) in.readObject();
+            this.blacklistedAdminSerial = (String) in.readObject();
         }
     }
 
