@@ -351,7 +351,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         endEntityProfileId, approvalProfiles[0], approvalProfiles[1]);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ADDUSER)) {
                     approvalSession.addApprovalRequest(admin, ar);
-                    throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalad"));
+                    throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalad"), ar.generateApprovalId());
                 }
             }
         }
@@ -734,7 +734,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     numOfApprovalsRequired, caid, endEntityProfileId, approvalProfiles[0], approvalProfiles[1]);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)) {
                 approvalSession.addApprovalRequest(admin, ar);
-                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"));
+                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"), ar.generateApprovalId());
             }
         }
         // Check if the subjectDN serialnumber already exists.
@@ -1197,7 +1197,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)) {
                 approvalSession.addApprovalRequest(admin, ar);
                 String msg = intres.getLocalizedMessage("ra.approvaledit");
-                throw new WaitingForApprovalException(msg);
+                throw new WaitingForApprovalException(msg, ar.generateApprovalId());
             }
         }
         if (data1.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY
@@ -1409,7 +1409,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                             data.getEndEntityProfileId(), approvalProfiles[0], approvalProfiles[1]);
                     if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER)) {
                         approvalSession.addApprovalRequest(admin, ar);
-                        throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"));
+                        throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), ar.generateApprovalId());
                     }
                 }
                 try {
@@ -1469,7 +1469,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     userData.getEndEntityProfileId(), approvalProfiles[0], approvalProfiles[1]);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEUSER)) {
                 approvalSession.addApprovalRequest(admin, ar);
-                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"));
+                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), ar.generateApprovalId());
             }
         }
         // Revoke all non-expired and not revoked certs, one at the time
@@ -1624,7 +1624,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         caid, endEntityProfileId, approvalProfiles[0], approvalProfiles[1]);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
                     approvalSession.addApprovalRequest(admin, ar);
-                    throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"));
+                    throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), ar.generateApprovalId());
                 }
             }
         }
