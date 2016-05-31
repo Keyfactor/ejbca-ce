@@ -116,7 +116,10 @@
                 rendered="#{cc.attrs.raCertificateDetails.typeX509}">
                 <ui:repeat var="keyUsageIndex" value="#{cc.attrs.raCertificateDetails.keyUsages}" varStatus="status">
                     <h:outputText value=", " rendered="#{status.index!=0}"/>
-                    <h:outputText value="#{msg['component_certdetails_field_keyusage_'.concat(keyUsageIndex)]}"/>
+                    <h:outputText value="#{'Key usage '.concat(keyUsageIndex)}"
+                        rendered="#{msg['component_certdetails_field_keyusage_'.concat(keyUsageIndex)].equals('???component_certdetails_field_keyusage_'.concat(keyUsageIndex).concat('???'))}"/>
+                    <h:outputText value="#{msg['component_certdetails_field_keyusage_'.concat(keyUsageIndex)]}"
+                        rendered="#{not msg['component_certdetails_field_keyusage_'.concat(keyUsageIndex)].equals('???component_certdetails_field_keyusage_'.concat(keyUsageIndex).concat('???'))}"/>
                 </ui:repeat>
             </h:panelGroup>
             <h:outputLabel for="extendedkeyusage" value="#{msg.component_certdetails_field_extendedkeyusage}"
@@ -181,13 +184,9 @@
                     <f:selectItems value="#{cc.attrs.raCertificateDetails.newRevocationReasons}"/>
                 </h:selectOneMenu>
                 <h:commandButton value="#{msg.component_certdetails_changestatus_revoke}" action="#{cc.attrs.raCertificateDetails.actionRevoke}"
-                    rendered="#{cc.attrs.raCertificateDetails.active and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}">
-                    <f:ajax execute="newRevocationReason @this" render="@form"/>
-                </h:commandButton>
+                    rendered="#{cc.attrs.raCertificateDetails.active and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}"/>
                 <h:commandButton value="#{msg.component_certdetails_changestatus_reactivate}" action="#{cc.attrs.raCertificateDetails.actionReactivate}"
-                    rendered="#{cc.attrs.raCertificateDetails.suspended and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}">
-                    <f:ajax execute="newRevocationReason @this" render="@form"/>
-                </h:commandButton>
+                    rendered="#{cc.attrs.raCertificateDetails.suspended and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}"/>
             </h:panelGroup>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
