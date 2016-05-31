@@ -2214,7 +2214,7 @@ If both "Non existing is good" and "Non existing is revoked", the responder will
 <li>Non existing is revoked:
 If true a certificate that does not exist in the database, but is issued by a CA the responder handles
 will be treated as revoked; the revocation reason will be "Certificate Hold" and the revocation time is January 1st, 1970. 
-Default (when this value and value of "Non exsiting is good" are false) is 
+Default (when this value and value of "Non existing is good" are false) is 
 to treat it as "unknown".
 If both "Non existing is good" and "Non existing is revoked", the responder will answer "ok".
 </li>
