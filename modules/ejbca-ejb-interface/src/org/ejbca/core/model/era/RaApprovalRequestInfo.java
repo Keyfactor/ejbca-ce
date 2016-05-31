@@ -195,8 +195,13 @@ public class RaApprovalRequestInfo implements Serializable {
         }
     }
     
-    // TODO should there be a "not requested by me, but waiting for someone else" status also? on the other hand, one can use the adminweb for that. or the "all" tab.
-    //      and perhaps we should rename the "all" tab to "custom search"?
+    public boolean isProcessed() {
+        return (status == ApprovalDataVO.STATUS_EXECUTED || 
+                status == ApprovalDataVO.STATUS_EXECUTIONDENIED ||
+                status == ApprovalDataVO.STATUS_EXECUTIONFAILED ||
+                status == ApprovalDataVO.STATUS_REJECTED) &&
+                (requestedByMe || editedByMe || approvedByMe);
+    }
     
     public boolean isRequestedByMe() {
         return requestedByMe;
