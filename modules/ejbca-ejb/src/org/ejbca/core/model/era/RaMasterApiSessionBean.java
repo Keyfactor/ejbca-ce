@@ -1010,7 +1010,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final BigInteger serialNumber = new BigInteger(cdw.getCertificateData().getSerialNumber());
             final String issuerDn = cdw.getCertificateData().getIssuerDN();
             try {
-                // This call checks CA authorization and /ra_functionality/revoke_end_entity
+                // This call checks CA authorization, EEP authorization (if enabled) and /ra_functionality/revoke_end_entity
                 endEntityManagementSessionLocal.revokeCert(authenticationToken, serialNumber, issuerDn, newRevocationReason);
                 return true;
             } catch (AlreadyRevokedException e) {
