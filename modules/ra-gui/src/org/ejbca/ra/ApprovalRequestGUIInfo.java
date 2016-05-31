@@ -277,7 +277,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         
         // Steps
         final ApprovalStep nextApprovalStep = request.getNextApprovalStep();
-        if (nextApprovalStep != null && !request.isEditedByMe()) {
+        if (nextApprovalStep != null && !request.isEditedByMe() && !request.isApprovedByMe() && !request.isRequestedByMe()) {
             nextStep = new Step(nextApprovalStep);
             canApprove = true;
         } else {
@@ -335,7 +335,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean isExecuted() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTED; }
     public boolean isSuccessful() { return isExecuted() || isPendingExecution(); }
     public boolean isUnsuccessful() { return !isWaitingForApproval() && !isSuccessful(); }
-    public boolean isExecutionFailed() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTIONDENIED || request.getStatus() == ApprovalDataVO.STATUS_EXECUTIONFAILED; }
+    public boolean isExecutionFailed() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTIONFAILED; }
     public boolean isWaitingForMe() { return request.isWaitingForMe(); }
     public boolean isWaitingForApproval() { return request.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL; }
     public boolean isExpired() { return request.getStatus() == ApprovalDataVO.STATUS_EXPIRED || request.getStatus() == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED; }
