@@ -116,7 +116,9 @@ public class RaManageRequestBean implements Serializable {
     }
     
     public String getCantApproveReason() {
-        if (requestInfo.isPendingExecution()) {
+        if (requestInfo.isExpired()) {
+            return raLocaleBean.getMessage("view_request_page_cannot_approve_expired");
+        } else if (requestInfo.isPendingExecution()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_pending_execution");
         } else if (!requestInfo.isExecuted()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_already_executed");

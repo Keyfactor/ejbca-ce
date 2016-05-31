@@ -338,5 +338,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean isExecutionFailed() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTIONDENIED || request.getStatus() == ApprovalDataVO.STATUS_EXECUTIONFAILED; }
     public boolean isWaitingForMe() { return request.isWaitingForMe(); }
     public boolean isWaitingForApproval() { return request.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL; }
+    public boolean isExpired() { return request.getStatus() == ApprovalDataVO.STATUS_EXPIRED || request.getStatus() == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED; }
     
 }
