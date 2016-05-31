@@ -213,6 +213,12 @@ public class ApprovalRequestGUIInfo implements Serializable {
                 case "EMAIL":
                     editValue = editData.getEmail();
                     break;
+                // Suppress some "no" or "none" values
+                case "HARDTOKENISSUERALIAS":
+                case "KEYRECOVERABLE":
+                case "SENDNOTIFICATION":
+                    if ("NOVALUE".equals(dataText.getData()) || "NO".equals(dataText.getData())) continue;
+                    // NOPMD: Fall through
                 default:
                     editingSupported = false;
                     editValue = null;
