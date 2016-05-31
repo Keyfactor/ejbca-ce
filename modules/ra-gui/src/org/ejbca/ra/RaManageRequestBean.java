@@ -115,6 +115,24 @@ public class RaManageRequestBean implements Serializable {
         }
     }
     
+    public String getCantApproveReason() {
+        if (requestInfo.isPendingExecution()) {
+            return raLocaleBean.getMessage("view_request_page_cannot_approve_pending_execution");
+        } else if (!requestInfo.isExecuted()) {
+            return raLocaleBean.getMessage("view_request_page_cannot_approve_already_executed");
+        } else if (!requestInfo.isExecutionFailed()) {
+            return raLocaleBean.getMessage("view_request_page_cannot_approve_already_executed_failed");
+        } else if (!requestInfo.isWaitingForApproval()) {
+            return raLocaleBean.getMessage("view_request_page_cannot_approve_not_waiting");
+        } else if (requestInfo.isPending()) {
+            return raLocaleBean.getMessage("view_request_page_cannot_approve_pending");
+        } else if (requestInfo.isEditedByMe()) {
+            return raLocaleBean.getMessage("view_request_page_cannot_approve_edited_by_me");
+        } else {
+            return raLocaleBean.getMessage("view_request_page_cannot_approve");
+        }
+    }
+    
     private RaApprovalResponseRequest buildApprovalResponseRequest(final Action action) {
         final List<ApprovalRequestGUIInfo.StepControl> controls = getNextStepControls();
         final int id = getRequest().request.getId();

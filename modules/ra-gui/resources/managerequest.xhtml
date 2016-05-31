@@ -129,7 +129,7 @@
                 
                 <h:panelGroup layout="block" rendered="#{not raManageRequestBean.request.canApprove}">
                     <!-- TODO show a different text if the request has already been approved, and yet another text for auditors -->
-                    <h:outputText value="#{msg.view_request_page_cannot_approve}"/>
+                    <h:outputText value="#{raManageRequestBean.cantApproveReason}"/>
                 </h:panelGroup>
             </h:panelGroup>
         </h:form>
