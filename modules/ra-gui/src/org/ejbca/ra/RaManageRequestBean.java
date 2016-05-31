@@ -120,9 +120,9 @@ public class RaManageRequestBean implements Serializable {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_expired");
         } else if (requestInfo.isPendingExecution()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_pending_execution");
-        } else if (!requestInfo.isExecuted()) {
+        } else if (requestInfo.isExecuted()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_already_executed");
-        } else if (!requestInfo.isExecutionFailed()) {
+        } else if (requestInfo.isExecutionFailed()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_already_executed_failed");
         } else if (!requestInfo.isWaitingForApproval()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_not_waiting");
