@@ -641,7 +641,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final String genericSearchStringHex = request.getGenericSearchStringAsHex();
         final StringBuilder sb = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE (a.issuerDN IN (:issuerDN))");
         if (!genericSearchString.isEmpty()) {
-            sb.append(" AND (a.username LIKE :username OR a.subjectDN LIKE :subjectDN");
+            sb.append(" AND (a.username LIKE :username OR a.subjectDN LIKE :subjectDN OR a.subjectAltName LIKE :subjectAltName");
             if (genericSearchStringDec!=null) {
                 sb.append(" OR a.serialNumber LIKE :serialNumberDec");
             }
@@ -702,6 +702,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!genericSearchString.isEmpty()) {
             query.setParameter("username", "%" + genericSearchString + "%");
             query.setParameter("subjectDN", "%" + genericSearchString + "%");
+            query.setParameter("subjectAltName", "%" + genericSearchString + "%");
             if (genericSearchStringDec!=null) {
                 query.setParameter("serialNumberDec", genericSearchStringDec);
                 if (log.isDebugEnabled()) {
