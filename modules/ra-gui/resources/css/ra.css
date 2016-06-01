@@ -43,14 +43,14 @@
     padding: 1em 1.5em 1em; 
 }
 	.content-body h2 {
-	    margin: 0.2em 0.5em;
+	    margin: 0.2em 0;
 	    font-size: 1.3em;
 	    font-weight: 300;
 	    color: #1f589f;
 	}
 	
 	.content-body h3 {
-	    margin: 0.2em 0.5em;
+	    margin: 0.2em 0;
 	    color: #1f589f;
 	}
 	
