@@ -173,7 +173,9 @@ public class RaSearchCertsBean implements Serializable {
                         (!cdw.getCertificateData().getSerialNumber().equals(stagedRequest.getGenericSearchStringAsDecimal())) &&
                         (!cdw.getCertificateData().getSerialNumber().equals(stagedRequest.getGenericSearchStringAsHex())) &&
                         (cdw.getCertificateData().getUsername() == null || !cdw.getCertificateData().getUsername().contains(stagedRequest.getGenericSearchString())) &&
-                        (cdw.getCertificateData().getSubjectDN() == null || !cdw.getCertificateData().getSubjectDN().contains(stagedRequest.getGenericSearchString())))) {
+                        (cdw.getCertificateData().getSubjectDN() == null || !cdw.getCertificateData().getSubjectDN().contains(stagedRequest.getGenericSearchString())) &&
+                        (cdw.getCertificateData().getSubjectAltName() == null || !cdw.getCertificateData().getSubjectAltName().contains(stagedRequest.getGenericSearchString()))
+                        )) {
                     continue;
                 }
                 if (!stagedRequest.getEepIds().isEmpty() && !stagedRequest.getEepIds().contains(cdw.getCertificateData().getEndEntityProfileIdOrZero())) {
