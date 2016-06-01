@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -176,8 +177,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private EndEntityInformation endEntityInformation;
     private String confirmPassword;
     public enum DownloadCredentialsType {
-        NO_CREDENTIALS_DIRECT_DOWNLOAD("No credentials (direct download)"), USERNAME_PASSWORD("Username and password credentials"), EMAIL(
-                "Download credentials will be sent to the specified email");
+        NO_CREDENTIALS_DIRECT_DOWNLOAD("No credentials (direct download)"), USERNAME_PASSWORD("Username and password credentials"), REQUEST_ID(
+                "RequestID");
         private String value;
 
         private DownloadCredentialsType(String value) {
@@ -191,6 +192,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private Map<String, DownloadCredentialsType> availableDownloadCredentials = new HashMap<String, DownloadCredentialsType>();
     private String selectedDownloadCredentialsType;
     private boolean downloadCredentialsChanged;
+    
+    //8. Request data
+    private int requestId;
 
     @PostConstruct
     private void postContruct() {
@@ -390,10 +394,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     private void initDownloadCredentialsType() {
+        //TODO if approval is required show only request id option or other, otherwise
         availableDownloadCredentials.put(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue(),
                 DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD);
         availableDownloadCredentials.put(DownloadCredentialsType.USERNAME_PASSWORD.getValue(), DownloadCredentialsType.USERNAME_PASSWORD);
-        availableDownloadCredentials.put(DownloadCredentialsType.EMAIL.getValue(), DownloadCredentialsType.EMAIL);
+        availableDownloadCredentials.put(DownloadCredentialsType.REQUEST_ID.getValue(), DownloadCredentialsType.REQUEST_ID);
     }
 
     private void initDownloadCredentialsData() {
@@ -439,8 +444,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
         return selectedDownloadCredentialsType != null
-                && (selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue())
-                        || selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()))
                 && availableKeyStores.contains(SecConst.TOKEN_SOFT_JKS + "")
                 && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue());//TODO probably will need to get updated once approvals are implemented in kickassra
     }
@@ -452,8 +455,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
         return selectedDownloadCredentialsType != null
-                && (selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue())
-                        || selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()))
                 && availableKeyStores.contains(SecConst.TOKEN_SOFT_P12 + "")
                 && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue());//TODO probably will need to get updated once approvals are implemented in kickassra
     }
@@ -465,8 +466,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
         return selectedDownloadCredentialsType != null
-                && (selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue())
-                        || selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()))
                 && availableKeyStores.contains(EndEntityConstants.TOKEN_USERGEN + "")
                 && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue());//TODO probably will need to get updated once approvals are implemented in kickassra
     }
@@ -539,6 +538,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private final void resetDownloadCredentialsData() {
         endEntityInformation = null;
+        setRequestId(0);
     }
 
     /**
@@ -684,39 +684,43 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public final void addEndEntityAndGenerateCertificeDer() {
-        addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "DER", "application/octet-stream", ".der", TokenDownloadType.DER);
+        byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "DER", TokenDownloadType.DER);
+        downloadToken(token, "application/octet-stream", ".der");
     }
 
     public final void addEndEntityAndGenerateCertificePksc7() {
-        addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "PKCS#7", "application/octet-stream", ".p7b", TokenDownloadType.PKCS7);
+        byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "PKCS#7", TokenDownloadType.PKCS7);
+        downloadToken(token, "application/octet-stream", ".p7b");
     }
 
     public final void addEndEntityAndGenerateCertificePemFullChain() {
-        addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "PEM", "application/octet-stream", ".pem", TokenDownloadType.PEM_FULL_CHAIN);
+        byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "PEM", TokenDownloadType.PEM_FULL_CHAIN);
+        downloadToken(token, "application/octet-stream", ".pem");
     }
 
     public final void addEndEntityAndGenerateCertificePem() {
-        addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "PEM", "application/octet-stream", ".pem", TokenDownloadType.PEM);
+        byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "PEM", TokenDownloadType.PEM);
+        downloadToken(token, "application/octet-stream", ".pem");
     }
 
     public final void addEndEntityAndGenerateP12() {
-        addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_P12, "PKCS#12", "application/x-pkcs12", ".p12", TokenDownloadType.P12);
+        byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_P12, "PKCS#12", TokenDownloadType.P12);
+        downloadToken(token, "application/x-pkcs12", ".p12");
     }
 
     public final void addEndEntityAndGenerateJks() {
-        addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_JKS, "JKS", "application/octet-stream", ".jks", TokenDownloadType.JKS);
+        byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_JKS, "JKS", TokenDownloadType.JKS);
+        downloadToken(token, "application/octet-stream", ".jks");
     }
 
     /**
      * Adds end entity and creates its token that will be downloaded. This method is responsible for deleting the end entity if something goes wrong with token creation.
      * @param tokenType the type of the token that will be created (one of: TOKEN_USERGEN, TOKEN_SOFT_P12, TOKEN_SOFT_JKS from EndEntityConstants)
      * @param tokenName the name of the token. It will be used only in messages and logs
-     * @param responseContentType the MIME type of the token to be downloaded (etc. "application/octet-stream", "application/x-pkcs12",..)
-     * @param fileExtension the file extension that will be added to the end of the downlaoded token file
      * @param tokenDownloadType the download type/format of the token. This is used only with TOKEN_USERGEN since this is the only one that have different formats: PEM, DER,...)
+     * @return generated token as byte array
      */
-    private final void addEndEntityAndGenerateToken(int tokenType, String tokenName, String responseContentType, String fileExtension,
-            TokenDownloadType tokenDownloadType) {
+    private final byte[] addEndEntityAndGenerateToken(int tokenType, String tokenName, TokenDownloadType tokenDownloadType) {
         //Update the EndEntityInformation data
         subjectDn.update();
         subjectAlternativeName.updateValue();
@@ -725,7 +729,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setTokenType(tokenType);
 
         //Enter temporary credentials
-        if (selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue())) {
+        if (!selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()) ) {
             String commonName = subjectDn.getFieldInstancesMap().get(DnComponents.COMMONNAME).getValue(); //Common Name has to be required field
             endEntityInformation.setUsername(commonName);
             endEntityInformation.setPassword(commonName);
@@ -738,20 +742,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
             } else {
                 raLocaleBean.addMessageInfo("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername());
                 log.error(raLocaleBean.getMessage("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername()));
-                return;
+                return null;
             }
         } catch (EndEntityExistsException e) {
             raLocaleBean.addMessageInfo("enroll_username_already_exists", endEntityInformation.getUsername(), e.getMessage());
             log.error(raLocaleBean.getMessage("enroll_username_already_exists", endEntityInformation.getUsername(), e.getMessage()), e);
-            return;
+            return null;
         } catch (AuthorizationDeniedException e) {
             raLocaleBean.addMessageInfo("enroll_unauthorized_operation", endEntityInformation.getUsername(), e.getMessage());
             log.error(raLocaleBean.getMessage("enroll_unauthorized_operation", endEntityInformation.getUsername(), e.getMessage()), e);
-            return;
+            return null;
         } catch (WaitingForApprovalException e) {
             //TODO
-            log.error(e);
-            return;
+            requestId = e.getApprovalId();
+            log.info(requestId);
+            log.info(e);
+            return null;
         }
         
         //End entity has been added now! Make sure clean-up is done in this "try-finally" block if something goes wrong inside it
@@ -764,17 +770,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest);
                 if (pkcs10CertificateRequest == null) {
                     raLocaleBean.addMessageError("enroll_invalid_certificate_request");
-                    return;
+                    return null;
                 }
-                JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(
-                        CertTools.getCertificateRequestFromPem(certificateRequest));
+                JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificateRequest);
                 PublicKey publicKey;
                 try {
                     publicKey = jcaPKCS10CertificationRequest.getPublicKey();
                 } catch (InvalidKeyException | NoSuchAlgorithmException e) {
                     log.warn(raLocaleBean.getMessage("enroll_csr_public_key_could_not_be_extracted"));
                     raLocaleBean.addMessageError("enroll_csr_public_key_could_not_be_extracted");
-                    return;
+                    return null;
                 }
                 keyAlg = AlgorithmTools.getKeyAlgorithm(publicKey);
                 keyLength = AlgorithmTools.getKeySpecification(publicKey);
@@ -798,7 +803,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | AuthorizationDeniedException e) {
                     raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
                     log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
-                    return;
+                    return null;
                 } finally {
                     if (buffer != null) {
                         try {
@@ -814,7 +819,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                             endEntityInformation, CertTools.getCertificateRequestFromPem(certificateRequest).getEncoded());
                     if (certificateDataToDownload == null) {
                         raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername());
-                        return;
+                        return null;
                     }
     
                     if (tokenDownloadType == TokenDownloadType.PEM_FULL_CHAIN) {
@@ -836,7 +841,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
                     log.error(raLocaleBean.getMessage("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()),
                             e);
-                    return;
+                    return null;
                 } finally {
                     if (buffer != null) {
                         try {
@@ -847,30 +852,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             }
     
-            //Download the token
-            FacesContext fc = FacesContext.getCurrentInstance();
-            ExternalContext ec = fc.getExternalContext();
-            ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
-            ec.setResponseContentType(responseContentType);
-            ec.setResponseContentLength(buffer.size());
-            ec.setResponseHeader("Content-Disposition",
-                    "attachment; filename=\"" + StringTools.stripFilename(endEntityInformation.getUsername() + fileExtension) + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
-            OutputStream output = null;
-            try {
-                output = ec.getResponseOutputStream();
-                buffer.writeTo(output);
-                output.flush();
-            } catch (IOException e) {
-                log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
-            } finally {
-                if (output != null) {
-                    try {
-                        output.close();
-                    } catch (IOException e) {
-                    }
-                }
-                fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
-            }
+            return buffer.toByteArray();
             
         }finally{
             //End entity clean-up must be done if enrollment could not be completed (but end-entity has been added)
@@ -882,6 +864,37 @@ public class EnrollMakeNewRequestBean implements Serializable {
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException(e);
             }
+        }
+    }
+    
+    private final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
+        if (token == null) {
+            return;
+        }
+
+        //Download the token
+        FacesContext fc = FacesContext.getCurrentInstance();
+        ExternalContext ec = fc.getExternalContext();
+        ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
+        ec.setResponseContentType(responseContentType);
+        ec.setResponseContentLength(token.length);
+        ec.setResponseHeader("Content-Disposition",
+                "attachment; filename=\"" + StringTools.stripFilename(endEntityInformation.getUsername() + fileExtension) + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+        OutputStream output = null;
+        try {
+            output = ec.getResponseOutputStream();
+            output.write(token);
+            output.flush();
+        } catch (IOException e) {
+            log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
+        } finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                }
+            }
+            fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         }
     }
 
@@ -1375,5 +1388,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public void setCertificateRequest(String certificateRequest) {
         this.certificateRequest = certificateRequest;
+    }
+
+    /**
+     * @return the requestId
+     */
+    public int getRequestId() {
+        return requestId;
+    }
+
+    /**
+     * @param requestId the requestId to set
+     */
+    public void setRequestId(int requestId) {
+        this.requestId = requestId;
     }
 }
