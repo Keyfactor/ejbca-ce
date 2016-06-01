@@ -63,14 +63,17 @@ import org.cesecore.util.ValueExtractor;
                 @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"), @ColumnResult(name = "revocationReason") }),
         @SqlResultSetMapping(name = "CertificateInfoSubset", columns = { @ColumnResult(name = "issuerDN"), @ColumnResult(name = "subjectDN"),
                 @ColumnResult(name = "cAFingerprint"), @ColumnResult(name = "status"), @ColumnResult(name = "type"),
-                @ColumnResult(name = "serialNumber"), @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"),
-                @ColumnResult(name = "revocationReason"), @ColumnResult(name = "username"), @ColumnResult(name = "tag"),
-                @ColumnResult(name = "certificateProfileId"), @ColumnResult(name = "updateTime"), @ColumnResult(name = "subjectKeyId") }),
+                @ColumnResult(name = "serialNumber"),
+                @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"), @ColumnResult(name = "revocationReason"),
+                @ColumnResult(name = "username"), @ColumnResult(name = "tag"), @ColumnResult(name = "certificateProfileId"),
+                @ColumnResult(name = "endEntityProfileId"), @ColumnResult(name = "updateTime"), @ColumnResult(name = "subjectKeyId"),
+                @ColumnResult(name = "subjectAltName") }),
         @SqlResultSetMapping(name = "CertificateInfoSubset2", columns = { @ColumnResult(name = "fingerprint"), @ColumnResult(name = "subjectDN"),
                 @ColumnResult(name = "cAFingerprint"), @ColumnResult(name = "status"), @ColumnResult(name = "type"),
                 @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"), @ColumnResult(name = "revocationReason"),
                 @ColumnResult(name = "username"), @ColumnResult(name = "tag"), @ColumnResult(name = "certificateProfileId"),
-                @ColumnResult(name = "updateTime"), @ColumnResult(name = "subjectKeyId") }),
+                @ColumnResult(name = "endEntityProfileId"), @ColumnResult(name = "updateTime"), @ColumnResult(name = "subjectKeyId"),
+                @ColumnResult(name = "subjectAltName") }),
         @SqlResultSetMapping(name = "FingerprintUsernameSubset", columns = { @ColumnResult(name = "fingerprint"), @ColumnResult(name = "username") }) })
 public class CertificateData extends ProtectedData implements Serializable {
 
@@ -851,7 +854,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         final Query query = entityManager
                 .createNativeQuery(
                         "SELECT a.fingerprint, a.subjectDN, a.cAFingerprint, a.status, a.type, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason, "
-                                + "a.username, a.tag, a.certificateProfileId, a.updateTime, a.subjectKeyId FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber",
+                                + "a.username, a.tag, a.certificateProfileId, a.endEntityProfileId, a.updateTime, a.subjectKeyId, a.subjectAltName FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber",
                         "CertificateInfoSubset2");
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("serialNumber", serialNumber);
@@ -871,16 +874,23 @@ public class CertificateData extends ProtectedData implements Serializable {
             final int revocationReason = ValueExtractor.extractIntValue(fields[7]);
             final String username = (String) fields[8];
             final String tag = (String) fields[9];
-            final int cProfId = ValueExtractor.extractIntValue(fields[10]);
-            final long updateTime;
+            final int certificateProfileId = ValueExtractor.extractIntValue(fields[10]);
+            final Integer endEntityProfileId;
             if (fields[11] == null) {
+                endEntityProfileId = null;
+            } else {
+                endEntityProfileId = ValueExtractor.extractIntValue(fields[11]);
+            }
+            final long updateTime;
+            if (fields[12] == null) {
                 updateTime = 0; // Might be null in an upgraded installation
             } else {
-                updateTime = ValueExtractor.extractLongValue(fields[11]);
+                updateTime = ValueExtractor.extractLongValue(fields[12]);
             }
-            final String subjectKeyId = (String)fields[12];
+            final String subjectKeyId = (String)fields[13];
+            final String subjectAltName = (String)fields[14];
             ret = new CertificateInfo(fingerprint, cafp, serialNumber, issuerDN, subjectDN, status, type, expireDate, revocationDate,
-                    revocationReason, username, tag, cProfId, updateTime, subjectKeyId);
+                    revocationReason, username, tag, certificateProfileId, endEntityProfileId, updateTime, subjectKeyId, subjectAltName);
         }
         return ret;
     }
@@ -1165,7 +1175,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         CertificateInfo ret = null;
         final Query query = entityManager.createNativeQuery(
                 "SELECT a.issuerDN, a.subjectDN, a.cAFingerprint, a.status, a.type, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason, "
-                        + "a.username, a.tag, a.certificateProfileId, a.updateTime, a.subjectKeyId FROM CertificateData a WHERE a.fingerprint=:fingerprint",
+                        + "a.username, a.tag, a.certificateProfileId, a.endEntityProfileId, a.updateTime, a.subjectKeyId, a.subjectAltName FROM CertificateData a WHERE a.fingerprint=:fingerprint",
                 "CertificateInfoSubset");
         query.setParameter("fingerprint", fingerprint);
         @SuppressWarnings("unchecked")
@@ -1184,16 +1194,23 @@ public class CertificateData extends ProtectedData implements Serializable {
             final int revocationReason = ValueExtractor.extractIntValue(fields[8]);
             final String username = (String) fields[9];
             final String tag = (String) fields[10];
-            final int cProfId = ValueExtractor.extractIntValue(fields[11]);
-            final long updateTime;
+            final int certificateProfileId = ValueExtractor.extractIntValue(fields[11]);
+            final Integer endEntityProfileId;
             if (fields[12] == null) {
+                endEntityProfileId = null;
+            } else {
+                endEntityProfileId = ValueExtractor.extractIntValue(fields[12]);
+            }
+            final long updateTime;
+            if (fields[13] == null) {
                 updateTime = 0; // Might be null in an upgraded installation
             } else {
-                updateTime = ValueExtractor.extractLongValue(fields[12]);
+                updateTime = ValueExtractor.extractLongValue(fields[13]);
             }
-            final String subjectKeyId = (String)fields[13];
+            final String subjectKeyId = (String)fields[14];
+            final String subjectAltName = (String)fields[15];
             ret = new CertificateInfo(fingerprint, cafp, serno, issuerDN, subjectDN, status, type, expireDate, revocationDate, revocationReason,
-                    username, tag, cProfId, updateTime, subjectKeyId);
+                    username, tag, certificateProfileId, endEntityProfileId, updateTime, subjectKeyId, subjectAltName);
         }
         return ret;
     }

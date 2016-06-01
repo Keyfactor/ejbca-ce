@@ -38,12 +38,14 @@ public class CertificateInfo implements Serializable {
     private String username;
 	private String tag;
 	private int certificateProfileId;
+    private Integer endEntityProfileId;
     private Date updateTime;
     private String subjectKeyId;
+    private String subjectAltName;
     
-    public CertificateInfo(String fingerprint, String cafingerprint, String serno, 
-            String issuerdn, String subjectdn, int status, int type, 
-            long expiredate, long revocationdate, int revocationreason, String username, String tag, int certificateProfileId, long updateTime, String subjectKeyId){
+    public CertificateInfo(String fingerprint, String cafingerprint, String serno,  String issuerdn, String subjectdn, int status, int type, 
+            long expiredate, long revocationdate, int revocationreason, String username, String tag, int certificateProfileId,
+            Integer endEntityProfileId, long updateTime, String subjectKeyId, String subjectAltName) {
         this.fingerprint=fingerprint;
         this.cafingerprint=cafingerprint;
         this.serno=serno;
@@ -57,8 +59,10 @@ public class CertificateInfo implements Serializable {
         this.username = username;
         this.tag = tag;
         this.certificateProfileId = certificateProfileId;
+        this.endEntityProfileId = endEntityProfileId;
         this.updateTime = new Date(updateTime);
         this.subjectKeyId = subjectKeyId;
+        this.subjectAltName = subjectAltName;
     }
     
     public String getFingerprint() {return fingerprint;}
@@ -88,6 +92,10 @@ public class CertificateInfo implements Serializable {
 		return certificateProfileId;
 	}
 
+	public int getEndEntityProfileIdOrZero() {
+	    return endEntityProfileId==null ? 0 : endEntityProfileId;
+	}
+
 	public void setCertificateProfileId(int certificateProfileId) {
 		this.certificateProfileId = certificateProfileId;
 	}
@@ -112,4 +120,7 @@ public class CertificateInfo implements Serializable {
         return subjectKeyId;
     }
 	
+    public String getSubjectAltName() {
+        return subjectAltName;
+    }
 }
