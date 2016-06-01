@@ -139,6 +139,7 @@ CREATE TABLE CertificateData (
     serialNumber TEXT NOT NULL,
     status INT4 NOT NULL,
     subjectDN TEXT NOT NULL,
+    subjectAltName TEXT,
     subjectKeyId TEXT,
     tag TEXT,
     type INT4 NOT NULL,

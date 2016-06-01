@@ -22,7 +22,7 @@
                         http://java.sun.com/xml/ns/persistence/orm_2_0.xsd">
 
     <!-- 
-         This file contains mappings specific to MS SQL. Tested with MS SQL Server 2005 Express.
+         This file contains mappings specific to MS SQL.
 
          boolean: BIT
          int:     INTEGER
@@ -32,8 +32,10 @@
          Object:  IMAGE
    
          Notes:
+         - Not well tested.
          - HardTokenPropertyData.id was defined as "VARCHAR(80) BINARY" in the JBoss CMP mapping in EJBCA 3.x.
            This is illegal and was ignored. The used mapping was VARCHAR(256).
+         - SQL Server 2008 have maximum VARCHAR column length of 8000 bytes. (https://msdn.microsoft.com/en-us/library/ms186981.aspx)
     -->
 
     <entity class="org.cesecore.certificates.certificate.CertificateData" access="PROPERTY" metadata-complete="false">
@@ -56,6 +58,7 @@
             <basic fetch="EAGER" name="endEntityProfileId"><column name="endEntityProfileId" column-definition="INTEGER" nullable="true"/></basic>
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(256)"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(4000)" nullable="true"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>

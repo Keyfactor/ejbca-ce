@@ -27,7 +27,7 @@
          boolean: NUMBER(1)
          int:     NUMBER(10)
          long:    NUMBER(19)
-         String:  VARCHAR2(255 byte)
+         String:  VARCHAR2(255 byte). Allowed range is 1-4000 bytes.
          CLOB:    CLOB
          Object:  BLOB
 
@@ -35,7 +35,7 @@
          - 
          
          Notes:
-         - 
+         - Oracle considers NULL and empty Strings to be the same.
     -->
 
     <entity class="org.cesecore.certificates.certificate.CertificateData" access="PROPERTY" metadata-complete="false">
@@ -58,6 +58,7 @@
             <basic fetch="EAGER" name="endEntityProfileId"><column name="endEntityProfileId" column-definition="NUMBER(10)" nullable="true"/></basic>
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="NUMBER(19)" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR2(4000 byte)" nullable="true"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>

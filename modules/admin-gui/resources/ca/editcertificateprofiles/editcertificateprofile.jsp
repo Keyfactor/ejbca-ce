@@ -450,6 +450,12 @@
 			<h:selectBooleanCheckbox id="cbsubjectalternativenamecritical" value="#{certProfileBean.certificateProfile.subjectAlternativeNameCritical}"
 				disabled="#{!certProfileBean.certificateProfile.useSubjectAlternativeName or certProfilesBean.viewOnly}"/>
 			<h:outputLabel for="cbsubjectalternativenamecritical" value="#{web.text.EXT_CRITICAL}"/>
+            <h:selectBooleanCheckbox id="cbsubjectalternativenamesearchable" value="#{certProfileBean.certificateProfile.storeSubjectAlternativeName}"
+                disabled="#{!certProfileBean.certificateProfile.useSubjectAlternativeName or certProfilesBean.viewOnly}"/>
+            <h:outputLabel for="cbsubjectalternativenamesearchable" value="#{web.text.STORESUBJECTALTNAME_STORE} "/>
+            <h:panelGroup styleClass="help">
+                <h:outputText value="#{web.text.STORESUBJECTALTNAME_HELP}"/>
+            </h:panelGroup>
 		</h:panelGroup>
 
 		<%-- PKIX Issuer Alternative Name (IAN) extension --%>

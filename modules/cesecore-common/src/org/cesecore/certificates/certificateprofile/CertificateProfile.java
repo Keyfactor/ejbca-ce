@@ -174,6 +174,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
     protected static final String USECERTIFICATESTORAGE = "usecertificatestorage";
     protected static final String STORECERTIFICATEDATA = "storecertificatedata";
+    protected static final String STORESUBJECTALTNAME = "storesubjectaltname";
     //
     // CRL extensions
     protected static final String USECRLNUMBER = "usecrlnumber";
@@ -344,6 +345,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAllowBackdatedRevocation(false);
         setUseCertificateStorage(true);
         setStoreCertificateData(true);
+        setStoreSubjectAlternativeName(true); // New profiles created after EJBCA 6.6.0 will store SAN by default
 
         setUseBasicConstraints(true);
         setBasicConstraintsCritical(true);
@@ -775,10 +777,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     
     public boolean getStoreCertificateData() {
-        //Lazy upgrade for profiles created prior to EJBCA 6.2.10
-        Boolean value = (Boolean) data.get(STORECERTIFICATEDATA);
+        // Lazy upgrade for profiles created prior to EJBCA 6.2.10
+        final Boolean value = (Boolean) data.get(STORECERTIFICATEDATA);
         if (value == null) {
-            //Default is true
+            // Default for existing profiles is true
             setStoreCertificateData(true);
             return true;
         } else {
@@ -788,6 +790,23 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
     public void setStoreCertificateData(boolean storeCertificateData) {
         data.put(STORECERTIFICATEDATA, Boolean.valueOf(storeCertificateData));
+    }
+
+    /** @return true if the CertificateData.subjectAltName column should be populated. */
+    public boolean getStoreSubjectAlternativeName() {
+        // Lazy upgrade for profiles created prior to EJBCA 6.6.0
+        final Boolean value = (Boolean) data.get(STORESUBJECTALTNAME);
+        if (value == null) {
+            // Old profiles created before EJBCA 6.6.0 will not store SAN by default.
+            setStoreCertificateData(false);
+            return false;
+        } else {
+            return value.booleanValue();
+        }
+    }
+    
+    public void setStoreSubjectAlternativeName(final boolean storeSubjectAlternativeName) {
+        data.put(STORESUBJECTALTNAME, Boolean.valueOf(storeSubjectAlternativeName));
     }
 
     public boolean getSubjectAlternativeNameCritical() {

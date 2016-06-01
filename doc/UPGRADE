@@ -30,15 +30,16 @@ database upgrades code is available in "src/upgrade/<oldversion>_<newversion>/<o
 
 From EJBCA 6.5.x to EJBCA 6.6.0
 -------------------------------
-CertificateData has a new column "endEntityProfileId". Since CertificateData is used by EJBCA running as a Validation
+CertificateData has two new columns "endEntityProfileId" and "subjectAltName". Since CertificateData is used by EJBCA running as a Validation
 Authority, you need to make this database schema change to your VAs as well before upgrading for publishing to work.
 See src/upgrade/650_660/650_660-upgrade-<database>.sql for the correct SQL alter statement.
-In the case where the endEntityProfileId has not changed for End Entities since certificate issuance, you can copy this
+
+In the case where the endEntityProfileId and subjectAltName has not changed for End Entities since certificate issuance, you can copy this
 value using a SQL statement like (consult your DBA for the proper syntax and feasibility of executing this query on
 your production database):
 
   UPDATE CertificateData AS a INNER JOIN UserData AS b ON a.username = b.username
-    SET a.endEntityProfileId = b.endEntityProfileId WHERE a.endEntityProfileId IS NULL;
+    SET a.endEntityProfileId = b.endEntityProfileId, a.subjectAltName = b.subjectAltName WHERE a.endEntityProfileId IS NULL;
     
 ApprovalData has a new column "approvalProfileId", to handle the new approval profile concept. Either allow your system to upgrade the database 
 automatically, or upgrade it manually with src/upgrade/650_660/650_660-upgrade-<database>.sql. Approvals created prior to 6.6.0 will still be 
