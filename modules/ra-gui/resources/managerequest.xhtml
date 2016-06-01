@@ -75,14 +75,18 @@
                 <h:commandButton id="commandSaveData" action="#{raManageRequestBean.saveRequestData}" value="#{msg.view_request_page_save_data_command}" />
             </h:panelGroup>
             
-            <h:panelGroup layout="block" rendered="#{raManageRequestBean.approvalVisible}">
-                <h2><h:outputText value="#{msg.view_request_page_approval_header}"/></h2>
+            <h:panelGroup layout="block" rendered="#{raManageRequestBean.previousStepsVisible}">
+                <h2><h:outputText value="#{msg.view_request_page_previous_steps_header}"/></h2>
+            
+                <ui:repeat value="#{raManageRequestBean.request.previousSteps}" var="prevStep">
+                    <h:panelGroup layout="block" styleClass="approvalStep">
+                        <h3><h:outputText value="#{prevStep.headingText}"/></h3>
                 
-                <h:dataTable value="#{raManageRequestBean.request.previousSteps}" var="prevStep" rendered="#{not empty raManageRequestBean.request.previousSteps}">
-                    <h:column>
-                        <h:dataTable value="#{prevStep.controls}" var="control">
-                            <h:column>
-                                <h:outputText value="#{control.instruction}"/>
+                        <ui:repeat value="#{prevStep.controls}" var="control">
+                            <h:panelGroup layout="block" styleClass="approvalControl">
+                                <h:panelGroup layout="block">
+                                    <h:outputText value="#{control.instruction}"/>
+                                </h:panelGroup>
                                 
                                 <h:panelGroup layout="block" rendered="#{control.checkbox}">
                                     <h:selectManyCheckbox value="#{control.checkboxValue}" disabled="true">
@@ -98,16 +102,24 @@
                                     <h:inputText value="#{control.textValue}" size="25" disabled="true" />
                                 </h:panelGroup>
                                 
-                                <h:inputText value="#{control.optionNote}" size="25" disabled="true" />
-                            </h:column>
-                        </h:dataTable>
-                    </h:column>
-                </h:dataTable>
+                                <h:panelGroup layout="block">
+                                    <h:outputText value="#{msg.view_request_page_note}"/>
+                                    <h:inputText value="#{control.optionNote}" size="25" disabled="true" />
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </ui:repeat>
+                    </h:panelGroup>
+                </ui:repeat>
+            </h:panelGroup>
+            
+            <h:panelGroup layout="block" rendered="#{raManageRequestBean.approvalVisible}">
+                <h2><h:outputText value="#{msg.view_request_page_approval_header}"/></h2>
                 
-                
-                <h:dataTable value="#{raManageRequestBean.nextStepControls}" var="control" rendered="#{raManageRequestBean.hasNextStep}">
-                    <h:column>
-                        <h:outputText value="#{control.instruction}"/>
+                <ui:repeat value="#{raManageRequestBean.nextStepControls}" var="control">
+                    <h:panelGroup layout="block" styleClass="approvalControl">
+                        <h:panelGroup layout="block" styleClass="stepInstruction">
+                            <h:outputText value="#{control.instruction}"/>
+                        </h:panelGroup>
                         
                         <h:panelGroup layout="block" rendered="#{control.checkbox}">
                             <h:selectManyCheckbox value="#{control.checkboxValue}">
@@ -123,9 +135,12 @@
                             <h:inputText value="#{control.textValue}" size="25"/>
                         </h:panelGroup>
                         
-                        <h:inputText value="#{control.optionNote}" size="25"/>
-                    </h:column>
-                </h:dataTable>
+                        <h:panelGroup layout="block">
+                            <h:outputText value="#{msg.view_request_page_note}"/>
+                            <h:inputText value="#{control.optionNote}" size="25"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </ui:repeat>
                 
                 
                 <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.canApprove}">
@@ -134,7 +149,6 @@
                 </h:panelGroup>
                 
                 <h:panelGroup layout="block" rendered="#{not raManageRequestBean.request.canApprove}">
-                    <!-- TODO show a different text if the request has already been approved, and yet another text for auditors -->
                     <h:outputText value="#{raManageRequestBean.cantApproveReason}"/>
                 </h:panelGroup>
             </h:panelGroup>
