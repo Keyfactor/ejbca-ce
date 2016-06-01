@@ -953,6 +953,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
+    public CertificateProfile searchCertificateProfile(AuthenticationToken authenticationToken, int certificateProfileId){
+        List<Integer> authorizedCertificateProfileIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, CertificateConstants.CERTTYPE_ENDENTITY);
+        for(Integer i: authorizedCertificateProfileIds){
+            if(i == certificateProfileId){
+                return certificateProfileSession.getCertificateProfile(certificateProfileId);
+            }
+        }
+        return null;
+    }
+    
+    @Override
     public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken) {
         IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
         List<CAInfo> authorizedCAInfosList = caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
@@ -987,16 +998,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public EndEntityInformation findUser(final AuthenticationToken admin, String username) throws AuthorizationDeniedException{
+    public EndEntityInformation searchUser(final AuthenticationToken admin, String username) {
         return endEntityAccessSession.findUser(username);
     }
     
     @Override
-    public KeyStore generateKeystore(final AuthenticationToken admin, final EndEntityInformation endEntity, String keyLength, String keyAlg) throws AuthorizationDeniedException, KeyStoreException{
+    public KeyStore generateKeystore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, KeyStoreException{
         GenerateToken tgen = new GenerateToken(endEntityAuthenticationSessionLocal, endEntityAccessSession, endEntityManagementSessionLocal, caSession, keyRecoverySessionLocal, signSessionLocal);
         try {
-            KeyStore ks = tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), keyLength, keyAlg, endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
-            return ks;
+            return tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), endEntity.getKeyStoreAlgorithmLength(), endEntity.getKeyStoreAlgorithm(), endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
         } catch (Exception e) {
             throw new KeyStoreException(e);
         }

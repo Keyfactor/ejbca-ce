@@ -23,58 +23,79 @@
      *                                                                       *
      *************************************************************************/
 
-     version: $Id: enrollmakenewrequest.xhtml 23569 2016-05-30 16:18:49Z marko $
+     version: $Id$
      -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
 	<ui:define name="content">
 		<h:panelGroup layout="block" class="header" id="title">
 			<h1>
-				<h:outputText value="#{msg.enroll_with_request_id_title}" />
+				<h:outputText
+					value="#{msg.enrollwithrequestid_enrollment_with_request_id_title}" />
 			</h1>
 		</h:panelGroup>
 		<h:panelGroup layout="block" id="enrollUseRequestIdContentBody"
 			styleClass="content-body">
 			<h:form id="enrollWithRequestIdForm"
 				styleClass="pure-form pure-form-aligned">
-				<h:panelGroup layout="block">
+				
+				<h:panelGroup layout="block" rendered="#{!(enrollWithRequestIdBean.isRequestApproved())}">
 					<h2>
-						<h:outputText value="#{msg.enroll_enter_request_id}" />
+						<h:outputText
+							value="#{msg.enrollwithrequestid_enter_request_id_to_check_the_request_status}" />
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<fieldset>
 							<h:panelGroup layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="requestId" value="#{msg.enroll_request_id}" />
 								<h:inputText id="requestId" styleClass="required-input"
-									required="true" value="#{enrollWithRequestIdBean.requestId}" >
+									required="true" value="#{enrollWithRequestIdBean.requestId}">
 									<f:validateLongRange minimum="-2147483648" maximum="2147483647" />
 								</h:inputText>
 							</h:panelGroup>
 							<h:panelGroup layout="block" id="navigationButtonGroup"
 								styleClass="keygeneration-button-group">
-								<h:commandButton id="checkButton" value="#{msg.enroll_check}"
+								<h:commandButton id="checkButton"
+									value="#{msg.enrollwithrequestid_check}"
 									styleClass="pure-button ra-button"
 									action="#{enrollWithRequestIdBean.checkRequestId()}">
-								</h:commandButton>
-							</h:panelGroup>
-							<h:panelGroup layout="block"
-								rendered="#{enrollWithRequestIdBean.isRequestApproved()}">
-								<h:outputText
-									value="#{msg.enrollwithrequestid_finalize_enrollment_for_request_id}: " />
-								<h:outputText value="#{enrollWithRequestIdBean.requestId}" />
-							</h:panelGroup>
-							<h:panelGroup layout="block"
-								rendered="#{enrollWithRequestIdBean.isRequestApproved()}">
-								<h:commandButton id="finalizeEnrollmentButton"
-									value="#{msg.enrollwithrequestid_check_request_status}"
-									styleClass="pure-button ra-button"
-									action="#{enrollWithRequestIdBean.finalizeEnrollment()}">
 								</h:commandButton>
 							</h:panelGroup>
 						</fieldset>
 					</h:panelGroup>
 				</h:panelGroup>
 
+				<h:panelGroup layout="block"
+					rendered="#{enrollWithRequestIdBean.isRequestApproved()}">
+					<h2>
+						<h:outputText
+							value="#{msg.enrollwithrequestid_finalize_enrollment} " />
+					</h2>
+					<h:panelGroup layout="block" styleClass="internal-frame">
+						<fieldset>
+							<h:panelGroup layout="block" styleClass="pure-control-group">
+								<h:outputText value="#{msg.enroll_request_id}: " />
+								<h:outputText value="#{enrollWithRequestIdBean.requestId}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="pure-control-group">
+								<h:outputText value="Token Type: " />
+								<h:outputText value="P12" />
+							</h:panelGroup>
+							<h:panelGroup layout="block"
+								rendered="#{enrollWithRequestIdBean.isRequestApproved()}">
+								<h:commandButton id="finalizeEnrollmentButton"
+									value="#{msg.enrollwithrequestid_finalize}"
+									styleClass="pure-button ra-button"
+									action="#{enrollWithRequestIdBean.finalizeEnrollment()}">
+								</h:commandButton>
+								<h:commandButton id="resetButton" value="#{msg.generic_back}"
+									styleClass="pure-button ra-button"
+									action="#{enrollWithRequestIdBean.reset()}">
+								</h:commandButton>
+							</h:panelGroup>
+						</fieldset>
+					</h:panelGroup>
+				</h:panelGroup>
 			</h:form>
 		</h:panelGroup>
 	</ui:define>
