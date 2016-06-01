@@ -106,14 +106,16 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public static final class Step implements Serializable {
         private static final long serialVersionUID = 1L;
         private final int stepId;
+        private final String headingText;
         private final List<StepControl> controls;
         
-        public Step(final ApprovalStep approvalStep) {
+        public Step(final ApprovalStep approvalStep, final RaLocaleBean raLocaleBean) {
             controls = new ArrayList<>();
             for (final ApprovalStepMetadata metadata : approvalStep.getMetadata()) {
                 controls.add(new StepControl(metadata));
             }
             stepId = approvalStep.getStepId();
+            headingText = raLocaleBean.getMessage("view_request_page_step", stepId);
         }
         
         public int getStepId() {
@@ -122,6 +124,10 @@ public class ApprovalRequestGUIInfo implements Serializable {
         
         public List<StepControl> getControls() {
             return controls;
+        }
+        
+        public String getHeadingText() {
+            return headingText;
         }
     }
     
@@ -278,7 +284,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         // Steps
         final ApprovalStep nextApprovalStep = request.getNextApprovalStep();
         if (nextApprovalStep != null && !request.isEditedByMe() && !request.isApprovedByMe() && !request.isRequestedByMe()) {
-            nextStep = new Step(nextApprovalStep);
+            nextStep = new Step(nextApprovalStep, raLocaleBean);
             canApprove = true;
         } else {
             nextStep = null;
@@ -287,7 +293,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         
         previousSteps = new ArrayList<>();
         for (final ApprovalStep prevApprovalStep : request.getPreviousApprovalSteps()) {
-            previousSteps.add(new Step(prevApprovalStep));
+            previousSteps.add(new Step(prevApprovalStep, raLocaleBean));
         }
     }
     

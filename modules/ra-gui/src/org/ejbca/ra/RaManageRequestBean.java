@@ -99,6 +99,7 @@ public class RaManageRequestBean implements Serializable {
     public boolean isViewDataVisible() { return !editing; }
     public boolean isEditDataVisible() { return editing; }
     public boolean isStatusVisible() { return !editing; }
+    public boolean isPreviousStepsVisible() { return !editing && !requestInfo.getPreviousSteps().isEmpty(); }
     public boolean isApprovalVisible() { return !editing; }
     
     public boolean isHasNextStep() {
