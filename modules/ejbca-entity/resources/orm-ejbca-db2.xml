@@ -35,7 +35,7 @@
          - HardTokenPropertyData.id is VARCHAR(80) for unknown historic reasons
          
          Notes:
-         - 
+         - VARCHAR was limited to 4000 bytes before version 7. 32672 bytes after.
     -->
     <entity class="org.cesecore.certificates.certificate.CertificateData" access="PROPERTY" metadata-complete="false">
         <attributes>
@@ -57,6 +57,7 @@
             <basic fetch="EAGER" name="endEntityProfileId"><column name="endEntityProfileId" column-definition="INTEGER" nullable="true"/></basic>
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(254)"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(4000)" nullable="true"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>

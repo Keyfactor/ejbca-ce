@@ -80,6 +80,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     private String issuerDN;
     private String subjectDN;
+    private String subjectAltName;
     private String fingerprint = "";
     private String cAFingerprint;
     private int status = 0;
@@ -105,7 +106,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * 
      * NOTE! Never use this constructor without considering the useBase64CertTable below!
      * 
-     * @param incert the (X509)Certificate to be stored in the database. If the property "database.useSeparateCertificateTable" is true then it should be null.
+     * @param certificate the (X509)Certificate to be stored in the database. If the property "database.useSeparateCertificateTable" is true then it should be null.
      * @param enrichedpubkey possibly an EC public key enriched with the full set of parameters, if the public key in the certificate does not have
      *            parameters. Can be null if RSA or certificate public key contains all parameters.
      * @param username the username in UserData to map the certificate to
@@ -117,39 +118,43 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param tag a custom tag to map the certificate to any custom defined tag
      * @param updatetime the time the certificate was updated in the database, i.e. System.currentTimeMillis().
      * @param storeCertificate true if a special table is used for the encoded certificates, or if certificate data isn't supposed to be stored at all. NOTE: If true then the caller must store the certificate in Base64CertData as well. 
+     * @param storeSubjectAltName true if the subjectAltName column should be populated with the Subject Alternative Name of the certificate
      */
-    public CertificateData(Certificate incert, PublicKey enrichedpubkey, String username, String cafp, int status, int type, int certprofileid, int endEntityProfileId,
-            String tag, long updatetime, boolean storeCertificate) {
+    public CertificateData(Certificate certificate, PublicKey enrichedpubkey, String username, String cafp, int status, int type, int certprofileid, int endEntityProfileId,
+            String tag, long updatetime, boolean storeCertificate, boolean storeSubjectAltName) {
         // Extract all fields to store with the certificate.
         try {
             if (storeCertificate ) {
-                setBase64Cert(new String(Base64.encode(incert.getEncoded())));
+                setBase64Cert(new String(Base64.encode(certificate.getEncoded())));
             }
 
-            String fp = CertTools.getFingerprintAsString(incert);
+            String fp = CertTools.getFingerprintAsString(certificate);
             setFingerprint(fp);
 
             // Make sure names are always looking the same
-            setSubjectDN(CertTools.getSubjectDN(incert));
-            setIssuerDN(CertTools.getIssuerDN(incert));
-            if (log.isDebugEnabled()) {
-                log.debug("Creating certdata, subject=" + getSubjectDN() + ", issuer=" + getIssuerDN() + ", fingerprint=" + fp);
+            setSubjectDN(CertTools.getSubjectDN(certificate));
+            setIssuerDN(CertTools.getIssuerDN(certificate));
+            if (storeSubjectAltName) {
+                setSubjectAltName(CertTools.getSubjectAlternativeName(certificate));
             }
-            setSerialNumber(CertTools.getSerialNumber(incert).toString());
+            if (log.isDebugEnabled()) {
+                log.debug("Creating CertificateData, subjectDN=" + getSubjectDN() + ", subjectAltName=" + getSubjectAltName() + ", issuer=" + getIssuerDN() + ", fingerprint=" + fp);
+            }
+            setSerialNumber(CertTools.getSerialNumber(certificate).toString());
 
             setUsername(username);
             // Values for status and type
             setStatus(status);
             setType(type);
             setCaFingerprint(cafp);
-            setExpireDate(CertTools.getNotAfter(incert));
+            setExpireDate(CertTools.getNotAfter(certificate));
             setRevocationDate(-1L);
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             setUpdateTime(updatetime); // (new Date().getTime());
             setCertificateProfileId(certprofileid);
             setEndEntityProfileId(Integer.valueOf(endEntityProfileId));
             // Create a key identifier
-            PublicKey pubk = incert.getPublicKey();
+            PublicKey pubk = certificate.getPublicKey();
             if (enrichedpubkey != null) {
                 pubk = enrichedpubkey;
             }
@@ -172,11 +177,12 @@ public class CertificateData extends ProtectedData implements Serializable {
     /**
      * Copy Constructor
      */
-    public CertificateData(CertificateData copy) {
+    public CertificateData(final CertificateData copy) {
         setBase64Cert(copy.getBase64Cert());
         setFingerprint(copy.getFingerprint());
         setSubjectDN(copy.getSubjectDN());
         setIssuerDN(copy.getIssuerDN());
+        setSubjectAltName(copy.getSubjectAltName());
         setSerialNumber(copy.getSerialNumber());
         setUsername(copy.getUsername());
         setStatus(copy.getStatus());
@@ -254,6 +260,15 @@ public class CertificateData extends ProtectedData implements Serializable {
      */
     public void setSubjectDN(String subjectDN) {
         this.subjectDN = subjectDN;
+    }
+
+    /** @return Subject Alternative Name from the certificate if it was saved at the time of issuance. */
+    //@Column(length=4096)
+    public String getSubjectAltName() {
+        return subjectAltName;
+    }
+    public void setSubjectAltName(final String subjectAltName) {
+        this.subjectAltName = subjectAltName;
     }
 
     /**

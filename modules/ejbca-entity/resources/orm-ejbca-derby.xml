@@ -35,7 +35,7 @@
          - 
          
          Notes:
-         -     
+         - Maximum length of VARCHAR is 32672 characters [Derby 10.2.?].
     -->
 
     <entity class="org.cesecore.certificates.certificate.CertificateData" access="PROPERTY" metadata-complete="false">
@@ -58,6 +58,7 @@
             <basic fetch="EAGER" name="endEntityProfileId"><column name="endEntityProfileId" column-definition="INTEGER" nullable="true"/></basic>
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(256)"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(4000)" nullable="true"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB(10 K)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
