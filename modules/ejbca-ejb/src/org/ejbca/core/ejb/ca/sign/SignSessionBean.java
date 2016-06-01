@@ -417,7 +417,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace(">createCertificate(RequestMessage)");
         }
         // Get CA that will receive request
-        EndEntityInformation data = null;
+        EndEntityInformation endEntityInformation = null;
         CertificateResponseMessage ret = null;
         // Get CA object and make sure it is active
         // Do not log access control to the CA here, that is logged later on when we use the CA to issue a certificate (if we get that far).
@@ -445,21 +445,24 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 try {
                     // If we haven't done so yet, authenticate user. (Only if we store UserData for this CA.)
                     if (ca.isUseUserStorage()) {
-                        data = authUser(admin, req.getUsername(), req.getPassword());
+                        endEntityInformation = authUser(admin, req.getUsername(), req.getPassword());
                     } else {
-                        data = suppliedUserData;
+                        endEntityInformation = suppliedUserData;
                     }
                     // We need to make sure we use the users registered CA here
-                    if (data.getCAId() != ca.getCAId()) {
+                    if (endEntityInformation.getCAId() != ca.getCAId()) {
                         final String failText = intres.getLocalizedMessage("signsession.wrongauthority", Integer.valueOf(ca.getCAId()),
-                                Integer.valueOf(data.getCAId()));
+                                Integer.valueOf(endEntityInformation.getCAId()));
                         log.info(failText);
                         ret = createRequestFailedResponse(admin, req, responseClass, FailInfo.WRONG_AUTHORITY, failText);
                     } else {
                         final long updateTime = System.currentTimeMillis();
+                        //Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal. 
+                        //We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing. 
+                        singleActiveCertificateConstraint(admin, endEntityInformation);        
                         // Issue the certificate from the request
-                        ret = certificateCreateSession.createCertificate(admin, data, ca, req, responseClass, fetchCertGenParams(), updateTime);
-                        postCreateCertificate(admin, data, ca, new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()));
+                        ret = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, req, responseClass, fetchCertGenParams(), updateTime);
+                        postCreateCertificate(admin, endEntityInformation, ca, new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()));
                     }
                 } catch (ObjectNotFoundException e) {
                     // If we didn't find the entity return error message
@@ -470,11 +473,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             }
             ret.create();
             // Call authentication session and tell that we are finished with this user. (Only if we store UserData for this CA.)
-            if (ca.isUseUserStorage() && data != null) {
-                finishUser(ca, data);
+            if (ca.isUseUserStorage() && endEntityInformation != null) {
+                finishUser(ca, endEntityInformation);
             }
         } catch (CustomCertificateSerialNumberException e) {
-            cleanUserCertDataSN(data);
+            cleanUserCertDataSN(endEntityInformation);
             throw e;
         } catch (IllegalKeyException ke) {
             log.error("Key is of unknown type: ", ke);
@@ -874,6 +877,29 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final long updateTime = System.currentTimeMillis();
         //Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal. 
         //We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing. 
+        singleActiveCertificateConstraint(admin, endEntityInformation);        
+        // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
+        final CertificateDataWrapper certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, keyusage, notBefore, notAfter, extensions,
+                sequence, fetchCertGenParams(), updateTime);
+        postCreateCertificate(admin, endEntityInformation, ca, certWrapper);
+        if (log.isTraceEnabled()) {
+            log.trace("<createCertificate(pk, ku, notAfter)");
+        }
+        return certWrapper.getCertificate();
+    }
+
+
+    /**Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal. 
+    * We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing.
+    * 
+    * @param admin AuthenticationToken used for revoking the certificate
+    * @param endEntityInformation EndEntityInformation containing username, DN and certificate profile id
+    */ 
+    private void singleActiveCertificateConstraint(final AuthenticationToken admin, final EndEntityInformation endEntityInformation)
+            throws CertificateRevokeException, AuthorizationDeniedException {
+        if (log.isTraceEnabled()) {
+            log.trace(">singleActiveCertificateConstraint()");
+        }
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
         if (certProfile.isSingleActiveCertificateConstraint()) {
             // Only get not yet expired certificates with status CERT_ACTIVE, CERT_NOTIFIEDABOUTEXPIRATION, CERT_REVOKED
@@ -894,15 +920,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 revocationSession.revokeCertificate(admin, cdw, publishers, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED, endEntityInformation.getDN());
             }
         }
-        
-        // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
-        final CertificateDataWrapper certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, keyusage, notBefore, notAfter, extensions,
-                sequence, fetchCertGenParams(), updateTime);
-        postCreateCertificate(admin, endEntityInformation, ca, certWrapper);
         if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(pk, ku, notAfter)");
+            log.trace("<singleActiveCertificateConstraint()");
         }
-        return certWrapper.getCertificate();
     }
     
     @Override
