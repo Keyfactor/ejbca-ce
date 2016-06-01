@@ -41,6 +41,9 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBTransactionRolledbackException;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -337,6 +340,10 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 			log.debug("revocationdate=" + data3.getRevocationDate());
 			log.debug("revocationreason=" + data3.getRevocationReason());
 			assertEquals("Wrong revocation reason", data3.getRevocationReason(), RevokedCertInfo.NOT_REVOKED);
+            log.debug("subjectAltName=" + data3.getSubjectAltName());
+            assertEquals("Wrong SAN", "dNSName=foobar.bar.com", data3.getSubjectAltName());
+            log.debug("endEntityProfileId=" + data3.getEndEntityProfileIdOrZero());
+            assertEquals("Wrong EEP", EndEntityInformation.NO_ENDENTITYPROFILE, data3.getEndEntityProfileIdOrZero());
 			
 			internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 			data3 = certificateStoreSession.getCertificateInfo(fp);
@@ -399,6 +406,10 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 			log.debug("revocationdate=" + data3.getRevocationDate());
 			log.debug("revocationreason=" + data3.getRevocationReason());
 			assertEquals("wrong reason", data3.getRevocationReason(), RevokedCertInfo.NOT_REVOKED);
+            log.debug("subjectAltName=" + data3.getSubjectAltName());
+            assertEquals("Wrong SAN", "dNSName=foobar.bar.com", data3.getSubjectAltName());
+            log.debug("endEntityProfileId=" + data3.getEndEntityProfileIdOrZero());
+            assertEquals("Wrong EEP", EndEntityInformation.NO_ENDENTITYPROFILE, data3.getEndEntityProfileIdOrZero());
 			
 			boolean worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 			assertTrue("Failed to revoke cert that should have worked", worked);
@@ -863,8 +874,15 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     private X509Certificate generateCert(final AuthenticationToken admin, final int status) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
             SignatureException, InvalidKeyException, CreateException, AuthorizationDeniedException, IllegalStateException, OperatorCreationException, CertificateException, IOException {
         // create a new self signed certificate
-        X509Certificate xcert = CertTools.genSelfCert("C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keys.getPrivate(), 
-        		keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foobar.bar.com");
+        ExtensionsGenerator extgen = new ExtensionsGenerator();
+        extgen.addExtension(Extension.subjectAlternativeName, false, san);
+        Extension sanExtension = extgen.generate().getExtension(Extension.subjectAlternativeName);
+        List<Extension> additionalExtensions = new ArrayList<>();
+        additionalExtensions.add(sanExtension);
+        
+        X509Certificate xcert = CertTools.genSelfCertForPurpose("C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keys.getPrivate(), 
+        		keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false, 0, null, null, BouncyCastleProvider.PROVIDER_NAME, true, additionalExtensions);
         String fp = CertTools.getFingerprintAsString(xcert);
 
         Certificate ce = certificateStoreSession.findCertificateByFingerprint(fp);

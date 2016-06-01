@@ -950,6 +950,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             ctypes.add(CertificateConstants.CERTTYPE_ROOTCA);
         }
         List<Certificate> ret;
+        // FIXME: These queries can easily make the server run out of memory on a large database
         if (null != issuerDN && issuerDN.length() > 0) {
             ret = CertificateData.findActiveCertificatesByTypeAndIssuer(entityManager, ctypes, CertTools.stringToBCDNString(issuerDN));
         } else {
