@@ -48,10 +48,12 @@
                                     	<li class="pure-menu-item">
                                             <h:outputLink value="enrollmakenewrequest.xhtml" styleClass="pure-menu-link enroll-menu-link"><h:outputText value="#{msg.menu_pagetitle_enroll_make_new_request}"/></h:outputLink>
                                         </li>
-                                    </ui:fragment><!--  Hiding until these items have been implemented
+                                    </ui:fragment>
                                     <ui:fragment rendered="#{raAccessBean.authorizedToEnrollWithRequestId}">
-                                        <li class="pure-menu-item"><a href="#" class="pure-menu-link enroll-menu-link">Enroll with Request ID</a></li>
-                                    </ui:fragment>-->
+                                        <li class="pure-menu-item">
+                                        	<h:outputLink value="enrollwithrequestid.xhtml" styleClass="pure-menu-link enroll-menu-link"><h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}"/></h:outputLink>
+                                        </li>
+                                    </ui:fragment>
                                     <ui:fragment rendered="#{raAccessBean.authorizedToEnrollSeeRequestStatus}">
                                         <li class="pure-menu-item"><a href="#" class="pure-menu-link enroll-menu-link">See Request Status</a></li>
                                     </ui:fragment><!-- Hiding until these items have been implemented
