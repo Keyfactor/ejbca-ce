@@ -345,44 +345,63 @@ document.getElementById("marker").appendChild(newFileInput);
 										value="#{enrollMakeNewRequestBean.endEntityInformation.email}" />
 								</h:panelGroup>
 							</fieldset>
-							
-							<h:panelGroup layout="block" styleClass="keygeneration-button-group">
-								<h:commandButton id="generateJks"
-									value="#{msg.enroll_generate_jks}"
+
+							<h:panelGroup layout="block"
+								styleClass="keygeneration-button-group">
+								<h:commandButton id="generateJks" value="#{msg.enroll_request_jks}"
 									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateJks()}"
 									rendered="#{enrollMakeNewRequestBean.getGenerateJksButtonRendered()}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
-								<h:commandButton id="generateP12"
-									value="#{msg.enroll_generate_p12}"
+								<h:commandButton id="generateP12" value="#{msg.enroll_request_p12}"
 									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateP12()}"
 									rendered="#{enrollMakeNewRequestBean.getGenerateP12ButtonRendered()}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
-								<h:commandButton id="generatePem"
-									value="#{msg.enroll_generate_pem}"
+								<h:commandButton id="generatePem" value="#{msg.enroll_request_pem}"
 									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePem()}"
 									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
 								<h:commandButton id="generatePemFullChain"
-									value="#{msg.enroll_generate_pem_full_chain}"
+									value="#{msg.enroll_request_pem_full_chain}"
 									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePemFullChain()}"
 									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
-								<h:commandButton id="generatePkcs7"
-									value="#{msg.enroll_generate_pkcs7}"
+								<h:commandButton id="generatePkcs7" value="#{msg.enroll_request_pkcs7}"
 									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePksc7()}"
 									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
-								<h:commandButton id="generateDer"
-									value="#{msg.enroll_generate_der}"
+								<h:commandButton id="generateDer" value="#{msg.enroll_request_der}"
 									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificeDer()}"
 									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
+							</h:panelGroup>
+							<h:panelGroup layout="block"
+								styleClass="keygeneration-button-group"
+								rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
+								<h:outputText
+									value="#{msg.enroll_request_was_successfully_sent}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block"
+								styleClass="keygeneration-button-group"
+								rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
+								<h:outputText
+									value="#{msg.enroll_request_id}" />
+								<h:outputText
+									value="#{enrollMakeNewRequestBean.requestId ne 0}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block"
+								styleClass="keygeneration-button-group"
+								rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
+								<h:outputLink value="enrollmakenewrequest.xhtml"
+									styleClass="pure-menu-link enroll-menu-link">
+									<h:outputText
+										value="#{msg.menu_pagetitle_enroll_use_request_id}" />
+								</h:outputLink>
 							</h:panelGroup>
 						</h:panelGroup>
 					</h:panelGroup>
