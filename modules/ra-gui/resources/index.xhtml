@@ -28,6 +28,15 @@
     </ui:remove>
     <ui:composition template="/WEB-INF/include/template.xhtml">
         <ui:define name="content">
+            <h:panelGroup layout="block" class="header" id="title">
+                <h1><h:outputText value="#{msg.welcome_page_header}"/></h1>
+            </h:panelGroup> 
+            <h:panelGroup layout="block" class="content-body" id="content-body">
+                <h:outputText value="#{msg.welcome_page_text}"/>
+            </h:panelGroup>
+        
+        <!-- Testing stuff below -->
+        <ui:remove>
         	<h:panelGroup layout="block" class="header" id="title">
 				<h1>A Title!</h1>
 			</h:panelGroup>	
@@ -111,7 +120,7 @@
 				    </tbody>
 				</table>
 	        </h:panelGroup>
-	        
+        </ui:remove>
 	         
         </ui:define>
     </ui:composition>
