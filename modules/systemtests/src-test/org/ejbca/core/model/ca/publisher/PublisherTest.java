@@ -292,7 +292,7 @@ public class PublisherTest {
 		publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(newName)));
 
         final CertificateData cd = new CertificateData(cert, cert.getPublicKey(), "test05", null, CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, "foo", System.currentTimeMillis(), true);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, "foo", System.currentTimeMillis(), true, true);
         cd.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
         cd.setRevocationDate(-1L);
         final CertificateDataWrapper cdw = new CertificateDataWrapper(cd, null);
@@ -336,7 +336,8 @@ public class PublisherTest {
         final Certificate testCertificate = CertTools.getCertfromByteArray(testcert, Certificate.class);
         final String cafp = "CA fingerprint could be anything in this test.";
         final CertificateData cd = new CertificateData(testCertificate, testCertificate.getPublicKey(), "username", cafp, CertificateConstants.CERT_ACTIVE,
-                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, "tag", System.currentTimeMillis(), true);
+                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, "tag",
+                System.currentTimeMillis(), true, true);
         cd.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
         cd.setRevocationDate(-1L);
         final CertificateDataWrapper cdw = new CertificateDataWrapper(cd, null);

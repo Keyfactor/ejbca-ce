@@ -180,7 +180,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             base64CertData = new Base64CertData(incert);
             entityManager.persist(new Base64CertData(incert));
         }
-        final CertificateData certificateData = new CertificateData(incert, pubk, username, cafp, status, type, certificateProfileId, endEntityProfileId, tag, updateTime, !useBase64CertTable && storeCertificateData);
+        final boolean storeSubjectAlternativeName = certificateProfile==null || certificateProfile.getStoreSubjectAlternativeName();
+        final CertificateData certificateData = new CertificateData(incert, pubk, username, cafp, status, type, certificateProfileId, endEntityProfileId, tag, updateTime,
+                !useBase64CertTable && storeCertificateData, storeSubjectAlternativeName);
         entityManager.persist(certificateData);
         final String serialNo = CertTools.getSerialNumberAsString(incert);
         final String msg = INTRES.getLocalizedMessage("store.storecert", username, certificateData.getFingerprint(), certificateData.getSubjectDN(), certificateData.getIssuerDN(), serialNo);

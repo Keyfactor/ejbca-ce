@@ -375,6 +375,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     
     public void toggleUseSubjectAlternativeName() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseSubjectAlternativeName(!getCertificateProfile().getUseSubjectAlternativeName());
+        // Default store to enabled when extension is first enabled and vice versa
+        getCertificateProfile().setStoreSubjectAlternativeName(getCertificateProfile().getUseSubjectAlternativeName());
         redirectToComponent("header_x509v3extensions_names");
     }
     
