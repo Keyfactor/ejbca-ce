@@ -226,7 +226,6 @@ document.getElementById("marker").appendChild(newFileInput);
 								<h:outputText
 									value="#{enrollMakeNewRequestBean.getSubjectDnFieldOutputName(instance.getName())}"
 									rendered="#{instance.isUsed()}" />
-								<h:outputText value="#{instance.getName()}" style="display: none"/>
 								<h:inputText id="subjectDnField" value="#{instance.value}"
 									rendered="#{instance.isUsed()}"
 									disabled="!#{instance.isModifiable()}"
@@ -392,13 +391,12 @@ document.getElementById("marker").appendChild(newFileInput);
 								<h:outputText
 									value="#{msg.enroll_request_id}" />
 								<h:outputText
-									value="#{enrollMakeNewRequestBean.requestId ne 0}" />
+									value="#{enrollMakeNewRequestBean.requestId}" />
 							</h:panelGroup>
 							<h:panelGroup layout="block"
 								styleClass="keygeneration-button-group"
 								rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
-								<h:outputLink value="enrollmakenewrequest.xhtml"
-									styleClass="pure-menu-link enroll-menu-link">
+								<h:outputLink value="enrollwithrequestid.xhtml">
 									<h:outputText
 										value="#{msg.menu_pagetitle_enroll_use_request_id}" />
 								</h:outputLink>
@@ -417,7 +415,7 @@ document.getElementById("marker").appendChild(newFileInput);
 					</h:commandButton>
 				</h:panelGroup>
 				<script>
-					document.getElementById('enrollMakeNewRequestForm:nextButton').focus();	<!-- temp solution. proper highlighting solution is needed -->	
+					document.getElementById('enrollMakeNewRequestForm:resetButton').focus();	<!-- temp solution. proper highlighting solution is needed -->	
 				</script>
 			</h:form>
 		</h:panelGroup>
