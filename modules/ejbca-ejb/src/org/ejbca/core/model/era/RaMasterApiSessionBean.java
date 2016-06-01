@@ -226,6 +226,28 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return approvals.iterator().next();
     }
     
+    /** @param approvalId Calculated hash of the request (this somewhat confusing name is re-used from the ApprovalRequest class) */
+    private ApprovalDataVO getApprovalDataByRequestHash(AuthenticationToken authenticationToken, final int approvalId) {
+        final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
+        query.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalId));
+        
+        final List<ApprovalDataVO> approvals;
+        try {
+            approvals = approvalSession.query(authenticationToken, query, 0, 100, "", "", ""); // authorization checks are performed afterwards
+        } catch (AuthorizationDeniedException e) {
+            // Not currently ever thrown by query()
+            throw new IllegalStateException(e);
+        } catch (IllegalQueryException e) {
+            throw new IllegalStateException("Query for approval request failed: " + e.getMessage(), e);
+        }
+        
+        if (approvals.isEmpty()) {
+            return null;
+        }
+        
+        return approvals.iterator().next();
+    }
+    
     /** Gets the complete text representation of a request (unlike ApprovalRequest.getNewRequestDataAsText which doesn't do any database queries) */
     private List<ApprovalDataText> getRequestDataAsText(final AuthenticationToken authenticationToken, final ApprovalDataVO approval) {
         final ApprovalRequest approvalRequest = approval.getApprovalRequest();
@@ -269,6 +291,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final int id) {
         final ApprovalDataVO advo = getApprovalData(authenticationToken, id);
+        if (advo == null) {
+            return null;
+        }
+        return getApprovalRequest(authenticationToken, advo);
+    }
+    
+    @Override
+    public RaApprovalRequestInfo getApprovalRequestByRequestHash(final AuthenticationToken authenticationToken, final int approvalId) {
+        final ApprovalDataVO advo = getApprovalDataByRequestHash(authenticationToken, approvalId);
         if (advo == null) {
             return null;
         }

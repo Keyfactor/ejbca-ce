@@ -60,6 +60,13 @@ public interface RaMasterApi {
     RaApprovalRequestInfo getApprovalRequest(AuthenticationToken authenticationToken, int id);
 
     /**
+     * Finds an approval by a hash of the request data.
+     * 
+     * @param approvalId Calculated hash of the request (this somewhat confusing name is re-used from the ApprovalRequest class)
+     */
+    RaApprovalRequestInfo getApprovalRequestByRequestHash(AuthenticationToken authenticationToken, int approvalId);
+    
+    /**
      * Modifies an approval request and sets the current admin as a blacklisted admin.
      * @return The new approval request (which may have a new id)
      */
@@ -179,4 +186,5 @@ public interface RaMasterApi {
      */
     boolean changeCertificateStatus(AuthenticationToken authenticationToken, String fingerprint, int newStatus, int newRevocationReason)
             throws ApprovalException, WaitingForApprovalException;
+
 }
