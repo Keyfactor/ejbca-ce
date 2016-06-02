@@ -1424,17 +1424,5 @@ but it will give an indication as well for other platforms what configuration st
 </subsection>
 </section>
 
-<section name="Additional howtos">
-<note>
-These additional howtos are for advanced users. If this is the first time installing EJBCA, or you run into trouble with these guides, please go back and try the regular quick install guide.
-</note>
-<p>
-Branko Majic have a good detailed guide for setting up <a href="http://majic.rs/book/free-software-x509-cookbook/setting-up-ejbca-as-certification-authority">EJBCA with JBoss</a> in a rather thorough setup.
-</p>
-<p>
-In the directory doc/howto in the distribution there are additional howtos for some specific platforms and configurations.
-</p>
-</section>
-
 </body>
 </document>
