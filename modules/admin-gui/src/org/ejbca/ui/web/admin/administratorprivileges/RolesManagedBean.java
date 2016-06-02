@@ -318,10 +318,14 @@ public class RolesManagedBean extends BaseManagedBean {
         AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(matchWithMenuItems[0],
                 matchWithMenuItems[1]);
         AccessMatchType matchType = getMatchType();
-        String matchValue = getMatchValue();
-        if (matchValue == null || "".equals(matchValue)) {
-            addErrorMessage("MATCHVALUEREQUIRED");
-            return;
+        if (matchType.equals(AccessMatchType.TYPE_NONE)) {
+            matchValue = "";
+        } else {
+            matchValue = getMatchValue();
+            if (matchValue == null || "".equals(matchValue)) {
+                addErrorMessage("MATCHVALUEREQUIRED");
+                return;
+            }
         }
         int caid = Integer.parseInt(getMatchCaId());
         AccessUserAspectData adminEntity = new AccessUserAspectData(getCurrentRoleObject().getRoleName(), caid, matchWith, matchType,
@@ -342,7 +346,7 @@ public class RolesManagedBean extends BaseManagedBean {
      * @throws RoleNotFoundException
      */
     public void deleteAdmin() throws RoleNotFoundException {
-        final String primaryKey = (String) FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("primaryKey");
+        final String primaryKey = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("primaryKey");
         if (primaryKey==null) {
             addErrorMessage("ACCESSUSERASPECT_UNKNOWN");
             return;
@@ -390,7 +394,7 @@ public class RolesManagedBean extends BaseManagedBean {
     /** @return the name of the CA that has issued the certificate for the admin in the current row of the datatable */
     public String getIssuingCA() {
         AccessUserAspectData adminEntity = getAdminForEach();
-        String caName = (String) ejbLocalHelper.getCaSession().getCAIdToNameMap().get(adminEntity.getCaId());
+        String caName = ejbLocalHelper.getCaSession().getCAIdToNameMap().get(adminEntity.getCaId());
         if (caName == null) {
             caName = "Unknown CA with hash " + adminEntity.getCaId();
         }
@@ -524,7 +528,7 @@ public class RolesManagedBean extends BaseManagedBean {
     /** @return the available end entity rules as a Collection<SelectItem> */
     public Collection<SelectItem> getAvailableEndEntityRules() {
         Collection<SelectItem> list = new ArrayList<SelectItem>();
-        for (Integer currentRule : (Collection<Integer>) getBasicRuleSet().getAvailableEndEntityRules()) {
+        for (Integer currentRule : getBasicRuleSet().getAvailableEndEntityRules()) {
             list.add(new SelectItem(currentRule, getEjbcaWebBean().getText(BasicAccessRuleSet.getEndEntityRuleText(currentRule))));
         }
         return list;
@@ -533,7 +537,7 @@ public class RolesManagedBean extends BaseManagedBean {
     /** @return the available end entity profile rules as a Collection<SelectItem> */
     public Collection<SelectItem> getAvailableEndEntityProfiles() {
         Collection<SelectItem> list = new ArrayList<SelectItem>();
-        for (Integer currentProfile : (Collection<Integer>) getBasicRuleSet().getAvailableEndEntityProfiles()) {
+        for (Integer currentProfile : getBasicRuleSet().getAvailableEndEntityProfiles()) {
             if (currentProfile == BasicAccessRuleSet.ENDENTITYPROFILE_ALL) {
                 list.add(new SelectItem(currentProfile, getEjbcaWebBean().getText("ALL")));
             } else {
@@ -546,7 +550,7 @@ public class RolesManagedBean extends BaseManagedBean {
     /** @return the available other access rules as a Collection<SelectItem> */
     public Collection<SelectItem> getAvailableOtherRules() {
         Collection<SelectItem> list = new ArrayList<SelectItem>();
-        for (Integer currentRule : (Collection<Integer>) getBasicRuleSet().getAvailableOtherRules()) {
+        for (Integer currentRule : getBasicRuleSet().getAvailableOtherRules()) {
             list.add(new SelectItem(currentRule.toString(), getEjbcaWebBean().getText(BasicAccessRuleSet.OTHERTEXTS[currentRule])));
         }
         return list;
