@@ -219,23 +219,25 @@ document.getElementById("marker").appendChild(newFileInput);
 						<h3>
 							<h:outputText value="#{msg.enroll_subject_dn_attributes}" />
 						</h3>
-						<ui:repeat id="subjectDn"
-							value="#{enrollMakeNewRequestBean.subjectDn.getFieldInstances()}"
-							var="instance">
-							<h:panelGroup layout="block" styleClass="pure-control-group">
-								<h:outputText
-									value="#{enrollMakeNewRequestBean.getSubjectDnFieldOutputName(instance.getName())}"
-									rendered="#{instance.isUsed()}" />
-								<h:inputText id="subjectDnField" value="#{instance.value}"
-									rendered="#{instance.isUsed()}"
-									disabled="!#{instance.isModifiable()}"
-									required="#{instance.isRequired()}" >
-									<f:validator validatorId="extendedRegexValidator" />
-    								<f:attribute name="pattern" value="#{instance.getRegexPattern()}" />
-								</h:inputText>
-								<h:message for="subjectDnField"/>
-							</h:panelGroup>
-						</ui:repeat>
+						<fieldset>
+							<ui:repeat id="subjectDn"
+								value="#{enrollMakeNewRequestBean.subjectDn.getFieldInstances()}"
+								var="instance">
+								<h:panelGroup layout="block" styleClass="pure-control-group">
+									<h:outputLabel for="subjectDnField"
+										value="#{enrollMakeNewRequestBean.getSubjectDnFieldOutputName(instance.getName())}"
+										rendered="#{instance.isUsed()}" />
+									<h:inputText id="subjectDnField" value="#{instance.value}"
+										rendered="#{instance.isUsed()}"
+										disabled="!#{instance.isModifiable()}"
+										required="#{instance.isRequired()}" >
+										<f:validator validatorId="extendedRegexValidator" />
+	    								<f:attribute name="pattern" value="#{instance.getRegexPattern()}" />
+									</h:inputText>
+									<h:message for="subjectDnField"/>
+								</h:panelGroup>		
+							</ui:repeat>
+						</fieldset>
 					</h:panelGroup>
 					
 					<h:panelGroup layout="block" styleClass="internal-frame" 
