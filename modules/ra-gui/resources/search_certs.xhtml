@@ -277,21 +277,8 @@
 	                            </f:facet>
 	                            <h:outputText styleClass="fineprint" value="#{raSearchCertificate.username}"/>
 	                        </h:column>
-	                        <h:column>
-	                            <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_cert}"/></f:facet>
-	                            <h:outputLink styleClass="fineprintMono" value="cert">
-	                                <f:param name="fp" value="#{raSearchCertificate.fingerprint}"/>
-	                                <f:param name="chain" value="true"/>
-	                                <f:param name="format" value="pem"/>
-	                                <h:outputText value="#{msg.search_certs_page_link_download_cert}"/>
-	                            </h:outputLink>
-	                        </h:column>
                             <h:column>
                                 <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_action}"/></f:facet>
-                                <h:outputLink styleClass="fineprintMono" value="viewcert.xhtml">
-                                    <f:param name="fp" value="#{raSearchCertificate.fingerprint}"/>
-                                    <h:outputText value="#{msg.search_certs_page_link_view_cert}"/>
-                                </h:outputLink>
                                 <h:commandButton action="#{raSearchCertsBean.openCertificateDetails(raSearchCertificate)}" value="#{msg.search_certs_page_show_command}"/>
                             </h:column>
 	                    </h:dataTable>
