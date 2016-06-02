@@ -782,6 +782,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
                 KeyStore keystore = null;
                 try {
+                    endEntityInformation.setKeyStoreAlgorithm(keyAlg);
+                    endEntityInformation.setKeyStoreAlgorithmLength(keyLength);
                     keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
                     log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", tokenName, endEntityInformation.getUsername()));
     
