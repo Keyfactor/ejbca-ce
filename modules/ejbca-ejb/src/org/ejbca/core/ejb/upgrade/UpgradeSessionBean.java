@@ -298,7 +298,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         final String last = getLastPostUpgradedToVersion();
         boolean ret = true;
         if (isLesserThan(last, currentVersion)) {
-            ret = upgradeSession.upgrade(dbType, last, false);
+            ret = upgradeSession.upgrade(dbType, last, true);
         }
         return ret;
     }
@@ -389,7 +389,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             if (!isEndEntityProfileInCertificateData()) {
                 // Persist mark that this upgrade has not been performed so we can do it in later release (unless the value was set due to this being a fresh installation)
-                setEndEntityProfileInCertificateData(false); 
+                setEndEntityProfileInCertificateData(false);
             }
             setLastUpgradedToVersion("6.6.0");
         }
