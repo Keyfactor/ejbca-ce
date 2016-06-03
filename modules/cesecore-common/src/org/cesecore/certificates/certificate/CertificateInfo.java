@@ -32,6 +32,7 @@ public class CertificateInfo implements Serializable {
     private String subjectdn;
     private int status;
     private int type;
+    private Date notBefore;
     private Date expiredate;
     private Date revocationdate;
     private int revocationreason;
@@ -44,18 +45,19 @@ public class CertificateInfo implements Serializable {
     private String subjectAltName;
     
     public CertificateInfo(String fingerprint, String cafingerprint, String serno,  String issuerdn, String subjectdn, int status, int type, 
-            long expiredate, long revocationdate, int revocationreason, String username, String tag, int certificateProfileId,
+            Long notBefore, long expiredate, long revocationdate, int revocationreason, String username, String tag, int certificateProfileId,
             Integer endEntityProfileId, long updateTime, String subjectKeyId, String subjectAltName) {
-        this.fingerprint=fingerprint;
-        this.cafingerprint=cafingerprint;
-        this.serno=serno;
-        this.issuerdn=issuerdn;
-        this.subjectdn=subjectdn;
-        this.status=status;
-        this.type=type;
-        this.expiredate=new Date(expiredate);
-        this.revocationdate=new Date(revocationdate);
-        this.revocationreason=revocationreason;
+        this.fingerprint = fingerprint;
+        this.cafingerprint = cafingerprint;
+        this.serno = serno;
+        this.issuerdn = issuerdn;
+        this.subjectdn = subjectdn;
+        this.status = status;
+        this.type = type;
+        this.notBefore = notBefore==null ? null : new Date(notBefore);
+        this.expiredate = new Date(expiredate);
+        this.revocationdate = new Date(revocationdate);
+        this.revocationreason = revocationreason;
         this.username = username;
         this.tag = tag;
         this.certificateProfileId = certificateProfileId;
@@ -76,6 +78,7 @@ public class CertificateInfo implements Serializable {
     /** One of the CertificateConstants.CERT_ constants, for example CertificateConstants.CERT_ACTIVE */
     public void setStatus(int s) { this.status=s; }
     public int getType() { return type; }
+    public Date getNotBefore() { return notBefore; }
     public Date getExpireDate() { return expiredate; }
     public Date getRevocationDate() { return revocationdate; }
     public void setRevocationDate(Date d) { this.revocationdate=d; }

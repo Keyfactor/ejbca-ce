@@ -344,6 +344,8 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             assertEquals("Wrong SAN", "dNSName=foobar.bar.com", data3.getSubjectAltName());
             log.debug("endEntityProfileId=" + data3.getEndEntityProfileIdOrZero());
             assertEquals("Wrong EEP", EndEntityInformation.NO_ENDENTITYPROFILE, data3.getEndEntityProfileIdOrZero());
+            log.debug("notBefore=" + data3.getNotBefore());
+            assertEquals("Wrong notBefore", CertTools.getNotBefore(cert), data3.getNotBefore());
 			
 			internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 			data3 = certificateStoreSession.getCertificateInfo(fp);

@@ -52,6 +52,7 @@
             <basic fetch="EAGER" name="status"><column name="status" column-definition="INT4" nullable="false"/></basic>
             <basic fetch="EAGER" name="type"><column name="type" column-definition="INT4" nullable="false"/></basic>
             <basic fetch="EAGER" name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(256)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="notBefore"><column name="notBefore" column-definition="INT8" nullable="true"/></basic>
             <basic fetch="EAGER" name="expireDate"><column name="expireDate" column-definition="INT8" nullable="false"/></basic>
             <basic fetch="EAGER" name="revocationDate"><column name="revocationDate" column-definition="INT8" nullable="false"/></basic>
             <basic fetch="EAGER" name="revocationReason"><column name="revocationReason" column-definition="INT4" nullable="false"/></basic>
