@@ -66,8 +66,8 @@ public class EndEntityInformation implements Serializable {
     private int tokentype;
     private int hardtokenissuerid;
     private ExtendedInformation extendedinformation;
-    String keyStoreAlgorithm;
-    String keyStoreAlgorithmLength;
+    private String keyStoreAlgorithm;
+    private String keyStoreAlgorithmLength;
 
     /** Creates new empty EndEntityInformation */
     public EndEntityInformation() {
@@ -354,5 +354,22 @@ public class EndEntityInformation implements Serializable {
     	} else {
             return StringTools.getBase64String(subjectDNClean);
     	}
+    }
+    
+    public String getTokenTypeName() {
+        switch (getTokenType()) {
+        case EndEntityConstants.TOKEN_SOFT_P12:
+            return "P12";
+        case EndEntityConstants.TOKEN_SOFT_JKS:
+            return "JKS";
+        case EndEntityConstants.TOKEN_SOFT_PEM:
+            return "PEM";
+        case EndEntityConstants.TOKEN_USERGEN:
+            return "User Generated";
+        case EndEntityConstants.TOKEN_SOFT:
+            return "Soft";
+        default:
+            return "Unknown token type with id = '" + getTokenType() + "'";
+        }
     }
 }
