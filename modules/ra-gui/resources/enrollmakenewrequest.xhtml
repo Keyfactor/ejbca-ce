@@ -230,7 +230,7 @@ document.getElementById("marker").appendChild(newFileInput);
 									<h:inputText id="subjectDnField" value="#{instance.value}"
 										rendered="#{instance.isUsed()}"
 										disabled="!#{instance.isModifiable()}"
-										required="#{instance.isRequired()}" >
+										required="#{instance.isRequired()}">
 										<f:validator validatorId="extendedRegexValidator" />
 	    								<f:attribute name="pattern" value="#{instance.getRegexPattern()}" />
 									</h:inputText>
@@ -413,7 +413,7 @@ document.getElementById("marker").appendChild(newFileInput);
 						rendered="#{enrollMakeNewRequestBean.getNextButtonRendered()}">
 					</h:commandButton>
 					<h:commandButton id="resetButton" value="#{msg.generic_reset}" styleClass="pure-button ra-button"
-						action="#{enrollMakeNewRequestBean.reset()}" immediate="true">
+						action="#{enrollMakeNewRequestBean.reset()}">
 					</h:commandButton>
 				</h:panelGroup>
 				<script>

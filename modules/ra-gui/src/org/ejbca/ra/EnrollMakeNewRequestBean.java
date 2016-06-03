@@ -42,7 +42,7 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.SessionScoped;
+import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.ExternalContext;
@@ -81,7 +81,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * @version $Id$
  */
 @ManagedBean
-@SessionScoped
+@ViewScoped
 public class EnrollMakeNewRequestBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -352,7 +352,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (endEntityProfile == null) {
             return;
         }
-
+        
         subjectDn = new SubjectDn(endEntityProfile);
         subjectAlternativeName = new SubjectAlternativeName(endEntityProfile);
         subjectDirectoryAttributes = new SubjectDirectoryAttributes(endEntityProfile);
@@ -471,13 +471,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     //All reset* methods should be able to clear/reset states that have changed during init* methods.
     //Always make sure that reset methods are chained!
 
-    public final void reset() {
-        availableEndEntityProfiles.clear();
-        selectedEndEntityProfile = null;
-        endEntityProfileChanged = false;
-        resetCertificateProfile();
-
-        initAll();
+    public final String reset() {
+        //Invalidate view tree by redirecting to the same page
+        String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
+        return viewId+"?faces-redirect=true";
     }
 
     private final void resetCertificateProfile() {
