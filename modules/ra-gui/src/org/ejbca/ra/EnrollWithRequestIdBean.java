@@ -31,6 +31,7 @@ import javax.faces.context.FacesContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -79,6 +80,9 @@ public class EnrollWithRequestIdBean implements Serializable {
         
     }
     
+    /**
+     * Check the status of request ID
+     */
     public void checkRequestId(){
         if(Integer.parseInt(requestId) != 0){
             RaApprovalRequestInfo raApprovalRequestInfo = raMasterApiProxyBean.getApprovalRequestByRequestHash(raAuthenticationBean.getAuthenticationToken(), Integer.parseInt(requestId));
@@ -105,9 +109,9 @@ public class EnrollWithRequestIdBean implements Serializable {
                 return;
             }
             
+            //Get username and set the password to be the same as username
             String username = raApprovalRequestInfo.getEditableData().getUsername();
-            endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);
-            
+            endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);   
             if(endEntityInformation == null){
                 log.error("Could not find endEntity for the username='" + username + "'" );
                 return;
@@ -125,7 +129,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
     
     public void finalizeEnrollment(){
-        
+        //Generate token
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         KeyStore keystore = null;
         try {
@@ -146,9 +150,19 @@ public class EnrollWithRequestIdBean implements Serializable {
             }
         }
         
-        raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_has_been_successfully_enrolled", Integer.parseInt(requestId));
+        //Download the token
+        switch (endEntityInformation.getTokenType()) {
+        case EndEntityConstants.TOKEN_SOFT_P12:
+            downloadToken(buffer.toByteArray(), "application/x-pkcs12", ".p12");
+            break;
+        case EndEntityConstants.TOKEN_SOFT_JKS:
+            downloadToken(buffer.toByteArray(), "application/octet-stream", ".jks");
+            break;
+        default:
+            break;
+        }
         
-        downloadToken(buffer.toByteArray(), "application/x-pkcs12", ".p12");
+        reset(); //After the download let's get on the previous screen
     }
     
     private final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
@@ -182,7 +196,6 @@ public class EnrollWithRequestIdBean implements Serializable {
         }
     }
     
-
     //-----------------------------------------------------------------
     //Getters/setters
     public EndEntityInformation getEndEntityInformation() {
