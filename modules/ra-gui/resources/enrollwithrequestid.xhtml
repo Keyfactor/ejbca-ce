@@ -79,7 +79,7 @@
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group">
 								<h:outputText value="Token Type: " />
-								<h:outputText value="P12" />
+								<h:outputText value="#{enrollWithRequestIdBean.endEntityInformation.getTokenTypeName()}" />
 							</h:panelGroup>
 							<h:panelGroup layout="block"
 								rendered="#{enrollWithRequestIdBean.isRequestApproved()}">
