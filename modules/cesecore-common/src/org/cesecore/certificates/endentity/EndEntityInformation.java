@@ -355,21 +355,4 @@ public class EndEntityInformation implements Serializable {
             return StringTools.getBase64String(subjectDNClean);
     	}
     }
-    
-    public String getTokenTypeName() {
-        switch (getTokenType()) {
-        case EndEntityConstants.TOKEN_SOFT_P12:
-            return "P12";
-        case EndEntityConstants.TOKEN_SOFT_JKS:
-            return "JKS";
-        case EndEntityConstants.TOKEN_SOFT_PEM:
-            return "PEM";
-        case EndEntityConstants.TOKEN_USERGEN:
-            return "User Generated";
-        case EndEntityConstants.TOKEN_SOFT:
-            return "Soft";
-        default:
-            return "Unknown token type with id = '" + getTokenType() + "'";
-        }
-    }
 }
