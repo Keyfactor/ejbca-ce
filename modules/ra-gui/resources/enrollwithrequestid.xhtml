@@ -79,7 +79,7 @@
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group">
 								<h:outputText value="Token Type: " />
-								<h:outputText value="#{enrollWithRequestIdBean.endEntityInformation.getTokenTypeName()}" />
+								<h:outputText value="#{msg['tokentype_'.concat(enrollWithRequestIdBean.endEntityInformation.tokenType)]}" />
 							</h:panelGroup>
 							<h:panelGroup layout="block"
 								rendered="#{enrollWithRequestIdBean.isRequestApproved()}">
