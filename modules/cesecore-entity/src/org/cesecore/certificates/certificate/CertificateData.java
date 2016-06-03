@@ -64,16 +64,16 @@ import org.cesecore.util.ValueExtractor;
         @SqlResultSetMapping(name = "CertificateInfoSubset", columns = { @ColumnResult(name = "issuerDN"), @ColumnResult(name = "subjectDN"),
                 @ColumnResult(name = "cAFingerprint"), @ColumnResult(name = "status"), @ColumnResult(name = "type"),
                 @ColumnResult(name = "serialNumber"),
-                @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"), @ColumnResult(name = "revocationReason"),
-                @ColumnResult(name = "username"), @ColumnResult(name = "tag"), @ColumnResult(name = "certificateProfileId"),
-                @ColumnResult(name = "endEntityProfileId"), @ColumnResult(name = "updateTime"), @ColumnResult(name = "subjectKeyId"),
-                @ColumnResult(name = "subjectAltName") }),
+                @ColumnResult(name = "notBefore"), @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"),
+                @ColumnResult(name = "revocationReason"), @ColumnResult(name = "username"), @ColumnResult(name = "tag"),
+                @ColumnResult(name = "certificateProfileId"), @ColumnResult(name = "endEntityProfileId"), @ColumnResult(name = "updateTime"),
+                @ColumnResult(name = "subjectKeyId"), @ColumnResult(name = "subjectAltName") }),
         @SqlResultSetMapping(name = "CertificateInfoSubset2", columns = { @ColumnResult(name = "fingerprint"), @ColumnResult(name = "subjectDN"),
                 @ColumnResult(name = "cAFingerprint"), @ColumnResult(name = "status"), @ColumnResult(name = "type"),
-                @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"), @ColumnResult(name = "revocationReason"),
-                @ColumnResult(name = "username"), @ColumnResult(name = "tag"), @ColumnResult(name = "certificateProfileId"),
-                @ColumnResult(name = "endEntityProfileId"), @ColumnResult(name = "updateTime"), @ColumnResult(name = "subjectKeyId"),
-                @ColumnResult(name = "subjectAltName") }),
+                @ColumnResult(name = "notBefore"), @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"),
+                @ColumnResult(name = "revocationReason"), @ColumnResult(name = "username"), @ColumnResult(name = "tag"),
+                @ColumnResult(name = "certificateProfileId"), @ColumnResult(name = "endEntityProfileId"), @ColumnResult(name = "updateTime"),
+                @ColumnResult(name = "subjectKeyId"), @ColumnResult(name = "subjectAltName") }),
         @SqlResultSetMapping(name = "FingerprintUsernameSubset", columns = { @ColumnResult(name = "fingerprint"), @ColumnResult(name = "username") }) })
 public class CertificateData extends ProtectedData implements Serializable {
 
@@ -83,12 +83,13 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     private String issuerDN;
     private String subjectDN;
-    private String subjectAltName;
+    private String subjectAltName = null;  // @since EJBCA 6.6.0
     private String fingerprint = "";
     private String cAFingerprint;
     private int status = 0;
     private int type = 0;
     private String serialNumber;
+    private Long notBefore = null;  // @since EJBCA 6.6.0
     private long expireDate = 0;
     private long revocationDate = 0;
     private int revocationReason = 0;
@@ -150,6 +151,12 @@ public class CertificateData extends ProtectedData implements Serializable {
             setStatus(status);
             setType(type);
             setCaFingerprint(cafp);
+            final Date notBefore = CertTools.getNotBefore(certificate);
+            if (notBefore==null) {
+                setNotBefore(null);
+            } else {
+                setNotBefore(notBefore.getTime());
+            }
             setExpireDate(CertTools.getNotAfter(certificate));
             setRevocationDate(-1L);
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
@@ -366,18 +373,23 @@ public class CertificateData extends ProtectedData implements Serializable {
         this.serialNumber = serialNumber;
     }
 
-    /**
-     * Date formated as seconds since 1970 (== Date.getTime())
-     * 
-     * @return expire date
-     */
+    /** @returns the number of milliseconds since 1970-01-01 00:00:00 GMT until the certificate was issued or null if the information is not known. */
+    // @Column
+    public Long getNotBefore() {
+        return notBefore;
+    }
+    public void setNotBefore(final Long notBefore) {
+        this.notBefore = notBefore;
+    }
+
+    /** @returns the number of milliseconds since 1970-01-01 00:00:00 GMT until the certificate expires. */
     // @Column
     public long getExpireDate() {
         return expireDate;
     }
 
     /**
-     * Date formated as seconds since 1970 (== Date.getTime())
+     * Date formated as milliseconds since 1970 (== Date.getTime())
      * 
      * @param expireDate expire date
      */
@@ -853,14 +865,14 @@ public class CertificateData extends ProtectedData implements Serializable {
         CertificateInfo ret = null;
         final Query query = entityManager
                 .createNativeQuery(
-                        "SELECT a.fingerprint, a.subjectDN, a.cAFingerprint, a.status, a.type, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason, "
+                        "SELECT a.fingerprint, a.subjectDN, a.cAFingerprint, a.status, a.type, a.serialNumber, a.notBefore, a.expireDate, a.revocationDate, a.revocationReason, "
                                 + "a.username, a.tag, a.certificateProfileId, a.endEntityProfileId, a.updateTime, a.subjectKeyId, a.subjectAltName FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber",
                         "CertificateInfoSubset2");
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("serialNumber", serialNumber);
         query.setMaxResults(1);
         @SuppressWarnings("unchecked")
-        final List<Object[]> resultList = (List<Object[]>) query.getResultList();
+        final List<Object[]> resultList = query.getResultList();
         if (!resultList.isEmpty()) {
             final Object[] fields = resultList.get(0);
             // The order of the results are defined by the SqlResultSetMapping annotation
@@ -869,27 +881,33 @@ public class CertificateData extends ProtectedData implements Serializable {
             final String cafp = (String) fields[2];
             final int status = ValueExtractor.extractIntValue(fields[3]);
             final int type = ValueExtractor.extractIntValue(fields[4]);
-            final long expireDate = ValueExtractor.extractLongValue(fields[5]);
-            final long revocationDate = ValueExtractor.extractLongValue(fields[6]);
-            final int revocationReason = ValueExtractor.extractIntValue(fields[7]);
-            final String username = (String) fields[8];
-            final String tag = (String) fields[9];
-            final int certificateProfileId = ValueExtractor.extractIntValue(fields[10]);
+            final Long notBefore;
+            if (fields[5] == null) {
+                notBefore = null;
+            } else {
+                notBefore = ValueExtractor.extractLongValue(fields[5]);
+            }
+            final long expireDate = ValueExtractor.extractLongValue(fields[6]);
+            final long revocationDate = ValueExtractor.extractLongValue(fields[7]);
+            final int revocationReason = ValueExtractor.extractIntValue(fields[8]);
+            final String username = (String) fields[9];
+            final String tag = (String) fields[10];
+            final int certificateProfileId = ValueExtractor.extractIntValue(fields[11]);
             final Integer endEntityProfileId;
-            if (fields[11] == null) {
+            if (fields[12] == null) {
                 endEntityProfileId = null;
             } else {
-                endEntityProfileId = ValueExtractor.extractIntValue(fields[11]);
+                endEntityProfileId = ValueExtractor.extractIntValue(fields[12]);
             }
             final long updateTime;
-            if (fields[12] == null) {
+            if (fields[13] == null) {
                 updateTime = 0; // Might be null in an upgraded installation
             } else {
-                updateTime = ValueExtractor.extractLongValue(fields[12]);
+                updateTime = ValueExtractor.extractLongValue(fields[13]);
             }
-            final String subjectKeyId = (String)fields[13];
-            final String subjectAltName = (String)fields[14];
-            ret = new CertificateInfo(fingerprint, cafp, serialNumber, issuerDN, subjectDN, status, type, expireDate, revocationDate,
+            final String subjectKeyId = (String)fields[14];
+            final String subjectAltName = (String)fields[15];
+            ret = new CertificateInfo(fingerprint, cafp, serialNumber, issuerDN, subjectDN, status, type, notBefore, expireDate, revocationDate,
                     revocationReason, username, tag, certificateProfileId, endEntityProfileId, updateTime, subjectKeyId, subjectAltName);
         }
         return ret;
@@ -1174,12 +1192,12 @@ public class CertificateData extends ProtectedData implements Serializable {
     public static CertificateInfo getCertificateInfo(EntityManager entityManager, String fingerprint) {
         CertificateInfo ret = null;
         final Query query = entityManager.createNativeQuery(
-                "SELECT a.issuerDN, a.subjectDN, a.cAFingerprint, a.status, a.type, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason, "
+                "SELECT a.issuerDN, a.subjectDN, a.cAFingerprint, a.status, a.type, a.serialNumber, a.notBefore, a.expireDate, a.revocationDate, a.revocationReason, "
                         + "a.username, a.tag, a.certificateProfileId, a.endEntityProfileId, a.updateTime, a.subjectKeyId, a.subjectAltName FROM CertificateData a WHERE a.fingerprint=:fingerprint",
                 "CertificateInfoSubset");
         query.setParameter("fingerprint", fingerprint);
         @SuppressWarnings("unchecked")
-        final List<Object[]> resultList = (List<Object[]>) query.getResultList();
+        final List<Object[]> resultList = query.getResultList();
         if (!resultList.isEmpty()) {
             final Object[] fields = resultList.get(0);
             // The order of the results are defined by the SqlResultSetMapping annotation
@@ -1189,27 +1207,33 @@ public class CertificateData extends ProtectedData implements Serializable {
             final int status = ValueExtractor.extractIntValue(fields[3]);
             final int type = ValueExtractor.extractIntValue(fields[4]);
             final String serno = (String) fields[5];
-            final long expireDate = ValueExtractor.extractLongValue(fields[6]);
-            final long revocationDate = ValueExtractor.extractLongValue(fields[7]);
-            final int revocationReason = ValueExtractor.extractIntValue(fields[8]);
-            final String username = (String) fields[9];
-            final String tag = (String) fields[10];
-            final int certificateProfileId = ValueExtractor.extractIntValue(fields[11]);
+            final Long notBefore;
+            if (fields[6] == null) {
+                notBefore = null;
+            } else {
+                notBefore = ValueExtractor.extractLongValue(fields[6]);
+            }
+            final long expireDate = ValueExtractor.extractLongValue(fields[7]);
+            final long revocationDate = ValueExtractor.extractLongValue(fields[8]);
+            final int revocationReason = ValueExtractor.extractIntValue(fields[9]);
+            final String username = (String) fields[10];
+            final String tag = (String) fields[11];
+            final int certificateProfileId = ValueExtractor.extractIntValue(fields[12]);
             final Integer endEntityProfileId;
-            if (fields[12] == null) {
+            if (fields[13] == null) {
                 endEntityProfileId = null;
             } else {
-                endEntityProfileId = ValueExtractor.extractIntValue(fields[12]);
+                endEntityProfileId = ValueExtractor.extractIntValue(fields[13]);
             }
             final long updateTime;
-            if (fields[13] == null) {
+            if (fields[14] == null) {
                 updateTime = 0; // Might be null in an upgraded installation
             } else {
-                updateTime = ValueExtractor.extractLongValue(fields[13]);
+                updateTime = ValueExtractor.extractLongValue(fields[14]);
             }
-            final String subjectKeyId = (String)fields[14];
-            final String subjectAltName = (String)fields[15];
-            ret = new CertificateInfo(fingerprint, cafp, serno, issuerDN, subjectDN, status, type, expireDate, revocationDate, revocationReason,
+            final String subjectKeyId = (String)fields[15];
+            final String subjectAltName = (String)fields[16];
+            ret = new CertificateInfo(fingerprint, cafp, serno, issuerDN, subjectDN, status, type, notBefore, expireDate, revocationDate, revocationReason,
                     username, tag, certificateProfileId, endEntityProfileId, updateTime, subjectKeyId, subjectAltName);
         }
         return ret;

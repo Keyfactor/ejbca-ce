@@ -30,9 +30,15 @@ database upgrades code is available in "src/upgrade/<oldversion>_<newversion>/<o
 
 From EJBCA 6.5.x to EJBCA 6.6.0
 -------------------------------
-CertificateData has two new columns "endEntityProfileId" and "subjectAltName". Since CertificateData is used by EJBCA running as a Validation
-Authority, you need to make this database schema change to your VAs as well before upgrading for publishing to work.
-See src/upgrade/650_660/650_660-upgrade-<database>.sql for the correct SQL alter statement.
+CertificateData has three new columns "notBefore", "endEntityProfileId" and "subjectAltName".
+
+CertificateData is for storing issued certificates and can be quite large. Even though deploying the new version EJBCA will eventually perform
+the schema change on larger installations, we strongly recommend that you manually alter the table before deploying the new version of
+EJBCA. (Otherwise you might need to force a restart of the application server.)
+Since CertificateData is used by EJBCA running as a Validation Authority, you need to make this database schema change to your VAs
+as well before upgrading for publishing to work.
+
+See src/upgrade/650_660/650_660-upgrade-<database>.sql for the correct SQL ALTER statement.
 
 In the case where the endEntityProfileId and subjectAltName has not changed for End Entities since certificate issuance, you can copy this
 value using a SQL statement like (consult your DBA for the proper syntax and feasibility of executing this query on

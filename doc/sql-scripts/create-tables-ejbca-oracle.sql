@@ -130,6 +130,7 @@ CREATE TABLE CertificateData (
     cAFingerprint VARCHAR2(255 byte),
     certificateProfileId NUMBER(10) NOT NULL,
     endEntityProfileId NUMBER(10),
+    notBefore NUMBER(19),
     expireDate NUMBER(19) NOT NULL,
     issuerDN VARCHAR2(255 byte) NOT NULL,
     revocationDate NUMBER(19) NOT NULL,
