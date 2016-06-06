@@ -35,7 +35,7 @@
 		<% } %>
 
 		<hr />
-		<h2>CA: ${caName}</h2>
+		<h2><c:out value="CA: ${caName}" /></h2>
 		<table>
 		<thead><tr>
 			<th style="text-align: left;">CRL</th>
