@@ -144,7 +144,7 @@ CREATE TABLE CertificateData (
     status INT(11) NOT NULL,
     subjectDN VARCHAR(250) BINARY NOT NULL,
     subjectKeyId VARCHAR(250) BINARY,
-    subjectAltName VARCHAR(4000) BINARY,
+    subjectAltName VARCHAR(2000) BINARY,
     tag VARCHAR(250) BINARY,
     type INT(11) NOT NULL,
     updateTime BIGINT(20) NOT NULL,
