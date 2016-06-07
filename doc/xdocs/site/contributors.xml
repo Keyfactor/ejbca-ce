@@ -109,6 +109,7 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>SecureMetric, <!-- securemetric.com -->Fix IE11 enrollment in public web.</li>
 <li>Kaan Kivilcim of The Google Security Team, suggestions for security improvements.</li>
 <li>Stefan Selbitschka, patch to allow HELP text in custom publisher UI.</li>
+<li>Mohammad Anwari, <!--  mdamt@mdamt.net -->Add CESeCore API support for RFC-4683 idOnSim OtherName (altName).</li>
 </ul>
     </section>
   </body>

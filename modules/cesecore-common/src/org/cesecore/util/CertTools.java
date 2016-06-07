@@ -240,7 +240,10 @@ public abstract class CertTools {
     public static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
     /** extended key usage OID Intel AMT (out of band) network management */
     public static final String Intel_amt = "2.16.840.1.113741.1.2.3";
-
+    /** ID on SIM support (RFC-4683) */
+    public static final String OID_ID_ON_SIM = id_pkix + ".8.6";
+    public static final String IdOnSIM = "sim";
+    
     /** Object ID for CT (Certificate Transparency) specific extensions */
     public static final String id_ct_redacted_domains = "1.3.6.1.4.1.11129.2.4.6";
     
@@ -2117,6 +2120,25 @@ public abstract class CertTools {
     }
 
     /**
+     * Helper method for getting the idOnSIM name 
+     * 
+     * @param seq the OtherName sequence
+     */
+    private static String getSIMStringFromSequence(ASN1Sequence seq) throws IOException {
+        if (seq != null) {
+            // First in sequence is the object identifier, that we must check
+            ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
+            if (id.getId().equals(CertTools.OID_ID_ON_SIM)) {
+                ASN1TaggedObject obj = (ASN1TaggedObject) seq.getObjectAt(1);
+                ASN1OctetString str = ASN1OctetString.getInstance(obj.getObject());
+                String ret = new String(Hex.encode(str.getOctets()));
+                return ret;
+            }
+        }
+        return null;
+    }
+    
+    /**
      * Helper method to get MS GUID from GeneralName otherName sequence
      * 
      * @param seq the OtherName sequence
@@ -2561,6 +2583,19 @@ public abstract class CertTools {
             vec.add(gn);
         }
 
+        // idOnSIM is an OtherName. See RFC-4683 
+        for (final String simString : CertTools.getPartsFromDN(altName, CertTools.IdOnSIM)) {
+            if (log.isDebugEnabled()) {
+                log.debug("simString: " + simString);
+            }
+            ASN1EncodableVector v = new ASN1EncodableVector();
+            v.add(new ASN1ObjectIdentifier(CertTools.OID_ID_ON_SIM));
+            v.add(new DERTaggedObject(true, 0, new DEROctetString(Hex.decode(simString))));
+            // GeneralName gn = new GeneralName(new DERSequence(v), 0);
+            final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
+            vec.add(gn);
+        }
+        
         // To support custom OIDs in altNames, they must be added as an OtherName of plain type UTF8String
         for (final String oid : CertTools.getCustomOids(altName)) {
             for (final String oidValue : CertTools.getPartsFromDN(altName, oid)) {
@@ -2605,6 +2640,11 @@ public abstract class CertTools {
                     String krb5Principal = getKrb5PrincipalNameFromSequence(seq);
                     if (krb5Principal != null) {
                         ret = CertTools.KRB5PRINCIPAL + "=" + krb5Principal;
+                    } else {
+                        String simString = getSIMStringFromSequence(seq);
+                        if (simString != null) {
+                            ret = CertTools.IdOnSIM + "=" + simString;
+                        }
                     }
                 }
             }
