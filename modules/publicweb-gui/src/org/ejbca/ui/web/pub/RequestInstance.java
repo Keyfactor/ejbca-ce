@@ -738,24 +738,25 @@ public class RequestInstance {
 
 		String tempDirectory = System.getProperty("java.io.tmpdir");
 		File fout = new File(tempDirectory + System.getProperty("file.separator") + username + ".p12");
-		FileOutputStream certfile = new FileOutputStream(fout);
+		String IssuerDN = null;
+		String SubjectDN = null;
+		try (FileOutputStream certfile = new FileOutputStream(fout)) {
+		    Enumeration<String> en = ks.aliases();
+		    String alias = en.nextElement();
+		    // Then get the certificates
+		    Certificate[] certs = KeyTools.getCertChain(ks, alias);
+		    // The first one (certs[0]) is the users cert and the last
+		    // one (certs [certs.lenght-1]) is the CA-cert
+		    X509Certificate x509cert = (X509Certificate) certs[0];
+		    IssuerDN = x509cert.getIssuerDN().toString();
+		    SubjectDN = x509cert.getSubjectDN().toString();
 
-		Enumeration<String> en = ks.aliases();
-		String alias = en.nextElement();
-		// Then get the certificates
-		Certificate[] certs = KeyTools.getCertChain(ks, alias);
-		// The first one (certs[0]) is the users cert and the last
-		// one (certs [certs.lenght-1]) is the CA-cert
-		X509Certificate x509cert = (X509Certificate) certs[0];
-		String IssuerDN = x509cert.getIssuerDN().toString();
-		String SubjectDN = x509cert.getSubjectDN().toString();
-
-		// export the users certificate to file
-		buffer.writeTo(certfile);
-		buffer.flush();
-		buffer.close();
-		certfile.close();
-
+		    // export the users certificate to file
+		    buffer.writeTo(certfile);
+		    buffer.flush();
+		    buffer.close();
+		    certfile.close();
+		}
 		// run shell script, which will also remove the created files
 		// parameters are the username, IssuerDN and SubjectDN
 		// IssuerDN and SubjectDN will be used to select the right

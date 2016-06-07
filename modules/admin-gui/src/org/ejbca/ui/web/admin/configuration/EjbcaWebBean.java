@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
@@ -524,10 +525,14 @@ public class EjbcaWebBean implements Serializable {
         String secondaryurl = getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getHelpPath() + "/" + helpfile + "."
                 + secondary + "." + postfix;
 
-        if (this.getClass().getResourceAsStream(preferedfilename) != null) {
-            returnedurl = preferedurl;
-        } else {
-            returnedurl = secondaryurl;
+        try (InputStream stream = this.getClass().getResourceAsStream(preferedfilename)) {
+            if (stream != null) {
+                returnedurl = preferedurl;
+            } else {
+                returnedurl = secondaryurl;
+            }
+        } catch (IOException e) {
+            log.info("IOException closing resource: ", e);
         }
         return returnedurl;
     }
