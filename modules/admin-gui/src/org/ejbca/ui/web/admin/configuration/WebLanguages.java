@@ -65,20 +65,24 @@ public class WebLanguages implements java.io.Serializable {
                 + availablelanguages[i] +".properties";
                 
                 InputStream is = null;
-                if (servletContext != null) {
-                	is = servletContext.getResourceAsStream(propsfile);
-                } else {
-                    is = this.getClass().getResourceAsStream(propsfile);                	
-                }
                 try {
-                    if (is == null) {
-                        //if not available as stream, try it as a file
-                        is = new FileInputStream("/tmp" + propsfile);
+                    try {
+                        if (servletContext != null) {
+                            is = servletContext.getResourceAsStream(propsfile);
+                        } else {
+                            is = this.getClass().getResourceAsStream(propsfile);                	
+                        }
+                        if (is == null) {
+                            //if not available as stream, try it as a file
+                            is = new FileInputStream("/tmp" + propsfile);
+                        }
+                        if (log.isDebugEnabled()) {
+                            log.debug("Loading language from file: " + propsfile);
+                        }
+                        languages[i].load(is);
+                    } finally {
+                        if (is != null) {is.close();}
                     }
-                    if (log.isDebugEnabled()) {
-                        log.debug("Loading language from file: " + propsfile);
-                    }
-                    languages[i].load(is);
                 } catch (IOException e) {
                     throw new IllegalStateException("Properties file " + propsfile + " could not be read.", e);
                 }
