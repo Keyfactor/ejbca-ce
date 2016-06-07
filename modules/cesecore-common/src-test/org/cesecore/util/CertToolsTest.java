@@ -1500,6 +1500,16 @@ public class CertToolsTest {
     }
 
     @Test
+    public void testIdOnSIM() throws Exception {
+        String otherName = "krb5principal=foo/bar@P.SE, sim=3051300B060960864801650304020104200102030405060708010203040506070801020304050607080102030405060708042060AC15B03093CC7E95D2083841B2CFB11DFCA15A8D9D440771105BD047301BC3, upn=upn@u.com";
+        GeneralNames gn = CertTools.getGeneralNamesFromAltName(otherName);
+        GeneralName[] names = gn.getNames();
+        String ret = CertTools.getGeneralNameString(0, names[2].getName());
+        assertEquals(names.length, 3);
+        assertEquals("sim=3051300B060960864801650304020104200102030405060708010203040506070801020304050607080102030405060708042060AC15B03093CC7E95D2083841B2CFB11DFCA15A8D9D440771105BD047301BC3".toLowerCase(), ret);
+    }
+    
+    @Test
     public void testPseudonymAndName() throws Exception {
         String dn1 = "c=SE,O=Prime,OU=Tech,TelephoneNumber=555-666,Name=Kalle,PostalAddress=footown,PostalCode=11122,Pseudonym=Shredder,cn=Tomas Gustavsson";
         String bcdn1 = CertTools.stringToBCDNString(dn1);
