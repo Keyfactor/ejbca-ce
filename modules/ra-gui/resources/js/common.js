@@ -75,7 +75,7 @@ function SessionKeepAlive(linkElementId) {
     if (this.link) {
     	window.setTimeout(this.poll, this.timeToNextCheckInMs);
     } else {
-        console.log("Unable to find link element with id " + linkElementId + ". SessionKeepAlive will not be enabled.");
+        console.log("Unable to find link element with ID '" + linkElementId + "'. SessionKeepAlive will not be enabled.");
     }
 };
 
