@@ -64,10 +64,12 @@ public class MailAttachment {
 			}
 			File file = File.createTempFile("ejbca-mailattachment", ".tmp");
 			fullFilePathName = file.getCanonicalPath();
-			FileOutputStream fos = new FileOutputStream(file);
-			DataOutputStream dos = new DataOutputStream (fos);
+			try (
+			        FileOutputStream fos = new FileOutputStream(file);
+			        DataOutputStream dos = new DataOutputStream (fos);
+			        ) {
 			dos.write(attachmentData);
-			fos.close ();
+			}
 		} catch (IOException e) {
 			throw new RuntimeException("The email attachment type is not supported.", e);
 		}

@@ -96,36 +96,37 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
         final AuditLogExportReport report = new AuditLogExportReport();
         try {
             final File exportFile = AuditDevicesConfig.getExportFile(properties, timestamp);
-            final SigningFileOutputStream signingFileOutputStream = new SigningFileOutputStream(exportFile, cryptoToken, signatureDetails);
-            final AuditExporter auditExporter = c.newInstance();
-            auditExporter.setOutputStream(signingFileOutputStream);
-            verifyAndOptionalExport(auditExporter, report, timestamp, AuditDevicesConfig.getAuditLogExportFetchSize(properties));
-        	report.setExportedFile(exportFile.getCanonicalPath());
-        	if (log.isDebugEnabled()) {
-        		log.debug("Exported " + report.getExportCount() + " rows.");
-        	}
-        	logVerificationResult(report.errors().size(), timestamp, token);
-            // Sign the exported file ... it will write the signature on the side
-            final String signatureFilename = signingFileOutputStream.writeSignature();
-            report.setSignatureFile(signatureFilename);
-            // Log export success
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("deleteAfterExport", deleteAfterExport);
-            details.put("timestamp", ValidityDate.formatAsISO8601(new Date(), ValidityDate.TIMEZONE_UTC));
-            securityEventsLogger.log(EventTypes.LOG_EXPORT, EventStatus.SUCCESS, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, token.toString(), null, null, null, details);
-        	// Delete the exported log entries if requested
-            if (deleteAfterExport) {
+            try (final SigningFileOutputStream signingFileOutputStream = new SigningFileOutputStream(exportFile, cryptoToken, signatureDetails)) {
+                final AuditExporter auditExporter = c.newInstance();
+                auditExporter.setOutputStream(signingFileOutputStream);
+                verifyAndOptionalExport(auditExporter, report, timestamp, AuditDevicesConfig.getAuditLogExportFetchSize(properties));
+                report.setExportedFile(exportFile.getCanonicalPath());
                 if (log.isDebugEnabled()) {
-                    log.debug("deleting exported logs");
+                    log.debug("Exported " + report.getExportCount() + " rows.");
                 }
-        		final int deletedRowCount = integrityProtectedAuditorSession.deleteRows(token, timestamp, properties);
-        		if (log.isDebugEnabled()) {
-        			log.debug("Deleted " + deletedRowCount + " rows from audit log after export.");
-        		}
+                logVerificationResult(report.errors().size(), timestamp, token);
+                // Sign the exported file ... it will write the signature on the side
+                final String signatureFilename = signingFileOutputStream.writeSignature();
+                report.setSignatureFile(signatureFilename);
+                // Log export success
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("deleteAfterExport", deleteAfterExport);
+                details.put("timestamp", ValidityDate.formatAsISO8601(new Date(), ValidityDate.TIMEZONE_UTC));
+                securityEventsLogger.log(EventTypes.LOG_EXPORT, EventStatus.SUCCESS, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, token.toString(), null, null, null, details);
+                // Delete the exported log entries if requested
+                if (deleteAfterExport) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("deleting exported logs");
+                    }
+                    final int deletedRowCount = integrityProtectedAuditorSession.deleteRows(token, timestamp, properties);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Deleted " + deletedRowCount + " rows from audit log after export.");
+                    }
+                }
+                auditExporter.close();
             }
-            auditExporter.close();
         } catch (final Exception e) {
-        	throw new AuditLogExporterException(e.getMessage(), e);
+            throw new AuditLogExporterException(e.getMessage(), e);
         }
         return report;
 	}

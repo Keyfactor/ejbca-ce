@@ -95,6 +95,7 @@ public class EjbcaJSFHelper {
      }
     
      public EjbcaWebBean getEjbcaWebBean(){
+         // The outermost check is here to avoid locking if we already have the variable set.
     	 if(ejbcawebbean == null){
     		 FacesContext ctx = FacesContext.getCurrentInstance();    		    	
     		 HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);

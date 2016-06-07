@@ -203,11 +203,11 @@ public class CertificateSamplerCustomPublisher implements ICustomPublisher {
     }
 
     protected void writeCertificate(Certificate cert, File outFolder, String prefix, String suffix) throws PublisherException {
-        FileOutputStream fos = null;
         try {
             final File destFile = File.createTempFile(prefix, suffix, outFolder);
-            fos = new FileOutputStream(destFile);
-            fos.write(cert.getEncoded());
+            try (FileOutputStream fos = new FileOutputStream(destFile)) {
+                fos.write(cert.getEncoded());
+            }
         } catch (CertificateEncodingException ex) {
             final String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
             LOG.error(msg);
@@ -216,12 +216,6 @@ public class CertificateSamplerCustomPublisher implements ICustomPublisher {
             final String msg = intres.getLocalizedMessage("publisher.errortempfile");
             LOG.error(msg, e);
             throw new PublisherException(msg);
-        } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException ignored) {} // NOPMD
-            }
         }
     }
     
