@@ -2869,10 +2869,10 @@ UserDataSourceSessionBean.fetch(AuthenticationToken admin, Collection&lt;Integer
 </p>
 </section>
 
-<section name="Services Framework">
+<section name="Services">
 <p>
 EJBCA has a framework for timer services, i.e. procedures 
-that should be run on a timely basis. Currently there exists five types of 
+that runs on a timely basis. Currently there exists five types of 
 services:
 <ul>
 <li>a 'CRL Updater' that automatically updates the CRL.</li>
@@ -3053,7 +3053,7 @@ The occurance of such timeouts depend on the specific HSM used, neworking equipm
 
 <p><b>Remote Internal Key Binding Updater</b></p>
 <p>
-The service periodically (with configured interval) connects to the configured peer system using a Peer Connector and checks expiration of visible, usable and
+The service periodically (with configured interval) connects to the configured peer system using a <a href="adminguide.html#Peer%20Systems%20(Enterprise%20only)">Peer Connector</a> and checks expiration of visible, usable and
 enabled Internal Key Bindings' certificates.
 For renewal to work, the issuing CA has to be usable on the system where this service is running and the same end entity that was used to issue the
 previous certificate must still exist.
@@ -4600,6 +4600,154 @@ You can mix 'implicitlyCA' with named curves any way you like though.
 </subsection>
 </section>
 
+<section name="Peer Systems (Enterprise only)">
+<p>
+An EJBCA instance can be both target and initiator of remote operations from another EJBCA instance.
+Connections are made using dual authenticated HTTPS.
+This is similar to how you use a client certificate to authenticate to the Admin GUI and then manage an EJBCA instance,
+but in this case the configured administrator is another EJBCA instace.
+</p><p>
+Normally the instance with higher security requirements (e.g. an EJBCA acting as CA) initates connections to a system with
+lower security requirements (e.g. an EJBCA acting as VA). 
+</p><p>
+In the Peer Systems overview you can:
+<ul>
+<li>Modify global settings like enabling or disabling incoming connections.</li>
+<li>See a list of configured known EJBCA Peer Systems that this instance can connect to (<i>Peer Connectors</i>) and their current connection status.</li>
+<li>See a list of systems that have connected to this instance recently (<i>Incoming Connections</i>).</li>
+</ul>
+</p><p>
+Additionally there are links to the relevant authentication settings for outgoing connections (AuthenticationKeyBinding) and incoming connections (Administrator Role).
+</p>
+<subsection name="Setting up Peer Connectors for Outgoing Connections">
+<p>
+Outgoing connections are allowed by default and can be disabled by administrators authorized to <code>/peer/modify</code> recursive.
+</p><p>
+A <a href="concepts.html#Peer Connector">Peer Connector</a> is a representation of a remote EJBCA instance and can be referenced
+by other components like Publishers and Services.
+Each Peer Connector maintains a pool of outgoing re-usable (HTTP Keep-Alive) connections and new connections are only created when needed.
+</p><p>
+To authenticate to a peer, you need to configure an <a href="userguide.html#AuthenticationKeyBinding">AuthenticationKeyBinding</a>.
+The AuthenticationKeyBinding is the EJBCA instance identity and consists of a client SSL X509 certificate and a key pair in
+one of the instance's <a href="userguide.html#Managing Crypto Tokens">Crypto Tokens</a>.
+Ensure that the AuthenticationKeyBinding is configured to trust the peer's server SSL certificate or the connection
+will fail.
+AuthenticationKeyBinding settings are only read when a Peer Connector's connection pool is started and if the client certificate
+is updated this will not take effect until a connection pool is <code>Reset</code>.
+</p><p>
+For each configured Peer Connector, you can see the human readable name, connection end point and current connection status.
+You can <code>Ping</code> any of the peers to check connectivity and the result is the round-trip time from and to the
+application over the secure connection (giving a more accurate view of the actual round trip time than a network ping using the ICMP protocol).
+</p><p>
+Only the first connection to a peer using the same client certificate will be subject to a full authentication check
+and subsequent requests will share the same credential.
+This means that an initial <code>Ping</code> request to a peer system will be significantly slower than the next one.
+</p>
+<subsubsection name="Adding a Peer Connector">
+<p>
+Outgoing connections must be allowed to be able to add a new Peer Connector.
+From the Peer Systems overview, click the <code>Add</code> button. Configure the following fields and click <code>Create</code>.
+<ul>
+<li>Name: Your name for the peer.</li>
+<li>URL: The target end point where the peer is listening. Normally you only need to change the hostname of the URL.</li>
+<li>Enabled: If a Peer Connector is enabled connections to the peer are allowed to be created when needed.</li>
+</ul>
+</p>
+</subsubsection>
+<subsubsection name="Edit, Clone or Delete a Peer Connector">
+<p>
+From the Peer Systems overview, click the <code>Edit</code> button for an existing Peer Connector.
+In the view of the Peer Connector you can modify and save the existing name, URL or state.
+In the Edit view, you additionally have buttons for cloning (<code>Clone</code>) or deleting (<code>Delete</code>) the current object.
+</p>
+</subsubsection>
+</subsection>
+<subsection name="Incoming connections">
+<p>
+Incoming connections are not allowed by default and can be enabled by administrators authorized to <code>/peer/modify</code> recursive. 
+</p><p>
+In the list of incoming connections, you can see systems that have successfully connected to the EJBCA instance with a client
+certificate trusted by the application server's SSL configuration.
+If the client certificate presented by the connecting system is already part of an Administrator Role, the name of this role
+will be shown.
+</p>
+<subsubsection name="Authorization of incoming connections">
+<p>
+If no <a href="userguide.html#Administrator Roles">Administrator Role</a> exists for the connecting system's client certificate,
+you are presented with a <code>Create Authorization</code> button.
+Clicking this button will allow you to quickly setup a new Administrator Role with for the incoming client certificate
+and a relevant set of access rules or add the incoming client certificate to an existing Administrator Role.
+</p><p>
+If an Administrator Role already exists for the connecting system's client certificate, you are presented with a
+<code>Modify Authorization</code> button where you can change the relevant set of access rules for the Administrator Role.
+</p><p>
+Note that this is just a simplified view of EJBCA's normal authentication and authorization management and
+the created Administrator Role can be edited just like any other Administrator Role.
+</p>
+</subsubsection>
+</subsection>
+<subsection name="Management operations for an EJBCA Peer System">
+<p>
+Once an EJBCA instance has been authorized to connect and manage another EJBCA instance, operations on the peer
+can be performed through the Admin GUI of the authorized instance.
+</p>
+<p>
+The administrator initiating these operations needs to be authorized to the <code>/peer/view /peer/manage</code>
+access rules and additionally any relevant CA.
+</p>
+<subsubsection name="Publishing using Peer Connectors">
+<p>
+<a href="adminguide.html#LDAP and Publishers">Publishers</a> are used to propagate certificate or CRL information to a peer system.
+The PeerPublisher implementation allows this information to be pushed to a configured Peer Connector.
+</p>
+<p>
+The connecting system needs to be authorized to the <code>/peerincoming /peerpublish/writecert /peerpublish/writecrl /ca/[CAName]</code>
+access rules to be able to push both certificate and CRL data.
+</p>
+</subsubsection>
+<subsubsection name="Certificate data synchronization">
+<p>
+In a setup where an EJBCA CA instance (or a cluster) uses external EJBCA VA/OCSP responders, revocation information needs to be
+propagated from CA to VA.
+Information about newly issued certificates and revocation updates are normally sent using a (Peer)Publisher, but the first time
+a new VA is connected the current state of all previously issued certificates needs to be pushed to the VA.
+</p><p>
+In the overview of peer connectors, click <code>Manage</code> for the peer connector representing the VA and select the
+<code>Certificate Data Synchronization</code> tab.
+Configure the relevant subset of information to synchronize and click <code>Start</code> to initiate the synchronization as a background task.
+The progress can be followed either in this view or in the Peer Systems overview.
+</p><p>
+Note that the subset of revocation information to send affects how database queries are performed.
+Depending on your database it might be faster to only synchronize everything or only one subset of data at the time.
+</p><p>
+The connecting system needs to be authorized to the <code>/peerincoming /peerpublish/readcert /peerpublish/writecert /ca/[CAName]</code>
+access rules to be able to check synchronzation data and push missing or outdated certificate entries.
+</p>
+</subsubsection>
+<subsubsection name="Renewal of remote Internal Key Bindings">
+<p>
+In a setup where an EJBCA CA instance (or a cluster) uses external EJBCA VA/OCSP responders, a CA delegates signing of OCSP responses
+to an OCSP signing certificate (configured as a OcspKeyBinding) at the VA.
+The OCSP signing certificate should be short-lived and to make renewal easier, this is available as a remote management operation on
+the CA.
+</p><p>
+In the overview of peer connectors, click <code>Manage</code> for the peer connector representing the VA and select the
+<code>Remote Key Bindings</code> tab.
+Click <code>Renew</code> to generate a new certificate.
+Optionally you can also select to generate a new key pair for the next OCSP signing certificate.
+</p><p>
+Renewal of remote Internal Key Bindings can be automated using a <code>Remote Internal Key Binding Updater</code>
+<a href="adminguide.html#Services">Service</a>.
+</p><p>
+The connecting system needs to be authorized to the
+<code>/peerincoming /internalkeybinding/view/[IKB] /internalkeybinding/modify/[IKBName] /cryptotoken/view/[CTName]</code>
+access rules to be able to renew an Internal Key Binding certificate.
+Additionally <code>/cryptotoken/keys/generate/[CTName]</code> is required if key renewal should be allowed.
+</p>
+</subsubsection>
+</subsection>
+</section>
+
 <section name="LDAP and Publishers">
 <p>
 EJBCA has a modular support for something we call Publishers. A publisher
@@ -5566,7 +5714,7 @@ keyword "error". The error message will be visible in the log file.
 
 <subsection name="Publisher Queue and failures">
 <p>To achieve robust publishing there is a publisher queue. When a publisher fails the published data is stored in a 
-separate table in the database, the PublisherQueueData. This queue can then be processed by a service (see <i>Publisher Queue Process Service</i> in the <a href="#Services%20Framework">Services Framework</a> section).
+separate table in the database, the PublisherQueueData. This queue can then be processed by a service (see <i>Publisher Queue Process Service</i> in the <a href="#Services">Services</a> section).
 </p>
 <p>
 Publishers can also be configured not to publish directly at all, but to store everything in the queue, which is later processed.
