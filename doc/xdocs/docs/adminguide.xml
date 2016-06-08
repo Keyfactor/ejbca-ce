@@ -5996,6 +5996,7 @@ Also note that the time in the log entry itself is the time of the event and mig
 <ul>
 <li>Security information about the <a href="security.html#Database%20Integrity%20Protection">Database Integrity Protection</a>.</li>
 <li><a href="adminguide.html#Local%20Database%20CLI%20%28EJBCA%20Enterprise%20only%29">Local Database CLI</a> to verify protection and export/import data.</li>
+<li>See the <a href="security.html#Database%20Integrity%20Protection">Security documentation</a> for information about the security features and possibilities to repair gaps.</li>
 </ul>
 </subsubsection>
 <subsubsection name="Log4JLogDevice">
