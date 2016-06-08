@@ -127,7 +127,7 @@
 	
 	                <h:panelGroup id="more" layout="block" style="margin-top: 10px;" styleClass="pure-u-1 pure-u-lg-4-5">
 	                    <h:panelGroup rendered="#{raSearchCertsBean.moreOptions}" styleClass="pure-g">                
-							<h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-3">
+							<h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-4">
 								<h:panelGroup layout="block" styleClass="pure-control-group">
 	                                <h:outputLabel for="criteriaMaxResults" value="#{msg.search_certs_page_criteria_maxresults}"/>
 	                                <h:selectOneMenu id="criteriaMaxResults" value="#{raSearchCertsBean.criteriaMaxResults}">
@@ -138,7 +138,27 @@
 	                                </h:selectOneMenu>
                                 </h:panelGroup>
 	                       </h:panelGroup>
-	                       <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-3">                  
+                           <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-4">                  
+                                <h:panelGroup layout="block" styleClass="pure-control-group">
+                                    <h:outputLabel for="issuedAfter" id="issuedAfterLabel" value="#{msg.search_certs_page_criteria_issuedafter}"/>
+                                    <h:inputText id="issuedAfter" value="#{raSearchCertsBean.issuedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
+                                        styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
+                                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:issuedAfterLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:inputText>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" styleClass="pure-control-group">
+                                    <h:outputLabel for="issuedBefore" id="issuedBeforeLabel" value="#{msg.search_certs_page_criteria_issuedbefore}"/>
+                                    <h:inputText id="issuedBefore" value="#{raSearchCertsBean.issuedBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
+                                        styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
+                                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:issuedBeforeLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:inputText>
+                                 </h:panelGroup>
+                            </h:panelGroup>
+	                       <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-4">                  
 	                            <h:panelGroup layout="block" styleClass="pure-control-group">
 	                                <h:outputLabel for="expiresAfter" id="expiresAfterLabel" value="#{msg.search_certs_page_criteria_expiresafter}"/>
 	                                <h:inputText id="expiresAfter" value="#{raSearchCertsBean.expiresAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
@@ -158,7 +178,7 @@
 	                                </h:inputText>
                                  </h:panelGroup>
 							</h:panelGroup>
-							<h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-3">				
+							<h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-4">				
 	                            <h:panelGroup layout="block" styleClass="pure-control-group">	                            	
 	                                <h:outputLabel for="revokedAfter" id="revokedAfterLabel" value="#{msg.search_certs_page_criteria_revokedafter}"/>
 	                                <h:inputText id="revokedAfter" value="#{raSearchCertsBean.revokedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"

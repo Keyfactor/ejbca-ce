@@ -650,17 +650,24 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             sb.append(")");
         }
-        if (request.getExpiresAfter()<Long.MAX_VALUE) {
+        // NOTE: notBefore is not indexed.. we might want to disallow such search.
+        if (request.getIssuedAfter()>0L) {
+            sb.append(" AND (a.notBefore > :issuedAfter)");
+        }
+        if (request.getIssuedBefore()<Long.MAX_VALUE) {
+            sb.append(" AND (a.notBefore < :issuedBefore)");
+        }
+        if (request.getExpiresAfter()>0L) {
             sb.append(" AND (a.expireDate > :expiresAfter)");
         }
-        if (request.getExpiresBefore()>0) {
+        if (request.getExpiresBefore()<Long.MAX_VALUE) {
             sb.append(" AND (a.expireDate < :expiresBefore)");
         }
         // NOTE: revocationDate is not indexed.. we might want to disallow such search.
-        if (request.getRevokedAfter()<Long.MAX_VALUE) {
+        if (request.getRevokedAfter()>0L) {
             sb.append(" AND (a.revocationDate > :revokedAfter)");
         }
-        if (request.getRevokedBefore()>0L) {
+        if (request.getRevokedBefore()<Long.MAX_VALUE) {
             sb.append(" AND (a.revocationDate < :revokedBefore)");
         }
         if (!request.getStatuses().isEmpty()) {
@@ -716,16 +723,22 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 }
             }
         }
-        if (request.getExpiresAfter()<Long.MAX_VALUE) {
+        if (request.getIssuedAfter()>0L) {
+            query.setParameter("issuedAfter", request.getIssuedAfter());
+        }
+        if (request.getIssuedBefore()<Long.MAX_VALUE) {
+            query.setParameter("issuedBefore", request.getIssuedBefore());
+        }
+        if (request.getExpiresAfter()>0) {
             query.setParameter("expiresAfter", request.getExpiresAfter());
         }
-        if (request.getExpiresBefore()>0) {
+        if (request.getExpiresBefore()<Long.MAX_VALUE) {
             query.setParameter("expiresBefore", request.getExpiresBefore());
         }
-        if (request.getRevokedAfter()<Long.MAX_VALUE) {
+        if (request.getRevokedAfter()>0L) {
             query.setParameter("revokedAfter", request.getRevokedAfter());
         }
-        if (request.getRevokedBefore()>0L) {
+        if (request.getRevokedBefore()<Long.MAX_VALUE) {
             query.setParameter("revokedBefore", request.getRevokedBefore());
         }
         if (!request.getStatuses().isEmpty()) {
