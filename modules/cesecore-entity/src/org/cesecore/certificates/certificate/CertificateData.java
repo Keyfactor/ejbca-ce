@@ -198,6 +198,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         setStatus(copy.getStatus());
         setType(copy.getType());
         setCaFingerprint(copy.getCaFingerprint());
+        setNotBefore(copy.getNotBefore());
         setExpireDate(copy.getExpireDate());
         setRevocationDate(copy.getRevocationDate());
         setRevocationReason(copy.getRevocationReason());
@@ -746,6 +747,15 @@ public class CertificateData extends ProtectedData implements Serializable {
         if (!serialNumber.equals(certificateData.serialNumber)) {
             return false;
         }
+        if (notBefore==null) {
+            if (certificateData.notBefore!=null) {
+                return false;
+            }
+        } else {
+            if (notBefore.equals(certificateData.notBefore)) {
+                return false;
+            }
+        }
         if (expireDate != certificateData.expireDate) {
             return false;
         }
@@ -770,8 +780,26 @@ public class CertificateData extends ProtectedData implements Serializable {
         if (certificateProfileId != null && !certificateProfileId.equals(certificateData.certificateProfileId)) {
             return false;
         }
+        if (endEntityProfileId==null) {
+            if (certificateData.endEntityProfileId!=null) {
+                return false;
+            }
+        } else {
+            if (endEntityProfileId.equals(certificateData.endEntityProfileId)) {
+                return false;
+            }
+        }
         if (updateTime != certificateData.updateTime) {
             return false;
+        }
+        if (subjectAltName==null) {
+            if (certificateData.subjectAltName!=null) {
+                return false;
+            }
+        } else {
+            if (!subjectAltName.equals(certificateData.subjectAltName)) {
+                return false;
+            }
         }
         return true;
     }
@@ -1352,7 +1380,9 @@ public class CertificateData extends ProtectedData implements Serializable {
                 .append(getSerialNumber()).append(getExpireDate()).append(getRevocationDate()).append(getRevocationReason()).append(getBase64Cert())
                 .append(getUsername()).append(getTag()).append(getCertificateProfileId()).append(getUpdateTime()).append(getSubjectKeyId());
         if (version>1) {
+            build.append(String.valueOf(getNotBefore()));
             build.append(String.valueOf(getEndEntityProfileId()));
+            build.append(String.valueOf(getSubjectAltName()));
         }
         if (log.isDebugEnabled()) {
             // Some profiling
