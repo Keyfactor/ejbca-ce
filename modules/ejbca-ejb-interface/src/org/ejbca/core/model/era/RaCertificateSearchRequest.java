@@ -35,10 +35,12 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     private List<Integer> cpIds = new ArrayList<>();
     private List<Integer> caIds = new ArrayList<>();
     private String genericSearchString = "";
-    private long expiresAfter = Long.MAX_VALUE;
-    private long expiresBefore = 0L;
-    private long revokedAfter = Long.MAX_VALUE;
-    private long revokedBefore = 0L;
+    private long issuedAfter = 0L;
+    private long issuedBefore = Long.MAX_VALUE;
+    private long expiresAfter = 0L;
+    private long expiresBefore = Long.MAX_VALUE;
+    private long revokedAfter = 0L;
+    private long revokedBefore = Long.MAX_VALUE;
     private List<Integer> statuses = new ArrayList<>();
     private List<Integer> revocationReasons = new ArrayList<>();
 
@@ -52,6 +54,8 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         cpIds.addAll(request.cpIds);
         caIds.addAll(request.caIds);
         genericSearchString = request.genericSearchString;
+        issuedAfter = request.issuedAfter;
+        issuedBefore = request.issuedBefore;
         expiresAfter = request.expiresAfter;
         expiresBefore = request.expiresBefore;
         revokedAfter = request.revokedAfter;
@@ -70,6 +74,10 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     public void setCaIds(final List<Integer> caIds) { this.caIds = caIds; }
     public String getGenericSearchString() { return genericSearchString; }
     public void setGenericSearchString(final String genericSearchString) { this.genericSearchString = genericSearchString; }
+    public long getIssuedAfter() { return issuedAfter; }
+    public void setIssuedAfter(final long issuedAfter) { this.issuedAfter = issuedAfter; }
+    public long getIssuedBefore() { return issuedBefore; }
+    public void setIssuedBefore(final long issuedBefore) { this.issuedBefore = issuedBefore; }
     public long getExpiresAfter() { return expiresAfter; }
     public void setExpiresAfter(final long expiresAfter) { this.expiresAfter = expiresAfter; }
     public long getExpiresBefore() { return expiresBefore; }
@@ -124,6 +132,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         // First check if there is any there is any indication that this does not contain the whole other
         if (maxResults>other.maxResults ||
                 isWider(eepIds, other.eepIds) || isWider(cpIds, other.cpIds) || isWider(caIds, other.caIds) ||
+                issuedAfter<other.issuedAfter || issuedBefore>other.issuedBefore ||
                 expiresAfter<other.expiresAfter || expiresBefore>other.expiresBefore ||
                 revokedAfter<other.revokedAfter || revokedBefore>other.revokedBefore ||
                 (getGenericSearchStringAsDecimal()!=null && !getGenericSearchStringAsDecimal().equals(other.getGenericSearchStringAsDecimal())) ||
@@ -136,6 +145,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         // Next check if this object is more narrow than the other
         if (maxResults<other.maxResults ||
                 isMoreNarrow(eepIds, other.eepIds) || isMoreNarrow(cpIds, other.cpIds) || isMoreNarrow(caIds, other.caIds) ||
+                issuedAfter>other.issuedAfter || issuedBefore<other.issuedBefore ||
                 expiresAfter>other.expiresAfter || expiresBefore<other.expiresBefore ||
                 revokedAfter>other.revokedAfter || revokedBefore<other.revokedBefore ||
                 (genericSearchString.contains(other.genericSearchString) && !other.genericSearchString.contains(genericSearchString)) ||

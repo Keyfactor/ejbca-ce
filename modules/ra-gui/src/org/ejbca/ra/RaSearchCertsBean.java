@@ -83,6 +83,8 @@ public class RaSearchCertsBean implements Serializable {
     private RaCertificateSearchRequest lastExecutedRequest = null;
     private RaCertificateSearchResponse lastExecutedResponse = null;
 
+    private String issuedAfter = "";
+    private String issuedBefore = "";
     private String expiresAfter = "";
     private String expiresBefore = "";
     private String revokedAfter = "";
@@ -151,9 +153,12 @@ public class RaSearchCertsBean implements Serializable {
                 log.debug("Wider criteria → Query");
             }
             lastExecutedResponse = raMasterApiProxyBean.searchForCertificates(raAuthenticationBean.getAuthenticationToken(), stagedRequest);
-            lastExecutedRequest = stagedRequest;
-            stagedRequest = new RaCertificateSearchRequest(stagedRequest);
-            filterTransformSort();
+            if (!lastExecutedResponse.isMightHaveMoreResults() || !lastExecutedResponse.getCdws().isEmpty()) {
+                // Only update last executed request when there is no timeout
+                lastExecutedRequest = stagedRequest;
+                stagedRequest = new RaCertificateSearchRequest(stagedRequest);
+                filterTransformSort();
+            }
         }
     }
 
@@ -187,22 +192,35 @@ public class RaSearchCertsBean implements Serializable {
                 if (!stagedRequest.getCaIds().isEmpty() && !stagedRequest.getCaIds().contains(cdw.getCertificateData().getIssuerDN().hashCode())) {
                     continue;
                 }
-                if (stagedRequest.getExpiresAfter()<Long.MAX_VALUE) {
+                if (stagedRequest.getIssuedAfter()>0L) {
+                    final Long notBefore = cdw.getCertificateData().getNotBefore();
+                    if (notBefore==null || notBefore.longValue()<stagedRequest.getIssuedAfter()) {
+                        log.info("DEVELOP IssuedAfter: " + stagedRequest.getIssuedAfter() + " notBefore= "+notBefore + " fp="+cdw.getCertificateData().getFingerprint());
+                        continue;
+                    }
+                }
+                if (stagedRequest.getIssuedBefore()<Long.MAX_VALUE) {
+                    final Long notBefore = cdw.getCertificateData().getNotBefore();
+                    if (notBefore==null || notBefore.longValue()>stagedRequest.getIssuedBefore()) {
+                        continue;
+                    }
+                }
+                if (stagedRequest.getExpiresAfter()>0L) {
                     if (cdw.getCertificateData().getExpireDate()<stagedRequest.getExpiresAfter()) {
                         continue;
                     }
                 }
-                if (stagedRequest.getExpiresBefore()>0L) {
+                if (stagedRequest.getExpiresBefore()<Long.MAX_VALUE) {
                     if (cdw.getCertificateData().getExpireDate()>stagedRequest.getExpiresBefore()) {
                         continue;
                     }
                 }
-                if (stagedRequest.getRevokedAfter()<Long.MAX_VALUE) {
+                if (stagedRequest.getRevokedAfter()>0L) {
                     if (cdw.getCertificateData().getRevocationDate()<stagedRequest.getRevokedAfter()) {
                         continue;
                     }
                 }
-                if (stagedRequest.getRevokedBefore()>0L) {
+                if (stagedRequest.getRevokedBefore()<Long.MAX_VALUE) {
                     if (cdw.getCertificateData().getRevocationDate()>stagedRequest.getRevokedBefore()) {
                         continue;
                     }
@@ -308,10 +326,14 @@ public class RaSearchCertsBean implements Serializable {
         moreOptions = !moreOptions;
         // Reset any criteria in the advanced section
         stagedRequest.setMaxResults(RaCertificateSearchRequest.DEFAULT_MAX_RESULTS);
-        stagedRequest.setExpiresAfter(Long.MAX_VALUE);
-        stagedRequest.setExpiresBefore(0L);
-        stagedRequest.setRevokedAfter(Long.MAX_VALUE);
-        stagedRequest.setRevokedBefore(0L);
+        stagedRequest.setIssuedAfter(0L);
+        stagedRequest.setIssuedBefore(Long.MAX_VALUE);
+        stagedRequest.setExpiresAfter(0L);
+        stagedRequest.setExpiresBefore(Long.MAX_VALUE);
+        stagedRequest.setRevokedAfter(0L);
+        stagedRequest.setRevokedBefore(Long.MAX_VALUE);
+        issuedAfter = "";
+        issuedBefore = "";
         expiresAfter = "";
         expiresBefore = "";
         revokedAfter = "";
@@ -411,33 +433,47 @@ public class RaSearchCertsBean implements Serializable {
         return availableCas;
     }
 
+    public String getIssuedAfter() {
+        return getDateAsString(issuedAfter, stagedRequest.getIssuedAfter(), 0L);
+    }
+    public void setIssuedAfter(final String issuedAfter) {
+        this.issuedAfter = issuedAfter;
+        stagedRequest.setIssuedAfter(parseDateAndUseDefaultOnFail(issuedAfter, 0L));
+    }
+    public String getIssuedBefore() {
+        return getDateAsString(issuedBefore, stagedRequest.getIssuedBefore(), Long.MAX_VALUE);
+    }
+    public void setIssuedBefore(final String issuedBefore) {
+        this.issuedBefore = issuedBefore;
+        stagedRequest.setIssuedBefore(parseDateAndUseDefaultOnFail(issuedBefore, Long.MAX_VALUE));
+    }
     public String getExpiresAfter() {
-        return getDateAsString(expiresAfter, stagedRequest.getExpiresAfter(), Long.MAX_VALUE);
+        return getDateAsString(expiresAfter, stagedRequest.getExpiresAfter(), 0L);
     }
     public void setExpiresAfter(final String expiresAfter) {
         this.expiresAfter = expiresAfter;
-        stagedRequest.setExpiresAfter(parseDateAndUseDefaultOnFail(expiresAfter, Long.MAX_VALUE));
+        stagedRequest.setExpiresAfter(parseDateAndUseDefaultOnFail(expiresAfter, 0L));
     }
     public String getExpiresBefore() {
-        return getDateAsString(expiresBefore, stagedRequest.getExpiresBefore(), 0L);
+        return getDateAsString(expiresBefore, stagedRequest.getExpiresBefore(), Long.MAX_VALUE);
     }
     public void setExpiresBefore(final String expiresBefore) {
         this.expiresBefore = expiresBefore;
-        stagedRequest.setExpiresBefore(parseDateAndUseDefaultOnFail(expiresBefore, 0L));
+        stagedRequest.setExpiresBefore(parseDateAndUseDefaultOnFail(expiresBefore, Long.MAX_VALUE));
     }
     public String getRevokedAfter() {
-        return getDateAsString(revokedAfter, stagedRequest.getRevokedAfter(), Long.MAX_VALUE);
+        return getDateAsString(revokedAfter, stagedRequest.getRevokedAfter(), 0L);
     }
     public void setRevokedAfter(final String revokedAfter) {
         this.revokedAfter = revokedAfter;
-        stagedRequest.setRevokedAfter(parseDateAndUseDefaultOnFail(revokedAfter, Long.MAX_VALUE));
+        stagedRequest.setRevokedAfter(parseDateAndUseDefaultOnFail(revokedAfter, 0L));
     }
     public String getRevokedBefore() {
-        return getDateAsString(revokedBefore, stagedRequest.getRevokedBefore(), 0L);
+        return getDateAsString(revokedBefore, stagedRequest.getRevokedBefore(), Long.MAX_VALUE);
     }
     public void setRevokedBefore(final String revokedBefore) {
         this.revokedBefore = revokedBefore;
-        stagedRequest.setRevokedBefore(parseDateAndUseDefaultOnFail(revokedBefore, 0L));
+        stagedRequest.setRevokedBefore(parseDateAndUseDefaultOnFail(revokedBefore, Long.MAX_VALUE));
     }
 
     /** @return the current value if the staged request value if the default value */
