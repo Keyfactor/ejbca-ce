@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ejb.ObjectNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -41,6 +42,8 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -62,6 +65,8 @@ public class ApplyBean implements Serializable {
     private String username = "";
     private EndEntityInformation endEntityInformation = null;
     private String browser = "unknown";
+    /** Is set to true by setUserOk if user exists and password is correct */
+    private boolean userOk = false;
 	
 	private EjbLocalHelper ejbLocalHelper;
 	
@@ -88,7 +93,7 @@ public class ApplyBean implements Serializable {
      *
      * @param username the user whose tokentype should be returned
      *
-     * @return tokentype as defined in SecConst
+     * @return caid of user.
      *
      * @see org.ejbca.core.model.SecConst
      */
@@ -109,16 +114,14 @@ public class ApplyBean implements Serializable {
         return returnval;
     }
 
-	/**
-	 * Method that returns a users tokentype defined in SecConst, if 0 is returned user couldn't be
-	 * found i database.
-	 *
-	 * @param username the user whose tokentype should be returned
-	 *
-	 * @return caid of user.
-	 *
-	 * @see org.ejbca.core.model.SecConst
-	 */
+    /**
+     * Method that returns the CAId of the CA the user was registered with, if 0 is returned user couldn't be
+     * found i database.
+     *
+     * @param username the user whose caid should be returned
+     *
+     * @return caid
+     */
 	public int getCAId(String username) throws Exception {
 		int returnval = 0;		
 
@@ -250,6 +253,37 @@ public class ApplyBean implements Serializable {
         	log.trace("<getUserCertificateProfile(" + username + ") --> " + returnval);
         }
         return returnval;
+    }
+
+    /**
+     * Method that returns if the user exists and password matches.
+     *
+     * @param username user whose authentication should be checked.
+     *
+     * @return true if user exists and pwd is ok, false otherwise
+     */
+    public void setUserOk(String username, String password) throws Exception {
+        if(!username.equals(this.username) || this.endEntityInformation == null){
+            try {
+                ejbLocalHelper.getEndEntityAuthenticationSession().authenticateUser(administrator, username, password);
+                this.userOk = true;
+            } catch (AuthLoginException | ObjectNotFoundException | AuthStatusException e) {
+                // coming here means that the user did not exist or the pwd was wrong, i.e. we will set value to false
+                this.userOk = false;
+            }
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<userOk(" + username + ") --> " + this.userOk);
+        }
+    }
+
+    /**
+     * Returns if the user exists and password matches. Must be initialized by call to setUserOk(username, password)
+     *
+     * @return true if user exists and pwd is ok, false otherwise
+     */
+    public boolean getUserOk() {
+        return this.userOk;
     }
     
     /**
