@@ -23,10 +23,12 @@
 
 <jsp:useBean id="applybean" class="org.ejbca.ui.web.pub.ApplyBean" scope="page" />
 <jsp:useBean id="username" class="java.lang.String" />
+<jsp:useBean id="password" class="java.lang.String" />
 <jsp:useBean id="finder" class="org.ejbca.ui.web.pub.retrieve.CertificateFinderBean" scope="page" />
 <%
   applybean.initialize(request);
   applybean.setDefaultUsername(username);
+  applybean.setUserOk(username, password);
 %>
 
 <c:set var="browser" value="${applybean.browser}" />
@@ -38,6 +40,7 @@
 	</c:if>
 	<c:if test="${username != null && password != null && browser != null}">
 		<c:set var="tokentype" value="${applybean.tokenType}" />
+		<c:set var="userok" value="${applybean.userOk}" />
 		<c:set var="availablekeylengths" value="${applybean.availableBitLengths}" />
 		<c:set var="minKeyLength" value="${applybean.minimumAvailableKeyLength}" />
 		<c:set var="availableCertProfiles" value="${applybean.availableCertificateProfiles}" />
@@ -47,10 +50,10 @@
 		<% finder.setCurrentCA(caid); %>
 
 		<c:choose>
-	        <c:when test="${tokentype == 0}">
+	        <c:when test="${userok == false}">
 				<%	
 					// The user doesn't exist. Redirect to error page.
-		            request.setAttribute("ErrorMessage","Wrong username or password");
+		            request.setAttribute("ErrorMessage","Wrong username, enrollment code or user status");
 		            request.getRequestDispatcher("error.jsp").forward(request, response);
 		        %>
 	        </c:when> 
