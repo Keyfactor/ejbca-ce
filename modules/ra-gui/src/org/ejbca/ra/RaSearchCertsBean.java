@@ -90,7 +90,7 @@ public class RaSearchCertsBean implements Serializable {
     private String revokedAfter = "";
     private String revokedBefore = "";
 
-    private enum SortOrder { PROFILE, CA, SERIALNUMBER, SUBJECT, USERNAME, EXPIRATION, STATUS };
+    private enum SortOrder { PROFILE, CA, SERIALNUMBER, SUBJECT, USERNAME, ISSUANCE, EXPIRATION, STATUS };
     
     private SortOrder sortBy = SortOrder.USERNAME;
     private boolean sortAscending = true;
@@ -254,6 +254,8 @@ public class RaSearchCertsBean implements Serializable {
                     return o1.getSerialnumber().compareTo(o2.getSerialnumber()) * (sortAscending ? 1 : -1);
                 case SUBJECT:
                     return (o1.getSubjectDn()+o1.getSubjectAn()).compareTo(o2.getSubjectDn()+o2.getSubjectAn()) * (sortAscending ? 1 : -1);
+                case ISSUANCE:
+                    return o1.getCreated().compareTo(o2.getCreated()) * (sortAscending ? 1 : -1);
                 case EXPIRATION:
                     return o1.getExpires().compareTo(o2.getExpires()) * (sortAscending ? 1 : -1);
                 case STATUS:
@@ -287,6 +289,8 @@ public class RaSearchCertsBean implements Serializable {
     public void sortBySerialNumber() { sortBy(SortOrder.SERIALNUMBER, true); }
     public String getSortedBySubject() { return getSortedBy(SortOrder.SUBJECT); }
     public void sortBySubject() { sortBy(SortOrder.SUBJECT, true); }
+    public String getSortedByIssuance() { return getSortedBy(SortOrder.ISSUANCE); }
+    public void sortByIssuance() { sortBy(SortOrder.ISSUANCE, false); }
     public String getSortedByExpiration() { return getSortedBy(SortOrder.EXPIRATION); }
     public void sortByExpiration() { sortBy(SortOrder.EXPIRATION, false); }
     public String getSortedByStatus() { return getSortedBy(SortOrder.STATUS); }

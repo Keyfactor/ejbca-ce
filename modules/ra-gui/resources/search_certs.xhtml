@@ -259,18 +259,26 @@
 	                            </h:panelGrid>
 	                        </h:column>
 	                        <h:column>
+                                <f:facet name="header">
+                                    <h:outputLabel for="sortIssuance" value="#{msg.search_certs_page_colhead_notbefore} #{raSearchCertsBean.sortedByIssuance}"/>
+                                    <h:commandButton id="sortIssuance" action="#{raSearchCertsBean.sortByIssuance}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
+                                        <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    </h:commandButton>
+                                </f:facet>
+                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.created}"/>
+                            </h:column>
+                            <h:column>
 	                            <f:facet name="header">
-	                                <h:outputLabel for="sortExpiration" value="#{msg.search_certs_page_colhead_validity} #{raSearchCertsBean.sortedByExpiration}"/>
+	                                <h:outputLabel for="sortExpiration" value="#{msg.search_certs_page_colhead_notafter} #{raSearchCertsBean.sortedByExpiration}"/>
 	                                <h:commandButton id="sortExpiration" action="#{raSearchCertsBean.sortByExpiration}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
 	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
 	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
 	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:commandButton>
 	                            </f:facet>
-	                            <h:panelGrid columns="1" styleClass="nopadding noborder">
-	                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.created}"/>
-	                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.expires}"/>
-	                            </h:panelGrid>
+                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.expires}"/>
 	                        </h:column>
 	                        <h:column>
 	                            <f:facet name="header">
