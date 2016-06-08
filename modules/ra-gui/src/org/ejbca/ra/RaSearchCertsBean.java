@@ -195,7 +195,6 @@ public class RaSearchCertsBean implements Serializable {
                 if (stagedRequest.getIssuedAfter()>0L) {
                     final Long notBefore = cdw.getCertificateData().getNotBefore();
                     if (notBefore==null || notBefore.longValue()<stagedRequest.getIssuedAfter()) {
-                        log.info("DEVELOP IssuedAfter: " + stagedRequest.getIssuedAfter() + " notBefore= "+notBefore + " fp="+cdw.getCertificateData().getFingerprint());
                         continue;
                     }
                 }
