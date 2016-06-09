@@ -23,11 +23,11 @@ import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.keybind.InternalKeyBindingFactory;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
-import org.cesecore.keybind.InternalKeyBindingProperty;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -65,10 +65,10 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
         registerParameter(new Parameter(SIGNATURE_ALGORITHM_KEY, "Algorithm", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The signature algorithm that this InternalKeyBinding will use for signatures."));
         //Register type specific properties dynamically
-        Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = EjbRemoteHelper.INSTANCE.getRemoteSession(
+        Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> typesAndProperties = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 InternalKeyBindingMgmtSessionRemote.class).getAvailableTypesAndProperties();
-        for (Entry<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
-            for (InternalKeyBindingProperty<? extends Serializable> property : entry.getValue().values()) {
+        for (Entry<String, Map<String, DynamicUiProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
+            for (DynamicUiProperty<? extends Serializable> property : entry.getValue().values()) {
                 if (isParameterRegistered("-"+property.getName())) {
                     //Different properties could contain the same keyword. Simply use the same one. 
                     continue;
@@ -101,7 +101,7 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         //Get dynamically loaded properties
-        Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = EjbRemoteHelper.INSTANCE.getRemoteSession(
+        Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> typesAndProperties = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 InternalKeyBindingMgmtSessionRemote.class).getAvailableTypesAndProperties();
         for (String propertyName : typesAndProperties.get(type).keySet()) {
             if (parameters.containsKey("-"+propertyName)) {
