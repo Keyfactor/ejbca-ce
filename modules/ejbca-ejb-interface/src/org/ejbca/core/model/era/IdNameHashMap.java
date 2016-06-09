@@ -20,59 +20,39 @@ import java.util.Set;
 
 /**
  * Provides looking up operation with two separate keys (id or name) over a map.
+ * 
  * @version $Id$
  */
-public class IdNameHashMap<T> implements Serializable{
+public class IdNameHashMap<T extends Serializable> implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 
-    public class Tuple implements Serializable{
-		private static final long serialVersionUID = 1L;
-        private int id;
-		private String name;
-		private T value;
-		public Tuple(Integer id, String name, T value){
-			this.id = id;
-			this.name = name;
-			this.value = value;
-		}
-		public int getId(){
-			return id;
-		}
-		public String getName(){
-			return name;
-		}
-		public T getValue(){
-			return value;
-		}
-	}
-
-	private Map<String, Tuple> nameMap = new HashMap<>();
-	private Map<Integer, Tuple> idMap = new HashMap<>();
+    private Map<String, Tuple<T>> nameMap = new HashMap<>();
+	private Map<Integer, Tuple<T>> idMap = new HashMap<>();
  
-	public Map<String, Tuple> getNameMap() {
+	public Map<String, Tuple<T>> getNameMap() {
         return nameMap;
     }
 
-    public Map<Integer, Tuple> getIdMap() {
+    public Map<Integer, Tuple<T>> getIdMap() {
         return idMap;
     }
 
-    public Tuple put(int id, String name, T value){
+    public Tuple<T> put(int id, String name, T value){
         if(nameMap.containsKey(name) || idMap.containsKey(id)){
             return null;
         }
-        Tuple newValue = new Tuple(id, name, value);
+        Tuple<T> newValue = new Tuple<T>(id, name, value);
 		nameMap.put(name, newValue);
 		idMap.put(id, newValue);
 		return newValue;
 	}
 	
-	public Tuple get(int id){
+	public Tuple<T> get(int id){
 		return idMap.get(id);
 	}
 	
-	public Tuple get(String name){
+	public Tuple<T> get(String name){
 		return nameMap.get(name);
 	}
 	
@@ -97,7 +77,7 @@ public class IdNameHashMap<T> implements Serializable{
 	    return nameMap.containsKey(key);
 	}
 	
-	public Collection<Tuple> values(){
+	public Collection<Tuple<T>> values(){
 	    return idMap.values();
 	}
 	

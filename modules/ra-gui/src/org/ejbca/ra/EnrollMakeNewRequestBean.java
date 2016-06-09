@@ -70,6 +70,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.Tuple;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
@@ -208,7 +209,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         setAuthorizedCertificateProfiles(raMasterApiProxyBean.getAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken()));
         setAuthorizedCAInfos(raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken()));
 
-        for (IdNameHashMap<EndEntityProfile>.Tuple tuple : authorizedEndEntityProfiles.values()) {
+        for (Tuple<EndEntityProfile> tuple : authorizedEndEntityProfiles.values()) {
             availableEndEntityProfiles.put(tuple.getName(), tuple.getName());
         }
     }
@@ -220,7 +221,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         String[] availableCertificateProfileIds = endEntityProfile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
         for (String id : availableCertificateProfileIds) {
-            IdNameHashMap<CertificateProfile>.Tuple tuple = authorizedCertificateProfiles.get(Integer.parseInt(id));
+            Tuple<CertificateProfile> tuple = authorizedCertificateProfiles.get(Integer.parseInt(id));
             if (tuple != null) {
                 String defaultCertProfileId = endEntityProfile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
                 if (id.equalsIgnoreCase(defaultCertProfileId)) {
@@ -250,7 +251,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         boolean anyCAAvailableFromCP = availableCAsFromCP.size() == 1 && availableCAsFromCP.iterator().next() == CertificateProfile.ANYCA;
 
         //Intersect both with authorized CAs
-        for (IdNameHashMap<CAInfo>.Tuple tuple : authorizedCAInfos.values()) {
+        for (Tuple<CAInfo> tuple : authorizedCAInfos.values()) {
             if ((anyCAAvailableFromEEP || Arrays.asList(availableCAsFromEEPArray).contains(tuple.getId() + ""))
                     && (anyCAAvailableFromCP || availableCAsFromCP.contains(tuple.getId()))) {
                 String defaultCAId = endEntityProfile.getValue(EndEntityProfile.DEFAULTCA, 0);
@@ -957,7 +958,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (selectedEndEntityProfile == null) {
             return null;
         }
-        IdNameHashMap<EndEntityProfile>.Tuple temp = authorizedEndEntityProfiles.get(selectedEndEntityProfile);
+        Tuple<EndEntityProfile> temp = authorizedEndEntityProfiles.get(selectedEndEntityProfile);
         if (temp == null) {
             return null;
         }
@@ -968,7 +969,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (selectedCertificateProfile == null) {
             return null;
         }
-        IdNameHashMap<CertificateProfile>.Tuple temp = authorizedCertificateProfiles.get(selectedCertificateProfile);
+        Tuple<CertificateProfile> temp = authorizedCertificateProfiles.get(selectedCertificateProfile);
         if (temp == null) {
             return null;
         }
@@ -979,7 +980,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (selectedCertificateAuthority == null) {
             return null;
         }
-        IdNameHashMap<CAInfo>.Tuple temp = authorizedCAInfos.get(selectedCertificateAuthority);
+        Tuple<CAInfo> temp = authorizedCAInfos.get(selectedCertificateAuthority);
         if (temp == null) {
             return null;
         }
