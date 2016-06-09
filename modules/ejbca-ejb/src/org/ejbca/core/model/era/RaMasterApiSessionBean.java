@@ -1067,7 +1067,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public KeyStore generateKeystore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, KeyStoreException{
         GenerateToken tgen = new GenerateToken(endEntityAuthenticationSessionLocal, endEntityAccessSession, endEntityManagementSessionLocal, caSession, keyRecoverySessionLocal, signSessionLocal);
         try {
-            return tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), endEntity.getKeyStoreAlgorithmLength(), endEntity.getKeyStoreAlgorithm(), endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
+            return tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), endEntity.getExtendedinformation().getKeyStoreAlgorithmLength(), endEntity.getExtendedinformation().getKeyStoreAlgorithm(), endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
         } catch (Exception e) {
             throw new KeyStoreException(e);
         }

@@ -225,7 +225,7 @@ document.getElementById("marker").appendChild(newFileInput);
 								var="instance">
 								<h:panelGroup layout="block" styleClass="pure-control-group">
 									<h:outputLabel for="subjectDnField"
-										value="#{enrollMakeNewRequestBean.getSubjectDnFieldOutputName(instance.getName())}"
+										value="#{msg['subject_dn_'.concat(instance.getName())]}"
 										rendered="#{instance.isUsed()}" />
 									<h:inputText id="subjectDnField" value="#{instance.value}"
 										rendered="#{instance.isUsed()}"
@@ -251,7 +251,7 @@ document.getElementById("marker").appendChild(newFileInput);
 							var="instance">
 							<h:panelGroup layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="subjectAltNameField"
-									value="#{enrollMakeNewRequestBean.getSubjectAlternativeNameFieldOutputName(instance.getName())}"
+									value="#{msg['subject_alternative_name_'.concat(instance.getName())]}"
 									rendered="#{instance.isUsed()}" />
 								<h:inputText id="subjectAltNameField" value="#{instance.value}"
 									rendered="#{instance.isUsed()}"
@@ -273,7 +273,7 @@ document.getElementById("marker").appendChild(newFileInput);
 							var="instance">
 							<h:panelGroup layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="subjectDirectoryField"
-									value="#{enrollMakeNewRequestBean.getSubjectDirectoryAttributesFieldOutputName(instance.getName())}"
+									value="#{msg['subject_directory_attributes_'.concat(instance.getName())]}"
 									rendered="#{instance.isUsed()}" />
 								<h:inputText id="subjectDirectoryField"
 									value="#{instance.value}" rendered="#{instance.isUsed()}"
