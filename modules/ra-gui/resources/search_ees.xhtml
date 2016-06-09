@@ -33,7 +33,30 @@
             </h:panelGroup>
             <h:panelGroup layout="block" styleClass="content-body">
                 <h:outputText value="#{msg.search_ees_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToSearchEndEntities}"/>
-                <h:form id="contentForm" styleClass="pure-form pure-form-aligned foo-form" rendered="#{raAccessBean.authorizedToSearchEndEntities}">
+                <h:form id="detailsForm"
+                    rendered="#{raAccessBean.authorizedToSearchCerts and not empty raSearchEesBean.currentEndEntityDetails}">
+                    <h:panelGroup styleClass="pure-u-1">
+                        <h:panelGroup styleClass="pure-u-1-3">
+                            <h2><h:outputText value="#{msg.endentity_page_title}"/></h2>
+                        </h:panelGroup>
+                        <h:panelGroup styleClass="pure-u-2-3">
+                            <h:commandButton action="#{raSearchEesBean.previousEndEntityDetails}" value="#{msg.search_ees_page_cdprevious_command}"
+                                rendered="#{not empty raSearchEesBean.currentEndEntityDetails.previous}"/>
+                            <h:commandButton action="#{raSearchEesBean.closeEndEntityDetails}" value="#{msg.search_ees_page_cdclose_command}"/>
+                            <h:commandButton action="#{raSearchEesBean.nextEndEntityDetails}" value="#{msg.search_ees_page_cdnext_command}"
+                                rendered="#{not empty raSearchEesBean.currentEndEntityDetails.next}"/>
+                            <h:outputLink styleClass="fineprintMono" value="endentity.xhtml">
+                                <f:param name="ee" value="#{raSearchEesBean.currentEndEntityDetails.username}"/>
+                                <h:outputText value="#{msg.search_ees_page_link_view_cert}"/>
+                            </h:outputLink>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    <h:panelGroup styleClass="pure-u-1">
+                        <component:eedetails raEndEntityDetails="#{raSearchEesBean.currentEndEntityDetails}"/>
+                    </h:panelGroup>
+                </h:form>
+                <h:form id="contentForm" styleClass="pure-form pure-form-aligned foo-form"
+                    rendered="#{raAccessBean.authorizedToSearchEndEntities and empty raSearchEesBean.currentEndEntityDetails}">
                     <ui:remove><!-- Add a hidden h:commandButton first in the form to ensure that hitting enter leads to a search --></ui:remove>
                     <h:commandButton action="#{raSearchEesBean.searchAndFilterAction}" value="#{msg.search_ees_page_search_command}" style="display: none;"/>
     
@@ -221,7 +244,7 @@
                             </h:column>
                             <h:column>
                                 <f:facet name="header"><h:outputText value="#{msg.search_ees_page_colhead_action}"/></f:facet>
-
+                                <h:commandButton action="#{raSearchEesBean.openEndEntityDetails(raSearchEndEntity)}" value="#{msg.search_ees_page_show_command}"/>
                             </h:column>
                         </h:dataTable>
                     </h:panelGroup>

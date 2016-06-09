@@ -40,9 +40,11 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.core.model.era.RaEndEntitySearchRequest;
 import org.ejbca.core.model.era.RaEndEntitySearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
 /**
  * Backing bean for Search Certificates page. 
@@ -53,66 +55,6 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 @ViewScoped
 public class RaSearchEesBean implements Serializable {
 
-    /** UI representation of a result set item from the back end. */
-    public class RaSearchEndEntity {
-        private final String username;
-        private final String subjectDn;
-        private final String subjectAn;
-        private final String eepName;
-        private final String cpName;
-        private final String caName;
-        private final String modified;
-        private final int status;
-
-        public RaSearchEndEntity(final EndEntityInformation endEntity) {
-            this.username = endEntity.getUsername();
-            this.subjectDn = endEntity.getDN();
-            this.subjectAn = endEntity.getSubjectAltName();
-            final int cpId = endEntity.getCertificateProfileId();
-            if (cpId==EndEntityInformation.NO_CERTIFICATEPROFILE) {
-                this.cpName = raLocaleBean.getMessage("search_ees_page_info_unknowncp");
-            } else if (cpIdToNameMap!=null && cpIdToNameMap.containsKey(cpId)) {
-                this.cpName = String.valueOf(cpIdToNameMap.get(cpId));
-            } else {
-                this.cpName = raLocaleBean.getMessage("search_ees_page_info_missingcp", cpId);
-            }
-            final int eepId = endEntity.getEndEntityProfileId();
-            if (eepId==EndEntityInformation.NO_ENDENTITYPROFILE) {
-                this.eepName = raLocaleBean.getMessage("search_ees_page_info_unknowneep", eepId);
-            } else if (eepIdToNameMap!=null && eepIdToNameMap.containsKey(Integer.valueOf(eepId))) {
-                this.eepName = String.valueOf(eepIdToNameMap.get(Integer.valueOf(eepId)));
-            } else {
-                this.eepName = raLocaleBean.getMessage("search_ees_page_info_missingeep", eepId);
-            }
-            this.caName = String.valueOf(caIdToNameMap.get(endEntity.getCAId()));
-            this.modified = ValidityDate.formatAsISO8601ServerTZ(endEntity.getTimeModified().getTime(), TimeZone.getDefault());
-            this.status = endEntity.getStatus();
-        }
-        public String getUsername() { return username; }
-        public String getSubjectDn() { return subjectDn; }
-        public String getSubjectAn() { return subjectAn; }
-        public String getCaName() { return caName; }
-        public String getCpName() { return cpName; }
-        public boolean isCpNameSameAsEepName() { return eepName.equals(cpName); }
-        public String getEepName() { return eepName; }
-        public String getModified() { return modified; }
-        public String getStatus() {
-            switch (status) {
-            case EndEntityConstants.STATUS_FAILED:
-                return raLocaleBean.getMessage("search_ees_page_status_failed");
-            case EndEntityConstants.STATUS_GENERATED:
-                return raLocaleBean.getMessage("search_ees_page_status_generated");
-            case EndEntityConstants.STATUS_KEYRECOVERY:
-                return raLocaleBean.getMessage("search_ees_page_status_keyrecovery");
-            case EndEntityConstants.STATUS_NEW:
-                return raLocaleBean.getMessage("search_ees_page_status_new");
-            case EndEntityConstants.STATUS_REVOKED:
-                return raLocaleBean.getMessage("search_ees_page_status_revoked");
-            }
-            return raLocaleBean.getMessage("search_ees_page_status_other");
-        }
-    }
-    
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaSearchEesBean.class);
 
@@ -127,7 +69,7 @@ public class RaSearchEesBean implements Serializable {
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
-    private final List<RaSearchEndEntity> resultsFiltered = new ArrayList<>();
+    private final List<RaEndEntityDetails> resultsFiltered = new ArrayList<>();
     private Map<Integer,String> eepIdToNameMap = null;
     private Map<Integer,String> cpIdToNameMap = null;
     private Map<Integer,String> caIdToNameMap = new HashMap<>();
@@ -148,6 +90,15 @@ public class RaSearchEesBean implements Serializable {
     private boolean sortAscending = true;
 
     private boolean moreOptions = false;
+
+    private RaEndEntityDetails currentEndEntityDetails = null;
+
+    private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
+        @Override
+        public RaLocaleBean getRaLocaleBean() {
+            return raLocaleBean;
+        }
+    };
 
     /** Invoked action on search form post */
     public void searchAndFilterAction() {
@@ -185,9 +136,12 @@ public class RaSearchEesBean implements Serializable {
                 log.debug("Wider criteria → Query");
             }
             lastExecutedResponse = raMasterApiProxyBean.searchForEndEntities(raAuthenticationBean.getAuthenticationToken(), stagedRequest);
-            lastExecutedRequest = stagedRequest;
-            stagedRequest = new RaEndEntitySearchRequest(stagedRequest);
-            filterTransformSort();
+            if (!lastExecutedResponse.isMightHaveMoreResults() || !lastExecutedResponse.getEndEntities().isEmpty()) {
+                // Only update last executed request when there is no timeout
+                lastExecutedRequest = stagedRequest;
+                stagedRequest = new RaEndEntitySearchRequest(stagedRequest);
+                filterTransformSort();
+            }
         }
     }
 
@@ -195,64 +149,65 @@ public class RaSearchEesBean implements Serializable {
     private void filterTransformSort() {
         resultsFiltered.clear();
         if (lastExecutedResponse != null) {
-            for (final EndEntityInformation endEntity : lastExecutedResponse.getEndEntities()) {
+            for (final EndEntityInformation endEntityInformation : lastExecutedResponse.getEndEntities()) {
                 // ...we don't filter if the requested maxResults is lower than the search request
                 if (!stagedRequest.getGenericSearchString().isEmpty() &&
-                        (endEntity.getUsername() == null || !endEntity.getUsername().contains(stagedRequest.getGenericSearchString())) &&
-                        (endEntity.getDN() == null || !endEntity.getDN().contains(stagedRequest.getGenericSearchString()) &&
-                        (endEntity.getSubjectAltName() == null || !endEntity.getSubjectAltName().contains(stagedRequest.getGenericSearchString())))) {
+                        (endEntityInformation.getUsername() == null || !endEntityInformation.getUsername().contains(stagedRequest.getGenericSearchString())) &&
+                        (endEntityInformation.getDN() == null || !endEntityInformation.getDN().contains(stagedRequest.getGenericSearchString()) &&
+                        (endEntityInformation.getSubjectAltName() == null || !endEntityInformation.getSubjectAltName().contains(stagedRequest.getGenericSearchString())))) {
                     continue;
                 }
-                if (!stagedRequest.getEepIds().isEmpty() && !stagedRequest.getEepIds().contains(endEntity.getEndEntityProfileId())) {
+                if (!stagedRequest.getEepIds().isEmpty() && !stagedRequest.getEepIds().contains(endEntityInformation.getEndEntityProfileId())) {
                     continue;
                 }
-                if (!stagedRequest.getCpIds().isEmpty() && !stagedRequest.getCpIds().contains(endEntity.getCertificateProfileId())) {
+                if (!stagedRequest.getCpIds().isEmpty() && !stagedRequest.getCpIds().contains(endEntityInformation.getCertificateProfileId())) {
                     continue;
                 }
-                if (!stagedRequest.getCaIds().isEmpty() && !stagedRequest.getCaIds().contains(endEntity.getCAId())) {
+                if (!stagedRequest.getCaIds().isEmpty() && !stagedRequest.getCaIds().contains(endEntityInformation.getCAId())) {
                     continue;
                 }
                 if (stagedRequest.getModifiedAfter()<Long.MAX_VALUE) {
-                    if (endEntity.getTimeModified().getTime()<stagedRequest.getModifiedAfter()) {
+                    if (endEntityInformation.getTimeModified().getTime()<stagedRequest.getModifiedAfter()) {
                         continue;
                     }
                 }
                 if (stagedRequest.getModifiedBefore()>0L) {
-                    if (endEntity.getTimeModified().getTime()>stagedRequest.getModifiedBefore()) {
+                    if (endEntityInformation.getTimeModified().getTime()>stagedRequest.getModifiedBefore()) {
                         continue;
                     }
                 }
-                if (!stagedRequest.getStatuses().isEmpty() && !stagedRequest.getStatuses().contains(endEntity.getStatus())) {
+                if (!stagedRequest.getStatuses().isEmpty() && !stagedRequest.getStatuses().contains(endEntityInformation.getStatus())) {
                     continue;
                 }
-                resultsFiltered.add(new RaSearchEndEntity(endEntity));
+                resultsFiltered.add(new RaEndEntityDetails(endEntityInformation, raEndEntityDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caIdToNameMap));
             }
             if (log.isDebugEnabled()) {
                 log.debug("Filtered " + lastExecutedResponse.getEndEntities().size() + " responses down to " + resultsFiltered.size() + " results.");
             }
             sort();
+            chain();
         }
     }
 
     /** Sort the filtered result set based on the select column and sort order. */
     private void sort() {
-        Collections.sort(resultsFiltered, new Comparator<RaSearchEndEntity>() {
+        Collections.sort(resultsFiltered, new Comparator<RaEndEntityDetails>() {
             @Override
-            public int compare(RaSearchEndEntity o1, RaSearchEndEntity o2) {
+            public int compare(RaEndEntityDetails o1, RaEndEntityDetails o2) {
                 switch (sortBy) {
                 case PROFILE:
-                    return o1.eepName.concat(o1.cpName).compareTo(o2.eepName.concat(o2.cpName)) * (sortAscending ? 1 : -1);
+                    return o1.getEepName().concat(o1.getCpName()).compareTo(o2.getEepName().concat(o2.getCpName())) * (sortAscending ? 1 : -1);
                 case CA:
-                    return o1.caName.compareTo(o2.caName) * (sortAscending ? 1 : -1);
+                    return o1.getCaName().compareTo(o2.getCaName()) * (sortAscending ? 1 : -1);
                 case SUBJECT:
-                    return (o1.subjectDn+o1.subjectAn).compareTo(o2.subjectDn+o2.subjectAn) * (sortAscending ? 1 : -1);
+                    return (o1.getSubjectDn()+o1.getSubjectAn()).compareTo(o2.getSubjectDn()+o2.getSubjectAn()) * (sortAscending ? 1 : -1);
                 case MODIFIED:
-                    return o1.modified.compareTo(o2.modified) * (sortAscending ? 1 : -1);
+                    return o1.getModified().compareTo(o2.getModified()) * (sortAscending ? 1 : -1);
                 case STATUS:
                     return o1.getStatus().compareTo(o2.getStatus()) * (sortAscending ? 1 : -1);
                 case USERNAME:
                 default:
-                    return o1.username.compareTo(o2.username) * (sortAscending ? 1 : -1);
+                    return o1.getUsername().compareTo(o2.getUsername()) * (sortAscending ? 1 : -1);
                 }
             }
         });
@@ -322,7 +277,7 @@ public class RaSearchEesBean implements Serializable {
         searchAndFilterCommon();
     }
 
-    public List<RaSearchEndEntity> getFilteredResults() {
+    public List<RaEndEntityDetails> getFilteredResults() {
         return resultsFiltered;
     }
 
@@ -512,5 +467,36 @@ public class RaSearchEesBean implements Serializable {
             }
         });
         return entrySetSorted;
+    }
+
+    /** Chain the results in the current order for end entity details navigation. */
+    private void chain() {
+        RaEndEntityDetails previous = null;
+        for (final RaEndEntityDetails current: resultsFiltered) {
+            current.setPrevious(previous);
+            if (previous!=null) {
+                previous.setNext(current);
+            }
+            previous = current;
+        }
+        if (!resultsFiltered.isEmpty()) {
+            resultsFiltered.get(resultsFiltered.size()-1).setNext(null);
+        }
+    }
+
+    public void openEndEntityDetails(final RaEndEntityDetails selected) {
+        currentEndEntityDetails = selected;
+    }
+    public RaEndEntityDetails getCurrentEndEntityDetails() {
+        return currentEndEntityDetails;
+    }
+    public void nextEndEntityDetails() {
+        currentEndEntityDetails = currentEndEntityDetails.getNext();
+    }
+    public void previousEndEntityDetails() {
+        currentEndEntityDetails = currentEndEntityDetails.getPrevious();
+    }
+    public void closeEndEntityDetails() {
+        currentEndEntityDetails = null;
     }
 }
