@@ -16,11 +16,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -53,7 +51,6 @@ import javax.faces.event.ValueChangeEvent;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -400,17 +397,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     //-----------------------------------------------------------------------------------------------
     // Helpers and get*Rendered() methods
-    public String getSubjectDnFieldOutputName(String keyName) {
-        return raLocaleBean.getMessage("subject_dn_" + keyName);
-    }
-
-    public String getSubjectAlternativeNameFieldOutputName(String keyName) {
-        return raLocaleBean.getMessage("subject_alternative_name_" + keyName);
-    }
-
-    public String getSubjectDirectoryAttributesFieldOutputName(String keyName) {
-        return raLocaleBean.getMessage("subject_directory_attributes_" + keyName);
-    }
 
     public boolean getCsrUploadRendered() {
         return selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue());
@@ -689,12 +675,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public final void addEndEntityAndGenerateP12() {
-        byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_P12, "PKCS#12", TokenDownloadType.P12);
+        byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_P12, "PKCS#12", null);
         downloadToken(token, "application/x-pkcs12", ".p12");
     }
 
     public final void addEndEntityAndGenerateJks() {
-        byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_JKS, "JKS", TokenDownloadType.JKS);
+        byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_JKS, "JKS", null);
         downloadToken(token, "application/octet-stream", ".jks");
     }
 
@@ -720,6 +706,21 @@ public class EnrollMakeNewRequestBean implements Serializable {
             endEntityInformation.setPassword(commonName);
         }
 
+        //Get token's algorithm from CSR (PROVIDED_BY_USER) or it can be specified directly (ON_SERVER)
+        if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
+            final String[] tokenKeySpecSplit = selectedAlgorithm.split("_");
+            endEntityInformation.getExtendedinformation().setKeyStoreAlgorithm(tokenKeySpecSplit[0]);
+            endEntityInformation.getExtendedinformation().setKeyStoreAlgorithmLength(tokenKeySpecSplit[1]);
+            
+        }else if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())){
+            try {
+                endEntityInformation.getExtendedinformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(certificateRequest).getEncoded());
+            } catch (IOException e) {
+                raLocaleBean.addMessageError("enroll_invalid_certificate_request");
+                return null;
+            }
+        }
+        
         //Add end-entity
         try {
             if (raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, /*clearpwd=*/false)) {
@@ -746,41 +747,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         
         //End entity has been added now! Make sure clean-up is done in this "try-finally" block if something goes wrong inside it
         try{
-
-            //Get token's algorithm from CSR (PROVIDED_BY_USER) or it can be specified directly (ON_SERVER)
-            String keyAlg = null;
-            String keyLength = null;
-            if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
-                PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest);
-                if (pkcs10CertificateRequest == null) {
-                    raLocaleBean.addMessageError("enroll_invalid_certificate_request");
-                    return null;
-                }
-                JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificateRequest);
-                PublicKey publicKey;
-                try {
-                    publicKey = jcaPKCS10CertificationRequest.getPublicKey();
-                } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-                    log.warn(raLocaleBean.getMessage("enroll_csr_public_key_could_not_be_extracted"));
-                    raLocaleBean.addMessageError("enroll_csr_public_key_could_not_be_extracted");
-                    return null;
-                }
-                keyAlg = AlgorithmTools.getKeyAlgorithm(publicKey);
-                keyLength = AlgorithmTools.getKeySpecification(publicKey);
-            } else if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
-                final String[] tokenKeySpecSplit = selectedAlgorithm.split("_");
-                keyAlg = tokenKeySpecSplit[0];
-                keyLength = tokenKeySpecSplit[1];
-            }
-    
             //Generates a keystore token if user has specified "ON SERVER" key pair generation.
             //Generates a certificate token if user has specified "PROVIDED_BY_USER" key pair generation
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
                 KeyStore keystore = null;
                 try {
-                    endEntityInformation.setKeyStoreAlgorithm(keyAlg);
-                    endEntityInformation.setKeyStoreAlgorithmLength(keyLength);
                     keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
                     log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", tokenName, endEntityInformation.getUsername()));
     
@@ -798,14 +770,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     }
                 }
             } else if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
-                byte[] certificateDataToDownload = null;
                 try {
-                    certificateDataToDownload = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(),
+                    endEntityInformation.getExtendedinformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(certificateRequest).getEncoded());
+                    byte[] certificateDataToDownload = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(),
                             endEntityInformation, CertTools.getCertificateRequestFromPem(certificateRequest).getEncoded());
-                    if (certificateDataToDownload == null) {
-                        raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername());
-                        return null;
-                    }
     
                     if (tokenDownloadType == TokenDownloadType.PEM_FULL_CHAIN) {
                         X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
@@ -863,15 +831,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
         ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
         ec.setResponseContentType(responseContentType);
         ec.setResponseContentLength(token.length);
+        final String filename = StringTools.stripFilename(endEntityInformation.getUsername() + fileExtension);
         ec.setResponseHeader("Content-Disposition",
-                "attachment; filename=\"" + StringTools.stripFilename(endEntityInformation.getUsername() + fileExtension) + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+                "attachment; filename=\"" + filename + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
         OutputStream output = null;
         try {
             output = ec.getResponseOutputStream();
             output.write(token);
             output.flush();
+            fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
-            log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
+            log.error(raLocaleBean.getMessage("enroll_token_could_not_be_downloaded", filename), e);
+            raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", filename);
         } finally {
             if (output != null) {
                 try {
@@ -879,7 +850,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 } catch (IOException e) {
                 }
             }
-            fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         }
     }
 

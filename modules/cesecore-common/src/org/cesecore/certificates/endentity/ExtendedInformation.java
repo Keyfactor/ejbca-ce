@@ -101,6 +101,13 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
     private static final Object NAMECONSTRAINTS_PERMITTED = "nameconstraints_permitted";
     private static final Object NAMECONSTRAINTS_EXCLUDED = "nameconstraints_excluded";
+    
+    /** Keystore specifications used for enrolling end entity user with key-pair generated on a server side (KickAssRA).*/
+    private static String KEYSTORE_ALGORITHMLENGTH = "KEYSTORE_ALGORITHMLENGTH";
+    private static String KEYSTORE_ALGORITHM = "KEYSTORE_ALGORITHM";
+    
+    /** Certificate request used for enrolling end entity user with public key provided by user (KickAssRA). */
+    private static String CERTIFICATE_REQUEST = "CERTIFICATE_REQUEST";
 
 
     /** Creates a new instance of EndEntity Profile */
@@ -109,6 +116,43 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         data.put(SUBJECTDIRATTRIBUTES, "");
         setMaxLoginAttempts(DEFAULT_MAXLOGINATTEMPTS);
         setRemainingLoginAttempts(DEFAULT_REMAININGLOGINATTEMPTS);
+        setKeyStoreAlgorithm(null);
+        setKeyStoreAlgorithmLength(null);
+        setCertificateRequest(null);
+    }
+    
+    /** @return The keystore algorithm length for RSA/DSA ('2046', '4096',...) or curve specification for ECDSA
+     *  ('brainpoolP224r1', 'prime239v1', 'secp256k1'...) if it was provided during user enrollment request, null otherwise. Default: null*/
+    public String getKeyStoreAlgorithmLength(){
+        return (String) data.get(KEYSTORE_ALGORITHMLENGTH);
+    }
+    
+    public void setKeyStoreAlgorithmLength(String keyStoreAlgorithmLength){
+        if(keyStoreAlgorithmLength != null){
+            data.put(KEYSTORE_ALGORITHMLENGTH, keyStoreAlgorithmLength);
+        }
+    }
+    
+    /** @return The keystore algorithm (RSA, DSA, ECDSA) if it was provided during user enrollment request, null otherwise. Default: null*/
+    public String getKeyStoreAlgorithm(){
+        return (String) data.get(KEYSTORE_ALGORITHM);
+    }
+    
+    public void setKeyStoreAlgorithm(String keyStoreAlgorithm){
+        if(keyStoreAlgorithm != null){
+            data.put(KEYSTORE_ALGORITHM, keyStoreAlgorithm);
+        }
+    }
+    
+    /** @return The certificate request if it was provided during user enrollment request, null otherwise.*/
+    public byte[] getCertificateRequest(){
+        return (byte[]) data.get(CERTIFICATE_REQUEST);
+    }
+    
+    public void setCertificateRequest(byte[] certificateRequest){
+        if(certificateRequest != null){
+            data.put(CERTIFICATE_REQUEST, certificateRequest);
+        }
     }
 
     public String getSubjectDirectoryAttributes() {
