@@ -268,12 +268,18 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
             int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence, 
             CertificateGenerationParams certGenParams, final AvailableCustomCertificateExtensionsConfiguration cceConfig)
             throws IllegalValidityException, CryptoTokenOfflineException, CertificateCreateException, SignatureException {
-	if (log.isTraceEnabled()) {
+        if (log.isTraceEnabled()) {
 			log.trace(">generateCertificate("+notBefore+", "+notAfter+")");
 		}
 		// Get the fields for the Holder Reference fields
-		// country is taken from C in a DN string, mnemonic from CN in a DN string and seq from SERIALNUMBER in a DN string
-		final String subjectDn = subject.getCertificateDN();
+		// country is taken from C in a DN string, mnemonic from CN in a DN string and seq from the sequence passed as parameter
+        String subjectDn = subject.getCertificateDN();
+        if (certProfile.getAllowDNOverride() && (request != null) && (request.getRequestDN() != null)) {
+            subjectDn = request.getRequestDN();
+            if (log.isDebugEnabled()) {
+                log.debug("Using Holder Reference from request instead of user's registered.");
+            }
+        }
 		final String country = CertTools.getPartFromDN(subjectDn, "C");
 		if(country == null) {
 	        final String msg = intres.getLocalizedMessage("cvc.error.missingdnfield", subjectDn, "Country");
