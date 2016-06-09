@@ -66,8 +66,6 @@ public class EndEntityInformation implements Serializable {
     private int tokentype;
     private int hardtokenissuerid;
     private ExtendedInformation extendedinformation;
-    private String keyStoreAlgorithm;
-    private String keyStoreAlgorithmLength;
 
     /** Creates new empty EndEntityInformation */
     public EndEntityInformation() {
@@ -144,8 +142,6 @@ public class EndEntityInformation implements Serializable {
         setHardTokenIssuerId(hardtokenissuerid);
         setExtendedinformation(extendedinfo);
         setCardNumber(null);
-        setKeyStoreAlgorithm(null);
-        setKeyStoreAlgorithmLength(null);
     }
     
     
@@ -182,22 +178,7 @@ public class EndEntityInformation implements Serializable {
     public void setCardNumber(String cardNumber) {this.cardNumber =  StringTools.putBase64String(cardNumber);}
     public String getCardNumber() {return StringTools.getBase64String(cardNumber);}
     public void setPassword(String pwd) {this.password = StringTools.putBase64String(pwd);}
-    /**
-     * @return keystore algorithm (DSA, ECDSA or RSA) for keystore tokens (P12 and JKS)
-     */
-    public String getKeyStoreAlgorithm(){return this.keyStoreAlgorithm;}
-    /**
-     * @param keyAlgorithm keystore algorithm ('DSA', 'ECDSA' or 'RSA') for keystore tokens (P12 and JKS)
-     */
-    public void setKeyStoreAlgorithm(String keyAlgorithm){this.keyStoreAlgorithm = keyAlgorithm;}
-    /**
-     * @return keystore algorithm length for non-EC or curve name for EC(etc. '1024', '2048,.. or 'brainpoolP224r1', 'prime239v1', 'secp256k1',..)
-     */
-    public String getKeyStoreAlgorithmLength(){return this.keyStoreAlgorithmLength;}
-    /**
-     * @param keyLength keystore algorithm length for non-EC or curve name for EC(etc. '1024', '2048,.. or 'brainpoolP224r1', 'prime239v1', 'secp256k1',..)
-     */
-    public void setKeyStoreAlgorithmLength(String keyLength){this.keyStoreAlgorithmLength = keyLength;}
+
     /**
      * Gets the user's clear text password. For empty passwords, it can either return
      * null or an empty string depending on the database software used.
@@ -355,4 +336,6 @@ public class EndEntityInformation implements Serializable {
             return StringTools.getBase64String(subjectDNClean);
     	}
     }
+
+
 }

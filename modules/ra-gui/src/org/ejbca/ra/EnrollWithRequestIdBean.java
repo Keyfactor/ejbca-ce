@@ -55,12 +55,14 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     @ManagedProperty(value = "#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
+
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) {
         this.raAuthenticationBean = raAuthenticationBean;
     }
 
     @ManagedProperty(value = "#{raLocaleBean}")
     private RaLocaleBean raLocaleBean;
+
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {
         this.raLocaleBean = raLocaleBean;
     }
@@ -68,31 +70,32 @@ public class EnrollWithRequestIdBean implements Serializable {
     private String requestId;
     public int requestStatus;
     EndEntityInformation endEntityInformation;
-    
+    byte[] generatedToken;
+
     @PostConstruct
-    private void postConstruct(){
+    private void postConstruct() {
         reset();
     }
-    
-    public void reset(){
+
+    public void reset() {
         requestStatus = ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
         endEntityInformation = null;
-        
     }
-    
+
     /**
      * Check the status of request ID
      */
-    public void checkRequestId(){
-        if(Integer.parseInt(requestId) != 0){
-            RaApprovalRequestInfo raApprovalRequestInfo = raMasterApiProxyBean.getApprovalRequestByRequestHash(raAuthenticationBean.getAuthenticationToken(), Integer.parseInt(requestId));
-            if(raApprovalRequestInfo == null){
+    public void checkRequestId() {
+        if (Integer.parseInt(requestId) != 0) {
+            RaApprovalRequestInfo raApprovalRequestInfo = raMasterApiProxyBean
+                    .getApprovalRequestByRequestHash(raAuthenticationBean.getAuthenticationToken(), Integer.parseInt(requestId));
+            if (raApprovalRequestInfo == null) {
                 raLocaleBean.addMessageError("enrollwithrequestid_could_not_find_request_with_request_id", Integer.parseInt(requestId));
                 return;
             }
-            
+
             requestStatus = raApprovalRequestInfo.getStatus();
-            switch(requestStatus){
+            switch (requestStatus) {
             case ApprovalDataVO.STATUS_WAITINGFORAPPROVAL:
                 raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_is_still_waiting_for_approval", Integer.parseInt(requestId));
                 return;
@@ -108,63 +111,102 @@ public class EnrollWithRequestIdBean implements Serializable {
                 raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_is_still_waiting_for_approval", Integer.parseInt(requestId));
                 return;
             }
-            
+
             //Get username and set the password to be the same as username
             String username = raApprovalRequestInfo.getEditableData().getUsername();
-            endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);   
-            if(endEntityInformation == null){
-                log.error("Could not find endEntity for the username='" + username + "'" );
+            endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);
+            if (endEntityInformation == null) {
+                log.error("Could not find endEntity for the username='" + username + "'");
                 return;
             }
             endEntityInformation.setPassword(username);
-            
-            //TODO fix hardcoded algorithm
-            endEntityInformation.setKeyStoreAlgorithm("RSA");
-            endEntityInformation.setKeyStoreAlgorithmLength("4096");
+
         }
     }
-    
-    public boolean isRequestApproved(){
+
+    public boolean isRequestApproved() {
         return requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED;
     }
-    
-    public void finalizeEnrollment(){
+
+    public void finalizeEnrollment() {
         //Generate token
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        KeyStore keystore = null;
-        try {
-            keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
-            log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", "P12", endEntityInformation.getUsername()));
+        if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN) {
+            byte[] certificateRequest = endEntityInformation.getExtendedinformation().getCertificateRequest();
+            if (certificateRequest == null) {
+                raLocaleBean.addMessageError("enrollwithrequestid_could_not_find_csr_inside_enrollment_request", endEntityInformation.getUsername());
+                log.error(raLocaleBean.getMessage("enrollwithrequestid_could_not_find_csr_inside_enrollment_request",
+                        endEntityInformation.getUsername()));
+                return;
+            }
+            try {
+                generatedToken = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(), endEntityInformation,
+                        certificateRequest);
+                downloadAsDer();
+            } catch (AuthorizationDeniedException e) {
+                raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e);
+                return;
+            } finally {
+                if (buffer != null) {
+                    try {
+                        buffer.close();
+                    } catch (IOException e) {
+                    }
+                }
+            }
+        } else {
+            KeyStore keystore = null;
+            try {
+                keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+                log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", endEntityInformation.getTokenType(),
+                        endEntityInformation.getUsername()));
 
-            keystore.store(buffer, endEntityInformation.getPassword().toCharArray());
-        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | AuthorizationDeniedException e) {
-            raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-            log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
-            return;
-        } finally {
-            if (buffer != null) {
-                try {
-                    buffer.close();
-                } catch (IOException e) {
+                keystore.store(buffer, endEntityInformation.getPassword().toCharArray());
+                generatedToken = buffer.toByteArray();
+                if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS) {
+                    downloadJks();
+                } else if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12) {
+                    downloadPkcs12();
+                }
+            } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | AuthorizationDeniedException e) {
+                raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
+                log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
+                return;
+            } finally {
+                if (buffer != null) {
+                    try {
+                        buffer.close();
+                    } catch (IOException e) {
+                    }
                 }
             }
         }
         
-        //Download the token
-        switch (endEntityInformation.getTokenType()) {
-        case EndEntityConstants.TOKEN_SOFT_P12:
-            downloadToken(buffer.toByteArray(), "application/x-pkcs12", ".p12");
-            break;
-        case EndEntityConstants.TOKEN_SOFT_JKS:
-            downloadToken(buffer.toByteArray(), "application/octet-stream", ".jks");
-            break;
-        default:
-            break;
-        }
-        
-        reset(); //After the download let's get on the previous screen
+        reset();
+
     }
-    
+
+    public final void downloadAsDer() {
+        if (endEntityInformation.getTokenType() != EndEntityConstants.TOKEN_USERGEN) {
+            throw new IllegalStateException();
+        }
+        downloadToken(generatedToken, "application/octet-stream", ".der");
+    }
+
+    public final void downloadPkcs12() {
+        if (endEntityInformation.getTokenType() != EndEntityConstants.TOKEN_SOFT_P12) {
+            throw new IllegalStateException();
+        }
+        downloadToken(generatedToken, "application/x-pkcs12", ".p12");
+    }
+
+    public final void downloadJks() {
+        if (endEntityInformation.getTokenType() != EndEntityConstants.TOKEN_SOFT_JKS) {
+            throw new IllegalStateException();
+        }
+        downloadToken(generatedToken, "application/octet-stream", ".jks");
+    }
+
     private final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
         if (token == null) {
             return;
@@ -176,15 +218,17 @@ public class EnrollWithRequestIdBean implements Serializable {
         ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
         ec.setResponseContentType(responseContentType);
         ec.setResponseContentLength(token.length);
-        ec.setResponseHeader("Content-Disposition",
-                "attachment; filename=\"" + StringTools.stripFilename(endEntityInformation.getUsername() + fileExtension) + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+        final String filename = StringTools.stripFilename(endEntityInformation.getUsername() + fileExtension);
+        ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + filename + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
         OutputStream output = null;
         try {
             output = ec.getResponseOutputStream();
             output.write(token);
             output.flush();
+            fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
-            log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
+            log.error(raLocaleBean.getMessage("enroll_token_could_not_be_downloaded", filename), e);
+            raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", filename);
         } finally {
             if (output != null) {
                 try {
@@ -192,10 +236,13 @@ public class EnrollWithRequestIdBean implements Serializable {
                 } catch (IOException e) {
                 }
             }
-            fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         }
     }
-    
+
+    public boolean isUserGeneratedToken() {
+        return endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN;
+    }
+
     //-----------------------------------------------------------------
     //Getters/setters
     public EndEntityInformation getEndEntityInformation() {
@@ -205,6 +252,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     public void setEndEntityInformation(EndEntityInformation endEntityInformation) {
         this.endEntityInformation = endEntityInformation;
     }
+
     /**
      * @return the requestId
      */
@@ -227,7 +275,14 @@ public class EnrollWithRequestIdBean implements Serializable {
         this.requestStatus = requestStatus;
     }
 
+    /**
+     * @return the generatedToken (.p12, .jks or .pem without full chain)
+     */
+    public byte[] getGeneratedToken() {
+        return generatedToken;
+    }
 
-    
-    
+    public void setGeneratedToken(byte[] generatedToken) {
+        this.generatedToken = generatedToken;
+    }
 }
