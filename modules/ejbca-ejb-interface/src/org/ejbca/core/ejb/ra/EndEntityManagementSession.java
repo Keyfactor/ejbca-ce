@@ -282,6 +282,7 @@ public interface EndEntityManagementSession {
      * @param admin the administrator performing the action
      * @param username the unique username.
      * @param password the password to be verified.
+     * @return true if password was correct, false otherwise
      */
     boolean verifyPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException;
 
