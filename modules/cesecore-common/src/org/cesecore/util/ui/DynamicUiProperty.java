@@ -75,6 +75,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public DynamicUiProperty(final DynamicUiProperty<T> original) {
         this.name = original.getName();
         this.defaultValue = original.getDefaultValue();
+        this.setHasMultipleValues(original.getHasMultipleValues());
         if(!original.hasMultipleValues) {
             setValue(original.getValue()); 
         } else {
@@ -212,15 +213,38 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public String getEncodedValue() {
         return getAsEncodedValue(getValue());
     }
+    
+    public List<String> getEncodedValues() {
+        return getAsEncodedValues(getValues());
+    }
 
     @SuppressWarnings("unchecked")
     public String getAsEncodedValue(Serializable possibleValue) {
         return new String(Base64.encode(getAsByteArray((T) possibleValue), false));
     }
+    
+    @SuppressWarnings("unchecked")
+    public List<String> getAsEncodedValues(List<T> list) {
+        List<String> encodedValues = new ArrayList<>();
+        for(Serializable possibleValue : list)
+        {
+            encodedValues.add(new String(Base64.encode(getAsByteArray((T) possibleValue), false)));
+        }
+        return encodedValues;
+    }
 
     @SuppressWarnings("unchecked")
     public void setEncodedValue(String encodedValue) {
         setValue((T) getAsObject(Base64.decode(encodedValue.getBytes())));
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void setEncodedValues(List<String> encodedValues) {
+        List<T> decodedValues = new ArrayList<>();
+        for (String encodedValue : encodedValues) {
+            decodedValues.add((T) getAsObject(Base64.decode(encodedValue.getBytes())));
+        }
+        setValues(decodedValues);
     }
 
     @SuppressWarnings("unchecked")
