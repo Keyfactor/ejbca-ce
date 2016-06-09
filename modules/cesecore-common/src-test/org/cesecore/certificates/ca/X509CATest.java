@@ -80,6 +80,7 @@ import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.Store;
@@ -180,7 +181,7 @@ public class X509CATest {
         String dn = p10.getSubject().toString();
         assertEquals(CADN, dn);
         
-        // Make a request with some pkcs11 attributes as well
+        // Make a request with some pkcs10 attributes as well
 		Collection<ASN1Encodable> attributes = new ArrayList<ASN1Encodable>();
 		// Add a subject alternative name
 		ASN1EncodableVector altnameattr = new ASN1EncodableVector();
@@ -878,6 +879,44 @@ public class X509CATest {
         // The EV DN components do not have names in standard java/BC
         desiredDN = "1.3.6.1.4.1.311.60.2.1.3=NL,1.3.6.1.4.1.311.60.2.1.2=State,1.3.6.1.4.1.311.60.2.1.1=Åmål,BusinessCategory=Private Organization,SERIALNUMBER=1234567890,C=SE,ST=Norrland,L=Åmål,O=MyOrg B.V.,OU=XY,CN=evssltest6.test.lan";
         assertEquals("Wrong DN order of issued certificate", desiredDN, name.toString());
+    }
+
+    /**
+     * Testing that DN override works.
+     */
+    @Test
+    public void testDNOverride() throws Exception {
+        final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
+        X509Certificate cacert = (X509Certificate) x509ca.getCACertificate();
+
+        // Create a pkcs10 certificate request        
+        KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        X500Name x509dn = CertTools.stringToBcX500Name("CN=Override,O=PrimeKey,C=SE");
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
+        PKCS10RequestMessage p10msg = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(req));
+        assertEquals("CN=Override,O=PrimeKey,C=SE", p10msg.getRequestDN());
+
+        // Generate a client certificate and check that it was generated correctly
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
+        cp.setUseCertificatePolicies(true);
+        Certificate usercert = x509ca.generateCertificate(cryptoToken, user, p10msg, keyPair.getPublic(), 0, null, null, cp, null, "00000", cceConfig);
+        assertNotNull(usercert);
+        assertEquals("CN=User", CertTools.getSubjectDN(usercert));
+        assertEquals(CADN, CertTools.getIssuerDN(usercert));
+        assertEquals(getTestKeyPairAlgName(algName).toUpperCase(), AlgorithmTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
+        assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
+        // Allow DN override
+        cp.setAllowDNOverride(true);
+        usercert = x509ca.generateCertificate(cryptoToken, user, p10msg, keyPair.getPublic(), 0, null, null, cp, null, "00000", cceConfig);
+        assertNotNull(usercert);
+        assertEquals("CN=Override,O=PrimeKey,C=SE", CertTools.getSubjectDN(usercert));
+        assertEquals(CADN, CertTools.getIssuerDN(usercert));
+        assertEquals(getTestKeyPairAlgName(algName).toUpperCase(), AlgorithmTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
+        assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
     }
 
     private static ASN1Encodable getValueFromDN(Certificate cert, ASN1ObjectIdentifier oid) {
