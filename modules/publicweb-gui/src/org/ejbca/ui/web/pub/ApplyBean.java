@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ejb.FinderException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -261,7 +262,12 @@ public class ApplyBean implements Serializable {
      */
     public void setUserOk(String username, String password) throws Exception {
         if(!username.equals(this.username) || this.endEntityInformation == null){
-            this.userOk = ejbLocalHelper.getEndEntityManagementSession().verifyPassword(administrator, username, password);
+            try {
+                this.userOk = ejbLocalHelper.getEndEntityManagementSession().verifyPassword(administrator, username, password);
+            } catch (FinderException e) {
+                // Username does not exist
+                this.userOk = false;
+            }
         }
         if (log.isTraceEnabled()) {
             log.trace("<userOk(" + username + ") --> " + this.userOk);
