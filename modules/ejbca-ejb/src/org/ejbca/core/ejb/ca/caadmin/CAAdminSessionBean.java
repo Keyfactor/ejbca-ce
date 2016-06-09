@@ -137,7 +137,6 @@ import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
-import org.cesecore.keybind.InternalKeyBindingProperty;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
@@ -161,6 +160,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -455,7 +455,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         
         // Update Internal Key Bindings
-        Map<String,Map<String,InternalKeyBindingProperty<?>>> keyBindTypes = keyBindMgmtSession.getAvailableTypesAndProperties();
+        Map<String,Map<String,DynamicUiProperty<?>>> keyBindTypes = keyBindMgmtSession.getAvailableTypesAndProperties();
         Map<String,List<Integer>> typesKeybindings = new HashMap<>();
         for (String type : keyBindTypes.keySet()) {
             typesKeybindings.put(type, keyBindMgmtSession.getInternalKeyBindingIds(authenticationToken, type));

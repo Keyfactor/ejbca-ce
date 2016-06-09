@@ -51,6 +51,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -104,9 +105,9 @@ public class InternalKeyBindingMgmtTest {
     @Test
     public void assertTestPreRequisites() throws Exception {
         // Request all available implementations from server and verify that the implementation we intend to use exists
-        final Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> availableTypesAndProperties = internalKeyBindingMgmtSession
+        final Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> availableTypesAndProperties = internalKeyBindingMgmtSession
                 .getAvailableTypesAndProperties();
-        final Map<String, InternalKeyBindingProperty<? extends Serializable>> availableProperties = availableTypesAndProperties
+        final Map<String, DynamicUiProperty<? extends Serializable>> availableProperties = availableTypesAndProperties
                 .get(KEYBINDING_TYPE_ALIAS);
         assertNotNull("Expected " + KEYBINDING_TYPE_ALIAS + " to exist on the server for this test.", availableProperties);
         // Verify that a property we intend to modify exists for our key binding implementation

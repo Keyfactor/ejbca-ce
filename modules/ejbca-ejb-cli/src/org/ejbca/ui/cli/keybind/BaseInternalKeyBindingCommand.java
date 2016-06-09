@@ -20,10 +20,10 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keybind.InternalKeyBindingFactory;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
-import org.cesecore.keybind.InternalKeyBindingProperty;
 import org.cesecore.keybind.InternalKeyBindingPropertyValidationWrapper;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
@@ -80,13 +80,13 @@ public abstract class BaseInternalKeyBindingCommand extends EjbcaCliUserCommandB
     protected String showTypesProperties() {
         final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
-        Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = internalKeyBindingMgmtSession
+        Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> typesAndProperties = internalKeyBindingMgmtSession
                 .getAvailableTypesAndProperties();
         final StringBuilder sb = new StringBuilder();
         sb.append("Registered implementation types and implemention specific properties:\n");
-        for (Entry<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
+        for (Entry<String, Map<String, DynamicUiProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
             sb.append(' ').append(entry.getKey()).append(":\n");
-            for (InternalKeyBindingProperty<? extends Serializable> property : entry.getValue().values()) {
+            for (DynamicUiProperty<? extends Serializable> property : entry.getValue().values()) {
                 sb.append("    " + property.getName()).append(",\n");
             }
             if (sb.charAt(sb.length() - 2) == ',') {

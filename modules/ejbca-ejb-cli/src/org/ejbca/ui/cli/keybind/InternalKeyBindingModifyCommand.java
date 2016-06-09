@@ -27,10 +27,10 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
-import org.cesecore.keybind.InternalKeyBindingProperty;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -76,10 +76,10 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                 "Removes trust entries to the given keybinding. Trust entries can be of the form <CAName[;CertificateSerialNumber]> where the serialnumber is in hex and optional. "
                         + "Multiple trust entries can be added by separating them with a ',' i.e. <CA1[;CertificateSerialNumber],CA2[;CertificateSerialNumber]>"));
         //Register type specific properties dynamically
-        Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = EjbRemoteHelper.INSTANCE.getRemoteSession(
+        Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> typesAndProperties = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 InternalKeyBindingMgmtSessionRemote.class).getAvailableTypesAndProperties();
-        for (Entry<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
-            for (InternalKeyBindingProperty<? extends Serializable> property : entry.getValue().values()) {
+        for (Entry<String, Map<String, DynamicUiProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
+            for (DynamicUiProperty<? extends Serializable> property : entry.getValue().values()) {
                 if (isParameterRegistered("-"+property.getName())) {
                     //Different properties could contain the same keyword. Simply use the same one. 
                     continue;
@@ -107,7 +107,7 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
         // Extract properties      
         final Map<String, String> propertyMap = new HashMap<String, String>();
         //Get dynamically loaded properties
-        Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = EjbRemoteHelper.INSTANCE.getRemoteSession(
+        Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> typesAndProperties = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 InternalKeyBindingMgmtSessionRemote.class).getAvailableTypesAndProperties();
         for (String propertyName : typesAndProperties.get(internalKeyBinding.getImplementationAlias()).keySet()) {
             if (parameters.containsKey("-"+propertyName)) {
@@ -242,7 +242,7 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         for (Entry<String, Serializable> entry : validatedProperties.entrySet()) {
-            InternalKeyBindingProperty<? extends Serializable> oldProperty = internalKeyBinding.getProperty(entry.getKey());
+            DynamicUiProperty<? extends Serializable> oldProperty = internalKeyBinding.getProperty(entry.getKey());
             if (!oldProperty.getValue().equals(entry.getValue())) {
                 internalKeyBinding.setProperty(entry.getKey(), entry.getValue());
                 getLogger().info(" Setting " + entry.getKey() + " to " + String.valueOf(entry.getValue()) + "");

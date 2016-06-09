@@ -28,11 +28,11 @@ import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
-import org.cesecore.keybind.InternalKeyBindingProperty;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -119,9 +119,9 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
                 sb.append(", ").append(internalKeyBinding.getKeyPairAlias());
                 sb.append(", ").append(internalKeyBinding.getNextKeyPairAlias());
                 sb.append(", properties={");
-                final Collection<InternalKeyBindingProperty<? extends Serializable>> properties = internalKeyBinding.getCopyOfProperties()
+                final Collection<DynamicUiProperty<? extends Serializable>> properties = internalKeyBinding.getCopyOfProperties()
                         .values();
-                for (final InternalKeyBindingProperty<? extends Serializable> property : properties) {
+                for (final DynamicUiProperty<? extends Serializable> property : properties) {
                     sb.append("\n\t").append(property.getName()).append('=').append(property.getValue());
                     sb.append(" [").append(property.getType().getSimpleName()).append(", default=").append(property.getDefaultValue()).append("],");
                 }

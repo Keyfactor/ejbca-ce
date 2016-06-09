@@ -84,6 +84,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
  * Generic Management implementation for InternalKeyBindings.
@@ -117,16 +118,16 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @SuppressWarnings("unchecked")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties() {
+    public Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> getAvailableTypesAndProperties() {
         // Perform deep cloning (this will work since we know that the property types extend Serializable)
-        final Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> clone;
+        final Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> clone;
         try {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             final ObjectOutputStream oos = new ObjectOutputStream(baos);
             oos.writeObject(InternalKeyBindingFactory.INSTANCE.getAvailableTypesAndProperties());
             oos.close();
             final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
-            clone = (Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>>) ois.readObject();
+            clone = (Map<String, Map<String, DynamicUiProperty<? extends Serializable>>>) ois.readObject();
             ois.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -399,7 +400,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         details.put("cryptoTokenId", String.valueOf(internalKeyBinding.getCryptoTokenId()));
         details.put("status", internalKeyBinding.getStatus().name());
         details.put("trustedCertificateReferences", Arrays.toString(internalKeyBinding.getTrustedCertificateReferences().toArray()));
-        putDelta(new HashMap<String, InternalKeyBindingProperty<? extends Serializable>>(), internalKeyBinding.getCopyOfProperties(), details);
+        putDelta(new HashMap<String, DynamicUiProperty<? extends Serializable>>(), internalKeyBinding.getCopyOfProperties(), details);
         securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_CREATE, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(allocatedId), null, null, details);
         return allocatedId;
@@ -947,19 +948,19 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
 
     /** Helper method for audit logging changes */
-    private void putDelta(final Map<String, InternalKeyBindingProperty<? extends Serializable>> oldProperties, final Map<String, InternalKeyBindingProperty<? extends Serializable>> newProperties,
+    private void putDelta(final Map<String, DynamicUiProperty<? extends Serializable>> oldProperties, final Map<String, DynamicUiProperty<? extends Serializable>> newProperties,
             final Map<String, Object> details) {
         // Find out what has happended to all the old properties
         for (final String key : oldProperties.keySet()) {
-            final InternalKeyBindingProperty<? extends Serializable> oldValue = oldProperties.get(key);
-            final InternalKeyBindingProperty<? extends Serializable> newValue = newProperties.get(key);
+            final DynamicUiProperty<? extends Serializable> oldValue = oldProperties.get(key);
+            final DynamicUiProperty<? extends Serializable> newValue = newProperties.get(key);
             putDelta(key, getAsStringValue(oldValue), getAsStringValue(newValue), details);
         }
         // Find out which new properties that did not exist in the old
         for (final String key : newProperties.keySet()) {
-            final InternalKeyBindingProperty<? extends Serializable> oldValue = oldProperties.get(key);
+            final DynamicUiProperty<? extends Serializable> oldValue = oldProperties.get(key);
             if (oldValue==null) {
-                final InternalKeyBindingProperty<? extends Serializable> newValue = newProperties.get(key);
+                final DynamicUiProperty<? extends Serializable> newValue = newProperties.get(key);
                 putDelta(key, getAsStringValue(oldValue), getAsStringValue(newValue), details);
             }
         }
@@ -978,7 +979,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
     }
     
-    private String getAsStringValue(final InternalKeyBindingProperty<? extends Serializable> valueObj) {
+    private String getAsStringValue(final DynamicUiProperty<? extends Serializable> valueObj) {
         if (valueObj!=null && valueObj.getValue()!=null) {
             return String.valueOf(valueObj.getValue());
         }

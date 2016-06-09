@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
  * Holder of general InternalKeyBinding relevant properties.
@@ -52,18 +53,18 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
     private String signatureAlgorithm;
     
-    private final Map<String,InternalKeyBindingProperty<? extends Serializable>> propertyTemplates = new HashMap<String,InternalKeyBindingProperty<? extends Serializable>>();
+    private final Map<String,DynamicUiProperty<? extends Serializable>> propertyTemplates = new HashMap<String,DynamicUiProperty<? extends Serializable>>();
     
-    protected void addProperty(InternalKeyBindingProperty<? extends Serializable> property) {
+    protected void addProperty(DynamicUiProperty<? extends Serializable> property) {
         propertyTemplates.put(property.getName(), property);
     }
     
     @Override
-    public Map<String, InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties() {
-        final Map<String, InternalKeyBindingProperty<? extends Serializable>> ret = new HashMap<String, InternalKeyBindingProperty<? extends Serializable>>();
+    public Map<String, DynamicUiProperty<? extends Serializable>> getCopyOfProperties() {
+        final Map<String, DynamicUiProperty<? extends Serializable>> ret = new HashMap<String, DynamicUiProperty<? extends Serializable>>();
         for (String key : propertyTemplates.keySet()) {
-            InternalKeyBindingProperty<? extends Serializable> current = propertyTemplates.get(key);
-            final InternalKeyBindingProperty<? extends Serializable> clone = current.clone();
+            DynamicUiProperty<? extends Serializable> current = propertyTemplates.get(key);
+            final DynamicUiProperty<? extends Serializable> clone = current.clone();
             clone.setValueGeneric(getProperty(clone.getName()).getValue());
             ret.put(key, clone);
         }
@@ -71,8 +72,8 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     }
 
     @Override
-    public InternalKeyBindingProperty<? extends Serializable> getProperty(final String name) {
-        final InternalKeyBindingProperty<? extends Serializable> property = propertyTemplates.get(name);
+    public DynamicUiProperty<? extends Serializable> getProperty(final String name) {
+        final DynamicUiProperty<? extends Serializable> property = propertyTemplates.get(name);
         property.setValueGeneric(getData(name, property.getDefaultValue()));
         return property;
     }

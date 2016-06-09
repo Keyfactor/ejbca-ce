@@ -63,7 +63,6 @@ import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
-import org.cesecore.keybind.InternalKeyBindingProperty;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
@@ -71,6 +70,7 @@ import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.util.passgen.IPasswordGenerator;
@@ -631,7 +631,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private String currentKeyPairAlias = null;
     private String currentSignatureAlgorithm = null;
     private String currentNextKeyPairAlias = null;
-    private ListDataModel<InternalKeyBindingProperty<? extends Serializable>> internalKeyBindingPropertyList = null;
+    private ListDataModel<DynamicUiProperty<? extends Serializable>> internalKeyBindingPropertyList = null;
     private boolean inEditMode = false;
     private Integer currentCertificateAuthority = null;
     private String currentCertificateSerialNumber = null;
@@ -701,7 +701,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             getAvailableCryptoTokens();
             getAvailableKeyPairAliases();
             getAvailableSignatureAlgorithms();
-            internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<InternalKeyBindingProperty<? extends Serializable>>(internalKeyBindingSession.getAvailableTypesAndProperties()
+            internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<DynamicUiProperty<? extends Serializable>>(internalKeyBindingSession.getAvailableTypesAndProperties()
                     .get(getSelectedInternalKeyBindingType()).values()));
         } else {
             // Load existing
@@ -719,7 +719,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
             currentSignatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
             currentNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
-            internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<InternalKeyBindingProperty<? extends Serializable>>(internalKeyBinding
+            internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<DynamicUiProperty<? extends Serializable>>(internalKeyBinding
                     .getCopyOfProperties().values()));
             trustedCertificates = null;
         }
@@ -1102,13 +1102,13 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     /** @return a list of the current InteralKeyBinding's properties */
-    public ListDataModel<InternalKeyBindingProperty<? extends Serializable>> getInternalKeyBindingPropertyList() {
+    public ListDataModel<DynamicUiProperty<? extends Serializable>> getInternalKeyBindingPropertyList() {
         return internalKeyBindingPropertyList;
     }
 
     /** @return the lookup result of message key "INTERNALKEYBINDING_<type>_<property-name>" or property-name if no key exists. */
     public String getPropertyNameTranslated() {
-        final String name = ((InternalKeyBindingProperty<? extends Serializable>) internalKeyBindingPropertyList.getRowData()).getName();
+        final String name = ((DynamicUiProperty<? extends Serializable>) internalKeyBindingPropertyList.getRowData()).getName();
         final String msgKey = "INTERNALKEYBINDING_" + getSelectedInternalKeyBindingType().toUpperCase() + "_" + name.toUpperCase();
         final String translatedName = super.getEjbcaWebBean().getText(msgKey);
         return translatedName.equals(msgKey) ? name : translatedName;
@@ -1118,7 +1118,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public List<SelectItem/*<String,String>*/> getPropertyPossibleValues() {
         final List<SelectItem> propertyPossibleValues = new ArrayList<SelectItem>();
         if (internalKeyBindingPropertyList != null) {
-            final InternalKeyBindingProperty<? extends Serializable> property = (InternalKeyBindingProperty<? extends Serializable>) internalKeyBindingPropertyList
+            final DynamicUiProperty<? extends Serializable> property = (DynamicUiProperty<? extends Serializable>) internalKeyBindingPropertyList
                     .getRowData();
             for (final Serializable possibleValue : property.getPossibleValues()) {
                 propertyPossibleValues.add(new SelectItem(property.getAsEncodedValue(property.getType().cast(possibleValue)), possibleValue
@@ -1140,9 +1140,9 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         } else {
             try {
                 final Map<String, Serializable> dataMap = new HashMap<String, Serializable>();
-                final List<InternalKeyBindingProperty<? extends Serializable>> internalKeyBindingProperties = (List<InternalKeyBindingProperty<? extends Serializable>>) internalKeyBindingPropertyList
+                final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties = (List<DynamicUiProperty<? extends Serializable>>) internalKeyBindingPropertyList
                         .getWrappedData();
-                for (final InternalKeyBindingProperty<? extends Serializable> property : internalKeyBindingProperties) {
+                for (final DynamicUiProperty<? extends Serializable> property : internalKeyBindingProperties) {
                     dataMap.put(property.getName(), property.getValue());
                 }
                 currentInternalKeyBindingId = String.valueOf(internalKeyBindingSession.createInternalKeyBinding(authenticationToken,
@@ -1187,9 +1187,9 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 }
             }
             internalKeyBinding.setTrustedCertificateReferences((List<InternalKeyBindingTrustEntry>) trustedCertificates.getWrappedData());
-            final List<InternalKeyBindingProperty<? extends Serializable>> internalKeyBindingProperties = (List<InternalKeyBindingProperty<? extends Serializable>>) internalKeyBindingPropertyList
+            final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties = (List<DynamicUiProperty<? extends Serializable>>) internalKeyBindingPropertyList
                     .getWrappedData();
-            for (final InternalKeyBindingProperty<? extends Serializable> property : internalKeyBindingProperties) {
+            for (final DynamicUiProperty<? extends Serializable> property : internalKeyBindingProperties) {
                 internalKeyBinding.setProperty(property.getName(), property.getValue());
             }
             currentInternalKeyBindingId = String
