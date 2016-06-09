@@ -83,6 +83,8 @@ public class RaSearchCertsBean implements Serializable {
     private RaCertificateSearchRequest lastExecutedRequest = null;
     private RaCertificateSearchResponse lastExecutedResponse = null;
 
+    private String genericSearchString = "";
+
     private String issuedAfter = "";
     private String issuedBefore = "";
     private String expiresAfter = "";
@@ -174,62 +176,21 @@ public class RaSearchCertsBean implements Serializable {
         if (lastExecutedResponse != null) {
             for (final CertificateDataWrapper cdw : lastExecutedResponse.getCdws()) {
                 // ...we don't filter if the requested maxResults is lower than the search request
-                if (!stagedRequest.getGenericSearchString().isEmpty() && (
-                        (!cdw.getCertificateData().getSerialNumber().equals(stagedRequest.getGenericSearchStringAsDecimal())) &&
-                        (!cdw.getCertificateData().getSerialNumber().equals(stagedRequest.getGenericSearchStringAsHex())) &&
-                        (cdw.getCertificateData().getUsername() == null || !cdw.getCertificateData().getUsername().contains(stagedRequest.getGenericSearchString())) &&
-                        (cdw.getCertificateData().getSubjectDN() == null || !cdw.getCertificateData().getSubjectDN().contains(stagedRequest.getGenericSearchString())) &&
-                        (cdw.getCertificateData().getSubjectAltName() == null || !cdw.getCertificateData().getSubjectAltName().contains(stagedRequest.getGenericSearchString()))
+                if (!genericSearchString.isEmpty() && (
+                        !stagedRequest.matchSerialNumber(cdw.getCertificateData().getSerialNumber()) &&
+                        !stagedRequest.matchUsername(cdw.getCertificateData().getUsername()) &&
+                        !stagedRequest.matchSubjectDn(cdw.getCertificateData().getSubjectDN()) &&
+                        !stagedRequest.matchSubjectAn(cdw.getCertificateData().getSubjectAltName())
                         )) {
                     continue;
                 }
-                if (!stagedRequest.getEepIds().isEmpty() && !stagedRequest.getEepIds().contains(cdw.getCertificateData().getEndEntityProfileIdOrZero())) {
-                    continue;
-                }
-                if (!stagedRequest.getCpIds().isEmpty() && !stagedRequest.getCpIds().contains(cdw.getCertificateData().getCertificateProfileId())) {
-                    continue;
-                }
-                if (!stagedRequest.getCaIds().isEmpty() && !stagedRequest.getCaIds().contains(cdw.getCertificateData().getIssuerDN().hashCode())) {
-                    continue;
-                }
-                if (stagedRequest.getIssuedAfter()>0L) {
-                    final Long notBefore = cdw.getCertificateData().getNotBefore();
-                    if (notBefore==null || notBefore.longValue()<stagedRequest.getIssuedAfter()) {
-                        continue;
-                    }
-                }
-                if (stagedRequest.getIssuedBefore()<Long.MAX_VALUE) {
-                    final Long notBefore = cdw.getCertificateData().getNotBefore();
-                    if (notBefore==null || notBefore.longValue()>stagedRequest.getIssuedBefore()) {
-                        continue;
-                    }
-                }
-                if (stagedRequest.getExpiresAfter()>0L) {
-                    if (cdw.getCertificateData().getExpireDate()<stagedRequest.getExpiresAfter()) {
-                        continue;
-                    }
-                }
-                if (stagedRequest.getExpiresBefore()<Long.MAX_VALUE) {
-                    if (cdw.getCertificateData().getExpireDate()>stagedRequest.getExpiresBefore()) {
-                        continue;
-                    }
-                }
-                if (stagedRequest.getRevokedAfter()>0L) {
-                    if (cdw.getCertificateData().getRevocationDate()<stagedRequest.getRevokedAfter()) {
-                        continue;
-                    }
-                }
-                if (stagedRequest.getRevokedBefore()<Long.MAX_VALUE) {
-                    if (cdw.getCertificateData().getRevocationDate()>stagedRequest.getRevokedBefore()) {
-                        continue;
-                    }
-                }
-                if (!stagedRequest.getStatuses().isEmpty() && !stagedRequest.getStatuses().contains(cdw.getCertificateData().getStatus())) {
-                    continue;
-                }
-                if (!stagedRequest.getRevocationReasons().isEmpty() && !stagedRequest.getRevocationReasons().contains(cdw.getCertificateData().getRevocationReason())) {
-                    continue;
-                }
+                if (!stagedRequest.matchEep(cdw.getCertificateData().getEndEntityProfileIdOrZero())) { continue; }
+                if (!stagedRequest.matchCp(cdw.getCertificateData().getCertificateProfileId())) { continue; }
+                if (!stagedRequest.matchCa(cdw.getCertificateData().getIssuerDN().hashCode())) { continue; }
+                if (!stagedRequest.matchIssuedInterval(cdw.getCertificateData().getNotBefore())) { continue; }
+                if (!stagedRequest.matchExpiresInterval(cdw.getCertificateData().getExpireDate())) { continue; }
+                if (!stagedRequest.matchRevokedInterval(cdw.getCertificateData().getRevocationDate())) { continue; }
+                if (!stagedRequest.matchStatusAndReason(cdw.getCertificateData().getStatus(), cdw.getCertificateData().getRevocationReason())) { continue; }
                 resultsFiltered.add(new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap));
             }
             if (log.isDebugEnabled()) {
@@ -328,13 +289,13 @@ public class RaSearchCertsBean implements Serializable {
     public void moreOptionsAction() {
         moreOptions = !moreOptions;
         // Reset any criteria in the advanced section
-        stagedRequest.setMaxResults(RaCertificateSearchRequest.DEFAULT_MAX_RESULTS);
-        stagedRequest.setIssuedAfter(0L);
-        stagedRequest.setIssuedBefore(Long.MAX_VALUE);
-        stagedRequest.setExpiresAfter(0L);
-        stagedRequest.setExpiresBefore(Long.MAX_VALUE);
-        stagedRequest.setRevokedAfter(0L);
-        stagedRequest.setRevokedBefore(Long.MAX_VALUE);
+        stagedRequest.resetMaxResults();
+        stagedRequest.resetIssuedAfter();
+        stagedRequest.resetIssuedBefore();
+        stagedRequest.resetExpiresAfter();
+        stagedRequest.resetExpiresBefore();
+        stagedRequest.resetRevokedAfter();
+        stagedRequest.resetRevokedBefore();
         issuedAfter = "";
         issuedBefore = "";
         expiresAfter = "";
@@ -348,8 +309,15 @@ public class RaSearchCertsBean implements Serializable {
         return resultsFiltered;
     }
 
-    public String getGenericSearchString() { return stagedRequest.getGenericSearchString(); }
-    public void setGenericSearchString(final String genericSearchString) { stagedRequest.setGenericSearchString(genericSearchString); }
+    public String getGenericSearchString() { return this.genericSearchString; }
+    public void setGenericSearchString(final String genericSearchString) {
+        this.genericSearchString = genericSearchString;
+        stagedRequest.setSubjectDnSearchString(genericSearchString);
+        stagedRequest.setSubjectAnSearchString(genericSearchString);
+        stagedRequest.setUsernameSearchString(genericSearchString);
+        stagedRequest.setSerialNumberSearchStringFromDec(genericSearchString);
+        stagedRequest.setSerialNumberSearchStringFromHex(genericSearchString);
+    }
     
     public int getCriteriaMaxResults() { return stagedRequest.getMaxResults(); }
     public void setCriteriaMaxResults(final int criteriaMaxResults) { stagedRequest.setMaxResults(criteriaMaxResults); }

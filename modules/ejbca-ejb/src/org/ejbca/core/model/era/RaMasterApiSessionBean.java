@@ -636,38 +636,70 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             return response;
         }
-        final String genericSearchString = request.getGenericSearchString();
-        final String genericSearchStringDec = request.getGenericSearchStringAsDecimal();
-        final String genericSearchStringHex = request.getGenericSearchStringAsHex();
+        final String subjectDnSearchString = request.getSubjectDnSearchString();
+        final String subjectAnSearchString = request.getSubjectAnSearchString();
+        final String usernameSearchString = request.getUsernameSearchString();
+        final String serialNumberSearchStringFromDec = request.getSerialNumberSearchStringFromDec();
+        final String serialNumberSearchStringFromHex = request.getSerialNumberSearchStringFromHex();
         final StringBuilder sb = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE (a.issuerDN IN (:issuerDN))");
-        if (!genericSearchString.isEmpty()) {
-            sb.append(" AND (a.username LIKE :username OR a.subjectDN LIKE :subjectDN OR a.subjectAltName LIKE :subjectAltName");
-            if (genericSearchStringDec!=null) {
-                sb.append(" OR a.serialNumber LIKE :serialNumberDec");
+        if (!subjectDnSearchString.isEmpty() || !subjectAnSearchString.isEmpty() || !usernameSearchString.isEmpty() ||
+                !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty()) {
+            sb.append(" AND (");
+            boolean firstAppended = false;
+            if (!subjectDnSearchString.isEmpty()) {
+                sb.append("a.subjectDN LIKE :subjectDN");
+                firstAppended = true;
             }
-            if (genericSearchStringDec==null && genericSearchStringHex!=null) {
-                sb.append(" OR a.serialNumber LIKE :serialNumberHex");
+            if (!subjectAnSearchString.isEmpty()) {
+                if (firstAppended) {
+                    sb.append(" OR ");
+                } else {
+                    firstAppended = true;
+                }
+                sb.append("a.subjectAltName LIKE :subjectAltName");
+            }
+            if (!usernameSearchString.isEmpty()) {
+                if (firstAppended) {
+                    sb.append(" OR ");
+                } else {
+                    firstAppended = true;
+                }
+                sb.append("a.username LIKE :username");
+            }
+            if (!serialNumberSearchStringFromDec.isEmpty()) {
+                if (firstAppended) {
+                    sb.append(" OR ");
+                } else {
+                    firstAppended = true;
+                }
+                sb.append("a.serialNumber LIKE :serialNumberDec");
+            }
+            if (!serialNumberSearchStringFromHex.isEmpty()) {
+                if (firstAppended) {
+                    sb.append(" OR ");
+                }
+                sb.append("a.serialNumber LIKE :serialNumberHex");
             }
             sb.append(")");
         }
         // NOTE: notBefore is not indexed.. we might want to disallow such search.
-        if (request.getIssuedAfter()>0L) {
+        if (request.isIssuedAfterUsed()) {
             sb.append(" AND (a.notBefore > :issuedAfter)");
         }
-        if (request.getIssuedBefore()<Long.MAX_VALUE) {
+        if (request.isIssuedBeforeUsed()) {
             sb.append(" AND (a.notBefore < :issuedBefore)");
         }
-        if (request.getExpiresAfter()>0L) {
+        if (request.isExpiresAfterUsed()) {
             sb.append(" AND (a.expireDate > :expiresAfter)");
         }
-        if (request.getExpiresBefore()<Long.MAX_VALUE) {
+        if (request.isExpiresBeforeUsed()) {
             sb.append(" AND (a.expireDate < :expiresBefore)");
         }
         // NOTE: revocationDate is not indexed.. we might want to disallow such search.
-        if (request.getRevokedAfter()>0L) {
+        if (request.isRevokedAfterUsed()) {
             sb.append(" AND (a.revocationDate > :revokedAfter)");
         }
-        if (request.getRevokedBefore()<Long.MAX_VALUE) {
+        if (request.isRevokedBeforeUsed()) {
             sb.append(" AND (a.revocationDate < :revokedBefore)");
         }
         if (!request.getStatuses().isEmpty()) {
@@ -706,39 +738,55 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.debug(" endEntityProfileId: Any (even deleted) profile(s) due to root access.");
             }
         }
-        if (!genericSearchString.isEmpty()) {
-            query.setParameter("username", "%" + genericSearchString + "%");
-            query.setParameter("subjectDN", "%" + genericSearchString + "%");
-            query.setParameter("subjectAltName", "%" + genericSearchString + "%");
-            if (genericSearchStringDec!=null) {
-                query.setParameter("serialNumberDec", genericSearchStringDec);
-                if (log.isDebugEnabled()) {
-                    log.debug(" serialNumberDec: " + genericSearchStringDec);
-                }
-            }
-            if (genericSearchStringDec==null && genericSearchStringHex!=null) {
-                query.setParameter("serialNumberHex", genericSearchStringHex);
-                if (log.isDebugEnabled()) {
-                    log.debug(" serialNumberHex: " + genericSearchStringHex);
-                }
+        if (!subjectDnSearchString.isEmpty()) {
+            if (request.isSubjectDnSearchExact()) {
+                query.setParameter("subjectDN", subjectDnSearchString);
+            } else {
+                query.setParameter("subjectDN", "%" + subjectDnSearchString + "%");
             }
         }
-        if (request.getIssuedAfter()>0L) {
+        if (!subjectAnSearchString.isEmpty()) {
+            if (request.isSubjectAnSearchExact()) {
+                query.setParameter("subjectAltName", subjectAnSearchString);
+            } else {
+                query.setParameter("subjectAltName", "%" + subjectAnSearchString + "%");
+            }
+        }
+        if (!usernameSearchString.isEmpty()) {
+            if (request.isUsernameSearchExact()) {
+                query.setParameter("username", usernameSearchString);
+            } else {
+                query.setParameter("username", "%" + usernameSearchString + "%");
+            }
+        }
+        if (!serialNumberSearchStringFromDec.isEmpty()) {
+            query.setParameter("serialNumberDec", serialNumberSearchStringFromDec);
+            if (log.isDebugEnabled()) {
+                log.debug(" serialNumberDec: " + serialNumberSearchStringFromDec);
+            }
+        }
+        if (!serialNumberSearchStringFromHex.isEmpty()) {
+            query.setParameter("serialNumberHex", serialNumberSearchStringFromHex);
+            if (log.isDebugEnabled()) {
+                log.debug(" serialNumberHex: " + serialNumberSearchStringFromHex);
+            }
+        }
+        if (request.isIssuedAfterUsed()) {
             query.setParameter("issuedAfter", request.getIssuedAfter());
         }
-        if (request.getIssuedBefore()<Long.MAX_VALUE) {
+        if (request.isIssuedBeforeUsed()) {
             query.setParameter("issuedBefore", request.getIssuedBefore());
         }
-        if (request.getExpiresAfter()>0) {
+        if (request.isExpiresAfterUsed()) {
             query.setParameter("expiresAfter", request.getExpiresAfter());
         }
-        if (request.getExpiresBefore()<Long.MAX_VALUE) {
+        if (request.isExpiresBeforeUsed()) {
             query.setParameter("expiresBefore", request.getExpiresBefore());
         }
-        if (request.getRevokedAfter()>0L) {
+        if (request.isRevokedAfterUsed()) {
             query.setParameter("revokedAfter", request.getRevokedAfter());
         }
-        if (request.getRevokedBefore()<Long.MAX_VALUE) {
+        if (request.isRevokedBeforeUsed()) {
             query.setParameter("revokedBefore", request.getRevokedBefore());
         }
         if (!request.getStatuses().isEmpty()) {
