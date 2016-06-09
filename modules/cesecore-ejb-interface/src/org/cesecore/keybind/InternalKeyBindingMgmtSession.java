@@ -23,6 +23,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
  * Generic Management interface for InternalKeyBinding.
@@ -36,7 +37,7 @@ public interface InternalKeyBindingMgmtSession {
      * 
      * @return a map where each entry is a registered implementation type and the value is a list of implementation specific properties for the type
      */
-    Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties();
+    Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> getAvailableTypesAndProperties();
     
     /**
      * Get a list of all InternalKeyBindings of the requested type, regardless of authorization.

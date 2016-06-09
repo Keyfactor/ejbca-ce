@@ -22,8 +22,9 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
-import org.cesecore.keybind.InternalKeyBindingProperty;
+import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
  * Holder of "external" (e.g. non-CA signing key) OCSP InternalKeyBinding properties.
@@ -50,15 +51,15 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_MAX_AGE = "maxAge";
     
     {
-        addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
-        addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_NON_EXISTING_REVOKED, Boolean.FALSE));
-        addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));
-        addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_INCLUDE_SIGN_CERT, Boolean.TRUE));
-        addProperty(new InternalKeyBindingProperty<String>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(),
-                ResponderIdType.KEYHASH.name(), ResponderIdType.NAME.name()));
-        addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.FALSE));
-        addProperty(new InternalKeyBindingProperty<Long>(PROPERTY_UNTIL_NEXT_UPDATE, Long.valueOf(0L)));
-        addProperty(new InternalKeyBindingProperty<Long>(PROPERTY_MAX_AGE, Long.valueOf(0L)));
+        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
+        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_NON_EXISTING_REVOKED, Boolean.FALSE));
+        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));
+        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_INCLUDE_SIGN_CERT, Boolean.TRUE));
+        addProperty(new DynamicUiProperty<String>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(),
+                Arrays.asList(ResponderIdType.KEYHASH.name(), ResponderIdType.NAME.name())));
+        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.FALSE));
+        addProperty(new DynamicUiProperty<Long>(PROPERTY_UNTIL_NEXT_UPDATE, Long.valueOf(0L)));
+        addProperty(new DynamicUiProperty<Long>(PROPERTY_MAX_AGE, Long.valueOf(0L)));
     }
 
     

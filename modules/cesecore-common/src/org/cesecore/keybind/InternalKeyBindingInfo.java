@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.naming.OperationNotSupportedException;
 
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
  * Value object for remote invocation from JVMs where the implementation class is not available.
@@ -39,7 +40,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     final private int cryptoTokenId;
     final private String keyPairAlias;
     final private String nextKeyPairAlias;
-    final private Map<String, InternalKeyBindingProperty<? extends Serializable>> properties;
+    final private Map<String, DynamicUiProperty<? extends Serializable>> properties;
     final private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
     final private String signatureAlgorithm;
     
@@ -154,7 +155,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     }
 
     @Override
-    public InternalKeyBindingProperty<? extends Serializable> getProperty(String name) {
+    public DynamicUiProperty<? extends Serializable> getProperty(String name) {
         return properties.get(name);
     }
 
@@ -164,7 +165,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     }
 
     @Override
-    public Map<String, InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties() {
+    public Map<String, DynamicUiProperty<? extends Serializable>> getCopyOfProperties() {
         return properties;
     }
 

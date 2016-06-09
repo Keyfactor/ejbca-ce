@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
  * Factory class with an internal registry of known implementations.
@@ -36,7 +37,7 @@ public enum InternalKeyBindingFactory {
     private final Logger log = Logger.getLogger(InternalKeyBindingFactory.class);
     private final Map<String, String> aliasToImplementationMap = new HashMap<String, String>();
     private final Map<String, String> implementationToAliasMap = new HashMap<String, String>();
-    private final Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> implementationPropertiesMap = new HashMap<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>>();
+    private final Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> implementationPropertiesMap = new HashMap<String, Map<String, DynamicUiProperty<? extends Serializable>>>();
 
     private InternalKeyBindingFactory() {
         addImplementation(OcspKeyBinding.class);
@@ -99,7 +100,7 @@ public enum InternalKeyBindingFactory {
     private void addImplementation(final Class<? extends InternalKeyBinding> c) {
         String alias = null;
         List<String> implementationPropertyKeys = null;
-        Map<String, InternalKeyBindingProperty<? extends Serializable>> implementationProperties = null;
+        Map<String, DynamicUiProperty<? extends Serializable>> implementationProperties = null;
         try {
             final InternalKeyBinding temporaryInstance = c.newInstance();
             alias = temporaryInstance.getImplementationAlias();
@@ -120,7 +121,7 @@ public enum InternalKeyBindingFactory {
         }
     }
 
-    public Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties() {
+    public Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> getAvailableTypesAndProperties() {
         return Collections.unmodifiableMap(implementationPropertiesMap);
     }
 
@@ -136,13 +137,13 @@ public enum InternalKeyBindingFactory {
      */
     public InternalKeyBindingPropertyValidationWrapper validateProperties(String alias, Map<String, String> propertiesMap) {
         InternalKeyBindingPropertyValidationWrapper result = new InternalKeyBindingPropertyValidationWrapper();
-        Map<String, InternalKeyBindingProperty<? extends Serializable>> implementationProperties =  implementationPropertiesMap.get(alias);
+        Map<String, DynamicUiProperty<? extends Serializable>> implementationProperties =  implementationPropertiesMap.get(alias);
         for (String key : propertiesMap.keySet()) {
             if(!implementationProperties.containsKey(key)) {
                 result.addUnknownProperty(key);
                 continue;
             }
-            InternalKeyBindingProperty<? extends Serializable> property = implementationProperties.get(key);
+            DynamicUiProperty<? extends Serializable> property = implementationProperties.get(key);
             String value = propertiesMap.get(key);
             Serializable recastValue = property.valueOf(value);
             if(recastValue == null) {

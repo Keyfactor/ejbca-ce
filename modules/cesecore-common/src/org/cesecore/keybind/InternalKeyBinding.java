@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
  * Interface for the InternalKeyBindings.
@@ -92,14 +93,14 @@ public interface InternalKeyBinding extends Serializable {
     void setProperty(String name, Serializable value);
 
     /** @return an implementation specific property or the default */
-    InternalKeyBindingProperty<? extends Serializable> getProperty(String name);
+    DynamicUiProperty<? extends Serializable> getProperty(String name);
 
     /** 
      * Get a defensive copy of all properties
      * 
      * @return a Map of all properties/data specific to this implementation, keyed to each property's name. 
      */
-    Map<String, InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties();
+    Map<String, DynamicUiProperty<? extends Serializable>> getCopyOfProperties();
 
     /** @return a list of trusted certificates references. An undefined (null) serialnumber means ANY serialnumber. */
     List<InternalKeyBindingTrustEntry> getTrustedCertificateReferences();

@@ -19,12 +19,12 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
-import org.cesecore.keybind.InternalKeyBindingProperty;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
  * Used when this EJBCA instance authenticates to other instances.
@@ -41,7 +41,7 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
 
     {
         final String[] CIPHER_SUITES_SUBSET = CesecoreConfiguration.getAvailableCipherSuites();
-        addProperty(new InternalKeyBindingProperty<String>(PROPERTY_PROTOCOL_AND_CIPHER_SUITE, CIPHER_SUITES_SUBSET[0], CIPHER_SUITES_SUBSET));
+        addProperty(new DynamicUiProperty<String>(PROPERTY_PROTOCOL_AND_CIPHER_SUITE, CIPHER_SUITES_SUBSET[0], Arrays.asList(CIPHER_SUITES_SUBSET)));
     }
 
     /** @return an array of supported protocols named according to JSSE */
