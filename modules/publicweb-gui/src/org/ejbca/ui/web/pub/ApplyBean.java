@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.ObjectNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -42,8 +41,6 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.AuthLoginException;
-import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
