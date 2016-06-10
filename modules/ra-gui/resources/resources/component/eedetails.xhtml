@@ -79,6 +79,18 @@
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
+            <h:outputLabel for="tokentype" value="#{msg.component_eedetails_field_tokentype}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="tokentype" value="#{cc.attrs.raEndEntityDetails.tokenType}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="keyrecoverable" value="#{msg.component_eedetails_field_keyrecoverable}" rendered="#{!cc.attrs.raEndEntityDetails.tokenTypeUserGenerated}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="keyrecoverable" rendered="#{!cc.attrs.raEndEntityDetails.tokenTypeUserGenerated}"
+                value="#{cc.attrs.raEndEntityDetails.keyRecoverable ? msg.component_eedetails_field_keyrecoverable_true : msg.component_eedetails_field_keyrecoverable_false}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+
             <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}">
                 <ui:repeat id="subjectDistinguishedName" value="#{cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}" var="instance">
                     <h:outputLabel for="subjectDistinguishedNameField" rendered="#{instance.used}" value="#{msg['subject_dn_'.concat(instance.name)]}"
