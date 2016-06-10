@@ -18,6 +18,7 @@ import java.util.TimeZone;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /** 
  * UI representation of a result set item from the back end.
@@ -28,11 +29,13 @@ public class RaEndEntityDetails {
 
     public interface Callbacks {
         RaLocaleBean getRaLocaleBean();
+        EndEntityProfile getEndEntityProfile(final int eepId);
     }
 
     private final Callbacks callbacks;
 
     private final String username;
+    private final EndEntityInformation endEntityInformation;
     private final String subjectDn;
     private final String subjectAn;
     private final int eepId;
@@ -40,8 +43,14 @@ public class RaEndEntityDetails {
     private final int cpId;
     private final String cpName;
     private final String caName;
+    private final String created;
     private final String modified;
     private final int status;
+    
+    private EndEntityProfile endEntityProfile = null;
+    private SubjectDn subjectDistinguishedName = null;
+    private SubjectAlternativeName subjectAlternativeName = null;
+    private SubjectDirectoryAttributes subjectDirectoryAttributes = null;
 
     private int styleRowCallCounter = 0;
 
@@ -50,6 +59,7 @@ public class RaEndEntityDetails {
 
     public RaEndEntityDetails(final EndEntityInformation endEntity, final Callbacks callbacks,
             final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<Integer,String> caIdToNameMap) {
+        this.endEntityInformation = endEntity;
         this.callbacks = callbacks;
         this.username = endEntity.getUsername();
         this.subjectDn = endEntity.getDN();
@@ -59,6 +69,7 @@ public class RaEndEntityDetails {
         this.eepId = endEntity.getEndEntityProfileId();
         this.eepName = String.valueOf(eepIdToNameMap.get(Integer.valueOf(eepId)));
         this.caName = String.valueOf(caIdToNameMap.get(Integer.valueOf(endEntity.getCAId())));
+        this.created = ValidityDate.formatAsISO8601ServerTZ(endEntity.getTimeCreated().getTime(), TimeZone.getDefault());
         this.modified = ValidityDate.formatAsISO8601ServerTZ(endEntity.getTimeModified().getTime(), TimeZone.getDefault());
         this.status = endEntity.getStatus();
     }
@@ -83,6 +94,7 @@ public class RaEndEntityDetails {
         }
         return callbacks.getRaLocaleBean().getMessage("search_ees_page_info_missingeep", eepId);
     }
+    public String getCreated() { return created; }
     public String getModified() { return modified; }
     public String getStatus() {
         switch (status) {
@@ -100,6 +112,37 @@ public class RaEndEntityDetails {
         return callbacks.getRaLocaleBean().getMessage("search_ees_page_status_other");
     }
 
+    public SubjectDn getSubjectDistinguishedName() {
+        if (subjectDistinguishedName==null) {
+            this.subjectDistinguishedName = new SubjectDn(getEndEntityProfile(), endEntityInformation.getDN());
+        }
+        return subjectDistinguishedName;
+    }
+
+    public SubjectAlternativeName getSubjectAlternativeName() {
+        if (subjectAlternativeName==null) {
+            this.subjectAlternativeName = new SubjectAlternativeName(getEndEntityProfile(), endEntityInformation.getSubjectAltName());
+        }
+        return subjectAlternativeName;
+        
+    }
+
+    public SubjectDirectoryAttributes getSubjectDirectoryAttributes() {
+        if (subjectDirectoryAttributes==null) {
+            String value = endEntityInformation.getExtendedinformation() == null ? null : endEntityInformation.getExtendedinformation().getSubjectDirectoryAttributes();
+            this.subjectDirectoryAttributes = new SubjectDirectoryAttributes(getEndEntityProfile(), value);
+        }
+        return subjectDirectoryAttributes;
+        
+    }
+
+    private EndEntityProfile getEndEntityProfile() {
+        if (endEntityProfile==null) {
+            endEntityProfile = callbacks.getEndEntityProfile(eepId);
+        }
+        return endEntityProfile;
+    }
+    
     /** @return true every twice starting with every forth call */
     public boolean isEven() {
         styleRowCallCounter++;
