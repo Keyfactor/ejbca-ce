@@ -55,7 +55,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 41.0;
+    public static final float LATEST_VERSION = (float) 42.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -239,6 +239,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEQCETSIRETENTIONPERIOD = "useqcetsiretentionperiod";
     protected static final String QCETSIRETENTIONPERIOD = "qcetsiretentionperiod";
     protected static final String USEQCETSISIGNATUREDEVICE = "useqcetsisignaturedevice";
+    protected static final String USEQCETSITYPE = "useqcetsitype";
+    protected static final String QCETSITYPE = "qcetsitype";
+    protected static final String USEQCETSIPDS = "useqcetsipds";
+    protected static final String QCETSIPDSURL = "qcetsipdsurl";
+    protected static final String QCETSIPDSLANG = "qcetsipdslang";
     protected static final String USEQCCUSTOMSTRING = "useqccustomstring";
     protected static final String QCCUSTOMSTRINGOID = "qccustomstringoid";
     protected static final String QCCUSTOMSTRINGTEXT = "qccustomstringtext";
@@ -1705,11 +1710,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return (String) data.get(QCETSIVALUELIMITCURRENCY);
     }
 
-    public void setQCEtsiValueLimitCurrency(String qcetsicaluelimitcurrency) {
-        if (qcetsicaluelimitcurrency == null) {
+    public void setQCEtsiValueLimitCurrency(String qcetsivaluelimitcurrency) {
+        if (qcetsivaluelimitcurrency == null) {
             data.put(QCETSIVALUELIMITCURRENCY, "");
         } else {
-            data.put(QCETSIVALUELIMITCURRENCY, qcetsicaluelimitcurrency);
+            data.put(QCETSIVALUELIMITCURRENCY, qcetsivaluelimitcurrency);
         }
     }
 
@@ -1736,7 +1741,64 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setUseQCEtsiSignatureDevice(boolean useqcetsisignaturedevice) {
         data.put(USEQCETSISIGNATUREDEVICE, Boolean.valueOf(useqcetsisignaturedevice));
     }
+    public boolean getUseQCEtsiType() {
+        return ((Boolean) data.get(USEQCETSITYPE)).booleanValue();
+    }
 
+    /** QC Type is a String with Type OID (EN 319 412-05)
+     * 0.4.0.1862.1.6.1 = id-etsi-qct-esign
+     * 0.4.0.1862.1.6.2 = id-etsi-qct-eseal
+     * 0.4.0.1862.1.6.3 = id-etsi-qct-web
+     */
+    public void setUseQCEtsiType(boolean useqcetsitype) {
+        data.put(USEQCETSITYPE, Boolean.valueOf(useqcetsitype));
+    }
+    /** @return String with Type OID or empty string (EN 319 412-05)
+     * 0.4.0.1862.1.6.1 = id-etsi-qct-esign
+     * 0.4.0.1862.1.6.2 = id-etsi-qct-eseal
+     * 0.4.0.1862.1.6.3 = id-etsi-qct-web
+     */
+    public String getQCEtsiType() {
+        return (String) data.get(QCETSITYPE);
+    }
+
+    public void setQCEtsiType(String qcetsitype) {
+        if (qcetsitype == null) {
+            data.put(QCETSITYPE, "");
+        } else {
+            data.put(QCETSITYPE, qcetsitype);
+        }
+    }
+    public boolean getUseQCEtsiPDS() {
+        return ((Boolean) data.get(USEQCETSIPDS)).booleanValue();
+    }
+
+    public void setUseQCEtsiPDS(boolean useqcetsipds) {
+        data.put(USEQCETSIPDS, Boolean.valueOf(useqcetsipds));
+    }
+    /** @return String with PDS URL or empty string (EN 319 412-05) */
+    public String getQCEtsiPdsUrl() {
+        return (String) data.get(QCETSIPDSURL);
+    }
+    public void setQCEtsiPdsUrl(String qcetsipdsurl) {
+        if (qcetsipdsurl == null) {
+            data.put(QCETSIPDSURL, "");
+        } else {
+            data.put(QCETSIPDSURL, qcetsipdsurl);
+        }
+    }
+    /** @return String with PDS Language or empty string (EN 319 412-05) */
+    public String getQCEtsiPdsLang() {
+        return (String) data.get(QCETSIPDSLANG);
+    }
+    public void setQCEtsiPdsLang(String qcetsipdslang) {
+        if (qcetsipdslang == null) {
+            data.put(QCETSIPDSLANG, "");
+        } else {
+            data.put(QCETSIPDSLANG, qcetsipdslang);
+        }
+    }
+    
     public boolean getUseQCCustomString() {
         return ((Boolean) data.get(USEQCCUSTOMSTRING)).booleanValue();
     }
@@ -2547,6 +2609,23 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if(data.get(APPROVALPROFILE) == null) { // v41
                 setApprovalProfileID(-1);
             }
+            // v42. ETSI QC Type and PDS specified in EN 319 412-05.
+            if(data.get(USEQCETSITYPE) == null) { 
+                setUseQCEtsiType(false);
+            }
+            if(data.get(QCETSITYPE) == null) { 
+                setQCEtsiType("");
+            }
+            if(data.get(USEQCETSIPDS) == null) { 
+                setUseQCEtsiPDS(false);
+            }
+            if(data.get(QCETSIPDSURL) == null) { 
+                setQCEtsiPdsUrl("");
+            }
+            if(data.get(QCETSIPDSLANG) == null) { 
+                setQCEtsiPdsLang("");
+            }
+            
             data.put(VERSION, new Float(LATEST_VERSION));
         }
         log.trace("<upgrade");

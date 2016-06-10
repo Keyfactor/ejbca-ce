@@ -528,6 +528,17 @@ public class CertificateProfileTest {
         profile.setApprovalSettings(approvals);
         assertTrue(profile.isApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY));
         assertFalse(profile.isApprovalRequired(CAInfo.REQ_APPROVAL_KEYRECOVER));
+        
+        profile.setUseQCEtsiPDS(true);
+        assertTrue(profile.getUseQCEtsiPDS());
+        profile.setUseQCEtsiType(true);
+        assertTrue(profile.getUseQCEtsiType());
+        profile.setQCEtsiPdsLang("en");
+        assertEquals("en", profile.getQCEtsiPdsLang());
+        profile.setQCEtsiPdsUrl("http://pds.foo.bar/pds");
+        assertEquals("http://pds.foo.bar/pds", profile.getQCEtsiPdsUrl());
+        profile.setQCEtsiType("1.2.3.4");
+        assertEquals("1.2.3.4", profile.getQCEtsiType());
     }
 
     @Test

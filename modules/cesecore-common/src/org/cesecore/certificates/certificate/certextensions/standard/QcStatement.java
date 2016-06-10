@@ -22,6 +22,9 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.Extension;
@@ -115,6 +118,29 @@ public class QcStatement extends StandardCertificateExtension {
 			qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD);
 			qcs.add(qc);
 		}
+		// ETSI QC Type and PDS is new fields in EN 319 412-05 (2016)
+        if (certProfile.getUseQCEtsiType()) {
+            if  (StringUtils.isEmpty(certProfile.getQCEtsiType())) {
+                throw new CertificateExtensionException("ETSI QC Type must have a value when used");
+            }
+            final ASN1EncodableVector vec = new ASN1EncodableVector();
+            vec.add(new ASN1ObjectIdentifier(certProfile.getQCEtsiType()));
+            ASN1Sequence seq = new DERSequence(vec);
+            qc = new QCStatement(new ASN1ObjectIdentifier("0.4.0.1862.1.6"), seq); // ETSIQCObjectIdentifiers.id_etsi_qcs_QcType
+            qcs.add(qc);
+        }
+        if (certProfile.getUseQCEtsiPDS()) {
+            if (StringUtils.isEmpty(certProfile.getQCEtsiPdsUrl()) || StringUtils.isEmpty(certProfile.getQCEtsiPdsLang())) {
+                throw new CertificateExtensionException("ETSI QC PDS URL and Language must have a value when used");
+            }
+            final ASN1EncodableVector locations = new ASN1EncodableVector();
+            final ASN1EncodableVector location = new ASN1EncodableVector();
+            location.add(new DERIA5String(certProfile.getQCEtsiPdsUrl()));
+            location.add(new DERPrintableString(certProfile.getQCEtsiPdsLang()));
+            locations.add(new DERSequence(location));
+            qc = new QCStatement(new ASN1ObjectIdentifier("0.4.0.1862.1.5"), new DERSequence(locations)); // ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds
+            qcs.add(qc);
+        }
 		// Custom UTF8String QC-statement:
 		// qcStatement-YourCustom QC-STATEMENT ::= { SYNTAX YourCustomUTF8String
 		//   IDENTIFIED BY youroid }

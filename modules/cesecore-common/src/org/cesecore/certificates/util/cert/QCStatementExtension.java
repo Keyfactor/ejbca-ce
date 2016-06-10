@@ -196,4 +196,28 @@ public final class QCStatementExtension extends CertTools {
         return ret;
     }
 
+    /** Assumes that the statementoid in the QcStatements Sequence, seq, is a String and extracts that value from position, pos, of sequence */
+    public static String getStatementStringValue(final ASN1Sequence seq, final String statementoid, final int pos) throws IOException {
+        // Look through all the QCStatements and see if we have a standard ETSI PDS URL
+        for (int i = 0; i < seq.size(); i++) {
+            final QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));
+            final ASN1ObjectIdentifier oid = qc.getStatementId();
+            if ((oid != null) && oid.toString().equals(statementoid)) {
+                // We MUST have a URL and LANG here
+                final ASN1Encodable enc = qc.getStatementInfo();
+                if (enc != null) {
+                    ASN1Encodable str;
+                    if (enc instanceof ASN1Sequence) {
+                        ASN1Sequence valueseq = ASN1Sequence.getInstance(enc);
+                        str = valueseq.getObjectAt(pos);
+                    } else {
+                        str = enc; 
+                    }
+                    return str.toString();
+                }
+            }
+        }
+        return null;
+    }
+
 }
