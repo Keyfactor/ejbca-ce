@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
@@ -26,24 +27,33 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
  *
  */
 public class SubjectDirectoryAttributes {
-    private List<EndEntityProfile.FieldInstance> fieldInstances;
-    public final static List<String> COMPONENTS;
-    static{
-        COMPONENTS = new ArrayList<>();
-        COMPONENTS.add(DnComponents.DATEOFBIRTH);
-        COMPONENTS.add(DnComponents.PLACEOFBIRTH);
-        COMPONENTS.add(DnComponents.GENDER);
-        COMPONENTS.add(DnComponents.COUNTRYOFCITIZENSHIP);
-        COMPONENTS.add(DnComponents.COUNTRYOFRESIDENCE);
-    }
-    
+
+    public final static List<String> COMPONENTS = Arrays.asList(
+            DnComponents.DATEOFBIRTH,
+            DnComponents.PLACEOFBIRTH,
+            DnComponents.GENDER,
+            DnComponents.COUNTRYOFCITIZENSHIP,
+            DnComponents.COUNTRYOFRESIDENCE
+            );
+
+    private List<EndEntityProfile.FieldInstance> fieldInstances = new ArrayList<>();
     private String value;
 
-    public SubjectDirectoryAttributes(EndEntityProfile endEntityProfile) {
-        fieldInstances = new ArrayList<EndEntityProfile.FieldInstance>();
-        for (String key : COMPONENTS) {
-            Field field = endEntityProfile.new Field(key);
-            for (EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
+    public SubjectDirectoryAttributes(final EndEntityProfile endEntityProfile) {
+        this(endEntityProfile, null);
+    }
+
+    public SubjectDirectoryAttributes(final EndEntityProfile endEntityProfile, final String subjectDirectoryAttributes) {
+        DNFieldExtractor dnFieldExtractor = null;
+        if (subjectDirectoryAttributes!=null) {
+            dnFieldExtractor = new DNFieldExtractor(subjectDirectoryAttributes, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
+        }
+        for (final String key : COMPONENTS) {
+            final Field field = endEntityProfile.new Field(key);
+            for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
+                if (dnFieldExtractor!=null) {
+                    fieldInstance.setValue(dnFieldExtractor.getField(DnComponents.profileIdToDnId(fieldInstance.getProfileId()), fieldInstance.getNumber()));
+                }
                 fieldInstances.add(fieldInstance);
             }
         }

@@ -40,10 +40,12 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.ValidityDate;
-import org.ejbca.core.model.era.RaCertificateSearchRequest;
+import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaEndEntitySearchRequest;
 import org.ejbca.core.model.era.RaEndEntitySearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.Tuple;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
 /**
@@ -97,6 +99,13 @@ public class RaSearchEesBean implements Serializable {
         @Override
         public RaLocaleBean getRaLocaleBean() {
             return raLocaleBean;
+        }
+
+        @Override
+        public EndEntityProfile getEndEntityProfile(int eepId) {
+            final IdNameHashMap<EndEntityProfile> map = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken());
+            final Tuple<EndEntityProfile> tuple = map.get(eepId);
+            return tuple==null ? null : tuple.getValue();
         }
     };
 
