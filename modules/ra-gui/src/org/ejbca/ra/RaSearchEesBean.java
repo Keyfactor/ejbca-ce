@@ -93,6 +93,7 @@ public class RaSearchEesBean implements Serializable {
 
     private boolean moreOptions = false;
 
+    private IdNameHashMap<EndEntityProfile> endEntityProfileMap = null;
     private RaEndEntityDetails currentEndEntityDetails = null;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
@@ -103,12 +104,19 @@ public class RaSearchEesBean implements Serializable {
 
         @Override
         public EndEntityProfile getEndEntityProfile(int eepId) {
-            final IdNameHashMap<EndEntityProfile> map = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken());
-            final Tuple<EndEntityProfile> tuple = map.get(eepId);
+            final Tuple<EndEntityProfile> tuple = getEndEntityProfileMap().get(eepId);
             return tuple==null ? null : tuple.getValue();
         }
     };
 
+    private IdNameHashMap<EndEntityProfile> getEndEntityProfileMap() {
+        if (endEntityProfileMap==null) {
+            // This can be quite a massive object, so only retrieve it when asked for
+            endEntityProfileMap = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken());
+        }
+        return endEntityProfileMap;
+    }
+    
     /** Invoked action on search form post */
     public void searchAndFilterAction() {
         searchAndFilterCommon();
