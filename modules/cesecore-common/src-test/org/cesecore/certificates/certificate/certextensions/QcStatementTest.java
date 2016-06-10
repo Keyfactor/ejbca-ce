@@ -34,7 +34,7 @@ import org.cesecore.certificates.util.cert.QCStatementExtension;
 import org.junit.Test;
 
 /**
- * @version $Id: BasicCertificateExtensionTest.java 21785 2015-09-02 21:39:25Z aveen4711 $
+ * @version $Id$
  */
 public class QcStatementTest {
     private static Logger log = Logger.getLogger(QcStatementTest.class);
