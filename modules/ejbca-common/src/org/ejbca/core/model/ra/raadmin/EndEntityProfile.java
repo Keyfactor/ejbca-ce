@@ -2193,6 +2193,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public void setDefaultValue(String value){this.defaultValue = value;}
         public String getName(){return name;}
         public String getRegexPattern(){return regexPattern;}
+        public int getNumber(){return number;}
         @Override
         public int hashCode(){return name.hashCode();}
         public int getProfileId(){return profileId;}
