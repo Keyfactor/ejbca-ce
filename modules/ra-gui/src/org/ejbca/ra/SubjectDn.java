@@ -13,12 +13,12 @@
 package org.ejbca.ra;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -33,47 +33,55 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
  */
 public class SubjectDn {
 
-    private static final Logger log = Logger.getLogger(SubjectDn.class);
-    private Collection<EndEntityProfile.FieldInstance> fieldInstances;
-    private Map<String, Map<Integer, EndEntityProfile.FieldInstance>> fieldInstancesMap;
-    public final static List<String> COMPONENTS;
-    static{
-        COMPONENTS = new ArrayList<>();
-        COMPONENTS.add(DnComponents.DNEMAILADDRESS);
-        COMPONENTS.add(DnComponents.DNQUALIFIER);
-        COMPONENTS.add(DnComponents.UID);
-        COMPONENTS.add(DnComponents.COMMONNAME);
-        COMPONENTS.add(DnComponents.DNSERIALNUMBER);
-        COMPONENTS.add(DnComponents.GIVENNAME);
-        COMPONENTS.add(DnComponents.INITIALS);
-        COMPONENTS.add(DnComponents.SURNAME);
-        COMPONENTS.add(DnComponents.TITLE);
-        COMPONENTS.add(DnComponents.ORGANIZATIONALUNIT);
-        COMPONENTS.add(DnComponents.ORGANIZATION);
-        COMPONENTS.add(DnComponents.LOCALITY);
-        COMPONENTS.add(DnComponents.STATEORPROVINCE);
-        COMPONENTS.add(DnComponents.DOMAINCOMPONENT);
-        COMPONENTS.add(DnComponents.COUNTRY);
-        COMPONENTS.add(DnComponents.UNSTRUCTUREDADDRESS);
-        COMPONENTS.add(DnComponents.UNSTRUCTUREDNAME);
-        COMPONENTS.add(DnComponents.POSTALCODE);
-        COMPONENTS.add(DnComponents.BUSINESSCATEGORY);
-        COMPONENTS.add(DnComponents.POSTALADDRESS);
-        COMPONENTS.add(DnComponents.TELEPHONENUMBER);
-        COMPONENTS.add(DnComponents.PSEUDONYM);
-        COMPONENTS.add(DnComponents.STREETADDRESS);
-        COMPONENTS.add(DnComponents.NAME);
-    }
+    //private static final Logger log = Logger.getLogger(SubjectDn.class);
+
+    public static final List<String> COMPONENTS = Arrays.asList(
+            DnComponents.DNEMAILADDRESS,
+            DnComponents.DNQUALIFIER,
+            DnComponents.UID,
+            DnComponents.COMMONNAME,
+            DnComponents.DNSERIALNUMBER,
+            DnComponents.GIVENNAME,
+            DnComponents.INITIALS,
+            DnComponents.SURNAME,
+            DnComponents.TITLE,
+            DnComponents.ORGANIZATIONALUNIT,
+            DnComponents.ORGANIZATION,
+            DnComponents.LOCALITY,
+            DnComponents.STATEORPROVINCE,
+            DnComponents.DOMAINCOMPONENT,
+            DnComponents.COUNTRY,
+            DnComponents.UNSTRUCTUREDADDRESS,
+            DnComponents.UNSTRUCTUREDNAME,
+            DnComponents.POSTALCODE,
+            DnComponents.BUSINESSCATEGORY,
+            DnComponents.POSTALADDRESS,
+            DnComponents.TELEPHONENUMBER,
+            DnComponents.PSEUDONYM,
+            DnComponents.STREETADDRESS,
+            DnComponents.NAME
+            );
     
+    private final Collection<EndEntityProfile.FieldInstance> fieldInstances = new ArrayList<>();
+    private final Map<String, Map<Integer, EndEntityProfile.FieldInstance>> fieldInstancesMap = new HashMap<>();
     private String value;
 
-    public SubjectDn(EndEntityProfile endEntityProfile) {
-        fieldInstances = new ArrayList<EndEntityProfile.FieldInstance>();
-        fieldInstancesMap = new HashMap<String, Map<Integer, EndEntityProfile.FieldInstance>>();
-        for (String key : COMPONENTS) {
-            Field field = endEntityProfile.new Field(key);
+    public SubjectDn(final EndEntityProfile endEntityProfile) {
+        this(endEntityProfile, null);
+    }
+
+    public SubjectDn(final EndEntityProfile endEntityProfile, final String subjectDistinguishedName) {
+        DNFieldExtractor dnFieldExtractor = null;
+        if (subjectDistinguishedName!=null) {
+            dnFieldExtractor = new DNFieldExtractor(subjectDistinguishedName, DNFieldExtractor.TYPE_SUBJECTDN);
+        }
+        for (final String key : COMPONENTS) {
+            final Field field = endEntityProfile.new Field(key);
             fieldInstancesMap.put(key, new HashMap<Integer, EndEntityProfile.FieldInstance>());
-            for (EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
+            for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
+                if (dnFieldExtractor!=null) {
+                    fieldInstance.setValue(dnFieldExtractor.getField(DnComponents.profileIdToDnId(fieldInstance.getProfileId()), fieldInstance.getNumber()));
+                }
                 fieldInstances.add(fieldInstance);
                 fieldInstancesMap.get(key).put(fieldInstance.getNumber(), fieldInstance);
             }

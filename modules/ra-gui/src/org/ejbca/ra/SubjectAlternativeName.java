@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
@@ -26,33 +27,44 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
  *
  */
 public class SubjectAlternativeName {
-    private List<EndEntityProfile.FieldInstance> fieldInstances;
-    public final static List<String> COMPONENTS;
-    static{
-        COMPONENTS = new ArrayList<>();
-        COMPONENTS.add(DnComponents.RFC822NAME);
-        COMPONENTS.add(DnComponents.DNSNAME);
-        COMPONENTS.add(DnComponents.IPADDRESS);
-        COMPONENTS.add(DnComponents.UNIFORMRESOURCEID);
-        COMPONENTS.add(DnComponents.DIRECTORYNAME);
-        COMPONENTS.add(DnComponents.UPN);
-        COMPONENTS.add(DnComponents.GUID);
-        COMPONENTS.add(DnComponents.KRB5PRINCIPAL);
-        COMPONENTS.add(DnComponents.PERMANENTIDENTIFIER);
-        // Below are altNames that are not implemented yet
-        COMPONENTS.add(DnComponents.OTHERNAME);
-        COMPONENTS.add(DnComponents.X400ADDRESS);
-        COMPONENTS.add(DnComponents.EDIPARTYNAME);
-        COMPONENTS.add(DnComponents.REGISTEREDID);
-    }
+
+    //private static final Logger log = Logger.getLogger(SubjectAlternativeName.class);
+
+    public static final List<String> COMPONENTS = Arrays.asList(
+            DnComponents.RFC822NAME,
+            DnComponents.DNSNAME,
+            DnComponents.IPADDRESS,
+            DnComponents.UNIFORMRESOURCEID,
+            DnComponents.DIRECTORYNAME,
+            DnComponents.UPN,
+            DnComponents.GUID,
+            DnComponents.KRB5PRINCIPAL,
+            DnComponents.PERMANENTIDENTIFIER,
+            // Below are altNames that are not implemented yet
+            DnComponents.OTHERNAME,
+            DnComponents.X400ADDRESS,
+            DnComponents.EDIPARTYNAME,
+            DnComponents.REGISTEREDID
+            );
     
+    private List<EndEntityProfile.FieldInstance> fieldInstances = new ArrayList<>();
     private String value;
 
-    public SubjectAlternativeName(EndEntityProfile endEntityProfile) {
-        fieldInstances = new ArrayList<EndEntityProfile.FieldInstance>();
-        for (String key : COMPONENTS) {
-            Field field = endEntityProfile.new Field(key);
-            for (EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
+    public SubjectAlternativeName(final EndEntityProfile endEntityProfile) {
+        this(endEntityProfile, null);
+    }
+
+    public SubjectAlternativeName(final EndEntityProfile endEntityProfile, final String subjectAlternativeName) {
+        DNFieldExtractor dnFieldExtractor = null;
+        if (subjectAlternativeName!=null) {
+            dnFieldExtractor = new DNFieldExtractor(subjectAlternativeName, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+        }
+        for (final String key : COMPONENTS) {
+            final Field field = endEntityProfile.new Field(key);
+            for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
+                if (dnFieldExtractor!=null) {
+                    fieldInstance.setValue(dnFieldExtractor.getField(DnComponents.profileIdToDnId(fieldInstance.getProfileId()), fieldInstance.getNumber()));
+                }
                 fieldInstances.add(fieldInstance);
             }
         }
