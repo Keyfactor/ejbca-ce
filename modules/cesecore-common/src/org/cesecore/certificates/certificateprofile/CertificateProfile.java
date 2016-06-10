@@ -1787,10 +1787,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             data.put(QCETSIPDSURL, qcetsipdsurl);
         }
     }
-    /** @return String with PDS Language or empty string (EN 319 412-05) */
+    /** Shall be a two letter ISO 639-1 code, i.e. en, sv, fr  
+     * @return String with PDS Language or empty string (EN 319 412-05) 
+     */
     public String getQCEtsiPdsLang() {
         return (String) data.get(QCETSIPDSLANG);
     }
+    /** Sets String with PDS Language (EN 319 412-05) 
+     * Shall be a two letter ISO 639-1 code, i.e. en, sv, fr 
+     */
     public void setQCEtsiPdsLang(String qcetsipdslang) {
         if (qcetsipdslang == null) {
             data.put(QCETSIPDSLANG, "");
