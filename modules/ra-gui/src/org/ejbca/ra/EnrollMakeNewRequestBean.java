@@ -24,6 +24,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -359,21 +360,26 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
             PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest); //pkcs10CertificateRequest will not be null at this point
             List<String> subjectDnFieldsFromParsedCsr = CertTools.getX500NameComponents(pkcs10CertificateRequest.getSubject().toString());
-            for (String subjectDnField : subjectDnFieldsFromParsedCsr) {
+            bothLoops: for (String subjectDnField : subjectDnFieldsFromParsedCsr) {
+                if(log.isDebugEnabled()){
+                    log.debug("Parsing the subject DN field '" + subjectDnField + "'...");
+                }
                 String[] nameValue = subjectDnField.split("=");
                 if (nameValue != null && nameValue.length == 2) {
                     Integer dnId = DnComponents.getDnIdFromDnName(nameValue[0]);
                     if (dnId != null) {
                         String profileName = DnComponents.dnIdToProfileName(dnId);
                         if (profileName != null) {
-                            EndEntityProfile.FieldInstance fieldInstance = subjectDn.getFieldInstancesMap().get(profileName);
-                            if (fieldInstance != null) {
-                                fieldInstance.setValue(nameValue[1]);
-                                subjectDn.getFieldInstancesMap().put(profileName, fieldInstance);
-                                if (log.isDebugEnabled()) {
-                                    log.debug(raLocaleBean.getMessage("enroll_subject_dn_field_successfully_parsed_from_csr", subjectDnField));
+                            //In the case of multiple fields (etc. two CNs), find the first one with an empty value
+                            for(EndEntityProfile.FieldInstance fieldInstance : subjectDn.getFieldInstancesMap().get(profileName).values()){
+                                if(fieldInstance.getValue() == null || fieldInstance.getValue().isEmpty()){
+                                    fieldInstance.setValue(nameValue[1]);
+                                    subjectDn.getFieldInstancesMap().get(profileName).put(fieldInstance.getNumber(), fieldInstance);
+                                    if (log.isDebugEnabled()) {
+                                        log.debug(raLocaleBean.getMessage("enroll_subject_dn_field_successfully_parsed_from_csr", subjectDnField));
+                                    }
+                                    continue bothLoops;
                                 }
-                                continue;
                             }
                         }
                     }
@@ -700,11 +706,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
         setDownloadCredentialsData();
         endEntityInformation.setTokenType(tokenType);
 
-        //Enter temporary credentials
+        //Enter temporary credentials.
         if (!selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()) ) {
-            String commonName = subjectDn.getFieldInstancesMap().get(DnComponents.COMMONNAME).getValue(); //Common Name has to be required field
-            endEntityInformation.setUsername(commonName);
-            endEntityInformation.setPassword(commonName);
+            Map<Integer, EndEntityProfile.FieldInstance> commonNameFieldInstances = subjectDn.getFieldInstancesMap().get(DnComponents.COMMONNAME);
+            for(EndEntityProfile.FieldInstance commonNameFieldInstance : commonNameFieldInstances.values()){
+                if(commonNameFieldInstance.isRequired()){
+                    endEntityInformation.setUsername(commonNameFieldInstance.getValue() + " " + new Timestamp(new Date().getTime()));
+                    endEntityInformation.setPassword(commonNameFieldInstance.getValue() + " " + new Timestamp(new Date().getTime()));
+                    break;
+                }
+            }
+            if(endEntityInformation.getUsername() == null){ //in the case common name is not required (not sure if possible though)
+                throw new IllegalStateException("At least one common name is required in end entity profile");
+            }
         }
 
         //Get token's algorithm from CSR (PROVIDED_BY_USER) or it can be specified directly (ON_SERVER)

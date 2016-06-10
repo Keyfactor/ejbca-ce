@@ -277,7 +277,7 @@ document.getElementById("marker").appendChild(newFileInput);
 									rendered="#{instance.isUsed()}" />
 								<h:inputText id="subjectDirectoryField"
 									value="#{instance.value}" rendered="#{instance.isUsed()}"
-									disabled="!#{instance.isModifiable()}" >
+									disabled="#{!instance.isModifiable()}" >
 									<f:validator validatorId="extendedRegexValidator" />
     								<f:attribute name="pattern" value="#{instance.getRegexPattern()}" />
 								</h:inputText>

@@ -25,7 +25,9 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
 
 /**
- * Contains SubjectDN attributes
+ * Represents two "interfaces": list (needed for JSF) and map interface
+ * for the subject DN fields of the specified end entity profile.
+ * 
  * @version $Id$
  *
  */
@@ -33,7 +35,7 @@ public class SubjectDn {
 
     private static final Logger log = Logger.getLogger(SubjectDn.class);
     private Collection<EndEntityProfile.FieldInstance> fieldInstances;
-    private Map<String, EndEntityProfile.FieldInstance> fieldInstancesMap;
+    private Map<String, Map<Integer, EndEntityProfile.FieldInstance>> fieldInstancesMap;
     public final static List<String> COMPONENTS;
     static{
         COMPONENTS = new ArrayList<>();
@@ -66,56 +68,43 @@ public class SubjectDn {
     private String value;
 
     public SubjectDn(EndEntityProfile endEntityProfile) {
-        fieldInstances = new ArrayList<>(COMPONENTS.size());
-        fieldInstancesMap = new HashMap<String, EndEntityProfile.FieldInstance>(COMPONENTS.size());
+        fieldInstances = new ArrayList<EndEntityProfile.FieldInstance>();
+        fieldInstancesMap = new HashMap<String, Map<Integer, EndEntityProfile.FieldInstance>>();
         for (String key : COMPONENTS) {
             Field field = endEntityProfile.new Field(key);
+            fieldInstancesMap.put(key, new HashMap<Integer, EndEntityProfile.FieldInstance>());
             for (EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
-                fieldInstancesMap.put(key, fieldInstance);
+                fieldInstances.add(fieldInstance);
+                fieldInstancesMap.get(key).put(fieldInstance.getNumber(), fieldInstance);
             }
         }
-        
-        update();
     }
     
+    /**
+     * @return the list interface for the subject DN fields
+     */
     public Collection<EndEntityProfile.FieldInstance> getFieldInstances() {
         return fieldInstances;
     }
-    
-    private void setFieldInstances(){
-        fieldInstances.clear();
-        fieldInstances.addAll(fieldInstancesMap.values());
-    }
-    
-    public Map<String, EndEntityProfile.FieldInstance> getFieldInstancesMap() {
+
+    /**
+     * @return the map interface for the subject DN fields.
+     */
+    public Map<String, Map<Integer, EndEntityProfile.FieldInstance>> getFieldInstancesMap() {
         return fieldInstancesMap;
     }
 
     /**
-     * Set the field instances map. Make sure you invoke update() after you have been using this method to change some entries.
-     * This method is useful when SubjectDN values should be set from CSR.
-     * @param fieldInstancesMap
-     * @see SubjectDn.update()
-     * @see EnrollMakeNewRequestBean.initCertificateData()
+     * Updates the the result string value of Subject DN.
      */
-    public void setFieldInstancesMap(Map<String, EndEntityProfile.FieldInstance> fieldInstancesMap) {
-        this.fieldInstancesMap = fieldInstancesMap;
-        
-    }
-
-    /**
-     * Updates the field instances arraylist and string value.
-     */
-    public void update(){
-        setFieldInstances();
-        
+    public void update() {
         StringBuilder subjectDn = new StringBuilder();
-        for(EndEntityProfile.FieldInstance fieldInstance : fieldInstances){
-            if(!fieldInstance.getValue().isEmpty()){
+        for (EndEntityProfile.FieldInstance fieldInstance : fieldInstances) {
+            if (!fieldInstance.getValue().isEmpty()) {
                 int dnId = DnComponents.profileIdToDnId(fieldInstance.getProfileId());
                 String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, DNFieldExtractor.TYPE_SUBJECTDN) + fieldInstance.getValue().trim();
                 //TODO nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart);
-                if(subjectDn.length() != 0){
+                if (subjectDn.length() != 0) {
                     subjectDn.append(", ");
                 }
                 subjectDn.append(nameValueDnPart);
@@ -127,16 +116,27 @@ public class SubjectDn {
 
     @Override
     public String toString() {
-        return getValue();
+        return getUpdatedValue();
     }
 
     /**
-     * @return the value
+     * Returns non-updated string value of subject DN.
+     * @return subject DN as String
+     * @see SubjectDn.update()
      */
     public String getValue() {
         if(value == null){
             update();
         }
+        return value;
+    }
+    
+    /**
+     * Updates the string value of subject DN and then returns it.
+     * @return subject DN as String
+     */
+    public String getUpdatedValue() {
+        update();
         return value;
     }
 
