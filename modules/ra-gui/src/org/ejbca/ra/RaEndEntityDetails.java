@@ -79,37 +79,59 @@ public class RaEndEntityDetails {
     public String getCaName() { return caName; }
     public String getCpName() {
         if (cpId==EndEntityInformation.NO_CERTIFICATEPROFILE) {
-            return callbacks.getRaLocaleBean().getMessage("search_ees_page_info_unknowncp");
+            return callbacks.getRaLocaleBean().getMessage("component_eedetails_info_unknowncp");
         } else if (cpName!=null) {
             return cpName;
         }
-        return callbacks.getRaLocaleBean().getMessage("search_ees_page_info_missingcp", cpId);
+        return callbacks.getRaLocaleBean().getMessage("component_eedetails_info_missingcp", cpId);
     }
     public boolean isCpNameSameAsEepName() { return getEepName().equals(getCpName()); }
     public String getEepName() {
         if (eepId==EndEntityInformation.NO_ENDENTITYPROFILE) {
-            return callbacks.getRaLocaleBean().getMessage("search_ees_page_info_unknowneep", eepId);
+            return callbacks.getRaLocaleBean().getMessage("component_eedetails_info_unknowneep", eepId);
         } else if (eepName!=null) {
             return eepName;
         }
-        return callbacks.getRaLocaleBean().getMessage("search_ees_page_info_missingeep", eepId);
+        return callbacks.getRaLocaleBean().getMessage("component_eedetails_info_missingeep", eepId);
     }
     public String getCreated() { return created; }
     public String getModified() { return modified; }
     public String getStatus() {
         switch (status) {
         case EndEntityConstants.STATUS_FAILED:
-            return callbacks.getRaLocaleBean().getMessage("search_ees_page_status_failed");
+            return callbacks.getRaLocaleBean().getMessage("component_eedetails_status_failed");
         case EndEntityConstants.STATUS_GENERATED:
-            return callbacks.getRaLocaleBean().getMessage("search_ees_page_status_generated");
+            return callbacks.getRaLocaleBean().getMessage("component_eedetails_status_generated");
         case EndEntityConstants.STATUS_KEYRECOVERY:
-            return callbacks.getRaLocaleBean().getMessage("search_ees_page_status_keyrecovery");
+            return callbacks.getRaLocaleBean().getMessage("component_eedetails_status_keyrecovery");
         case EndEntityConstants.STATUS_NEW:
-            return callbacks.getRaLocaleBean().getMessage("search_ees_page_status_new");
+            return callbacks.getRaLocaleBean().getMessage("component_eedetails_status_new");
         case EndEntityConstants.STATUS_REVOKED:
-            return callbacks.getRaLocaleBean().getMessage("search_ees_page_status_revoked");
+            return callbacks.getRaLocaleBean().getMessage("component_eedetails_status_revoked");
         }
-        return callbacks.getRaLocaleBean().getMessage("search_ees_page_status_other");
+        return callbacks.getRaLocaleBean().getMessage("component_eedetails_status_other");
+    }
+
+    public String getTokenType() {
+        switch (endEntityInformation.getTokenType()) {
+        case EndEntityConstants.TOKEN_USERGEN:
+            return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_usergen");
+        case EndEntityConstants.TOKEN_SOFT_JKS:
+            return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_jks");
+        case EndEntityConstants.TOKEN_SOFT_P12:
+            return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_pkcs12");
+        case EndEntityConstants.TOKEN_SOFT_PEM:
+            return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_pem");
+        }
+        return "?";
+    }
+
+    public boolean isTokenTypeUserGenerated() {
+        return endEntityInformation.getTokenType()==EndEntityConstants.TOKEN_USERGEN;
+    }
+
+    public boolean isKeyRecoverable() {
+        return endEntityInformation.getKeyRecoverable();
     }
 
     public SubjectDn getSubjectDistinguishedName() {
