@@ -61,6 +61,7 @@ public class RaEndEntityBean implements Serializable {
     private Map<Integer, String> eepIdToNameMap = null;
     private Map<Integer, String> cpIdToNameMap = null;
     private Map<Integer,String> caIdToNameMap = new HashMap<>();
+    private boolean editEditEndEntityMode = false;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -95,4 +96,18 @@ public class RaEndEntityBean implements Serializable {
 
     public String getUsername() { return username; }
     public RaEndEntityDetails getEndEntity() { return raEndEntityDetails; }
+
+    public boolean isEditEditEndEntityMode() {
+        return editEditEndEntityMode;
+    }
+    public void editEditEndEntity() {
+        editEditEndEntityMode = true;
+    }
+    public void editEditEndEntityCancel() {
+        postConstruct();
+        editEditEndEntityMode = false;
+    }
+    public void editEditEndEntitySave() {
+        editEditEndEntityMode = false;
+    }
 }
