@@ -36,7 +36,18 @@
                 <h:outputText rendered="#{not empty raEndEntityBean.username and empty raEndEntityBean.endEntity}" value="#{msg.endentity_page_info_nosuchee}"/>
                 <h:panelGroup rendered="#{not empty raEndEntityBean.endEntity}" styleClass="pure-u-1">
                     <h:form>
-                        <component:eedetails raEndEntityDetails="#{raEndEntityBean.endEntity}"/>
+                        <h:panelGroup styleClass="pure-u-1-3">
+                        </h:panelGroup>
+                        <h:panelGroup styleClass="pure-u-2-3">
+                            <h:commandButton action="#{raEndEntityBean.editEditEndEntity}" value="#{msg.endentity_page_command_edit}" disabled="true"
+                                rendered="#{raAccessBean.authorizedToEditEndEntities and !raEndEntityBean.editEditEndEntityMode}"/>
+                            <h:commandButton action="#{raEndEntityBean.editEditEndEntityCancel}" value="#{msg.endentity_page_command_editcancel}"
+                                rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode}"/>
+                            <h:commandButton action="#{raEndEntityBean.editEditEndEntitySave}" value="#{msg.endentity_page_command_editsave}"
+                                rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode}"
+                                disabled="true"/>
+                        </h:panelGroup>
+                        <component:eedetails raEndEntityDetails="#{raEndEntityBean.endEntity}" editMode="#{raEndEntityBean.editEditEndEntityMode}"/>
                     </h:form>
                 </h:panelGroup>
             </h:panelGroup>

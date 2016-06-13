@@ -127,6 +127,10 @@ public class RaAccessBean implements Serializable {
         return auth;
     }
 
+    public boolean isAuthorizedToEditEndEntities() {
+        return isAuthorized(AccessRulesConstants.REGULAR_EDITENDENTITY);
+    }
+    
     public boolean isAuthorizedToSearch() {
         return isAuthorizedToSearchCerts() ||
                 isAuthorizedToSearchEndEntities();
