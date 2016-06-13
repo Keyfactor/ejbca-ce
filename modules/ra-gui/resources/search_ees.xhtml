@@ -50,9 +50,17 @@
                                 <h:outputText value="#{msg.search_ees_page_link_view_cert}"/>
                             </h:outputLink>
                         </h:panelGroup>
+                        <h:panelGroup styleClass="pure-u-1-3">
+                        </h:panelGroup>
+                        <h:panelGroup styleClass="pure-u-2-3">
+                            <h:commandButton action="#{raSearchEesBean.editEditEndEntity}" value="#{msg.search_ees_page_edit_command}"
+                                rendered="#{raAccessBean.authorizedToEditEndEntities and !raSearchEesBean.editEditEndEntityMode}" disabled="true"/>
+                            <h:commandButton action="#{raSearchEesBean.editEditEndEntityCancel}" value="#{msg.search_ees_page_editcancel_command}"
+                                rendered="#{raAccessBean.authorizedToEditEndEntities and raSearchEesBean.editEditEndEntityMode}"/>
+                        </h:panelGroup>
                     </h:panelGroup>
                     <h:panelGroup styleClass="pure-u-1">
-                        <component:eedetails raEndEntityDetails="#{raSearchEesBean.currentEndEntityDetails}"/>
+                        <component:eedetails raEndEntityDetails="#{raSearchEesBean.currentEndEntityDetails}" editMode="#{raSearchEesBean.editEditEndEntityMode}"/>
                     </h:panelGroup>
                 </h:form>
                 <h:form id="contentForm" styleClass="pure-form pure-form-aligned foo-form"

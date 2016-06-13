@@ -15,6 +15,7 @@ package org.ejbca.ra;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.ValidityDate;
@@ -32,6 +33,7 @@ public class RaEndEntityDetails {
         EndEntityProfile getEndEntityProfile(final int eepId);
     }
 
+    private static final Logger log = Logger.getLogger(RaEndEntityDetails.class);
     private final Callbacks callbacks;
 
     private final String username;
@@ -169,6 +171,11 @@ public class RaEndEntityDetails {
     public boolean isEven() {
         styleRowCallCounter++;
         return (styleRowCallCounter+1) / 2 % 2 == 0;
+    }
+    /** @return true every twice starting with every other call */
+    public boolean isEvenTwice() {
+        isEven();
+        return isEven();
     }
 
     public RaEndEntityDetails getNext() { return next; }

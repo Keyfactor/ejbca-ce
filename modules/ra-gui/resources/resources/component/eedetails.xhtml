@@ -92,17 +92,19 @@
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}">
+                <h3><h:outputText value="#{msg.component_eedetails_header_subjectdn}"/></h3>
                 <ui:repeat id="subjectDistinguishedName" value="#{cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}" var="instance">
-                    <h:outputLabel for="subjectDistinguishedNameField" rendered="#{instance.used}" value="#{msg['subject_dn_'.concat(instance.name)]}"
-                        styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-                    <h:panelGroup styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
-                        <h:outputText rendered="#{instance.used and !cc.attrs.editMode}" value="#{instance.value}"/>
-                        <h:inputText id="subjectDistinguishedNameField" rendered="#{instance.used and cc.attrs.editMode}" value="#{instance.value}" disabled="#{!instance.modifiable}"
-                            styleClass="#{cc.attrs.styleFull}">
-                            <f:validator validatorId="extendedRegexValidator" />
-                            <f:attribute name="pattern" value="#{instance.regexPattern}" />
-                        </h:inputText>
-                        <h:message for="subjectDistinguishedNameField"/>
+                    <h:panelGroup styleClass="#{cc.attrs.raEndEntityDetails.evenTwice ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                        <h:outputLabel for="subjectDistinguishedNameFieldGroup" value="#{msg['subject_dn_'.concat(instance.name)]}" styleClass="#{cc.attrs.styleLabel}"/>
+                        <h:panelGroup id="subjectDistinguishedNameFieldGroup" styleClass="#{cc.attrs.styleValue}">
+                            <h:outputText rendered="#{!cc.attrs.editMode}" value="#{instance.value} " styleClass="pre"/>
+                            <h:inputText rendered="#{cc.attrs.editMode}" id="subjectDistinguishedNameField" value="#{instance.value}" disabled="#{!instance.modifiable}"
+                                styleClass="#{cc.attrs.styleFull}">
+                                <f:validator validatorId="extendedRegexValidator"/>
+                                <f:attribute name="pattern" value="#{instance.regexPattern}"/>
+                            </h:inputText>
+                            <h:message rendered="#{cc.attrs.editMode}" for="subjectDistinguishedNameField"/>
+                        </h:panelGroup>
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
@@ -110,17 +112,19 @@
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances}">
+                <h3><h:outputText value="#{msg.component_eedetails_header_subjectan}"/></h3>
                 <ui:repeat id="subjectAlternativeName" value="#{cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances}" var="instance">
-                    <h:outputLabel for="subjectAltNameField" rendered="#{instance.used}" value="#{msg['subject_alternative_name_'.concat(instance.name)]}"
-                        styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-                    <h:panelGroup styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
-                        <h:outputText rendered="#{instance.used and !cc.attrs.editMode}" value="#{instance.value}"/>
-                        <h:inputText id="subjectAltNameField" rendered="#{instance.used and cc.attrs.editMode}" value="#{instance.value}" disabled="#{!instance.modifiable}"
-                            styleClass="#{cc.attrs.styleFull}">
-                            <f:validator validatorId="extendedRegexValidator" />
-                            <f:attribute name="pattern" value="#{instance.regexPattern}" />
-                        </h:inputText>
-                        <h:message for="subjectAltNameField"/>
+                    <h:panelGroup styleClass="#{cc.attrs.raEndEntityDetails.evenTwice ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                        <h:outputLabel for="subjectAlternativeNameFieldGroup" value="#{msg['subject_alternative_name_'.concat(instance.name)]}" styleClass="#{cc.attrs.styleLabel}"/>
+                        <h:panelGroup id="subjectAlternativeNameFieldGroup" styleClass="#{cc.attrs.styleValue}">
+                            <h:outputText rendered="#{!cc.attrs.editMode}" value="#{instance.value} " styleClass="pre"/>
+                            <h:inputText rendered="#{cc.attrs.editMode}" id="subjectAltNameField" value="#{instance.value}" disabled="#{!instance.modifiable}"
+                                styleClass="#{cc.attrs.styleFull}">
+                                <f:validator validatorId="extendedRegexValidator"/>
+                                <f:attribute name="pattern" value="#{instance.regexPattern}"/>
+                            </h:inputText>
+                            <h:message rendered="#{cc.attrs.editMode}" for="subjectAltNameField"/>
+                        </h:panelGroup>
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
@@ -128,17 +132,19 @@
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}">
+                <h3><h:outputText value="#{msg.component_eedetails_header_subjectda}"/></h3>
                 <ui:repeat id="subjectDirectoryAttributes" value="#{cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}" var="instance">
-                    <h:outputLabel for="subjectDirectoryAttributesField" rendered="#{instance.used}" value="#{msg['subject_directory_attributes_'.concat(instance.name)]}"
-                        styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-                    <h:panelGroup styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
-                        <h:outputText rendered="#{instance.used and !cc.attrs.editMode}" value="#{instance.value}"/>
-                        <h:inputText id="subjectDirectoryAttributesField" rendered="#{instance.used and cc.attrs.editMode}" value="#{instance.value}" disabled="#{!instance.modifiable}"
-                            styleClass="#{cc.attrs.styleFull}">
-                            <f:validator validatorId="extendedRegexValidator" />
-                            <f:attribute name="pattern" value="#{instance.regexPattern}" />
-                        </h:inputText>
-                        <h:message for="subjectDirectoryAttributesField"/>
+                    <h:panelGroup styleClass="#{cc.attrs.raEndEntityDetails.evenTwice ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                        <h:outputLabel for="subjectDirectoryAttributesFieldGroup" value="#{msg['subject_directory_attributes_'.concat(instance.name)]}" styleClass="#{cc.attrs.styleLabel}"/>
+                        <h:panelGroup id="subjectDirectoryAttributesFieldGroup" styleClass="#{cc.attrs.styleValue}">
+                            <h:outputText rendered="#{!cc.attrs.editMode}" value="#{instance.value} " styleClass="pre"/>
+                            <h:inputText rendered="#{cc.attrs.editMode}" id="subjectDirectoryAttributesField" value="#{instance.value}" disabled="#{!instance.modifiable}"
+                                styleClass="#{cc.attrs.styleFull}">
+                                <f:validator validatorId="extendedRegexValidator"/>
+                                <f:attribute name="pattern" value="#{instance.regexPattern}"/>
+                            </h:inputText>
+                            <h:message rendered="#{cc.attrs.editMode}" for="subjectDirectoryAttributesField"/>
+                        </h:panelGroup>
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
