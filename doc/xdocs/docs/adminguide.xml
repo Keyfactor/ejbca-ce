@@ -3063,6 +3063,24 @@ previous certificate must still exist.
 </ul>
 </p>
 
+<p><b>CRL Downloader</b></p>
+<p>
+The service periodcally download a CRL from provided URL and imports it into EJBCA, including updating any revocation information for the certificates.
+Information on how to use this on a Validation Authority can be found in the OCSP User Guide, <a href="userguide-ocsp.html#Populating%20the%20OCSP%20responder%20database%20using%20the%20CRL%20download%20service">Populating the OCSP responder database using the CRL download service</a>.</p>
+<p>
+<ul>
+<li>CAs to Check: select the imported CA (or select ANY to process all external X509 CAs with a configured external CDP)</li>
+<li>Ignore nextUpdate and always download the CRL: select this option to force a download of the CRL whenever the service is executed instead of only downloading the CRL when the last known CRL indicates that a new one will be available.</li>
+<li>Maximum allowed size to download (bytes): The Service will refuse to process CRLs that are larger then this limit.</li>
+<li>Period: How often the Service should check if a new CRL needs to be downloaded.</li>
+<li>Active: Check to activate the service.</li>
+</ul>
+When the service is executed, there will be log entries showing if the CRL download and processing was successful.
+</p>
+<p>
+  If the downloaded CRL from the external CDP contains the Freshest CRL extension, the service will try to download and process
+  any such URL that uses "http" as protocol.
+</p>
 </subsection>
 
 <subsection name="Writing Customized Services">
