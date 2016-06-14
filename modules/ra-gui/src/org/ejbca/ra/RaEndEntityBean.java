@@ -80,6 +80,10 @@ public class RaEndEntityBean implements Serializable {
     @PostConstruct
     public void postConstruct() {
         username = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("ee");
+        reload();
+    }
+    
+    private void reload() {
         if (username!=null) {
             final EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);
             if (endEntityInformation!=null) {
@@ -104,7 +108,7 @@ public class RaEndEntityBean implements Serializable {
         editEditEndEntityMode = true;
     }
     public void editEditEndEntityCancel() {
-        postConstruct();
+        reload();
         editEditEndEntityMode = false;
     }
     public void editEditEndEntitySave() {
