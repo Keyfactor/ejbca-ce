@@ -35,7 +35,7 @@
                 <h:outputText rendered="#{empty raEndEntityBean.username}" value="#{msg.endentity_page_info_nousername}"/>
                 <h:outputText rendered="#{not empty raEndEntityBean.username and empty raEndEntityBean.endEntity}" value="#{msg.endentity_page_info_nosuchee}"/>
                 <h:panelGroup rendered="#{not empty raEndEntityBean.endEntity}" styleClass="pure-u-1">
-                    <h:form>
+                    <h:form styleClass="pure-form">
                         <ui:remove><!-- Hide edit capabilities until fully implemented. -->
                         <h:panelGroup styleClass="pure-u-1-3"></h:panelGroup>
                         <h:panelGroup styleClass="pure-u-2-3">
