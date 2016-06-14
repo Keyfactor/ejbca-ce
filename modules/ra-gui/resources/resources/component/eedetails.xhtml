@@ -43,8 +43,13 @@
         <composite:implementation>
             <h:outputLabel for="username" value="#{msg.component_eedetails_field_username}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="username" value="#{cc.attrs.raEndEntityDetails.username}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup id="username" styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                <h:outputText value="#{cc.attrs.raEndEntityDetails.username} "/>
+                <h:outputLink value="endentity.xhtml" styleClass="fineprint">
+                    <f:param name="ee" value="#{cc.attrs.raEndEntityDetails.username}"/>
+                    <h:outputText value="#{msg.component_eedetails_link_perm}"/>
+                </h:outputLink>
+            </h:panelGroup>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
@@ -76,30 +81,59 @@
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="caname" value="#{cc.attrs.raEndEntityDetails.caName}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-
-            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
-
             <h:outputLabel for="tokentype" value="#{msg.component_eedetails_field_tokentype}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="tokentype" value="#{cc.attrs.raEndEntityDetails.tokenType}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputLabel for="keyrecoverable" value="#{msg.component_eedetails_field_keyrecoverable}" rendered="#{!cc.attrs.raEndEntityDetails.tokenTypeUserGenerated}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="keyrecoverable" rendered="#{!cc.attrs.raEndEntityDetails.tokenTypeUserGenerated}"
-                value="#{cc.attrs.raEndEntityDetails.keyRecoverable ? msg.component_eedetails_field_keyrecoverable_true : msg.component_eedetails_field_keyrecoverable_false}"
+            <h:outputText id="tokentype"
+                value="#{cc.attrs.raEndEntityDetails.tokenType} #{msg['component_eedetails_field_keyrecoverable_'.concat(cc.attrs.raEndEntityDetails.keyRecoverable)]}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
-            <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}">
+            <h:outputLabel for="email" value="#{msg.component_eedetails_field_email}" rendered="#{cc.attrs.raEndEntityDetails.emailEnabled and not empty cc.attrs.raEndEntityDetails.email}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="email" value="#{cc.attrs.raEndEntityDetails.email}" rendered="#{cc.attrs.raEndEntityDetails.emailEnabled and not empty cc.attrs.raEndEntityDetails.email}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="notification" value="#{msg.component_eedetails_field_notification}" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="notification" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled}"
+                value="#{msg['component_eedetails_field_notification_'.concat(cc.attrs.raEndEntityDetails.sendNotification)]}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="certserialoverride" value="#{msg.component_eedetails_field_certserialoverride}"
+                rendered="#{cc.attrs.raEndEntityDetails.certificateSerialNumberOverrideEnabled and not empty cc.attrs.raEndEntityDetails.certificateSerialNumberOverride}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="certserialoverride" value="#{cc.attrs.raEndEntityDetails.certificateSerialNumberOverride}"
+                rendered="#{cc.attrs.raEndEntityDetails.certificateSerialNumberOverrideEnabled and not empty cc.attrs.raEndEntityDetails.certificateSerialNumberOverride}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="cleartextpassword" value="#{msg.component_eedetails_field_cleartextpassword}"
+                rendered="#{!cc.attrs.raEndEntityDetails.tokenTypeUserGenerated and not empty cc.attrs.raEndEntityDetails.endEntityInformation.password}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="cleartextpassword" value="#{msg.component_eedetails_field_cleartextpassword_true}"
+                rendered="#{!cc.attrs.raEndEntityDetails.tokenTypeUserGenerated and not empty cc.attrs.raEndEntityDetails.endEntityInformation.password}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
+            <h:outputLabel for="logins" value="#{msg.component_eedetails_field_logins}"
+                rendered="#{cc.attrs.raEndEntityDetails.loginsMaxEnabled}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="logins" value="#{cc.attrs.raEndEntityDetails.loginsRemaining} / #{cc.attrs.raEndEntityDetails.loginsMax}"
+                rendered="#{cc.attrs.raEndEntityDetails.loginsMaxEnabled}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+
+            <h:outputLabel for="subjectdn" rendered="#{!cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDn}" value="#{msg.component_eedetails_header_subjectdn}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="subjectdn" rendered="#{!cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDn}"
+                value="#{cc.attrs.raEndEntityDetails.subjectDn}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}"
+                value=" "/>
+            <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}">
                 <h3><h:outputText value="#{msg.component_eedetails_header_subjectdn}"/></h3>
                 <ui:repeat id="subjectDistinguishedName" value="#{cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}" var="instance">
                     <h:panelGroup styleClass="#{cc.attrs.raEndEntityDetails.evenTwice ? cc.attrs.styleEven : cc.attrs.styleOdd}">
                         <h:outputLabel for="subjectDistinguishedNameFieldGroup" value="#{msg['subject_dn_'.concat(instance.name)]}" styleClass="#{cc.attrs.styleLabel}"/>
                         <h:panelGroup id="subjectDistinguishedNameFieldGroup" styleClass="#{cc.attrs.styleValue}">
-                            <h:outputText rendered="#{!cc.attrs.editMode}" value="#{instance.value} " styleClass="pre"/>
-                            <h:inputText rendered="#{cc.attrs.editMode}" id="subjectDistinguishedNameField" value="#{instance.value}" disabled="#{!instance.modifiable}"
-                                styleClass="#{cc.attrs.styleFull}">
+                            <h:inputText id="subjectDistinguishedNameField" value="#{instance.value}" disabled="#{!instance.modifiable}" styleClass="#{cc.attrs.styleFull}">
                                 <f:validator validatorId="extendedRegexValidator"/>
                                 <f:attribute name="pattern" value="#{instance.regexPattern}"/>
                             </h:inputText>
@@ -109,17 +143,20 @@
                 </ui:repeat>
             </h:panelGroup>
 
-            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
-
-            <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances}">
+            <h:outputLabel for="subjectan" rendered="#{!cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn}" value="#{msg.component_eedetails_header_subjectan}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="subjectan" rendered="#{!cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn}"
+                value="#{cc.attrs.raEndEntityDetails.subjectAn}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances}"
+                value=" "/>
+            <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances}">
                 <h3><h:outputText value="#{msg.component_eedetails_header_subjectan}"/></h3>
                 <ui:repeat id="subjectAlternativeName" value="#{cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances}" var="instance">
                     <h:panelGroup styleClass="#{cc.attrs.raEndEntityDetails.evenTwice ? cc.attrs.styleEven : cc.attrs.styleOdd}">
                         <h:outputLabel for="subjectAlternativeNameFieldGroup" value="#{msg['subject_alternative_name_'.concat(instance.name)]}" styleClass="#{cc.attrs.styleLabel}"/>
                         <h:panelGroup id="subjectAlternativeNameFieldGroup" styleClass="#{cc.attrs.styleValue}">
-                            <h:outputText rendered="#{!cc.attrs.editMode}" value="#{instance.value} " styleClass="pre"/>
-                            <h:inputText rendered="#{cc.attrs.editMode}" id="subjectAltNameField" value="#{instance.value}" disabled="#{!instance.modifiable}"
-                                styleClass="#{cc.attrs.styleFull}">
+                            <h:inputText id="subjectAltNameField" value="#{instance.value}" disabled="#{!instance.modifiable}" styleClass="#{cc.attrs.styleFull}">
                                 <f:validator validatorId="extendedRegexValidator"/>
                                 <f:attribute name="pattern" value="#{instance.regexPattern}"/>
                             </h:inputText>
@@ -129,17 +166,20 @@
                 </ui:repeat>
             </h:panelGroup>
 
-            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
-
-            <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}">
+            <h:outputLabel for="subjectda" rendered="#{!cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDa}" value="#{msg.component_eedetails_header_subjectda}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="subjectda" rendered="#{!cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDa}"
+                value="#{cc.attrs.raEndEntityDetails.subjectDa}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}"
+                value=" "/>
+            <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}">
                 <h3><h:outputText value="#{msg.component_eedetails_header_subjectda}"/></h3>
                 <ui:repeat id="subjectDirectoryAttributes" value="#{cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}" var="instance">
                     <h:panelGroup styleClass="#{cc.attrs.raEndEntityDetails.evenTwice ? cc.attrs.styleEven : cc.attrs.styleOdd}">
                         <h:outputLabel for="subjectDirectoryAttributesFieldGroup" value="#{msg['subject_directory_attributes_'.concat(instance.name)]}" styleClass="#{cc.attrs.styleLabel}"/>
                         <h:panelGroup id="subjectDirectoryAttributesFieldGroup" styleClass="#{cc.attrs.styleValue}">
-                            <h:outputText rendered="#{!cc.attrs.editMode}" value="#{instance.value} " styleClass="pre"/>
-                            <h:inputText rendered="#{cc.attrs.editMode}" id="subjectDirectoryAttributesField" value="#{instance.value}" disabled="#{!instance.modifiable}"
-                                styleClass="#{cc.attrs.styleFull}">
+                            <h:inputText id="subjectDirectoryAttributesField" value="#{instance.value}" disabled="#{!instance.modifiable}" styleClass="#{cc.attrs.styleFull}">
                                 <f:validator validatorId="extendedRegexValidator"/>
                                 <f:attribute name="pattern" value="#{instance.regexPattern}"/>
                             </h:inputText>
