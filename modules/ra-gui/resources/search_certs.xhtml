@@ -41,10 +41,10 @@
                         </h:panelGroup>
                         <h:panelGroup styleClass="pure-u-2-3">
                             <h:commandButton action="#{raSearchCertsBean.previousCertificateDetails}" value="#{msg.search_certs_page_cdprevious_command}"
-                                rendered="#{not empty raSearchCertsBean.currentCertificateDetails.previous}"/>
+                                disabled="#{empty raSearchCertsBean.currentCertificateDetails.previous}"/>
                             <h:commandButton action="#{raSearchCertsBean.closeCertificateDetails}" value="#{msg.search_certs_page_cdclose_command}"/>
                             <h:commandButton action="#{raSearchCertsBean.nextCertificateDetails}" value="#{msg.search_certs_page_cdnext_command}"
-                                rendered="#{not empty raSearchCertsBean.currentCertificateDetails.next}"/>
+                                disabled="#{empty raSearchCertsBean.currentCertificateDetails.next}"/>
                             <h:outputLink styleClass="fineprintMono" value="viewcert.xhtml">
                                 <f:param name="fp" value="#{raSearchCertsBean.currentCertificateDetails.fingerprint}"/>
                                 <h:outputText value="#{msg.search_certs_page_link_view_cert}"/>
