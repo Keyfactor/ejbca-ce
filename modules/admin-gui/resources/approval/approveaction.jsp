@@ -75,147 +75,106 @@ function viewcert(link){
    		</tr>
    	</table>
 
-    <h:panelGroup id="showcmp" rendered="#{approvalActionManagedBean.approvalRequestComparable}">
-      <h:dataTable value="#{approvalActionManagedBean.approveRequestData.textComparisonList}" var="textCompareRow"  width="100%">
-        <h:column>
-          <f:facet name="header">
-            <h:outputText value="#{web.text.ORIGINALACTIONDATA}"/>
-          </f:facet>
-          <h:outputText value="#{textCompareRow.orgvalue}"   styleClass="#{textCompareRow.textComparisonColor}"/>
-        </h:column>
-        <h:column>
-          <f:facet name="header">
-            <h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
-          </f:facet>
-          <h:outputText value="#{textCompareRow.newvalue}" styleClass="#{textCompareRow.textComparisonColor}"/>
-        </h:column>
-      </h:dataTable>
-    </h:panelGroup>
-    <h:panelGroup id="shownoncmp" rendered="#{!approvalActionManagedBean.approvalRequestComparable and !approvalActionManagedBean.approveRequestData.containingLink}">
-      <p align="center">
-      <h:dataTable value="#{approvalActionManagedBean.approveRequestData.textComparisonList}" var="singleTextCompareRow"  width="100%">
-        <h:column>
-          <f:facet name="header">
-            <h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
-          </f:facet>
-          <h:outputText value="#{singleTextCompareRow.newvalue}"/>
-        </h:column>
-      </h:dataTable>
-      </p>
-    </h:panelGroup>
-    <h:panelGroup id="shownoncmpwithlinks" rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionManagedBean.approveRequestData.containingLink}">
-      <p align="center">
-      <h:dataTable value="#{approvalActionManagedBean.approveRequestData.textListExceptLinks}" var="singleTextCompareRow"  width="100%">
-        <h:column>
-          <f:facet name="header">
-            <h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
-          </f:facet>
-          <h:outputText value="#{singleTextCompareRow.newvalue}"/>
-        </h:column>
-      </h:dataTable>
-      <h:dataTable value="#{approvalActionManagedBean.approveRequestData.approvalDataLinks}" var="link"  width="100%">
-        <h:column>
-          <h:outputText value="#{link.preDescription}"/>
-          <h:outputLink value="#{link.URI}" target="Viewinfo" onclick="#{approvalView.viewApproverCertLink}">
-            <h:outputText value="#{link.description}"/>
-          </h:outputLink>
-          <h:outputText value="#{link.postDescription}"/>
-        </h:column>
-      </h:dataTable>
-      </p>
-    </h:panelGroup>
-
-
-
-  <h3><h:outputText value="Previous Approval Steps:" rendered="#{approvalActionManagedBean.existPreviousMetadata}"/></h3>
-  <h:dataTable value="#{approvalActionManagedBean.previousMetadataList}" var="previousMD" width="100%" 
-  						rendered="#{approvalActionManagedBean.existPreviousMetadata}">
-    <h:column>
-		<h:outputLabel value="#{previousMD.instruction} "/>
-    </h:column>
-    <h:column>
-		<h:outputLabel value="#{previousMD.optionValue}"/>
-    </h:column>
-	<h:column>
-		<h:outputLabel value="#{previousMD.note}" />
-	</h:column>
-
-  </h:dataTable>   
-  
-   <h3><h:outputText value="Current Step:" rendered="#{approvalActionManagedBean.existCurrentApprovalStep}"/></h3>
-  <h:dataTable id="currentApprovalMetadataTable" value="#{approvalActionManagedBean.metadataList}" var="md" width="100%" 
-  					rendered="#{approvalActionManagedBean.existCurrentApprovalStep}" >
-    <h:column>
-			<h:outputLabel value="#{md.instruction} "/>
-    </h:column>
-    <h:column>
-    	<h:panelGroup>
-   			<h:selectManyListbox value="#{md.optionValueList}" size="5" rendered="#{md.optionsType==1}">
-				<f:selectItems value="#{md.options}"/>
-			</h:selectManyListbox>
-   			
-   			<h:selectOneMenu value="#{md.optionValue}"  rendered="#{md.optionsType==2}">
-				<f:selectItems value="#{md.options}"/>
-			</h:selectOneMenu>
-			
-			<h:inputText value="#{md.optionValue}" title="#{web.text.FORMAT_ID_STR}" size="25" maxlength="255" 
-		  										rendered="#{md.optionsType==3}"/>
-		  	
-   		</h:panelGroup>
-    </h:column>
-    
-	<h:column>
-		<h:inputText value="#{md.note}" title="#{web.text.FORMAT_ID_STR}" size="25" maxlength="255" 
-												rendered="#{md.optionsType!=3}"/>
-	</h:column>
-
-  </h:dataTable>   
-
+	<h:dataTable value="#{approvalActionManagedBean.approveRequestData.textComparisonList}" var="textCompareRow"  width="100%" 
+		rendered="#{approvalActionManagedBean.approvalRequestComparable}">
+		<h:column>
+			<f:facet name="header">
+				<h:outputText value="#{web.text.ORIGINALACTIONDATA}"/>
+			</f:facet>
+			<h:outputText value="#{textCompareRow.orgvalue}"   styleClass="#{textCompareRow.textComparisonColor}"/>
+		</h:column>
+		<h:column>
+			<f:facet name="header">
+				<h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
+			</f:facet>
+			<h:outputText value="#{textCompareRow.newvalue}" styleClass="#{textCompareRow.textComparisonColor}"/>
+		</h:column>
+	</h:dataTable>
+	<h:dataTable value="#{approvalActionManagedBean.approveRequestData.textComparisonList}" var="singleTextCompareRow"  width="100%" 
+		rendered="#{!approvalActionManagedBean.approvalRequestComparable and !approvalActionManagedBean.approveRequestData.containingLink}">
+		<h:column>
+			<f:facet name="header">
+				<h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
+			</f:facet>
+			<h:outputText value="#{singleTextCompareRow.newvalue}"/>
+		</h:column>
+	</h:dataTable>
+	<h:dataTable value="#{approvalActionManagedBean.approveRequestData.textListExceptLinks}" var="singleTextCompareRow"  width="100%"
+		rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionManagedBean.approveRequestData.containingLink}">
+		<h:column>
+			<f:facet name="header">
+				<h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
+			</f:facet>
+			<h:outputText value="#{singleTextCompareRow.newvalue}"/>
+		</h:column>
+	</h:dataTable>
+	<h:dataTable value="#{approvalActionManagedBean.approveRequestData.approvalDataLinks}" var="link"  width="100%"
+		rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionManagedBean.approveRequestData.containingLink}">
+		<h:column>
+			<h:outputText value="#{link.preDescription}"/>
+			<h:outputLink value="#{link.URI}" target="Viewinfo" onclick="#{approvalView.viewApproverCertLink}">
+				<h:outputText value="#{link.description}"/>
+			</h:outputLink>
+			<h:outputText value="#{link.postDescription}"/>
+		</h:column>
+	</h:dataTable>
 
     <h3><h:outputText value="#{web.text.APPROVEDBY}"/></h3>
     <h:outputText value="#{web.text.NONE}" rendered="#{!approvalActionManagedBean.existsApprovals}"/>
-  <h:dataTable id="approvalTable" value="#{approvalActionManagedBean.approvalViews}" var="approvalView" width="100%" rendered="#{approvalActionManagedBean.existsApprovals}">
-    <h:column>
-      <f:facet name="header">
-        <h:panelGroup>
-          <h:outputText value="#{web.text.ACTION}"/>
-        </h:panelGroup>
-      </f:facet>
-      <h:outputText value="#{approvalView.adminAction}"/>
-    </h:column>
-    <h:column>
-      <f:facet name="header">
-        <h:outputText value="#{web.text.DATE}"/>
-      </f:facet>
-      <h:outputText value="#{approvalView.approvalDate}"/>
-    </h:column>
-    <h:column>
-      <f:facet name="header">
-        <h:outputText value="#{web.text.ADMINISTRATOR}"/>
-      </f:facet>
-          <h:outputLink value="" target="Viewinfo" onclick="#{approvalView.viewApproverCertLink}">
-            <h:outputText  value="#{approvalView.approvalAdmin}"/>            
-          </h:outputLink>         
-    </h:column>
-    <h:column>
-      <f:facet name="header">
-        <h:panelGroup>
-          <h:outputText value="#{web.text.APCOMMENT}"/>
-        </h:panelGroup>
-      </f:facet>
-      <h:outputText value="#{approvalView.comment}"/>
-    </h:column>
-  </h:dataTable>   
+  	<h:dataTable id="approvalTable" value="#{approvalActionManagedBean.approvalViews}" var="approvalView" width="100%" rendered="#{approvalActionManagedBean.existsApprovals}">
+	    <h:column>
+	      <f:facet name="header">
+	        <h:panelGroup>
+	          <h:outputText value="#{web.text.ACTION}"/>
+	        </h:panelGroup>
+	      </f:facet>
+	      <h:outputText value="#{approvalView.adminAction}"/>
+	    </h:column>
+	    <h:column>
+	      <f:facet name="header">
+	        <h:outputText value="#{web.text.DATE}"/>
+	      </f:facet>
+	      <h:outputText value="#{approvalView.approvalDate}"/>
+	    </h:column>
+	    <h:column>
+	      <f:facet name="header">
+	        <h:outputText value="#{web.text.ADMINISTRATOR}"/>
+	      </f:facet>
+	          <h:outputLink value="" target="Viewinfo" onclick="#{approvalView.viewApproverCertLink}">
+	            <h:outputText  value="#{approvalView.approvalAdmin}"/>            
+	          </h:outputLink>         
+	    </h:column>
+	    <h:column>
+	      <f:facet name="header">
+	        <h:panelGroup>
+	          <h:outputText value="#{web.text.APCOMMENT}"/>
+	        </h:panelGroup>
+	      </f:facet>
+	      <h:outputText value="#{approvalView.comment}"/>
+	    </h:column>
+	</h:dataTable>   
+	<table border="0" cellpadding="1" width="100%">
+		<col width="20%">
+  		<col width="80%">
+		<tr>
+			<td>
+				<h:outputText value="#{web.text.APCOMMENT}"/><h:outputText value=":"/> 
+			</td>
+			<td>
+		        <h:inputTextarea id="comment" rows="2" cols="30" value="#{approvalActionManagedBean.comment}"
+		        	disabled="#{!approvalActionManagedBean.approvable}"/>
+        	</td>
+        </tr>
+	</table>
 
-    <br /><br /><br />       
-    <h:panelGroup id="showapprovebuttons" rendered="#{approvalActionManagedBean.approvable}">
-        <h:outputText value="#{web.text.APCOMMENT}"/><h:outputText value=":"/> 
-        <h:inputTextarea id="comment" rows="2" cols="30" value="#{approvalActionManagedBean.comment}"/><br />
-        <h:commandButton  id="accept" value="#{web.text.APPROVE}" action="#{approvalActionManagedBean.approve}" onclick="return confirmapprove()"/>
-        <h:commandButton  id="reject" value="#{web.text.REJECT}" action="#{approvalActionManagedBean.reject}" onclick="return confirmreject()"/>
-        <h:commandButton id="buttonClose1" value="#{web.text.CLOSE}" onclick="self.close()"/>
+
+    <h:panelGroup id="showapprovebuttons" style="padding: 5px 10px">
+        <h:commandButton  id="accept" value="#{web.text.APPROVE}" action="#{approvalActionManagedBean.approve}" onclick="return confirmapprove()"
+        	rendered="#{approvalActionManagedBean.approvable}"/>
+        <h:commandButton  id="reject" value="#{web.text.REJECT}" action="#{approvalActionManagedBean.reject}" onclick="return confirmreject()"
+        	rendered="#{approvalActionManagedBean.approvable}"/>
+        <h:commandButton id="buttonClose" value="#{web.text.CLOSE}" onclick="self.close()"/>
     </h:panelGroup>
-    <h:commandButton id="buttonClose2" value="#{web.text.CLOSE}" onclick="self.close()" rendered="#{!approvalActionManagedBean.approvable}"/>
  </h:form>
 
   <script language="javascript">
