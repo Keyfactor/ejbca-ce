@@ -95,7 +95,6 @@ public class RaSearchEesBean implements Serializable {
 
     private IdNameHashMap<EndEntityProfile> endEntityProfileMap = null;
     private RaEndEntityDetails currentEndEntityDetails = null;
-    private boolean editEditEndEntityMode = false;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -516,15 +515,5 @@ public class RaSearchEesBean implements Serializable {
     }
     public void closeEndEntityDetails() {
         currentEndEntityDetails = null;
-    }
-
-    public void editEditEndEntity() {
-        editEditEndEntityMode = true;
-    }
-    public void editEditEndEntityCancel() {
-        editEditEndEntityMode = false;
-    }
-    public boolean isEditEditEndEntityMode() {
-        return editEditEndEntityMode;
     }
 }

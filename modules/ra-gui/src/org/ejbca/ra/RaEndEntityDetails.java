@@ -12,12 +12,14 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.math.BigInteger;
 import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
@@ -40,6 +42,7 @@ public class RaEndEntityDetails {
     private final EndEntityInformation endEntityInformation;
     private final String subjectDn;
     private final String subjectAn;
+    private final String subjectDa;
     private final int eepId;
     private final String eepName;
     private final int cpId;
@@ -66,6 +69,7 @@ public class RaEndEntityDetails {
         this.username = endEntity.getUsername();
         this.subjectDn = endEntity.getDN();
         this.subjectAn = endEntity.getSubjectAltName();
+        this.subjectDa = endEntityInformation.getExtendedinformation() == null ? null : endEntityInformation.getExtendedinformation().getSubjectDirectoryAttributes();
         this.cpId = endEntity.getCertificateProfileId();
         this.cpName = cpIdToNameMap.get(Integer.valueOf(cpId));
         this.eepId = endEntity.getEndEntityProfileId();
@@ -75,9 +79,11 @@ public class RaEndEntityDetails {
         this.modified = ValidityDate.formatAsISO8601ServerTZ(endEntity.getTimeModified().getTime(), TimeZone.getDefault());
         this.status = endEntity.getStatus();
     }
+    public EndEntityInformation getEndEntityInformation() { return endEntityInformation; } 
     public String getUsername() { return username; }
     public String getSubjectDn() { return subjectDn; }
     public String getSubjectAn() { return subjectAn; }
+    public String getSubjectDa() { return subjectDa; }
     public String getCaName() { return caName; }
     public String getCpName() {
         if (cpId==EndEntityInformation.NO_CERTIFICATEPROFILE) {
@@ -136,16 +142,62 @@ public class RaEndEntityDetails {
         return endEntityInformation.getKeyRecoverable();
     }
 
+    public boolean isEmailEnabled() {
+        return getEndEntityProfile().getUse(EndEntityProfile.EMAIL,0);
+    }
+    public String getEmail() {
+        return endEntityInformation.getEmail();
+    }
+
+    public boolean isLoginsMaxEnabled() {
+        return getEndEntityProfile().getUse(EndEntityProfile.MAXFAILEDLOGINS, 0);
+    }
+    public String getLoginsMax() {
+        final ExtendedInformation extendedinformation = endEntityInformation.getExtendedinformation();
+        if (extendedinformation!=null) {
+            return Integer.toString(extendedinformation.getMaxLoginAttempts());
+        }
+        return "∞";
+    }
+    public String getLoginsRemaining() {
+        final ExtendedInformation extendedinformation = endEntityInformation.getExtendedinformation();
+        if (extendedinformation!=null) {
+            return Integer.toString(extendedinformation.getRemainingLoginAttempts());
+        }
+        return "∞";
+    }
+    
+    public boolean isSendNotificationEnabled() {
+        return getEndEntityProfile().getUse(EndEntityProfile.SENDNOTIFICATION, 0);
+    }
+    public boolean isSendNotification() {
+        return endEntityInformation.getSendNotification();
+    }
+    
+    public boolean isCertificateSerialNumberOverrideEnabled() {
+        return getEndEntityProfile().getUse(EndEntityProfile.CERTSERIALNR, 0);
+    }
+    public String getCertificateSerialNumberOverride() {
+        final ExtendedInformation extendedinformation = endEntityInformation.getExtendedinformation();
+        if (extendedinformation!=null) {
+            final BigInteger certificateSerialNumber = extendedinformation.certificateSerialNumber();
+            if (certificateSerialNumber!=null) {
+                return certificateSerialNumber.toString(16);
+            }
+        }
+        return "";
+    }
+
     public SubjectDn getSubjectDistinguishedName() {
         if (subjectDistinguishedName==null) {
-            this.subjectDistinguishedName = new SubjectDn(getEndEntityProfile(), endEntityInformation.getDN());
+            this.subjectDistinguishedName = new SubjectDn(getEndEntityProfile(), subjectDn);
         }
         return subjectDistinguishedName;
     }
 
     public SubjectAlternativeName getSubjectAlternativeName() {
         if (subjectAlternativeName==null) {
-            this.subjectAlternativeName = new SubjectAlternativeName(getEndEntityProfile(), endEntityInformation.getSubjectAltName());
+            this.subjectAlternativeName = new SubjectAlternativeName(getEndEntityProfile(), subjectAn);
         }
         return subjectAlternativeName;
         
@@ -153,8 +205,7 @@ public class RaEndEntityDetails {
 
     public SubjectDirectoryAttributes getSubjectDirectoryAttributes() {
         if (subjectDirectoryAttributes==null) {
-            String value = endEntityInformation.getExtendedinformation() == null ? null : endEntityInformation.getExtendedinformation().getSubjectDirectoryAttributes();
-            this.subjectDirectoryAttributes = new SubjectDirectoryAttributes(getEndEntityProfile(), value);
+            this.subjectDirectoryAttributes = new SubjectDirectoryAttributes(getEndEntityProfile(), subjectDa);
         }
         return subjectDirectoryAttributes;
         
