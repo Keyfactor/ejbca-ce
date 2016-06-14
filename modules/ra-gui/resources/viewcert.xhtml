@@ -35,7 +35,7 @@
                 <h:outputText rendered="#{empty raViewCertBean.fingerprint}" value="#{msg.viewcert_page_info_nofp}"/>
                 <h:outputText rendered="#{not empty raViewCertBean.fingerprint and empty raViewCertBean.certificate}" value="#{msg.viewcert_page_info_nosuchcert}"/>
                 <h:panelGroup rendered="#{not empty raViewCertBean.certificate}" styleClass="pure-u-1">
-                    <h:form>
+                    <h:form styleClass="pure-form">
                         <component:certdetails raCertificateDetails="#{raViewCertBean.certificate}"/>
                     </h:form>
                 </h:panelGroup>

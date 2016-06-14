@@ -33,7 +33,7 @@
         <composite:interface>
             <composite:attribute name="raCertificateDetails" required="true"/>
             <composite:attribute name="styleLabel" required="false" default="pure-u-lg-1-3"/>
-            <composite:attribute name="styleValue" required="false" default="pure-u-lg-2-3"/>
+            <composite:attribute name="styleValue" required="false" default="pure-u-lg-2-3 ra-outputText"/>
             <composite:attribute name="styleFull" required="false" default="pure-u-lg-1"/>
             <composite:attribute name="styleOdd" required="false" default="row-odd"/>
             <composite:attribute name="styleEven" required="false" default="row-even"/>
@@ -180,12 +180,15 @@
             <h:panelGroup styleClass="#{cc.attrs.styleLabel}"/>
             <h:panelGroup styleClass="#{cc.attrs.styleValue}">
                 <h:selectOneMenu id="newRevocationReason" value="#{cc.attrs.raCertificateDetails.newRevocationReason}"
+                    styleClass="pure-input-1-4"
                     rendered="#{cc.attrs.raCertificateDetails.active and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}">
                     <f:selectItems value="#{cc.attrs.raCertificateDetails.newRevocationReasons}"/>
                 </h:selectOneMenu>
                 <h:commandButton value="#{msg.component_certdetails_changestatus_revoke}" action="#{cc.attrs.raCertificateDetails.actionRevoke}"
+                    styleClass="pure-button ra-button"
                     rendered="#{cc.attrs.raCertificateDetails.active and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}"/>
                 <h:commandButton value="#{msg.component_certdetails_changestatus_reactivate}" action="#{cc.attrs.raCertificateDetails.actionReactivate}"
+                    styleClass="pure-button ra-button"
                     rendered="#{cc.attrs.raCertificateDetails.suspended and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}"/>
             </h:panelGroup>
 
@@ -230,6 +233,7 @@
                 </h:outputLink>
                 <h:outputText value=" " styleClass="pre"/>
                 <h:commandButton value="#{cc.attrs.raCertificateDetails.more ? msg.component_certdetails_show_less : msg.component_certdetails_show_more}"
+                    styleClass="pure-button ra-button"
                     action="#{cc.attrs.raCertificateDetails.actionToggleMore}">
                     <f:ajax execute="@this" render="@form"/>
                 </h:commandButton>

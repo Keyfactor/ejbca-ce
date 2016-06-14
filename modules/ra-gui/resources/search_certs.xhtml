@@ -33,7 +33,7 @@
 			</h:panelGroup>
         	<h:panelGroup layout="block" styleClass="content-body">	  
                 <h:outputText value="#{msg.search_certs_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToSearchCerts}"/>
-                <h:form id="detailsForm"
+                <h:form id="detailsForm" styleClass="pure-form"
                     rendered="#{raAccessBean.authorizedToSearchCerts and not empty raSearchCertsBean.currentCertificateDetails}">
                     <h:panelGroup styleClass="pure-u-1">
                         <h:panelGroup styleClass="pure-u-1-3">
@@ -41,9 +41,12 @@
                         </h:panelGroup>
                         <h:panelGroup styleClass="pure-u-2-3">
                             <h:commandButton action="#{raSearchCertsBean.previousCertificateDetails}" value="#{msg.search_certs_page_cdprevious_command}"
+                                styleClass="pure-button ra-button"
                                 disabled="#{empty raSearchCertsBean.currentCertificateDetails.previous}"/>
-                            <h:commandButton action="#{raSearchCertsBean.closeCertificateDetails}" value="#{msg.search_certs_page_cdclose_command}"/>
+                            <h:commandButton action="#{raSearchCertsBean.closeCertificateDetails}" value="#{msg.search_certs_page_cdclose_command}"
+                                styleClass="pure-button ra-button"/>
                             <h:commandButton action="#{raSearchCertsBean.nextCertificateDetails}" value="#{msg.search_certs_page_cdnext_command}"
+                                styleClass="pure-button ra-button"
                                 disabled="#{empty raSearchCertsBean.currentCertificateDetails.next}"/>
                             <h:outputLink styleClass="fineprintMono" value="viewcert.xhtml">
                                 <f:param name="fp" value="#{raSearchCertsBean.currentCertificateDetails.fingerprint}"/>
@@ -307,7 +310,8 @@
 	                        </h:column>
                             <h:column>
                                 <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_action}"/></f:facet>
-                                <h:commandButton action="#{raSearchCertsBean.openCertificateDetails(raSearchCertificate)}" value="#{msg.search_certs_page_show_command}"/>
+                                <h:commandButton action="#{raSearchCertsBean.openCertificateDetails(raSearchCertificate)}" value="#{msg.search_certs_page_show_command}"
+                                    styleClass="pure-button ra-button"/>
                             </h:column>
 	                    </h:dataTable>
 	                </h:panelGroup>
