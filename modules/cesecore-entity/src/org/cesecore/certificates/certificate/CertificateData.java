@@ -274,7 +274,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @return Subject Alternative Name from the certificate if it was saved at the time of issuance. */
-    //@Column(length=4096)
+    //@Column(length=2000)
     public String getSubjectAltName() {
         return subjectAltName;
     }
