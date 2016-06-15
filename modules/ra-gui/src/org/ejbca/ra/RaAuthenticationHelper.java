@@ -89,7 +89,9 @@ public class RaAuthenticationHelper implements Serializable {
                 x509AuthenticationTokenFingerprint = authenticationToken==null ? null : fingerprint;
             }
             if (authenticationToken == null) {
-                authenticationToken = new PublicAccessAuthenticationToken("Public access from " + httpServletRequest.getRemoteAddr());
+                // Instead of checking httpServletRequest.isSecure() (connection deemed secure by container), we check if a TLS session is present
+                final boolean confidentialTransport = currentTlsSessionId!=null;
+                authenticationToken = new PublicAccessAuthenticationToken("Public access from " + httpServletRequest.getRemoteAddr(), confidentialTransport);
             }
         }
         resetUnwantedHttpHeaders(httpServletRequest, httpServletResponse);

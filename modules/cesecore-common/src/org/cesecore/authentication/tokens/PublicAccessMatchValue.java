@@ -19,7 +19,9 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookup
  * @version $Id: UsernameAccessMatchValue.java 18613 2014-03-17 13:31:40Z mikekushner $
  */
 public enum PublicAccessMatchValue implements AccessMatchValue {
-    NONE(0);
+    TRANSPORT_ANY(0),
+    TRANSPORT_PLAIN(1),
+    TRANSPORT_CONFIDENTIAL(2);
 
     private int numericValue;
 
