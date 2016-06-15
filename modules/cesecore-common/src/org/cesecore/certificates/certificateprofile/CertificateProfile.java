@@ -803,7 +803,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         final Boolean value = (Boolean) data.get(STORESUBJECTALTNAME);
         if (value == null) {
             // Old profiles created before EJBCA 6.6.0 will not store SAN by default.
-            setStoreCertificateData(false);
+            setStoreSubjectAlternativeName(false);
             return false;
         } else {
             return value.booleanValue();
