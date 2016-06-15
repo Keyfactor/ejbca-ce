@@ -118,6 +118,53 @@
                 rendered="#{cc.attrs.raEndEntityDetails.loginsMaxEnabled}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 
+            <h:outputLabel for="overridenotbefore" value="#{msg.component_eedetails_field_overridenotbefore}"
+                rendered="#{cc.attrs.raEndEntityDetails.overrideNotBeforeEnabled and not empty cc.attrs.raEndEntityDetails.overrideNotBefore}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="overridenotbefore" value="#{cc.attrs.raEndEntityDetails.overrideNotBefore}"
+                rendered="#{cc.attrs.raEndEntityDetails.overrideNotBeforeEnabled and not empty cc.attrs.raEndEntityDetails.overrideNotBefore}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="overridenotafter" value="#{msg.component_eedetails_field_overridenotafter}"
+                rendered="#{cc.attrs.raEndEntityDetails.overrideNotAfterEnabled and not empty cc.attrs.raEndEntityDetails.overrideNotAfter}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="overridenotafter" value="#{cc.attrs.raEndEntityDetails.overrideNotAfter}"
+                rendered="#{cc.attrs.raEndEntityDetails.overrideNotAfterEnabled and not empty cc.attrs.raEndEntityDetails.overrideNotAfter}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
+            <h:outputLabel for="cardnumber" value="#{msg.component_eedetails_field_cardnumber}"
+                rendered="#{cc.attrs.raEndEntityDetails.cardNumberEnabled and not empty cc.attrs.raEndEntityDetails.cardNumber}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="cardnumber" value="#{cc.attrs.raEndEntityDetails.cardNumber}"
+                rendered="#{cc.attrs.raEndEntityDetails.cardNumberEnabled and not empty cc.attrs.raEndEntityDetails.cardNumber}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
+            <h:outputLabel for="nameconstraintspermitted" value="#{msg.component_eedetails_field_nameconstraintspermitted}"
+                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled and not empty cc.attrs.raEndEntityDetails.nameConstraintsPermitted}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="nameconstraintspermitted" value="#{cc.attrs.raEndEntityDetails.nameConstraintsPermitted}"
+                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled and not empty cc.attrs.raEndEntityDetails.nameConstraintsPermitted}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="nameconstraintsexcluded" value="#{msg.component_eedetails_field_nameconstraintsexcluded}"
+                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled and not empty cc.attrs.raEndEntityDetails.nameConstraintsExcluded}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="nameconstraintsexcluded" value="#{cc.attrs.raEndEntityDetails.nameConstraintsExcluded}"
+                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled and not empty cc.attrs.raEndEntityDetails.nameConstraintsExcluded}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
+            <h:outputLabel for="allowedrequests" value="#{msg.component_eedetails_field_allowedrequests}"
+                rendered="#{cc.attrs.raEndEntityDetails.allowedRequestsEnabled}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="allowedrequests" value="#{cc.attrs.raEndEntityDetails.allowedRequestsUsed} / #{cc.attrs.raEndEntityDetails.allowedRequests}"
+                rendered="#{cc.attrs.raEndEntityDetails.allowedRequestsEnabled}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
+            <h:outputLabel for="issuancerevocation" value="#{msg.component_eedetails_field_issuancerevocation}"
+                rendered="#{cc.attrs.raEndEntityDetails.issuanceRevocationReasonEnabled and not empty cc.attrs.raEndEntityDetails.issuanceRevocationReason}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="issuancerevocation" value="#{cc.attrs.raEndEntityDetails.issuanceRevocationReason}"
+                rendered="#{cc.attrs.raEndEntityDetails.issuanceRevocationReasonEnabled and not empty cc.attrs.raEndEntityDetails.issuanceRevocationReason}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:outputLabel for="subjectdn" rendered="#{!cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDn}" value="#{msg.component_eedetails_header_subjectdn}"
