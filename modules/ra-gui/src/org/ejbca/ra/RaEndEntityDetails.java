@@ -13,18 +13,24 @@
 package org.ejbca.ra;
 
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /** 
  * UI representation of a result set item from the back end.
+ * 
+ * Bravely ignoring hard token issuer and printing of user data fields.
  * 
  * @version $Id$
  */
@@ -40,6 +46,7 @@ public class RaEndEntityDetails {
 
     private final String username;
     private final EndEntityInformation endEntityInformation;
+    private final ExtendedInformation extendedInformation;
     private final String subjectDn;
     private final String subjectAn;
     private final String subjectDa;
@@ -65,11 +72,13 @@ public class RaEndEntityDetails {
     public RaEndEntityDetails(final EndEntityInformation endEntity, final Callbacks callbacks,
             final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<Integer,String> caIdToNameMap) {
         this.endEntityInformation = endEntity;
+        final ExtendedInformation extendedInformation = endEntity.getExtendedinformation();
+        this.extendedInformation = extendedInformation==null ? new ExtendedInformation() : extendedInformation;
         this.callbacks = callbacks;
         this.username = endEntity.getUsername();
         this.subjectDn = endEntity.getDN();
         this.subjectAn = endEntity.getSubjectAltName();
-        this.subjectDa = endEntityInformation.getExtendedinformation() == null ? null : endEntityInformation.getExtendedinformation().getSubjectDirectoryAttributes();
+        this.subjectDa = extendedInformation.getSubjectDirectoryAttributes();
         this.cpId = endEntity.getCertificateProfileId();
         this.cpName = cpIdToNameMap.get(Integer.valueOf(cpId));
         this.eepId = endEntity.getEndEntityProfileId();
@@ -153,18 +162,10 @@ public class RaEndEntityDetails {
         return getEndEntityProfile().getUse(EndEntityProfile.MAXFAILEDLOGINS, 0);
     }
     public String getLoginsMax() {
-        final ExtendedInformation extendedinformation = endEntityInformation.getExtendedinformation();
-        if (extendedinformation!=null) {
-            return Integer.toString(extendedinformation.getMaxLoginAttempts());
-        }
-        return "∞";
+        return Integer.toString(extendedInformation.getMaxLoginAttempts());
     }
     public String getLoginsRemaining() {
-        final ExtendedInformation extendedinformation = endEntityInformation.getExtendedinformation();
-        if (extendedinformation!=null) {
-            return Integer.toString(extendedinformation.getRemainingLoginAttempts());
-        }
-        return "∞";
+        return Integer.toString(extendedInformation.getRemainingLoginAttempts());
     }
     
     public boolean isSendNotificationEnabled() {
@@ -178,14 +179,75 @@ public class RaEndEntityDetails {
         return getEndEntityProfile().getUse(EndEntityProfile.CERTSERIALNR, 0);
     }
     public String getCertificateSerialNumberOverride() {
-        final ExtendedInformation extendedinformation = endEntityInformation.getExtendedinformation();
-        if (extendedinformation!=null) {
-            final BigInteger certificateSerialNumber = extendedinformation.certificateSerialNumber();
-            if (certificateSerialNumber!=null) {
-                return certificateSerialNumber.toString(16);
-            }
+        final BigInteger certificateSerialNumber = extendedInformation.certificateSerialNumber();
+        if (certificateSerialNumber!=null) {
+            return certificateSerialNumber.toString(16);
         }
         return "";
+    }
+
+    public boolean isOverrideNotBeforeEnabled() {
+        return getEndEntityProfile().getUse(EndEntityProfile.STARTTIME, 0);
+    }
+    public String getOverrideNotBefore() {
+        return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
+    }
+    public boolean isOverrideNotAfterEnabled() {
+        return getEndEntityProfile().getUse(EndEntityProfile.ENDTIME, 0);
+    }
+    public String getOverrideNotAfter() {
+        return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
+    }
+
+    public boolean isCardNumberEnabled() {
+        return getEndEntityProfile().getUse(EndEntityProfile.CARDNUMBER, 0);
+    }
+    public String getCardNumber() {
+        return endEntityInformation.getCardNumber();
+    }
+
+    public boolean isNameConstraintsPermittedEnabled() {
+        return getEndEntityProfile().getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0);
+    }
+    public String getNameConstraintsPermitted() {
+        final List<String> value = extendedInformation.getNameConstraintsPermitted();
+        if (value!=null) {
+            return Arrays.toString(extendedInformation.getNameConstraintsPermitted().toArray());
+        }
+        return "";
+    }
+    public boolean isNameConstraintsExcludedEnabled() {
+        return getEndEntityProfile().getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0);
+    }
+    public String getNameConstraintsExcluded() {
+        final List<String> value = extendedInformation.getNameConstraintsExcluded();
+        if (value!=null) {
+            return Arrays.toString(extendedInformation.getNameConstraintsExcluded().toArray());
+        }
+        return "";
+    }
+
+    public boolean isAllowedRequestsEnabled() {
+        return getEndEntityProfile().getUse(EndEntityProfile.ALLOWEDREQUESTS, 0);
+    }
+    public String getAllowedRequests() {
+        final String value = endEntityProfile.getValue(EndEntityProfile.ALLOWEDREQUESTS, 0);
+        return value==null ? "1" : value;
+    }
+    public String getAllowedRequestsUsed() {
+        final String value = extendedInformation.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
+        return value==null ? "0" : value;
+    }
+
+    public boolean isIssuanceRevocationReasonEnabled() {
+        return getEndEntityProfile().getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
+    }
+    public String getIssuanceRevocationReason() {
+        final String reasonCode = extendedInformation.getCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
+        if (reasonCode!=null) {
+            return callbacks.getRaLocaleBean().getMessage("component_eedetails_field_issuancerevocation_reason_"+reasonCode);
+        }
+        return callbacks.getRaLocaleBean().getMessage("component_eedetails_field_issuancerevocation_reason_" + RevokedCertInfo.NOT_REVOKED);
     }
 
     public SubjectDn getSubjectDistinguishedName() {
