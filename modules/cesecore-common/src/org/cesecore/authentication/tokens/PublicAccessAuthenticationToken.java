@@ -43,15 +43,36 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
             return principal;
         }
     }
-    
+
+    private static class PublicAccessCredential implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private final boolean confidentialTransport;
+
+        public PublicAccessCredential(final boolean confidentialTransport) {
+            this.confidentialTransport = confidentialTransport;
+        }
+
+        public boolean isConfidentialTransport() {
+            return confidentialTransport;
+        }
+    }
+
     private static final long serialVersionUID = 1L;
     public static final String TOKEN_TYPE = "PublicAccessAuthenticationToken";
     
     private final PublicAccessPrincipal principal;
-    
+    private final PublicAccessCredential credential;
+
+    @Deprecated
     public PublicAccessAuthenticationToken(final String principal) {
-        super(new HashSet<>(Arrays.asList(new Principal[] { new PublicAccessPrincipal(principal) })), new HashSet<>());
+        this(principal, false);
+    }
+
+    public PublicAccessAuthenticationToken(final String principal, final boolean confidentialTransport) {
+        super(new HashSet<>(Arrays.asList(new Principal[] { new PublicAccessPrincipal(principal) })),
+                new HashSet<>(Arrays.asList(new PublicAccessCredential[] { new PublicAccessCredential(confidentialTransport) })));
         this.principal = new PublicAccessPrincipal(principal);
+        this.credential = new PublicAccessCredential(confidentialTransport);
     }
 
     @Override
@@ -60,7 +81,16 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
         if (!super.isCreatedInThisJvm()) {
             return false;
         }
-        return true;
+        final PublicAccessMatchValue matchValue = (PublicAccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
+        switch (matchValue) {
+        case TRANSPORT_CONFIDENTIAL:
+            return credential.isConfidentialTransport();
+        case TRANSPORT_PLAIN:
+            return !credential.isConfidentialTransport();
+        case TRANSPORT_ANY:
+        default:
+            return true;
+        }
     }
 
     @Override
@@ -70,7 +100,7 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
 
     @Override
     public AccessMatchValue getDefaultMatchValue() {
-        return PublicAccessMatchValue.NONE;
+        return PublicAccessMatchValue.TRANSPORT_ANY;
     }
 
     @Override
@@ -81,12 +111,14 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
     /** Returns information of the entity this authentication token belongs to. */
     @Override
     public String toString() {
-        return principal.getName() + super.toString();
+        return principal.getName() + (credential.isConfidentialTransport() ? " (TRANSPORT_CONFIDENTIAL)" : " (TRANSPORT_PLAIN)") + super.toString();
     }
 
     @Override
     public int hashCode() {
-        return 4711 * 1 + ((principal.getName() == null) ? 0 : principal.getName().hashCode());
+        int hashCode = 4711 * 1 + ((principal.getName() == null) ? 0 : principal.getName().hashCode());
+        hashCode *= 17 + (credential.isConfidentialTransport() ? 0 : 1);
+        return hashCode;
     }
 
     @Override
@@ -108,6 +140,6 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
         } else if (!principal.getName().equals(other.principal.getName())) {
             return false;
         }
-        return true;
+        return credential.isConfidentialTransport()==other.credential.isConfidentialTransport();
     }
 }
