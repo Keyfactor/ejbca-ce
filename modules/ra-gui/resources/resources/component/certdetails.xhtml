@@ -181,12 +181,12 @@
             <h:panelGroup styleClass="#{cc.attrs.styleValue}">
                 <h:selectOneMenu id="newRevocationReason" value="#{cc.attrs.raCertificateDetails.newRevocationReason}"
                     styleClass="pure-input-1-4"
-                    rendered="#{cc.attrs.raCertificateDetails.active and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}">
+                    rendered="#{(cc.attrs.raCertificateDetails.active or cc.attrs.raCertificateDetails.suspended) and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}">
                     <f:selectItems value="#{cc.attrs.raCertificateDetails.newRevocationReasons}"/>
                 </h:selectOneMenu>
-                <h:commandButton value="#{msg.component_certdetails_changestatus_revoke}" action="#{cc.attrs.raCertificateDetails.actionRevoke}"
-                    styleClass="pure-button ra-button"
-                    rendered="#{cc.attrs.raCertificateDetails.active and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}"/>
+                <h:commandButton value="#{cc.attrs.raCertificateDetails.suspended ? msg.component_certdetails_changestatus_revokepermanent : msg.component_certdetails_changestatus_revoke}"
+                    action="#{cc.attrs.raCertificateDetails.actionRevoke}" styleClass="pure-button ra-button"
+                    rendered="#{(cc.attrs.raCertificateDetails.active or cc.attrs.raCertificateDetails.suspended) and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}"/>
                 <h:commandButton value="#{msg.component_certdetails_changestatus_reactivate}" action="#{cc.attrs.raCertificateDetails.actionReactivate}"
                     styleClass="pure-button ra-button"
                     rendered="#{cc.attrs.raCertificateDetails.suspended and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}"/>
@@ -211,21 +211,26 @@
 
             <h:panelGroup styleClass="#{cc.attrs.styleLabel}"/>
             <h:panelGroup styleClass="#{cc.attrs.styleValue}">
-                <h:outputLink value="cert">
+                <h:outputLink value="viewcert.xhtml" styleClass="fineprint">
+                    <f:param name="fp" value="#{cc.attrs.raCertificateDetails.fingerprint}"/>
+                    <h:outputText value="#{msg.component_certdetails_link_perm}"/>
+                </h:outputLink>
+                <h:outputText value=" " styleClass="pre"/>
+                <h:outputLink value="cert" styleClass="fineprint">
                     <f:param name="fp" value="#{cc.attrs.raCertificateDetails.fingerprint}"/>
                     <f:param name="chain" value="true"/>
                     <f:param name="format" value="pem"/>
                     <h:outputText value="#{msg.component_certdetails_link_download_pem}"/>
                 </h:outputLink>
                 <h:outputText value=" " styleClass="pre"/>
-                <h:outputLink value="cert">
+                <h:outputLink value="cert" styleClass="fineprint">
                     <f:param name="fp" value="#{cc.attrs.raCertificateDetails.fingerprint}"/>
                     <f:param name="chain" value="true"/>
                     <f:param name="format" value="der"/>
                     <h:outputText value="#{msg.component_certdetails_link_download_der}"/>
                 </h:outputLink>
                 <h:outputText value=" " styleClass="pre"/>
-                <h:outputLink value="cert">
+                <h:outputLink value="cert" styleClass="fineprint">
                     <f:param name="fp" value="#{cc.attrs.raCertificateDetails.fingerprint}"/>
                     <f:param name="chain" value="false"/>
                     <f:param name="format" value="pkcs7"/>
