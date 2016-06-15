@@ -38,8 +38,8 @@ public final class RemoteAccessSetCacheHolderTest {
 
     private static final Logger log = Logger.getLogger(RemoteAccessSetCacheHolderTest.class);
     
-    private final AuthenticationToken token1 = new PublicAccessAuthenticationToken("CN=test1");
-    private final AuthenticationToken token2 = new PublicAccessAuthenticationToken("CN=test2");
+    private final AuthenticationToken token1 = new PublicAccessAuthenticationToken("CN=test1", false);
+    private final AuthenticationToken token2 = new PublicAccessAuthenticationToken("CN=test2", false);
     
     @Test
     public void testStartFinishCycle() {
