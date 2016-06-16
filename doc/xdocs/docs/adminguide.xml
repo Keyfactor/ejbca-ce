@@ -4626,7 +4626,7 @@ This is similar to how you use a client certificate to authenticate to the Admin
 but in this case the configured administrator is another EJBCA instace.
 </p><p>
 Normally the instance with higher security requirements (e.g. an EJBCA acting as CA) initates connections to a system with
-lower security requirements (e.g. an EJBCA acting as VA). 
+lower security requirements (e.g. an EJBCA acting as VA or RA). 
 </p><p>
 In the Peer Systems overview you can:
 <ul>
@@ -4669,6 +4669,7 @@ From the Peer Systems overview, click the <code>Add</code> button. Configure the
 <li>Name: Your name for the peer.</li>
 <li>URL: The target end point where the peer is listening. Normally you only need to change the hostname of the URL.</li>
 <li>Enabled: If a Peer Connector is enabled connections to the peer are allowed to be created when needed.</li>
+<li>Process Incoming requests: See <a href="adminguide.html#Configuring%20the%20Peer%20Connector%20to%20fetch%20requests%20from%20the%20RA">Configuring the Peer Connector to fetch requests from the RA</a> below</li>
 </ul>
 </p>
 </subsubsection>
@@ -4692,12 +4693,12 @@ will be shown.
 <subsubsection name="Authorization of incoming connections">
 <p>
 If no <a href="userguide.html#Administrator Roles">Administrator Role</a> exists for the connecting system's client certificate,
-you are presented with a <code>Create Authorization</code> button.
+you are presented with a <code>Create new role</code> button.
 Clicking this button will allow you to quickly setup a new Administrator Role with for the incoming client certificate
 and a relevant set of access rules or add the incoming client certificate to an existing Administrator Role.
 </p><p>
 If an Administrator Role already exists for the connecting system's client certificate, you are presented with a
-<code>Modify Authorization</code> button where you can change the relevant set of access rules for the Administrator Role.
+<code>Modify role</code> button where you can change the relevant set of access rules for the Administrator Role.
 </p><p>
 Note that this is just a simplified view of EJBCA's normal authentication and authorization management and
 the created Administrator Role can be edited just like any other Administrator Role.
@@ -4761,6 +4762,46 @@ The connecting system needs to be authorized to the
 <code>/peerincoming /internalkeybinding/view/[IKB] /internalkeybinding/modify/[IKBName] /cryptotoken/view/[CTName]</code>
 access rules to be able to renew an Internal Key Binding certificate.
 Additionally <code>/cryptotoken/keys/generate/[CTName]</code> is required if key renewal should be allowed.
+</p>
+</subsubsection>
+</subsection>
+<subsection name="Serving Registration Authority requests via Peer Connections">
+<p>
+The Registration Authority (RA) added in EJBCA 6.6.0 can be run either locally or remotely using long-hanging Peer Connections from CA to RA.
+</p><p>
+The CA will connect to the RA and listen for requests, grab either the first pending or wait for one, and return the request to the CA.
+Once the CA is done processing the request, it will reconnect to the same RA and deliver the result and then wait for a new request.
+</p>
+<subsubsection name="Configuring the Peer Connector to fetch requests from the RA">
+<p>
+When setting up an outgoing Peer Connector on the CA, pay attention to the "Incoming requests" options.
+<ul>
+<li>Process Incoming requests: Enabling this option will make the CA establish long hanging connections to the RA and fetch requests.</li>
+<li>Minimum parallel requests: Minimum number of long hanging connections that will wait for the requests on the RA when the RA is idle.</li>
+<li>Maximum parallel requests: Maximum number of long hanging connections that will process requests from the RA when the RA is fully utilized.</li>
+</ul>
+The CA will automatically throttle up and down the number of long hanging connections to each RA based on utilization.
+If you want rapid responses to bursts of requests after a long period of idle time, you should increase the minimum.
+If you want to limit the load the an RA can inflict on a CA when the RA is fully utilized, you should lower the maximum.
+</p>
+</subsubsection>
+<subsubsection name="Authorizing which types of requests from the RA to serve">
+<p>
+Once the CA is able to connect to the RA, there is an option in the outgoing Peer Connector list to <code>Authorize requests</code>.
+The RA authenticates to the CA with its server side TLS certificate and using <code>Authorize requests</code> will allow you to create a new role
+(suitable action for first RA) or assign this certificate to an existing administrator role (suitable action for the rest of the RAs).
+</p><p>
+Once the server side TLS certificate belongs to a role, you are shown a simplified view of access rules relevant to RA requests processing.
+Since requests from the RA over the long hanging Peer Connections are authorized with a common subset of access rules from an adminstrator
+authenticated to the RA and the RA itself, this will limit the maximum access any administrator can have when performing requests over the RA.
+Think of it as context aware authorization.
+</p>
+</subsubsection>
+<subsubsection name="Authorizing the CA to fetch requests from the RA">
+<p>
+Similar to <a href="adminguide.html#Authorization%20of%20incoming%20connections">Authorization of incoming connections</a>, you need to grant
+the CA rights on the RA to fetch pending requests.
+Modify the matching role and ensure that "Accept long hanging connections (External RA)" is checked.
 </p>
 </subsubsection>
 </subsection>
