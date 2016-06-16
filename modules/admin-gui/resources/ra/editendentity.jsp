@@ -664,7 +664,7 @@ function isKeyRecoveryPossible(){
      document.edituser.<%=CHECKBOX_KEYRECOVERABLE%>.checked=false;
      document.edituser.<%=CHECKBOX_KEYRECOVERABLE%>.disabled=true;
    }else{
-     <% if(profile.isRequired(EndEntityProfile.KEYRECOVERABLE,0)){ %>
+     <% if(profile.isRequired(EndEntityProfile.KEYRECOVERABLE,0) && profile.getValue(EndEntityProfile.KEYRECOVERABLE,0).equals(EndEntityProfile.TRUE) && userdata.getKeyRecoverable()){ %>
        document.edituser.<%=CHECKBOX_KEYRECOVERABLE%>.disabled=true; 
      <% }else{ %>
      document.edituser.<%=CHECKBOX_KEYRECOVERABLE%>.disabled=false;
