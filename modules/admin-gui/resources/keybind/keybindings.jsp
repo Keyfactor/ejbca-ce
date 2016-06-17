@@ -71,8 +71,9 @@ org.cesecore.keybind.InternalKeyBindingRules
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CERTIFICATEISSUER}"/></f:facet>
-			<h:outputLink value="adminweb/viewcertificate.jsp?certsernoparameter=#{guiInfo.caCertificateSerialNumber},#{guiInfo.caCertificateIssuerDn}&ref=keybindings"
-				rendered="#{guiInfo.certificateBound}">
+			<h:outputLink value="adminweb/viewcertificate.jsp" rendered="#{guiInfo.certificateBound}">
+                <f:param name="certsernoparameter" value="#{guiInfo.caCertificateSerialNumber},#{guiInfo.caCertificateIssuerDn}"/>
+                <f:param name="returnTo" value="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding' ? '2' : '3'}"/>
 				<h:outputText value="#{guiInfo.certificateInternalCaName}" rendered="#{guiInfo.issuedByInternalCa}"/>
 				<h:outputText value="#{guiInfo.certificateIssuerDn}" rendered="#{!guiInfo.issuedByInternalCa}"/>
 			</h:outputLink>
@@ -80,8 +81,10 @@ org.cesecore.keybind.InternalKeyBindingRules
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CERTIFICATESERIAL}"/></f:facet>
-			<h:outputLink value="adminweb/viewcertificate.jsp?certsernoparameter=#{guiInfo.certificateSerialNumber},#{guiInfo.certificateIssuerDn}&ref=keybindings" rendered="#{guiInfo.certificateBound}">
-				<h:outputText style="font-family: monospace; text-align: right;" value="#{guiInfo.certificateSerialNumber}"/>
+			<h:outputLink value="adminweb/viewcertificate.jsp" rendered="#{guiInfo.certificateBound}">
+                <f:param name="certsernoparameter" value="#{guiInfo.certificateSerialNumber},#{guiInfo.certificateIssuerDn}"/>
+                <f:param name="returnTo" value="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding' ? '2' : '3'}"/>
+            	<h:outputText style="font-family: monospace; text-align: right;" value="#{guiInfo.certificateSerialNumber}"/>
 			</h:outputLink>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_NOT_PRESENT}" rendered="#{!guiInfo.certificateBound}"/>
 		</h:column>
