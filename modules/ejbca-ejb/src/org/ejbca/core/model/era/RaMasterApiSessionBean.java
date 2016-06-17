@@ -83,7 +83,6 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -101,16 +100,13 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
-import org.ejbca.core.model.approval.ApprovalStep;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
-import org.ejbca.core.model.approval.type.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.era.RaApprovalResponseRequest.MetadataResponse;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -424,16 +420,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException, AdminAlreadyApprovedRequestException, SelfApprovalException {
+    public boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse)
+            throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException,
+            AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException {
         final ApprovalDataVO advo = getApprovalData(authenticationToken, requestResponse.getId());
         if (advo == null) {
             // Return false so the next master api backend can see if it can handle the approval
             return false;
         }
         // Convert RA request steps into approval steps
-        final boolean isAccumulativeOnly = advo.getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof AccumulativeApprovalProfile;
-        final Approval approval = new Approval(requestResponse.getComment());
-        final ApprovalStep approvalStep;
+        /*
+        final boolean isAccumulativeOnly = advo.getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof AccumulativeApprovalProfile;*/
+        final Approval approval = new Approval(requestResponse.getComment(), requestResponse.getStepIdentifier(), 0);
+        /*final ApprovalStep approvalStep;
         if (isAccumulativeOnly) {
             approvalStep = null;
             if (requestResponse.getStepId() != -1) {
@@ -446,15 +445,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             approvalStep = advo.getApprovalRequest().getApprovalStep(requestResponse.getStepId());
             for (final MetadataResponse metadata : requestResponse.getMetadataList()) {
                 approvalStep.updateOneMetadataValue(metadata.getMetadataId(), metadata.getOptionValue(), metadata.getOptionNote());
-            }
+            
         }
-        
+        }*/
         switch (requestResponse.getAction()) {
         case APPROVE:
-            approvalExecutionSession.approve(authenticationToken, advo.getApprovalId(), approval, approvalStep, isAccumulativeOnly);
+            approvalExecutionSession.approve(authenticationToken, advo.getApprovalId(), approval);
             return true;
         case REJECT:
-            approvalSession.reject(authenticationToken, advo.getApprovalId(), approval, approvalStep, isAccumulativeOnly);
+            approvalExecutionSession.reject(authenticationToken, advo.getApprovalId(), approval);
             return true;
         case SAVE:
             throw new UnsupportedOperationException("Saving without approving or rejecting is not yet implemented");

@@ -169,7 +169,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @deprecated since 6.6.0, use the appropriate approval profile instead
      */
     @Deprecated
-    protected static final String NUMOFREQAPPROVALS = "numofreqapprovals";
+    public static final String NUMOFREQAPPROVALS = "numofreqapprovals";
     protected static final String APPROVALPROFILE = "approvalProfile";
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
     protected static final String USECERTIFICATESTORAGE = "usecertificatestorage";
@@ -2015,7 +2015,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     @Deprecated
     public int getNumOfReqApprovals() {
-        return ((Integer) data.get(NUMOFREQAPPROVALS)).intValue();
+        Integer result = (Integer) data.get(NUMOFREQAPPROVALS);
+        if(result != null) {
+            return result.intValue();
+        } else {
+            return 1;
+        }
     }
 
     /**

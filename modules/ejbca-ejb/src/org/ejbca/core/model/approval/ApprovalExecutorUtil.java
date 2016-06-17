@@ -16,21 +16,11 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.approval.ApprovalProfileSession;
-import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
-import org.ejbca.core.model.approval.type.AccumulativeApprovalProfile;
 
 /**
  * Util class with methods to get information about calling classes
- * Used to avoid cirkular method invocations
+ * Used to avoid circular method invocations
 
 Approval configuration
 ======================
@@ -71,7 +61,6 @@ The method ApprovalExecutorUtil.requireApproval checks first if the caller class
 ApprovalExecutorUtil.requireApproval checks all the rules and returns true or false.
 
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class ApprovalExecutorUtil {
@@ -100,7 +89,7 @@ public class ApprovalExecutorUtil {
             log.trace(">requireApproval: "+req.getClass().getName());            
         }
 		boolean ret = true;
-		if (isApprovalProfileRelevant(req)) {
+		if (req.getApprovalProfile().isApprovalRequired()) {
 			ret = !isCalledByOveridableClassnames(getGloballyAllowed());
 			// If we were not found in the globally allowed list, check the passed in list
 			if (ret && (overridableClassNames != null)) {
@@ -119,31 +108,7 @@ public class ApprovalExecutorUtil {
         }
 		return ret;
 	}
-	
-	private static boolean isApprovalProfileRelevant(ApprovalRequest approvalRequest) {
-	    final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
-	    if((approvalProfile == null) || 
-	       ( (approvalProfile.getNumberOfApprovals()==0) && (approvalProfile.getApprovalSteps().size()==0) ) ) {
-	        return false;
-	    }
-	    
-	    final int[] actionsRequireApproval = approvalProfile.getActionsRequireApproval();
-        if (approvalRequest instanceof ActivateCATokenApprovalRequest) {
-            return arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ACTIVATECA);
-        } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-            return arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY);
-        } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
-            return arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY);
-        } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-            return arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY);
-        } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
-            return arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_KEYRECOVER);
-        } else if (approvalRequest instanceof RevocationApprovalRequest) {
-            return arrayContainsValue(actionsRequireApproval, CAInfo.REQ_APPROVAL_REVOCATION);
-        }
-        return false;
-	}
-	
+		
 	private static ApprovalOveradableClassName[] getGloballyAllowed() {
 		if (globallyAllowed == null) {
 			ArrayList<ApprovalOveradableClassName> arr = new ArrayList<ApprovalOveradableClassName>();
@@ -168,63 +133,7 @@ public class ApprovalExecutorUtil {
 	    }
 	    return false;
 	}
-	
-    public static ApprovalProfile[] getApprovalProfiles(final int action, final CAInfo cainfo, final CertificateProfile certProfile, 
-            final ApprovalProfileSession approvalProfileSession) {
-            ApprovalProfile profiles[] = new ApprovalProfile[2];
-            ApprovalProfile firstProfile = null;
-            ApprovalProfile secondProfile = null;
-            
-            if(cainfo != null) {
-                int approvalProfileId = cainfo.getApprovalProfile();
-                if(approvalProfileId != -1) {
-                    ApprovalProfile profile = approvalProfileSession.getApprovalProfile(approvalProfileId);
-                    if(arrayContainsValue(profile.getActionsRequireApproval(), action) && 
-                            ( (profile.getNumberOfApprovals() > 0) || (profile.getApprovalSteps().size() > 0) )) {
-                        firstProfile = profile;
-                    }
-                }
-            }
+	   
 
-            if(certProfile != null) {
-                int approvalProfileId = certProfile.getApprovalProfileID();
-                if(approvalProfileId != -1) {
-                    ApprovalProfile profile = approvalProfileSession.getApprovalProfile(approvalProfileId);
-                    if(arrayContainsValue(profile.getActionsRequireApproval(), action) &&
-                            ( (profile.getNumberOfApprovals() > 0) || (profile.getApprovalSteps().size() > 0) )) {
-                        secondProfile = profile;
-                    }
-                }            
-            }
-            
-            if(firstProfile != null && secondProfile != null) {
-                if(firstProfile.equals(secondProfile)) {
-                    secondProfile = null;
-                } else if((firstProfile.getApprovalProfileType() instanceof AccumulativeApprovalProfile) && 
-                           secondProfile.getApprovalProfileType() instanceof AccumulativeApprovalProfile) {
-                    if(secondProfile.getNumberOfApprovals() > firstProfile.getNumberOfApprovals()) {
-                        firstProfile = secondProfile;
-                    }
-                    secondProfile = null;
-                }
-            } else if((firstProfile==null) && (secondProfile != null)){
-                firstProfile = secondProfile;
-                secondProfile = null;
-            }
-            
-            profiles[0] = firstProfile;
-            profiles[1] = secondProfile;
-            
-            return profiles;
-    }
-    
-    private static boolean arrayContainsValue(final int[] array, final int value) {
-        for(int v : array) {
-            if(v==value) {
-                return true;
-            }
-        }
-        return false;
-    }
     
 }

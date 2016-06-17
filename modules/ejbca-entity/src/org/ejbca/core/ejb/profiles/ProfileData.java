@@ -12,20 +12,24 @@
  *************************************************************************/
 package org.ejbca.core.ejb.profiles;
 
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.io.UnsupportedEncodingException;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.JBossUnmarshaller;
-import org.ejbca.core.model.approval.ApprovalProfile;
+import org.cesecore.util.Base64GetHashMap;
+import org.cesecore.util.Base64PutHashMap;
+import org.ejbca.core.model.profiles.Profile;
 
 /**
  * Implementation of the "ProfileData" table in the database
@@ -38,26 +42,35 @@ public class ProfileData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger log = Logger.getLogger(ProfileData.class);
-
     private int id;
     private String profileName;
-    private  String profileType;
-    private Serializable data;
+    private String profileType;
+    private String rawData;
     private int rowVersion = 0;
     private String rowProtection;
+
     
     public ProfileData() {}
     
     /**
      * Entity holding data of an approval profile.
      */
-    public ProfileData(int id, String profileName, ApprovalProfile approvalProfile) {
+    public ProfileData(int id, Profile profile) {
         setId(id);
-        setProfileName(profileName);
-        setProfileType(ApprovalProfile.TYPE);
-        setProfile(approvalProfile);
-        log.debug("Created profile " + profileName);
+        setProfileName(profile.getProfileName());
+        setProfileType(profile.getProfileType());
+        setDataMap(profile.getDataMap());
+    }
+    
+    /**
+     * Loads the values of the submitted profile implementation into this entity object
+     * @param profile a profile
+     */
+    @Transient
+    public void setProfile(Profile profile) {
+        setProfileName(profile.getProfileName());
+        setProfileType(profile.getProfileType());
+        setDataMap(profile.getDataMap());
     }
     
     public int getId() { return id; }
@@ -68,43 +81,61 @@ public class ProfileData extends ProtectedData implements Serializable {
     
     public String getProfileType() { return profileType; }
     public void setProfileType(String profileType) { this.profileType = profileType; }
-    
-    public Serializable getDataUnsafe() { return data; }
-    // /** DO NOT USE! Stick with setData(HashMap data) instead. */
-    private void setDataUnsafe(Serializable data) { this.data = data; }
+
+    /** Should not be invoked directly. Use getDataMap() instead. */
+    public String getRawData() { return rawData; }
+    /** Should not be invoked directly. Use setDataMap(..) instead. */
+    public void setRawData(String rawData) { this.rawData = rawData; }
 
     @Transient
-    private LinkedHashMap<?, ?> getData() {
-        return JBossUnmarshaller.extractLinkedHashMap(data);
-    }
-    private void setData(LinkedHashMap<?, ?> data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
-    
-    /**
-     * Method that returns the approval profile and updates it if necessary.
-     */
-    @Transient
-    public ApprovalProfile getProfile() {
-        return readAndUpgradeProfileInternal();
+    @SuppressWarnings("unchecked")
+    public LinkedHashMap<Object, Object> getDataMap() {
+        try {
+            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(getRawData().getBytes("UTF8")));
+            final Map<?, ?> h = (Map<?, ?>)decoder.readObject();
+            decoder.close();
+            // Handle Base64 encoded string values
+            final LinkedHashMap<Object, Object> dataMap = new Base64GetHashMap(h);
+            return dataMap;
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);  // No UTF8 would be real trouble
+        }
     }
 
-    /**
-     * Method that saves the approval profile.
-     */
-    public void setProfile(ApprovalProfile profile) {
-        setData((LinkedHashMap<?, ?>) profile.saveData());
+    @Transient
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void setDataMap(final LinkedHashMap<Object, Object> dataMap) {
+        try {
+            // We must base64 encode string for UTF safety
+            final LinkedHashMap<?, ?> a = new Base64PutHashMap();
+            a.putAll((LinkedHashMap)dataMap);
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final XMLEncoder encoder = new XMLEncoder(baos);
+            encoder.writeObject(a);
+            encoder.close();
+            final String data = baos.toString("UTF8");
+            setRawData(data);
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
     }
     
-    public int getRowVersion() { return rowVersion; }
-    public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
-    
+    //
+    // Start Database integrity protection methods
+    //
     @Transient
     @Override
     protected String getProtectString(final int version) {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getId()).append(getProfileName()).append(getData());
+        build.append(getId()).append(getProfileName()).append(getDataMap());
         return build.toString();
     }
+
+    
+    public int getRowVersion() { return rowVersion; }
+    public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+    
     
     @Transient
     @Override
@@ -122,37 +153,25 @@ public class ProfileData extends ProtectedData implements Serializable {
     protected String getRowId() {
         return String.valueOf(getId());
     }
-    
-    /** 
-     * Method that upgrades an approval Profile, if needed.
-     */
-    public void upgradeProfile() {
-        readAndUpgradeProfileInternal();
-    }
 
     /**
-     * We have an internal method for this read operation with a side-effect. 
-     * This is because getProfile() is a read-only method, so the possible side-effect of upgrade will not happen,
-     * and therefore this internal method can be called from another non-read-only method, upgradeProfile().
-     * @return ApprovalProfile
-     * TODO: Still true with JPA?
+     * 
+     * @return the value object representation of this database row
      */
-    private ApprovalProfile readAndUpgradeProfileInternal() {
-        ApprovalProfile returnval = new ApprovalProfile();
-        HashMap<?, ?> data = getData();
-        // If ApprovalProfile-data is upgraded we want to save the new data, so we must get the old version before loading the data 
-        // and perhaps upgrading
-        float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
-        // Load the profile data, this will potentially upgrade the ApprovalProfile
-        returnval.loadData(data);
-        if (Float.compare(oldversion, returnval.getVersion()) != 0) {
-            // Save new data versions differ
-            setProfile(returnval);
-            if (log.isDebugEnabled()) {
-                log.debug("Saved upgraded profile, old version="+oldversion+", new version="+returnval.getVersion());               
-            }
+    @SuppressWarnings("unchecked")
+    @Transient
+    public Profile getProfile() {
+        Class<? extends Profile> implementationClass = (Class<? extends Profile>) getDataMap().get(Profile.PROFILE_TYPE);
+        Profile returnValue;
+        try {     
+            returnValue = implementationClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new IllegalStateException("Could not instansiate class of type " + implementationClass.getCanonicalName(), e);
         }
-        return returnval;
+        returnValue.setProfileName(profileName);
+        returnValue.setProfileId(id);
+        returnValue.setDataMap((LinkedHashMap<Object, Object>) getDataMap());
+        return returnValue;
     }
-     
+
 }

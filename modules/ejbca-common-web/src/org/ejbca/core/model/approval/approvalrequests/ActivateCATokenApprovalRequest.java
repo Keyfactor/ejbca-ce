@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.EJBException;
@@ -26,14 +25,13 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
  * Approval Request created when trying to activate a CA Service.
@@ -62,26 +60,16 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * @param username
 	 * @param reason
 	 * @param requestAdmin
-	 * @param numOfReqApprovals
 	 * @param cAId
 	 * @param endEntityProfileId
 	 */
-	public ActivateCATokenApprovalRequest(String cAName, String authenticationCode,
-	        AuthenticationToken requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId, 
-	        ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
-		super(requestAdmin, null, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId, approvalProfile, secondApprovalProfile);
-		this.cAName = cAName;
-		this.authenticationCode = authenticationCode;
-	}
+    public ActivateCATokenApprovalRequest(String cAName, String authenticationCode, AuthenticationToken requestAdmin, int cAId,
+            int endEntityProfileId, ApprovalProfile approvalProfile) {
+        super(requestAdmin, null, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile);
+        this.cAName = cAName;
+        this.authenticationCode = authenticationCode;
+    }
 	
-	
-	public ActivateCATokenApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
-	    ActivateCATokenApprovalRequest req = new ActivateCATokenApprovalRequest(cAName, authenticationCode, getRequestAdmin(), 0, 
-	            getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
-	    req.setOldApprovals(oldApprovals);
-	    return req;
-	}
-
 	@Override
 	public void execute() throws ApprovalRequestExecutionException {
 		throw new RuntimeException("This execution requires additional bean references.");

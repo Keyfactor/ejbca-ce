@@ -19,7 +19,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.EJBException;
@@ -31,14 +30,13 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
-import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
  * Approval Request created when an administrator wants
@@ -60,23 +58,14 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	/** Constructor used in externalization only */
 	public KeyRecoveryApprovalRequest() {}
 
-	public KeyRecoveryApprovalRequest(Certificate cert, String username, boolean recoverNewestCert, 
-	        AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, 
-	        int endEntityProfileId, ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
-		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE,
-				numOfReqApprovals, cAId, endEntityProfileId, approvalProfile, secondApprovalProfile);
+    public KeyRecoveryApprovalRequest(Certificate cert, String username, boolean recoverNewestCert, AuthenticationToken requestAdmin,
+            String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile) {
+        super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile);
 		this.username = username;
 		this.cert = cert;
 		this.recoverNewestCert = recoverNewestCert;
 	}
 	
-	public KeyRecoveryApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
-	    KeyRecoveryApprovalRequest req = new KeyRecoveryApprovalRequest(cert, username, recoverNewestCert, 
-	            getRequestAdmin(), getRequestSignature(), 0, getCAId(), getEndEntityProfileId(), 
-	            getSecondApprovalProfile(), null);
-	    req.setOldApprovals(oldApprovals);
-	    return req;
-	}
 
 	@Override
 	public void execute() throws ApprovalRequestExecutionException {

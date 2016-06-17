@@ -13,16 +13,41 @@
 
 package org.ejbca.ui.web.admin.approval;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import javax.ejb.EJB;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.apache.myfaces.renderkit.html.util.AddResource;
+import org.apache.myfaces.renderkit.html.util.AddResourceFactory;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.internal.InternalResources;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.RoleInformation;
+import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.util.ui.DynamicUiProperty;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -30,13 +55,11 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
-import org.ejbca.core.model.approval.ApprovalStep;
-import org.ejbca.core.model.approval.ApprovalStepMetadata;
 import org.ejbca.core.model.approval.SelfApprovalException;
-import org.ejbca.core.model.approval.type.AccumulativeApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalPartition;
+import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.RAAuthorization;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -50,50 +73,72 @@ import org.ejbca.util.query.Query;
  * 
  * @version $Id$
  */
+@ViewScoped
+@ManagedBean(name="approvalActionManagedBean")
 public class ApproveActionManagedBean extends BaseManagedBean {
-
-    public class MetadataGuiInfo {
-        private int metadataId;
-        private String instruction;
-        private int optionsType;
-        private List<String> options;
-        private String optionValue;
-        private List<String> optionValueList;
-        private String note;
-        public MetadataGuiInfo(final ApprovalStepMetadata metadata) {
-            this.metadataId = metadata.getMetadataId();
-            this.instruction = metadata.getInstruction();
-            this.options = metadata.getOptions();
-            this.optionsType = metadata.getOptionsType();
-            this.optionValue = metadata.getOptionValue();
-            this.note = metadata.getOptionNote();            
-        }
-        public int getMetadataId() { return metadataId; }
-        public String getInstruction() { return instruction; }
-        public int getOptionsType() { return optionsType; }
-        public List<String> getOptions() { return options; }
-        public String getOptionValue() { return optionValue; }
-        public void setOptionValue(String value) { optionValue=value; }
-        public List<String> getOptionValueList() { return optionValueList; }
-        public void setOptionValueList(List<String> value) { optionValueList=value; }
-        public String getNote() { return note; }
-        public void setNote(String note) { this.note=note; }
-
-        
-    }
     
     private static final long serialVersionUID = 1940920496104779323L;
     private static final Logger log = Logger.getLogger(ApproveActionManagedBean.class);
+    private static final InternalResources intres = InternalResources.getInstance();
+
+    private enum Action {
+        APPROVE(intres.getLocalizedMessage("general.approve")), REJECT(intres.getLocalizedMessage("general.reject")), NO_ACTION(
+                intres.getLocalizedMessage("general.noaction"));
+
+       private static List<SelectItem> selectItems;
+       private final String label;
+       
+       static {
+           selectItems = new ArrayList<>();
+           for(Action action : Action.values()) {
+               selectItems.add(new SelectItem(action, action.getLabel()));
+           }
+       }
+       
+       private Action(final String label) {
+           this.label = label;
+           
+       }
+       
+       public String getLabel() {
+           return label;
+       }
+       
+       public static List<SelectItem> asSelectItems() {
+           return selectItems;
+       }
+        
+    }
     
-	private final EjbLocalHelper ejb = new EjbLocalHelper();
+    @EJB
+    private ApprovalExecutionSessionLocal approvalExecutionSession;
+    @EJB
+    private RoleAccessSessionLocal roleAccessSession;
+    
+    @EJB
+    private AccessControlSessionLocal accessControlSession;
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;
+    @EJB
+    private ApprovalSessionLocal approvalSession;
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private ComplexAccessControlSessionLocal complexAccessControlSession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    
+    
 	private String comment = "";
 	private ApprovalDataVOView approveRequestData = new ApprovalDataVOView();      
 	private HashMap<Integer, String> statustext = null;
-	private ApprovalStep currentApprovalStep = null;
-	private ListDataModel<MetadataGuiInfo> metadataList = null;
-	private ListDataModel<MetadataGuiInfo> previousMetadataList = null;
+	private Map<Integer, Action> partitionActions;
+	
+	ListDataModel<ApprovalPartitionProfileGuiObject> approvalPartitions = null;
 
-	public  HashMap<Integer, String> getStatusText(){
+	public HashMap<Integer, String> getStatusText(){
 	    if(statustext == null){
 	    	EjbcaWebBean ejbcawebbean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
 	    	statustext = new HashMap<Integer, String>();
@@ -127,102 +172,85 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     public List<ApprovalView> getApprovalViews() {
         List<ApprovalView> approvalViews = new ArrayList<ApprovalView>();
         if (approveRequestData != null && approveRequestData.getApproveActionDataVO().getApprovals() != null) {
-            Iterator<Approval> iter = approveRequestData.getApproveActionDataVO().getApprovals().iterator();
-            while (iter.hasNext()) {
-                approvalViews.add(new ApprovalView((Approval) iter.next()));
+            for(Approval approval : approveRequestData.getApproveActionDataVO().getApprovals()) {
+                approvalViews.add(new ApprovalView(approval));
             }
         }
         return approvalViews;
     }
-    public void setApprovalViews(List<ApprovalView> list){}
-   
+ 
     public boolean isExistsApprovals(){
     	return approveRequestData.getApproveActionDataVO().getApprovals().size() >0;
     }
+       
+    public boolean isApprovable(){
+    	return approveRequestData.getApproveActionDataVO().getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
+    }
 
-    public boolean getExistCurrentApprovalStep() {
-        if(currentApprovalStep==null) {
-            getMetadataList();
-        }
-        return currentApprovalStep!=null;
+    public List<SelectItem> getActionsAvailable() {
+        return Action.asSelectItems();
     }
     
-    public boolean getExistPreviousMetadata() {
-        if(previousMetadataList==null) {
-            getMetadataList();
+    public Action getActionForPartition() {
+        Action result =  getPartitionActions().get(approvalPartitions.getRowData().getPartitionId());
+        if(result != null) {
+            return result;
+        } else {
+            return Action.NO_ACTION;
         }
-        if(previousMetadataList == null) {
-            //Handles approvals created prior to 6.6.0
-            return false;
-        }
-        return previousMetadataList.getRowCount() > 0;
     }
     
-    
-    public ListDataModel<MetadataGuiInfo> getMetadataList() {
-        if(metadataList==null) {
-            if(currentApprovalStep==null) {
-                currentApprovalStep = getApproveRequestData().getApprovalRequest().getNextUnhandledApprovalStepByAdmin(getAdmin());
-            }
-            if(currentApprovalStep==null) {
-                addErrorMessage("AUTHORIZATIONDENIED");
-                return null;
-            }
-            
-            ArrayList<MetadataGuiInfo> previousMdGuis = new ArrayList<MetadataGuiInfo>();
-            if(currentApprovalStep.canSeePreviousSteps()) {
-                final List<ApprovalStep> approvedSteps = getApproveRequestData().getApprovalRequest().getApprovedApprovalSteps();
-                for(ApprovalStep previousStep : approvedSteps) {
-                    for(ApprovalStepMetadata md : previousStep.getMetadata()) {
-                        previousMdGuis.add(new MetadataGuiInfo(md));
+    private Map<Integer, Action> getPartitionActions() {
+        if (partitionActions == null) {
+            partitionActions = new HashMap<>();
+            for (Approval approval : approveRequestData.getApproveActionDataVO().getApprovals()) {
+                if (approval.getStepId() == getCurrentStep().getStepIdentifier()) {
+                    if (approval.isApproved()) {
+                        partitionActions.put(approval.getPartitionId(), Action.APPROVE);
+                    } else {
+                        partitionActions.put(approval.getPartitionId(), Action.REJECT);
                     }
                 }
             }
-            previousMetadataList = new ListDataModel<MetadataGuiInfo>(previousMdGuis);
-            
-            ArrayList<MetadataGuiInfo> currentMdGuis = new ArrayList<MetadataGuiInfo>();
-            for(ApprovalStepMetadata md : currentApprovalStep.getMetadata()) {
-                currentMdGuis.add(new MetadataGuiInfo(md));
-            }
-            metadataList = new ListDataModel<MetadataGuiInfo>(currentMdGuis);
-            
         }
-        return metadataList;
+        return partitionActions;
     }
     
-    public ListDataModel<MetadataGuiInfo> getPreviousMetadataList() {
-        if(previousMetadataList==null) {
-            getMetadataList();
-        }
-        return previousMetadataList;
-    }
-        
-    public boolean isApprovable(){
-    	if(approveRequestData.getApproveActionDataVO().getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL){
-    		return true;
-    	}
-    	return false;
+    /** 
+     * @return true if there already exists an approval for this partition 
+     */
+    public boolean isPartitionApproved() {
+        return getPartitionActions().get(approvalPartitions.getRowData().getPartitionId()) != null;
     }
 
-   
-    public String approve() {
-        
-        final boolean isNrOfApprovalProfile = getApproveRequestData().getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof AccumulativeApprovalProfile;
-        ApprovalStep step = getApprovalStep();
-
-        if((step==null) && (!isNrOfApprovalProfile)) {
-            addErrorMessage("No Approval Steps were found");
-        } else {
-            final Approval approval = new Approval(comment);
-            try {		   
+    public void setActionForPartition(final Action action) {
+        getPartitionActions().put(approvalPartitions.getRowData().getPartitionId(), action);
+    }
+    
+    public String saveState(ActionEvent event) {
+        for (Integer partitionId : getPartitionActions().keySet()) {
+            try {
                 final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
-                ejb.getApprovalExecutionSession().approve(admin, approveRequestData.getApprovalId(), approval, step, isNrOfApprovalProfile);
-                updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
+                final Approval approval = new Approval(comment, getCurrentStep().getStepIdentifier(), partitionId);
+                switch (getPartitionActions().get(partitionId)) {
+                case APPROVE:
+                    approvalExecutionSession.approve(admin, approveRequestData.getApprovalId(), approval);
+                    updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
+                    break;
+                case REJECT:
+                    approvalExecutionSession.reject(admin, approveRequestData.getApprovalId(), approval);
+                    updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
+                    break;
+                case NO_ACTION:
+                    break;
+                default:
+                    break;
+                }
             } catch (ApprovalRequestExpiredException e) {
                 addErrorMessage("APPROVALREQUESTEXPIRED");
             } catch (ApprovalRequestExecutionException e) {
                 addErrorMessage("ERROREXECUTINGREQUEST");
-            } catch (AuthorizationDeniedException e) {
+            } catch (AuthorizationDeniedException | AuthenticationFailedException e) {
                 addErrorMessage("AUTHORIZATIONDENIED");
             } catch (ApprovalException e) {
                 addErrorMessage("ERRORHAPPENDWHENAPPROVING");
@@ -230,62 +258,62 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                 addErrorMessage(e.getMessage());
             }
         }
-    	return "approveaction";
+        //Hack for closing the window after saving
+        FacesContext facesContext = FacesContext.getCurrentInstance(); 
+        //Yeah. I know. 
+        String javaScriptText = "window.close();"; 
+        //Add the Javascript to the rendered page's header for immediate execution 
+        AddResource addResource = AddResourceFactory.getInstance(facesContext); 
+        //Think of a better solution and you're free to implement it.
+        addResource.addInlineScriptAtPosition(facesContext, AddResource.HEADER_BEGIN, javaScriptText);   
+        //I'm so, so sorry. I have dishonored my dojo. 
+        return "approveaction";
+    }
+    
+   
+    public String approve() {
+        //TODO FIXME (Retrieve sequence and partition identifiers from GUI)
+        final Approval approval = new Approval(comment, 0, 0);
+        try {
+            final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
+            approvalExecutionSession.approve(admin, approveRequestData.getApprovalId(), approval);
+            updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
+        } catch (ApprovalRequestExpiredException e) {
+            addErrorMessage("APPROVALREQUESTEXPIRED");
+        } catch (ApprovalRequestExecutionException e) {
+            addErrorMessage("ERROREXECUTINGREQUEST");
+        } catch (AuthorizationDeniedException | AuthenticationFailedException e) {
+            addErrorMessage("AUTHORIZATIONDENIED");
+        } catch (ApprovalException e) {
+            addErrorMessage("ERRORHAPPENDWHENAPPROVING");
+        } catch (AdminAlreadyApprovedRequestException | SelfApprovalException e) {
+            addErrorMessage(e.getMessage());
+        } 
+        return "approveaction";
     }
 
     public String reject(){
         
-        final boolean isNrOfApprovalProfile = getApproveRequestData().getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof AccumulativeApprovalProfile;
-        ApprovalStep step = getApprovalStep();
-
-        if((step==null) && (!isNrOfApprovalProfile)) {
-            addErrorMessage("No Approval Steps were found");
-        } else {
-            final Approval approval = new Approval(comment);
-            try {
-                final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
-                ejb.getApprovalSession().reject(admin,  approveRequestData.getApprovalId(), approval, step, isNrOfApprovalProfile);
-                updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
-            } catch (ApprovalRequestExpiredException e) {
-                addErrorMessage("APPROVALREQUESTEXPIRED");
-            } catch (AuthorizationDeniedException e) {
-                addErrorMessage("AUTHORIZATIONDENIED");
-            } catch (ApprovalException e) {
-                addErrorMessage("ERRORHAPPENDWHENAPPROVING");
-            } catch (AdminAlreadyApprovedRequestException e) {
-                addErrorMessage(e.getMessage());
-            }
+        final Approval approval = new Approval(comment, 0, 0);
+        try {
+            final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
+            approvalExecutionSession.reject(admin, approveRequestData.getApprovalId(), approval);
+            updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
+        } catch (ApprovalRequestExpiredException e) {
+            addErrorMessage("APPROVALREQUESTEXPIRED");
+        } catch (AuthorizationDeniedException | AuthenticationFailedException e) {
+            addErrorMessage("AUTHORIZATIONDENIED");
+        } catch (ApprovalException e) {
+            addErrorMessage("ERRORHAPPENDWHENAPPROVING");
+        } catch (AdminAlreadyApprovedRequestException e) {
+            addErrorMessage(e.getMessage());
+        } catch (SelfApprovalException e) {
+            addErrorMessage("SELF_APPROVAL_ERROR");
         }
+
         return "approveaction";
     }
-    
-    private ApprovalStep getApprovalStep() {
-        if(getApproveRequestData().getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof AccumulativeApprovalProfile) {
-            return null;
-        }
-        
-        ApprovalRequest approvalRequest = getApproveRequestData().getApprovalRequest();
-        if(currentApprovalStep!=null) {
-            for(MetadataGuiInfo mdGui : metadataList) {
-                String metadataOptionsValue = "";
-                if(mdGui.getOptionsType()==ApprovalStepMetadata.METADATATYPE_CHECKBOX) {
-                    List<String> data = mdGui.getOptionValueList();
-                    for(String p : data) {
-                        metadataOptionsValue += p + "; " ;
-                    }
-                    metadataOptionsValue = metadataOptionsValue.substring(0, metadataOptionsValue.length()-3);
-                } else {
-                    metadataOptionsValue = mdGui.getOptionValue();
-                }
-                currentApprovalStep.updateOneMetadataValue(mdGui.getMetadataId(), metadataOptionsValue, mdGui.getNote());
-            }
-            approvalRequest.updateApprovalStepMetadata(currentApprovalStep.getStepId(), currentApprovalStep.getMetadata());
-            return approvalRequest.getApprovalStep(currentApprovalStep.getStepId());
-        }
-        
-        return null;
-    }
-    
+       
     public void setUniqueId(int uniqueId) {
     	log.debug("ApproveActionSessionBean.setApprovalId setting uniqueId : " + uniqueId);
     	updateApprovalRequestData(uniqueId);	
@@ -296,10 +324,10 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     	query.add(ApprovalMatch.MATCH_WITH_UNIQUEID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(id));
     	List<ApprovalDataVO> result;
     	try {
-    		RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), ejb.getGlobalConfigurationSession(),
-    				ejb.getAccessControlSession(), ejb.getComplexAccessControlSession(), ejb.getCaSession(), ejb.getEndEntityProfileSession(), 
-    				ejb.getApprovalProfileSession());
-    		result = ejb.getApprovalSession().query( EjbcaJSFHelper.getBean().getAdmin(), query, 0, 1, raAuthorization.getCAAuthorizationString(), 
+    		RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), globalConfigurationSession,
+    				accessControlSession, complexAccessControlSession, caSession, endEntityProfileSession, 
+    				approvalProfileSession);
+    		result = approvalSession.query( EjbcaJSFHelper.getBean().getAdmin(), query, 0, 1, raAuthorization.getCAAuthorizationString(), 
     		        raAuthorization.getEndEntityProfileAuthorizationString(AccessRulesConstants.APPROVE_END_ENTITY), 
     		        raAuthorization.getApprovalProfileAuthorizationString());
     		if (result.size() > 0) {
@@ -318,4 +346,106 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     public void setComment(String comment) {
     	this.comment = comment;
     }
+    
+    public int getNumberOfPartitionsInStep() {
+        ApprovalStep step = getCurrentStep();
+        if(step == null) {
+            return -1;
+        } else {
+        return step.getPartitions().size();
+        }
+    }
+    
+    /**
+     * @return the ordinal of the step currently being evaluated
+     */
+    public int getCurrentStepOrdinal() {
+        Collection<Approval> approvals = approveRequestData.getApproveActionDataVO().getApprovals();
+        try {
+            return approveRequestData.getApprovalProfile().getOrdinalOfStepBeingEvaluated(approvals);
+        } catch (AuthenticationFailedException e) {
+            throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
+        }
+        
+    }
+    
+    /**
+     * 
+     * @return the step currently being evaluated
+     */
+    public ApprovalStep getCurrentStep() {
+        Collection<Approval> approvals = approveRequestData.getApproveActionDataVO().getApprovals();
+        try {
+            return approveRequestData.getApprovalProfile().getStepBeingEvaluated(approvals);
+        } catch (AuthenticationFailedException e) {
+            //We shouldn't have gotten here in the UI with an invalid token
+            throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
+        }
+
+    }
+    
+    /**
+     * 
+     * @return all profiles that the current admin has access to
+     */
+    public ListDataModel<ApprovalPartitionProfileGuiObject> getApprovalPartitions() {
+        if (approvalPartitions == null) {
+            List<ApprovalPartitionProfileGuiObject> authorizedPartitions = new ArrayList<>();
+            for (ApprovalPartition approvalPartition : getCurrentStep().getPartitions().values()) {
+                try {
+                    if (approveRequestData.getApprovalProfile().canApprovePartition(getAdmin(), approvalPartition)) {
+                        authorizedPartitions
+                                .add(new ApprovalPartitionProfileGuiObject(approveRequestData.getApprovalProfile().getApprovalProfileIdentifier(),
+                                        approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalPartition)));
+                    }
+                } catch (AuthenticationFailedException e) {
+                    //We shouldn't have gotten here in the UI with an invalid token
+                    throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
+                }
+            }
+            approvalPartitions = new ListDataModel<ApprovalPartitionProfileGuiObject>(authorizedPartitions);
+
+        }
+        return approvalPartitions;
+    }
+    
+    /**
+     * Extract the partition properties, and fill in all and any placeholders. Also cull any properties set to be hidden.
+     * 
+     * @return a Map linking partitions IDs to lists of each partitions properties. 
+     */
+    private List<DynamicUiProperty<? extends Serializable>> getPartitionProperties(ApprovalPartition approvalPartition) {
+        Set<String> hiddenPropertyNames = approveRequestData.getApprovalProfile().getHiddenProperties();    
+        List<DynamicUiProperty<? extends Serializable>> propertyList = new ArrayList<>();
+        for (String propertyName : approvalPartition.getPropertyList().keySet()) {
+            if (!hiddenPropertyNames.contains(propertyName)) {
+                DynamicUiProperty<? extends Serializable> propertyClone = new DynamicUiProperty<>(
+                        approvalPartition.getPropertyList().get(propertyName));
+                switch (propertyClone.getPropertyCallback()) {
+                case ROLES:
+                    List<RoleData> allAuthorizedRoles = roleAccessSession.getAllAuthorizedRoles(getAdmin());
+                    List<RoleInformation> roleRepresentations = new ArrayList<>();
+                    for (RoleData role : allAuthorizedRoles) {
+                        RoleInformation identifierNamePair = new RoleInformation(role.getPrimaryKey(), role.getRoleName(),
+                                new ArrayList<>(role.getAccessUsers().values()));
+                        roleRepresentations.add(identifierNamePair);
+                    }
+                    if (!roleRepresentations.contains(propertyClone.getDefaultValue())) {
+                        //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else. 
+                        roleRepresentations.add(0, (RoleInformation) propertyClone.getDefaultValue());
+                    }
+                    propertyClone.setPossibleValues(roleRepresentations);
+                    break;
+                case NONE:
+                    break;
+                default:
+                    break;
+                }
+                propertyList.add(propertyClone);
+            }
+        }
+        return propertyList;
+    }
+    
+     
 }

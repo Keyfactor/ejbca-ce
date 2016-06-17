@@ -112,9 +112,7 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
-import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
-import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
@@ -123,8 +121,8 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
+import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -172,8 +170,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private static final String KEY_RECOVERY_EEP = "KEYRECOVERY";
     
     private final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
-    private final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
-    private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private final CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
@@ -517,16 +513,17 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         String username = "wsRevocationUser" + randomPostfix;
         int cryptoTokenId = 0;
         int caID = -1;
+        AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile(approvalProfileName);
+        int partitionId = approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier();
+        approvalProfile.setNumberOfApprovalsRequired(1);
+        final int approvalProfileId = approvalProfileSession.addApprovalProfile(intAdmin, approvalProfile);
         try {
             
-            ApprovalProfile approvalProfile = new ApprovalProfile(approvalProfileName);
-            approvalProfile.setActionsRequireApproval(new int[] {CAInfo.REQ_APPROVAL_REVOCATION});
-            approvalProfile.setNumberOfApprovals(1);
-            final int approvalProfileId = approvalProfileSession.addApprovalProfile(intAdmin, approvalProfileName, approvalProfile);
+         
             
             cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, approvalProfileId, caAdminSessionRemote, caSession, catoken);
+            caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, approvalProfileId, caAdminSessionRemote, caSession, catoken);
             X509Certificate adminCert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME)).iterator().next();
             Set<X509Certificate> credentials = new HashSet<X509Certificate>();
             credentials.add(adminCert);
@@ -555,8 +552,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
                 // Approve revocation and verify success
                 approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
-                        ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, approvalExecutionSession, caID, 
-                        approvalProfile);
+                        ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, caID, approvalProfile, AccumulativeApprovalProfile.FIXED_STEP_ID, partitionId);
                 // Try to unrevoke certificate
                 try {
                     ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.NOT_REVOKED);
@@ -570,7 +566,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 }
                 // Approve revocation and verify success
                 approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.NOT_REVOKED, ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE,
-                        certificateStoreSession, approvalSession, approvalExecutionSession, caID, approvalProfile);
+                        caID, approvalProfile, AccumulativeApprovalProfile.FIXED_STEP_ID, partitionId);
                 // Revoke user
                 try {
                     ejbcaraws.revokeUser(username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, false);
@@ -584,8 +580,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 }
                 // Approve revocation and verify success
                 approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
-                        ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, certificateStoreSession, approvalSession, approvalExecutionSession, caID, 
-                        approvalProfile);
+                        ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, caID, approvalProfile, AccumulativeApprovalProfile.FIXED_STEP_ID, partitionId);
                 // Try to reactivate user
                 try {
                     ejbcaraws.revokeUser(username, RevokedCertInfo.NOT_REVOKED, false);
@@ -612,13 +607,13 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 }
                 // Approve actions and verify success
                 approveRevocation(intAdmin, approvingAdmin, TOKENUSERNAME, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
-                        ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, approvalExecutionSession, caID, 
-                        approvalProfile);
+                        ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, caID, 
+                        approvalProfile, AccumulativeApprovalProfile.FIXED_STEP_ID, partitionId);
             } finally {
                 hardTokenSessionRemote.removeHardToken(intAdmin, TOKENSERIALNUMBER);
             }
         } finally {
-            approvalProfileSession.removeApprovalProfile(intAdmin, approvalProfileName);
+            approvalProfileSession.removeApprovalProfile(intAdmin, approvalProfileId);
             // Nuke CA
             try {
                 caAdminSessionRemote.revokeCA(intAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);

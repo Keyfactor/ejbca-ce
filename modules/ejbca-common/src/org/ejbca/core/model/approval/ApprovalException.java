@@ -18,8 +18,7 @@ import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
 
 /**
- * General Exception when something serious goes wrong when
- * managing approvals
+ * General Exception when something serious goes wrong when managing approvals
  * 
  * @version $Id$
  */

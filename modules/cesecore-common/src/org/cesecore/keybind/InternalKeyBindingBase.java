@@ -53,7 +53,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
     private String signatureAlgorithm;
     
-    private final Map<String,DynamicUiProperty<? extends Serializable>> propertyTemplates = new HashMap<String,DynamicUiProperty<? extends Serializable>>();
+    private final Map<String,DynamicUiProperty<? extends Serializable>> propertyTemplates = new HashMap<>();
     
     protected void addProperty(DynamicUiProperty<? extends Serializable> property) {
         propertyTemplates.put(property.getName(), property);
@@ -237,24 +237,24 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     /** Invoked after the all data has been loaded in init(...) */
     protected abstract void upgrade(final float latestVersion, final float currentVersion);
 
-    /** Store data in the undelying map. Encourages use of String valued keys. */
+    /** Store data in the underlying map. Encourages use of String valued keys. */
     private void putData(final String key, final Object value) {
         data.put(SUBCLASS_PREFIX + key, value);
     }
 
-    /** @return data from the undelying map. Encourages use of String valued keys. */
+    /** @return data from the underlying map. Encourages use of String valued keys. */
     @SuppressWarnings("unchecked")
     private <T> T getData(final String key, final T defaultValue) {
         final T ret = (T) data.get(SUBCLASS_PREFIX + key);
         return ret==null ? defaultValue : ret;
     }
 
-    /** Store data in the undelying map. Encourages use of String valued keys. */
+    /** Store data in the underlying map. Encourages use of String valued keys. */
     private void putDataInternal(final String key, final Object value) {
         data.put(BASECLASS_PREFIX + key, value);
     }
 
-    /** @return data from the undelying map. Encourages use of String valued keys. */
+    /** @return data from the underlying map. Encourages use of String valued keys. */
     @SuppressWarnings("unchecked")
     private <T> T getDataInternal(final String key, final T defaultValue) {
         final T ret = (T) data.get(BASECLASS_PREFIX + key);

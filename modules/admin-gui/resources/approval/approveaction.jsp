@@ -38,7 +38,7 @@ function viewcert(link){
 </script>
 
 <h2 align="center"><h:outputText value="#{web.text.APPROVEACTION}"/></h2>
-<h:form>
+<h:form id="approveActionForm">
   <h:inputHidden id="approveActionID" value="#{approvalActionRequest.uniqueId}"/>
   <f:attribute name="windowWidth" value="#{approvalActionManagedBean.windowWidth}"/>
 
@@ -70,11 +70,15 @@ function viewcert(link){
    			<td><h:outputText value="#{approvalActionManagedBean.approveRequestData.endEntityProfileName}"/></td>
    		</tr>
    		<tr id="Row1">
+   			<td><h:outputText value="#{web.text.APPROVALPROFILE}"/></td>
+   			<td><h:outputText value="#{approvalActionManagedBean.approveRequestData.approvalProfile.profileName}"/></td>
+   		</tr>
+   		<tr id="Row0">
    			<td><h:outputText value="#{web.text.REMAININGAPPROVALS}"/></td>
    			<td><h:outputText value="#{approvalActionManagedBean.approveRequestData.remainingApprovals}"/></td>
    		</tr>
    	</table>
-
+	
 	<h:dataTable value="#{approvalActionManagedBean.approveRequestData.textComparisonList}" var="textCompareRow"  width="100%" 
 		rendered="#{approvalActionManagedBean.approvalRequestComparable}">
 		<h:column>
@@ -91,7 +95,8 @@ function viewcert(link){
 		</h:column>
 	</h:dataTable>
 	<h:dataTable value="#{approvalActionManagedBean.approveRequestData.textComparisonList}" var="singleTextCompareRow"  width="100%" 
-		rendered="#{!approvalActionManagedBean.approvalRequestComparable and !approvalActionManagedBean.approveRequestData.containingLink}">
+		rendered="#{!approvalActionManagedBean.approvalRequestComparable and !approvalActionManagedBean.approveRequestData.containingLink}"
+		style="font-size: 0.7em;">
 		<h:column>
 			<f:facet name="header">
 				<h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
@@ -100,7 +105,8 @@ function viewcert(link){
 		</h:column>
 	</h:dataTable>
 	<h:dataTable value="#{approvalActionManagedBean.approveRequestData.textListExceptLinks}" var="singleTextCompareRow"  width="100%"
-		rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionManagedBean.approveRequestData.containingLink}">
+		rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionManagedBean.approveRequestData.containingLink}"
+		style="font-size: 0.7em;">
 		<h:column>
 			<f:facet name="header">
 				<h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
@@ -109,7 +115,8 @@ function viewcert(link){
 		</h:column>
 	</h:dataTable>
 	<h:dataTable value="#{approvalActionManagedBean.approveRequestData.approvalDataLinks}" var="link"  width="100%"
-		rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionManagedBean.approveRequestData.containingLink}">
+		rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionManagedBean.approveRequestData.containingLink}"
+		style="font-size: 0.7em;">
 		<h:column>
 			<h:outputText value="#{link.preDescription}"/>
 			<h:outputLink value="#{link.URI}" target="Viewinfo" onclick="#{approvalView.viewApproverCertLink}">
@@ -121,7 +128,8 @@ function viewcert(link){
 
     <h3><h:outputText value="#{web.text.APPROVEDBY}"/></h3>
     <h:outputText value="#{web.text.NONE}" rendered="#{!approvalActionManagedBean.existsApprovals}"/>
-  	<h:dataTable id="approvalTable" value="#{approvalActionManagedBean.approvalViews}" var="approvalView" width="100%" rendered="#{approvalActionManagedBean.existsApprovals}">
+  	<h:dataTable id="approvalTable" value="#{approvalActionManagedBean.approvalViews}" var="approvalView" width="100%" rendered="#{approvalActionManagedBean.existsApprovals}"
+  		style="font-size: 0.7em;">
 	    <h:column>
 	      <f:facet name="header">
 	        <h:panelGroup>
@@ -153,27 +161,79 @@ function viewcert(link){
 	      <h:outputText value="#{approvalView.comment}"/>
 	    </h:column>
 	</h:dataTable>   
-	<table border="0" cellpadding="1" width="100%">
-		<col width="20%">
-  		<col width="80%">
-		<tr>
-			<td>
-				<h:outputText value="#{web.text.APCOMMENT}"/><h:outputText value=":"/> 
-			</td>
-			<td>
-		        <h:inputTextarea id="comment" rows="2" cols="30" value="#{approvalActionManagedBean.comment}"
-		        	disabled="#{!approvalActionManagedBean.approvable}"/>
-        	</td>
-        </tr>
-	</table>
 
 
-    <h:panelGroup id="showapprovebuttons" style="padding: 5px 10px">
-        <h:commandButton  id="accept" value="#{web.text.APPROVE}" action="#{approvalActionManagedBean.approve}" onclick="return confirmapprove()"
-        	rendered="#{approvalActionManagedBean.approvable}"/>
-        <h:commandButton  id="reject" value="#{web.text.REJECT}" action="#{approvalActionManagedBean.reject}" onclick="return confirmreject()"
-        	rendered="#{approvalActionManagedBean.approvable}"/>
-        <h:commandButton id="buttonClose" value="#{web.text.CLOSE}" onclick="self.close()"/>
+	<h3><h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION_ACTION }"/></h3>
+	<h:outputText style="font-size: 0.7em;" 
+		value="#{web.text.APPROVAL_PROFILE_CURRENT_STEP}: #{approvalActionManagedBean.currentStepOrdinal} 
+			of #{approvalActionManagedBean.approveRequestData.approvalProfile.numberOfSteps}"/>
+		
+	<h:dataTable value="#{approvalActionManagedBean.approvalPartitions}" var="partition" style="width: 100%"  rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
+			footerClass="tableFooter">
+			<h:column>	
+				<h:dataTable value="#{partition.profilePropertyList}" var="property" headerClass="subheader" columnClasses="editColumn1,editColumn2"
+					 style="width: 100%" rendered="#{not empty partition.profilePropertyList}" styleClass="subTable">
+					<h:column>								
+						<h:outputText value="#{partition.propertyNameLocalized}:"/>
+					</h:column>
+					<h:column>										
+			   			<h:panelGroup rendered="#{!property.multiValued}">
+				   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved}" rendered="#{property.type.simpleName eq 'String'}" 
+				   				value="#{property.value}">
+				   				<f:converter converterId="stringConverter"/>
+				   			</h:inputText>
+				   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved}" rendered="#{property.type.simpleName eq 'Long'}" 
+				   				value="#{property.value}" style="text-align: right;" >
+			                   <f:converter converterId="javax.faces.Long"/>
+				   			</h:inputText>
+				   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved}" rendered="#{property.type.simpleName eq 'Integer'}" 
+				   				value="#{property.value}" style="text-align: right;" size="6">
+			                   <f:converter converterId="javax.faces.Integer"/>
+				   			</h:inputText>
+			   				<h:selectBooleanCheckbox disabled="#{approvalActionManagedBean.partitionApproved}" 
+			   					rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
+			   			</h:panelGroup>
+						<h:selectOneMenu disabled="#{approvalActionManagedBean.partitionApproved}" 
+							rendered="#{property.multiValued && !property.hasMultipleValues}" value="#{property.encodedValue}">
+							<f:selectItems value="#{partition.propertyPossibleValues}"/>
+						</h:selectOneMenu>
+						<h:selectManyListbox disabled="#{approvalActionManagedBean.partitionApproved}" rendered="#{property.multiValued && property.hasMultipleValues}" 
+							value="#{property.encodedValues}">
+							<f:selectItems value="#{partition.propertyPossibleValues}"/>
+						</h:selectManyListbox>
+					</h:column>
+				</h:dataTable>
+				
+				<h:panelGroup layout="block" style="padding: 5px 10px" rendered="#{approvalActionManagedBean.approvable}">
+					<h:selectOneMenu id="selectAction" value="#{approvalActionManagedBean.actionForPartition}" disabled="#{approvalActionManagedBean.partitionApproved}">
+						<f:selectItems value="#{approvalActionManagedBean.actionsAvailable}"/>
+					</h:selectOneMenu>  					
+				</h:panelGroup>
+				
+			</h:column>
+	</h:dataTable>
+	<h:panelGroup layout="block" style="padding: 5px 10px" rendered="#{approvalActionManagedBean.numberOfPartitionsInStep > approvalActionManagedBean.approvalPartitions.rowCount}" >
+		<h:outputText style="font-size: 0.7em;" value="#{web.text.PARTITIONS_HIDDEN}" />
+	</h:panelGroup>	
+
+     <h:panelGroup layout="block" style="padding: 5px 10px">
+    	<table border="0" cellpadding="1" width="100%">
+			<col width="20%">
+	  		<col width="80%">
+			<tr>
+				<td>
+					<h:outputText value="#{web.text.APCOMMENT}:"/>
+				</td>
+				<td>
+			        <h:inputTextarea id="comment" rows="2" cols="30" value="#{approvalActionManagedBean.comment}"
+			        	disabled="#{!approvalActionManagedBean.approvable}"/>
+	        	</td>
+	        </tr>
+		</table>
+	 </h:panelGroup>
+    <h:panelGroup style="padding: 5px 10px" layout="block">
+    	<h:commandButton id="buttonSave" value="#{web.text.APPROVAL_SAVE_STATE}" actionListener="#{approvalActionManagedBean.saveState}"/>
+    	<h:commandButton id="buttonCancel" value="#{web.text.CANCEL}" onclick="self.close()"/>
     </h:panelGroup>
  </h:form>
 
@@ -182,12 +242,7 @@ function viewcert(link){
 function resize(){
   window.resizeTo(<h:outputText value="#{approvalActionManagedBean.windowWidth}"/>,800);
 }
-function confirmapprove(){
-  return confirm('<h:outputText value="#{web.text.AREYOUSUREAPPROVE}"/>');
-}
-function confirmreject(){
-  return confirm('<h:outputText value="#{web.text.AREYOUSUREREJECT}"/>'); 
-}
+
 -->
 </script>
 </body>

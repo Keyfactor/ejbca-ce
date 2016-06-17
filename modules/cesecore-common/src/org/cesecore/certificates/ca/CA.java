@@ -173,7 +173,6 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         }
         data.put(EXTENDEDCASERVICES, extendedservicetypes);
         setApprovalSettings(cainfo.getApprovalSettings());
-        setNumOfRequiredApprovals(cainfo.getNumOfReqApprovals());
         setApprovalProfile(cainfo.getApprovalProfile());
     }
 
@@ -772,7 +771,6 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(CRLOVERLAPTIME, Long.valueOf(cainfo.getCRLOverlapTime()));
         data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
         data.put(APPROVALSETTINGS, cainfo.getApprovalSettings());
-        data.put(NUMBEROFREQAPPROVALS, Integer.valueOf(cainfo.getNumOfReqApprovals()));
         data.put(APPROVALPROFILE, Integer.valueOf(cainfo.getApprovalProfile()));
         if (cainfo.getCertificateProfileId() > 0) {
             data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));

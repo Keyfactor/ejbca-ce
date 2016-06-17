@@ -527,6 +527,7 @@ public class RequestInstance {
         } catch (IncomatibleTokenTypeException re) {
             iErrorMessage = intres.getLocalizedMessage("certreq.csrreceivedforservergentoken");
 		} catch (SignRequestException re) {
+		    log.error(re.getMessage(), re);
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq", re.getMessage());
 		} catch (SignRequestSignatureException se) {
 			String iMsg = intres.getLocalizedMessage("certreq.invalidsign");

@@ -48,14 +48,16 @@ public class RaApprovalResponseRequest implements Serializable {
     private static final long serialVersionUID = 1L;
     /** id of approval */
     private final int id;
-    private final int stepId;
+    private final int stepIdentifier;
+    private final int partitionIdentifier;
     private final String comment;
     private final List<MetadataResponse> metadataList = new ArrayList<>();
     private final Action action;
     
-    public RaApprovalResponseRequest(final int id, final int stepId, final String comment, final Action action) {
+    public RaApprovalResponseRequest(final int id, final int stepIdentifier, final int partitionIdentifier, final String comment, final Action action) {
         this.id = id;
-        this.stepId = stepId;
+        this.stepIdentifier = stepIdentifier;
+        this.partitionIdentifier = partitionIdentifier;
         this.comment = comment;
         this.action = action;
     }
@@ -67,9 +69,8 @@ public class RaApprovalResponseRequest implements Serializable {
     public int getId() {
         return id;
     }
-
-    public int getStepId() {
-        return stepId;
+    public int getStepIdentifier() {
+        return stepIdentifier;
     }
 
     public String getComment() {
@@ -82,6 +83,10 @@ public class RaApprovalResponseRequest implements Serializable {
     
     public Action getAction() {
         return action;
+    }
+
+    public int getPartitionIdentifier() {
+        return partitionIdentifier;
     }
 
 }

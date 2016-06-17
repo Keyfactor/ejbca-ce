@@ -14,9 +14,11 @@
 package org.cesecore.internal;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.cesecore.util.Base64GetHashMap;
 
@@ -203,6 +205,23 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
     protected void putBoolean(final String key, final boolean value) {
         data.put(key, Boolean.valueOf(value));
     }
+    
+    /**
+     * @return a deep copy of this hashmap's data object, for cloning purposes.
+     */
+    protected LinkedHashMap<Object, Object> getClonedData() {
+        // We need to make a deep copy of the hashmap here
+        LinkedHashMap<Object, Object> clonedData = new LinkedHashMap<>(data.size());
+        for (final Entry<Object,Object> entry : data.entrySet()) {
+                Object value = entry.getValue();
+                if (value instanceof ArrayList<?>) {
+                        // We need to make a clone of this object, but the stored immutables can still be referenced
+                        value = ((ArrayList<?>)value).clone();
+                }
+                clonedData.put(entry.getKey(), value);
+        }
+        return clonedData;
+    }   
 
 
 }

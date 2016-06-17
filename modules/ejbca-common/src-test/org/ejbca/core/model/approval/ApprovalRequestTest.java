@@ -16,10 +16,16 @@ package org.ejbca.core.model.approval;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.cert.X509Certificate;
 
+import javax.ejb.EJBException;
+
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -27,6 +33,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
+import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -35,6 +42,8 @@ import org.junit.Test;
  */
 public class ApprovalRequestTest {
 
+    private static final Logger log = Logger.getLogger(ApprovalRequestTest.class);
+    
     private static byte[] testcertenc = Base64.decode(("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDky"
             + "NDA2NDgwNFoXDTA1MDkyMzA2NTgwNFowMzEQMA4GA1UEAxMHcDEydGVzdDESMBAG"
@@ -58,8 +67,8 @@ public class ApprovalRequestTest {
 		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
         AuthenticationToken token = new X509CertificateAuthenticationToken(testcert);
 
-        ApprovalProfile approvalProfile = new ApprovalProfile("NrOfApprovalsApprovalProfile");
-        approvalProfile.setNumberOfApprovals(DummyApprovalRequest.NUM_OF_REQUIRED_APPROVALS);
+        AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile("AccumulativeApprovalProfile");
+        approvalProfile.setNumberOfApprovalsRequired(2);
 		DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false, approvalProfile);
 		
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -69,7 +78,7 @@ public class ApprovalRequestTest {
     	String result = new String(Base64.encode(baos.toByteArray(),false));
 
     	
-    	ApprovalRequest readrequest = ApprovalDataUtil.getApprovalRequest(result);
+    	ApprovalRequest readrequest = getApprovalRequest(result);
     	assertTrue(readrequest.getApprovalType() == ApprovalDataVO.APPROVALTYPE_DUMMY);
     	assertTrue(readrequest.getApprovalRequestType() == ApprovalRequest.REQUESTTYPE_SIMPLE);
     	assertTrue(readrequest.getRequestSignature() == null);
@@ -81,14 +90,29 @@ public class ApprovalRequestTest {
     	assertTrue(!readrequest.isExecutable());
 		
 	}
+    
+    private  ApprovalRequest getApprovalRequest(String data) {
+        ApprovalRequest retval = null;      
+        try {
+            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Base64.decode(data.getBytes())));
+            retval= (ApprovalRequest) ois.readObject();
+        } catch (IOException e) {
+            log.error("Error building approval request.",e);
+            throw new EJBException(e);
+        } catch (ClassNotFoundException e) {
+            log.error("Error building approval request.",e);
+            throw new EJBException(e);
+        }
+        return retval;
+    }
 
     @Test
 	public void testGenerateApprovalId() throws Exception {
 		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
         AuthenticationToken token = new X509CertificateAuthenticationToken(testcert);
 
-        ApprovalProfile approvalProfile = new ApprovalProfile("NrOfApprovalsApprovalProfile");
-        approvalProfile.setNumberOfApprovals(DummyApprovalRequest.NUM_OF_REQUIRED_APPROVALS);
+        AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile("AccumulativeApprovalProfile");
+        approvalProfile.setNumberOfApprovalsRequired(2);
         DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false, approvalProfile);
 		
     	int id1 = ar.generateApprovalId();
@@ -98,7 +122,7 @@ public class ApprovalRequestTest {
         final String TEST_NONADMIN_USERNAME = "wsnonadmintest";
         final String TEST_NONADMIN_CN = "CN=wsnonadmintest";
         final String serialNumber = "12344711";
-        approvalProfile.setNumberOfApprovals(1);
+        approvalProfile.setNumberOfApprovalsRequired(1);
         ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, 
                 TEST_NONADMIN_CN, serialNumber, true, token, null, 1, 0, 0, approvalProfile, null);
         int approvalId = approvalRequest.generateApprovalId();
