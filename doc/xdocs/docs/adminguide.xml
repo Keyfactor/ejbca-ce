@@ -2638,10 +2638,10 @@ Variables used with  expiring certificates:
 Variables used with revocation or re-activation of individual End Entity certificates:
 <ul>
 <li>
-  ${revokedCertificate.CERTSERIAL}      = The serial number of the certificate about to expire
+  ${revokedCertificate.CERTSERIAL}      = The serial number of the revoked certificate
 </li>
 <li>
-  ${revokedCertificate.EXPIREDATE}      = The date the certificate will expire
+  ${revokedCertificate.EXPIREDATE}      = The date the revoked certificate will expire
 </li>
 <li>
   ${revokedCertificate.CERTSUBJECTDN}   = The certificate subject DN
