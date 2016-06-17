@@ -92,6 +92,11 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
             return true;
         }
     }
+    
+    @Override
+    public boolean matchIdentity(AccessUserAspect accessUser) {
+        return true;
+    }
 
     @Override
     public boolean matchTokenType(final String tokenType) {
@@ -142,4 +147,5 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
         }
         return credential.isConfidentialTransport()==other.credential.isConfidentialTransport();
     }
+
 }
