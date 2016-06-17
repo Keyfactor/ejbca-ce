@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -414,7 +413,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // this point it is safe to set the password
                 endEntity.setPassword(newpassword);
                 // Send notifications, if they should be sent
-                sendNotification(admin, endEntity, EndEntityConstants.STATUS_NEW);
+                sendNotification(admin, endEntity, EndEntityConstants.STATUS_NEW, null);
                 if (type.contains(EndEntityTypes.PRINT)) {
                     if (profile == null) {
                         profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
@@ -810,7 +809,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 notificationEndEntityInformation.setPassword(newpassword);
             }
             // Send notification if it should be sent.
-            sendNotification(admin, notificationEndEntityInformation, newstatus);
+            sendNotification(admin, notificationEndEntityInformation, newstatus, null);
             if (newstatus != oldstatus) {
                 // Only print stuff on a printer on the same conditions as for
                 // notifications, we also only print if the status changes, not for
@@ -1217,7 +1216,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Send notifications when transitioning user through work-flow, if they
         // should be sent
         final EndEntityInformation userdata = data1.toEndEntityInformation();
-        sendNotification(admin, userdata, status);
+        sendNotification(admin, userdata, status, null);
         if (log.isTraceEnabled()) {
             log.trace("<setUserStatus(" + username + ", " + status + ")");
         }
@@ -1457,6 +1456,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         }
         // Revoke all non-expired and not revoked certs, one at the time
+        final EndEntityInformation endEntityInformation = userData.toEndEntityInformation();
         final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(username, true, Arrays.asList(CertificateConstants.CERT_ARCHIVED, CertificateConstants.CERT_REVOKED));
         for (final CertificateDataWrapper cdw : cdws) {
             try {
@@ -1472,7 +1472,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 } else {
                     serialNumber = CertTools.getSerialNumber(certificate);
                 }
-                revokeCert(admin, serialNumber, cdw.getCertificateData().getIssuerDN(), reason);
+                try {
+                    revokeCert(admin, serialNumber, null, cdw.getCertificateData().getIssuerDN(), reason, false, endEntityInformation);
+                } catch (RevokeBackDateNotAllowedForProfileException e) {
+                    throw new IllegalStateException("This should not happen since there is no back dating.",e);
+                }
             } catch (AlreadyRevokedException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Certificate from issuer '" + cdw.getCertificateData().getIssuerDN() + "' with serial " + cdw.getCertificateData().getSerialNumber()
@@ -1505,15 +1509,20 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public void revokeCert(final AuthenticationToken admin, final BigInteger certserno, final String issuerdn, final int reason)
             throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         try {
-            revokeCert(admin, certserno, null, issuerdn, reason, false);
+            revokeCert(admin, certserno, null, issuerdn, reason, false, null);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
             throw new IllegalStateException("This should not happen since there is no back dating.",e);
         }
     }
-
     @Override
     public void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException,
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
+        revokeCert(admin, certserno, revocationdate, issuerdn, reason, checkDate, null);
+    }
+
+    private void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate,
+            final EndEntityInformation endEntityInformationParam) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
      if (log.isTraceEnabled()) {
             log.trace(">revokeCert(" + certserno.toString(16) + ", IssuerDN: " + issuerdn + ")");
@@ -1539,31 +1548,29 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final String username = certificateData.getUsername();
         assertAuthorizedToCA(admin, caid);
         int certificateProfileId = certificateData.getCertificateProfileId();
-        String userDataDN = certificateData.getSubjectDN();
+        String certificateSubjectDN = certificateData.getSubjectDN();
         final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(certserno, issuerdn);
-        UserData data = null;
-        if (certReqHistory == null) {
-            // We could use userdata later, so try to find it
-            data = UserData.findByUsername(entityManager, username);
-        }
         int endEntityProfileId = certificateData.getEndEntityProfileId()==null ? -1 : certificateData.getEndEntityProfileIdOrZero();
-        if (certReqHistory != null) {
+        final EndEntityInformation endEntityInformation = endEntityInformationParam==null ? endEntityAccessSession.findUser(username) : endEntityInformationParam;
+        if (certReqHistory == null) {
+            if (endEntityInformation!=null) {
+                // Get the EEP that is currently used as a fallback, if we can find it
+                endEntityProfileId = endEntityInformation.getEndEntityProfileId();
+                // Republish with the same user DN that is currently used as a fallback, if we can find it
+                certificateSubjectDN = endEntityInformation.getCertificateDN();
+                // If for some reason the certificate profile id was not set in the certificate data, try to get it from current userdata
+                if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
+                    certificateProfileId = endEntityInformation.getCertificateProfileId();
+                }
+            }
+        } else {
             // Get the EEP that was used in the original issuance, if we can find it
             endEntityProfileId = certReqHistory.getEndEntityInformation().getEndEntityProfileId();
             // Republish with the same user DN that was used in the original publication, if we can find it
-            userDataDN = certReqHistory.getEndEntityInformation().getCertificateDN();
+            certificateSubjectDN = certReqHistory.getEndEntityInformation().getCertificateDN();
             // If for some reason the certificate profile id was not set in the certificate data, try to get it from the certreq history
             if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
                 certificateProfileId = certReqHistory.getEndEntityInformation().getCertificateProfileId();
-            }
-        } else if (data != null) {
-            // Get the EEP that is currently used as a fallback, if we can find it
-            endEntityProfileId = data.getEndEntityProfileId();
-            // Republish with the same user DN that is currently used as a fallback, if we can find it
-            userDataDN = data.toEndEntityInformation().getCertificateDN();
-            // If for some reason the certificate profile id was not set in the certificate data, try to get it from current userdata
-            if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
-                certificateProfileId = data.getCertificateProfileId();
             }
         }
         if (endEntityProfileId != -1) {
@@ -1632,11 +1639,15 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Revoke certificate in database and all publishers
         try {
-            revocationSession.revokeCertificate(admin, cdw, publishers, revocationdate!=null ? revocationdate : new Date(), reason, userDataDN);
+            revocationSession.revokeCertificate(admin, cdw, publishers, revocationdate!=null ? revocationdate : new Date(), reason, certificateSubjectDN);
         } catch (CertificateRevokeException e) {
             final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));
             log.info(msg);
             throw new FinderException(msg);
+        }
+        // In the case where this is an individual certificate revocation request, we still send a STATUS_REVOKED notification (since user state wont change)
+        if (endEntityProfileId != -1 && endEntityInformationParam==null) {
+            sendNotification(admin, endEntityInformation, EndEntityConstants.STATUS_REVOKED, cdw);
         }
         if (log.isTraceEnabled()) {
             log.trace("<revokeCert()");
@@ -1976,73 +1987,67 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
     }
 
-    private void sendNotification(final AuthenticationToken admin, final EndEntityInformation data, final int newstatus) {
-        if (data == null) {
+    private void sendNotification(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final int newstatus, CertificateDataWrapper revokedCertificate) {
+        if (endEntityInformation == null) {
             if (log.isDebugEnabled()) {
                 log.debug("No UserData, no notification sent.");
             }
             return;
         }
-        final String useremail = data.getEmail();
+        final String userEmail = endEntityInformation.getEmail();
         if (log.isTraceEnabled()) {
-            log.trace(">sendNotification: user=" + data.getUsername() + ", email=" + useremail);
+            log.trace(">sendNotification: user=" + endEntityInformation.getUsername() + ", email=" + userEmail);
         }
-
         // Make check if we should send notifications at all
-        if (data.getType().contains(EndEntityTypes.SENDNOTIFICATION)) {
-            final int profileId = data.getEndEntityProfileId();
-            final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
-            final Collection<UserNotification> l = profile.getUserNotifications();
+        if (endEntityInformation.getType().contains(EndEntityTypes.SENDNOTIFICATION)) {
+            final int endEntityProfileId = endEntityInformation.getEndEntityProfileId();
+            final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
+            final List<UserNotification> userNotifications = endEntityProfile.getUserNotifications();
             if (log.isDebugEnabled()) {
-                log.debug("Number of user notifications: " + l.size());
+                log.debug("Number of user notifications: " + userNotifications.size());
             }
-            final Iterator<UserNotification> i = l.iterator();
-            String rcptemail = useremail; // Default value
-            while (i.hasNext()) {
-                final UserNotification not = i.next();
-                final Collection<String> events = not.getNotificationEventsCollection();
+            String recipientEmail = userEmail; // Default value
+            for (final UserNotification userNotification : userNotifications) {
+                final Collection<String> events = userNotification.getNotificationEventsCollection();
                 if (events.contains(String.valueOf(newstatus))) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Status is " + newstatus + ", notification sent for notificationevents: " + not.getNotificationEvents());
+                        log.debug("Status is " + newstatus + ", notification sent for notificationevents: " + userNotification.getNotificationEvents());
                     }
                     try {
-                        if (StringUtils.equals(not.getNotificationRecipient(), UserNotification.RCPT_USER)) {
-                            rcptemail = useremail;
-                        } else if (StringUtils.contains(not.getNotificationRecipient(), UserNotification.RCPT_CUSTOM)) {
-                            rcptemail = "custom"; // Just if this fail it will
-                                                  // say that sending to user
-                                                  // with email "custom" failed.
-                            // Plug-in mechanism for retrieving custom
-                            // notification email recipient addresses
-                            if (not.getNotificationRecipient().length() < 6) {
-                                final String msg = intres.getLocalizedMessage("ra.errorcustomrcptshort", not.getNotificationRecipient());
+                        if (StringUtils.equals(userNotification.getNotificationRecipient(), UserNotification.RCPT_USER)) {
+                            recipientEmail = userEmail;
+                        } else if (StringUtils.contains(userNotification.getNotificationRecipient(), UserNotification.RCPT_CUSTOM)) {
+                            // Just if this fail it will say that sending to user with email "custom" failed.
+                            recipientEmail = "custom";
+                            // Plug-in mechanism for retrieving custom notification email recipient addresses
+                            if (userNotification.getNotificationRecipient().length() < 6) {
+                                final String msg = intres.getLocalizedMessage("ra.errorcustomrcptshort", userNotification.getNotificationRecipient());
                                 log.error(msg);
                             } else {
-                                final String cp = not.getNotificationRecipient().substring(7);
-                                if (StringUtils.isNotEmpty(cp)) {
+                                final String customClassName = userNotification.getNotificationRecipient().substring(7);
+                                if (StringUtils.isNotEmpty(customClassName)) {
                                     final ICustomNotificationRecipient plugin = (ICustomNotificationRecipient) Thread.currentThread()
-                                            .getContextClassLoader().loadClass(cp).newInstance();
-                                    rcptemail = plugin.getRecipientEmails(data);
-                                    if (StringUtils.isEmpty(rcptemail)) {
-                                        final String msg = intres.getLocalizedMessage("ra.errorcustomnoemail", not.getNotificationRecipient());
+                                            .getContextClassLoader().loadClass(customClassName).newInstance();
+                                    recipientEmail = plugin.getRecipientEmails(endEntityInformation);
+                                    if (StringUtils.isEmpty(recipientEmail)) {
+                                        final String msg = intres.getLocalizedMessage("ra.errorcustomnoemail", userNotification.getNotificationRecipient());
                                         log.error(msg);
                                     } else {
                                         if (log.isDebugEnabled()) {
-                                            log.debug("Custom notification recipient plugin returned email: " + rcptemail);
+                                            log.debug("Custom notification recipient plugin returned email: " + recipientEmail);
                                         }
                                     }
                                 } else {
-                                    final String msg = intres.getLocalizedMessage("ra.errorcustomnoclasspath", not.getNotificationRecipient());
+                                    final String msg = intres.getLocalizedMessage("ra.errorcustomnoclasspath", userNotification.getNotificationRecipient());
                                     log.error(msg);
                                 }
                             }
                         } else {
-                            // Just a plain email address specified in the
-                            // recipient field
-                            rcptemail = not.getNotificationRecipient();
+                            // Just a plain email address specified in the recipient field
+                            recipientEmail = userNotification.getNotificationRecipient();
                         }
-                        if (StringUtils.isEmpty(rcptemail)) {
-                            final String msg = intres.getLocalizedMessage("ra.errornotificationnoemail", data.getUsername());
+                        if (StringUtils.isEmpty(recipientEmail)) {
+                            final String msg = intres.getLocalizedMessage("ra.errornotificationnoemail", endEntityInformation.getUsername());
                             throw new Exception(msg);
                         }
                         // Get the administrators DN from the admin certificate, if one exists
@@ -2052,40 +2057,38 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         if (admin instanceof X509CertificateAuthenticationToken) {
                             final X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken) admin;
                             final X509Certificate adminCert = xtok.getCertificate();
-                            String username = certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(CertTools.getIssuerDN(adminCert),
-                                    adminCert.getSerialNumber());
-                            approvalAdmin = endEntityAccessSession.findUser(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
-                                    "EndEntityManagementSession")), username);
+                            approvalAdminDN = CertTools.getSubjectDN(adminCert);
+                            final String username = certificateStoreSession.findUsernameByFingerprint(CertTools.getFingerprintAsString(adminCert));
+                            if (username!=null) {
+                                approvalAdmin = endEntityAccessSession.findUser(username);
+                            }
                         }
-                        final UserNotificationParamGen paramGen = new UserNotificationParamGen(data, approvalAdminDN, approvalAdmin);
-                        /*
-                         * substitute any $ fields in the receipient and from
-                         * fields
-                         */
-                        rcptemail = paramGen.interpolate(rcptemail);
-                        final String fromemail = paramGen.interpolate(not.getNotificationSender());
-                        final String subject = paramGen.interpolate(not.getNotificationSubject());
-                        final String message = paramGen.interpolate(not.getNotificationMessage());
-                        MailSender.sendMailOrThrow(fromemail, Arrays.asList(rcptemail), MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
-                        final String logmsg = intres.getLocalizedMessage("ra.sentnotification", data.getUsername(), rcptemail);
+                        final UserNotificationParamGen paramGen = new UserNotificationParamGen(endEntityInformation, approvalAdminDN, approvalAdmin, revokedCertificate);
+                        // substitute any $ fields in the recipient and from fields
+                        recipientEmail = paramGen.interpolate(recipientEmail);
+                        final String fromemail = paramGen.interpolate(userNotification.getNotificationSender());
+                        final String subject = paramGen.interpolate(userNotification.getNotificationSubject());
+                        final String message = paramGen.interpolate(userNotification.getNotificationMessage());
+                        MailSender.sendMailOrThrow(fromemail, Arrays.asList(recipientEmail), MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
+                        final String logmsg = intres.getLocalizedMessage("ra.sentnotification", endEntityInformation.getUsername(), recipientEmail);
                         log.info(logmsg);
                     } catch (Exception e) {
-                        final String msg = intres.getLocalizedMessage("ra.errorsendnotification", data.getUsername(), rcptemail);
+                        final String msg = intres.getLocalizedMessage("ra.errorsendnotification", endEntityInformation.getUsername(), recipientEmail);
                         log.error(msg, e);
                     }
-                } else { // if (events.contains(String.valueOf(newstatus)))
+                } else {
                     if (log.isDebugEnabled()) {
-                        log.debug("Status is " + newstatus + ", no notification sent for notificationevents: " + not.getNotificationEvents());
+                        log.debug("Status is " + newstatus + ", no notification sent for notificationevents: " + userNotification.getNotificationEvents());
                     }
                 }
             }
-        } else { // if ( ((data.getType() & EndEntityTypes.USER_SENDNOTIFICATION) != 0) )
+        } else {
             if (log.isDebugEnabled()) {
-                log.debug("Type ("+data.getType().getHexValue()+") does not contain EndEntityTypes.USER_SENDNOTIFICATION, no notification sent.");
+                log.debug("Type ("+endEntityInformation.getType().getHexValue()+") does not contain EndEntityTypes.USER_SENDNOTIFICATION, no notification sent.");
             }
         }
         if (log.isTraceEnabled()) {
-            log.trace("<sendNotification: user=" + data.getUsername() + ", email=" + useremail);
+            log.trace("<sendNotification: user=" + endEntityInformation.getUsername() + ", email=" + userEmail);
         }
     }
 
