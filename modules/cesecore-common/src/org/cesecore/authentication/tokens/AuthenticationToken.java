@@ -59,6 +59,15 @@ public abstract class AuthenticationToken implements Serializable {
      */
     public abstract boolean matches(AccessUserAspect accessUser) throws AuthenticationFailedException;
     
+    /**
+     * This method will take an <code>AccessUserAspectData</code> entity and return whether or not it matches to this AuthenticationToken. Will only
+     * check the identity, and not perform any authentication checks.
+     * 
+     * @param accessUser An <code>AccessUserAspectData</code> entity to match.
+     * @return <code>true</code> if matching.
+     */
+    public abstract boolean matchIdentity(AccessUserAspect accessUser);
+    
     @Override
     public abstract boolean equals(Object authenticationToken);
     

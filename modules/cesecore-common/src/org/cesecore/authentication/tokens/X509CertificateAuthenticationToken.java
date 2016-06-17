@@ -98,22 +98,19 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
                 new HashSet<>(Arrays.asList(new X509Certificate[]{ certificate })));
     }
 
-    /**
-     * This implementation presumes that a lone {@link X509Certificate} has been submitted as a credential (which should have been verified by the
-     * constructor), and will use that value to match this authentication token to the AccessUserData entity submitted.
-     * 
-     * FIXME: This class is a candidate for optimization. 
-     * FIXME: Attempt to remove as many static calls as possible.
-     * 
-     */
     @Override
     public boolean matches(AccessUserAspect accessUser) {
-    	// Protect against spoofing by checking if this token was created locally
-    	if (!super.isCreatedInThisJvm()) {
-    		return false;
-    	}
+        // Protect against spoofing by checking if this token was created locally
+        if (!super.isCreatedInThisJvm()) {
+            return false;
+        } else {
+            return matchIdentity(accessUser);
+        }
+    }   
+    
+    @Override
+    public boolean matchIdentity(AccessUserAspect accessUser) {
         boolean returnvalue = false;
-
         int parameter;
         int size = 0;
         String[] clientstrings = null;

@@ -47,6 +47,11 @@ public class UsernameBasedAuthenticationToken extends AuthenticationToken{
 
     @Override
     public boolean matches(AccessUserAspect accessUser) {
+        return matchIdentity(accessUser);
+    }
+    
+    @Override
+    public boolean matchIdentity(AccessUserAspect accessUser) {
         return username.equals(accessUser.getMatchValue());
     }
 
