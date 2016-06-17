@@ -12,18 +12,14 @@
  *************************************************************************/
 package org.ejbca.core.ejb.approval;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
-import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
-import org.ejbca.core.model.approval.ApprovalStep;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -32,7 +28,6 @@ import org.ejbca.util.query.Query;
  * @version $Id$
  */
 public interface ApprovalSession {
-
 
     /**
      * Method used to add an approval to database.
@@ -117,30 +112,6 @@ public interface ApprovalSession {
     void removeApprovalRequest(AuthenticationToken admin, int id) throws ApprovalException;
 
     /**
-     * Method used to reject an approval requests.
-     * 
-     * It does the following 1. checks if the approval with the status waiting
-     * exists, throws an ApprovalRequestDoesntExistException otherwise
-     * 
-     * 2. check if the administrator is authorized using the following rules: 
-     *   2.1 If the approval profile is of type AccumulativeApprovalProfile:
-     *      2.1.1 if getEndEntityProfile is ANY_ENDENTITYPROFILE then check if the admin is
-     *            authorized to AccessRulesConstants.REGULAR_APPROVECAACTION otherwise
-     *            AccessRulesConstants.REGULAR_APPORVEENDENTITY and APPROVAL_RIGHTS for the
-     *            end entity profile. 
-     *      2.1.2 Checks if the admin is authorized to the approval requests getCAId()
-     *   2.2 If the approval profile is of another type, check  whether the admin is authorized 
-     *       by calling ApprovalprofileType.isAdminAllowedToApprove()
-     * 
-     * 3. looks up the username of the administrator and checks that no
-     * approval have been made by this user earlier.
-     * 
-     * 4. Runs the approval command in the end entity bean.
-     */
-    void reject(AuthenticationToken admin, int approvalId, Approval approval, ApprovalStep approvalStep, boolean isNrOfApprovalsProfile) 
-            throws ApprovalRequestExpiredException, AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException;
-
-    /**
      * Method returning an approval requests with status 'waiting', 'Approved'
      * or 'Reject' returns null if no non expired exists
      */
@@ -151,9 +122,9 @@ public interface ApprovalSession {
      * 
      * @param admin
      * @param approvalId
-     * @return and collection of ApprovalDataVO, empty if no approvals exists.
+     * @return and list of ApprovalDataVO, empty if no approvals exists.
      */
-    Collection<ApprovalDataVO> findApprovalDataVO(AuthenticationToken admin, int approvalId);
+    List<ApprovalDataVO> findApprovalDataVO(AuthenticationToken admin, int approvalId);
 
     /**
      * Method returning a list of approvals from the give query

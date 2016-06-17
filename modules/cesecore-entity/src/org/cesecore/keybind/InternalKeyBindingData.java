@@ -183,7 +183,7 @@ public class InternalKeyBindingData extends ProtectedData implements Serializabl
             final LinkedHashMap<Object, Object> dataMap = new Base64GetHashMap(h);
             return dataMap;
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);  // No UTF8 would be real trouble
+            throw new IllegalStateException(e);  // No UTF8 would be real trouble
         }
     }
 
@@ -201,7 +201,7 @@ public class InternalKeyBindingData extends ProtectedData implements Serializabl
             final String data = baos.toString("UTF8");
             setRawData(data);
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
     

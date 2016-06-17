@@ -48,8 +48,8 @@ import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -523,7 +523,6 @@ public class RegisterReqBean {
             return;
         }
         
-        final int numApprovalsRequired = 1;
         final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new PublicWebPrincipal(remoteAddress));
         
         final EndEntityInformation endEntity = new EndEntityInformation(username, subjectDN, caid, subjectAltName, 
@@ -559,12 +558,12 @@ public class RegisterReqBean {
             errors.add("CA with ID " + caid + " does not exist. " + e1.getMessage());
             return;
         }
-        final ApprovalProfile approvalProfiles[] = getApprovalProfiles(cainfo, certProfileId);
+        final ApprovalProfile approvalProfile = getApprovalProfile(cainfo, certProfileId);
         
         // Add approval request
-        final AddEndEntityApprovalRequest approvalReq = new AddEndEntityApprovalRequest(endEntity,
-                false, admin, null, numApprovalsRequired, caid, eeProfileId, approvalProfiles[0], 
-                approvalProfiles[1]);
+        //TODO HANDLE 100% UPTIME HERE
+        final AddEndEntityApprovalRequest approvalReq = new AddEndEntityApprovalRequest(endEntity, false, admin, null, caid,
+                eeProfileId, approvalProfile);
         
         try {
             approvalSession.addApprovalRequest(admin, approvalReq);
@@ -574,34 +573,22 @@ public class RegisterReqBean {
         }
     }
     
-    private ApprovalProfile[] getApprovalProfiles(final CAInfo cainfo, final int certProfileId) {
-            ApprovalProfile profiles[] = new ApprovalProfile[2];
-            ApprovalProfile profileFromCA = null;
-            ApprovalProfile profileFromCP = null;
-            
-            final ApprovalProfileSessionLocal approvalProfileSession = ejbLocalHelper.getApprovalProfileSession();
-            int approvalProfileId = cainfo.getApprovalProfile();
-            if(approvalProfileId > -1) {
-                profileFromCA = approvalProfileSession.getApprovalProfile(approvalProfileId);
+    private ApprovalProfile getApprovalProfile(final CAInfo cainfo, final int certProfileId) {
+        //FIXME: We shouldn't have to pluck out a session bean for this... 
+        final ApprovalProfileSessionLocal approvalProfileSession = ejbLocalHelper.getApprovalProfileSession();
+        final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
+        if (certProfile != null) {
+            int approvalProfileId = certProfile.getApprovalProfileID();
+            if (approvalProfileId > -1) {
+                return approvalProfileSession.getApprovalProfile(approvalProfileId);
             }
+        }
+        int approvalProfileId = cainfo.getApprovalProfile();
+        if (approvalProfileId > -1) {
+            return approvalProfileSession.getApprovalProfile(approvalProfileId);
+        }
+        return null;
 
-            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
-            if(certProfile != null) {
-                approvalProfileId = certProfile.getApprovalProfileID();
-                if(approvalProfileId > -1) {
-                    profileFromCP = approvalProfileSession.getApprovalProfile(approvalProfileId);
-                }            
-            }
-            
-            if(profileFromCA != null) {
-                profiles[0] = profileFromCA;
-                profiles[1] = profileFromCP;
-            } else {
-                profiles[0] = profileFromCP;
-                profiles[1] = null;
-            }
-            
-            return profiles; 
     }
     
 }

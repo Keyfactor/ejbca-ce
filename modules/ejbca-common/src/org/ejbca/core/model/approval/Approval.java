@@ -30,7 +30,7 @@ import org.ejbca.core.model.log.Admin;
 
 
 /**
- * Class representing one approval of a request data. 
+ * Class representing an approval of a request. 
  * Includes information like:
  * Approval admin certificate
  * isApproved (rejected otherwise)
@@ -47,9 +47,12 @@ import org.ejbca.core.model.log.Admin;
 @SuppressWarnings("deprecation") 
 public class Approval implements Comparable<Approval>, Externalizable { 
 	
-	private static final long serialVersionUID = -1L;
+	private static final long serialVersionUID = -2L;
 	
-	private static final int LATEST_VERSION = 3;
+	/*
+	 * Version 4: Introduced approval profiles in 6.6.0. With this, approvals became specific for a certain sequence and partition. 
+	 */
+	private static final int LATEST_VERSION = 4;
 
 	private AuthenticationToken admin = null;
     private String adminCertIssuerDN = null;
@@ -58,16 +61,20 @@ public class Approval implements Comparable<Approval>, Externalizable {
     private Date approvalDate = null;
     private String comment = null;
     private String approvalSignature = null; 
+    private int stepId; //The identity of the step which this approval covers. 
+    private int partitionId; //The identity of the partition which this approval covers.
     
 	/**
 	 * @param approved
 	 * @param apDate
 	 * @param comment
 	 */
-	public Approval(String comment) {
+	public Approval(String comment, int stepId, int partitionId) {
 		super();
 		this.approvalDate = new Date();
 		this.comment = comment;
+		setStepId(stepId);
+		setPartitionId(partitionId);
 	}
 	
 	/**
@@ -147,6 +154,8 @@ public class Approval implements Comparable<Approval>, Externalizable {
 		out.writeObject(this.approvalDate);
 		out.writeObject(this.comment);	
 		out.writeObject(this.approvalSignature);
+		out.writeObject(this.stepId);
+		out.writeObject(this.partitionId);
 	}
 
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -188,6 +197,45 @@ public class Approval implements Comparable<Approval>, Externalizable {
 			this.approvalDate = (Date) in.readObject();
 			this.comment = (String) in.readObject();
 			this.approvalSignature = (String) in.readObject();
-		}
+		} else if (version == 4) {
+            this.admin = (AuthenticationToken) in.readObject();
+            if (this.admin instanceof AlwaysAllowLocalAuthenticationToken) {
+                // We trust this admin as if it were created internal to EJBCA and fill in the auth token
+                this.admin = new AlwaysAllowLocalAuthenticationToken(this.admin.getPrincipals().iterator().next());
+            } else if (this.admin instanceof X509CertificateAuthenticationToken) {
+                X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken)this.admin;
+                this.adminCertIssuerDN = CertTools.getIssuerDN(xtok.getCertificate());
+                this.adminCertSerialNumber = CertTools.getSerialNumberAsString(xtok.getCertificate());
+            }
+            this.approved = in.readBoolean();
+            this.approvalDate = (Date) in.readObject();
+            this.comment = (String) in.readObject();
+            this.approvalSignature = (String) in.readObject();
+            this.stepId = (int) in.readObject();
+            this.partitionId = (int) in.readObject();
+        }
+		
 	}
+
+	/**
+	 * @return the identity of the step which this approval covers. 
+	 */
+    public int getStepId() {
+        return stepId;
+    }
+
+    public void setStepId(int stepId) {
+        this.stepId = stepId;
+    }
+
+    /**
+     * @return the identity of the partition which this approval covers. 
+     */
+    public int getPartitionId() {
+        return partitionId;
+    }
+
+    public void setPartitionId(int partitionId) {
+        this.partitionId = partitionId;
+    }
 }

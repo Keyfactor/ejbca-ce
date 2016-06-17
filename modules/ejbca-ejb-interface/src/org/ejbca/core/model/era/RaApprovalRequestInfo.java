@@ -14,8 +14,6 @@ package org.ejbca.core.model.era;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -25,7 +23,6 @@ import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.ApprovalStep;
 
 /**
  * Information for an approval request, as seen by an admin.
@@ -61,10 +58,10 @@ public class RaApprovalRequestInfo implements Serializable {
     private boolean approvedByMe;
     
     // Current approval step
-    private final ApprovalStep nextApprovalStep;
+//    private final ApprovalStep nextApprovalStep;
     
     // Previous approval steps that are visible to the admin
-    private final List<ApprovalStep> previousApprovalSteps;
+//    private final List<ApprovalStep> previousApprovalSteps;
     
     public RaApprovalRequestInfo(final AuthenticationToken authenticationToken, final String adminCertIssuer, final String adminCertSerial, final String caName, final ApprovalDataVO approval,
             final List<ApprovalDataText> requestData, final RaEditableRequestData editableData) {
@@ -96,7 +93,7 @@ public class RaApprovalRequestInfo implements Serializable {
                 approvedByMe = true;
             }
         }
-        
+        /*
         // Next steps
         final ApprovalStep nextStep;
         nextStep = approval.getApprovalRequest().getNextUnhandledApprovalStepByAdmin(authenticationToken);
@@ -121,7 +118,7 @@ public class RaApprovalRequestInfo implements Serializable {
         }
         // TODO always add your own approval steps?
         Collections.sort(previousApprovalSteps);
-        
+        */
         requestedByMe = StringUtils.equals(requesterIssuerDN, adminCertIssuer) &&
                 StringUtils.equalsIgnoreCase(requesterSerialNumber, adminCertSerial);
     }
@@ -161,7 +158,7 @@ public class RaApprovalRequestInfo implements Serializable {
     public RaEditableRequestData getEditableData() {
         return editableData.clone();
     }
-    
+   /* 
     public ApprovalStep getNextApprovalStep() {
         return nextApprovalStep;
     }
@@ -169,7 +166,7 @@ public class RaApprovalRequestInfo implements Serializable {
     public List<ApprovalStep> getPreviousApprovalSteps() {
         return previousApprovalSteps;
     }
-    
+    */
     /** Is waiting for the given admin to do something */
     public boolean isWaitingForMe() {
         if (requestedByMe) {

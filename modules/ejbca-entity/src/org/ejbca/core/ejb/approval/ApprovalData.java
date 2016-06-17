@@ -13,8 +13,13 @@
 
 package org.ejbca.core.ejb.approval;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.PostLoad;
@@ -26,7 +31,10 @@ import javax.persistence.Transient;
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.util.Base64;
+import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalRequest;
 
 /**
  * Representation of approval data used to control request and their approvals.
@@ -174,13 +182,13 @@ s	 */
 	public void setStatus(int status) { this.status = status; }
 
 	/**
-	 * Stringrepresentation of data of approvals made by one or more administrators
+	 * String representation of data of approvals made by one or more administrators
 	 */
 	//@Column @Lob
 	public String getApprovaldata() { return approvalData; }
 
 	/**
-	 * Stringrepresentation of data of approvals made by one or more administrators
+	 * String representation of data of approvals made by one or more administrators
 	 */
 	public void setApprovaldata(String approvalData) { this.approvalData = approvalData; }
 
@@ -219,14 +227,22 @@ s	 */
 
 	/**
 	 * Indicates the number of approvals that remains in order to execute the action
+	 * @deprecated in 6.6.0, the type of approval handled is now part of the approval profile
 	 */
 	//@Column
+	@Deprecated
 	public int getRemainingapprovals() { return remainingApprovals; }
 	/**
 	 * Indicates the number of approvals that remains in order to execute the action  
 	 */
+	@Deprecated
 	public void setRemainingapprovals(int remainingApprovals) { this.remainingApprovals = remainingApprovals; }
 
+	@Transient
+	public int getNumberOfApprovalsRemaining() {
+	    return getApprovalRequest().getApprovalProfile().getRemainingApprovals(getApprovals());
+	}
+	
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(final int rowVersion) { this.rowVersion = rowVersion; }
@@ -315,7 +331,55 @@ s	 */
         return String.valueOf(getId());
     }
 
+
+    
     //
     // End Database integrity protection methods
     //
+    
+    /**
+     * @return a value object representation of this entity bean
+     */
+    @Transient
+    public ApprovalDataVO getApprovalDataVO() {
+        hasRequestOrApprovalExpired();
+        return new ApprovalDataVO(getId(), getApprovalid(), getApprovaltype(), getEndentityprofileid(), getCaid(), getReqadmincertissuerdn(),
+                getReqadmincertsn(), getStatus(), getApprovals(), getApprovalRequest(), getRequestDate(), getExpireDate());
+    }
+    
+    @Transient
+    public ApprovalRequest getApprovalRequest() {
+        ApprovalRequest retval = null;      
+        try {
+            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Base64.decode(getRequestdata().getBytes())));
+            retval= (ApprovalRequest) ois.readObject();
+        } catch (IOException e) {
+            log.error("Error building approval request.",e);
+            throw new IllegalStateException(e);
+        } catch (ClassNotFoundException e) {
+            log.error("Error building approval request.",e);
+            throw new IllegalStateException(e);
+        }
+        return retval;
+    }
+    
+    @Transient
+    public List<Approval> getApprovals() {
+        List<Approval> retval = new ArrayList<Approval>();
+        try{
+            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Base64.decode(getApprovaldata().getBytes())));
+            int size = ois.readInt();
+            for(int i=0;i<size;i++){
+                Approval next = (Approval) ois.readObject();
+                retval.add(next);
+            }
+        } catch (IOException e) {
+            log.error("Error building approvals.",e);
+            throw new IllegalStateException(e);
+        } catch (ClassNotFoundException e) {
+            log.error("Error building approvals.",e);
+            throw new IllegalStateException(e);
+        }
+        return retval;
+    }
 }

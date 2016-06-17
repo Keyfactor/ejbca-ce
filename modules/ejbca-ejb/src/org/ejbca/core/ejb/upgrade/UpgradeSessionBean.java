@@ -98,6 +98,8 @@ import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
@@ -106,6 +108,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRuleTemplate;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.DefaultRoles;
@@ -148,6 +151,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private AccessRuleManagementSessionLocal accessRuleManagementSession;
     @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -1290,6 +1295,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * 
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
+    @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase660() throws UpgradeFailedException {
@@ -1323,8 +1329,79 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         } catch (RoleNotFoundException e) {
             throw new UpgradeFailedException("Upgrade failed, for some reason retrieved role does not exist in database.", e);
         }
+        
+        //Create AccumulativeApprovalProfile for all CA's and Certificate Profiles running approvals
+
+        //Sort cache by the number of approvals
+        Map<Integer, Integer> approvalProfileCache = new HashMap<>();
+        //Add approval profiles to all CAs with approvals 
+        try {
+            for (int caId : caSession.getAllCaIds()) {
+                try {
+                    CA ca = caSession.getCAForEdit(authenticationToken, caId);
+                    int numberOfRequiredApprovals = ca.getNumOfRequiredApprovals();
+                    //Verify that the CA is in need of an approval profile...
+                    if (ca.getApprovalProfile() == -1 && ca.getApprovalSettings().size() > 0) {
+                        //Maybe this profile has already been created?
+                        if (approvalProfileCache.containsKey(Integer.valueOf(numberOfRequiredApprovals))) {
+                            //Indeed it has!
+                            ca.setApprovalProfile(approvalProfileCache.get(numberOfRequiredApprovals));
+                            caSession.editCA(authenticationToken, ca, true);
+                        } else {
+                            //None found! Let's create one!
+                            String name = "Require " + numberOfRequiredApprovals + " Approval" + (numberOfRequiredApprovals > 1 ? "s" : "");
+                            AccumulativeApprovalProfile newProfile = new AccumulativeApprovalProfile(name);
+                            newProfile.setNumberOfApprovalsRequired(numberOfRequiredApprovals);
+                            try {
+                                int newProfileId = approvalProfileSession.addApprovalProfile(authenticationToken, newProfile);
+                                approvalProfileCache.put(numberOfRequiredApprovals, newProfileId);
+                                ca.setApprovalProfile(newProfileId);
+                                caSession.editCA(authenticationToken, ca, true);
+                            } catch (ApprovalProfileExistsException e) {
+                                throw new IllegalStateException("Approval profile was apparently already persisted.", e);
+                            }
+                        }
+                    }
+                } catch (CADoesntExistsException e) {
+                    throw new IllegalStateException("CA was not found, in spite of ID just being retireved", e);
+                }
+            }
+            //Do the same for all certificate profiles (same boilerplate, repeated). 
+            Map<Integer, CertificateProfile> allCertificateProfiles = certProfileSession.getAllCertificateProfiles();
+            for (Integer certificateProfileId : allCertificateProfiles.keySet()) {
+                CertificateProfile certificateProfile = allCertificateProfiles.get(certificateProfileId);
+                int numberOfRequiredApprovals = certificateProfile.getNumOfReqApprovals();
+                //Verify that the Certificate Profile is in need of an approval profile...
+                if (certificateProfile.getApprovalProfileID() == -1 && certificateProfile.getApprovalSettings().size() > 0) {
+                    //Maybe this profile has already been created?
+                    String certificateProfileName = certProfileSession.getCertificateProfileName(certificateProfileId);
+                    if (approvalProfileCache.containsKey(Integer.valueOf(numberOfRequiredApprovals))) {
+                        //Indeed it has!
+                        certificateProfile.setApprovalProfileID(approvalProfileCache.get(numberOfRequiredApprovals));
+                        certProfileSession.changeCertificateProfile(authenticationToken, certificateProfileName, certificateProfile);
+                    } else {
+                        //None found! Let's create one!
+                        String name = "Require " + numberOfRequiredApprovals + " approval" + (numberOfRequiredApprovals > 1 ? "s" : "");
+                        AccumulativeApprovalProfile newProfile = new AccumulativeApprovalProfile(name);
+                        newProfile.setNumberOfApprovalsRequired(numberOfRequiredApprovals);
+                        try {
+                            int newProfileId = approvalProfileSession.addApprovalProfile(authenticationToken, newProfile);
+                            approvalProfileCache.put(numberOfRequiredApprovals, newProfileId);
+                            certificateProfile.setApprovalProfileID(newProfileId);
+                            certProfileSession.changeCertificateProfile(authenticationToken, certificateProfileName, certificateProfile);
+                        } catch (ApprovalProfileExistsException e) {
+                            throw new IllegalStateException("Upgrade appears to be happening concurrently.", e);
+                        }
+                    }
+                }
+            }
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException("AlwaysAllowToken was denied access", e);
+        }
+
     }
     
+   
     /**
      * In EJBCA 5.0 we have changed classname for CertificatePolicy.
      * In order to allow us to remove the legacy class in the future we want to upgrade all certificate profiles to use the new classname

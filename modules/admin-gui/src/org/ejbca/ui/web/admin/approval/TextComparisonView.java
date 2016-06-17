@@ -18,7 +18,6 @@ import java.io.Serializable;
 /**
  * Class used to present comparable data with red text for rows that doesn't match.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class TextComparisonView implements Serializable {

@@ -33,11 +33,6 @@
     <managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
   <managed-bean>
-    <managed-bean-name>approvalActionManagedBean</managed-bean-name>
-    <managed-bean-class>org.ejbca.ui.web.admin.approval.ApproveActionManagedBean</managed-bean-class>
-    <managed-bean-scope>session</managed-bean-scope>
-  </managed-bean>
-    <managed-bean>
     <managed-bean-name>approvalActionRequest</managed-bean-name>
     <managed-bean-class>org.ejbca.ui.web.admin.approval.ApproveActionRequestBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
@@ -88,20 +83,6 @@
     	<managed-property>
     	    <property-name>certProfilesBean</property-name>
     	    <value>#{certProfilesBean}</value>
-    	</managed-property>
-  </managed-bean>
-  <managed-bean>
-    	<managed-bean-name>approvalProfilesMBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.approval.ApprovalProfilesMBean</managed-bean-class>
-    	<managed-bean-scope>session</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
-    	<managed-bean-name>approvalProfileMBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.approval.ApprovalProfileMBean</managed-bean-class>
-    	<managed-bean-scope>session</managed-bean-scope>
-    	<managed-property>
-    	    <property-name>approvalProfilesMBean</property-name>
-    	    <value>#{approvalProfilesMBean}</value>
     	</managed-property>
   </managed-bean>
   <managed-bean>

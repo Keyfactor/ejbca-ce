@@ -13,16 +13,22 @@
 
 package org.ejbca.core.model.approval;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 
+import javax.ejb.EJBException;
+
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -38,6 +44,8 @@ import org.junit.Test;
  */
 
 public class ApprovalTest {
+    
+    private static final Logger log = Logger.getLogger(ApprovalTest.class);
 	
     private static byte[] testcertenc = Base64.decode(("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDky"
@@ -62,10 +70,13 @@ public class ApprovalTest {
 		CryptoProviderTools.installBCProvider();
 	}
 
+    @SuppressWarnings("deprecation")
     @Test
 	public void testWriteExternal() throws Exception {
-		ArrayList<Approval> approvals = new ArrayList<Approval>();		
-		Approval ap = new Approval("test");
+		ArrayList<Approval> approvals = new ArrayList<Approval>();	
+		int sequenceIdentifier = 4711;
+		int partitionIdentifier = 1337;
+		Approval ap = new Approval("test", sequenceIdentifier, partitionIdentifier);
 		Date apDate = ap.getApprovalDate();
 		
 		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
@@ -78,26 +89,45 @@ public class ApprovalTest {
     	
 		int size = approvals.size();
 		oos.writeInt(size);
-		Iterator<Approval> iter = approvals.iterator();
-		while(iter.hasNext()){
-			oos.writeObject(iter.next());
+		for(Approval approval : approvals) {
+			oos.writeObject(approval);
 		}
 		oos.flush();
     	String result = new String(Base64.encode(baos.toByteArray(),false));
 
-    	Collection<Approval> readapprovals = ApprovalDataUtil.getApprovals(result);
+    	Collection<Approval> readapprovals = getApprovals(result);
     	assertTrue(readapprovals.size() == 1);
     	
     	Approval rap = readapprovals.iterator().next();
     	X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken)rap.getAdmin(); 
-    	assertTrue(CertTools.getIssuerDN(xtok.getCertificate()).equals(CertTools.getIssuerDN(testcert)));
-    	assertTrue(CertTools.getSerialNumber(xtok.getCertificate()).equals(CertTools.getSerialNumber(testcert)));
-    	assertTrue(rap.getAdminCertIssuerDN().equals(CertTools.getIssuerDN(testcert)));
-    	assertTrue(rap.getAdminCertSerialNumber().equals(CertTools.getSerialNumber(testcert)));
-    	//assertTrue(rap.getAdmin().getUsername().equals("USERNAME"));
+    	assertEquals(CertTools.getIssuerDN(testcert), CertTools.getIssuerDN(xtok.getCertificate()));
+    	assertEquals(CertTools.getSerialNumber(testcert), CertTools.getSerialNumber(xtok.getCertificate()));
+    	assertEquals(CertTools.getIssuerDN(testcert), rap.getAdminCertIssuerDN());
+    	assertEquals(CertTools.getSerialNumber(testcert), rap.getAdminCertSerialNumber());
     	assertTrue(rap.isApproved());
-    	assertTrue(rap.getComment().equals("test"));
-    	assertTrue(rap.getApprovalDate().equals(apDate));
+    	assertEquals("test", rap.getComment());
+    	assertEquals(apDate, rap.getApprovalDate());
+    	assertEquals("Sequence identifier was not externalized successfully", sequenceIdentifier, rap.getStepId());
+    	
 	}
+    
+    private static Collection<Approval> getApprovals(String stringdata) {
+        ArrayList<Approval> retval = new ArrayList<Approval>();
+        try{
+            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Base64.decode(stringdata.getBytes())));
+            int size = ois.readInt();
+            for(int i=0;i<size;i++){
+                Approval next = (Approval) ois.readObject();
+                retval.add(next);
+            }
+        } catch (IOException e) {
+            log.error("Error building approvals.",e);
+            throw new EJBException(e);
+        } catch (ClassNotFoundException e) {
+            log.error("Error building approvals.",e);
+            throw new EJBException(e);
+        }
+        return retval;
+    }
 
 }

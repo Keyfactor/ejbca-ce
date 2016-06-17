@@ -745,7 +745,6 @@ public class CAInterfaceBean implements Serializable {
 	                            finishUser, extendedcaservices,
 	                            useutf8policytext,
 	                            approvalsettings,
-	                            0, //Value has been deprecated in 6.6.0, but remains in the constructor for the value object for upgrade reasons.
 	                            approvalProfileID,
 	                            useprintablestringsubjectdn,
 	                            useldapdnorder,
@@ -791,7 +790,6 @@ public class CAInterfaceBean implements Serializable {
 	                            finishUser, extendedcaservices,
 	                            useutf8policytext,
 	                            approvalsettings,
-	                            0, //Value has been deprecated in 6.6.0, but remains in the constructor for the value object for upgrade reasons.
 	                            approvalProfileID,
 	                            useprintablestringsubjectdn,
 	                            useldapdnorder,
@@ -831,7 +829,6 @@ public class CAInterfaceBean implements Serializable {
 	                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
 	                        finishUser, extendedcaservices,
 	                        approvalsettings,
-                            0, //Value has been deprecated in 6.6.0, but remains in the constructor for the value object for upgrade reasons.
 	                        approvalProfileID,
 	                        false, // Do not automatically include new CAs in health-check
 	                        isDoEnforceUniquePublicKeys,
@@ -1016,7 +1013,6 @@ public class CAInterfaceBean implements Serializable {
                        finishUser,extendedcaservices,
                        useutf8policytext,
                        approvalsettings,
-                       0, //Value has been deprecated in 6.6.0, but remains in the constructor for the value object for upgrade reasons.
                        approvalProfileID,
                        useprintablestringsubjectdn,
                        useldapdnorder,
@@ -1042,7 +1038,6 @@ public class CAInterfaceBean implements Serializable {
                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
                        finishUser, extendedcaservices,
                        approvalsettings,
-                       0, //Value has been deprecated in 6.6.0, but remains in the constructor for the value object for upgrade reasons.
                        approvalProfileID,
                        includeInHealthCheck,
                        isDoEnforceUniquePublicKeys,

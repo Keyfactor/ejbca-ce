@@ -5,7 +5,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.EJBException;
@@ -18,14 +17,13 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 
@@ -47,11 +45,9 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	/**
 	 * Construct an ApprovalRequest for the revocation of a certificate.
 	 */
-	public RevocationApprovalRequest(BigInteger certificateSerialNumber, String issuerDN, String username,
-			int reason, AuthenticationToken requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId, 
-			ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
-		super(requestAdmin, null, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId, approvalProfile, 
-		        secondApprovalProfile);
+    public RevocationApprovalRequest(BigInteger certificateSerialNumber, String issuerDN, String username, int reason,
+            AuthenticationToken requestAdmin, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile) {
+		super(requestAdmin, null, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile);
 		this.approvalType = ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE;
 		this.username = username;
 		this.reason = reason;
@@ -62,11 +58,9 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	/**
 	 * Constructs an ApprovalRequest for the revocation and optional removal of an end entity.
 	 */
-	public RevocationApprovalRequest(boolean deleteAfterRevoke, String username,
-			int reason, AuthenticationToken requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId, 
-			ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
-		super(requestAdmin, null, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId, approvalProfile, 
-		        secondApprovalProfile);
+    public RevocationApprovalRequest(boolean deleteAfterRevoke, String username, int reason, AuthenticationToken requestAdmin, int cAId,
+            int endEntityProfileId, ApprovalProfile approvalProfile) {
+		super(requestAdmin, null, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile);
 		if (deleteAfterRevoke) {
 			this.approvalType = ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY;
 		} else {
@@ -78,25 +72,6 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		this.issuerDN = null;
 	}
 	
-	private RevocationApprovalRequest(int approvalType, String username,
-	            int reason, String issuerDN,  AuthenticationToken requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId, 
-	            ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
-	    super(requestAdmin, null, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId, approvalProfile, 
-	            secondApprovalProfile);
-	    this.approvalType = approvalType;
-	    this.username = username;
-	    this.reason = reason;
-	    this.certificateSerialNumber = null;
-	    this.issuerDN = issuerDN;  
-	}
-	
-	public RevocationApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
-	    RevocationApprovalRequest req = new RevocationApprovalRequest(this.approvalType, this.username, this.reason, this.issuerDN, 
-	            getRequestAdmin(), 0, getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
-	    req.setOldApprovals(oldApprovals);
-	    return req;
-	}
-
 	/**
 	 * A main function of the ApprovalRequest, the execute() method
 	 * is run when all required approvals have been made.

@@ -52,17 +52,17 @@ public abstract class CAInfo implements Serializable {
     public static final int SPECIALCAIDBORDER = 10;
 
     /**
-     * Constants indicating approvalsettings for this CA
+     * Constants indicating approval settings for this CA
      */
     public static final int REQ_APPROVAL_ADDEDITENDENTITY = 1;
 
     /**
-     * Constants indicating approvalsettings for key recover this CA
+     * Constants indicating approval settings for key recover this CA
      */
     public static final int REQ_APPROVAL_KEYRECOVER = 2;
 
     /**
-     * Constants indicating approvalsettings for revocations this CA
+     * Constants indicating approval settings for revocations this CA
      */
     public static final int REQ_APPROVAL_REVOCATION = 3;
 
@@ -110,11 +110,7 @@ public abstract class CAInfo implements Serializable {
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
     protected Collection<Integer> approvalSettings;
     protected int approvalProfile;
-    /**
-     * @deprecated in 6.6.0, kept only for upgrade reasons. 
-     */
-    @Deprecated
-    protected int numOfReqApprovals;
+
     protected boolean includeInHealthCheck;
     protected boolean doEnforceUniquePublicKeys;
     protected boolean doEnforceUniqueDistinguishedName;
@@ -377,21 +373,6 @@ public abstract class CAInfo implements Serializable {
      */
     public boolean isApprovalRequired(int action) {
         return approvalSettings.contains(Integer.valueOf(action));
-    }
-
-    /**
-     * Returns the number of different administrators that needs to approve
-     * an action, default 1.
-     */
-    public int getNumOfReqApprovals() {
-        return numOfReqApprovals;
-    }
-
-    /**
-     * The number of different administrators that needs to approve
-     */
-    public void setNumOfReqApprovals(int numOfReqApprovals) {
-        this.numOfReqApprovals = numOfReqApprovals;
     }
 
     /**
