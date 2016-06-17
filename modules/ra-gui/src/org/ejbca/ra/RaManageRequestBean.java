@@ -23,6 +23,7 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -99,21 +100,21 @@ public class RaManageRequestBean implements Serializable {
     public boolean isViewDataVisible() { return !editing; }
     public boolean isEditDataVisible() { return editing; }
     public boolean isStatusVisible() { return !editing; }
-    public boolean isPreviousStepsVisible() { return !editing && !requestInfo.getPreviousSteps().isEmpty(); }
+    public boolean isPreviousStepsVisible() { return !editing/* && !requestInfo.getPreviousSteps().isEmpty()*/; }
     public boolean isApprovalVisible() { return !editing; }
     
     public boolean isHasNextStep() {
         initializeRequestInfo();
-        return requestInfo != null && requestInfo.getNextStep() != null;
+        return requestInfo != null;// && requestInfo.getNextStep() != null;
     }
     
     public List<ApprovalRequestGUIInfo.StepControl> getNextStepControls() {
         initializeRequestInfo();
-        if (requestInfo != null && requestInfo.getNextStep() != null) {
-            return getRequest().getNextStep().getControls();
-        } else {
+      //  if (requestInfo != null && requestInfo.getNextStep() != null) {
+      //      return getRequest().getNextStep().getControls();
+      //  } else {
             return null;
-        }
+      //  }
     }
     
     public String getCantApproveReason() {
@@ -139,15 +140,15 @@ public class RaManageRequestBean implements Serializable {
     private RaApprovalResponseRequest buildApprovalResponseRequest(final Action action) {
         final List<ApprovalRequestGUIInfo.StepControl> controls = getNextStepControls();
         final int id = getRequest().request.getId();
-        final int stepId = getRequest().getNextStep().getStepId();
-        final RaApprovalResponseRequest approval = new RaApprovalResponseRequest(id, stepId, "", action); // TODO comment field. should it be here for partitioned approvals also?
+        final int stepId = 0;
+        final RaApprovalResponseRequest approval = new RaApprovalResponseRequest(id, stepId, 0,  "", action); // TODO comment field. should it be here for partitioned approvals also?
         for (final ApprovalRequestGUIInfo.StepControl control : controls) {
             approval.addMetadata(control.getMetadataId(), control.getOptionValue(), control.getOptionNote());
         }
         return approval;
     }
     
-    public void approve() throws AuthorizationDeniedException {
+    public void approve() throws AuthorizationDeniedException, AuthenticationFailedException {
         final RaApprovalResponseRequest responseReq = buildApprovalResponseRequest(Action.APPROVE);
         try {
             if (raMasterApiProxyBean.addRequestResponse(raAuthenticationBean.getAuthenticationToken(), responseReq)) {
@@ -175,7 +176,7 @@ public class RaManageRequestBean implements Serializable {
         reloadRequest();
     }
     
-    public void reject() throws AuthorizationDeniedException {
+    public void reject() throws AuthorizationDeniedException, AuthenticationFailedException {
         final RaApprovalResponseRequest responseReq = buildApprovalResponseRequest(Action.REJECT);
         try {
             if (raMasterApiProxyBean.addRequestResponse(raAuthenticationBean.getAuthenticationToken(), responseReq)) {

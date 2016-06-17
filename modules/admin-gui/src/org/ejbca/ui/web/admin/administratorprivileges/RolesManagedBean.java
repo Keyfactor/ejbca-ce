@@ -41,7 +41,6 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
-import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.roles.RoleData;
@@ -133,26 +132,8 @@ public class RolesManagedBean extends BaseManagedBean {
     
     /** @return a List of all roles, excepting ones that refer to CA's which the current role doesn't have access to. */
     public List<RoleData> getRoles() {
-        List<RoleData> roles = new ArrayList<RoleData>();
         RoleAccessSessionLocal roleAccessSession = getEjbcaWebBean().getEjb().getRoleAccessSession();
-        CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
-        roleLoop: for(RoleData role : roleAccessSession.getAllRoles()) {
-            // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
-            for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
-                if (!caSession.authorizedToCANoLogging(getAdmin(), accessUserAspect.getCaId())) {
-                    continue roleLoop;
-                }
-            }
-            // Secondly, walk through all CAs and make sure that there are no differences. 
-            for (Integer caId : caSession.getAllCaIds()) {
-                if(!caSession.authorizedToCANoLogging(getAdmin(), caId) && role.hasAccessToRule(StandardRules.CAACCESS.resource() + caId)) {
-                    continue roleLoop;
-                }
-            }
-            roles.add(role);
-        }
-        Collections.sort(roles);
-        return roles;
+        return roleAccessSession.getAllAuthorizedRoles(getAdmin());
     }
 
     /** Renames a role */

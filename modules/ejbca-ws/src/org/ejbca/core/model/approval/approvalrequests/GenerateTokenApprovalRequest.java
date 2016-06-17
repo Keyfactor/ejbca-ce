@@ -16,17 +16,15 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
  * Special Approval Request created when an adminsitrator wants
@@ -55,22 +53,13 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 	public GenerateTokenApprovalRequest() {}
 
 	public GenerateTokenApprovalRequest(String username, String userDN, String tokenTypeLabel, AuthenticationToken requestAdmin, 
-	        String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile, 
+	        String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile, 
 	        ApprovalProfile secondApprovalProfile) {
-		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId,2, approvalProfile, 
-		        secondApprovalProfile);
+        super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, 2, approvalProfile);
 		this.username = username;
 		this.dn = userDN;
 		this.tokenTypeLabel = tokenTypeLabel;
 	}
-
-    @Override
-    public GenerateTokenApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
-        GenerateTokenApprovalRequest req = new GenerateTokenApprovalRequest(username, dn, tokenTypeLabel, getRequestAdmin(), 
-                getRequestSignature(), 0, getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
-        req.setOldApprovals(oldApprovals);
-        return req;
-    }
 	
 	@Override
 	public void execute() throws ApprovalRequestExecutionException {

@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.EJBException;
@@ -27,19 +26,17 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
-import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
  * Approval Request created when trying to edit an end entity.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
@@ -55,21 +52,13 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	/** Constructor used in externalization only */
 	public ChangeStatusEndEntityApprovalRequest() {}
 
-	public ChangeStatusEndEntityApprovalRequest( String username, int oldstatus, int newstatus, 
-	        AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, 
-	        int endEntityProfileId, ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
-		super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, numOfReqApprovals, cAId, endEntityProfileId, 
-		        approvalProfile, secondApprovalProfile);
+    public ChangeStatusEndEntityApprovalRequest(String username, int oldstatus, int newstatus, AuthenticationToken requestAdmin,
+            String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile) {
+		super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, 
+		        approvalProfile);
 		this.username = username;
 		this.oldstatus = oldstatus;
 		this.newstatus = newstatus;
-	}
-
-	public ChangeStatusEndEntityApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
-	    ChangeStatusEndEntityApprovalRequest req = new ChangeStatusEndEntityApprovalRequest(username, oldstatus, newstatus, 
-	            getRequestAdmin(), getRequestSignature(), 0, getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
-	    req.setOldApprovals(oldApprovals);
-	    return req;
 	}
 
 	/** Overrides ApprovalRequest.isAllowedTransition()

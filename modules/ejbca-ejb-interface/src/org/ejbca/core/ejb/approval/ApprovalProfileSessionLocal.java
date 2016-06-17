@@ -18,8 +18,10 @@ import java.util.Map;
 
 import javax.ejb.Local;
 
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.ejbca.core.ejb.profiles.ProfileData;
-import org.ejbca.core.model.approval.ApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
  * Session to access approval profiles locally
@@ -28,27 +30,19 @@ import org.ejbca.core.model.approval.ApprovalProfile;
  */
 @Local
 public interface ApprovalProfileSessionLocal extends ApprovalProfileSession {
-
-    /**
-     * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
-     * @return the found entity instance or null if the entity does not exist
-     */
-    ProfileData findByIdAndType(final int id, final String type);
     
     /** @return the found entity instance or null if the entity does not exist */
     ProfileData findById(int id);
     
     /**
-     * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
-     * @return the found entity instance or null if the entity does not exist
+     * @return the found entity instances or an empty list. 
      */
-    ProfileData findByNameAndType(final String name, final String type);
+    List<ProfileData> findByNameAndType(final String name, final String type);
     
     /**
-     * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
      * @return the found entity instance or null if the entity does not exist
      */
-    ProfileData findByApprovalProfileName(String profileName);
+    List<ProfileData> findByApprovalProfileName(String profileName);
     
     /** @return return all approval profiles  as a List. */
     List<ProfileData> findAllApprovalProfiles();
@@ -62,4 +56,15 @@ public interface ApprovalProfileSessionLocal extends ApprovalProfileSession {
      * @return a list of all existing approval profiles
      */
     Collection<ApprovalProfile> getApprovalProfilesList();
+    
+    /**
+     * Returns the appropriate approval profile for the given action, where any approval profile defined in the certificate profile trumps any 
+     * define in the CA
+     * 
+     * @param action an approval action
+     * @param cainfo a CA information object
+     * @param certProfile a certificate profile
+     * @return the most appropriate profile for the action, or null if none was found.
+     */
+    ApprovalProfile getApprovalProfileForAction(final int action, final CAInfo cainfo, final CertificateProfile certProfile);
 }

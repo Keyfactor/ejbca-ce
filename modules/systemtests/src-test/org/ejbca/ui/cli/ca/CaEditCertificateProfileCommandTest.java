@@ -74,20 +74,20 @@ public class CaEditCertificateProfileCommandTest {
             profile.setCaIssuers(caissuers);
             profileSession.addCertificateProfile(admin, PROFILE_NAME, profile);
             CertificateProfile profile1 = profileSession.getCertificateProfile(PROFILE_NAME);
-            assertEquals("storing cert profile with values failed", "http://crl1.foo.com/crl1.crl", profile1.getCRLDistributionPointURI());
-            assertEquals("storing cert profile with values failed", "ldap://caissuer.foo.com/ca1.der", profile1.getCaIssuers().get(0));
-            assertEquals("changing cert profile with values failed", false, profile1.getUseOcspNoCheck());
-            assertEquals("changing cert profile with values failed", 1, profile1.getNumOfReqApprovals());
+            assertEquals("Storing cert profile with values failed", "http://crl1.foo.com/crl1.crl", profile1.getCRLDistributionPointURI());
+            assertEquals("Storing cert profile with values failed", "ldap://caissuer.foo.com/ca1.der", profile1.getCaIssuers().get(0));
+            assertEquals("Changing cert profile with values failed", false, profile1.getUseOcspNoCheck());
+            assertEquals("Changing cert profile with values failed", 1, profile1.getNumOfReqApprovals());
             command.execute(HAPPY_PATH_ARGS1);
             command.execute(HAPPY_PATH_ARGS2);
             command.execute(HAPPY_PATH_ARGS3);
             command.execute(HAPPY_PATH_ARGS4);
             // Check that we edited
             CertificateProfile profile2 = profileSession.getCertificateProfile(PROFILE_NAME);
-            assertEquals("changing cert profile with values failed", "http://my-crl-distp.com/my.crl", profile2.getCRLDistributionPointURI());
-            assertEquals("changing cert profile with values failed", "http://my-ca.issuer.com/ca", profile2.getCaIssuers().get(0));
-            assertEquals("changing cert profile with values failed", true, profile2.getUseOcspNoCheck());
-            assertEquals("changing cert profile with values failed", 5, profile2.getNumOfReqApprovals());
+            assertEquals("Changing cert profile with values failed", "http://my-crl-distp.com/my.crl", profile2.getCRLDistributionPointURI());
+            assertEquals("Changing cert profile with values failed", "http://my-ca.issuer.com/ca", profile2.getCaIssuers().get(0));
+            assertEquals("Changing cert profile with values failed", true, profile2.getUseOcspNoCheck());
+            assertEquals("Changing cert profile with values failed", 5, profile2.getNumOfReqApprovals());
             // Try to get value and list fields without exceptions...
             command.execute(HAPPY_PATH_GETVALUE_ARGS);
             command.execute(HAPPY_PATH_LISTFIELDS_ARGS);

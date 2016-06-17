@@ -22,6 +22,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import javax.ejb.EJB;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
 import javax.faces.model.ListDataModel;
 
 import org.apache.commons.lang.StringUtils;
@@ -35,7 +38,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.ejbca.core.ejb.approval.ApprovalProfileDoesNotExistException;
 import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
-import org.ejbca.core.model.approval.ApprovalProfile;
+import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalProfileBase;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -43,11 +48,12 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * @version $Id$
  *
  */
+@SessionScoped
+@ManagedBean(name="approvalProfilesMBean")
 public class ApprovalProfilesMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -2452049885728885525L;
-    
-    
+        
     public class ApprovalProfileGuiInfo {
         private final int id;
         private final String name;
@@ -60,7 +66,9 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     }
     
     
-    
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;
+
     private boolean renameInProgress = false;
     private boolean deleteInProgress = false;
     private boolean addFromTemplateInProgress = false;
@@ -80,7 +88,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     public String getSelectedApprovalProfileName() {
         final Integer profileId = getSelectedApprovalProfileId();
         if (profileId != null) {
-            return getEjbcaWebBean().getEjb().getApprovalProfileSession().getApprovalProfileName(profileId.intValue());
+            return approvalProfileSession.getApprovalProfileName(profileId.intValue());
         }
         return null;
     }
@@ -102,7 +110,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     }
     
     public void selectCurrentRowData() {
-        final ApprovalProfileGuiInfo approvalProfileItem = (ApprovalProfileGuiInfo) getApprovalProfiles().getRowData();
+        final ApprovalProfileGuiInfo approvalProfileItem = getApprovalProfiles().getRowData();
         selectedApprovalProfileId = approvalProfileItem.getId();
     }
 
@@ -110,7 +118,6 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     public ListDataModel<ApprovalProfileGuiInfo> getApprovalProfiles() {
         if (approvalProfilesList == null) {
             final List<ApprovalProfileGuiInfo> items = new ArrayList<ApprovalProfileGuiInfo>();
-            final ApprovalProfileSessionLocal approvalProfileSession = getEjbcaWebBean().getEjb().getApprovalProfileSession();
             final List<Integer> authorizedProfileIds = new ArrayList<Integer>();
 
             authorizedProfileIds.addAll(approvalProfileSession.getAuthorizedApprovalProfileIds(getAdmin()));
@@ -162,7 +169,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     public String actionEdit() {
         selectCurrentRowData();
         viewOnly = false;
-        return "edit"; // Outcome is defined in faces-config.xml
+        return "edit"; 
     }
     
     public boolean getViewOnly() {
@@ -188,7 +195,6 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     public void actionDeleteConfirm() {
         if (canDeleteApprovalProfile()) {
             try {
-                ApprovalProfileSessionLocal approvalProfileSession = getEjbcaWebBean().getEjb().getApprovalProfileSession(); 
                 approvalProfileSession.removeApprovalProfile(getAdmin(), getSelectedApprovalProfileId());
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage("Not authorized to remove approval profile.");
@@ -233,6 +239,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
         }
         return result;
     }
+    
     public List<String> getCAsUsingApprovalProfile(final int approvalProfileId) {
         final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
         List<Integer> allCas = caSession.getAllCaIds();
@@ -248,10 +255,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
             }
         }
         return result;
-    }
-    
-    
-    
+    } 
     
     private String getAsCommaSeparatedString(final List<String> list) {
         final StringBuilder sb = new StringBuilder();
@@ -264,10 +268,6 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
         return sb.toString();
     }
     
-    
-    
-    
-    
     public void actionRename() {
         selectCurrentRowData();
         renameInProgress = true;
@@ -277,8 +277,8 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
         final String approvalProfileName = getApprovalProfileName();
         if (StringUtils.isNotEmpty(approvalProfileName)) {
             try {
-                getEjbcaWebBean().getEjb().getApprovalProfileSession()
-                        .renameApprovalProfile(getAdmin(), getSelectedApprovalProfileName(), approvalProfileName);
+                approvalProfileSession.renameApprovalProfile(getAdmin(), approvalProfileSession.getApprovalProfile(getSelectedApprovalProfileId()),
+                        approvalProfileName);
                 setApprovalProfileName("");
             } catch (ApprovalProfileExistsException | ApprovalProfileDoesNotExistException e) {
                 addErrorMessage(e.getLocalizedMessage());
@@ -293,13 +293,13 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
         selectCurrentRowData();
         addFromTemplateInProgress = true;
     }
+    
     public void actionAddFromTemplateConfirm() {
         final String approvalProfileName = getApprovalProfileName();
         if (StringUtils.isNotEmpty(approvalProfileName)) {
             try {
-                getEjbcaWebBean().getEjb().getApprovalProfileSession()
-                        .cloneApprovalProfile(getAdmin(), getSelectedApprovalProfileName(), approvalProfileName);
-                getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
+                approvalProfileSession.cloneApprovalProfile(getAdmin(), approvalProfileSession.getApprovalProfile(getSelectedApprovalProfileId()),
+                        approvalProfileName);
                 setApprovalProfileName("");
             } catch (ApprovalProfileExistsException | ApprovalProfileDoesNotExistException | AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e.getLocalizedMessage());
@@ -313,14 +313,18 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
         
         final String approvalProfileName = getApprovalProfileName();
         if (StringUtils.isNotEmpty(approvalProfileName)) {
-            try {
-                final ApprovalProfile approvalProfile = new ApprovalProfile(approvalProfileName);
-                getEjbcaWebBean().getEjb().getApprovalProfileSession().addApprovalProfile(getAdmin(), approvalProfileName, approvalProfile);
+           try {
+                if(!approvalProfileSession.findByNameAndType(approvalProfileName, ApprovalProfileBase.TYPE_NAME).isEmpty()) {
+                    //Handle this below
+                    throw new ApprovalProfileExistsException("Approval profile of name " + approvalProfileName + " already exists");
+                }
+                final ApprovalProfile approvalProfile = new AccumulativeApprovalProfile(approvalProfileName);
+                approvalProfileSession.addApprovalProfile(getAdmin(), approvalProfile);
                 setApprovalProfileName("");
             } catch (ApprovalProfileExistsException e) {
-                addErrorMessage("CERTIFICATEPROFILEALREADY");
+                addErrorMessage("APPROVAL_PROFILE_ALREADY_EXISTS");
             } catch (AuthorizationDeniedException e) {
-                addNonTranslatedErrorMessage("Not authorized to add certificate profile.");
+                addNonTranslatedErrorMessage("Not authorized to add approval profile.");
             }
         }
         approvalProfilesList = null;

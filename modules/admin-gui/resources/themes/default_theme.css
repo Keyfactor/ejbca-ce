@@ -29,6 +29,15 @@ a img {
 	border-width: 0px;
 }
 
+/* Help Text */
+p.help {
+	font-size: 0.70em;
+	line-height: 0.70em;
+	white-space: normal;
+	color: #606060;		/* Keep it, for old web browsers */
+	color: rgba(0,0,0,.6);
+}
+
 
 /*--------------------------------------------------------------------------*/
 /* NAVIGATION */
@@ -903,6 +912,18 @@ table#config tr td:first-child {
 
 .listCaption { font-weight: bold; font-size: 1.2em; text-align: left; background-color: #5B8CCD; color: #FFF; padding-left: .25em; }
 .listHeader { color: #777; font-size: 1.1em; font-weight: bold; text-align: left; }
+
+.subheader { color: #777; font-size: 0.7em; font-weight: bold; text-align: left; }
+
+.subTable { background-color: #ffffff; border: 1px solid #252525; }
+
+.tableFooter {
+			font-size: 0.70em;
+			line-height: 0.70em;
+			white-space: normal;
+			color: #606060;		/* Keep it, for old web browsers */
+			color: rgba(0,0,0,.6);
+		}
 
 /* --- Table: List/Actions */
 

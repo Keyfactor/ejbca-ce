@@ -64,6 +64,7 @@ import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
@@ -148,13 +149,13 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.GenerateTokenApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -1779,18 +1780,19 @@ public class EjbcaWS implements IEjbcaWS {
             }
 		} else {
 		    boolean approveGenTokenCert = false; // will cause AuthorizationDeniedException
-		    final String approvalProfileName = WebServiceConfiguration.getApprovalProfile();
-		    ApprovalProfile approvalProfile = null;
-		    if(StringUtils.isNotEmpty(approvalProfileName)) {
-		        approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileName);
+		    final String approvalProfileIdString = WebServiceConfiguration.getApprovalProfile();   
+	        ApprovalProfile approvalProfile = null;
+		    if(StringUtils.isNotEmpty(approvalProfileIdString) && NumberUtils.isNumber(approvalProfileIdString)) {
+		        Integer approvalProfileId = Integer.valueOf(approvalProfileIdString);
+		        approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
 		    }
 		    if(approvalProfile!=null) {
-		        approveGenTokenCert = arrayContainsValue(approvalProfile.getActionsRequireApproval(), ApprovalRequest.REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE);
+		        approveGenTokenCert = true; // arrayContainsValue(approvalProfile.getActionsRequireApproval(), ApprovalRequest.REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE);
 		    }
 		    
 			if(approveGenTokenCert){
-				ar = new GenerateTokenApprovalRequest(userDataWS.getUsername(), userDataWS.getSubjectDN(), hardTokenDataWS.getLabel(),admin,
-				        null,0,significantcAInfo.getCAId(),endEntityProfileId, approvalProfile, null);
+                    ar = new GenerateTokenApprovalRequest(userDataWS.getUsername(), userDataWS.getSubjectDN(), hardTokenDataWS.getLabel(), admin,
+                            null, significantcAInfo.getCAId(), endEntityProfileId, approvalProfile, null);
 				int status = ApprovalDataVO.STATUS_REJECTED; 					
 				try{
 					status = approvalSession.isApproved(admin, ar.generateApprovalId(), 1);
@@ -2096,10 +2098,13 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
     @Override
-	public HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates)
-		throws CADoesntExistsException, AuthorizationDeniedException, HardTokenDoesntExistsException, NotFoundException, ApprovalRequestExpiredException, WaitingForApprovalException, ApprovalRequestExecutionException, EjbcaException {
+    public HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates)
+            throws CADoesntExistsException, AuthorizationDeniedException, HardTokenDoesntExistsException, NotFoundException,
+            ApprovalRequestExpiredException, WaitingForApprovalException, ApprovalRequestExecutionException, EjbcaException {
 		HardTokenDataWS retval = null;
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+        EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession,
+                certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession,
+                webAuthenticationSession, cryptoTokenManagementSession);
 		AuthenticationToken admin = ejbhelper.getAdmin(true);
 		ApprovalRequest ar = null;
 		boolean isApprovedStep0 = false;
@@ -2120,14 +2125,16 @@ public class EjbcaWS implements IEjbcaWS {
                 
                 boolean approveViewHardToken = false; // will cause AuthorizationDeniedException
                 boolean approveGenTokeCert = false;
-                final String approvalProfileName = WebServiceConfiguration.getApprovalProfile();
+                final String approvalProfileIdString = WebServiceConfiguration.getApprovalProfile();   
                 ApprovalProfile approvalProfile = null;
-                if(StringUtils.isNotEmpty(approvalProfileName)) {
-                    approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileName);
+                if(StringUtils.isNotEmpty(approvalProfileIdString) && NumberUtils.isNumber(approvalProfileIdString)) {
+                    Integer approvalProfileId = Integer.valueOf(approvalProfileIdString);
+                    approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
                 }
                 if(approvalProfile!=null) {
-                    approveViewHardToken = arrayContainsValue(approvalProfile.getActionsRequireApproval(), ApprovalRequest.REQ_APPROVAL_VIEW_HARD_TOKEN);
-                    approveGenTokeCert = arrayContainsValue(approvalProfile.getActionsRequireApproval(), ApprovalRequest.REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE);
+                // TODO: FIX ME!
+                    //    approveViewHardToken = arrayContainsValue(approvalProfile.getActionsRequireApproval(), ApprovalRequest.REQ_APPROVAL_VIEW_HARD_TOKEN);
+                //    approveGenTokeCert = arrayContainsValue(approvalProfile.getActionsRequireApproval(), ApprovalRequest.REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE);
                 }
                 
                 if(approveViewHardToken){
@@ -2146,7 +2153,7 @@ public class EjbcaWS implements IEjbcaWS {
                     int caid = userData.getCAId();
                     caSession.verifyExistenceOfCA(caid);
                     ar = new GenerateTokenApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenData.getHardToken().getLabel(),
-                            admin,null,0,caid,userData.getEndEntityProfileId(), approvalProfile, null);
+                            admin,null,caid,userData.getEndEntityProfileId(), approvalProfile, null);
                     int status = ApprovalDataVO.STATUS_REJECTED;
                     try{
                         if(!approveGenTokeCert){
@@ -2170,6 +2177,7 @@ public class EjbcaWS implements IEjbcaWS {
                         if(!approveViewHardToken){
                             throw new AuthorizationDeniedException("EjbcaWS is not configured for getHardTokenData approvals.");
                         }
+                        //TODO HANDLE 100% UPTIME HERE
                         ar = new ViewHardTokenDataApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenSN, true,admin,null,
                                 0,userData.getCAId(),userData.getEndEntityProfileId(), approvalProfile, null);
                         try{

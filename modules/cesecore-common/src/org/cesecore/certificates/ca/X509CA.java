@@ -250,7 +250,7 @@ public class X509CA extends CA implements Serializable {
                 getRevocationReason(), getRevocationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(),
                 getDeltaCRLPeriod(), getCRLPublishers(), getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(), getUseCRLNumber(),
                 getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getAuthorityInformationAccess(), getNameConstraintsPermitted(), getNameConstraintsExcluded(), getCADefinedFreshestCRL(),
-                getFinishUser(), externalcaserviceinfos, getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(), getApprovalProfile(),
+                getFinishUser(), externalcaserviceinfos, getUseUTF8PolicyText(), getApprovalSettings(), getApprovalProfile(),
                 getUsePrintableStringSubjectDN(), getUseLdapDNOrder(), getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical(),
                 getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName(),
                 isDoEnforceUniqueSubjectDNSerialnumber(), isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage(), getCmpRaAuthSecret());

@@ -247,22 +247,25 @@ org.cesecore.keybind.InternalKeyBindingRules
    // --------------------------------------------------------------------------
    // SUPERVISION FUNCTIONS
 
-   // If authorized to approve data show related links
-   		boolean approveendentity = ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
-		boolean approvecaaction = ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVECAACTION);
-		if(approveendentity || approvecaaction){
+    // If authorized to view approval profiles then display related links.
+
+	    if(ejbcawebbean.isAuthorizedNoLogSilent(APPROVALPROFILEVIEW_RESOURCE)){
 			logheaderprinted = true;%>
 		<li id="cat4" class="section"><strong><%=ejbcawebbean.getText("NAV_SUPERVISIONFUNCTIONS") %></strong>
 			<ul>
-				<li><a href="<%= APPROVAL_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_APPROVEACTIONS") %></a></li>
-<%      }
-    // If authorized to view log then display related links.
-      if(ejbcawebbean.isAuthorizedNoLogSilent(APPROVALPROFILEVIEW_RESOURCE)){
-            if(!logheaderprinted){
-              out.write("<li id=\"cat4\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SUPERVISIONFUNCTIONS")+"</strong><ul>"); 
-              logheaderprinted=true;
-            }  %>
-                <li><a href="<%= APPROVAL_PROFILES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_APPROVALPROFILES") %></a></li>
+			  <li><a href="<%= APPROVAL_PROFILES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_APPROVALPROFILES") %></a></li>
+			
+	<% }%>
+<%
+         // If authorized to approve data show related links
+   	  boolean approveendentity = ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+	  boolean approvecaaction = ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVECAACTION);
+	  if(approveendentity || approvecaaction){
+           if(!logheaderprinted){
+             out.write("<li id=\"cat4\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SUPERVISIONFUNCTIONS")+"</strong><ul>"); 
+             logheaderprinted=true;
+           }  %>
+			<li><a href="<%= APPROVAL_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_APPROVEACTIONS") %></a></li>
 <%    }
     // If authorized to view log then display related links.
       if(ejbcawebbean.isAuthorizedNoLogSilent(LOGVIEW_RESOURCE)){

@@ -113,7 +113,7 @@
 	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15on-154.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-154.jar" sourcepath="/Users/mikek/Sources/BouncyCastle 1.54 Source/bcprov-jdk15on-154/src.zip"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-154.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-entitymanager-4.1.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-4.1.1.Final.jar"/>

@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -50,6 +51,7 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -78,13 +80,13 @@ import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
+import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.ws.BatchCreateTool;
@@ -129,50 +131,54 @@ public class ApprovalSessionTest extends CaTestCase {
 
     private static ArrayList<AccessUserAspectData> adminentities;
     
-    private static ApprovalProfile approvalProfile = null;
+    private static AccumulativeApprovalProfile approvalProfile = null;
     
     private RoleData role;
     private int caid = getTestCAId();
     private int removeApprovalId = 0;
 
     private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    private RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private ApprovalSessionRemote approvalSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = EjbRemoteHelper.INSTANCE
             .getRemoteSession(ApprovalExecutionSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(EndEntityManagementSessionRemote.class);
-
-    private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(
-            SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final ConfigurationSessionRemote configurationProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-
-    private final AuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
-            ApprovalSessionTest.class.getSimpleName()));
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(EndEntityManagementSessionRemote.class);
+    private RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     private static List<File> fileHandles = new ArrayList<File>();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        CryptoProviderTools.installBCProvider();
-        createTestCA();
-        
-        approvalProfile = new ApprovalProfile("ApprovalSessionTest_NrOfApprovalsApprovalProfile");
-        approvalProfile.setNumberOfApprovals(DummyApprovalRequest.NUM_OF_REQUIRED_APPROVALS);
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        createTestCA();      
+        approvalProfile = new AccumulativeApprovalProfile("AccumulativeApprovalProfile");
+        approvalProfile.setNumberOfApprovalsRequired(2);
         ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
-        approvalProfileSession.addApprovalProfile(intadmin, approvalProfile.getProfileName(), approvalProfile);
+        int approvalProfileId =  approvalProfileSession.addApprovalProfile(intadmin, approvalProfile);
+        approvalProfile.setProfileId(approvalProfileId);
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
         removeTestCA();
         
+        InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        internalCertificateStoreSession.removeCertificate(admincert1);
+        internalCertificateStoreSession.removeCertificate(admincert2);
+        internalCertificateStoreSession.removeCertificate(admincert3);
+        internalCertificateStoreSession.removeCertificate(externalcert);
+        internalCertificateStoreSession.removeCertificate(reqadmincert);   
+        
         ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
-        if((approvalProfile != null) && (approvalProfileSession.getApprovalProfile(approvalProfile.getProfileName()) != null)) {
-            approvalProfileSession.removeApprovalProfile(intadmin, approvalProfile.getProfileName());
+        if((approvalProfile.getProfileId() != null) && (approvalProfileSession.getApprovalProfile(approvalProfile.getProfileId()) != null)) {
+            approvalProfileSession.removeApprovalProfile(intadmin, approvalProfile);
         }
         
         for(File file : fileHandles) {
@@ -184,7 +190,7 @@ public class ApprovalSessionTest extends CaTestCase {
     public void createTestCAWithEndEntity() throws Exception {
         // An if on a static thing here, just so we don't have to batch generate new certs for every test
         if (adminusername1 == null) {
-            adminusername1 = genRandomUserName();
+            adminusername1 = "createTestCAWithEndEntity";
             adminusername2 = adminusername1 + "2";
             adminusername3 = adminusername1 + "3";
             reqadminusername = "req" + adminusername1;
@@ -229,7 +235,7 @@ public class ApprovalSessionTest extends CaTestCase {
         accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(roleName, StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(internalToken, role, accessRules);
+        roleManagementSession.addAccessRulesToRole(intadmin, role, accessRules);
 
         adminentities = new ArrayList<AccessUserAspectData>();
         adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
@@ -256,6 +262,10 @@ public class ApprovalSessionTest extends CaTestCase {
         reqadmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(reqadmincert));
         // TODO: before is had both a cert and username input?
 
+    }
+    
+    private int getPartitionId() {
+        return approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier();
     }
 
     private AuthenticationSubject makeAuthenticationSubject(X509Certificate certificate) {
@@ -367,7 +377,7 @@ public class ApprovalSessionTest extends CaTestCase {
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
 
             // Test approvalId generation with a "real" approval request with a requestAdmin
-            approvalProfile.setNumberOfApprovals(1);
+            approvalProfile.setNumberOfApprovalsRequired(1);
             ViewHardTokenDataApprovalRequest ar = new ViewHardTokenDataApprovalRequest("APPROVALREQTESTTOKENUSER1", 
                     "CN=APPROVALREQTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0, approvalProfile, null);
             log.debug("Adding approval with approvalId: " + ar.generateApprovalId());
@@ -381,7 +391,7 @@ public class ApprovalSessionTest extends CaTestCase {
                 approvalSessionRemote.removeApprovalRequest(admin1, next);
             }
             configurationProxySession.updateProperty("approval.defaultrequestvalidity", originalValidity);
-            approvalProfile.setNumberOfApprovals(DummyApprovalRequest.NUM_OF_REQUIRED_APPROVALS);
+            approvalProfile.setNumberOfApprovalsRequired(2);
         }
     }
 
@@ -393,30 +403,30 @@ public class ApprovalSessionTest extends CaTestCase {
         configurationProxySession.updateProperty("approval.defaultrequestvalidity", "1");
         configurationProxySession.updateProperty("approval.defaultapprovalvalidity", "1");
         try {
-            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, 
-                    SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
+            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false,
+                    approvalProfile);
             removeApprovalId = nonExecutableRequest.generateApprovalId();
             approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
 
-            Approval approval1 = new Approval("ap1test");
-            approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1, null, true);
+            Approval approval1 = new Approval("ap1test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
 
             Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-            assertTrue(result.size() == 1);
+            assertEquals("Wrong number of approvals was returned.", 1, result.size());
 
             ApprovalDataVO next = result.iterator().next();
-            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
-            assertTrue(next.getRemainingApprovals() == 1);
+            assertEquals("Status was not set to 'Waiting for Approval'", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, next.getStatus());
+            assertEquals("Wrong number of remaining approvals", 1, next.getRemainingApprovals());
 
-            Approval approvalAgain = new Approval("apAgaintest");
+            Approval approvalAgain = new Approval("apAgaintest", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
             try {
-                approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approvalAgain, null, true);
+                approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approvalAgain);
                 fail("The same admin shouldn't be able to approve a request twice");
             } catch (AdminAlreadyApprovedRequestException e) {
             }
 
-            Approval approval2 = new Approval("ap2test");
-            approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2, null, true);
+            Approval approval2 = new Approval("ap2test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
 
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
@@ -440,8 +450,8 @@ public class ApprovalSessionTest extends CaTestCase {
                     SecConst.EMPTY_ENDENTITYPROFILE, true, approvalProfile);
             approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
 
-            approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1, null, true);
-            approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2, null, true);
+            approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
+            approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
 
             result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
@@ -462,10 +472,10 @@ public class ApprovalSessionTest extends CaTestCase {
             nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, 
                     false, approvalProfile);
             approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
-            Approval approvalUsingReqAdmin = new Approval("approvalUsingReqAdmin");
+            Approval approvalUsingReqAdmin = new Approval("approvalUsingReqAdmin", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
             try {
                 approvalExecutionSessionRemote.approve(reqadmin, nonExecutableRequest.generateApprovalId(), 
-                        approvalUsingReqAdmin, null, true);
+                        approvalUsingReqAdmin);
                 fail("Request admin shouln't be able to approve their own request");
             } catch (AdminAlreadyApprovedRequestException e) {
             }
@@ -489,9 +499,9 @@ public class ApprovalSessionTest extends CaTestCase {
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword(clearpwd);
-        approvalProfile.setNumberOfApprovals(1);
-        final AddEndEntityApprovalRequest eeApprovalRequest = new AddEndEntityApprovalRequest(userdata, false, cliReqAuthToken, null, 1, caid,
-                SecConst.EMPTY_ENDENTITYPROFILE, approvalProfile, null);
+        approvalProfile.setNumberOfApprovalsRequired(1);
+        final AddEndEntityApprovalRequest eeApprovalRequest = new AddEndEntityApprovalRequest(userdata, false, cliReqAuthToken, null, caid,
+                SecConst.EMPTY_ENDENTITYPROFILE, approvalProfile);
         removeApprovalId = eeApprovalRequest.generateApprovalId();
         approvalSessionRemote.addApprovalRequest(cliReqAuthToken, eeApprovalRequest);
         // Use the authentication token
@@ -501,8 +511,8 @@ public class ApprovalSessionTest extends CaTestCase {
             // NOPMD we only did the above to use our one time authentication token, we know the user does not exist
         }
         try {
-            final Approval approval1 = new Approval("ap1test");
-            approvalExecutionSessionRemote.approve(intadmin, eeApprovalRequest.generateApprovalId(), approval1, null, true);
+            final Approval approval1 = new Approval("ap1test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.approve(intadmin, eeApprovalRequest.generateApprovalId(), approval1);
         } finally {
             try {
                 EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).deleteUser(intadmin, username);
@@ -510,7 +520,7 @@ public class ApprovalSessionTest extends CaTestCase {
                 // NOPMD: ignore if the user does not exist
             }
         }
-        approvalProfile.setNumberOfApprovals(DummyApprovalRequest.NUM_OF_REQUIRED_APPROVALS);
+        approvalProfile.setNumberOfApprovalsRequired(2);
     }
 
     private AuthenticationToken getCliAdmin() {
@@ -540,36 +550,36 @@ public class ApprovalSessionTest extends CaTestCase {
             removeApprovalId = nonExecutableRequest.generateApprovalId();
             approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
 
-            Approval approval1 = new Approval("ap1test");
-            approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1, null, true);
+            Approval approval1 = new Approval("ap1test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
 
             Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             ApprovalDataVO next = result.iterator().next();
-            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
-            assertTrue(next.getRemainingApprovals() == 1);
+            assertEquals("Status = " + next.getStatus(), ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, next.getStatus());
+            assertEquals(1, next.getRemainingApprovals());
 
-            Approval rejection = new Approval("rejectiontest");
-            approvalSessionRemote.reject(admin2, nonExecutableRequest.generateApprovalId(), rejection, null, true);
+            Approval rejection = new Approval("rejectiontest", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.reject(admin2, nonExecutableRequest.generateApprovalId(), rejection);
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             next = (ApprovalDataVO) result.iterator().next();
-            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_REJECTED);
-            assertTrue(next.getRemainingApprovals() == 0);
+            assertEquals("Status = " + next.getStatus(), ApprovalDataVO.STATUS_REJECTED, next.getStatus());
+            assertEquals("No approvals expected to be required.", 0, next.getRemainingApprovals());
 
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
 
             nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
             approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
 
-            rejection = new Approval("rejectiontest2");
-            approvalSessionRemote.reject(admin1, nonExecutableRequest.generateApprovalId(), rejection, null, true);
+            rejection = new Approval("rejectiontest2", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.reject(admin1, nonExecutableRequest.generateApprovalId(), rejection);
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             next = (ApprovalDataVO) result.iterator().next();
-            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_REJECTED);
-            assertTrue(next.getRemainingApprovals() == 0);
+            assertEquals("Status = " + next.getStatus(), ApprovalDataVO.STATUS_REJECTED, next.getStatus());
+            assertEquals("No approvals expected to be required.", 0, next.getRemainingApprovals());
 
             // Try to approve a rejected request
             try {
-                approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval1, null, true);
+                approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval1);
                 fail("It shouldn't be possible to approve a rejected request");
             } catch (ApprovalException e) {
                 log.info("ApprovalException: " + e.getErrorCode() + ". " + e.getMessage());
@@ -585,7 +595,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
             // Try to reject an expired request
             try {
-                approvalSessionRemote.reject(admin2, nonExecutableRequest.generateApprovalId(), rejection, null, true);
+                approvalExecutionSessionRemote.reject(admin2, nonExecutableRequest.generateApprovalId(), rejection);
                 fail("It shouln't be possible to reject and expired request");
             } catch (ApprovalException e) {
             }
@@ -607,31 +617,31 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
 
             int status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
-            assertTrue(status == 2);
+            assertEquals(2, status);
 
-            Approval approval1 = new Approval("ap1test");
-            approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1, null, true);
-
-            status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
-            assertTrue(status == 1);
-
-            Approval approval2 = new Approval("ap2test");
-            approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2, null, true);
+            Approval approval1 = new Approval("ap1test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
 
             status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
-            assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
+            assertEquals(1, status);
+
+            Approval approval2 = new Approval("ap2test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
+
+            status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
+            assertEquals(ApprovalDataVO.STATUS_APPROVED, status);
 
             // Test that the approval expires as it should
             Thread.sleep(1100);
 
             try {
                 status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
-                fail("A ApprovalRequestExpiredException should be thrown here");
+                fail("An ApprovalRequestExpiredException should be thrown here");
             } catch (ApprovalRequestExpiredException e) {
             }
 
             status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
-            assertTrue(status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED);
+            assertEquals(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED, status);
 
             Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             ApprovalDataVO next = result.iterator().next();
@@ -641,67 +651,6 @@ public class ApprovalSessionTest extends CaTestCase {
             configurationProxySession.updateProperty("approval.defaultapprovalvalidity", originalApprovalValidity);
 
         }
-        
-
-    }
-
-    @Test
-    public void testIsApprovedWithSteps() throws Exception {
-        DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, 3, false, approvalProfile);
-        removeApprovalId = nonExecutableRequest.generateApprovalId();
-        approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
-
-        int status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId(), 0);
-        assertTrue(status == 2);
-
-        int approvalId = nonExecutableRequest.generateApprovalId();
-        Approval approval1 = new Approval("ap1test");
-        approvalExecutionSessionRemote.approve(admin1, approvalId, approval1, null, true);
-
-        status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId(), 0);
-        assertTrue(status == 1);
-
-        Approval approval2 = new Approval("ap2test");
-        approvalExecutionSessionRemote.approve(admin2, approvalId, approval2, null, true);
-
-        status = approvalSessionRemote.isApproved(reqadmin, approvalId, 0);
-        assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
-
-        status = approvalSessionRemote.isApproved(reqadmin, approvalId, 1);
-        assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
-
-        status = approvalSessionRemote.isApproved(reqadmin, approvalId, 2);
-        assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
-
-        approvalSessionRemote.markAsStepDone(reqadmin, approvalId, 0);
-
-        status = approvalSessionRemote.isApproved(reqadmin, approvalId, 0);
-        assertTrue(status == ApprovalDataVO.STATUS_EXPIRED);
-
-        status = approvalSessionRemote.isApproved(reqadmin, approvalId, 1);
-        assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
-
-        approvalSessionRemote.markAsStepDone(reqadmin, approvalId, 1);
-
-        status = approvalSessionRemote.isApproved(reqadmin, approvalId, 0);
-        assertTrue(status == ApprovalDataVO.STATUS_EXPIRED);
-
-        status = approvalSessionRemote.isApproved(reqadmin, approvalId, 1);
-        assertTrue(status == ApprovalDataVO.STATUS_EXPIRED);
-
-        status = approvalSessionRemote.isApproved(reqadmin, approvalId, 2);
-        assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
-
-        approvalSessionRemote.markAsStepDone(reqadmin, approvalId, 2);
-
-        status = approvalSessionRemote.isApproved(reqadmin, approvalId, 2);
-        assertTrue(status == ApprovalDataVO.STATUS_EXPIRED);
-
-        Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        ApprovalDataVO next = result.iterator().next();
-
-        approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
-
     }
 
     @Test
@@ -802,22 +751,22 @@ public class ApprovalSessionTest extends CaTestCase {
     @Test
     public void testApprovalsWithExternalAdmins() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
             InvalidKeyException, CertificateEncodingException, SignatureException, IllegalStateException, ApprovalRequestExpiredException,
-            ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, SelfApprovalException, ApprovalException {
+            ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, SelfApprovalException, ApprovalException, AuthenticationFailedException {
         log.trace(">testApprovalsWithExternalAdmins()");
         DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
         removeApprovalId = nonExecutableRequest.generateApprovalId();
         approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
 
-        Approval approval1 = new Approval("ap1test");
-        approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1, null, true);
+        Approval approval1 = new Approval("ap1test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+        approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
         Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
         assertTrue(result.size() == 1);
         ApprovalDataVO next = result.iterator().next();
         assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
         assertTrue(next.getRemainingApprovals() == 1);
 
-        Approval approval2 = new Approval("ap2test");
-        approvalExecutionSessionRemote.approve(externaladmin, nonExecutableRequest.generateApprovalId(), approval2, null, true);
+        Approval approval2 = new Approval("ap2test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+        approvalExecutionSessionRemote.approve(externaladmin, nonExecutableRequest.generateApprovalId(), approval2);
         result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
         assertTrue(result.size() == 1);
         next = (ApprovalDataVO) result.iterator().next();
@@ -826,7 +775,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
         log.trace("<testApprovalsWithExternalAdmins()");
     }
-
+    
     public String getRoleName() {
         return this.getClass().getSimpleName();
     }

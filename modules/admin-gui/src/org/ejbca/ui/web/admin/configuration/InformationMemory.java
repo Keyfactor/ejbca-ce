@@ -16,6 +16,7 @@ package org.ejbca.ui.web.admin.configuration;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,6 +53,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -307,21 +309,22 @@ public class InformationMemory implements Serializable {
         return approvalProfileMap;
     }
     
-    public List<Integer> getSortedApprovalProfileIds() {
-        Map<String, Integer> sortedTreeMap = new TreeMap<>(new Comparator<String>() {
+    public List<Integer> getSortedApprovalProfileIds() {    
+        List<ApprovalProfile> sortedProfiles = new ArrayList<>(approvalProfileSession.getAllApprovalProfiles().values());
+        Collections.sort(sortedProfiles, new Comparator<ApprovalProfile>() {
             @Override
-            public int compare(String o1, String o2) {
-                return o1.compareTo(o2);
+            public int compare(ApprovalProfile o1, ApprovalProfile o2) {               
+                return o1.getProfileName().compareToIgnoreCase(o2.getProfileName());
             }
         });
-        sortedTreeMap.putAll(approvalProfileSession.getApprovalProfileNameToIdMap());
-        List<Integer> result = new ArrayList<>(sortedTreeMap.values());
-        result.add(0, -1);
+        List<Integer> result = new ArrayList<>();
+        result.add(-1);
+        for(ApprovalProfile approvalProfile : sortedProfiles) {
+            result.add(approvalProfile.getProfileId());
+        }
         return result;
     }
-
-    
-    
+        
     /**
      * Method returning the all available publishers id to name.
      * 

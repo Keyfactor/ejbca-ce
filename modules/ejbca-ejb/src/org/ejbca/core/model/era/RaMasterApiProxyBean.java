@@ -222,7 +222,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException, AdminAlreadyApprovedRequestException, SelfApprovalException {
+    public boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse)
+            throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException,
+            AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
                 try {

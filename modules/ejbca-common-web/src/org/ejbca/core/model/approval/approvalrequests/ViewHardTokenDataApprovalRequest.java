@@ -16,17 +16,15 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
  * Approval Request created when an administrator wants
@@ -51,21 +49,12 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
 	public ViewHardTokenDataApprovalRequest(String username, String userDN, String tokensn, boolean viewPUK, 
 	        AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, 
 	        int endEntityProfileId, ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
-		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId, 
-		        approvalProfile, secondApprovalProfile);
+        super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile);
 		this.username = username;
 		this.dn = userDN;
 		this.tokensn = tokensn;
 		this.viewpuk = viewPUK;
 	}
-
-    @Override
-    public ViewHardTokenDataApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
-        ViewHardTokenDataApprovalRequest req = new ViewHardTokenDataApprovalRequest(username, dn, tokensn, viewpuk, getRequestAdmin(), 
-                getRequestSignature(), 0, getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
-        req.setOldApprovals(oldApprovals);
-        return req;
-    }
 	
 	@Override
 	public void execute() throws ApprovalRequestExecutionException {

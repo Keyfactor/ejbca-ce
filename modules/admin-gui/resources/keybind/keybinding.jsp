@@ -183,7 +183,6 @@ org.cesecore.keybind.InternalKeyBindingRules
 		</h:column>
 	</h:dataTable>
 	<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_PROPERTIES}"/></h3>
-	<%-- TODO: Make it not look like a table --%>
 	<h:dataTable value="#{internalKeyBindingMBean.internalKeyBindingPropertyList}" var="property" styleClass="propertyTable">
 		<h:column>
 			<h:outputText value="#{internalKeyBindingMBean.propertyNameTranslated}:"/>

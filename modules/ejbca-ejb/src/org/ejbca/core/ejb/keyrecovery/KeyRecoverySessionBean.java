@@ -55,9 +55,9 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceResponse;
@@ -147,12 +147,11 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
 		final CertificateProfile certProfile = certProfileSession.getCertificateProfile(certinfo.getCertificateProfileId());
 		
         // Check if approvals is required.
-		final ApprovalProfile approvalProfiles[] = ApprovalExecutorUtil.getApprovalProfiles(CAInfo.REQ_APPROVAL_KEYRECOVER, cainfo, certProfile, 
-		        approvalProfileSession);
-        int numOfApprovalsRequired = caAdminSession.getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_KEYRECOVER, caid, certinfo.getCertificateProfileId());
-        if (approvalProfiles[0] != null) {    
-			KeyRecoveryApprovalRequest ar = new KeyRecoveryApprovalRequest(certificate,username,checkNewest, admin,null,numOfApprovalsRequired,caid,
-			        endEntityProfileId, approvalProfiles[0], approvalProfiles[1]);
+        final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_KEYRECOVER, cainfo, certProfile);
+        if (approvalProfile != null) {    
+			KeyRecoveryApprovalRequest ar = new KeyRecoveryApprovalRequest(certificate,username,checkNewest, admin,null,caid,
+			        endEntityProfileId, approvalProfile);
+			//TODO HANDLE 100% UPTIME HERE
 			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_KEYRECOVERY)){
 				approvalSession.addApprovalRequest(admin, ar);
 	            String msg = intres.getLocalizedMessage("keyrecovery.addedforapproval");            	

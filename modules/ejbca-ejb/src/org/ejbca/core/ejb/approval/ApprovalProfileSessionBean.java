@@ -14,7 +14,6 @@ package org.ejbca.core.ejb.approval;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -39,13 +38,16 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
-import org.cesecore.util.QueryResultWrapper;
 import org.ejbca.core.ejb.profiles.ProfileData;
-import org.ejbca.core.model.approval.ApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalProfileBase;
+import org.ejbca.core.model.approval.profile.NonModifiableApprovalProfileException;
 
 /**
  * Keeps track of the approval profiles
@@ -70,19 +72,16 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public int addApprovalProfile(AuthenticationToken admin, String name, ApprovalProfile profile) throws ApprovalProfileExistsException, AuthorizationDeniedException {
-        return addApprovalProfile(admin, findFreeApprovalProfileId(), name, profile);
-    }
-    
-    private int addApprovalProfile(final AuthenticationToken admin, final int id, final String name, final ApprovalProfile profile)
-            throws ApprovalProfileExistsException, AuthorizationDeniedException {
-
-        authorizedToEditProfile(admin, profile, id);
-
+    public int addApprovalProfile(AuthenticationToken admin, ApprovalProfile profile) throws ApprovalProfileExistsException, AuthorizationDeniedException {
+        final int id = findFreeApprovalProfileId();
+        authorizedToEditProfile(admin, id);
+        String name = profile.getProfileName();
         if (isFreeApprovalProfileId(id)) {
-            if (findByApprovalProfileName(name) == null) {
-                entityManager.persist(new ProfileData(Integer.valueOf(id), name, profile));
+            if (findByApprovalProfileName(name).isEmpty()) {
+                profile.setProfileId(id);
+                entityManager.persist(new ProfileData(Integer.valueOf(id), profile));
                 approvalProfileCache.forceCacheExpiration();
                 final String msg = INTRES.getLocalizedMessage("store.addedprofile", name);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -101,10 +100,10 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             throw new ApprovalProfileExistsException(msg);
         }
     }
-
+    
     private boolean isFreeApprovalProfileId(final int id) {
         boolean foundfree = false;
-        if (findByIdAndType(Integer.valueOf(id), ApprovalProfile.TYPE) == null) {
+        if (findById(id) == null) {
             foundfree = true;
         }
         return foundfree;
@@ -113,54 +112,53 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void changeApprovalProfile(final AuthenticationToken admin, final String name, final ApprovalProfile profile)
+    public void changeApprovalProfile(final AuthenticationToken admin, final ApprovalProfile profile)
             throws AuthorizationDeniedException {
-
-        final ProfileData pdl = findByNameAndType( name, ApprovalProfile.TYPE);
-        if (pdl == null) {
+        String name = profile.getProfileName();
+        Integer profileId = profile.getProfileId();
+        if(profileId == null) {
+            throw new IllegalArgumentException("ApprovalProfile did not contain a valid ID");
+        }
+        final ProfileData profileData = findById(profile.getProfileId());
+        if (profileData == null) {
             LOG.info(INTRES.getLocalizedMessage("store.erroreditapprovalprofile", name) + ". No such profile was found");
         } else {
-            authorizedToEditProfile(admin, profile, pdl.getId());
-
+            authorizedToEditProfile(admin, profileData.getId());
             // Do the actual change
-            pdl.setProfile(profile);
+            profileData.setProfile(profile);
+            entityManager.merge(profileData);
+            entityManager.flush();
             LOG.info(INTRES.getLocalizedMessage("store.editedapprovalprofile", name));
-
         }
         approvalProfileCache.forceCacheExpiration();
     }
     
-    
-    
-    
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void removeApprovalProfile(final AuthenticationToken admin, final String name) throws AuthorizationDeniedException {
-        final ProfileData pdl = findByNameAndType(name, ApprovalProfile.TYPE);
-        if (pdl == null) {
+    public void removeApprovalProfile(final AuthenticationToken admin, final ApprovalProfile profile) throws AuthorizationDeniedException {
+        final ProfileData profileData = findById(profile.getProfileId());
+        if (profileData == null) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Trying to remove an approval profile that does not exist: " + name);
+                LOG.debug("Trying to remove an approval profile that does not exist: " + profile.getProfileName());
             }
         } else {
-            authorizedToEditProfile(admin, pdl.getProfile(), pdl.getId());
-
-            entityManager.remove(pdl);
+            authorizedToEditProfile(admin, profileData.getId());
+            entityManager.remove(profileData);
             approvalProfileCache.forceCacheExpiration();
-            LOG.info(INTRES.getLocalizedMessage("store.removedprofile", name));
+            LOG.info(INTRES.getLocalizedMessage("store.removedprofile", profile.getProfileName()));
         }
     }
     
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeApprovalProfile(final AuthenticationToken admin, final int id) throws AuthorizationDeniedException {
-        final ProfileData pdl = findByIdAndType(id, ApprovalProfile.TYPE);
+        final ProfileData pdl = findById(id);
         if (pdl == null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Trying to remove an approval profile that does not exist. ID: " + id);
             }
         } else {
-            authorizedToEditProfile(admin, pdl.getProfile(), pdl.getId());
-
+            authorizedToEditProfile(admin, pdl.getId());
             final String name = pdl.getProfileName();
             entityManager.remove(pdl);
             approvalProfileCache.forceCacheExpiration();
@@ -170,19 +168,19 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void renameApprovalProfile(final AuthenticationToken admin, final String oldname, final String newname)
+    public void renameApprovalProfile(final AuthenticationToken admin, final ApprovalProfile approvalProfile, final String newname)
             throws ApprovalProfileExistsException, ApprovalProfileDoesNotExistException, AuthorizationDeniedException {
-        if (findByNameAndType(newname, ApprovalProfile.TYPE) == null) {
-            final ProfileData pdl = findByNameAndType(oldname, ApprovalProfile.TYPE);
+        if (findByNameAndType(newname,ApprovalProfile.TYPE_NAME) == null) {
+            final ProfileData pdl = findById(approvalProfile.getProfileId());
             if (pdl == null) {
-                final String msg = INTRES.getLocalizedMessage("store.errorprofilenotexist", oldname);
+                final String msg = INTRES.getLocalizedMessage("store.errorprofilenotexist", approvalProfile.getProfileName());
                 throw new ApprovalProfileDoesNotExistException(msg);
             } else {
-                authorizedToEditProfile(admin, pdl.getProfile(), pdl.getId());
-
+                authorizedToEditProfile(admin, pdl.getId());
+                String oldName = approvalProfile.getProfileName();
                 pdl.setProfileName(newname);
                 approvalProfileCache.forceCacheExpiration();
-                final String msg = INTRES.getLocalizedMessage("store.renamedprofile", oldname, newname);
+                final String msg = INTRES.getLocalizedMessage("store.renamedprofile", oldName, newname);
                 LOG.info(msg);
             }
         } else {
@@ -193,172 +191,116 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void cloneApprovalProfile(final AuthenticationToken admin, final String orgname, final String newname)
+    public void cloneApprovalProfile(final AuthenticationToken admin, final ApprovalProfile approvalProfile, final String newName)
             throws ApprovalProfileExistsException, ApprovalProfileDoesNotExistException, AuthorizationDeniedException {
         ApprovalProfile profile = null;
 
-        try {
-            final int origProfileId = getApprovalProfileId(orgname);
-            if (origProfileId == 0) {
-                final String msg = INTRES.getLocalizedMessage("store.errorprofilenotexist", orgname);
-                LOG.info(msg);
-                throw new ApprovalProfileDoesNotExistException(msg);
-            }
-            final ApprovalProfile p = getApprovalProfile(origProfileId);
-
-            profile = p.clone();
-
-            authorizedToEditProfile(admin, profile, origProfileId);
-
-            if (findByNameAndType(newname, ApprovalProfile.TYPE) == null) {
-                entityManager.persist(new ProfileData(findFreeApprovalProfileId(), newname, profile));
-                approvalProfileCache.forceCacheExpiration();
-                final String msg = INTRES.getLocalizedMessage("store.addedprofilewithtempl", newname, orgname);
-                LOG.info(msg);
-            } else {
-                final String msg = INTRES.getLocalizedMessage("store.erroraddprofilewithtempl", newname, orgname);
-                throw new ApprovalProfileExistsException(msg);
-            }
-        } catch (CloneNotSupportedException f) {
-            // If this happens it's a programming error. Throw an exception!
-            throw new IllegalStateException(f);
+        final Integer origProfileId = approvalProfile.getProfileId();
+        if (origProfileId == null) {
+            throw new ApprovalProfileDoesNotExistException("Approval profile of name " + approvalProfile.getProfileName() + " does not exist.");
         }
+        profile = getApprovalProfile(origProfileId).clone();
+        authorizedToEditProfile(admin, origProfileId);
+        if (findByNameAndType(newName, ApprovalProfile.TYPE_NAME).isEmpty()) {
+            entityManager.persist(new ProfileData(findFreeApprovalProfileId(), profile));
+            approvalProfileCache.forceCacheExpiration();
+            LOG.info("Cloned approval profile with name " + newName + " from profile with name " + approvalProfile.getProfileName());
+        } else {
+            throw new ApprovalProfileExistsException("Could not clone profile, profile of name " + newName + " already exists.");
+        }
+      
     }
     
-    @Override
-    public ProfileData findByIdAndType(final int id, final String type) {
-        Query query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.id=:id AND a.profileType=:profileType");
-        query.setParameter("id", id);
-        query.setParameter("profileType", ApprovalProfile.TYPE);
-        return (ProfileData) QueryResultWrapper.getSingleResult(query);
-    } 
-    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public ProfileData findById(int id) {
         return entityManager.find(ProfileData.class, id);
     }
-
-    
-    
-    
+   
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<Integer> getAuthorizedApprovalProfileIds(final AuthenticationToken admin) {
-        // TODO Implement correctly
-        ArrayList<Integer> ret = new ArrayList<Integer>();
-        Map<Integer, ApprovalProfile> allProfiles = getAllApprovalProfiles();
-        Set<Integer> ids = allProfiles.keySet();
-        for(Integer id : ids) {
-            ret.add(id);
-        }
-        return ret;
+        return new ArrayList<>(getAllApprovalProfiles().keySet());
     }    
     
     private int findFreeApprovalProfileId() {
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
             public boolean isFree(int i) {
-                return findByIdAndType(Integer.valueOf(i), ApprovalProfile.TYPE)==null;
+                return findById(i) == null;
             }
         };
         return ProfileID.getNotUsedID(db);
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public ProfileData findByApprovalProfileName(String profileName) {
-        Query query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.profileName=:profileName AND a.profileType=:profileType");
+    public List<ProfileData> findByApprovalProfileName(String profileName) {
+        TypedQuery<ProfileData> query = entityManager
+                .createQuery("SELECT a FROM ProfileData a WHERE a.profileName=:profileName AND a.profileType=:profileType", ProfileData.class);
         query.setParameter("profileName", profileName);
-        query.setParameter("profileType", ApprovalProfile.TYPE);
-        return (ProfileData) QueryResultWrapper.getSingleResult(query);
+        query.setParameter("profileType", ApprovalProfileBase.PROFILE_TYPE);
+        return query.getResultList();
     }
     
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public ProfileData findByNameAndType(final String name, final String type) {
-        Query query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.profileName=:name AND a.profileType=:profileType");
+    public List<ProfileData> findByNameAndType(final String name, final String type) {
+        TypedQuery<ProfileData> query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.profileName=:name AND a.profileType=:profileType", ProfileData.class);
         query.setParameter("name", name);
-        query.setParameter("profileType", ApprovalProfile.TYPE);
-        return (ProfileData) QueryResultWrapper.getSingleResult(query);
+        query.setParameter("profileType", type);
+        return query.getResultList();
     }
     
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<ProfileData> findAllApprovalProfiles() {
-        Query query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.profileType=:profileType");
-        query.setParameter("profileType", ApprovalProfile.TYPE);
-        @SuppressWarnings("unchecked")
+        TypedQuery<ProfileData> query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.profileType=:profileType", ProfileData.class);
+        query.setParameter("profileType", ApprovalProfile.TYPE_NAME);
         List<ProfileData> ret = query.getResultList();
         return ret;
     }
     
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Map<Integer, ApprovalProfile> getAllApprovalProfiles() {
         return approvalProfileCache.getProfileCache();
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Collection<ApprovalProfile> getApprovalProfilesList() {
-        Map<Integer, ApprovalProfile> allProfiles = approvalProfileCache.getProfileCache();
-        
-        
-        ArrayList<ApprovalProfile> profiles = new ArrayList<ApprovalProfile>();
+        Map<Integer, ApprovalProfile> allProfiles = approvalProfileCache.getProfileCache();    
+        ArrayList<ApprovalProfile> profiles = new ArrayList<>();
         Set<Entry<Integer, ApprovalProfile>> entries = allProfiles.entrySet();
-        Iterator<Entry<Integer, ApprovalProfile>> itr = entries.iterator();
-        while(itr.hasNext()) {
-            Entry<Integer, ApprovalProfile> entry = itr.next();
+        for (Entry<Integer, ApprovalProfile> entry : entries) {
             ApprovalProfile profile = entry.getValue();
             profiles.add(profile);
         }
         return profiles;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public ApprovalProfile getApprovalProfile(int id) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getApprovalProfile(" + id + ")");
         }
         ApprovalProfile returnval = null;
-        // We need to clone the profile, otherwise the cache contents will be modifiable from the outside
         final ApprovalProfile aprofile = approvalProfileCache.getProfileCache().get(Integer.valueOf(id));
-        try {
-            if (aprofile != null) {
-                returnval = aprofile.clone();
-            }
-        } catch (CloneNotSupportedException e) {
-            LOG.error("Should never happen: ", e);
-            throw new IllegalStateException(e);
+        // We need to clone the profile, otherwise the cache contents will be modifiable from the outside
+        if (aprofile != null) {
+            returnval = aprofile.clone();
         }
+   
         
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getApprovalProfile(" + id + "): " + (returnval == null ? "null" : "not null"));
         }
         return returnval;
     }
-
-    @Override
-    public ApprovalProfile getApprovalProfile(String name) {
-        final Integer id = approvalProfileCache.getNameIdMapCache().get(name);
-        if (id == null) {
-            return null;
-        } else {
-            return getApprovalProfile(id);
-        }
-    }
-
-    @Override
-    public int getApprovalProfileId(String name) throws ApprovalProfileDoesNotExistException {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace(">getApprovalProfileId: " + name);
-        }
-        
-        final Integer id = approvalProfileCache.getNameIdMapCache().get(name);
-        if (id != null) {
-            final int returnval = id.intValue();
-            if (LOG.isTraceEnabled()) {
-                LOG.trace("<getApprovalProfileId: " + name + "): " + returnval);
-            }
-            return returnval;
-        }
-        throw new ApprovalProfileDoesNotExistException("Approval profile '" + name + "' does not exist");
-    }
-
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public String getApprovalProfileName(int id) {
         if (LOG.isTraceEnabled()) {
@@ -371,6 +313,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         return returnval;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Map<Integer, String> getApprovalProfileIdToNameMap() {
         if (LOG.isTraceEnabled()) {
@@ -380,26 +323,47 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     }
     
     
-    private void authorizedToEditProfile(final AuthenticationToken admin, final ApprovalProfile profile, final int id) throws AuthorizationDeniedException {
+    private void authorizedToEditProfile(final AuthenticationToken admin, final int id) throws AuthorizationDeniedException {
         if (!accessSession.isAuthorized(admin, StandardRules.APPROVALPROFILEEDIT.resource())) {
             final String msg = INTRES.getLocalizedMessage("store.editapprovalprofilenotauthorized", admin.toString(), id);
             throw new AuthorizationDeniedException(msg);
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public void forceProfileCacheExpire() {
        approvalProfileCache.forceCacheExpiration();
     }
     
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public void forceProfileCacheRebuild() {
        approvalProfileCache.updateProfileCache(true);
     }
-
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<String, Integer> getApprovalProfileNameToIdMap() {
-        return approvalProfileCache.getNameIdMapCache();
+    public ApprovalProfile getApprovalProfileForAction(final int action, final CAInfo cainfo, final CertificateProfile certProfile) {
+        if (certProfile != null) {
+            int approvalProfileId = certProfile.getApprovalProfileID();
+            if (approvalProfileId != -1) {
+                ApprovalProfile profile = getApprovalProfile(approvalProfileId);        
+                if (certProfile.getApprovalSettings().contains(Integer.valueOf(action)) && profile.isApprovalRequired()) {
+                    return profile;
+                }
+            }
+        }
+        if (cainfo != null) {
+            int approvalProfileId = cainfo.getApprovalProfile();
+            if (approvalProfileId != -1) {
+                ApprovalProfile profile = getApprovalProfile(approvalProfileId);
+                if (cainfo.getApprovalSettings().contains(Integer.valueOf(action)) && profile.isApprovalRequired()) {
+                    return profile;
+                }
+            }
+        }
+        return null;
     }
 
 }

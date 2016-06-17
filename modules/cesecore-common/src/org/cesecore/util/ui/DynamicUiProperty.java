@@ -192,7 +192,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         if (objects == null || objects.isEmpty()) {
             this.values.set(0, defaultValue);
         } else {
-            if (possibleValues != null) {
+            if (possibleValues != null && !possibleValues.isEmpty()) {
                 this.values.clear();
                 OBJECT_LOOP: for (final T object : objects) {
                     for (final T possibleValue : possibleValues) {
@@ -224,7 +224,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     }
     
     @SuppressWarnings("unchecked")
-    public List<String> getAsEncodedValues(List<T> list) {
+    private List<String> getAsEncodedValues(List<T> list) {
         List<String> encodedValues = new ArrayList<>();
         for(Serializable possibleValue : list)
         {
@@ -286,7 +286,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             oos.close();
             return baos.toByteArray();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -297,7 +297,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             ois.close();
             return (Serializable) o;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 

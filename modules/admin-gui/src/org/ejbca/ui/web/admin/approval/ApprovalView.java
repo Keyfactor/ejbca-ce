@@ -28,7 +28,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 /**
  * Class used to represent the view of an approval
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class ApprovalView {

@@ -40,20 +40,6 @@ public interface CAAdminSessionLocal extends CAAdminSession {
     void initializeAndUpgradeCA(Integer caid) throws CADoesntExistsException;
 
     /**
-     * Help method that checks the CA data config and the certificate profile if
-     * the specified action requires approvals and how many
-     * 
-     * @param action one of CAInfo.REQ_APPROVAL_ constants
-     * @param caid of the ca to check
-     * @param certprofile of the ca to check
-     * @return 0 if no approvals is required otherwise the number of approvals
-     * 
-     * @deprecated since 6.6.0, use approval profiles instead
-     */
-    @Deprecated
-    int getNumOfApprovalRequired(int action, int caid, int certProfileId);
-
-    /**
      * Used by health-check. Validate that CAs are online and optionally performs
      * a signature test.
      * 

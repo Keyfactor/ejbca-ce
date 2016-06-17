@@ -14,6 +14,7 @@ package org.cesecore.roles.access;
 
 import java.util.List;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.roles.RoleData;
 
 /**
@@ -30,6 +31,13 @@ public interface RoleAccessSession {
      * @return all the roles in the database.
      */
     List<RoleData> getAllRoles();
+    
+    /**
+     * 
+     * @param authenticationToken an authentication token
+     * @return a list of all roles the current user is authorized to, based on CAs and access rules. Will sort them by name. 
+     */
+    List<RoleData> getAllAuthorizedRoles(AuthenticationToken authenticationToken);
 
     /**
      * Finds a RoleData object by its primary key.

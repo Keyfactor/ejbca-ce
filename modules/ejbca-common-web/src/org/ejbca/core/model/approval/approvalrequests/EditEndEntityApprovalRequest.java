@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.EJBException;
@@ -36,21 +35,19 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestHelper;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
  * Approval Request created when trying to edit an end entity.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class EditEndEntityApprovalRequest extends ApprovalRequest {
@@ -68,27 +65,17 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	/** Constructor used in externalization only */
 	public EditEndEntityApprovalRequest() {}
 
-	public EditEndEntityApprovalRequest(EndEntityInformation newuserdata, boolean clearpwd, EndEntityInformation orguserdata, 
-	        AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId, 
-	        ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
-		super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, numOfReqApprovals, cAId, endEntityProfileId, approvalProfile, 
-		        secondApprovalProfile);
+    public EditEndEntityApprovalRequest(EndEntityInformation newuserdata, boolean clearpwd, EndEntityInformation orguserdata,
+            AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile) {
+		super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, approvalProfile);
 		this.newuserdata = newuserdata;
 		this.clearpwd = clearpwd;
 		this.orguserdata = orguserdata;
 	}
 
 	@Override
-	public EditEndEntityApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
-	    EditEndEntityApprovalRequest req = new EditEndEntityApprovalRequest(newuserdata, clearpwd, orguserdata, getRequestAdmin(), 
-	            getRequestSignature(), 0, getCAId(), getEndEntityProfileId(), getSecondApprovalProfile(), null);
-	    req.setOldApprovals(oldApprovals);
-	    return req;
-	}
-
-	@Override
 	public void execute() throws ApprovalRequestExecutionException {
-		throw new RuntimeException("This execution requires additional bean references.");
+		throw new IllegalStateException("This execution requires additional bean references.");
 	}
 	
     public void execute(EndEntityManagementSession endEntityManagementSession) throws ApprovalRequestExecutionException {

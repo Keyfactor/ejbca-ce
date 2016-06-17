@@ -17,18 +17,17 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
- * Value Object containing all the information about an approval
- * such as approvalid, approvaltype, endentityprofileid, caid, 
- * reqadmincertissuerdn, reqadmincertsn, status, approvals (Collection),
- * requestdata, requestdate, expiredate, remainingapprovals
+ * Value Object containing all the information about an approval such as approvalid, approvaltype, endentityprofileid, caid, reqadmincertissuerdn, 
+ * reqadmincertsn, status, approvals (Collection), requestdata, requestdate, expiredate, remainingapprovals
  * 
  * @version $Id$
  */
 public class ApprovalDataVO implements Serializable { 	
 
-	private static final long serialVersionUID = -1L;
+	private static final long serialVersionUID = -2L;
 	
 	// Status constants
 	public static final int STATUS_WAITINGFORAPPROVAL = -1;
@@ -77,7 +76,6 @@ public class ApprovalDataVO implements Serializable {
     private ApprovalRequest approvalRequest = null;
     private Date requestDate = null;
     private Date expireDate = null;
-    private int remainingApprovals = 0;
 
 	/**
 	 * @param id unique row id
@@ -101,7 +99,7 @@ public class ApprovalDataVO implements Serializable {
 	 */
 	public ApprovalDataVO(int id, int approvalId, int approvalType, int endEntityProfileiId, int cAId, String reqadmincertissuerdn, 
 	        String reqadmincertsn, int status, Collection<Approval> approvals, ApprovalRequest approvalRequest, Date requestDate, 
-	        Date expireDate, int remainingApprovals) {
+	        Date expireDate) {
 		super();
 		this.id = id;
 		this.approvalId = approvalId;
@@ -115,7 +113,6 @@ public class ApprovalDataVO implements Serializable {
 		this.approvalRequest = approvalRequest;
 		this.requestDate = requestDate;
 		this.expireDate = expireDate;
-		this.remainingApprovals = remainingApprovals;
 	}
 	/**
 	 *  Constructed from action data as actiontype, admin, username etc. It should
@@ -191,13 +188,17 @@ public class ApprovalDataVO implements Serializable {
 		return id;
 	}
 	
-	/**
-	 * Indicates the number of approvals that remains in order to execute the action
-	 * @return Returns the remainingApprovals.
-	 */
-	public int getRemainingApprovals() {
-		return remainingApprovals;
+	public ApprovalProfile getApprovalProfile() {
+	    return approvalRequest.getApprovalProfile();
 	}
+	
+    public int getRemainingApprovals() {
+        if (status == STATUS_REJECTED) {
+            return 0;
+        } else {
+            return getApprovalProfile().getRemainingApprovals(getApprovals());
+        }
+    }
 	
 	/**
 	 * The issuerdn of the administrator certificate that generated the request.

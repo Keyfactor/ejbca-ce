@@ -14,10 +14,13 @@ package org.ejbca.core.ejb.upgrade;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -25,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -33,9 +38,18 @@ import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingRules;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
@@ -45,7 +59,9 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRuleTemplate;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.DefaultRoles;
@@ -64,6 +80,9 @@ import org.junit.Test;
  */
 public class UpgradeSessionBeanTest {
 
+    private ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
@@ -266,6 +285,100 @@ public class UpgradeSessionBeanTest {
 
        } finally {
            roleManagementSession.remove(alwaysAllowtoken, testRoleName);
+       }
+   }
+   
+    /**
+    * This test verifies that CAs and Certificate Profiles using approvals are automatically assigned approval profiles at upgrade. 
+    */
+   @SuppressWarnings("deprecation")
+   @Test
+   public void testUpgradeTo660Approvals() throws CAExistsException, AuthorizationDeniedException, CertificateProfileExistsException, CADoesntExistsException, CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, IOException {       
+       //This CA should not be assigned an approval profile on account of lacking approvals
+       List<Integer> approvalRequirements = new ArrayList<>();
+       approvalRequirements.add(CAInfo.REQ_APPROVAL_ACTIVATECA);
+      
+       //This CA should not be assigned an approval profile on account of lacking any actions
+       X509CA noActionsCa =  CaTestUtils.createTestX509CA("CN=NoActions", "foo123".toCharArray(), false);
+       noActionsCa.setNumOfRequiredApprovals(2);
+       caSession.addCA(alwaysAllowtoken, noActionsCa);
+       
+       //This CA should be assigned a profile on with two approvals 
+       X509CA twoApprovalsCa =  CaTestUtils.createTestX509CA("CN=TwoApprovals", "foo123".toCharArray(), false);
+       twoApprovalsCa.setNumOfRequiredApprovals(2);
+       twoApprovalsCa.setApprovalSettings(approvalRequirements);
+       caSession.addCA(alwaysAllowtoken, twoApprovalsCa);
+       
+       //This CA should be assigned a profile on with three approvals 
+       X509CA threeApprovalsCa = CaTestUtils.createTestX509CA("CN=ThreeApprovals", "foo123".toCharArray(), false);
+       threeApprovalsCa.setNumOfRequiredApprovals(3);
+       threeApprovalsCa.setApprovalSettings(approvalRequirements);
+       caSession.addCA(alwaysAllowtoken, threeApprovalsCa);
+       
+       //This certificate profile has approvals set, but nothing to approve. 
+       String noActionsCertificateProfileName = "NoActionsCertificateProfile";
+       CertificateProfile noActionsCertificateProfile = new CertificateProfile();
+       noActionsCertificateProfile.setNumOfReqApprovals(2);
+       certificateProfileSession.addCertificateProfile(alwaysAllowtoken, noActionsCertificateProfileName, noActionsCertificateProfile);    
+              
+       //This certificate profile should require two approvals, and should reuse the one from the CA
+       CertificateProfile twoProfilesCertificateProfile = new CertificateProfile();
+       twoProfilesCertificateProfile.setNumOfReqApprovals(2);
+       twoProfilesCertificateProfile.setApprovalSettings(Arrays.asList(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY));
+       String certificateProfileName = "TwoApprovalsCertificateProfile";
+       certificateProfileSession.addCertificateProfile(alwaysAllowtoken, certificateProfileName, twoProfilesCertificateProfile);      
+     
+       int twoApprovalProfileId = -1;
+       int threeApprovalProfileId = -1;
+       int noActionProfileId = -1;
+       int noActionCertificateProfileId = -1;
+       
+       try {
+           upgradeSession.upgrade(null, "6.5.1", false);
+           
+           CAInfo retrievedNoActionsCa = caSession.getCAInfo(alwaysAllowtoken, noActionsCa.getCAId());
+           noActionProfileId = retrievedNoActionsCa.getApprovalProfile();
+           assertEquals("Approval profile was created for CA with no approvals set.", -1, noActionProfileId);
+           
+           CAInfo retrievedTwoApprovalsCa = caSession.getCAInfo(alwaysAllowtoken, twoApprovalsCa.getCAId());
+           twoApprovalProfileId = retrievedTwoApprovalsCa.getApprovalProfile();
+           assertNotEquals("No approval profile was set for two approvals CA", -1, twoApprovalProfileId);
+           AccumulativeApprovalProfile twoApprovalProfile = (AccumulativeApprovalProfile) approvalProfileSession.getApprovalProfile(twoApprovalProfileId);
+           assertEquals("Correct number of approvals was not set in profile during upgrade.", 2, twoApprovalProfile.getNumberOfApprovalsRequired());
+           
+           CAInfo retrievedThreeApprovalsCa = caSession.getCAInfo(alwaysAllowtoken, threeApprovalsCa.getCAId());
+           threeApprovalProfileId = retrievedThreeApprovalsCa.getApprovalProfile();
+           AccumulativeApprovalProfile threeApprovalProfile = (AccumulativeApprovalProfile) approvalProfileSession.getApprovalProfile(threeApprovalProfileId);
+           assertEquals("Correct number of approvals was not set in profile during upgrade.", 3, threeApprovalProfile.getNumberOfApprovalsRequired());
+           
+           CertificateProfile retrievedCertificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileName);
+           assertEquals("Two approvals profile was not reused for certificate profile.", twoApprovalProfileId,
+                    retrievedCertificateProfile.getApprovalProfileID());
+            
+            CertificateProfile retrievedNoActionCertificateProfile = certificateProfileSession.getCertificateProfile(noActionsCertificateProfileName);
+            noActionCertificateProfileId = retrievedNoActionCertificateProfile.getApprovalProfileID();
+            assertEquals("Approval profile was set for certificate profile lacking actions.", -1, noActionCertificateProfileId
+                    );
+            
+        } finally {          
+            if (twoApprovalProfileId != -1) {
+                approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, twoApprovalProfileId);
+            }
+            if (threeApprovalProfileId != -1) {
+                approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, threeApprovalProfileId);
+            }
+            if (noActionProfileId != -1) {
+                approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, noActionProfileId);
+            }
+            if (noActionCertificateProfileId != -1) {
+                approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, noActionCertificateProfileId);
+            }
+            CaTestUtils.removeCa(alwaysAllowtoken, noActionsCa.getCAInfo());
+            CaTestUtils.removeCa(alwaysAllowtoken, twoApprovalsCa.getCAInfo());
+            CaTestUtils.removeCa(alwaysAllowtoken, threeApprovalsCa.getCAInfo());
+            certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, certificateProfileName);
+            certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, noActionsCertificateProfileName);
+            
        }
    }
    

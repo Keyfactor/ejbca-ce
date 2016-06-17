@@ -78,14 +78,14 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.ejb.approval.ApprovalExecutionSession;
-import org.ejbca.core.ejb.approval.ApprovalSession;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
@@ -118,6 +118,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static final String TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME = "TESTDVECC-D";
     public static final String TEST_DSA_CA_NAME = "TESTDSA";
 
+    private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
+    private final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
+    private final CertificateStoreSession certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSession.class);
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final static Logger log = Logger.getLogger(CaTestCase.class);
@@ -451,8 +454,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * Find all certificates for a user and approve any outstanding revocation.
      */
     protected int approveRevocation(AuthenticationToken internalAdmin, AuthenticationToken approvingAdmin, String username, int reason,
-            int approvalType, CertificateStoreSession certificateStoreSession, ApprovalSession approvalSession,
-            ApprovalExecutionSession approvalExecutionSession, int approvalCAID, final ApprovalProfile approvalProfile) throws Exception {
+            int approvalType, int approvalCAID, final ApprovalProfile approvalProfile, final int sequenceId, final int partitionId) throws Exception {
         log.debug("approvingAdmin=" + approvingAdmin.toString() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType
                 + " approvalCAID=" + approvalCAID);
         Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
@@ -474,8 +476,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                         "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")", "");
                 if (queryResults.size() > 0) {
                     ApprovalDataVO approvalData = queryResults.get(0);
-                    Approval approval = new Approval("Approved during testing.");
-                    approvalExecutionSession.approve(approvingAdmin, approvalID, approval, null, true);
+                    Approval approval = new Approval("Approved during testing.", sequenceId, partitionId);
+                    approvalExecutionSession.approve(approvingAdmin, approvalID, approval);
                     approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                     Assert.assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                     CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);

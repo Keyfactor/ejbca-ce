@@ -16,18 +16,16 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
  * Dummy Approval Request used for testing and demonstration purposes. 
@@ -36,11 +34,9 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
  */
 public class DummyApprovalRequest extends ApprovalRequest { 
 	
-	private static final long serialVersionUID = -1L;
+	private static final long serialVersionUID = -2L;
 	private static final Logger log = Logger.getLogger(DummyApprovalRequest.class);
 	private static final int LATEST_VERSION = 1;
-	
-	public static final int NUM_OF_REQUIRED_APPROVALS = 2;
 	
 	private boolean executable = false;
 	
@@ -55,8 +51,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
      */
 	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, 
 	            boolean executable, final ApprovalProfile approvalProfile) {
-		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, 
-		        approvalProfile, null);	
+        super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile);
 		this.executable = executable;
 	}  
 	
@@ -65,21 +60,13 @@ public class DummyApprovalRequest extends ApprovalRequest {
      */
 	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, 
 	        int steps, boolean executable, final ApprovalProfile approvalProfile) {
-		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, 
-		        steps, approvalProfile, null);	
+		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, 
+		        steps, approvalProfile);	
 		this.executable = executable;
 	} 
 	
     /** Constuctor used in externaliziation only */
     public DummyApprovalRequest() {
-    }
-
-    @Override
-    public DummyApprovalRequest getRequestCloneForSecondApprovalProfile(final Collection<Approval> oldApprovals) {
-        DummyApprovalRequest req = new DummyApprovalRequest(getRequestAdmin(), getRequestSignature(), getCAId(), getEndEntityProfileId(), 
-                executable, getSecondApprovalProfile());
-        req.setOldApprovals(oldApprovals);
-        return req;
     }
     
 	/**

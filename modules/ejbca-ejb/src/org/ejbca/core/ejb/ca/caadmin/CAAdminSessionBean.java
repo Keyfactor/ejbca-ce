@@ -182,9 +182,9 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
@@ -2915,14 +2915,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.info(intres.getLocalizedMessage("caadmin.catokenexternal", Integer.valueOf(caid)));
             return;
         }
-        // Check if approvals is required.
-        final int numOfApprovalsRequired = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ACTIVATECA, cainfo.getCAId(),
-                cainfo.getCertificateProfileId());
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
-        ApprovalProfile[] approvalProfiles = ApprovalExecutorUtil.getApprovalProfiles(CAInfo.REQ_APPROVAL_ACTIVATECA, cainfo, certProfile, 
-                approvalProfileSession);
-        final ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(), "", admin, numOfApprovalsRequired, caid,
-                ApprovalDataVO.ANY_ENDENTITYPROFILE, approvalProfiles[0], approvalProfiles[1]);
+        ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_ACTIVATECA, cainfo, certProfile);
+        //TODO HANDLE 100% UPTIME HERE
+        final ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(), "", admin, caid,
+                ApprovalDataVO.ANY_ENDENTITYPROFILE, approvalProfile);
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {
             approvalSession.addApprovalRequest(admin, ar);
             throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalcaactivation"));
@@ -3004,27 +3001,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw new RuntimeException("Available CA is no longer available!");
         }
         return false;
-    }
-
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public int getNumOfApprovalRequired(final int action, final int caid, final int certProfileId) {
-        int retval = 0;
-        try {
-            // No need to do access control here on the CA, we are just internally retrieving a value
-            // to be used to see if approvals are needed.
-            final CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
-            if (cainfo.isApprovalRequired(action)) {
-                retval = cainfo.getNumOfReqApprovals();
-            }
-            final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certProfileId);
-            if (certprofile != null && certprofile.isApprovalRequired(action)) {
-                retval = Math.max(retval, certprofile.getNumOfReqApprovals());
-            }
-        } catch (CADoesntExistsException e) {
-            // NOPMD ignore cainfo is null
-        }
-        return retval;
     }
     
     @Override

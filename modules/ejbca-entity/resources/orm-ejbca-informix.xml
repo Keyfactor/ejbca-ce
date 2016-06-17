@@ -358,7 +358,7 @@
             <id name="id"><column name="id" column-definition="INTEGER"/></id>
             <basic fetch="EAGER" name="profileType"><column name="profileType" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
             <basic fetch="EAGER" name="profileName"><column name="profileName" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="TEXT"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>

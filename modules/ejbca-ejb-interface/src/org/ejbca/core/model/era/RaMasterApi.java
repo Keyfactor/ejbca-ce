@@ -78,8 +78,11 @@ public interface RaMasterApi {
      * @throws ApprovalRequestExecutionException 
      * @throws ApprovalRequestExpiredException 
      * @throws ApprovalException
+     * @throws AuthenticationFailedException if the authentication token couldn't be validated
      */
-    boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException, AdminAlreadyApprovedRequestException, SelfApprovalException;
+    boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse)
+            throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException,
+            AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException;
     
     /** @return list of approval requests from the specified search criteria */
     RaRequestsSearchResponse searchForApprovalRequests(AuthenticationToken authenticationToken, RaRequestsSearchRequest raRequestsSearchRequest);

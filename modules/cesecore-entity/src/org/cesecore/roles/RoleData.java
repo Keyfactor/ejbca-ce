@@ -284,6 +284,11 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
     public int compareTo(RoleData o) {
         return roleName.compareToIgnoreCase(o.roleName);
     }
+    
+    @Override
+    public String toString() {
+        return roleName;
+    }
 
 
 

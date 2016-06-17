@@ -13,7 +13,6 @@
 package org.ejbca.core.ejb.approval;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -30,7 +29,7 @@ import javax.ejb.TransactionManagementType;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.profiles.ProfileData;
-import org.ejbca.core.model.approval.ApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
  * Class Holding cache variable.
@@ -66,8 +65,6 @@ public class ApprovalProfileCacheBean {
 
     /** Cache of mappings between profileId and profileName */
     private volatile Map<Integer, String> idNameMapCache = null;
-    /** Cache of mappings between profileName and profileId */
-    private volatile Map<String, Integer> nameIdMapCache = null;
     /** Cache of approval profiles, with Id as keys */
     private volatile Map<Integer, ApprovalProfile> profileCache = null;
 
@@ -77,12 +74,10 @@ public class ApprovalProfileCacheBean {
     
     /* Create template maps with all static constants */
     private HashMap<Integer, String> idNameMapCacheTemplate;
-    private HashMap<String, Integer> nameIdMapCacheTemplate;
 
     @PostConstruct
     public void initialize() {
-        idNameMapCacheTemplate = new HashMap<Integer, String>();
-        nameIdMapCacheTemplate = new HashMap<String, Integer>();
+        idNameMapCacheTemplate = new HashMap<>();
         lock = new ReentrantLock(false);
 
         try {
@@ -130,19 +125,16 @@ public class ApprovalProfileCacheBean {
         } finally {
             lock.unlock();
         }
-        final Map<Integer, String> idNameCache = new HashMap<Integer, String>(idNameMapCacheTemplate);
-        final Map<String, Integer> nameIdCache = new HashMap<String, Integer>(nameIdMapCacheTemplate);
-        final Map<Integer, ApprovalProfile> profCache = new HashMap<Integer, ApprovalProfile>();
-        final List<ProfileData> result = approvalProfileSession.findAllApprovalProfiles();
-        for (final ProfileData current : result) {
+        final Map<Integer, String> idNameCache = new HashMap<>(idNameMapCacheTemplate);
+        final Map<Integer, ApprovalProfile> profCache = new HashMap<>();
+        for (final ProfileData current : approvalProfileSession.findAllApprovalProfiles()) {
             final Integer id = current.getId();
             final String approvalProfileName = current.getProfileName();
             idNameCache.put(id, approvalProfileName);
-            nameIdCache.put(approvalProfileName, id);
-            profCache.put(id, current.getProfile());
+            //We can cast safely because we're retrieved the correct type of object
+            profCache.put(id, (ApprovalProfile) current.getProfile());
         }
         idNameMapCache = idNameCache;
-        nameIdMapCache = nameIdCache;
         profileCache = profCache;
         if (LOG.isTraceEnabled()) {
             LOG.trace("<updateProfileCache");
@@ -161,9 +153,4 @@ public class ApprovalProfileCacheBean {
         return idNameMapCache;
     }
 
-    /** @return the latest object from the cache or a current database representation if no caching is used. */
-    public Map<String, Integer> getNameIdMapCache() {
-        updateProfileCache(false);
-        return nameIdMapCache;
-    }
 }

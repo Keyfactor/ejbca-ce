@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,6 @@ import org.ejbca.core.ejb.approval.ApprovalProfileSession;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
@@ -78,78 +76,54 @@ public class RAAuthorization implements Serializable {
      */
     public String getCAAuthorizationString() {      
       if(authcastring==null){
-        Iterator<Integer> iter =  caSession.getAuthorizedCaIds(admin).iterator();
-         
-        authcastring = "";
-        
-        while(iter.hasNext()){
+        authcastring = "";   
+        for(Integer caId : caSession.getAuthorizedCaIds(admin)) {
           if(authcastring.equals("")) {
-            authcastring = " cAId = " + iter.next().toString();   
+            authcastring = " cAId = " + caId.toString();   
           } else {    
-            authcastring = authcastring + " OR cAId = " + iter.next().toString();
+            authcastring = authcastring + " OR cAId = " + caId.toString();
           }
         }
-        
         if(!authcastring.equals("")) {
           authcastring = "( " + authcastring + " )"; 
         }
       }
-      
       return authcastring;
     } 
     
+    /**
+     * 
+     * @return a query friendly list of all authorized approvals. 
+     * @throws AuthorizationDeniedException if current administrator is not authorized to approvals
+     */
     public String getApprovalProfileAuthorizationString() throws AuthorizationDeniedException {
         boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
-        boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
-     
+        boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE  
         authorizedToApproveCAActions = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
-
         authorizedToApproveRAActions = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
-
         if (!authorizedToApproveCAActions && !authorizedToApproveRAActions) {
-            throw new AuthorizationDeniedException("Not authorized to query apporvals");
+            throw new AuthorizationDeniedException("Not authorized to query approvals");
         }
-        
-        if(authApprovalProfilesString == null) {
-            
+        StringBuilder stringBuilder = new StringBuilder("");
+        if (authApprovalProfilesString == null) {
             authApprovalProfilesString = "";
-        
-            Map<String, Boolean> adminAuthorizedCache = new HashMap<String, Boolean>();
-            
             Set<Integer> profilesIds = approvalProfileSession.getApprovalProfileIdToNameMap().keySet();
-            for(Integer profileId : profilesIds) {
-                ApprovalProfile profile = approvalProfileSession.getApprovalProfile(profileId);
-                final String profileType = profile.getApprovalProfileType().getTypeName();
-                try {
-                    boolean adminAuthorized = false;
-                    if(adminAuthorizedCache.containsKey(profileType)) {
-                        adminAuthorized = adminAuthorizedCache.get(profileType).booleanValue(); 
-                    } else {
-                        adminAuthorized = profile.getApprovalProfileType().isAdminAllowedToApprove(admin, profile);
-                        adminAuthorizedCache.put(profileType, Boolean.valueOf(adminAuthorized));
-                    }
-                    if(adminAuthorized) {
-                        addApprovalProfileIdToAuthApprovalProfilesString(profileId);
-                    }
-                } catch (AuthorizationDeniedException e) { }
+            for (Integer profileId : profilesIds) {
+                if (stringBuilder.toString().equals("")) {
+                    stringBuilder.append(" approvalProfileId = " + profileId);
+                } else {
+                    stringBuilder.append(" OR approvalProfileId = " + profileId);
+                }
             }
-            
-            if(!authApprovalProfilesString.equals("")) {
-                authApprovalProfilesString = "( " + authApprovalProfilesString + " )"; 
+            authApprovalProfilesString = stringBuilder.toString();
+            if (!authApprovalProfilesString.equals("")) {
+                authApprovalProfilesString = "( " + authApprovalProfilesString + " )";
             }
         }
         return authApprovalProfilesString;
-        
+
     }
     
-    private void addApprovalProfileIdToAuthApprovalProfilesString(Integer profileId) {
-        if(authApprovalProfilesString.equals("")) {
-            authApprovalProfilesString = " approvalProfileId = " + profileId;   
-          } else {    
-              authApprovalProfilesString = authApprovalProfilesString + " OR approvalProfileId = " + profileId;
-          }
-    }
-
     /**
      * @return a string of end entity profile privileges that should be used in the where clause of SQL queries, or null if no authorized end entity profiles exist.
      * @throws AuthorizationDeniedException if the current requester isn't authorized to query for approvals
