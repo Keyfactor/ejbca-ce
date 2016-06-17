@@ -689,6 +689,15 @@ function confirmrepublish(){
               case 0: // 0 = send user to the audit log page
             	  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.jsf";
             	  break;
+              case 1: // 1 = send user to the peer overview page
+                  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "peerconnector/peerconnectors.jsf";
+                  break;
+              case 2: // 2 = send user to the IKB AKB page
+                  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.jsf?type=OcspKeyBinding";
+                  break;
+              case 3: // 3 = send user to the IKB OCSP page
+                  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.jsf?type=AuthenticationKeyBinding";
+                  break;
               }
           } catch (NumberFormatException e) {
           }
