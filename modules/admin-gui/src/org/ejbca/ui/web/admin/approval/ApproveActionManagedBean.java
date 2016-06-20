@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -136,7 +137,8 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 	private HashMap<Integer, String> statustext = null;
 	private Map<Integer, Action> partitionActions;
 	
-	ListDataModel<ApprovalPartitionProfileGuiObject> approvalPartitions = null;
+	ListDataModel<ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
+	Set<Integer> partitionsAuthorizedToApprove = null;
 
 	public HashMap<Integer, String> getStatusText(){
 	    if(statustext == null){
@@ -192,7 +194,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
     
     public Action getActionForPartition() {
-        Action result =  getPartitionActions().get(approvalPartitions.getRowData().getPartitionId());
+        Action result =  getPartitionActions().get(partitionsAuthorizedToView.getRowData().getPartitionId());
         if(result != null) {
             return result;
         } else {
@@ -220,11 +222,11 @@ public class ApproveActionManagedBean extends BaseManagedBean {
      * @return true if there already exists an approval for this partition 
      */
     public boolean isPartitionApproved() {
-        return getPartitionActions().get(approvalPartitions.getRowData().getPartitionId()) != null;
+        return getPartitionActions().get(partitionsAuthorizedToView.getRowData().getPartitionId()) != null;
     }
 
     public void setActionForPartition(final Action action) {
-        getPartitionActions().put(approvalPartitions.getRowData().getPartitionId(), action);
+        getPartitionActions().put(partitionsAuthorizedToView.getRowData().getPartitionId(), action);
     }
     
     public String saveState(ActionEvent event) {
@@ -386,27 +388,39 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     
     /**
      * 
-     * @return all profiles that the current admin has access to
+     * @return all profiles that the current admin has view access to
      */
     public ListDataModel<ApprovalPartitionProfileGuiObject> getApprovalPartitions() {
-        if (approvalPartitions == null) {
+        if (partitionsAuthorizedToView == null) {
             List<ApprovalPartitionProfileGuiObject> authorizedPartitions = new ArrayList<>();
+            partitionsAuthorizedToApprove = new HashSet<>();
             for (ApprovalPartition approvalPartition : getCurrentStep().getPartitions().values()) {
                 try {
-                    if (approveRequestData.getApprovalProfile().canApprovePartition(getAdmin(), approvalPartition)) {
+                    if (approveRequestData.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
                         authorizedPartitions
                                 .add(new ApprovalPartitionProfileGuiObject(approveRequestData.getApprovalProfile().getApprovalProfileIdentifier(),
                                         approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalPartition)));
+                    }
+                    if(approveRequestData.getApprovalProfile().canApprovePartition(getAdmin(), approvalPartition)) {
+                        partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
                     }
                 } catch (AuthenticationFailedException e) {
                     //We shouldn't have gotten here in the UI with an invalid token
                     throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
                 }
             }
-            approvalPartitions = new ListDataModel<ApprovalPartitionProfileGuiObject>(authorizedPartitions);
+            
+            partitionsAuthorizedToView = new ListDataModel<ApprovalPartitionProfileGuiObject>(authorizedPartitions);
 
         }
-        return approvalPartitions;
+        return partitionsAuthorizedToView;
+    }
+    
+    public boolean canApprovePartition(ApprovalPartitionProfileGuiObject partition) {
+        if(partitionsAuthorizedToApprove == null) {
+            getActionForPartition();
+        }
+        return partitionsAuthorizedToApprove.contains(partition.getPartitionId());
     }
     
     /**

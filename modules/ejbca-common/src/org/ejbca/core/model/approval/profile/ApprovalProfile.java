@@ -193,14 +193,24 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     ApprovalStep getStepBeingEvaluated(final Collection<Approval> approvalsPerformed) throws AuthenticationFailedException;
     
     /**
-     * Tests if an approval is valid for a particular partition. 
+     * Tests if an administrator can approve a particular partition 
      * 
      * @param authenticationToken an authentication token
      * @param approvalPartition an approval partition from an approval step
-     * @return true if the approval satisfies a particular partition
+     * @return true if administrator has approval rights
      * @throws AuthenticationFailedException if the authentication token in the approval doesn't check out
      */
      boolean canApprovePartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException;
+     
+     /**
+      * Tests if an administrator can view a particular partition. Approval rights automatically count as view rights. 
+      * 
+      * @param authenticationToken an authentication token
+      * @param approvalPartition an approval partition from an approval step
+      * @return true if administrator has view or approval rights
+      * @throws AuthenticationFailedException if the authentication token in the approval doesn't check out
+      */
+      boolean canViewPartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException;
      
      /**
       * @return a set of properties to hide at the approval screen. 

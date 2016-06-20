@@ -178,34 +178,35 @@ function viewcert(link){
 					</h:column>
 					<h:column>										
 			   			<h:panelGroup rendered="#{!property.multiValued}">
-				   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved}" rendered="#{property.type.simpleName eq 'String'}" 
-				   				value="#{property.value}">
+				   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)}" 
+				   				rendered="#{property.type.simpleName eq 'String'}" value="#{property.value}">
 				   				<f:converter converterId="stringConverter"/>
 				   			</h:inputText>
-				   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved}" rendered="#{property.type.simpleName eq 'Long'}" 
-				   				value="#{property.value}" style="text-align: right;" >
+				   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)}" 
+				   				rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" style="text-align: right;" >
 			                   <f:converter converterId="javax.faces.Long"/>
 				   			</h:inputText>
-				   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved}" rendered="#{property.type.simpleName eq 'Integer'}" 
-				   				value="#{property.value}" style="text-align: right;" size="6">
+				   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)}" 
+				   				rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" style="text-align: right;" size="6">
 			                   <f:converter converterId="javax.faces.Integer"/>
 				   			</h:inputText>
-			   				<h:selectBooleanCheckbox disabled="#{approvalActionManagedBean.partitionApproved}" 
+			   				<h:selectBooleanCheckbox disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)}" 
 			   					rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
 			   			</h:panelGroup>
-						<h:selectOneMenu disabled="#{approvalActionManagedBean.partitionApproved}" 
+						<h:selectOneMenu disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)}"
 							rendered="#{property.multiValued && !property.hasMultipleValues}" value="#{property.encodedValue}">
 							<f:selectItems value="#{partition.propertyPossibleValues}"/>
 						</h:selectOneMenu>
-						<h:selectManyListbox disabled="#{approvalActionManagedBean.partitionApproved}" rendered="#{property.multiValued && property.hasMultipleValues}" 
-							value="#{property.encodedValues}">
+						<h:selectManyListbox disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)}" 
+							rendered="#{property.multiValued && property.hasMultipleValues}" value="#{property.encodedValues}" >
 							<f:selectItems value="#{partition.propertyPossibleValues}"/>
 						</h:selectManyListbox>
 					</h:column>
 				</h:dataTable>
 				
 				<h:panelGroup layout="block" style="padding: 5px 10px" rendered="#{approvalActionManagedBean.approvable}">
-					<h:selectOneMenu id="selectAction" value="#{approvalActionManagedBean.actionForPartition}" disabled="#{approvalActionManagedBean.partitionApproved}">
+					<h:selectOneMenu id="selectAction" value="#{approvalActionManagedBean.actionForPartition}" 
+						disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)}">
 						<f:selectItems value="#{approvalActionManagedBean.actionsAvailable}"/>
 					</h:selectOneMenu>  					
 				</h:panelGroup>
