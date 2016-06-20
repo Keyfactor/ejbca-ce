@@ -51,7 +51,6 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -630,16 +629,10 @@ public class NestedMessageContentTest extends CmpTestCase {
         myCertTemplate.setValidity( myOptionalValidity );
         myCertTemplate.setIssuer(new X500Name(this.issuerDN));
         myCertTemplate.setSubject(SUBJECT_DN);
-        byte[]                  bytes = keys.getPublic().getEncoded();
-        ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
-        ASN1InputStream         dIn = new ASN1InputStream(bIn);
-        try {
-        SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence)dIn.readObject());
+        SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded());
         myCertTemplate.setPublicKey(keyInfo);
         // If we did not pass any extensions as parameter, we will create some of our own, standard ones
-        } finally {
-            dIn.close();
-        }
+
         final Extensions exts;
         {
             // SubjectAltName

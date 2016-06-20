@@ -900,8 +900,8 @@ public final class KeyTools {
                 if (keyObject instanceof ASN1Sequence) {
                     keyASN1Sequence = (ASN1Sequence) keyObject;
                 } else {
-                    // PublicKey key that don't encode to a ASN1Sequence. Fix this by creating a BC object instead.
-                    final PublicKey altKey = (PublicKey) KeyFactory.getInstance(pubKey.getAlgorithm(), "BC").translateKey(pubKey);
+                    // PublicKey key that doesn't encode to a ASN1Sequence. Fix this by creating a BC object instead.
+                    final PublicKey altKey = (PublicKey) KeyFactory.getInstance(pubKey.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME).translateKey(pubKey);
                     try ( final ASN1InputStream altKeyAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(altKey.getEncoded())) ) {
                         keyASN1Sequence = (ASN1Sequence) altKeyAsn1InputStream.readObject();
                     }
@@ -914,7 +914,7 @@ public final class KeyTools {
             e2.initCause(e);
             throw e2;
         }
-    } // createSubjectKeyId  
+    } 
 
     /**
      * Detect if "Unlimited Strength" Policy files has bean properly installed.
@@ -1239,12 +1239,10 @@ public final class KeyTools {
     public static PublicKey getPublicKeyFromBytes(byte[] asn1EncodedPublicKey) {
         try {
             final SubjectPublicKeyInfo keyInfo;
-            try ( final ASN1InputStream in = new ASN1InputStream(asn1EncodedPublicKey) ) {
-                keyInfo = SubjectPublicKeyInfo.getInstance(in.readObject());
-            }
+            keyInfo = SubjectPublicKeyInfo.getInstance(asn1EncodedPublicKey);
             final AlgorithmIdentifier keyAlg = keyInfo.getAlgorithm();
             final X509EncodedKeySpec xKeySpec = new X509EncodedKeySpec(new DERBitString(keyInfo).getBytes());
-            final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), "BC");
+            final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
             return keyFact.generatePublic(xKeySpec);
         } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
             log.debug("Unable to decode PublicKey.", e);

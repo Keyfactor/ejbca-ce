@@ -12,13 +12,9 @@
  *************************************************************************/ 
 package org.cesecore.certificates.certificate.certextensions.standard;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.security.PublicKey;
 
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509ExtensionUtils;
@@ -49,15 +45,7 @@ public class SubjectKeyIdentifier extends StandardCertificateExtension {
     @Override
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
-        SubjectPublicKeyInfo spki;
-        try {
-            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(userPublicKey.getEncoded()));
-            spki = SubjectPublicKeyInfo.getInstance((ASN1Sequence) asn1InputStream.readObject());
-            asn1InputStream.close();
-        } catch (IOException e) {
-            throw new CertificateExtensionException("IOException parsing user public key: " + e.getMessage(), e);
-        }
-
+        SubjectPublicKeyInfo spki = SubjectPublicKeyInfo.getInstance(userPublicKey.getEncoded());
         X509ExtensionUtils x509ExtensionUtils = new BcX509ExtensionUtils();
         return x509ExtensionUtils.createSubjectKeyIdentifier(spki);
     }

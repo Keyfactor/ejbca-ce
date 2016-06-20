@@ -942,12 +942,7 @@ public class X509CA extends CA implements Serializable {
             }
         }
 
-        SubjectPublicKeyInfo pkinfo;
-        try {
-            pkinfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
-        } catch (IOException e) {
-            throw new IllegalStateException("Caught unexpected IOException.", e);
-        }
+        SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
         final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(issuerDNName, serno, val.getNotBefore(), val.getNotAfter(), subjectDNName, pkinfo);
         
         // Only created and used if Certificate Transparency is enabled

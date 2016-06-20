@@ -23,8 +23,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -103,7 +101,7 @@ public class RequestHelperTest {
         Certificate caCert = CertTools.genSelfCert("CN=foo", 365, null, caKeys.getPrivate(), caKeys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
         KeyPair replyKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence) ASN1Primitive.fromByteArray(replyKeys.getPublic().getEncoded()));
+        final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(replyKeys.getPublic().getEncoded());
         String signedCertDn = "CN=signedcert";
         byte[] serno = new byte[8];
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");

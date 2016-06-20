@@ -49,7 +49,6 @@ import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
@@ -169,11 +168,7 @@ class CMPTest extends ClientToolBox {
             myCertTemplate.setValidity( myOptionalValidity );
             myCertTemplate.setIssuer(X500Name.getInstance(this.cacert.getSubjectX500Principal().getEncoded()));
             myCertTemplate.setSubject(userDN);
-            final byte[]                  bytes = this.keyPair.getPublic().getEncoded();
-            final ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
-            final ASN1InputStream         dIn = new ASN1InputStream(bIn);
-            final SubjectPublicKeyInfo keyInfo =  SubjectPublicKeyInfo.getInstance((ASN1Sequence) dIn.readObject());
-            dIn.close();
+            final SubjectPublicKeyInfo keyInfo =  SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
             myCertTemplate.setPublicKey(keyInfo);
             // If we did not pass any extensions as parameter, we will create some of our own, standard ones
             if (extensions == null) {

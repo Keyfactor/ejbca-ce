@@ -70,8 +70,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
@@ -1275,7 +1273,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         if (!useAuthInfoSender && publicKeyMacPassword==null) {
             crmb.setSubject(new X500Name(userDN));
         }
-        final SubjectPublicKeyInfo subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
+        final SubjectPublicKeyInfo subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
         crmb.setPublicKey(subjectPublicKeyInfo);
         crmb.addExtension(new ASN1ObjectIdentifier(extensionOid), false, new DEROctetString(extensionContent.getBytes()));
         if (useProofOfPossession) {

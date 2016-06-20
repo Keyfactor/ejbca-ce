@@ -55,7 +55,6 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERNull;
@@ -165,11 +164,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 
 			final CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
 			myCertTemplate.setValidity(myOptionalValidity);
-			final byte[] bytes = this.newKeyPair.getPublic().getEncoded();
-			final ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
-			final ASN1InputStream dIn = new ASN1InputStream(bIn);
-			final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence) dIn.readObject());
-			dIn.close();
+			final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(newKeyPair.getPublic().getEncoded());
 			myCertTemplate.setPublicKey(keyInfo);
 			return new CertRequest(4, myCertTemplate.build(), null);
 		}
