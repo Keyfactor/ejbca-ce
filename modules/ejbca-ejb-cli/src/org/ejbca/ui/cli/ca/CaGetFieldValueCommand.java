@@ -43,7 +43,7 @@ public class CaGetFieldValueCommand extends BaseCaAdminCommand {
 
     {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "The name of the CA to edit."));
+                "The name of the CA to query."));
         registerParameter(new Parameter(FIELD_KEY, "Field Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The sought field."));
     }
@@ -78,7 +78,7 @@ public class CaGetFieldValueCommand extends BaseCaAdminCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Edits CA fields of an existing CA.";
+        return "Displays the value of a specific field in an existing CA.";
                
     }
 
