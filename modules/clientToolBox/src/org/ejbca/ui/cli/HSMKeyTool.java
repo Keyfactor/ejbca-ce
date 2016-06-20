@@ -517,7 +517,7 @@ public class HSMKeyTool extends ClientToolBox {
                 System.out.println("Using signature algorithm "+linkSigAlg);
 
                 final BigInteger serno = SernoGeneratorRandom.instance().getSerno();
-                final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(ASN1Primitive.fromByteArray(newPubKey.getEncoded()));
+                final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(newPubKey.getEncoded());
                 final Date validFrom = new Date(new Date().getTime() - 60L*15L*1000L); // back date by 15 minutes to allow for clock skew
                 final Date validTo = oldCertX509.getNotAfter();
 

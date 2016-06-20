@@ -273,8 +273,7 @@ public class CaInitCommandTest {
             Random random = new Random();
             random.setSeed(firstDate.getTime());
             random.nextBytes(serno);
-            final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo
-                    .getInstance((ASN1Sequence) ASN1Primitive.fromByteArray(msg.getRequestPublicKey().getEncoded()));
+            final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(msg.getRequestPublicKey().getEncoded());
             X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(
                     CertTools.stringToBcX500Name(externalCACert.getSubjectDN().toString()), new java.math.BigInteger(serno).abs(), firstDate,
                     lastDate, CertTools.stringToBcX500Name(msg.getRequestDN()), pkinfo);

@@ -44,7 +44,6 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
@@ -162,16 +161,9 @@ public class CrmfRequestMessageTest {
 		CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
 		myCertTemplate.setValidity( myOptionalValidity );
 		myCertTemplate.setIssuer(new X500Name(issuerDN));
-		myCertTemplate.setSubject(new X500Name(subjectDN));
-		byte[]                  bytes = keys.getPublic().getEncoded();
-        ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
-        ASN1InputStream         dIn = new ASN1InputStream(bIn);
-        try {
-            SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence) dIn.readObject());
-            myCertTemplate.setPublicKey(keyInfo);
-        } finally {
-            dIn.close();
-        }
+        myCertTemplate.setSubject(new X500Name(subjectDN));
+        SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded());
+        myCertTemplate.setPublicKey(keyInfo);    
 		ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
 		DEROutputStream         dOut = new DEROutputStream(bOut);
 		ExtensionsGenerator extgen = new ExtensionsGenerator();

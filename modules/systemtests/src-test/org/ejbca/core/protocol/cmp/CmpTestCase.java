@@ -302,11 +302,7 @@ public abstract class CmpTestCase extends CaTestCase {
             // This field can be empty in the spec, and it has happened for real that someone has used empty value here
             myCertTemplate.setSubject(userDN);
         }
-        byte[] bytes = keys.getPublic().getEncoded();
-        ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
-        ASN1InputStream dIn = new ASN1InputStream(bIn);
-        SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence) dIn.readObject());
-        dIn.close();
+        SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded());
         myCertTemplate.setPublicKey(keyInfo);
         // If we did not pass any extensions as parameter, we will create some of our own, standard ones
         Extensions exts = extensions;
@@ -490,17 +486,9 @@ public abstract class CmpTestCase extends CaTestCase {
      if(reqIssuerDN != null) {
          myCertTemplate.setIssuer(new X500Name(reqIssuerDN));
      }
-     
-     
-        byte[] bytes = keys.getPublic().getEncoded();
-        ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
-        ASN1InputStream dIn = new ASN1InputStream(bIn);
-        try {
-            SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance((ASN1Sequence) dIn.readObject()); 
-            myCertTemplate.setPublicKey(keyInfo);
-        } finally {
-            dIn.close();
-        }
+
+        SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded());
+        myCertTemplate.setPublicKey(keyInfo);
 
      CertRequest myCertRequest = new CertRequest(4, myCertTemplate.build(), null);
 
