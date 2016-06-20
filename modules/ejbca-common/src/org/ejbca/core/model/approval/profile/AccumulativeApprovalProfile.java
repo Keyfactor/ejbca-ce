@@ -147,6 +147,12 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
         // We all good here, homie. 
         return true;
     }
+    
+    @Override
+    public boolean canViewPartition(AuthenticationToken authenticationToken, ApprovalPartition approvalPartition)
+            throws AuthenticationFailedException {
+        return canApprovePartition(authenticationToken, approvalPartition);
+    }
 
     @Override
     public int getOrdinalOfStepBeingEvaluated(Collection<Approval> approvalsPerformed) {
@@ -162,4 +168,6 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     public Set<String> getHiddenProperties() {
         return new HashSet<>(Arrays.asList(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS));
     }
+
+
 }
