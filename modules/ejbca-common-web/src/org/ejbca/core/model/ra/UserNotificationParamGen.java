@@ -70,7 +70,7 @@ public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 	    if (revokedCertificate!=null) {
 	        final CertificateData certificateData = revokedCertificate.getCertificateData();
 	        if (certificateData != null) {
-	            paramPut("revokedCertificate.CERTSERIAL", certificateData.getSerialNumber());
+	            paramPut("revokedCertificate.CERTSERIAL", certificateData.getSerialNumberHex());
 	            paramPut("revokedCertificate.EXPIREDATE", fastDateFormat(new Date(certificateData.getExpireDate())));
 	            paramPut("revokedCertificate.CERTSUBJECTDN", certificateData.getSubjectDN());
 	            paramPut("revokedCertificate.CERTISSUERDN", certificateData.getIssuerDN());

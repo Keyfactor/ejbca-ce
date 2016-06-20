@@ -4,13 +4,19 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
+import java.math.BigInteger;
 import java.util.Date;
 
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.SecConst;
 import org.junit.Test;
 
@@ -42,14 +48,27 @@ public class UserNotificationParamGenTest {
 		                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
 		                                 now, null, SecConst.TOKEN_SOFT_P12, 
 		                                 SecConst.NO_HARDTOKENISSUER, null);
-        UserNotificationParamGen paramGen = new UserNotificationParamGen(userdata, approvalAdminDN, admindata);
+		final String certificateSerialNumber = "1234567890";
+		final CertificateData certificateData = new CertificateData();
+		certificateData.setSerialNumber(certificateSerialNumber);
+		certificateData.setExpireDate(now);
+		certificateData.setSubjectDN("CN=foo,O=Org,C=SE");
+        certificateData.setIssuerDN("CN=The CA,O=Org,C=NO");
+        certificateData.setStatus(CertificateConstants.CERT_REVOKED);
+        certificateData.setRevocationReason(RevocationReasons.CERTIFICATEHOLD.getDatabaseValue());
+		final CertificateDataWrapper cdw = new CertificateDataWrapper(certificateData, null);
+        final UserNotificationParamGen paramGen = new UserNotificationParamGen(userdata, approvalAdminDN, admindata, cdw);
         assertNotNull("paramGen is null", paramGen);
         
         String msg = paramGen.interpolate("${USERNAME} ${user.USERNAME} ${PASSWORD} ${user.PASSWORD} ${CN} ${user.CN} ${C}" +
         						" ${approvalAdmin.CN} ${approvalAdmin.C} ${approvalAdmin.O}" +
-        						" ${user.EE.EMAIL} ${user.SAN.EMAIL} ${requestAdmin.EE.EMAIL} ${requestAdmin.CN} ${requestAdmin.SAN.EMAIL}");
+        						" ${user.EE.EMAIL} ${user.SAN.EMAIL} ${requestAdmin.EE.EMAIL} ${requestAdmin.CN} ${requestAdmin.SAN.EMAIL}" +
+        						" ${revokedCertificate.CERTSERIAL} ${revokedCertificate.EXPIREDATE} ${revokedCertificate.CERTSUBJECTDN} " +
+        						" ${revokedCertificate.CERTISSUERDN} ${revokedCertificate.REVOCATIONSTATUS} ${revokedCertificate.REVOCATIONREASON}");
         assertFalse("Interpolating message failed", (msg==null || msg.length()==0));
-        assertEquals("foo foo foo123 foo123 foo foo SE approvaluser SE Org fooee@foo.se fooalt@foo.se adminee@foo.se Test Admin adminalt@foo.se", msg);
+        assertEquals("foo foo foo123 foo123 foo foo SE approvaluser SE Org fooee@foo.se fooalt@foo.se adminee@foo.se Test Admin adminalt@foo.se" +
+                " " + new BigInteger(certificateSerialNumber).toString(16).toUpperCase() +" " + ValidityDate.formatAsISO8601(now, ValidityDate.TIMEZONE_SERVER) + " CN=foo,O=Org,C=SE " +
+                " CN=The CA,O=Org,C=NO Revoked certificateHold", msg);
 		
 	}
 	
