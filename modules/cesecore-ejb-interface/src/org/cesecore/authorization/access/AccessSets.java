@@ -214,15 +214,14 @@ public final class AccessSets {
         final String recursiveRule = "/".equals(rulename) ? "/" + AccessSet.WILDCARD_RECURSIVE : rulename + "/" + AccessSet.WILDCARD_RECURSIVE;
         addRule(set, recursiveRule);
         
-        // TODO this is tricky because we can't have the ejbca-specific rules in CESeCore.
-        //      either we could have a "access rule registry"
+        // TODO This is tricky because we can't have the ejbca-specific rules in CESeCore.
+        //      We could solve it by adding a parameter to the AccessTreeCache.updateAccessTree(Collection<RoleData>, int) method, which could
+        //      specify all the available rules (e.g. of existing CAs etc., but not necessarily granted in this access set)
         
-        // XXX this is cesecore so we can't use AccessRulesConstants
         /*Map<String, Set<String>> redactedRules = getAuthorizationDataHandler()
                     .getRedactedAccessRules(AccessRulesConstants.CREATE_END_ENTITY);
         allRulesViewCache = getCategorizedRuleSet(role, redactedRules);*/
         
-        // XXX this is cesecore so we can't use EjbcaConfiguration
         /*complexAccessControlSession.getAllAccessRulesRedactUnauthorizedCas(administrator,
                     globalconfiguration.getEnableEndEntityProfileLimitations(), globalconfiguration.getIssueHardwareTokens(),
                     globalconfiguration.getEnableKeyRecovery(), endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, endentityAccessRule),
