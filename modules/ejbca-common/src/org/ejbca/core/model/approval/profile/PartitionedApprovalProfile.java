@@ -47,6 +47,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     public static final int EXECUTION_STEP_ID = 0;
     public static final String PROPERTY_NAME = "name";
     public static final String PROPERTY_ROLES_WITH_APPROVAL_RIGHTS = "roles_with_approval_rights";
+    public static final String PROPERTY_ROLES_WITH_VIEW_RIGHTS = "roles_with_view_rights";
 
     {
         //Default step, which is the default execution step. It contains a single partition, and only a list of approved executors. 
@@ -151,7 +152,27 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
             }
         }
         return false;
-    }    
+    }  
+    
+    @Override
+    public boolean canViewPartition(AuthenticationToken authenticationToken, ApprovalPartition approvalPartition)
+            throws AuthenticationFailedException {
+        boolean result = false;
+        @SuppressWarnings("unchecked")
+        List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_VIEW_RIGHTS).getValues();
+        for (RoleInformation role : roles) {
+            if (role.equals(ANYBODY)) {
+                result = true;
+            } else {
+                for (AccessUserAspectData accessUserAspect : role.getAccessUserAspects()) {
+                    if (authenticationToken.matchIdentity(accessUserAspect)) {
+                        result = true;
+                    }
+                }
+            }
+        }
+        return result || canApprovePartition(authenticationToken, approvalPartition);
+    }
 
     @Override
     public int getRemainingApprovals(Collection<Approval> approvalsPerformed) {
@@ -178,20 +199,31 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     protected ApprovalPartition addConstantProperties(ApprovalPartition approvalPartition) {
         //All partitions for this profile have some default fields: a name and a list of Roles with access 
         approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NAME, ""));
-        //Add "Anybody" as the default Role. 
-        DynamicUiProperty<RoleInformation> roles = new DynamicUiProperty<RoleInformation>(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, ANYBODY,
+        
+        //Add approving roles, with "Anybody" as the default Role. 
+        DynamicUiProperty<RoleInformation> approvalRoles = new DynamicUiProperty<RoleInformation>(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, ANYBODY,
                 new ArrayList<RoleInformation>());
         //Will make this property into a multi-select instead of single select.
-        roles.setHasMultipleValues(true);
+        approvalRoles.setHasMultipleValues(true);
         //Tell whatever bean is using this property to fill it with authorized roles. 
-        roles.setPropertyCallback(DynamicUiPropertyCallback.ROLES);
-        approvalPartition.addProperty(roles);
+        approvalRoles.setPropertyCallback(DynamicUiPropertyCallback.ROLES);
+        approvalPartition.addProperty(approvalRoles);
+        
+        //Add roles with view rights, with "Anybody" as the default Role. 
+        DynamicUiProperty<RoleInformation> viewRoles = new DynamicUiProperty<RoleInformation>(PROPERTY_ROLES_WITH_VIEW_RIGHTS, ANYBODY,
+                new ArrayList<RoleInformation>());
+        //Will make this property into a multi-select instead of single select.
+        viewRoles.setHasMultipleValues(true);
+        //Tell whatever bean is using this property to fill it with authorized roles. 
+        viewRoles.setPropertyCallback(DynamicUiPropertyCallback.ROLES);
+        approvalPartition.addProperty(viewRoles);
+        
         return approvalPartition;
     }
 
     @Override
     public Set<String> getHiddenProperties() {
-        return new HashSet<>(Arrays.asList(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS));
+        return new HashSet<>(Arrays.asList(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, PROPERTY_ROLES_WITH_VIEW_RIGHTS));
     }
 
 }

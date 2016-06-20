@@ -139,17 +139,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         this.steps = null;
         data.put(STEPS_KEY, encodeSteps(stepsToBeEncoded.values()));
     }
-
-    @Override
-    public void addPropertyToPartition(int stepId, int partitionId, DynamicUiProperty<? extends Serializable> property) throws NoSuchApprovalStepException {
-        ApprovalStep step = getSteps().get(stepId);
-        if (step == null) {
-            throw new NoSuchApprovalStepException("Approval step with ID: " + stepId + " not found.");
-        }
-        step.setPropertyToPartition(partitionId, property);
-        saveTransientObjects();
-    }
-    
+ 
     @Override
     public ApprovalPartition addPartition(int stepIdentifier) {
         ApprovalPartition result = getStep(stepIdentifier).addPartition();
@@ -167,6 +157,16 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
      * @return a copy of the partition with the constant values.
      */
     protected abstract ApprovalPartition addConstantProperties(ApprovalPartition approvalPartition);
+
+    @Override
+    public void addPropertyToPartition(int stepId, int partitionId, DynamicUiProperty<? extends Serializable> property) throws NoSuchApprovalStepException {
+        ApprovalStep step = getSteps().get(stepId);
+        if (step == null) {
+            throw new NoSuchApprovalStepException("Approval step with ID: " + stepId + " not found.");
+        }
+        step.setPropertyToPartition(partitionId, property);
+        saveTransientObjects();
+    }
 
     @Override
     public void addPropertiesToPartition(Integer stepId, int partitionId, List<DynamicUiProperty<? extends Serializable>> properties)
