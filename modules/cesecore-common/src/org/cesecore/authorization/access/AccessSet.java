@@ -78,6 +78,7 @@ public final class AccessSet implements Serializable {
     }
 
     public boolean isAuthorized(final String... resources) {
+        // Note that "*SOME" rules are added when the rules for the AccessSet are built, and don't need to be handled here
         NEXT_RESOURCE: for (final String resource : resources) {
             if (resource.charAt(0) != '/') {
                 throw new IllegalArgumentException("Resource must start with /");
@@ -91,8 +92,9 @@ public final class AccessSet implements Serializable {
             }
             
             // Check for recursive rules
+            int depth = 0;
             String parentResource = resource;
-            while (true) {
+            for (; depth < 100; depth++) { // never split more than 100 times
                 int slash = parentResource.lastIndexOf('/');
                 if (slash == -1) {
                     break;
@@ -104,6 +106,10 @@ public final class AccessSet implements Serializable {
                 if (set.contains(parentResource + "/" + WILDCARD_RECURSIVE)) {
                     continue NEXT_RESOURCE; // OK. Check next resource
                 }
+            }
+            if (depth == 100 && log.isDebugEnabled()) {
+                // Recursive rules are always accept rules, so it's safe to ignore some of them and continue
+                log.debug("Resource had more than 100 components, only the first 100 were checked for recursive accept access: " + resource);
             }
             
             // If it contains an id, check for *ALL rules also
