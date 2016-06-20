@@ -161,7 +161,40 @@ function viewcert(link){
 	      <h:outputText value="#{approvalView.comment}"/>
 	    </h:column>
 	</h:dataTable>   
-
+	<h:panelGroup layout="block" style="padding: 5px 10px" rendered="#{not empty approvalActionManagedBean.previousPartitions}">
+		<h3><h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION_PREVIOUS }"/></h3>
+		<h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION_HIDDEN }"  style="font-size: 0.7em;"/>
+		<h:dataTable value="#{approvalActionManagedBean.previousPartitions}" var="partition" style="width: 100%"  rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+			<h:column>	
+				<h:dataTable value="#{partition.profilePropertyList}" var="property" headerClass="subheader" columnClasses="editColumn1,editColumn2"
+					 style="width: 100%" rendered="#{not empty partition.profilePropertyList}" styleClass="subTable">
+					<h:column>								
+						<h:outputText value="#{partition.propertyNameLocalized}:"/>
+					</h:column>
+					<h:column>										
+			   			<h:panelGroup rendered="#{!property.multiValued}">
+				   			<h:inputText disabled="true" rendered="#{property.type.simpleName eq 'String'}" value="#{property.value}">
+				   				<f:converter converterId="stringConverter"/>
+				   			</h:inputText>
+				   			<h:inputText disabled="true" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" style="text-align: right;" >
+			                   <f:converter converterId="javax.faces.Long"/>
+				   			</h:inputText>
+				   			<h:inputText disabled="true" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" style="text-align: right;" size="6">
+			                   <f:converter converterId="javax.faces.Integer"/>
+				   			</h:inputText>
+			   				<h:selectBooleanCheckbox disabled="true" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
+			   			</h:panelGroup>
+						<h:selectOneMenu disabled="true"  rendered="#{property.multiValued && !property.hasMultipleValues}" value="#{property.encodedValue}">
+							<f:selectItems value="#{partition.propertyPossibleValues}"/>
+						</h:selectOneMenu>
+						<h:selectManyListbox disabled="true" rendered="#{property.multiValued && property.hasMultipleValues}" value="#{property.encodedValues}" >
+							<f:selectItems value="#{partition.propertyPossibleValues}"/>
+						</h:selectManyListbox>
+					</h:column>
+				</h:dataTable>
+			</h:column>
+	</h:dataTable>
+	</h:panelGroup>
 
 	<h3><h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION_ACTION }"/></h3>
 	<h:outputText style="font-size: 0.7em;" 
