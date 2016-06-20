@@ -58,6 +58,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.RAAuthorization;
@@ -139,6 +140,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 	
 	ListDataModel<ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
 	Set<Integer> partitionsAuthorizedToApprove = null;
+	ListDataModel<ApprovalPartitionProfileGuiObject> previousPartitions = null;
 
 	public HashMap<Integer, String> getStatusText(){
 	    if(statustext == null){
@@ -388,7 +390,37 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     
     /**
      * 
-     * @return all profiles that the current admin has view access to
+     * @return all previous partitions that the current admin has view access to
+     */
+    public ListDataModel<ApprovalPartitionProfileGuiObject> getPreviousPartitions() {
+        if (previousPartitions == null) {
+            List<ApprovalPartitionProfileGuiObject> authorizedPartitions = new ArrayList<>();
+            ApprovalStep step = approveRequestData.getApprovalProfile().getFirstStep();
+            ApprovalStep currentStep = getCurrentStep();
+            while (!step.equals(currentStep)) {
+                for (ApprovalPartition approvalPartition : step.getPartitions().values()) {
+                    try {
+                        if (approveRequestData.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
+                            authorizedPartitions
+                                    .add(new ApprovalPartitionProfileGuiObject(approveRequestData.getApprovalProfile().getApprovalProfileIdentifier(),
+                                            approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalPartition)));
+                        }
+                    } catch (AuthenticationFailedException e) {
+                        //We shouldn't have gotten here in the UI with an invalid token
+                        throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
+                    }
+                }
+                step = approveRequestData.getApprovalProfile().getStep(step.getNextStep());
+            }
+            previousPartitions = new ListDataModel<ApprovalPartitionProfileGuiObject>(authorizedPartitions);
+        }
+        return previousPartitions;
+
+    }
+    
+    /**
+     * 
+     * @return all partitions that the current admin has view access to
      */
     public ListDataModel<ApprovalPartitionProfileGuiObject> getApprovalPartitions() {
         if (partitionsAuthorizedToView == null) {
