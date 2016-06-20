@@ -40,9 +40,16 @@ public final class AccessSets {
     private static final Logger log = Logger.getLogger(AccessSets.class);
     private static final Pattern idOrAllInRulename = Pattern.compile("^/(.+)/(-?[0-9]+|\\*ALL)(/|$)");
     
-    /** Map from role primary key to list of all allowed access rules, including generated wildcard rules */
-    private Map<Integer,Collection<String>> sets = null;
-    private Collection<RoleData> roles = null;
+    private static class AccessSetsState {
+        /** Map from role primary key to list of all allowed access rules, including generated wildcard rules */
+        final Map<Integer,Collection<String>> sets;
+        final Collection<RoleData> roles;
+        public AccessSetsState(final Map<Integer,Collection<String>> sets, final Collection<RoleData> roles) {
+            this.sets = sets;
+            this.roles = roles;
+        }
+    }
+    private AccessSetsState state;
     
     public void buildAccessSets(final Collection<RoleData> roles) {
         log.trace(">buildAccessSets");
@@ -50,17 +57,15 @@ public final class AccessSets {
         for (RoleData role : roles) {
             newSets.put(role.getPrimaryKey(), buildAccessSet(role));
         }
-        synchronized (this) {
-            sets = newSets; // Replace the old access rules with the new ones
-            this.roles = roles; // cache the available roles
-        }
+        state = new AccessSetsState(newSets, roles);
         log.trace("<buildAccessSets");
     }
     
     private Set<String> getAccessSetInternal(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        final AccessSetsState state = this.state; // get object atomically
         final Set<String> set = new HashSet<>();
         for (final Integer roleId : getRoleIdsForAuthToken(authenticationToken)) {
-            final Collection<String> rulesForRole = sets.get(roleId);
+            final Collection<String> rulesForRole = state.sets.get(roleId);
             if (rulesForRole != null) {
                 set.addAll(rulesForRole);
             } else {
@@ -129,8 +134,9 @@ public final class AccessSets {
     }
 
     private Collection<Integer> getRoleIdsForAuthToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        final AccessSetsState state = this.state; // get object atomically
         final Collection<Integer> roleIds = new ArrayList<>();
-        for (final RoleData role : roles) {
+        for (final RoleData role : state.roles) {
             for (final AccessUserAspect accessUser : role.getAccessUsers().values()) {
                 // If aspect is of the correct token type
                 if (authenticationToken.matchTokenType(accessUser.getTokenType()) && authenticationToken.matches(accessUser)) {
