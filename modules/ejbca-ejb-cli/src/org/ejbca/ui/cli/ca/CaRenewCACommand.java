@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.cli.ca;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -23,8 +21,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509ExtensionUtils;
@@ -218,22 +214,10 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
     }
 
     private static String computeSubjectKeyIdentifier(final X509Certificate certificate) {
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(certificate.getPublicKey().getEncoded()));
-        try {
-            try {
-                SubjectPublicKeyInfo spki = SubjectPublicKeyInfo.getInstance((ASN1Sequence) asn1InputStream.readObject());
-                X509ExtensionUtils utils = new X509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
-                SubjectKeyIdentifier ski = utils.createSubjectKeyIdentifier(spki);
-                return new String(Hex.encode(ski.getKeyIdentifier()));
-
-            } catch (IOException e) {
-                return "n/a";
-            } finally {
-                asn1InputStream.close();
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException("Unknown IOException was caught.", e);
-        }
+        SubjectPublicKeyInfo spki = SubjectPublicKeyInfo.getInstance(certificate.getPublicKey().getEncoded());
+        X509ExtensionUtils utils = new X509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
+        SubjectKeyIdentifier ski = utils.createSubjectKeyIdentifier(spki);
+        return new String(Hex.encode(ski.getKeyIdentifier()));
     }
 
     private static String computePublicKeyHash(final PublicKey publicKey) {

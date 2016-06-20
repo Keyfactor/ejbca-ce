@@ -302,7 +302,7 @@ public class CrlCreateSessionTest {
             firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
             Date lastDate = new Date();
             lastDate.setTime(lastDate.getTime() + 365 * 24 * 60 * 60 * 1000);
-            final SubjectPublicKeyInfo subcaspki = SubjectPublicKeyInfo.getInstance((ASN1Sequence) ASN1Primitive.fromByteArray(subcapubkey.getEncoded()));
+            final SubjectPublicKeyInfo subcaspki = SubjectPublicKeyInfo.getInstance(subcapubkey.getEncoded());
             final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(rootcadn, false), new BigInteger(64, new Random(System.nanoTime())),
                     firstDate, lastDate, CertTools.stringToBcX500Name(subcadn, false), subcaspki);
             final AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(CertTools.getAuthorityKeyId(rootcacert));
