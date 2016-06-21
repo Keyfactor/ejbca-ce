@@ -1,3 +1,25 @@
+EJBCA 6.5.3, 2016-06-22
+---
+Bug
+    [ECA-5085] - Regression: ca editca fails on an NPE if --fields parameter is missed.
+    [ECA-5089] - Security hardening
+    [ECA-5091] - Single Active Certificate Constraint does not cause publishing when called from CMP
+    [ECA-5129] - Security issue
+    [ECA-5144] - Regression: Bug in Key Recovery
+
+Improvement
+    [ECA-5038] - State more clearly in documentation that Peers is enterprise only
+    [ECA-5093] - Add debug logging when testing CT publisher connections
+    [ECA-5094] - Potential security issue
+    [ECA-5096] - In SCEP servlet don't info log auth failure that has already been audit logged
+    [ECA-5099] - Potential security issue
+    [ECA-5131] - Update Japanese Language Files
+    [ECA-5135] - ejbca-db-cli verify command should support individual table verification
+    [ECA-5158] - ejbca-db-cli "verify integrity protection" flag does not affect tables related to RoleData
+
+New Feature
+    [ECA-5136] - CHR override for IS and DV certificates
+
 EJBCA 6.5.2, 2016-05-13
 ---
 Bug
