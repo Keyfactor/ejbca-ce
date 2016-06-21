@@ -6,6 +6,24 @@ Certificate Profiles, but not for existing profiles.
 Since the CertificateData table has three new columns "notBefore", "endEntityProfileId" and "subjectAltName", a CA upgrade using direct database
 publishing to VA also requires schema changes on the connected VAs. Please see the UPGRADE document for details.
 
+EJBCA 6.5.3
+-----------
+Just in time for Midsummer in Sweden, what's better on a holiday than deploying a new version of EJBCA? This release of EJBCA 6.5.3 adds a couple of 
+security fixes, corrects a few bugs that hit a couple of rare cases, and improves the EJBCA Database CLI. 
+Not to mention an updated Japanese translation. All in all, this release contains 14 bug fixes and improvements.
+
+Security:
+    - Fix two security issues, and tighten a couple of cases that could cause unnecessary load.
+
+CMP:
+    - If issuing using CMP, using the Single Active Certificate Constraint, and OCSP publishing, the revocations were not published to OCSP.
+    
+CLI:
+    - Improve the ejbca-db-cli verify command to be more flexible and powerful, and fix a small documentation flaw in the regular EJBCA cli.
+
+Administration UI:
+    - Update Japanese translation.
+
 EJBCA 6.5.2
 -----------
 Winter is coming they say, but in the PrimeKey offices in Stockholm it seems to be a far way away. While we're busy toiling away at our new feature
