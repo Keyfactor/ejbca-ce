@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
@@ -90,7 +91,7 @@ public class RaMasterApiTest {
                 sb.append(className);
             }
         }
-        assertTrue("Design violation. The following referenced classes of RaMasterApi are not Serializable: " + sb.toString(), sb.length()==0);
+        assertEquals("Design violation. The following referenced classes of RaMasterApi are not Serializable: " + sb.toString(), 0, sb.length());
     }
 
     /** @return a Set of all classes declared as method parameters, method return types, method Exceptions or non-transient, non-static field in the class */
