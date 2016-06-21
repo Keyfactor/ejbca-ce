@@ -516,7 +516,7 @@ public class RaSearchCertsBean implements Serializable {
     public void setCriteriaStatus(final String criteriaStatus) {
         final List<Integer> statuses = new ArrayList<>();
         final List<Integer> revocationReasons = new ArrayList<>();
-        if (!criteriaStatus.isEmpty()) {
+        if (criteriaStatus!=null && !criteriaStatus.isEmpty()) {
             final String[] criteriaStatusSplit = criteriaStatus.split("_");
             if (String.valueOf(CertificateConstants.CERT_ACTIVE).equals(criteriaStatusSplit[0])) {
                 statuses.addAll(Arrays.asList(new Integer[]{ CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION }));
