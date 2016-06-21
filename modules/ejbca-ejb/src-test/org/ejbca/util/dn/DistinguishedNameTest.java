@@ -66,10 +66,19 @@ public class DistinguishedNameTest {
 
         final String EXPECTED_DN = "cn=David Galichet,o=Fimasys,email=dgalichet@fimasys.fr,"
             + "g=M,email=david.galichet@fimasys.fr,ou=Linagora Secu,email=dgalichet@linagora.com,l=Paris";
+        final String EXPECTED_DN_JDK8 = "cn=David Galichet,o=Fimasys,email=dgalichet@fimasys.fr,"
+                + "g=M,email=david.galichet@fimasys.fr,ou=Linagora Secu,l=Paris,email=dgalichet@linagora.com";
         dn = createNewDN();
         DistinguishedName newDn = dn.mergeDN(otherDn, false, null);
 
-        assertEquals(EXPECTED_DN, newDn.toString());
+        // This returns slightly different between JDK 7 and JDK 8
+        String[] javaVersionElements = System.getProperty("java.version").split("\\.");
+        int major = Integer.parseInt(javaVersionElements[1]);
+        if (major > 7) {
+            assertEquals(EXPECTED_DN_JDK8, newDn.toString());
+        } else {
+            assertEquals(EXPECTED_DN, newDn.toString());
+        }        
     }
 
     /**
@@ -81,11 +90,20 @@ public class DistinguishedNameTest {
 
         final String EXPECTED_DN = "cn=David Galichet,o=Linagora,email=dgalichet@linagora.fr,"
             + "g=M,email=david.galichet@linagora.com,ou=Linagora Secu,email=dgalichet@linagora.com,l=Paris";
+        final String EXPECTED_DN_JDK8 = "cn=David Galichet,o=Linagora,email=dgalichet@linagora.fr,"
+                + "g=M,email=david.galichet@linagora.com,ou=Linagora Secu,l=Paris,email=dgalichet@linagora.com";
 
         dn = createNewDN();
         DistinguishedName newDn = dn.mergeDN(otherDn, true, null);
 
-        assertEquals(EXPECTED_DN, newDn.toString());
+        // This returns slightly different between JDK 7 and JDK 8
+        String[] javaVersionElements = System.getProperty("java.version").split("\\.");
+        int major = Integer.parseInt(javaVersionElements[1]);
+        if (major > 7) {
+            assertEquals(EXPECTED_DN_JDK8, newDn.toString());
+        } else {
+            assertEquals(EXPECTED_DN, newDn.toString());
+        }        
     }
 
     /**

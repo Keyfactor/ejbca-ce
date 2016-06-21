@@ -625,7 +625,14 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar",
                         data.getDN());
                 // Make sure altNames are not stripped, they shall actually be merged as well
-                assertEquals("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
+                // This returns slightly different between JDK 7 and JDK 8
+                String[] javaVersionElements = System.getProperty("java.version").split("\\.");
+                int major = Integer.parseInt(javaVersionElements[1]);
+                if (major > 7) {
+                    assertEquals("rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=foo1.bar.com", data.getSubjectAltName());
+                } else {
+                    assertEquals("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
+                }        
                 // Try with some altName value to merge
                 endEntityManagementSession.deleteUser(admin, username);
                 profile.setValue(DnComponents.DNSNAME, 0, "server.bad.com");
