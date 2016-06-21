@@ -217,6 +217,7 @@ public final class AccessSets {
         // TODO This is tricky because we can't have the ejbca-specific rules in CESeCore.
         //      We could solve it by adding a parameter to the AccessTreeCache.updateAccessTree(Collection<RoleData>, int) method, which could
         //      specify all the available rules (e.g. of existing CAs etc., but not necessarily granted in this access set)
+        //      See ECA-5166.
         
         /*Map<String, Set<String>> redactedRules = getAuthorizationDataHandler()
                     .getRedactedAccessRules(AccessRulesConstants.CREATE_END_ENTITY);
