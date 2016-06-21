@@ -60,9 +60,9 @@ public class CaGetFieldValueCommandTest {
     @Test
     public void testSanity() {
         try {
-            assertEquals("CA get value command is broken.", CommandResult.SUCCESS, caGetFieldValueCommand.execute("--caname", CA_NAME, "--value", "CRLPeriod"));
+            assertEquals("CA get value command is broken.", CommandResult.SUCCESS, caGetFieldValueCommand.execute("--caname", CA_NAME, "--field", "CRLPeriod"));
         } catch (Exception e) {
-            fail("CA get value command is broken: " + e.getMessage());
+            fail("CA get field command is broken: " + e.getMessage());
         }
     }
 }
