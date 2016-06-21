@@ -94,7 +94,7 @@ public final class AccessSet implements Serializable {
             // Check for recursive rules
             int depth = 0;
             String parentResource = resource;
-            for (; depth < 100; depth++) { // never split more than 100 times
+            while (++depth < 100) { // never split more than 100 times
                 int slash = parentResource.lastIndexOf('/');
                 if (slash == -1) {
                     break;
