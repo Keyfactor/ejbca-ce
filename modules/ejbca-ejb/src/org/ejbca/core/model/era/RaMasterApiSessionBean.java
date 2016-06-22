@@ -81,6 +81,8 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalProfileSession;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -104,6 +106,9 @@ import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -127,6 +132,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     private static final Logger log = Logger.getLogger(RaMasterApiSessionBean.class);
 
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
@@ -429,20 +436,20 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return false;
         }
         // Convert RA request steps into approval steps
-        /*
-        final boolean isAccumulativeOnly = advo.getApprovalRequest().getApprovalProfile().getApprovalProfileType() instanceof AccumulativeApprovalProfile;*/
+        
+        //final boolean isAccumulativeOnly = advo.getApprovalRequest().getApprovalProfile() instanceof AccumulativeApprovalProfile;
         final Approval approval = new Approval(requestResponse.getComment(), requestResponse.getStepIdentifier(), 0);
         /*final ApprovalStep approvalStep;
         if (isAccumulativeOnly) {
             approvalStep = null;
-            if (requestResponse.getStepId() != -1) {
+            if (requestResponse.getStepIdentifier() != -1) {
                 throw new IllegalStateException("An approval step was provided for a plain accumulative approval request");
             }
         } else {
-            if (requestResponse.getStepId() == -1) {
+            if (requestResponse.getStepIdentifier() == -1) {
                 throw new IllegalStateException("No approval step was provided for partitioned approval request");
             }
-            approvalStep = advo.getApprovalRequest().getApprovalStep(requestResponse.getStepId());
+            approvalStep = advo.getApprovalRequest().getApprovalStep(requestResponse.getStepIdentifier());
             for (final MetadataResponse metadata : requestResponse.getMetadataList()) {
                 approvalStep.updateOneMetadataValue(metadata.getMetadataId(), metadata.getOptionValue(), metadata.getOptionNote());
             
@@ -450,6 +457,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }*/
         switch (requestResponse.getAction()) {
         case APPROVE:
+            // FIXME this method used to take an ApprovalStep parameter which included the metadata. We need to pass the meta data somehow to the approve method.
             approvalExecutionSession.approve(authenticationToken, advo.getApprovalId(), approval);
             return true;
         case REJECT:
