@@ -150,6 +150,7 @@
 	<property name="mod.edition-specific-ee-ejb.path" location="${mod.path}/edition-specific-ee"/>
 	<property name="mod.va-publisher.lib"  location="${mod.dist.path}/va-publisher.jar"/>
 	<property name="mod.systemtest-interface.lib" location="${mod.dist.path}/systemtests-interfaces.jar" />
+	<property name="mod.systemtest-common.lib" location="${mod.dist.path}/systemtests-common.jar" />
 	<property name="mod.systemtest-ejb.lib" location="${mod.dist.path}/systemtests-ejb.jar" />
 	<property name="mod.ra-gui.path" location="${mod.path}/ra-gui" />
 	<property name="mod.ra-gui.war" location="${mod.dist.path}/ra-gui.war" />
