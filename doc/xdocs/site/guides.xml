@@ -759,6 +759,28 @@ JkWorkersFile /etc/libapache2-mod-jk/workers.properties
   </p>
   </section>
 
+  <section name="Setting up a HA Proxy in front of EJBCA">
+    <p>
+      Scenario: redirect "http://ocsp.website.com" -> "http://1.2.3.4:80/ejbca/publicweb/status/ocsp"
+    </p>
+    <source>
+[...]
+frontend ocsp_front
+        bind *:80
+        stats uri /haproxy?stats
+        default_backend ocsp_back
+
+backend ocsp_back
+        mode http
+        option forwardfor
+        option http-server-close
+        reqrep ^([^\ :]*)\ [/]?(.*) \1\ /ejbca/publicweb/status/ocsp\2
+        reqirep ^Host:\ ocsp.website.com Host:\ 1.2.3.4
+        server ejbca 1.2.3.4:80 check
+[...] 
+    </source>
+  </section>
+
   <section name="Setting up Autoenrollment for Windows clients with EJBCA">
   <p>
   This section will show you how to set up automatic certificate enroll of
