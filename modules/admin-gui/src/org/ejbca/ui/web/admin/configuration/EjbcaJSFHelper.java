@@ -95,24 +95,21 @@ public class EjbcaJSFHelper {
      }
     
      public EjbcaWebBean getEjbcaWebBean(){
-         // The outermost check is here to avoid locking if we already have the variable set.
-    	 if(ejbcawebbean == null){
-    		 FacesContext ctx = FacesContext.getCurrentInstance();    		    	
-    		 HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
-    		 synchronized (session) {
-    			 ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) session.getAttribute("ejbcawebbean");
-    			 if (ejbcawebbean == null){
-    				 ejbcawebbean = new org.ejbca.ui.web.admin.configuration.EjbcaWebBean();
-    				 session.setAttribute("ejbcawebbean", ejbcawebbean);
-    			 }
-    		 }
-    		 try {
-    			 ejbcawebbean.initialize((HttpServletRequest) ctx.getExternalContext().getRequest(), "/administrator");
-    		 } catch (Exception e) {
-    			 log.error(e);
-    		 }
-    	 }
-    	 return ejbcawebbean;
+         FacesContext ctx = FacesContext.getCurrentInstance();    		    	
+         HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
+         synchronized (session) {
+             ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) session.getAttribute("ejbcawebbean");
+             if (ejbcawebbean == null){
+                 ejbcawebbean = new org.ejbca.ui.web.admin.configuration.EjbcaWebBean();
+                 try {
+                     ejbcawebbean.initialize((HttpServletRequest) ctx.getExternalContext().getRequest(), "/administrator");
+                     session.setAttribute("ejbcawebbean", ejbcawebbean);
+                 } catch (Exception e) {
+                     log.error(e);
+                 }
+             }
+         }
+         return ejbcawebbean;
      }
 
      public AuthenticationToken getAdmin() {
