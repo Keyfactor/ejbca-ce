@@ -35,7 +35,7 @@ public enum ProfilingStats {
 
     private final ConcurrentHashMap<String,Entry<Long,Long>> sums = new ConcurrentHashMap<String,Entry<Long,Long>>();
 
-    /*package*/ void add(final String key, final long invocationDuration) {
+    public void add(final String key, final long invocationDuration) {
         Entry<Long, Long> expectedValue = null;
         Entry<Long,Long> currentEntry = null;
         // Since there are likely many parallel invocations to different methods but rarely to the same

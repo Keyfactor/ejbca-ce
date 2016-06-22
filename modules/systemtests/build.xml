@@ -10,6 +10,7 @@
 	<property name="build.test.dir" location="${this.dir}/build/test"/>
 	<property name="build.src.dir" location="${this.dir}/build/src"/>
 	<property name="build.interface.dir" location="${this.dir}/build/interface"/>
+	<property name="build.common.dir" location="${this.dir}/build/common"/>
 	<property name="systemtests.dist.dir" location="${ejbca.home}/modules/dist"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src.test.dir" location="${this.dir}/src-test"/>
@@ -50,6 +51,7 @@
 		<pathelement location="${mod.edition-specific-ejb.lib}"/>
 		<pathelement location="${mod.ejbca-common.lib}"/>
 		<pathelement location="${mysql.lib}"/>
+		<pathelement location="${mod.systemtest-common.lib}"/>
 		<pathelement location="${mod.systemtest-interface.lib}"/>
 		<pathelement location="${mod.systemtest-ejb.lib}"/>
 	</path>
@@ -59,7 +61,12 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
 	</path>
-	
+
+	<path id="common.classpath">
+		<path location="${mod.cesecore-common.lib}"/>
+		<path location="${mod.ejbca-common.lib}"/>
+	</path>
+
 	<path id="interfaces.classpath">
 		<path refid="lib.ejbca-common-web.classpath"/>
 		<pathelement location="${mod.ejbca-entity.lib}" />
@@ -71,6 +78,7 @@
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.cesecore-ejb.lib}"/>
 		<path refid="lib.commons-lang.classpath" />
+		<path location="${build.common.dir}" />
 	</path>
 
 	<path id="compile-ejb.classpath">
@@ -93,6 +101,7 @@
 		<path location="${mod.ejbca-entity.lib}" />
 		<path refid="lib.quickserver.classpath" />
 		<path location="${build.interface.dir}" />
+		<path location="${build.common.dir}" />
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<path location="${mod.cesecore-entity.lib}"/>
 		<path location="${mod.cesecore-common.lib}"/>
@@ -125,17 +134,32 @@
 		<copy file="${systemtests.properties.file}" todir="${build.interface.dir}" failonerror="false"/>
 	</target>
 
-	<target name="systemtest-compile-src" depends="ejbca-properties, ejbca-ejb, edition-specific-interface, eedition-ejb">
+	<target name="systemtest-compile-common" depends="ejbca-properties">
+		<mkdir dir="${build.common.dir}" />
+		<javac srcdir="${src.dir}" destdir="${build.common.dir}" debug="on" includeantruntime="no"
+	        	encoding="UTF-8" classpathref="common.classpath" target="${java.target.version}">
+            <include name="org/cesecore/audit/impl/*EventTypes.java"/>
+            <include name="org/cesecore/certificates/ca/TestExtendedCAServiceInfo.java"/>
+            <include name="org/ejbca/core/ejb/ca/caadmin/UnAuthorizedCustomPublisherMock.java"/>			
+		</javac>
+	</target>
+
+	<target name="systemtest-compile-src" depends="">
 		<mkdir dir="${build.src.dir}" />
 		<javac srcdir="${src.dir}" destdir="${build.src.dir}" debug="on" includeantruntime="no"
 			        	encoding="UTF-8" classpathref="compile-ejb.classpath" target="${java.target.version}">	
+            <exclude name="org/cesecore/audit/impl/*EventTypes.java"/>
+            <exclude name="org/cesecore/certificates/ca/TestExtendedCAServiceInfo.java"/>
+            <exclude name="org/ejbca/core/ejb/ca/caadmin/UnAuthorizedCustomPublisherMock.java"/>			
 		</javac>
 	</target>
 
 	<target name="build-libs" depends="check-inproduction" unless="in-production-mode">
+		<antcall target="systemtest-compile-common" />
+		<jar destfile="${mod.systemtest-common.lib}" basedir="${build.common.dir}"/>
 		<antcall target="systemtest-compile-interfaces" />
-		<antcall target="systemtest-compile-src" />	
 		<jar destfile="${mod.systemtest-interface.lib}" basedir="${build.interface.dir}"/>
+		<antcall target="systemtest-compile-src" />	
 		<buildservicemanifest interface="org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension"
 							    		file="${build.src.dir}" classpath="manifest.classpath"/>
 		<jar destfile="${mod.systemtest-ejb.lib}" basedir="${build.src.dir}">	
