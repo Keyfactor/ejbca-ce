@@ -25,6 +25,7 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalStepMetadata;
+import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaEditableRequestData;
 
@@ -104,21 +105,22 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     public static final class Step implements Serializable {
         private static final long serialVersionUID = 1L;
-        //private final int stepId;
-       // private final String headingText;
+        private final int stepId;
+        private final String headingText;
         private final List<StepControl> controls;
         
-        public Step(/*final ApprovalStep approvalStep,*/ final RaLocaleBean raLocaleBean) {
+        public Step(final ApprovalStep approvalStep, final RaLocaleBean raLocaleBean) {
             controls = new ArrayList<>();
-         /*   for (final ApprovalStepMetadata metadata : approvalStep.getMetadata()) {
+            // TODO
+            /*for (final ApprovalStepMetadata metadata : approvalStep.getMetadata()) {
                 controls.add(new StepControl(metadata));
-            }
-            stepId = approvalStep.getStepId();
-            headingText = raLocaleBean.getMessage("view_request_page_step", stepId);*/
+            }*/
+            stepId = approvalStep.getStepIdentifier();
+            headingText = raLocaleBean.getMessage("view_request_page_step", stepId);
         }
         
         public int getStepId() {
-            return 0;//stepId;
+            return stepId;
         }
         
         public List<StepControl> getControls() {
@@ -126,7 +128,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
         
         public String getHeadingText() {
-            return "";//headingText;
+            return headingText;
         }
     }
     
@@ -191,6 +193,9 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     private final List<RequestDataRow> requestData;
     
+    private final Step nextStep;
+    private final List<Step> previousSteps;
+
     
     // Whether the current admin can approve this request
     private boolean canApprove;
@@ -277,7 +282,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
             log.info("Invalid status of approval request: " + request.getStatus());
             status = "???";
         }
-/*
         
         // Steps
         final ApprovalStep nextApprovalStep = request.getNextApprovalStep();
@@ -292,7 +296,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         previousSteps = new ArrayList<>();
         for (final ApprovalStep prevApprovalStep : request.getPreviousApprovalSteps()) {
             previousSteps.add(new Step(prevApprovalStep, raLocaleBean));
-        }*/
+        }
     }
     
     private String getCNOrFallback(final String subjectDN, final String fallback) {
@@ -328,8 +332,12 @@ public class ApprovalRequestGUIInfo implements Serializable {
         return null;
     }
     
+    public boolean isHasNextStep() { return nextStep != null && canApprove; }
+    public Step getNextStep() { return nextStep; }
+    public List<Step> getPreviousSteps() { return previousSteps; }
+    
     public boolean isCanApprove() { return canApprove; }
-    public boolean isCanEdit() { return canApprove/* && previousSteps.isEmpty()*/; }
+    public boolean isCanEdit() { return canApprove && previousSteps.isEmpty(); }
     public boolean isEditedByMe() { return request.isEditedByMe(); }
     public boolean isPending() { return request.isPending(); }
     public boolean isPendingExecution() { return request.getStatus() == ApprovalDataVO.STATUS_APPROVED; /* = approved but not executed */ }
