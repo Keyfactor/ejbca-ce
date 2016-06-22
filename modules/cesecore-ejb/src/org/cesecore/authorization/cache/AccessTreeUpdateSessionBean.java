@@ -42,7 +42,7 @@ public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal
     private static final Logger LOG = Logger.getLogger(AccessTreeUpdateSessionBean.class);
 
     // JBoss 7.1.1 has a problem with JEE Events (see Johans comment in ECA-4919, probably caused by https://bz.apache.org/bugzilla/show_bug.cgi?id=50789)
-    // The problem is that you get an exception when a META-INF/breans.xml file is present.
+    // The problem is that you get an exception when a META-INF/beans.xml file is present.
     // So for now we just use the standard java Runnable interface (which can only be set within the same JVM)
     private final Collection<AuthorizationCacheReloadListener> authCacheReloadEvent = new ArrayList<>();
     // Once this problem is solved, we can do:
