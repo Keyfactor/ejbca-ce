@@ -16,6 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -39,6 +40,7 @@ import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
@@ -49,9 +51,11 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.event.ValueChangeEvent;
+import javax.faces.validator.ValidatorException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -280,7 +284,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
-    private void initAvailableAndAlgorithms() {
+    private void initAvailableAlgorithms() {
         CertificateProfile certificateProfile = getCertificateProfile();
         final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
         final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
@@ -604,7 +608,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
         resetAlgorithmCsrUpload();
         if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
-            initAvailableAndAlgorithms();
+            initAvailableAlgorithms();
         } else if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
             initCsrUpload();
         }
@@ -619,12 +623,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     private final void enterCsr() {
-        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest);
-        if (pkcs10CertificateRequest == null) {
-            raLocaleBean.addMessageError("enroll_invalid_certificate_request");
-            return;
-        }
-
         resetCertificateData();
         initCertificateData();
     }
@@ -944,6 +942,32 @@ public class EnrollMakeNewRequestBean implements Serializable {
             fc.renderResponse();
         }
     }
+    
+    public void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(value.toString());
+        if (pkcs10CertificateRequest == null) {
+            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
+        }
+        
+        //Get public key algorithm from CSR and check if it's allowed in certificate profile
+        final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificateRequest);
+        try {
+            final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
+            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
+            final CertificateProfile certificateProfile = getCertificateProfile();
+            final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
+            final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
+            if(!availableKeyAlgorithms.contains(keyAlgorithm) ||
+                    !availableBitLengths.contains(Integer.parseInt(keySpecification))){
+                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
+            }
+        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
+        }
+        
+    }
+    
+    
     
     //-----------------------------------------------------------------------------------------------
     //Automatically generated getters/setters

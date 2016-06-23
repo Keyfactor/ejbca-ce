@@ -145,12 +145,15 @@
 								render=":globalMessages :enrollMakeNewRequestForm"
 								listener="#{enrollMakeNewRequestBean.keyPairGenerationAjaxListener}" />
 						</h:selectOneRadio>
-
+						
 						<h:panelGroup layout="block" id="algorithmSelectionMainPanel"
 							rendered="#{!enrollMakeNewRequestBean.availableAlgorithms.isEmpty()}">
+							<h3>
+								<h:outputText value="#{msg.enroll_select_key_algorithm}" />
+							</h3>
 							<h:panelGroup layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="selectAlgorithmOneMenu"
-									value="#{msg.enroll_key_specification}" />
+									value="#{msg.enroll_key_algorithm}" />
 								<h:selectOneMenu id="selectAlgorithmOneMenu"
 									value="#{enrollMakeNewRequestBean.selectedAlgorithm}"
 									valueChangeListener="#{enrollMakeNewRequestBean.algorithmChangedListener}">
@@ -171,13 +174,17 @@
 						</h:panelGroup>
 
 						<h:panelGroup layout="block" id="csrUploadPanel"
-							rendered="#{enrollMakeNewRequestBean.getCsrUploadRendered()}"
-							styleClass="pure-control-group">
-							<p id="marker" style="display: inline-block; max-width: 210px;"></p>
-							<ui:remove>
-								<!-- Pure JavaScript file upload, since non-JS fallback of pasting upload exists -->
-							</ui:remove>
-							<script>
+							rendered="#{enrollMakeNewRequestBean.getCsrUploadRendered()}">
+							<h3>
+								<h:outputText value="#{msg.enroll_upload_csr}" />
+							</h3>
+							<h:panelGroup layout="block"
+								styleClass="pure-control-group">
+								<p id="marker" style="display: inline-block; max-width: 210px;"></p>
+								<ui:remove>
+									<!-- Pure JavaScript file upload, since non-JS fallback of pasting upload exists -->
+								</ui:remove>
+								<script>
 var newFileInput = document.createElement("input");
 newFileInput.type='file';
 newFileInput.id='newFileInputId';
@@ -194,19 +201,18 @@ newFileInput.onchange = function() {
 	}
 };
 document.getElementById("marker").appendChild(newFileInput);
-                			</script>
+	                			</script>
+							</h:panelGroup>
+							<br />
+							<h:panelGroup>
+								<h:inputTextarea id="certificateRequest"
+									style="font-family:'Courier New', Courier, monospace;"
+									value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80"
+									rows="20" required="true" validator="#{enrollMakeNewRequestBean.validateCsr}">
+								</h:inputTextarea>
+								<h:message for="certificateRequest"/>
+							</h:panelGroup>
 						</h:panelGroup>
-						<br />
-						<h:panelGroup
-							rendered="#{enrollMakeNewRequestBean.getCsrUploadRendered()}">
-							<h:inputTextarea id="certificateRequest"
-								style="font-family:'Courier New', Courier, monospace;"
-								value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80"
-								rows="20">
-								<f:validateLength minimum="1" />
-							</h:inputTextarea>
-						</h:panelGroup>
-
 					</h:panelGroup>
 				</h:panelGroup>
 
