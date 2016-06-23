@@ -33,8 +33,10 @@
 				<h:outputText value="#{msg.make_requests_page_title}" />
 			</h1>
 		</h:panelGroup>
-		<h:panelGroup layout="block" id="enrollMakeNewRequestContentBody" styleClass="content-body">
-			<h:form id="enrollMakeNewRequestForm" styleClass="pure-form pure-form-aligned">
+		<h:panelGroup layout="block" id="enrollMakeNewRequestContentBody"
+			styleClass="content-body">
+			<h:form id="enrollMakeNewRequestForm"
+				styleClass="pure-form pure-form-aligned">
 				<h2>
 					<h:outputText value="#{msg.enroll_select_certificate_type_and_ca}" />
 				</h2>
@@ -95,7 +97,7 @@
 							rendered="#{enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty() and
 											enrollMakeNewRequestBean.selectedEndEntityProfile != null}"
 							value="#{msg.enroll_no_available_certificate_subtypes}" />
-	
+
 						<h:panelGroup layout="block" styleClass="pure-control-group">
 							<h:outputLabel for="selectCAOneMenu"
 								value="#{msg.enroll_certificate_authority}"
@@ -124,7 +126,8 @@
 					</fieldset>
 				</h:panelGroup>
 
-				<h:panelGroup layout="block" rendered="#{!enrollMakeNewRequestBean.availableKeyPairGenerations.isEmpty()}">
+				<h:panelGroup layout="block"
+					rendered="#{!enrollMakeNewRequestBean.availableKeyPairGenerations.isEmpty()}">
 					<h2>
 						<h:outputText value="#{msg.enroll_provide_a_key_pair_information}" />
 					</h2>
@@ -145,7 +148,7 @@
 								render=":globalMessages :enrollMakeNewRequestForm"
 								listener="#{enrollMakeNewRequestBean.keyPairGenerationAjaxListener}" />
 						</h:selectOneRadio>
-						
+
 						<h:panelGroup layout="block" id="algorithmSelectionMainPanel"
 							rendered="#{!enrollMakeNewRequestBean.availableAlgorithms.isEmpty()}">
 							<h3>
@@ -178,8 +181,7 @@
 							<h3>
 								<h:outputText value="#{msg.enroll_upload_csr}" />
 							</h3>
-							<h:panelGroup layout="block"
-								styleClass="pure-control-group">
+							<h:panelGroup layout="block" styleClass="pure-control-group">
 								<p id="marker" style="display: inline-block; max-width: 210px;"></p>
 								<ui:remove>
 									<!-- Pure JavaScript file upload, since non-JS fallback of pasting upload exists -->
@@ -207,10 +209,11 @@ document.getElementById("marker").appendChild(newFileInput);
 							<h:panelGroup>
 								<h:inputTextarea id="certificateRequest"
 									style="font-family:'Courier New', Courier, monospace;"
-									value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80"
-									rows="20" required="true" validator="#{enrollMakeNewRequestBean.validateCsr}">
+									value="#{enrollMakeNewRequestBean.certificateRequest}"
+									cols="80" rows="20" required="true"
+									validator="#{enrollMakeNewRequestBean.validateCsr}">
 								</h:inputTextarea>
-								<h:message for="certificateRequest"/>
+								<h:message for="certificateRequest" />
 							</h:panelGroup>
 						</h:panelGroup>
 					</h:panelGroup>
@@ -229,24 +232,29 @@ document.getElementById("marker").appendChild(newFileInput);
 							<ui:repeat id="subjectDn"
 								value="#{enrollMakeNewRequestBean.subjectDn.getFieldInstances()}"
 								var="instance">
-								<h:panelGroup layout="block" styleClass="pure-control-group">
+								<h:panelGroup layout="block" styleClass="pure-control-group"
+									rendered="#{instance.isUsed()}">
 									<h:outputLabel for="subjectDnField"
-										value="#{msg['subject_dn_'.concat(instance.getName())]}"
-										rendered="#{instance.isUsed()}" />
+										value="#{msg['subject_dn_'.concat(instance.getName())]}" />
 									<h:inputText id="subjectDnField" value="#{instance.value}"
-										rendered="#{instance.isUsed()}"
+										rendered="#{!instance.selectable}"
 										disabled="!#{instance.isModifiable()}"
 										required="#{instance.isRequired()}">
 										<f:validator validatorId="extendedRegexValidator" />
-	    								<f:attribute name="pattern" value="#{instance.getRegexPattern()}" />
+										<f:attribute name="pattern"
+											value="#{instance.getRegexPattern()}" />
 									</h:inputText>
-									<h:message for="subjectDnField"/>
-								</h:panelGroup>		
+									<h:selectOneMenu value="#{instance.value}"
+										rendered="#{instance.selectable}">
+										<f:selectItems value="#{instance.selectableValues}" />
+									</h:selectOneMenu>
+									<h:message for="subjectDnField" />
+								</h:panelGroup>
 							</ui:repeat>
 						</fieldset>
 					</h:panelGroup>
-					
-					<h:panelGroup layout="block" styleClass="internal-frame" 
+
+					<h:panelGroup layout="block" styleClass="internal-frame"
 						rendered="#{!(enrollMakeNewRequestBean.subjectAlternativeName.getFieldInstances().isEmpty())}">
 						<h3>
 							<h:outputText
@@ -255,21 +263,26 @@ document.getElementById("marker").appendChild(newFileInput);
 						<ui:repeat id="subjectAlternativeName"
 							value="#{enrollMakeNewRequestBean.subjectAlternativeName.getFieldInstances()}"
 							var="instance">
-							<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:panelGroup layout="block" styleClass="pure-control-group"
+								rendered="#{instance.isUsed()}">
 								<h:outputLabel for="subjectAltNameField"
-									value="#{msg['subject_alternative_name_'.concat(instance.getName())]}"
-									rendered="#{instance.isUsed()}" />
+									value="#{msg['subject_alternative_name_'.concat(instance.getName())]}" />
 								<h:inputText id="subjectAltNameField" value="#{instance.value}"
-									rendered="#{instance.isUsed()}"
-									disabled="!#{instance.isModifiable()}" >
+									rendered="#{!instance.selectable}"
+									disabled="!#{instance.isModifiable()}">
 									<f:validator validatorId="extendedRegexValidator" />
-    								<f:attribute name="pattern" value="#{instance.getRegexPattern()}" />
+									<f:attribute name="pattern"
+										value="#{instance.getRegexPattern()}" />
 								</h:inputText>
-								<h:message for="subjectAltNameField"/>
+								<h:selectOneMenu value="#{instance.value}"
+									rendered="#{instance.selectable}">
+									<f:selectItems value="#{instance.selectableValues}" />
+								</h:selectOneMenu>
+								<h:message for="subjectAltNameField" />
 							</h:panelGroup>
 						</ui:repeat>
 					</h:panelGroup>
-					<h:panelGroup layout="block" styleClass="internal-frame" 
+					<h:panelGroup layout="block" styleClass="internal-frame"
 						rendered="${!(enrollMakeNewRequestBean.subjectDirectoryAttributes.getFieldInstances().isEmpty())}">
 						<h3>
 							<h:outputText value="#{msg.enroll_subject_directory_attributes}" />
@@ -282,12 +295,18 @@ document.getElementById("marker").appendChild(newFileInput);
 									value="#{msg['subject_directory_attributes_'.concat(instance.getName())]}"
 									rendered="#{instance.isUsed()}" />
 								<h:inputText id="subjectDirectoryField"
-									value="#{instance.value}" rendered="#{instance.isUsed()}"
-									disabled="#{!instance.isModifiable()}" >
+									value="#{instance.value}" rendered="#{!instance.selectable}"
+									rendered="#{instance.isUsed()}"
+									disabled="#{!instance.isModifiable()}">
 									<f:validator validatorId="extendedRegexValidator" />
-    								<f:attribute name="pattern" value="#{instance.getRegexPattern()}" />
+									<f:attribute name="pattern"
+										value="#{instance.getRegexPattern()}" />
 								</h:inputText>
-								<h:message for="subjectDirectoryAttributes"/>
+								<h:selectOneMenu value="#{instance.value}"
+									rendered="#{instance.selectable}">
+									<f:selectItems value="#{instance.selectableValues}" />
+								</h:selectOneMenu>
+								<h:message for="subjectDirectoryAttributes" />
 							</h:panelGroup>
 						</ui:repeat>
 					</h:panelGroup>
@@ -330,7 +349,8 @@ document.getElementById("marker").appendChild(newFileInput);
 										styleClass="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isRequired() ? 'required-input' : ''}"
 										value="#{enrollMakeNewRequestBean.endEntityInformation.username}" />
 								</h:panelGroup>
-								<f:event listener="#{enrollMakeNewRequestBean.validatePassword}" type="postValidate" />
+								<f:event listener="#{enrollMakeNewRequestBean.validatePassword}"
+									type="postValidate" />
 								<h:panelGroup layout="block" styleClass="pure-control-group"
 									rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}">
 									<h:outputLabel for="passwordField"
@@ -344,7 +364,7 @@ document.getElementById("marker").appendChild(newFileInput);
 										value="#{msg.enroll_confirm_password}" />
 									<h:inputSecret id="passwordConfirmField"
 										value="#{enrollMakeNewRequestBean.confirmPassword}" />
-								</h:panelGroup>			
+								</h:panelGroup>
 								<h:panelGroup layout="block" styleClass="pure-control-group"
 									rendered="#{enrollMakeNewRequestBean.getEmailRendered()}">
 									<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
@@ -355,17 +375,20 @@ document.getElementById("marker").appendChild(newFileInput);
 
 							<h:panelGroup layout="block"
 								styleClass="keygeneration-button-group">
-								<h:commandButton id="generateJks" value="#{msg.enroll_request_jks}"
+								<h:commandButton id="generateJks"
+									value="#{msg.enroll_request_jks}"
 									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateJks()}"
 									rendered="#{enrollMakeNewRequestBean.getGenerateJksButtonRendered()}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
-								<h:commandButton id="generateP12" value="#{msg.enroll_request_p12}"
+								<h:commandButton id="generateP12"
+									value="#{msg.enroll_request_p12}"
 									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateP12()}"
 									rendered="#{enrollMakeNewRequestBean.getGenerateP12ButtonRendered()}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
-								<h:commandButton id="generatePem" value="#{msg.enroll_request_pem}"
+								<h:commandButton id="generatePem"
+									value="#{msg.enroll_request_pem}"
 									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePem()}"
 									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
 									styleClass="pure-button ra-button">
@@ -376,12 +399,14 @@ document.getElementById("marker").appendChild(newFileInput);
 									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
-								<h:commandButton id="generatePkcs7" value="#{msg.enroll_request_pkcs7}"
+								<h:commandButton id="generatePkcs7"
+									value="#{msg.enroll_request_pkcs7}"
 									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePksc7()}"
 									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
-								<h:commandButton id="generateDer" value="#{msg.enroll_request_der}"
+								<h:commandButton id="generateDer"
+									value="#{msg.enroll_request_der}"
 									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificeDer()}"
 									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
 									styleClass="pure-button ra-button">
@@ -396,10 +421,8 @@ document.getElementById("marker").appendChild(newFileInput);
 							<h:panelGroup layout="block"
 								styleClass="keygeneration-button-group"
 								rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
-								<h:outputText
-									value="#{msg.enroll_request_id}" />
-								<h:outputText
-									value="#{enrollMakeNewRequestBean.requestId}" />
+								<h:outputText value="#{msg.enroll_request_id}" />
+								<h:outputText value="#{enrollMakeNewRequestBean.requestId}" />
 							</h:panelGroup>
 							<h:panelGroup layout="block"
 								styleClass="keygeneration-button-group"
@@ -413,12 +436,15 @@ document.getElementById("marker").appendChild(newFileInput);
 					</h:panelGroup>
 				</h:panelGroup>
 
-				<h:panelGroup layout="block" id="navigationButtonGroup" styleClass="navigation-button-group">
-					<h:commandButton id="nextButton" value="#{msg.generic_next}" styleClass="pure-button ra-button"
+				<h:panelGroup layout="block" id="navigationButtonGroup"
+					styleClass="navigation-button-group">
+					<h:commandButton id="nextButton" value="#{msg.generic_next}"
+						styleClass="pure-button ra-button"
 						action="#{enrollMakeNewRequestBean.next()}"
 						rendered="#{enrollMakeNewRequestBean.getNextButtonRendered()}">
 					</h:commandButton>
-					<h:commandButton id="resetButton" value="#{msg.generic_reset}" styleClass="pure-button ra-button"
+					<h:commandButton id="resetButton" value="#{msg.generic_reset}"
+						styleClass="pure-button ra-button"
 						action="#{enrollMakeNewRequestBean.reset()}">
 					</h:commandButton>
 				</h:panelGroup>
