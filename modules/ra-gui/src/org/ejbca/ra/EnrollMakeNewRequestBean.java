@@ -19,13 +19,13 @@ import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -68,6 +69,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -709,8 +711,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
             Map<Integer, EndEntityProfile.FieldInstance> commonNameFieldInstances = subjectDn.getFieldInstancesMap().get(DnComponents.COMMONNAME);
             for(EndEntityProfile.FieldInstance commonNameFieldInstance : commonNameFieldInstances.values()){
                 if(commonNameFieldInstance.isRequired()){
-                    endEntityInformation.setUsername(commonNameFieldInstance.getValue() + " " + new Timestamp(new Date().getTime()));
-                    endEntityInformation.setPassword(commonNameFieldInstance.getValue() + " " + new Timestamp(new Date().getTime()));
+                    MessageDigest md;
+                    try {
+                        md = MessageDigest.getInstance("SHA-256");
+                        byte[] random = new byte[20];
+                        new Random().nextBytes(random);
+                        md.update(random);
+                        byte[] digest = md.digest();
+                        String encodedRandomSha256 = new String(Base64.encode(digest));
+                        endEntityInformation.setUsername(encodedRandomSha256);
+                        endEntityInformation.setPassword(encodedRandomSha256);
+                    } catch (NoSuchAlgorithmException e) {
+                    }
                     break;
                 }
             }
@@ -844,7 +856,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
         ec.setResponseContentType(responseContentType);
         ec.setResponseContentLength(token.length);
-        final String filename = StringTools.stripFilename(endEntityInformation.getUsername() + fileExtension);
+        final String filename = StringTools.stripFilename(endEntityInformation.getPassword() + fileExtension);
         ec.setResponseHeader("Content-Disposition",
                 "attachment; filename=\"" + filename + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
         OutputStream output = null;
