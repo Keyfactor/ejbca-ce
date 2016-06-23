@@ -646,8 +646,13 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar",
                         data.getDN());
                 // Make sure altNames are not stripped, they shall actually be merged as well. Ok cases are different but that does not matter.
-                assertEquals("DNSNAME=server.superbad.com,DNSNAME=server.bad.com,dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com",
-                        data.getSubjectAltName());
+                // This returns slightly different between JDK 7 and JDK 8
+                if (major > 7) {
+                    assertEquals("DNSNAME=server.superbad.com,DNSNAME=server.bad.com,rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=foo1.bar.com", data.getSubjectAltName());
+                } else {
+                    assertEquals("DNSNAME=server.superbad.com,DNSNAME=server.bad.com,dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com",
+                            data.getSubjectAltName());
+                }        
             } else {
                 log.debug("Skipped test related to Enterprise DN properties.");
             }
