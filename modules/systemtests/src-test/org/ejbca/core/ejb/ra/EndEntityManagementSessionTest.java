@@ -38,7 +38,6 @@ import javax.security.auth.x500.X500Principal;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -51,14 +50,17 @@ import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaTestSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -68,6 +70,8 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
@@ -123,6 +127,8 @@ public class EndEntityManagementSessionTest extends CaTestCase {
 
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -864,27 +870,28 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         final Date date2sAgo = new Date(now-2000L);
         final Date date1hFromNow = new Date(now+3600000L);
         final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        // Generate self signed certificates
-        final X509Certificate x509Certificate1 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date1hFromNow, null, keyPair.getPrivate(), keyPair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        // Generate certificates. Must be "real" certificates since we can not revoke them later on if they don't belong to a CA in the system
+        CA ca = caTestSession.getCA(roleMgmgToken, caid);
+        int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
+        final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
+        EndEntityInformation endEntityInformation = new EndEntityInformation();
+        endEntityInformation.setDN("CN="+USERNAME);
+        CertificateProfile prof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        prof.setAllowValidityOverride(true);
+        final Certificate x509Certificate1 = ca.generateCertificate(cryptoToken, endEntityInformation, null, keyPair.getPublic(), X509KeyUsage.digitalSignature, date10sAgo, date1hFromNow, prof, null, null, null);
         final String fingerprint1 = CertTools.getFingerprintAsString(x509Certificate1);
-        final X509Certificate x509Certificate2 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date2sAgo, null, keyPair.getPrivate(), keyPair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final Certificate x509Certificate2 = ca.generateCertificate(cryptoToken, endEntityInformation, null, keyPair.getPublic(), X509KeyUsage.digitalSignature, date10sAgo, date2sAgo, prof, null, null, null);
         final String fingerprint2 = CertTools.getFingerprintAsString(x509Certificate2);
-        final X509Certificate x509Certificate3 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date1hFromNow, null, keyPair.getPrivate(), keyPair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final Certificate x509Certificate3 = ca.generateCertificate(cryptoToken, endEntityInformation, null, keyPair.getPublic(), X509KeyUsage.digitalSignature, date10sAgo, date1hFromNow, prof, null, null, null);
         final String fingerprint3 = CertTools.getFingerprintAsString(x509Certificate3);
-        final X509Certificate x509Certificate4 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date1hFromNow, null, keyPair.getPrivate(), keyPair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final Certificate x509Certificate4 = ca.generateCertificate(cryptoToken, endEntityInformation, null, keyPair.getPublic(), X509KeyUsage.digitalSignature, date10sAgo, date1hFromNow, prof, null, null, null);
         final String fingerprint4 = CertTools.getFingerprintAsString(x509Certificate4);
-        final X509Certificate x509Certificate5 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date2sAgo, null, keyPair.getPrivate(), keyPair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final Certificate x509Certificate5 = ca.generateCertificate(cryptoToken, endEntityInformation, null, keyPair.getPublic(), X509KeyUsage.digitalSignature, date10sAgo, date2sAgo, prof, null, null, null);
         final String fingerprint5 = CertTools.getFingerprintAsString(x509Certificate5);
-        final X509Certificate x509Certificate6 = CertTools.genSelfCertForPurpose("CN="+USERNAME, date10sAgo, date1hFromNow, null, keyPair.getPrivate(), keyPair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
+        final Certificate x509Certificate6 = ca.generateCertificate(cryptoToken, endEntityInformation, null, keyPair.getPublic(), X509KeyUsage.digitalSignature, date10sAgo, date1hFromNow, prof, null, null, null);
         final String fingerprint6 = CertTools.getFingerprintAsString(x509Certificate6);
         try {
-            // Persists self signed certificates
+            // Persists certificates
             internalCertStoreSession.storeCertificateNoAuth(admin, x509Certificate1, USERNAME, fingerprint1, CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, now);
             internalCertStoreSession.storeCertificateNoAuth(admin, x509Certificate2, USERNAME, fingerprint2, CertificateConstants.CERT_ARCHIVED,
