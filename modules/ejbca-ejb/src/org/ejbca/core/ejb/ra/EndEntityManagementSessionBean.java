@@ -1384,7 +1384,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         try {
             if (data.getStatus() != EndEntityConstants.STATUS_REVOKED) {
                 // Check if approvals is required.
-                final CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
+                CAInfo cainfo = null;
+                try {
+                    cainfo = caSession.getCAInfoInternal(caid, null, true);
+                } catch (CADoesntExistsException e) {
+                    // If CA does not exist, the user is a bit "weird", but things can happen in reality and CAs can disappear
+                    // So the CA not existing should not prevent us from revoking the user.
+                    // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation 
+                }
                 final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(data.getCertificateProfileId());
                 final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, 
                         certProfile);
@@ -1404,9 +1411,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
             }
         } catch (FinderException e) {
-            throw new NotFoundException("User " + username + " not found.");
-        } catch (CADoesntExistsException e1) {
-            throw new NotFoundException("CA with ID " + caid + " not found.");
+            throw new NotFoundException("User " + username + " not found: "+e.getMessage());
         }
         deleteUser(admin, username);
     }
@@ -1438,11 +1443,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
 
         // Check if approvals is required.
-        CAInfo cainfo;
+        CAInfo cainfo = null;
         try {
             cainfo = caSession.getCAInfoInternal(caid, null, true);
         } catch (CADoesntExistsException e1) {
-            throw new FinderException("CA with ID " + caid + " not found.");
+            // If CA does not exist, the user is a bit "weird", but things can happen in reality and CAs can disappear
+            // So the CA not existing should not prevent us from revoking the user.
+            // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation 
         }
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(userData.getCertificateProfileId());
         final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, certProfile);
@@ -1600,11 +1607,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (endEntityProfileId != -1 && certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
             // We can only perform this check if we have a trail of what eep and cp was used..
             // Check if approvals is required.
-            CAInfo cainfo;
+            CAInfo cainfo = null;
             try {
                 cainfo = caSession.getCAInfoInternal(caid, null, true);
             } catch (CADoesntExistsException e) {
-                throw new FinderException("CA with ID " + caid + " not found.");
+                // If CA does not exist, the certificate is a bit "weird", but things can happen in reality and CAs can disappear
+                // So the CA not existing should not prevent us from revoking the certificate.
+                // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation 
             }
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
             final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, 
