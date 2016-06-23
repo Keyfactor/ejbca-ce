@@ -141,6 +141,7 @@
             <include name="org/cesecore/audit/impl/*EventTypes.java"/>
             <include name="org/cesecore/certificates/ca/TestExtendedCAServiceInfo.java"/>
             <include name="org/ejbca/core/ejb/ca/caadmin/UnAuthorizedCustomPublisherMock.java"/>			
+            <include name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>			
 		</javac>
 	</target>
 
@@ -151,6 +152,7 @@
             <exclude name="org/cesecore/audit/impl/*EventTypes.java"/>
             <exclude name="org/cesecore/certificates/ca/TestExtendedCAServiceInfo.java"/>
             <exclude name="org/ejbca/core/ejb/ca/caadmin/UnAuthorizedCustomPublisherMock.java"/>			
+            <exclude name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>			
 		</javac>
 	</target>
 
