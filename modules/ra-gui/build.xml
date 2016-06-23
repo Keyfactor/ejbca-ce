@@ -25,6 +25,7 @@
 		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.jee.classpath"/>
+		<path refid="lib.ldap.classpath"/>
 	</path>
 	
     <target name="clean" description="Clean up this module">

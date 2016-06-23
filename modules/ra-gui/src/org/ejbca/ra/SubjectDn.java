@@ -111,7 +111,7 @@ public class SubjectDn {
             if (!fieldInstance.getValue().isEmpty()) {
                 int dnId = DnComponents.profileIdToDnId(fieldInstance.getProfileId());
                 String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, DNFieldExtractor.TYPE_SUBJECTDN) + fieldInstance.getValue().trim();
-                //TODO nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart);
+                nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart);
                 if (subjectDn.length() != 0) {
                     subjectDn.append(", ");
                 }
