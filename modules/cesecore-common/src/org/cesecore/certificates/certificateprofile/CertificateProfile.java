@@ -442,6 +442,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setUseQCCustomString(false);
         setQCCustomStringOid(null);
         setQCCustomStringText(null);
+        setUseQCEtsiPDS(false);
+        setQCEtsiPdsUrl(null);
+        setQCEtsiPdsLang(null);
+        setUseQCEtsiType(false);
+        setQCEtsiType(null);
         
         setUseCertificateTransparencyInCerts(false);
         setUseCertificateTransparencyInOCSP(false);
