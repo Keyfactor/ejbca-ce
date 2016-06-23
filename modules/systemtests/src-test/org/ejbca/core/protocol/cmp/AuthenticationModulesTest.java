@@ -515,7 +515,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 asn1InputStream.close();
             }
         } finally {
-            this.endEntityManagementSession.deleteUser(ADMIN, userName);
+            if (endEntityManagementSession.existsUser(userName)) {
+                this.endEntityManagementSession.deleteUser(ADMIN, userName);
+            }
         }
     }
 
