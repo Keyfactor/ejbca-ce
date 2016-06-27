@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.ui.DynamicUiProperty;
+import org.cesecore.util.ui.MultiLineString;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.profiles.ProfileBase;
 
@@ -157,6 +158,25 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
      * @return a copy of the partition with the constant values.
      */
     protected abstract ApprovalPartition addConstantProperties(ApprovalPartition approvalPartition);
+
+    @Override
+    public ApprovalPartition addNotificationProperties(final ApprovalPartition approvalPartition) {
+        // TODO: It would be nice with the email-address type
+        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NOTIFICATION_EMAIL_RECIPIENT, ""));
+        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NOTIFICATION_EMAIL_SENDER, ""));
+        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, ""));
+        approvalPartition.addProperty(new DynamicUiProperty<MultiLineString>(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY, new MultiLineString("")));
+        return approvalPartition;
+    }
+
+    @Override
+    public ApprovalPartition removeNotificationProperties(final ApprovalPartition approvalPartition) {
+        approvalPartition.removeProperty(PROPERTY_NOTIFICATION_EMAIL_RECIPIENT);
+        approvalPartition.removeProperty(PROPERTY_NOTIFICATION_EMAIL_SENDER);
+        approvalPartition.removeProperty(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT);
+        approvalPartition.removeProperty(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY);
+        return approvalPartition;
+    }
 
     @Override
     public void addPropertyToPartition(int stepId, int partitionId, DynamicUiProperty<? extends Serializable> property) throws NoSuchApprovalStepException {

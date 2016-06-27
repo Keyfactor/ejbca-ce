@@ -34,6 +34,11 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
 
     public static final String TYPE_NAME = "APPROVAL_PROFILE";
 
+    final String PROPERTY_NOTIFICATION_EMAIL_RECIPIENT = "notification_email_recipient";
+    final String PROPERTY_NOTIFICATION_EMAIL_SENDER = "notification_email_sender";
+    final String PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT = "notification_email_msg_subject";
+    final String PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY = "notification_email_msg_body";
+
     /**
      * 
      * @return the type as a human readable name.
@@ -200,20 +205,26 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
      * @return true if administrator has approval rights
      * @throws AuthenticationFailedException if the authentication token in the approval doesn't check out
      */
-     boolean canApprovePartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException;
+    boolean canApprovePartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException;
      
-     /**
-      * Tests if an administrator can view a particular partition. Approval rights automatically count as view rights. 
-      * 
-      * @param authenticationToken an authentication token
-      * @param approvalPartition an approval partition from an approval step
-      * @return true if administrator has view or approval rights
-      * @throws AuthenticationFailedException if the authentication token in the approval doesn't check out
-      */
-      boolean canViewPartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException;
-     
-     /**
-      * @return a set of properties to hide at the approval screen. 
-      */
-     Set<String> getHiddenProperties();
+    /**
+     * Tests if an administrator can view a particular partition. Approval rights automatically count as view rights. 
+     * 
+     * @param authenticationToken an authentication token
+     * @param approvalPartition an approval partition from an approval step
+     * @return true if administrator has view or approval rights
+     * @throws AuthenticationFailedException if the authentication token in the approval doesn't check out
+     */
+    boolean canViewPartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException;
+
+    /**
+     * @return a set of properties to hide at the approval screen. 
+     */
+    Set<String> getHiddenProperties();
+
+    /** Add standardized notification properties */
+    ApprovalPartition addNotificationProperties(ApprovalPartition approvalPartition);
+
+    /** Remove standardized notification properties */
+    ApprovalPartition removeNotificationProperties(ApprovalPartition approvalPartition);
 }

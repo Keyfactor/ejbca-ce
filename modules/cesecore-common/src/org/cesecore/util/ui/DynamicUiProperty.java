@@ -31,6 +31,7 @@ import org.cesecore.util.Base64;
 public class DynamicUiProperty<T extends Serializable> implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
+    //private static final Logger log = Logger.getLogger(DynamicUiProperty.class);
 
     private String name;
     private T defaultValue;
@@ -93,7 +94,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * @return and Object instantiated as T, or null if value was not of a usable class or was invalid for T
      */
     public Serializable valueOf(String value) {
-        if (defaultValue instanceof String) {
+        if (defaultValue instanceof MultiLineString) {
+            return new MultiLineString(value);
+        } else if (defaultValue instanceof String) {
             return value;
         } else if (defaultValue instanceof Integer) {
             try {
