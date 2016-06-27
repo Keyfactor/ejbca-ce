@@ -61,8 +61,6 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
 
     private ListDataModel<ApprovalStepGuiObject> steps = null;
 
-    private String currentApprovalProfileTypeName = null;
-
     public ApprovalProfilesMBean getApprovalProfilesMBean() {
         return approvalProfilesMBean;
     }
@@ -71,8 +69,15 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         this.approvalProfilesMBean = approvalProfilesMBean;
     }
 
-    public Integer getSelectedApprovalProfileId() {
-        return approvalProfilesMBean.getSelectedApprovalProfileId();
+    /** @return the select profile id from the list view or the one cached in this view (this will never change in the view) */
+    public int getSelectedApprovalProfileId() {
+        if (currentApprovalProfileId==-1) {
+            final Integer id = approvalProfilesMBean.getSelectedApprovalProfileId();
+            if (id!=null) {
+                currentApprovalProfileId = id.intValue();
+            }
+        }
+        return currentApprovalProfileId;
     }
 
     public String getSelectedApprovalProfileName() {
@@ -80,48 +85,28 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public ApprovalProfile getApprovalProfile() {
-        if (currentApprovalProfileId != -1 && currentApprovalProfile != null && getSelectedApprovalProfileId().intValue() != currentApprovalProfileId) {
-            reset();
-        }
-        if (currentApprovalProfile == null) {
-            currentApprovalProfileId = getSelectedApprovalProfileId().intValue();
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(currentApprovalProfileId);
-            this.currentApprovalProfile = approvalProfile.clone();
+        if (currentApprovalProfile == null && getSelectedApprovalProfileId()!=-1) {
+            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(getSelectedApprovalProfileId());
+            if (approvalProfile!=null) {
+                this.currentApprovalProfile = approvalProfile.clone();
+            }
         }
         return currentApprovalProfile;
-    }
-
-    private void reset() {
-        currentApprovalProfileId = -1;
-        currentApprovalProfile = null;
-        currentApprovalProfileTypeName = null;
-        steps = null;
-
     }
 
     @SuppressWarnings("unchecked")
     public String save() {
         try {
-            ApprovalProfile currentApprovalProfile = getApprovalProfile();
-            ApprovalProfile newApprovalProfile;
-            //Reinstance approval profile if we've changed type
-            if (!currentApprovalProfile.getApprovalProfileIdentifier().equals(currentApprovalProfileTypeName)) {
-                newApprovalProfile = ApprovalProfilesFactory.INSTANCE.getArcheType(currentApprovalProfileTypeName);
-                newApprovalProfile.setProfileId(getSelectedApprovalProfileId());
-                newApprovalProfile.setProfileName(getSelectedApprovalProfileName());
-            } else {
-                newApprovalProfile = currentApprovalProfile;
-            }
-            for (ApprovalStepGuiObject approvalSequenceGuiObject : steps) {
-                int sequenceIdentifier = approvalSequenceGuiObject.getIdentifier();
-                for (ApprovalPartitionProfileGuiObject approvalPartitionGuiObject : approvalSequenceGuiObject.getPartitionGuiObjects()) {
-                    newApprovalProfile.addPropertiesToPartition(sequenceIdentifier, approvalPartitionGuiObject.getPartitionId(),
+            final ApprovalProfile approvalProfile = getApprovalProfile();
+            for (final ApprovalStepGuiObject approvalSequenceGuiObject : steps) {
+                final int sequenceIdentifier = approvalSequenceGuiObject.getIdentifier();
+                for (final ApprovalPartitionProfileGuiObject approvalPartitionGuiObject : approvalSequenceGuiObject.getPartitionGuiObjects()) {
+                    approvalProfile.addPropertiesToPartition(sequenceIdentifier, approvalPartitionGuiObject.getPartitionId(),
                             (List<DynamicUiProperty<? extends Serializable>>) approvalPartitionGuiObject.getProfilePropertyList().getWrappedData());
                 }
             }
-            approvalProfileSession.changeApprovalProfile(getAdmin(), newApprovalProfile);
+            approvalProfileSession.changeApprovalProfile(getAdmin(), approvalProfile);
             addInfoMessage("APPROVALPROFILESAVED");
-            reset();
             return "done";
         } catch (AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage("Not authorized to edit approval profiles.");
@@ -130,36 +115,27 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public String cancel() {
-        reset();
         return "done";
     }
     
-    public String addStep() {
-        ApprovalProfile updatedApprovalProfile = getApprovalProfile();
-        updatedApprovalProfile.addStepFirst();
-        steps = createStepListFromProfile(updatedApprovalProfile);
-        return "";
+    public void addStep() {
+        getApprovalProfile().addStepFirst();
+        steps = null;
     }
     
-    public String deleteStep() {
-        ApprovalProfile updatedApprovalProfile = getApprovalProfile();
-        updatedApprovalProfile.deleteStep(steps.getRowData().getIdentifier());
-        steps = createStepListFromProfile(updatedApprovalProfile);
-        return "";
+    public void deleteStep() {
+        getApprovalProfile().deleteStep(steps.getRowData().getIdentifier());
+        steps = null;
     }
     
-    public String addPartition() {
-        ApprovalProfile updatedApprovalProfile = getApprovalProfile();
-        updatedApprovalProfile.addPartition(steps.getRowData().getIdentifier());
-        steps = createStepListFromProfile(updatedApprovalProfile);
-        return "";
+    public void addPartition() {
+        getApprovalProfile().addPartition(steps.getRowData().getIdentifier());
+        steps = null;
     }
     
-    public String deletePartition(int partitionId) {
-        ApprovalProfile updatedApprovalProfile = getApprovalProfile();
-        updatedApprovalProfile.deletePartition(steps.getRowData().getIdentifier(), partitionId);
-        steps = createStepListFromProfile(updatedApprovalProfile);
-        return "";
+    public void deletePartition(int partitionId) {
+        getApprovalProfile().deletePartition(steps.getRowData().getIdentifier(), partitionId);
+        steps = null;
     }
 
     public void selectUpdate() {
@@ -167,22 +143,23 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public String getCurrentApprovalProfileTypeName() {
-        if (currentApprovalProfileTypeName == null) {
-            currentApprovalProfileTypeName = getApprovalProfile().getApprovalProfileIdentifier();
-        }
-        return currentApprovalProfileTypeName;
+        return getApprovalProfile().getApprovalProfileIdentifier();
     }
 
     public void setCurrentApprovalProfileTypeName(String typeName) {
-        //Reload property list 
-        steps = null;
-        currentApprovalProfileTypeName = typeName;
+        // Re-instantiate approval profile if we've changed type
+        if (!getApprovalProfile().getApprovalProfileIdentifier().equals(typeName)) {
+            final ApprovalProfile newApprovalProfile = ApprovalProfilesFactory.INSTANCE.getArcheType(typeName);
+            newApprovalProfile.setProfileId(getSelectedApprovalProfileId());
+            newApprovalProfile.setProfileName(getSelectedApprovalProfileName());
+            currentApprovalProfile = newApprovalProfile;
+            steps = null;
+        }
     }
 
     public List<SelectItem> getApprovalProfileTypesAvailable() {
-        getApprovalProfile();
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        for (ApprovalProfile type : ApprovalProfilesFactory.INSTANCE.getAllImplementations()) {
+        for (final ApprovalProfile type : ApprovalProfilesFactory.INSTANCE.getAllImplementations()) {
             ret.add(new SelectItem(type.getApprovalProfileIdentifier(), type.getApprovalProfileLabel()));
         }
         return ret;
@@ -191,13 +168,9 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     /** @return a list of the current steps in the current Approval Profile object */
     public ListDataModel<ApprovalStepGuiObject> getSteps() {
         if (steps == null) {
-            ApprovalProfile approvalProfile = getApprovalProfile();
-            if (approvalProfile.getApprovalProfileIdentifier().equals(getCurrentApprovalProfileTypeName())) {
+            final ApprovalProfile approvalProfile = getApprovalProfile();
+            if (approvalProfile!=null) {
                 steps = createStepListFromProfile(approvalProfile);   
-            } else {
-                //Else if we're switching, reset from the default
-                ApprovalProfile archetype = ApprovalProfilesFactory.INSTANCE.getArcheType(getCurrentApprovalProfileTypeName());
-                steps = createStepListFromProfile(archetype);  
             }
         }
         return steps;
@@ -256,11 +229,31 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         return partitionProperties;
     }
     
-    /**
-     * @return true of the approval profile is of a type where sequences can be added 
-     */
+    /** @return true of the approval profile is of a type where sequences can be added  */
     public boolean isStepSizeFixed() {
         return ApprovalProfilesFactory.INSTANCE.getArcheType(getCurrentApprovalProfileTypeName()).isStepSizeFixed();
     }
 
+    public boolean isNotificationEnabled(final int partitionIdentifier) {
+        final ApprovalProfile approvalProfile = getApprovalProfile();
+        final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
+        final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
+        return approvalPartition!=null && approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_RECIPIENT) != null;
+    }
+
+    public void addNotification(final int partitionIdentifier) {
+        final ApprovalProfile approvalProfile = getApprovalProfile();
+        final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
+        final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
+        approvalProfile.addNotificationProperties(approvalPartition);
+        steps = null;
+    }
+
+    public void removeNotification(final int partitionIdentifier) {
+        final ApprovalProfile approvalProfile = getApprovalProfile();
+        final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
+        final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
+        approvalProfile.removeNotificationProperties(approvalPartition);
+        steps = null;
+    }
 }

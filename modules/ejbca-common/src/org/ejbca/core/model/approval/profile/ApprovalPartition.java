@@ -69,7 +69,11 @@ public class ApprovalPartition implements Serializable {
     }
     
     public void addProperty(DynamicUiProperty<? extends Serializable> value) {
-       properties.put(value.getName(), value);
+        properties.put(value.getName(), value);
+    }
+
+    public void removeProperty(final String name) {
+        properties.remove(name);
     }
 
     @Override

@@ -68,6 +68,11 @@ public class ApprovalPartitionProfileGuiObject {
     /** @return the lookup result of message key "APPROVAL_PROFILE_<TYPE>_<property-name>" or property-name if no key exists. */
     public String getPropertyNameLocalized() {
         final String name = profilePropertyList.getRowData().getName();
+        final String msgKeyCommon = "APPROVAL_PROFILE_COMMON_" + name.toUpperCase();
+        final String translatedNameCommon = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(msgKeyCommon);
+        if (!translatedNameCommon.equals(msgKeyCommon)) {
+            return translatedNameCommon;
+        }
         final String msgKey = "APPROVAL_PROFILE_" + approvalProfileIdentifier.toUpperCase() + "_" + name.toUpperCase();
         final String translatedName = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(msgKey);
         return translatedName.equals(msgKey) ? name : translatedName;
