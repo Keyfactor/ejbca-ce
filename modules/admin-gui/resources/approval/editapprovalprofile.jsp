@@ -76,7 +76,8 @@
 						onchange="document.getElementById('approvalProfilesForm:selectProfileType').click();" disabled="#{approvalProfilesMBean.viewOnly}">
 					<f:selectItems value="#{approvalProfileMBean.approvalProfileTypesAvailable}"/>
 				</h:selectOneMenu>
-				<h:commandButton id="selectProfileType" action="#{approvalProfileMBean.selectUpdate}" value="#{approvalProfileMBean.currentApprovalProfileTypeName}"/>
+				<h:commandButton id="selectProfileType" action="#{approvalProfileMBean.selectUpdate}" value="#{approvalProfileMBean.currentApprovalProfileTypeName}"
+                    rendered="#{!approvalProfilesMBean.viewOnly}"/>
 				<script>document.getElementById('approvalProfilesForm:selectProfileType').style.display = 'none';</script>
 			</h:panelGroup>		
 		</h:panelGrid>
@@ -98,22 +99,33 @@
 							<h:column>
 								<f:facet name="header">
 									<h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION}: #{partition.partitionId}" 
-										rendered="#{!approvalProfileMBean.stepSizeFixed}"/>						
-								</f:facet>								
+										rendered="#{!approvalProfileMBean.stepSizeFixed}"/>
+								</f:facet>
 								<h:outputText value="#{partition.propertyNameLocalized}:"/>
 							</h:column>
-							<h:column>	
+							<h:column>
 								<f:facet name="header">
-								<h:panelGroup layout="block" style="text-align: right;">
-									<h:commandButton value="#{web.text.APPROVAL_PROFILE_DELETE_PARTITION}" disabled="#{approvalProfilesMBean.viewOnly}" 
-				    					rendered="#{!approvalProfileMBean.stepSizeFixed}" action="#{approvalProfileMBean.deletePartition(partition.partitionId)}"/>	 
-				    					</h:panelGroup>
+    								<h:panelGroup layout="block" style="text-align: right;">
+    									<h:commandButton value="#{web.text.APPROVAL_PROFILE_DELETE_PARTITION}"
+    				    					rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"
+                                            action="#{approvalProfileMBean.deletePartition(partition.partitionId)}"/>	 
+                                        <h:commandButton value="#{web.text.APPROVAL_PROFILE_PARTITION_NOTIFICATION_ADD}"
+                                            rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.isNotificationEnabled(partition.partitionId)}"
+                                            action="#{approvalProfileMBean.addNotification(partition.partitionId)}"/>  
+                                        <h:commandButton value="#{web.text.APPROVAL_PROFILE_PARTITION_NOTIFICATION_REMOVE}"
+                                            rendered="#{!approvalProfilesMBean.viewOnly && approvalProfileMBean.isNotificationEnabled(partition.partitionId)}"
+                                            action="#{approvalProfileMBean.removeNotification(partition.partitionId)}"/>  
+                                    </h:panelGroup>
 				    			</f:facet>											
 					   			<h:panelGroup rendered="#{!property.multiValued}">
 						   			<h:inputText  disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'String'}" 
 						   				value="#{property.value}">
 						   				<f:converter converterId="stringConverter"/>
 						   			</h:inputText>
+                                    <h:inputTextarea disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'MultiLineString'}" 
+                                        value="#{property.value.value}">
+                                        <f:converter converterId="stringConverter"/>
+                                    </h:inputTextarea>
 						   			<h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" 
 						   				style="text-align: right;" >
 					                   <f:converter converterId="javax.faces.Long"/>
@@ -140,16 +152,16 @@
 					<h:outputText value="#{web.text.APPROVAL_PROFILE_EXECUTION_HELP}" rendered="#{!approvalProfileMBean.stepSizeFixed}" />
 				</f:facet>
 				<h:panelGroup layout="block">
-					<h:commandButton value="#{web.text.APPROVAL_PROFILE_ADD_PARTITION}" disabled="#{approvalProfilesMBean.viewOnly}" 
-				    	rendered="#{!approvalProfileMBean.stepSizeFixed}" action="#{approvalProfileMBean.addPartition}"/>	
-				    <h:commandButton value="#{web.text.APPROVAL_PROFILE_DELETE_STEP}" disabled="#{approvalProfilesMBean.viewOnly}" 
-				    	rendered="#{!approvalProfileMBean.stepSizeFixed}" action="#{approvalProfileMBean.deleteStep}"/>	
+					<h:commandButton value="#{web.text.APPROVAL_PROFILE_ADD_PARTITION}" action="#{approvalProfileMBean.addPartition}"
+                        rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"/>
+				    <h:commandButton value="#{web.text.APPROVAL_PROFILE_DELETE_STEP}" action="#{approvalProfileMBean.deleteStep}"
+				    	rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"/>
 				</h:panelGroup>	
 			</h:column>	
 		</h:dataTable>
 		<h:panelGroup layout="block" style="text-align: right;">
-			<h:commandButton value="#{web.text.APPROVAL_PROFILE_ADD_STEP}" disabled="#{approvalProfilesMBean.viewOnly}" 
-				rendered="#{!approvalProfileMBean.stepSizeFixed}" action="#{approvalProfileMBean.addStep}" />	
+			<h:commandButton value="#{web.text.APPROVAL_PROFILE_ADD_STEP}" action="#{approvalProfileMBean.addStep}"
+				rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"/>
 		</h:panelGroup>
 		<h:panelGrid columns="2" styleClass="edit" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 	
