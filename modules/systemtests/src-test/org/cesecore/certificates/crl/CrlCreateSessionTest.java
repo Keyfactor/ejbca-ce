@@ -39,8 +39,6 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -268,7 +266,7 @@ public class CrlCreateSessionTest {
             // Generate a new Base CRL. Unrevoked certificates should not appear on Base CRLs 
             forceCRL(authenticationToken, ca);
             crlEntry = fetchCRLEntry(cainfo, cert, false);
-            assertNull("Unrevoked (removeFromCRL) certificates should never appears on Base CRLs", crlEntry);
+            assertNull("Unrevoked (removeFromCRL) certificates should never appear on Base CRLs", crlEntry);
         } finally {
             internalCertificateStoreSession.removeCertificatesBySubject("CN=testremovefromcrl");
         }
