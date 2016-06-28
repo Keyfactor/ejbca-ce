@@ -277,7 +277,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
         if (certProfile.getAllowDNOverride() && (request != null) && (request.getRequestDN() != null)) {
             subjectDn = request.getRequestDN();
             if (log.isDebugEnabled()) {
-                log.debug("Using Holder Reference from request instead of user's registered.");
+                log.debug("Using Certificate Holder Reference from certificate request instead of the pre-registered End Entity value.");
             }
         }
 		final String country = CertTools.getPartFromDN(subjectDn, "C");
