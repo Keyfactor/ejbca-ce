@@ -70,13 +70,13 @@ public class SubjectAlternativeName {
         }
     }
     
-    public void updateValue(){
+    public void update(){
         StringBuilder subjectAlternativeName = new StringBuilder();
         for(EndEntityProfile.FieldInstance fieldInstance : fieldInstances){
             if(!fieldInstance.getValue().isEmpty()){
                 int dnId = DnComponents.profileIdToDnId(fieldInstance.getProfileId());
                 String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, DNFieldExtractor.TYPE_SUBJECTALTNAME) + fieldInstance.getValue().trim();
-                //TODO nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart);
+                nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart);
                 if(subjectAlternativeName.length() != 0){
                     subjectAlternativeName.append(", ");
                 }
@@ -104,8 +104,13 @@ public class SubjectAlternativeName {
      */
     public String getValue() {
         if(value == null){
-            updateValue();
+            update();
         }
+        return value;
+    }
+    
+    public String getUpdatedValue() {
+        update();
         return value;
     }
 
