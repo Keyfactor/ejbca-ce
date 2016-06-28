@@ -40,6 +40,7 @@ import java.util.Set;
 import javax.crypto.Cipher;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.p11.PKCS11Utils;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
@@ -367,7 +368,7 @@ class KeyStoreContainerTest {
         @Override
         public boolean verify() throws Exception {
 
-            final Signature verifySignature = Signature.getInstance(this.sigAlgName);
+            final Signature verifySignature = Signature.getInstance(this.sigAlgName, BouncyCastleProvider.PROVIDER_NAME);
             verifySignature.initVerify(KeyStoreContainerTest.this.keyPair.getPublic());
             TestData.updateWithTestData(verifySignature);
             this.result = verifySignature.verify(this.signBA);
