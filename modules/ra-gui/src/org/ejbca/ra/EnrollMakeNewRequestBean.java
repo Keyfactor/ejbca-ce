@@ -59,6 +59,7 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -70,7 +71,9 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.model.SecConst;
@@ -194,6 +197,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     
     //8. Request data
     private int requestId;
+    
+    //9. Certificate preview
+    private RaCertificatePreview certificatePreview;
 
     @PostConstruct
     private void postContruct() {
@@ -359,6 +365,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         
         subjectDn = new SubjectDn(endEntityProfile);
+        final X509CAInfo x509cainfo = (X509CAInfo) getCAInfo();
+        subjectDn.setLdapOrder(x509cainfo.getUseLdapDnOrder() && getCertificateProfile().getUseLdapDnOrder());
+        subjectDn.setNameStyle(x509cainfo.getUsePrintableStringSubjectDN() ? PrintableStringNameStyle.INSTANCE : CeSecoreNameStyle.INSTANCE);
         subjectAlternativeName = new SubjectAlternativeName(endEntityProfile);
         subjectDirectoryAttributes = new SubjectDirectoryAttributes(endEntityProfile);
 
@@ -406,7 +415,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private void initDownloadCredentialsData() {
         endEntityInformation = new EndEntityInformation();
+        
+        updatePreviewCertificate();
     }
+    
+    private void updatePreviewCertificate(){
+        certificatePreview = new RaCertificatePreview();
+        certificatePreview.updateSubjectDn(subjectDn);
+        certificatePreview.updateSubjectAlternativeName(subjectAlternativeName);
+        certificatePreview.updateSubjectDirectoryAttributes(subjectDirectoryAttributes);
+        certificatePreview.setPublicKeyAlgorithm(selectedAlgorithm);
+        certificatePreview.updateCA(getCAInfo());
+    }
+
 
     //-----------------------------------------------------------------------------------------------
     // Helpers and get*Rendered() methods
@@ -465,7 +486,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean getNextButtonRendered() {
         return !getGenerateJksButtonRendered() && !getGenerateP12ButtonRendered() && !getGenerateFromCsrButtonRendered();
     }
-
+    
+    public boolean getCertificatePreviewRendered(){
+        return selectedDownloadCredentialsType != null;
+    }
+    
     //-----------------------------------------------------------------------------------------------
     //All reset* methods should be able to clear/reset states that have changed during init* methods.
     //Always make sure that reset methods are chained!
@@ -701,7 +726,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private final byte[] addEndEntityAndGenerateToken(int tokenType, String tokenName, TokenDownloadType tokenDownloadType) {
         //Update the EndEntityInformation data
         subjectDn.update();
-        subjectAlternativeName.updateValue();
+        subjectAlternativeName.update();
         subjectDirectoryAttributes.updateValue();
         setDownloadCredentialsData();
         endEntityInformation.setTokenType(tokenType);
@@ -877,7 +902,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
     }
-
+   
     //-----------------------------------------------------------------------------------------------
     //Listeners that will be invoked from xhtml
     public final void endEntityProfileChangedListener(ValueChangeEvent e) {
@@ -1409,4 +1434,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setRequestId(int requestId) {
         this.requestId = requestId;
     }
+
+    public RaCertificatePreview getCertificatePreview() {
+        return certificatePreview;
+    }
+
+    public void setCertificatePreview(RaCertificatePreview certificatePreview) {
+        this.certificatePreview = certificatePreview;
+    }
+    
+    
 }
