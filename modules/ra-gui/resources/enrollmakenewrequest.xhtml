@@ -296,7 +296,6 @@ document.getElementById("marker").appendChild(newFileInput);
 									rendered="#{instance.isUsed()}" />
 								<h:inputText id="subjectDirectoryField"
 									value="#{instance.value}" rendered="#{!instance.selectable}"
-									rendered="#{instance.isUsed()}"
 									disabled="#{!instance.isModifiable()}">
 									<f:validator validatorId="extendedRegexValidator" />
 									<f:attribute name="pattern"
@@ -373,6 +372,14 @@ document.getElementById("marker").appendChild(newFileInput);
 								</h:panelGroup>
 							</fieldset>
 
+							<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.getCertificatePreviewRendered()}">
+								<h3>
+									<h:outputText value="#{msg.enroll_certificate_preview}" />
+								</h3>
+								<component:certpreview
+									raCertificatePreview="#{enrollMakeNewRequestBean.certificatePreview}" />
+							</h:panelGroup>
+
 							<h:panelGroup layout="block"
 								styleClass="keygeneration-button-group">
 								<h:commandButton id="generateJks"
@@ -433,6 +440,8 @@ document.getElementById("marker").appendChild(newFileInput);
 								</h:outputLink>
 							</h:panelGroup>
 						</h:panelGroup>
+					
+						
 					</h:panelGroup>
 				</h:panelGroup>
 

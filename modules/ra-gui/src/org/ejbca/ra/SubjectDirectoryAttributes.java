@@ -73,7 +73,7 @@ public class SubjectDirectoryAttributes {
             if(!fieldInstance.getValue().isEmpty()){
                 int dnId = DnComponents.profileIdToDnId(fieldInstance.getProfileId());
                 String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, DNFieldExtractor.TYPE_SUBJECTDIRATTR) + fieldInstance.getValue().trim();
-                //nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart); TODO
+                nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart);
                 if(subjectDn.length() != 0){
                     subjectDn.append(", ");
                 }
@@ -96,6 +96,11 @@ public class SubjectDirectoryAttributes {
         if(value == null){
             updateValue();
         }
+        return value;
+    }
+    
+    public String getUpdatedValue() {
+        updateValue();
         return value;
     }
 
