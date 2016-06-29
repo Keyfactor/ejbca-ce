@@ -94,6 +94,9 @@ EJBCA have been tested with MySQL 5.x and MariaDB 5.x.
 It is NOT recommended to use the MyISAM storage engine, since it only supports
 table locks and not row-locking.
 
+For InnoDB in some configurations the "binlog_format" defaults to "statement". 
+Running EJBCA requires is to be set to "row". binlog_format=row
+
 It is recommended to configure my.cnf with at least the following:
  [mysqld]
  default-storage-engine = INNODB
