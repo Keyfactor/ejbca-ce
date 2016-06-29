@@ -14,6 +14,7 @@ package org.cesecore.util.ui;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -280,13 +281,16 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     }
 
     private byte[] getAsByteArray(Serializable o) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             final ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(o);
-            oos.close();
+            try {
+                oos.writeObject(o);
+            } finally {
+                oos.close();
+            }
             return baos.toByteArray();
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -294,10 +298,13 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     private Serializable getAsObject(byte[] bytes) {
         try {
             final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
-            final Object o = ois.readObject();
-            ois.close();
-            return (Serializable) o;
-        } catch (Exception e) {
+            try {
+                final Object o = ois.readObject();
+                return (Serializable) o;
+            } finally {
+                ois.close();
+            }
+        } catch (IOException | ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
     }
