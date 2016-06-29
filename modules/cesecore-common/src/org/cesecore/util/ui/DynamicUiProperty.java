@@ -61,7 +61,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         this.values.add(defaultValue);
         this.possibleValues = possibleValues;
     }
-    
+
     public DynamicUiProperty(final String name, final T defaultValue) {
         this.name = name;
         this.defaultValue = defaultValue;
@@ -77,15 +77,15 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         this.name = original.getName();
         this.defaultValue = original.getDefaultValue();
         this.setHasMultipleValues(original.getHasMultipleValues());
-        if(!original.hasMultipleValues) {
-            setValue(original.getValue()); 
+        if (!original.hasMultipleValues) {
+            setValue(original.getValue());
         } else {
             setValues(original.getValues());
         }
         this.possibleValues = original.getPossibleValues();
         this.propertyCallback = original.getPropertyCallback();
     }
-    
+
     /**
      * Returns a value of type T from a string. Limited to the basic java types {@link Integer}, {@link String}, {@link Boolean}, {@link Float},
      * {@link Long}
@@ -135,16 +135,16 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public T getDefaultValue() {
         return defaultValue;
     }
-    
+
     public List<T> getValues() {
-        if(!hasMultipleValues) {
+        if (!hasMultipleValues) {
             throw new IllegalStateException("Attempted to draw multiple values from a dynamic property with a single value.");
         }
         return values;
     }
 
     public T getValue() {
-        if(hasMultipleValues) {
+        if (hasMultipleValues) {
             throw new IllegalStateException("Attempted to draw single value from a dynamic property with multiple value.");
         }
         return values.get(0);
@@ -153,19 +153,18 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public Collection<T> getPossibleValues() {
         return possibleValues;
     }
-    
+
     @SuppressWarnings("unchecked")
     public void setPossibleValues(Collection<? extends Serializable> collection) {
         this.possibleValues = (Collection<T>) collection;
     }
-
 
     public boolean isMultiValued() {
         return possibleValues != null;
     }
 
     public void setValue(T object) {
-        if(hasMultipleValues) {
+        if (hasMultipleValues) {
             throw new IllegalStateException("Attempted to set multiple values from a dynamic property with single value.");
         }
         if (object == null) {
@@ -187,9 +186,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             }
         }
     }
-    
+
     public void setValues(List<T> objects) {
-        if(!hasMultipleValues) {
+        if (!hasMultipleValues) {
             throw new IllegalStateException("Attempted to set single value from a dynamic property with multiple values.");
         }
         if (objects == null || objects.isEmpty()) {
@@ -216,7 +215,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public String getEncodedValue() {
         return getAsEncodedValue(getValue());
     }
-    
+
     public List<String> getEncodedValues() {
         return getAsEncodedValues(getValues());
     }
@@ -225,12 +224,11 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public String getAsEncodedValue(Serializable possibleValue) {
         return new String(Base64.encode(getAsByteArray((T) possibleValue), false));
     }
-    
+
     @SuppressWarnings("unchecked")
     private List<String> getAsEncodedValues(List<T> list) {
         List<String> encodedValues = new ArrayList<>();
-        for(Serializable possibleValue : list)
-        {
+        for (Serializable possibleValue : list) {
             encodedValues.add(new String(Base64.encode(getAsByteArray((T) possibleValue), false)));
         }
         return encodedValues;
@@ -240,7 +238,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public void setEncodedValue(String encodedValue) {
         setValue((T) getAsObject(Base64.decode(encodedValue.getBytes())));
     }
-    
+
     @SuppressWarnings("unchecked")
     public void setEncodedValues(List<String> encodedValues) {
         List<T> decodedValues = new ArrayList<>();
@@ -260,7 +258,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             this.values.add((T) object);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     public void setValuesGeneric(List<? extends Serializable> list) {
         if (list == null || list.isEmpty()) {
