@@ -541,7 +541,7 @@ class KeyStoreContainerTest {
                     termOut.println("Decryptions per second: "+(nanoNumber+this.totalDecryptTime/2)/this.totalDecryptTime);
                 }
             } else {
-                termOut.println("No crypto available for this key.");
+                termOut.println("No encryption possible with this key.");
             }
         }
 
