@@ -1094,6 +1094,7 @@ public final class KeyTools {
         if (publK instanceof ECPublicKey) {
             ps.println("Elliptic curve key:");
             final ECPublicKey ec = (ECPublicKey) publK;
+            ps.println("  Named curve: "+AlgorithmTools.getKeySpecification(ec));
             ps.println("  the affine x-coordinate: " + ec.getW().getAffineX().toString(16));
             ps.println("  the affine y-coordinate: " + ec.getW().getAffineY().toString(16));
             return;
