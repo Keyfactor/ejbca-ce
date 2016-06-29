@@ -212,7 +212,7 @@ Needed to build and run are:</p>
 <li>JDK 7 OpenJDK or Oracle JDK, if available OpenJDK is recommended.</li>
 <li>Only if using OracleJDK - <i>Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files</i> for your JDK.</li>
 <li>JBoss Application Server 7.1.x or later or JBoss EAP 6 or later (<a href="http://jbossas.jboss.org/downloads">download</a>, note that the absolute latest may not always be tested). 
-Or <a href="#WildFly%208">WildFly</a> 8 or later.</li>
+Or <a href="#WildFly%2010">WildFly</a> 8 or later.</li>
 <li>Apache Ant 1.8 or later to build (<a href="http://ant.apache.org/">download</a>). Note that javascript support may be needed in ant for some components.</li>
 </ul>
  <p>
@@ -359,7 +359,7 @@ in the distribution.
 <p>
 Note that the installation must be done with a user with privileges to write to APPSRV_HOME and sub directories.
 Running the deploy and install commands as described will also configure the application server with data sources and web configuration automatically. 
-If deploying on <a href="#WildFly%208">WildFly</a>, you should instead follow that guide to manually configure data sources and web. 
+If deploying on <a href="#WildFly%2010">WildFly</a>, you should instead follow that guide to manually configure data sources and web. 
 </p><p>
 1) Set the property 'appserver.home' in conf/ejbca.properties to where your JBoss is installed,
 examples:
@@ -449,10 +449,11 @@ For easy upgrades, keeping personal configuration between versions, you should c
 
 <section name="Application servers">
 <p>
-EJBCA should run on any on any JEE5 compliant application server in theory. In reality it doesn't, because dofferent application servers have different tweaks for the standard.
-It is not enough to pass JEE validation in order to run onn all application servers.
+EJBCA should run on any on any JEE5 compliant application server in theory. In reality it doesn't, because different application servers have different tweaks for the standard.
+It is not enough to pass JEE validation in order to run on all application servers.
 <ol>
-<li>JBoss 7.1.1.Final / JBoss EAP 6: Works well. Community and professional support available.</li>
+<li>JBoss 7.1.1.Final / JBoss EAP 6: Works well.</li>
+<li>WildFly 8, 9, 10: Works well.</li>
 <li>JBoss 5.1.0.GA / JBoss EAP 5.1: JEE5, only supported in older version of EJBCA.</li>
 <li>Glassfish 3.1.1: Not supported yet.</li>
 <li>Glassfish 2.1.1: Works with older versions of EJBCA (before v6).</li>
@@ -763,6 +764,9 @@ You can also improve the security by limiting access to tables. See for <a href=
 <note>
 If you don't set utf8 as character set EJBCA may not start because of index limitations if using the default charset 'utf8mb4' in some configurations of MariaDB/MySQL. 
 It will result in an error 'Specified key was too long; max key length is 767 bytes'.
+</note>
+<note>
+For InnoDB in some configurations the "binlog_format" defaults to "statement". Running EJBCA requires is to be set to "row". binlog_format=row
 </note>
 </subsubsection>
 
