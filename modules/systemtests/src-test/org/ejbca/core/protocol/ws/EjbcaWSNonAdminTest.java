@@ -152,7 +152,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
    
         approvalProfile = new AccumulativeApprovalProfile(WS_APPROVAL_PROFILE_NAME);
         approvalProfile.setNumberOfApprovalsRequired(2);
-        approvalProfileSession.addApprovalProfile(intadmin, approvalProfile);
+        int approvalProfileId = approvalProfileSession.addApprovalProfile(intadmin, approvalProfile);
+        approvalProfile.setProfileId(approvalProfileId);
     }
 
     @After
