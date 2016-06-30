@@ -22,7 +22,6 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
-import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ui.DynamicUiProperty;
 

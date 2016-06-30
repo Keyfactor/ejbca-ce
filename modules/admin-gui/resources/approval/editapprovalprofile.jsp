@@ -87,14 +87,14 @@
 			footerClass="tableFooter">
 			<h:column>			
 				<h:outputText value="#{step.identifier}" />																					
-				<h:dataTable value="#{step.partitionGuiObjects}" var="partition" style="width: 100%" headerClass="listHeader"  columnClasses="editColumn1,editColumn2" >						
+				<h:dataTable value="#{step.partitionGuiObjects}" var="partition" style="width: 100%" headerClass="listHeader" footerClass="tableFooter" columnClasses="editColumn1,editColumn2" >						
 					<h:column>
 						<f:facet name="header">
 							<h:outputText value="#{web.text.APPROVAL_PROFILE_STEP}: #{step.stepNumber}" 
 								rendered="#{approvalProfileMBean.steps.getRowCount() > 1 || !approvalProfileMBean.stepSizeFixed}"/>							
 						</f:facet>	
 						<h:dataTable value="#{partition.profilePropertyList}" var="property" headerClass="subheader"
-							columnClasses="editColumn1,editColumn2" style="width: 100%"
+							columnClasses="editColumn1,editColumn2" style="width: 100%" footerClass="tableFooter" 
 							rendered="#{not empty partition.profilePropertyList}" styleClass="subTable">							
 							<h:column>
 								<f:facet name="header">
@@ -102,21 +102,19 @@
 										rendered="#{!approvalProfileMBean.stepSizeFixed}"/>
 								</f:facet>
 								<h:outputText value="#{partition.propertyNameLocalized}:"/>
+								
+								<f:facet name="footer">
+									<h:panelGroup rendered="#{!approvalProfileMBean.arePartitionsFixed() && !approvalProfilesMBean.viewOnly}">
+										<h:inputText value="#{approvalProfileMBean.fieldLabel}"/>
+										<h:selectOneMenu id="selectAction" value="#{approvalProfileMBean.fieldToAdd}">
+											<f:selectItems value="#{approvalProfileMBean.fieldsAvailable}"/>
+										</h:selectOneMenu>	
+										<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_ADD}" action="#{approvalProfileMBean.addField(partition.partitionId)}"/>	
+									</h:panelGroup>											
+								</f:facet>	
 							</h:column>
 							<h:column>
-								<f:facet name="header">
-    								<h:panelGroup layout="block" style="text-align: right;">
-    									<h:commandButton value="#{web.text.APPROVAL_PROFILE_DELETE_PARTITION}"
-    				    					rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"
-                                            action="#{approvalProfileMBean.deletePartition(partition.partitionId)}"/>	 
-                                        <h:commandButton value="#{web.text.APPROVAL_PROFILE_PARTITION_NOTIFICATION_ADD}"
-                                            rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.isNotificationEnabled(partition.partitionId)}"
-                                            action="#{approvalProfileMBean.addNotification(partition.partitionId)}"/>  
-                                        <h:commandButton value="#{web.text.APPROVAL_PROFILE_PARTITION_NOTIFICATION_REMOVE}"
-                                            rendered="#{!approvalProfilesMBean.viewOnly && approvalProfileMBean.isNotificationEnabled(partition.partitionId)}"
-                                            action="#{approvalProfileMBean.removeNotification(partition.partitionId)}"/>  
-                                    </h:panelGroup>
-				    			</f:facet>											
+																							
 					   			<h:panelGroup rendered="#{!property.multiValued}">
 						   			<h:inputText  disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'String'}" 
 						   				value="#{property.value}">
@@ -136,12 +134,65 @@
 						   			</h:inputText>
 					   				<h:selectBooleanCheckbox disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
 					   			</h:panelGroup>
-								<h:selectOneMenu disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.multiValued && !property.hasMultipleValues}" value="#{property.encodedValue}">
+								<h:selectOneMenu disabled="#{approvalProfilesMBean.viewOnly}" 
+									rendered="#{property.multiValued 
+												&& !property.hasMultipleValues 
+												&& property.type.simpleName != 'RadioButton'}" 
+									value="#{property.encodedValue}">
 									<f:selectItems value="#{partition.propertyPossibleValues}"/>
 								</h:selectOneMenu>
-								<h:selectManyListbox disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.multiValued && property.hasMultipleValues}" value="#{property.encodedValues}">
+								<h:selectManyListbox disabled="#{approvalProfilesMBean.viewOnly}" 
+									rendered="#{property.multiValued 
+												&& property.hasMultipleValues 
+												&& property.type.simpleName != 'RadioButton'}" 
+									value="#{property.encodedValues}">
 									<f:selectItems value="#{partition.propertyPossibleValues}"/>
-								</h:selectManyListbox>
+								</h:selectManyListbox>	
+								<h:panelGroup rendered="#{property.type.simpleName eq 'RadioButton' 
+												&& property.multiValued 
+												&& !property.hasMultipleValues}" >
+									<h:outputText value="#{web.text.APPROVAL_PROFILE_FIELD_RADIO_NO_VALUES}" 
+										rendered="#{empty partition.propertyPossibleValues}"/>
+									<h:dataTable value="#{partition.propertyPossibleValues}" var="radioButton" 
+										columnClasses="column-checkbox1, column-checkbox2" style="width: 100%;">
+										<h:column>
+											<input type="radio" name="<h:outputText value='#{property.name}'/>" 
+												<h:outputText value="disabled" rendered="#{approvalProfilesMBean.viewOnly}"/> 												
+											/>
+											<h:outputText value="#{radioButton.value}" converter="radioButtonConverter"/>									
+										</h:column>
+										<h:column>										
+											<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_REMOVE_ROW}" disabled="#{approvalProfilesMBean.viewOnly}"
+														action="#{approvalProfileMBean.removeRowFromRadioButton(partition.partitionId, radioButton.value)}"/>									
+										</h:column>								
+									</h:dataTable>	
+									<h:panelGroup style="padding: 5px 10px;">
+										<h:outputText value="#{web.text.APPROVAL_PROFILE_FIELD_RADIO_LABEL}: "/>
+										<h:inputText binding="#{radioButtonLabel}"  disabled="#{approvalProfilesMBean.viewOnly}" />
+										<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_ADD_ROW}" disabled="#{approvalProfilesMBean.viewOnly}"
+											action="#{approvalProfileMBean.addRowToRadioButton(partition.partitionId, radioButtonLabel.value)}"/>	
+									</h:panelGroup>								
+								</h:panelGroup>
+																			
+							</h:column>
+							<h:column>
+								<f:facet name="header">
+    								<h:panelGroup layout="block" style="text-align: right;">
+    									<h:commandButton value="#{web.text.APPROVAL_PROFILE_DELETE_PARTITION}"
+    				    					rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"
+                                            action="#{approvalProfileMBean.deletePartition(partition.partitionId)}"/>	 
+                                        <h:commandButton value="#{web.text.APPROVAL_PROFILE_PARTITION_NOTIFICATION_ADD}"
+                                            rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.isNotificationEnabled(partition.partitionId)}"
+                                            action="#{approvalProfileMBean.addNotification(partition.partitionId)}"/>  
+                                        <h:commandButton value="#{web.text.APPROVAL_PROFILE_PARTITION_NOTIFICATION_REMOVE}"
+                                            rendered="#{!approvalProfilesMBean.viewOnly && approvalProfileMBean.isNotificationEnabled(partition.partitionId)}"
+                                            action="#{approvalProfileMBean.removeNotification(partition.partitionId)}"/>  
+                                    </h:panelGroup>
+				    			</f:facet>			
+				    			<h:panelGroup layout="block" style="text-align: left;">	
+									<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_REMOVE}" action="#{approvalProfileMBean.removeField(partition.partitionId, partition.propertyName)}"
+										rendered="#{!approvalProfileMBean.isPropertyPredefined(partition.partitionId, partition.propertyName)}" disabled="#{approvalProfilesMBean.viewOnly}"/>
+								</h:panelGroup>
 							</h:column>
 						</h:dataTable>	
 						   				    

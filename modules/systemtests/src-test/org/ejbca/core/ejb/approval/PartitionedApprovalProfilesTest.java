@@ -214,7 +214,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
         ApprovalProfile singleStepPartitionProfile = new PartitionedApprovalProfile("testSingleSequenceSinglePartition");
         ApprovalStep executionStep = singleStepPartitionProfile.getStep(PartitionedApprovalProfile.EXECUTION_STEP_ID);
         ApprovalPartition singlePartition = executionStep.getPartitions().values().iterator().next();
-        List<RoleInformation> roles = new ArrayList<>();
+        Set<RoleInformation> roles = new HashSet<>();
         //Add admin1 as an approving admin to the partition
         RoleInformation admin1RoleInfo =  new RoleInformation(1, "admin1", Arrays.asList(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
                 AccessMatchType.TYPE_EQUALCASEINS, adminusername1)));
@@ -291,7 +291,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
         
         ApprovalStep firstStep = doubleSequencenProfile.getFirstStep();
         ApprovalPartition firstStepPartition = firstStep.getPartitions().values().iterator().next();
-        List<RoleInformation> roles = new ArrayList<>();
+        Set<RoleInformation> roles = new HashSet<>();
         //Add admin1 as an approving admin to the partition
         RoleInformation admin1RoleInfo =  new RoleInformation(1, "admin1", Arrays.asList(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
                 AccessMatchType.TYPE_EQUALCASEINS, adminusername1)));
@@ -304,7 +304,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
              
         ApprovalStep secondStep = doubleSequencenProfile.getStep(firstStep.getNextStep());
         ApprovalPartition secondStepPartition = secondStep.getPartitions().values().iterator().next();
-        roles = new ArrayList<>();
+        roles = new HashSet<>();
         //Add admin1 as an approving admin to the partition
         RoleInformation admin2RoleInfo =  new RoleInformation(2, "admin2", Arrays.asList(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
                 AccessMatchType.TYPE_EQUALCASEINS, adminusername2)));
@@ -367,7 +367,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
         ApprovalStep step = doubleSequencenProfile.getFirstStep();
         ApprovalPartition firstPartition = step.getPartitions().values().iterator().next();
         ApprovalPartition secondPartition = step.addPartition();
-        List<RoleInformation> roles = new ArrayList<>();
+        Set<RoleInformation> roles = new HashSet<>();
         //Add admin1 as an approving admin to the partition
         RoleInformation admin1RoleInfo =  new RoleInformation(1, "admin1", Arrays.asList(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
                 AccessMatchType.TYPE_EQUALCASEINS, adminusername1)));

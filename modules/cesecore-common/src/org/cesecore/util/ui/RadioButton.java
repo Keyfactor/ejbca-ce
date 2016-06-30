@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,33 +10,42 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.roles;
+package org.cesecore.util.ui;
 
 import java.io.Serializable;
-import java.util.List;
 
-import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.util.ProfileID;
 
 /**
- * Container POJO used due to the fact RoleData in certain contexts doesn't survive encoding to JSF
+ * POJO for a set of radio buttons in a Dynamic UI Property
  * 
  * @version $Id$
  *
  */
-public class RoleInformation implements Serializable {
+public class RadioButton implements Serializable {
+    
     private static final long serialVersionUID = 1L;
+    private String label;
     private final int identifier;
-    private final String name;
-    private final List<AccessUserAspectData> accessUserAspects;
-
-    public RoleInformation(final int identifier, final String name, final List<AccessUserAspectData> accessUserAspects) {
-        this.identifier = identifier;
-        this.name = name;
-        this.accessUserAspects = accessUserAspects;
+    
+    public RadioButton(final String label) {
+        this.identifier = ProfileID.getRandomIdNumber();
+        this.label = label;
     }
 
-    public String getName() {
-        return name;
+    public String getLabel() {
+        return "moop";
+    }
+
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+
+    @Override
+    public String toString() {
+        return label;
     }
 
     public int getIdentifier() {
@@ -44,16 +53,10 @@ public class RoleInformation implements Serializable {
     }
 
     @Override
-    public String toString() {
-        return name;
-    }
-
-    @Override
     public int hashCode() {
-        final int prime = 37;
+        final int prime = 31;
         int result = 1;
         result = prime * result + identifier;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
         return result;
     }
 
@@ -65,19 +68,15 @@ public class RoleInformation implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        RoleInformation other = (RoleInformation) obj;
+        RadioButton other = (RadioButton) obj;
         if (identifier != other.identifier)
-            return false;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
             return false;
         return true;
     }
-
-    public List<AccessUserAspectData> getAccessUserAspects() {
-        return accessUserAspects;
+    
+    public boolean equals(String encodedValue) {
+        return equals(DynamicUiProperty.getAsObject(encodedValue));
     }
+
 
 }
