@@ -88,8 +88,8 @@ public class ApprovalExecutorUtil {
 	    if (log.isTraceEnabled()) {
             log.trace(">requireApproval: "+req.getClass().getName());            
         }
-		boolean ret = true;
-		if (req.getApprovalProfile().isApprovalRequired()) {
+		boolean ret = true;	
+		if (req.getApprovalProfile() != null && req.getApprovalProfile().isApprovalRequired()) {
 			ret = !isCalledByOveridableClassnames(getGloballyAllowed());
 			// If we were not found in the globally allowed list, check the passed in list
 			if (ret && (overridableClassNames != null)) {
