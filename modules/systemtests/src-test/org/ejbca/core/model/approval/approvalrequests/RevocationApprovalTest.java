@@ -81,14 +81,16 @@ import org.ejbca.core.protocol.ws.BatchCreateTool;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * 
  * @version $Id$
  *
  */
-
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RevocationApprovalTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(RevocationApprovalTest.class);
@@ -245,11 +247,14 @@ public class RevocationApprovalTest extends CaTestCase {
      */
     public static int createApprovalCA(AuthenticationToken internalAdmin, String nameOfCA, int approvalRequirementType, int approvalProfileId,
             CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, CAToken caToken) throws Exception {
+        ArrayList<Integer> approvalSettings = new ArrayList<Integer>();
+        approvalSettings.add(approvalRequirementType);
         X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, CAConstants.CA_ACTIVE, 
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365,
                 CAInfo.SELFSIGNED, null, caToken);
         cainfo.setExpireTime(new Date(System.currentTimeMillis() + 364 * 24 * 3600 * 1000));
         cainfo.setApprovalProfile(approvalProfileId);
+        cainfo.setApprovalSettings(approvalSettings);
         int caID = cainfo.getCAId();
         try {
             caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
@@ -288,15 +293,17 @@ public class RevocationApprovalTest extends CaTestCase {
             createUser(internalAdmin, username, approvalCAID);
             try {
                 endEntityManagementSession.revokeUser(requestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-                fail("Approval code never interrupted run.");
+                fail("WaitingForApprovalException should have been thrown to show that this action is waiting for approval.");
             } catch (ApprovalException e) {
                 fail("Reporting that approval request exists, when it does not.");
             } catch (WaitingForApprovalException e) {
+              //NOPMD Expected result
             }
             try {
                 endEntityManagementSession.revokeUser(requestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-                fail("Approval code never interrupted run.");
+                fail("ApprovalException should have been thrown to show that this action has already been submitted");
             } catch (ApprovalException e) {
+              //NOPMD Expected result
             } catch (WaitingForApprovalException e) {
                 fail("Allowing addition of identical approval requests.");
             }
@@ -322,15 +329,16 @@ public class RevocationApprovalTest extends CaTestCase {
             createUser(internalAdmin, username, approvalCAID);
             try {
                 endEntityManagementSession.revokeAndDeleteUser(requestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-                fail("Approval code never interrupted run.");
+                fail("WaitingForApprovalException should have been thrown to show that this action is waiting for approval.");
             } catch (ApprovalException e) {
                 fail("Reporting that approval request exists, when it does not.");
             } catch (WaitingForApprovalException e) {
             }
             try {
                 endEntityManagementSession.revokeAndDeleteUser(requestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-                fail("Approval code never interrupted run.");
+                fail("ApprovalException should have been thrown to show that this action has already been submitted");
             } catch (ApprovalException e) {
+                //NOPMD Expected result
             } catch (WaitingForApprovalException e) {
                 fail("Allowing addition of identical approval requests.");
             }
