@@ -14,6 +14,8 @@ package org.ejbca.ui.web.admin.approval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +28,13 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.util.ui.RadioButton;
 import org.cesecore.util.ui.DynamicUiProperty;
+import org.cesecore.util.ui.MultiLineString;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
@@ -47,7 +52,38 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 public class ApprovalProfileMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -3751383340600251434L;
+    private static final InternalResources intres = InternalResources.getInstance();
 
+    private enum FieldType {
+        TEXT(intres.getLocalizedMessage("approval.profile.metadata.field.freetext")), 
+        CHECKBOX(intres.getLocalizedMessage("approval.profile.metadata.field.checkbox")), 
+        RADIOBUTTON(intres.getLocalizedMessage("approval.profile.metadata.field.radio.button"));
+
+       private static List<SelectItem> selectItems;
+       private final String label;
+       
+       static {
+           selectItems = new ArrayList<>();
+           for(FieldType action : FieldType.values()) {
+               selectItems.add(new SelectItem(action, action.getLabel()));
+           }
+       }
+       
+       private FieldType(final String label) {
+           this.label = label;
+           
+       }
+       
+       public String getLabel() {
+           return label;
+       }
+       
+       public static List<SelectItem> asSelectItems() {
+           return selectItems;
+       }
+        
+    }
+    
     @EJB
     private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
@@ -60,15 +96,20 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     private ApprovalProfile currentApprovalProfile = null;
 
     private ListDataModel<ApprovalStepGuiObject> steps = null;
+    
+    /**
+     * The type of metadata field to add to a partition, if any. 
+     */
+    private FieldType fieldToAdd = null;
+    private String fieldLabel = null;
 
-    public ApprovalProfilesMBean getApprovalProfilesMBean() {
+   public ApprovalProfilesMBean getApprovalProfilesMBean() {
         return approvalProfilesMBean;
     }
 
     public void setApprovalProfilesMBean(ApprovalProfilesMBean approvalProfilesMBean) {
         this.approvalProfilesMBean = approvalProfilesMBean;
     }
-
     /** @return the select profile id from the list view or the one cached in this view (this will never change in the view) */
     public int getSelectedApprovalProfileId() {
         if (currentApprovalProfileId==-1) {
@@ -118,6 +159,92 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         return "done";
     }
     
+    public String addField(int partitionId) {
+        ApprovalProfile updatedApprovalProfile = getApprovalProfile();
+        DynamicUiProperty<? extends Serializable> property;
+        switch (fieldToAdd) {
+        case TEXT:
+            property = new DynamicUiProperty<>(fieldLabel, new MultiLineString(""));
+            break;
+        case RADIOBUTTON:
+            property = new DynamicUiProperty<>(fieldLabel, null, new ArrayList<RadioButton>());
+            property.setType(RadioButton.class);
+            break;
+        default:
+            return "";
+        }
+      
+        if (updatedApprovalProfile.getStep(steps.getRowData().getIdentifier()).getPartition(partitionId).getProperty(fieldLabel) != null) {
+            addErrorMessage("APPROVAL_PROFILE_FIELD_EXISTS");
+            return "";
+        } else {
+            updatedApprovalProfile.addPropertyToPartition(steps.getRowData().getIdentifier(), partitionId, property);
+            steps = createStepListFromProfile(updatedApprovalProfile);
+            fieldLabel = null;
+            fieldToAdd = null;
+            return "";
+        }
+    }
+    
+    public String addRowToRadioButton(int partitionId, String label) {
+        ApprovalProfile updatedApprovalProfile = getApprovalProfile();
+        List<ApprovalPartitionProfileGuiObject> guiPartitions = steps.getRowData().getPartitionGuiObjects();
+        for (ApprovalPartitionProfileGuiObject approvalPartitionProfileGuiObject : guiPartitions) {
+            //find the right partition
+            if (approvalPartitionProfileGuiObject.getPartitionId() == partitionId) {
+                @SuppressWarnings("unchecked")
+                DynamicUiProperty<RadioButton> radioButtonProperty = (DynamicUiProperty<RadioButton>) approvalPartitionProfileGuiObject
+                        .getProfilePropertyList().getRowData();
+                Collection<RadioButton> possibleValues = new ArrayList<>(radioButtonProperty.getPossibleValues());
+                RadioButton newRadio = new RadioButton(label);
+                if (possibleValues.size() == 0) {
+                    radioButtonProperty.setDefaultValue(newRadio);
+                }
+                possibleValues.add(newRadio);
+                radioButtonProperty.setPossibleValues(possibleValues);
+                updatedApprovalProfile.addPropertyToPartition(steps.getRowData().getIdentifier(), partitionId, radioButtonProperty);
+                steps = createStepListFromProfile(updatedApprovalProfile);
+                break;
+            }
+        }
+        return "";
+    }
+    
+    public String removeRowFromRadioButton(int partitionId, String encodedRadioButton) {
+        ApprovalProfile updatedApprovalProfile = getApprovalProfile();
+        RadioButton radioButton = (RadioButton) DynamicUiProperty.getAsObject(encodedRadioButton);
+        List<ApprovalPartitionProfileGuiObject> guiPartitions = steps.getRowData().getPartitionGuiObjects();
+        for(ApprovalPartitionProfileGuiObject approvalPartitionProfileGuiObject : guiPartitions) {
+            //find the right partition
+            if(approvalPartitionProfileGuiObject.getPartitionId() == partitionId) {
+                @SuppressWarnings("unchecked")
+                DynamicUiProperty<RadioButton> radioButtonProperty = (DynamicUiProperty<RadioButton>) approvalPartitionProfileGuiObject.getProfilePropertyList().getRowData();
+                List<RadioButton> oldValues = new ArrayList<>(radioButtonProperty.getPossibleValues());
+                List<RadioButton> prunedValues = new ArrayList<>();
+                for(RadioButton dynamicRadioButton : oldValues) {
+                    if(dynamicRadioButton.getIdentifier() != radioButton.getIdentifier()) {
+                        prunedValues.add(dynamicRadioButton);
+                    }
+                }
+                if(radioButtonProperty.getDefaultValue().getIdentifier() == radioButton.getIdentifier()) {
+                    radioButtonProperty.setDefaultValue(prunedValues.get(0));
+                }        
+                radioButtonProperty.setPossibleValues(prunedValues);
+                updatedApprovalProfile.addPropertyToPartition(steps.getRowData().getIdentifier(), partitionId, radioButtonProperty);
+                steps = createStepListFromProfile(updatedApprovalProfile);
+                break;           
+            }
+        }
+        return "";
+    }
+    
+    public String removeField(int partitionId, String propertyName) {
+        ApprovalProfile updatedApprovalProfile = getApprovalProfile();
+        updatedApprovalProfile.removePropertyFromPartition(steps.getRowData().getIdentifier(), partitionId, propertyName);
+        steps = createStepListFromProfile(updatedApprovalProfile);
+        return "";
+    }
+    
     public void addStep() {
         getApprovalProfile().addStepFirst();
         steps = null;
@@ -136,6 +263,11 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public void deletePartition(int partitionId) {
         getApprovalProfile().deletePartition(steps.getRowData().getIdentifier(), partitionId);
         steps = null;
+    }
+    
+    public boolean isPropertyPredefined(int partitionId, String propertyName) {
+        ApprovalProfile approvalProfile = getApprovalProfile();
+        return approvalProfile.isPropertyPredefined(steps.getRowData().getIdentifier(), partitionId, propertyName);
     }
 
     public void selectUpdate() {
@@ -232,6 +364,34 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     /** @return true of the approval profile is of a type where sequences can be added  */
     public boolean isStepSizeFixed() {
         return ApprovalProfilesFactory.INSTANCE.getArcheType(getCurrentApprovalProfileTypeName()).isStepSizeFixed();
+    }
+    
+    /**
+     * @return true if it's possible to add fields to the partitions of this profile
+     */
+    public boolean arePartitionsFixed() {
+        return ApprovalProfilesFactory.INSTANCE.getArcheType(getCurrentApprovalProfileTypeName()).arePartitionsFixed();
+    }
+    
+    
+    public List<SelectItem> getFieldsAvailable() {
+        return FieldType.asSelectItems();
+    }
+
+    public FieldType getFieldToAdd() {
+        return fieldToAdd;
+    }
+
+    public void setFieldToAdd(FieldType fieldToAdd) {
+        this.fieldToAdd = fieldToAdd;
+    }
+
+    public String getFieldLabel() {
+        return fieldLabel;
+    }
+
+    public void setFieldLabel(String fieldLabel) {
+        this.fieldLabel = fieldLabel;
     }
 
     public boolean isNotificationEnabled(final int partitionIdentifier) {

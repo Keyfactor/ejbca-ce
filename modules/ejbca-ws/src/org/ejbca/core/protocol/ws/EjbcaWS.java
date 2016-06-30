@@ -1792,7 +1792,7 @@ public class EjbcaWS implements IEjbcaWS {
 		    
 			if(approveGenTokenCert){
                     ar = new GenerateTokenApprovalRequest(userDataWS.getUsername(), userDataWS.getSubjectDN(), hardTokenDataWS.getLabel(), admin,
-                            null, significantcAInfo.getCAId(), endEntityProfileId, approvalProfile, null);
+                            null, significantcAInfo.getCAId(), endEntityProfileId, approvalProfile);
 				int status = ApprovalDataVO.STATUS_REJECTED; 					
 				try{
 					status = approvalSession.isApproved(admin, ar.generateApprovalId(), 1);
@@ -2153,7 +2153,7 @@ public class EjbcaWS implements IEjbcaWS {
                     int caid = userData.getCAId();
                     caSession.verifyExistenceOfCA(caid);
                     ar = new GenerateTokenApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenData.getHardToken().getLabel(),
-                            admin,null,caid,userData.getEndEntityProfileId(), approvalProfile, null);
+                            admin,null,caid,userData.getEndEntityProfileId(), approvalProfile);
                     int status = ApprovalDataVO.STATUS_REJECTED;
                     try{
                         if(!approveGenTokeCert){

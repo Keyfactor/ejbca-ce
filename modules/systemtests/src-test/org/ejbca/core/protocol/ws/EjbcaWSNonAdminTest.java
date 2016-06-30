@@ -437,7 +437,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
                 .getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier());
         
         ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, 
-                reqadmin, null, 0, 0, approvalProfile, null);
+                reqadmin, null, 0, 0, approvalProfile);
         try {
             approvalExecutionSession.approve(admin1, ar.generateApprovalId(), approval1);
 
@@ -477,7 +477,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         
         
         ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, 
-                reqadmin, null, 0, 0, approvalProfile, null);
+                reqadmin, null, 0, 0, approvalProfile);
 
         Collection<ApprovalDataVO> result = approvalSession.findApprovalDataVO(intAdmin, ar.generateApprovalId());
         Iterator<ApprovalDataVO> iter = result.iterator();

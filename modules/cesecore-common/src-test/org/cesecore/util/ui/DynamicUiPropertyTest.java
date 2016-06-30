@@ -12,10 +12,10 @@
  *************************************************************************/
 package org.cesecore.util.ui;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import org.cesecore.roles.RoleData;
@@ -31,12 +31,12 @@ public class DynamicUiPropertyTest {
     public void testEncodingAndDecodingOfComplexType() {
         RoleData anybody = new RoleData(-1, "anybody");
         DynamicUiProperty<RoleData> roleProperty = new DynamicUiProperty<RoleData>("test",
-                anybody, new ArrayList<RoleData>(Arrays.asList(anybody)));
+                anybody, new HashSet<RoleData>(Arrays.asList(anybody)));
         roleProperty.setHasMultipleValues(true);
         List<String> encodedValues = roleProperty.getEncodedValues();
        
         DynamicUiProperty<RoleData> rolePropertyCopy = new DynamicUiProperty<RoleData>("test",
-                anybody, new ArrayList<RoleData>());
+                anybody, new HashSet<RoleData>());
         rolePropertyCopy.setHasMultipleValues(true);
         rolePropertyCopy.setEncodedValues(encodedValues);
         assertTrue("RoleData object didn't survive encodement/decodement", rolePropertyCopy.getValues().contains(anybody));

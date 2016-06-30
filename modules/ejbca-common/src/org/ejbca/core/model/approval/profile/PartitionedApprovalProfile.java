@@ -48,6 +48,8 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     public static final String PROPERTY_NAME = "name";
     public static final String PROPERTY_ROLES_WITH_APPROVAL_RIGHTS = "roles_with_approval_rights";
     public static final String PROPERTY_ROLES_WITH_VIEW_RIGHTS = "roles_with_view_rights";
+    
+    private static final Set<String> predefinedProperties = new HashSet<>(Arrays.asList(PROPERTY_NAME, PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, PROPERTY_ROLES_WITH_VIEW_RIGHTS));
 
     {
         //Default step, which is the default execution step. It contains a single partition, and only a list of approved executors. 
@@ -202,7 +204,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         
         //Add approving roles, with "Anybody" as the default Role. 
         DynamicUiProperty<RoleInformation> approvalRoles = new DynamicUiProperty<RoleInformation>(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, ANYBODY,
-                new ArrayList<RoleInformation>());
+                new HashSet<RoleInformation>());
         //Will make this property into a multi-select instead of single select.
         approvalRoles.setHasMultipleValues(true);
         //Tell whatever bean is using this property to fill it with authorized roles. 
@@ -211,19 +213,28 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         
         //Add roles with view rights, with "Anybody" as the default Role. 
         DynamicUiProperty<RoleInformation> viewRoles = new DynamicUiProperty<RoleInformation>(PROPERTY_ROLES_WITH_VIEW_RIGHTS, ANYBODY,
-                new ArrayList<RoleInformation>());
+                new HashSet<RoleInformation>());
         //Will make this property into a multi-select instead of single select.
         viewRoles.setHasMultipleValues(true);
         //Tell whatever bean is using this property to fill it with authorized roles. 
         viewRoles.setPropertyCallback(DynamicUiPropertyCallback.ROLES);
-        approvalPartition.addProperty(viewRoles);
-        
+        approvalPartition.addProperty(viewRoles);        
         return approvalPartition;
     }
 
     @Override
     public Set<String> getHiddenProperties() {
         return new HashSet<>(Arrays.asList(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, PROPERTY_ROLES_WITH_VIEW_RIGHTS));
+    }
+
+    @Override
+    public boolean arePartitionsFixed() {
+        return false;
+    }
+
+    @Override
+    public boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, String propertyName) {
+        return predefinedProperties.contains(propertyName);
     }
 
 }

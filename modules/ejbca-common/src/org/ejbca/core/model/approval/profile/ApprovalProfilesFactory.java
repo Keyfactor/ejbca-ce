@@ -43,5 +43,6 @@ public enum ApprovalProfilesFactory {
     public ApprovalProfile getArcheType(String identifier) {
         return identifierToImplementationMap.get(identifier).clone();
     }
+    
    
 }

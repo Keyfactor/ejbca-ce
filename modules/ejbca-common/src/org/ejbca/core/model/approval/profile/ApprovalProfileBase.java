@@ -54,6 +54,8 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
      * The sequences of this approval profile, as mapped by their sequences
      */
     private transient Map<Integer, ApprovalStep> steps = new HashMap<>();
+    
+    
 
     //Pointer to the first sequence
     private int firstStep = NO_SEQUENCES;
@@ -154,7 +156,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     /**
      * Add whatever constant properties specified by the implementation.  
      * 
-     * @param approvalPartition a 
+     * @param approvalPartition an approval partition
      * @return a copy of the partition with the constant values.
      */
     protected abstract ApprovalPartition addConstantProperties(ApprovalPartition approvalPartition);
@@ -185,6 +187,16 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
             throw new NoSuchApprovalStepException("Approval step with ID: " + stepId + " not found.");
         }
         step.setPropertyToPartition(partitionId, property);
+        saveTransientObjects();
+    }
+    
+    @Override
+    public void removePropertyFromPartition(final int stepId, final int partitionId, final String propertyName) {
+        ApprovalStep step = getSteps().get(stepId);
+        if (step == null) {
+            throw new NoSuchApprovalStepException("Approval step with ID: " + stepId + " not found.");
+        }
+        step.removePropertyFromPartition(partitionId, propertyName);
         saveTransientObjects();
     }
 

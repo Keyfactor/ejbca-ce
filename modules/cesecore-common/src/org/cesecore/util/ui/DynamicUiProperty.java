@@ -39,6 +39,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     private List<T> values = new ArrayList<>();
     private Collection<T> possibleValues;
     private DynamicUiPropertyCallback propertyCallback = DynamicUiPropertyCallback.NONE;
+    private Class<? extends Serializable> type;
     /**
      * Denotes whether this property can have multiple values. 
      */
@@ -61,6 +62,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         this.defaultValue = defaultValue;
         this.values.add(defaultValue);
         this.possibleValues = possibleValues;
+        if (defaultValue != null) {
+            this.type = defaultValue.getClass();
+        }
     }
 
     public DynamicUiProperty(final String name, final T defaultValue) {
@@ -68,6 +72,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         this.defaultValue = defaultValue;
         this.values.add(defaultValue);
         this.possibleValues = null;
+        if (defaultValue != null) {
+            this.type = defaultValue.getClass();
+        }
     }
 
     /**
@@ -85,6 +92,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         }
         this.possibleValues = original.getPossibleValues();
         this.propertyCallback = original.getPropertyCallback();
+        this.type = original.getType();
     }
 
     /**
@@ -129,14 +137,26 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         return name;
     }
 
+    /**
+     * 
+     * @return the type class of this property, based on the default value. If the default was null, then the type has to be set explicitly.
+     */
     public Class<? extends Serializable> getType() {
-        return defaultValue.getClass();
+        return type;
+    }
+    
+    public void setType(final Class<? extends Serializable> type) {
+        this.type = type;
     }
 
     public T getDefaultValue() {
         return defaultValue;
     }
 
+    public void setDefaultValue(T defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+    
     public List<T> getValues() {
         if (!hasMultipleValues) {
             throw new IllegalStateException("Attempted to draw multiple values from a dynamic property with a single value.");
@@ -295,7 +315,11 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         }
     }
 
-    private Serializable getAsObject(byte[] bytes) {
+    public static Serializable getAsObject(String encodedValue) {
+        return getAsObject(Base64.decode(encodedValue.getBytes()));
+    }
+    
+    private static Serializable getAsObject(byte[] bytes) {
         try {
             final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
             try {
