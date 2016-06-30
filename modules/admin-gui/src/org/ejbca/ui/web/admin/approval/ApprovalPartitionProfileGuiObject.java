@@ -57,9 +57,11 @@ public class ApprovalPartitionProfileGuiObject {
         final List<SelectItem> propertyPossibleValues = new ArrayList<SelectItem>();
         if (profilePropertyList != null) {
             final DynamicUiProperty<? extends Serializable> property = profilePropertyList.getRowData();
-            for (final Serializable possibleValue : property.getPossibleValues()) {
-                propertyPossibleValues
-                        .add(new SelectItem(property.getAsEncodedValue(property.getType().cast(possibleValue)), possibleValue.toString()));
+            if (property != null && property.getPossibleValues() != null) {
+                for (final Serializable possibleValue : property.getPossibleValues()) {
+                    propertyPossibleValues
+                            .add(new SelectItem(property.getAsEncodedValue(property.getType().cast(possibleValue)), possibleValue.toString()));
+                }
             }
         }
         return propertyPossibleValues;
@@ -76,6 +78,10 @@ public class ApprovalPartitionProfileGuiObject {
         final String msgKey = "APPROVAL_PROFILE_" + approvalProfileIdentifier.toUpperCase() + "_" + name.toUpperCase();
         final String translatedName = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(msgKey);
         return translatedName.equals(msgKey) ? name : translatedName;
+    }
+    
+    public String getPropertyName() {
+        return profilePropertyList.getRowData().getName();
     }
 
     public int getPartitionId() {

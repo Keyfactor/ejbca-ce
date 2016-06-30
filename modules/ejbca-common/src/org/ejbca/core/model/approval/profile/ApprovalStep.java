@@ -158,6 +158,19 @@ public class ApprovalStep implements Serializable {
         partitions.get(partitionId).addProperty(property);
     }
     
+    /**
+     * Removes the property from the given partition.
+     * 
+     * @param partitionId the identifier of the partition
+     * @param propertyName the name of the property
+     */
+    public void removePropertyFromPartition(final int partitionId, final String propertyName) {
+        ApprovalPartition approvalPartition = partitions.get(partitionId);
+        if(approvalPartition != null) {
+            approvalPartition.removeProperty(propertyName);
+        }
+    }
+    
     public ApprovalPartition addPartition() {
         Integer identifier;
         do {

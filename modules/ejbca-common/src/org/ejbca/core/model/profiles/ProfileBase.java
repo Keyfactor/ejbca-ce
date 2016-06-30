@@ -14,7 +14,6 @@ package org.ejbca.core.model.profiles;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import org.cesecore.internal.UpgradeableDataHashMap;
 

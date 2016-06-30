@@ -169,5 +169,15 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
         return new HashSet<>(Arrays.asList(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS));
     }
 
+    @Override
+    public boolean arePartitionsFixed() {
+        return true;
+    }
+
+    @Override
+    public boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, String propertyName) {
+        return propertyName.equals(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS);
+    }
+
 
 }

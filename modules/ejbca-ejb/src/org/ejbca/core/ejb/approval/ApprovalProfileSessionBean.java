@@ -47,7 +47,6 @@ import org.cesecore.util.ProfileID;
 import org.ejbca.core.ejb.profiles.ProfileData;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfileBase;
-import org.ejbca.core.model.approval.profile.NonModifiableApprovalProfileException;
 
 /**
  * Keeps track of the approval profiles

@@ -86,6 +86,11 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
      */
     boolean isStepSizeFixed();
     
+    /** 
+     * @return true if it's possible to add fields to the partitions of this profile 
+     */
+    boolean arePartitionsFixed();
+    
     Map<Integer, ApprovalStep> getSteps();
     
     /**
@@ -121,6 +126,15 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
      * @throws NoSuchApprovalStepException if the step specified by stepId wasn't found.
     */
     void addPropertyToPartition(final int stepId, final int partitionId, final DynamicUiProperty<? extends Serializable> property) throws NoSuchApprovalStepException;
+    
+    /**
+     * Removes a property from a partition. Will do nothing if property was predefined in the template. 
+     * 
+     * @param stepId the identifier of the step 
+     * @param partitionId the ID of a partition in the step
+     * @param propertyName the name of the property.
+     */
+    void removePropertyFromPartition(final int stepId, final int partitionId, final String propertyName);
     
     /**
      * Adds a partition to this sequence
@@ -227,4 +241,14 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
 
     /** Remove standardized notification properties */
     ApprovalPartition removeNotificationProperties(ApprovalPartition approvalPartition);
+     
+     /**
+      * Allows for querying a partition of a certain property was defined procedurally.
+      * 
+      * @param stepIdentifier the identifier of the step 
+      * @param partitionIdentifier the identifier of the partition
+      * @param propertyName the name of the property
+      * @return true if the property is considered predefined.
+      */
+     boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, final String propertyName);
 }

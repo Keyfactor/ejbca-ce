@@ -30,9 +30,6 @@ public class ApprovalPartition implements Serializable {
     private final LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> properties = new LinkedHashMap<>();
     private final int partitionIdentifier;
     
-    public int getPartitionIdentifier() {
-        return partitionIdentifier;
-    }
 
     public ApprovalPartition(int partitionIdentifier) {
         this.partitionIdentifier = partitionIdentifier;
@@ -71,9 +68,13 @@ public class ApprovalPartition implements Serializable {
     public void addProperty(DynamicUiProperty<? extends Serializable> value) {
         properties.put(value.getName(), value);
     }
-
-    public void removeProperty(final String name) {
-        properties.remove(name);
+    
+    public void removeProperty(final String propertyName) {
+        properties.remove(propertyName);
+    }
+    
+    public int getPartitionIdentifier() {
+        return partitionIdentifier;
     }
 
     @Override

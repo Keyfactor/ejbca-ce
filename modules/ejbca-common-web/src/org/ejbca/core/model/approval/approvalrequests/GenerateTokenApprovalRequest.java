@@ -53,8 +53,7 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 	public GenerateTokenApprovalRequest() {}
 
 	public GenerateTokenApprovalRequest(String username, String userDN, String tokenTypeLabel, AuthenticationToken requestAdmin, 
-	        String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile, 
-	        ApprovalProfile secondApprovalProfile) {
+	        String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile) {
         super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, 2, approvalProfile);
 		this.username = username;
 		this.dn = userDN;
