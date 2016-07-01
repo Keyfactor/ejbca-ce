@@ -112,8 +112,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         if (log.isTraceEnabled()) {
             log.trace(">approve: "+approvalId);
         }
-        ApprovalData approvalData;
-        approvalData = approvalSession.findNonExpiredApprovalDataLocal(approvalId);
+        final ApprovalData approvalData = approvalSession.findNonExpiredApprovalDataLocal(approvalId);
         if (approvalData == null) {
             String msg = intres.getLocalizedMessage("approval.notexist", approvalId);
             log.info(msg);
@@ -123,23 +122,21 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         checkApprovalPossibility(admin, approvalData, approval);
 		approval.setApprovalAdmin(true, admin);
         try {
-            if (approvalData.hasRequestOrApprovalExpired()) {
-                throw new ApprovalRequestExpiredException();
-            }
+            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalprofileid());
+            final List<Approval> approvalsPerformed = approvalData.getApprovals();
             if (approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
                 throw new ApprovalException("Wrong status of approval request.");
-            }            
-            ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalprofileid());
-            List<Approval> approvalsPerformed = approvalData.getApprovals();
-            //Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been 
-            //satisfied
-            if(!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval)) {
-                throw new AuthorizationDeniedException(
-                        "Administrator " + approval.getAdmin().toString() + " was not authorized to partition " + approval.getPartitionId()
+            }
+            // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
+            if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval)) {
+                throw new AuthorizationDeniedException("Administrator " + approval.getAdmin().toString() + " was not authorized to partition " + approval.getPartitionId()
                                 + " in step " + approval.getStepId() + " of approval profile " + approvalProfile.getProfileName());
             }
-            
             approvalsPerformed.add(approval);
+            if (approvalData.hasRequestOrApprovalExpired()) {
+                approvalSession.sendApprovalNotifications(admin, approvalData.getApprovalRequest(), approvalProfile, approvalsPerformed, false);
+                throw new ApprovalRequestExpiredException();
+            }
             final boolean readyToCheckExecution = approvalProfile.canApprovalExecute(approvalsPerformed);
             approvalSession.setApprovals(approvalData, approvalsPerformed);
             if (readyToCheckExecution) {
@@ -175,42 +172,21 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                     approvalData.setExpiredate((new Date()).getTime() + approvalRequest.getApprovalValidity());
                 }
             }
-            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
-                    .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-            if (globalConfiguration.getUseApprovalNotifications()) {
-                final ApprovalDataVO approvalDataVO = approvalData.getApprovalDataVO();
-                if (approvalDataVO.getRemainingApprovals() != 0) {
-                    approvalSession.sendApprovalNotification(admin, globalConfiguration.getApprovalAdminEmailAddress(),
-                            globalConfiguration.getApprovalNotificationFromAddress(),
-                            globalConfiguration.getBaseUrl() + "adminweb/approval/approveaction.jsf?uniqueId=" + approvalData.getId(),
-                            intres.getLocalizedMessage("notification.requestconcured.subject"),
-                            intres.getLocalizedMessage("notification.requestconcured.msg"), approvalData.getId(),
-                            approvalDataVO.getRemainingApprovals(), approvalDataVO.getRequestDate(), approvalDataVO.getApprovalRequest(), approval);
-                } else {
-                    approvalSession.sendApprovalNotification(admin, globalConfiguration.getApprovalAdminEmailAddress(),
-                            globalConfiguration.getApprovalNotificationFromAddress(),
-                            globalConfiguration.getBaseUrl() + "adminweb/approval/approveaction.jsf?uniqueId=" + approvalData.getId(),
-                            intres.getLocalizedMessage("notification.requestapproved.subject"),
-                            intres.getLocalizedMessage("notification.requestapproved.msg"), approvalData.getId(),
-                            approvalDataVO.getRemainingApprovals(), approvalDataVO.getRequestDate(), approvalDataVO.getApprovalRequest(), approval);
-                }
-            }
-            String msg = intres.getLocalizedMessage("approval.approved", approvalId);
+            // Notify all administrators affected by the work flow update
+            approvalSession.sendApprovalNotifications(admin, approvalData.getApprovalRequest(), approvalProfile, approvalsPerformed, false);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
+            details.put("msg", intres.getLocalizedMessage("approval.approved", approvalId));
             auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalData.getCaid()), null, null, details);
         } catch (ApprovalRequestExpiredException e) {
-            String msg = intres.getLocalizedMessage("approval.expired", approvalId);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
+            details.put("msg", intres.getLocalizedMessage("approval.expired", approvalId));
             auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalData.getCaid()), null, null, details);
             throw e;
         } catch (ApprovalRequestExecutionException e) {
-            String msg = intres.getLocalizedMessage("approval.errorexecuting", approvalId);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
+            details.put("msg", intres.getLocalizedMessage("approval.errorexecuting", approvalId));
             details.put("error", e.getMessage());
             auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalData.getCaid()), null, null, details);
@@ -221,36 +197,39 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         }
     }
 
-
     @Override
     public void reject(AuthenticationToken admin, int approvalId, Approval approval)
             throws ApprovalRequestExpiredException, AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException,
             SelfApprovalException, AuthenticationFailedException {
         log.trace(">reject");
-        ApprovalData approvalData;
-        approvalData = approvalSession.findNonExpiredApprovalDataLocal(approvalId);
+        final ApprovalData approvalData = approvalSession.findNonExpiredApprovalDataLocal(approvalId);
         if (approvalData == null) {
             String msg = intres.getLocalizedMessage("approval.notexist", approvalId);
             log.info(msg);
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, msg);
         }
         assertAuthorizedToApprove(admin, approvalData);
-
         checkApprovalPossibility(admin, approvalData, approval);
         approval.setApprovalAdmin(false, admin);
-
         try {
+            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalprofileid());
+            final List<Approval> approvalsPerformed = approvalData.getApprovals();
+            // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
+            if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval)) {
+                throw new AuthorizationDeniedException("Administrator " + approval.getAdmin().toString() + " was not authorized to partition " + approval.getPartitionId()
+                                + " in step " + approval.getStepId() + " of approval profile " + approvalProfile.getProfileName());
+            }
+            approvalsPerformed.add(approval);
             if (approvalData.hasRequestOrApprovalExpired()) {
+                approvalSession.sendApprovalNotifications(admin, approvalData.getApprovalRequest(), approvalProfile, approvalsPerformed, true);
                 throw new ApprovalRequestExpiredException();
             }
             if (approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
                 throw new ApprovalException("Wrong status of approval request.");
             }
-            List<Approval> approvalsPerformed = approvalData.getApprovals();
-            approvalsPerformed.add(approval);
             approvalSession.setApprovals(approvalData, approvalsPerformed);
             //Retrieve the approval profile just to make sure that the state is still valid
-            approvalProfileSession.getApprovalProfile(approvalData.getApprovalprofileid()).canApprovalExecute(approvalsPerformed);
+            approvalProfile.canApprovalExecute(approvalsPerformed);
             //Kept for legacy reasons
             approvalData.setRemainingapprovals(0);
             if (approvalData.getApprovalRequest().isExecutable()) {
@@ -260,21 +239,12 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                 approvalData.setStatus(ApprovalDataVO.STATUS_REJECTED);
                 approvalData.setExpiredate((new Date()).getTime() + approvalData.getApprovalRequest().getApprovalValidity());
             }
-            final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-            if (gc.getUseApprovalNotifications()) {
-                final ApprovalDataVO approvalDataVO = approvalData.getApprovalDataVO();
-                approvalSession.sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl()
-                        + "adminweb/approval/approveaction.jsf?uniqueId=" + approvalData.getId(),
-                        intres.getLocalizedMessage("notification.requestrejected.subject"),
-                        intres.getLocalizedMessage("notification.requestrejected.msg"), approvalData.getId(), approvalDataVO.getRemainingApprovals(),
-                        approvalDataVO.getRequestDate(), approvalDataVO.getApprovalRequest(), approval);
-            }
+            approvalSession.sendApprovalNotifications(admin, approvalData.getApprovalRequest(), approvalProfile, approvalsPerformed, false);
             final String detailsMsg = intres.getLocalizedMessage("approval.rejected", approvalId);
             auditSession.log(EjbcaEventTypes.APPROVAL_REJECT, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalData.getCaid()), null, null, detailsMsg);
         } catch (ApprovalRequestExpiredException e) {
-            String msg = intres.getLocalizedMessage("approval.expired", approvalId);
-            log.info(msg);
+            log.info(intres.getLocalizedMessage("approval.expired", approvalId));
             throw e;
         }
         log.trace("<reject");

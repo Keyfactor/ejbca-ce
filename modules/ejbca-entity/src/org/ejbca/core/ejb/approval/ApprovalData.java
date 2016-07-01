@@ -238,11 +238,6 @@ s	 */
 	@Deprecated
 	public void setRemainingapprovals(int remainingApprovals) { this.remainingApprovals = remainingApprovals; }
 
-	@Transient
-	public int getNumberOfApprovalsRemaining() {
-	    return getApprovalRequest().getApprovalProfile().getRemainingApprovals(getApprovals());
-	}
-	
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(final int rowVersion) { this.rowVersion = rowVersion; }

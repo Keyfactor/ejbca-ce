@@ -97,6 +97,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -109,6 +110,7 @@ import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.authorization.AccessRuleTemplate;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.DefaultRoles;
@@ -1330,8 +1332,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new UpgradeFailedException("Upgrade failed, for some reason retrieved role does not exist in database.", e);
         }
         
-        //Create AccumulativeApprovalProfile for all CA's and Certificate Profiles running approvals
-
+        // Create AccumulativeApprovalProfile for all CA's and Certificate Profiles running approvals
         //Sort cache by the number of approvals
         Map<Integer, Integer> approvalProfileCache = new HashMap<>();
         //Add approval profiles to all CAs with approvals 
@@ -1352,6 +1353,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                             String name = "Require " + numberOfRequiredApprovals + " Approval" + (numberOfRequiredApprovals > 1 ? "s" : "");
                             AccumulativeApprovalProfile newProfile = new AccumulativeApprovalProfile(name);
                             newProfile.setNumberOfApprovalsRequired(numberOfRequiredApprovals);
+                            addApprovalNotification(newProfile);
                             try {
                                 int newProfileId = approvalProfileSession.addApprovalProfile(authenticationToken, newProfile);
                                 approvalProfileCache.put(numberOfRequiredApprovals, newProfileId);
@@ -1384,6 +1386,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         String name = "Require " + numberOfRequiredApprovals + " approval" + (numberOfRequiredApprovals > 1 ? "s" : "");
                         AccumulativeApprovalProfile newProfile = new AccumulativeApprovalProfile(name);
                         newProfile.setNumberOfApprovalsRequired(numberOfRequiredApprovals);
+                        addApprovalNotification(newProfile);
                         try {
                             int newProfileId = approvalProfileSession.addApprovalProfile(authenticationToken, newProfile);
                             approvalProfileCache.put(numberOfRequiredApprovals, newProfileId);
@@ -1398,10 +1401,25 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException("AlwaysAllowToken was denied access", e);
         }
-
     }
-    
-   
+
+    /** Add the previously global configuration configured approval notification */
+    @SuppressWarnings("deprecation")
+    private void addApprovalNotification(final AccumulativeApprovalProfile newProfile) {
+        final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        if (gc.getUseApprovalNotifications()) {
+            final String hostname = WebConfiguration.getHostName();
+            final String baseUrl = gc.getBaseUrl(hostname);
+            final String defaultSubject = "[AR-${approvalRequest.ID}-${approvalRequest.STEP_ID}-${approvalRequest.PARTITION_ID}] " +
+                    "Approval Request to ${approvalRequest.TYPE} is now in state ${approvalRequest.WORKFLOWSTATE}";
+            final String defaultBody = "Approval Request to ${approvalRequest.TYPE} from ${approvalRequest.REQUESTOR} is now in state ${approvalRequest.WORKFLOWSTATE}.\n" +
+                    "\n" +
+                    "Direct link to the request: " + baseUrl + "ra/managerequest.xhtml?aid=${approvalRequest.ID}";
+            final ApprovalPartition approvalPartition = newProfile.getFirstStep().getPartitions().values().iterator().next();
+            newProfile.addNotificationProperties(approvalPartition, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), defaultSubject, defaultBody);
+        }
+    }
+
     /**
      * In EJBCA 5.0 we have changed classname for CertificatePolicy.
      * In order to allow us to remove the legacy class in the future we want to upgrade all certificate profiles to use the new classname

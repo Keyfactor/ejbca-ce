@@ -110,9 +110,7 @@ public class Approval implements Comparable<Approval>, Externalizable {
 	}
 	
 	
-	/**
-	 * @return Returns the approved.
-	 */
+	/** @return true for approved and false for rejection. */
 	public boolean isApproved() {
 		return approved;
 	}
