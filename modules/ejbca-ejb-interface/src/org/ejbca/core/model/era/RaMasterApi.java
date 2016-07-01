@@ -140,7 +140,7 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException
      * @throws KeyStoreException if something went wrong with keystore creation
      */
-    KeyStore generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity) throws AuthorizationDeniedException, KeyStoreException;
+    byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity) throws AuthorizationDeniedException, KeyStoreException;
 
     /**
      * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.

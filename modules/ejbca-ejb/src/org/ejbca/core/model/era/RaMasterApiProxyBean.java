@@ -451,25 +451,23 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public KeyStore generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity)
+    public byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity)
             throws AuthorizationDeniedException, KeyStoreException {
-        final KeyStore ret = null;
         for(final RaMasterApi raMasterApi : raMasterApis){
             if(raMasterApi.isBackendAvailable()){
                 try{
-                    return raMasterApi.generateKeystore(authenticationToken, endEntity);//TODO check with Johan if this is ok?
+                    return raMasterApi.generateKeystore(authenticationToken, endEntity);
                 }catch  (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        return ret;
+        return null;
     }
     
     @Override
     public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
             byte[] certificateRequest) throws AuthorizationDeniedException {
-        final byte[] ret = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
@@ -479,13 +477,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 }
             }
         }
-        return ret;
+        return null;
     }
     
     @Override
     public byte[] createPkcs7(AuthenticationToken authenticationToken, X509Certificate certificate, boolean includeChain)
             throws AuthorizationDeniedException {
-        final byte[] ret = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
@@ -495,7 +492,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 }
             }
         }
-        return ret;
+        return null;
     }
 
     @Override

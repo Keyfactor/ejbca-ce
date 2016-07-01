@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -81,7 +82,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
-import org.ejbca.core.ejb.approval.ApprovalProfileSession;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
@@ -106,9 +106,6 @@ import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
-import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
-import org.ejbca.core.model.approval.profile.ApprovalProfile;
-import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -1071,10 +1068,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public KeyStore generateKeystore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, KeyStoreException{
+    public byte[] generateKeystore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, KeyStoreException{
         GenerateToken tgen = new GenerateToken(endEntityAuthenticationSessionLocal, endEntityAccessSession, endEntityManagementSessionLocal, caSession, keyRecoverySessionLocal, signSessionLocal);
         try {
-            return tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), endEntity.getExtendedinformation().getKeyStoreAlgorithmLength(), endEntity.getExtendedinformation().getKeyStoreAlgorithm(), endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
+            KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), endEntity.getExtendedinformation().getKeyStoreAlgorithmLength(), endEntity.getExtendedinformation().getKeyStoreAlgorithm(), endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            keyStore.store(outputStream, endEntity.getPassword().toCharArray());
+            return outputStream.toByteArray();
         } catch (Exception e) {
             throw new KeyStoreException(e);
         }
