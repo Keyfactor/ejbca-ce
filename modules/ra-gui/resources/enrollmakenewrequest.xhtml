@@ -187,23 +187,28 @@
 									<!-- Pure JavaScript file upload, since non-JS fallback of pasting upload exists -->
 								</ui:remove>
 								<script>
-var newFileInput = document.createElement("input");
-newFileInput.type='file';
-newFileInput.id='newFileInputId';
-newFileInput.onchange = function() {
-	if (newFileInput.files.length != 0) {
-		var fileReader = new FileReader();
-		fileReader.onloadend = function(event) {
-			if (event.target.readyState == FileReader.DONE) {
-				document.getElementById('enrollMakeNewRequestForm:certificateRequest').value = event.target.result;
-				newFileInput.value = '';
-			}
-		};
-		fileReader.readAsText(newFileInput.files[0]);
-	}
-};
-document.getElementById("marker").appendChild(newFileInput);
-	                			</script>
+									var newFileInput = document
+											.createElement("input");
+									newFileInput.type = 'file';
+									newFileInput.id = 'newFileInputId';
+									newFileInput.onchange = function() {
+										if (newFileInput.files.length != 0) {
+											var fileReader = new FileReader();
+											fileReader.onloadend = function(
+													event) {
+												if (event.target.readyState == FileReader.DONE) {
+													document
+															.getElementById('enrollMakeNewRequestForm:certificateRequest').value = event.target.result;
+													newFileInput.value = '';
+												}
+											};
+											fileReader
+													.readAsText(newFileInput.files[0]);
+										}
+									};
+									document.getElementById("marker")
+											.appendChild(newFileInput);
+								</script>
 							</h:panelGroup>
 							<br />
 							<h:panelGroup>
@@ -219,7 +224,7 @@ document.getElementById("marker").appendChild(newFileInput);
 					</h:panelGroup>
 				</h:panelGroup>
 
-				<h:panelGroup layout="block"
+				<h:panelGroup id="enterCertificateData" layout="block"
 					rendered="#{enrollMakeNewRequestBean.subjectDn != null}">
 					<h2>
 						<h:outputText value="#{msg.enroll_enter_certificate_data}" />
@@ -235,18 +240,30 @@ document.getElementById("marker").appendChild(newFileInput);
 								<h:panelGroup layout="block" styleClass="pure-control-group"
 									rendered="#{instance.isUsed()}">
 									<h:outputLabel for="subjectDnField"
-										value="#{msg['subject_dn_'.concat(instance.getName())]}" />
+										value="#{msg['subject_dn_'.concat(instance.getName())]}"
+										rendered="#{!instance.required}" />
+									<h:outputLabel for="subjectDnField"
+										value="#{msg['subject_dn_'.concat(instance.getName())]} *"
+										rendered="#{instance.required}" />
 									<h:inputText id="subjectDnField" value="#{instance.value}"
 										rendered="#{!instance.selectable}"
-										disabled="!#{instance.isModifiable()}"
+										disabled="#{!instance.modifiable}"
 										required="#{instance.isRequired()}">
 										<f:validator validatorId="extendedRegexValidator" />
 										<f:attribute name="pattern"
 											value="#{instance.getRegexPattern()}" />
+										<f:ajax
+											execute="@this" event="change"
+											render=":enrollMakeNewRequestForm:requestPreview"
+											listener="#{enrollMakeNewRequestBean.subjectDnAjaxListener}" />
 									</h:inputText>
 									<h:selectOneMenu value="#{instance.value}"
 										rendered="#{instance.selectable}">
 										<f:selectItems value="#{instance.selectableValues}" />
+										<f:ajax
+											execute="@this" event="change"
+											render=":enrollMakeNewRequestForm:requestPreview"
+											listener="#{enrollMakeNewRequestBean.subjectDnAjaxListener}" />
 									</h:selectOneMenu>
 									<h:message for="subjectDnField" />
 								</h:panelGroup>
@@ -266,17 +283,29 @@ document.getElementById("marker").appendChild(newFileInput);
 							<h:panelGroup layout="block" styleClass="pure-control-group"
 								rendered="#{instance.isUsed()}">
 								<h:outputLabel for="subjectAltNameField"
-									value="#{msg['subject_alternative_name_'.concat(instance.getName())]}" />
+									value="#{msg['subject_alternative_name_'.concat(instance.getName())]}"
+									rendered="#{!instance.required}" />
+								<h:outputLabel for="subjectAltNameField"
+									value="#{msg['subject_alternative_name_'.concat(instance.getName())]} *"
+									rendered="#{instance.required}" />
 								<h:inputText id="subjectAltNameField" value="#{instance.value}"
 									rendered="#{!instance.selectable}"
-									disabled="!#{instance.isModifiable()}">
+									disabled="#{!instance.modifiable}">
 									<f:validator validatorId="extendedRegexValidator" />
 									<f:attribute name="pattern"
 										value="#{instance.getRegexPattern()}" />
+									<f:ajax
+										execute="@this" event="change"
+										render=":enrollMakeNewRequestForm:requestPreview"
+										listener="#{enrollMakeNewRequestBean.subjectAlternativeNameAjaxListener}" />
 								</h:inputText>
 								<h:selectOneMenu value="#{instance.value}"
 									rendered="#{instance.selectable}">
 									<f:selectItems value="#{instance.selectableValues}" />
+									<f:ajax
+										execute="@this" event="change"
+										render=":enrollMakeNewRequestForm:requestPreview"
+										listener="#{enrollMakeNewRequestBean.subjectAlternativeNameAjaxListener}" />
 								</h:selectOneMenu>
 								<h:message for="subjectAltNameField" />
 							</h:panelGroup>
@@ -290,158 +319,152 @@ document.getElementById("marker").appendChild(newFileInput);
 						<ui:repeat id="subjectDirectoryAttributes"
 							value="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.getFieldInstances()}"
 							var="instance">
-							<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:panelGroup layout="block" styleClass="pure-control-group"
+								rendered="#{instance.isUsed()}">
 								<h:outputLabel for="subjectDirectoryField"
 									value="#{msg['subject_directory_attributes_'.concat(instance.getName())]}"
-									rendered="#{instance.isUsed()}" />
+									rendered="#{!instance.required}" />
+								<h:outputLabel for="subjectDirectoryField"
+									value="#{msg['subject_directory_attributes_'.concat(instance.getName())]} *"
+									rendered="#{instance.required}" />
 								<h:inputText id="subjectDirectoryField"
 									value="#{instance.value}" rendered="#{!instance.selectable}"
-									disabled="#{!instance.isModifiable()}">
+									disabled="#{!instance.modifiable}">
 									<f:validator validatorId="extendedRegexValidator" />
 									<f:attribute name="pattern"
 										value="#{instance.getRegexPattern()}" />
+									<f:ajax
+										execute="@this" event="change"
+										render=":enrollMakeNewRequestForm:requestPreview"
+										listener="#{enrollMakeNewRequestBean.subjectDirectoryAttributesAjaxListener}" />
 								</h:inputText>
 								<h:selectOneMenu value="#{instance.value}"
 									rendered="#{instance.selectable}">
 									<f:selectItems value="#{instance.selectableValues}" />
+									<f:ajax
+										
+										execute="@this" event="change"
+										render=":enrollMakeNewRequestForm:requestPreview"
+										listener="#{enrollMakeNewRequestBean.subjectDirectoryAttributesAjaxListener}" />
 								</h:selectOneMenu>
 								<h:message for="subjectDirectoryAttributes" />
 							</h:panelGroup>
 						</ui:repeat>
 					</h:panelGroup>
+				</h:panelGroup>
 
-					<h:panelGroup layout="block"
-						rendered="#{enrollMakeNewRequestBean.certificateDataReady}">
-						<h2>
-							<h:outputText value="#{msg.enroll_enter_download_credentials}" />
-						</h2>
-						<h:panelGroup layout="block" styleClass="internal-frame">
+				<h:panelGroup id="enterDownloadCredentials" layout="block"
+					rendered="#{enrollMakeNewRequestBean.certificateDataReady}">
+					<h2>
+						<h:outputText value="#{msg.enroll_send_request}" />
+					</h2>
+					<h:panelGroup layout="block" styleClass="internal-frame">
+						<h3>
+							<h:outputText value="#{msg.enroll_user_credentials}" />
+						</h3>
+						<fieldset>
+							<h:panelGroup layout="block" styleClass="pure-control-group">
+								<h:outputLabel for="usernameField"
+									value="#{msg.enroll_username}" />
+								<h:inputText id="usernameField"
+									styleClass="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isRequired() ? 'required-input' : ''}"
+									value="#{enrollMakeNewRequestBean.endEntityInformation.username}" />
+							</h:panelGroup>
+							<f:event listener="#{enrollMakeNewRequestBean.validatePassword}"
+								type="postValidate" />
+							<h:panelGroup layout="block" styleClass="pure-control-group"
+								rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}">
+								<h:outputLabel for="passwordField"
+									value="#{msg.enroll_password}" />
+								<h:inputSecret id="passwordField"
+									value="#{enrollMakeNewRequestBean.endEntityInformation.password}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="pure-control-group"
+								rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}">
+								<h:outputLabel for="passwordConfirmField"
+									value="#{msg.enroll_confirm_password}" />
+								<h:inputSecret id="passwordConfirmField"
+									value="#{enrollMakeNewRequestBean.confirmPassword}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="pure-control-group">
+								<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
+								<h:inputText id="emailField"
+									value="#{enrollMakeNewRequestBean.endEntityInformation.email}" />
+							</h:panelGroup>
+						</fieldset>
+
+						<h:panelGroup layout="block" styleClass="internal-frame" id="requestPreview">
 							<h3>
-								<h:outputText value="#{msg.enroll_user_credentials}" />
+								<h:outputText value="#{msg.enroll_request_preview}" />
 							</h3>
-							<fieldset>
-								<h:panelGroup layout="block" styleClass="pure-control-group">
-									<h:outputLabel for="selectDownloadCredentialsOneMenu"
-										value="#{msg.enroll_credentials_for_download}" />
-									<h:selectOneMenu id="selectDownloadCredentialsOneMenu"
-										value="#{enrollMakeNewRequestBean.selectedDownloadCredentialsType}"
-										valueChangeListener="#{enrollMakeNewRequestBean.downloadCredentialsTypeChangedListener}">
-										<c:if
-											test="#{enrollMakeNewRequestBean.availableDownloadCredentials.size()>1}">
-											<f:selectItem itemLabel="Select..." itemValue="#{null}"
-												itemDisabled="true" itemLabelEscaped="true" />
-										</c:if>
-										<f:selectItems
-											value="#{enrollMakeNewRequestBean.availableDownloadCredentials.keySet()}" />
-										<f:ajax
-											execute=":enrollMakeNewRequestForm:selectDownloadCredentialsOneMenu"
-											event="change"
-											render=":globalMessages :enrollMakeNewRequestForm"
-											listener="#{enrollMakeNewRequestBean.downloadCredentialsTypeAjaxListener}" />
-									</h:selectOneMenu>
-								</h:panelGroup>
-								<h:panelGroup layout="block" styleClass="pure-control-group"
-									rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}">
-									<h:outputLabel for="usernameField"
-										value="#{msg.enroll_username}" />
-									<h:inputText id="usernameField"
-										styleClass="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isRequired() ? 'required-input' : ''}"
-										value="#{enrollMakeNewRequestBean.endEntityInformation.username}" />
-								</h:panelGroup>
-								<f:event listener="#{enrollMakeNewRequestBean.validatePassword}"
-									type="postValidate" />
-								<h:panelGroup layout="block" styleClass="pure-control-group"
-									rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}">
-									<h:outputLabel for="passwordField"
-										value="#{msg.enroll_password}" />
-									<h:inputSecret id="passwordField"
-										value="#{enrollMakeNewRequestBean.endEntityInformation.password}" />
-								</h:panelGroup>
-								<h:panelGroup layout="block" styleClass="pure-control-group"
-									rendered="#{enrollMakeNewRequestBean.getPasswordRendered()}">
-									<h:outputLabel for="passwordConfirmField"
-										value="#{msg.enroll_confirm_password}" />
-									<h:inputSecret id="passwordConfirmField"
-										value="#{enrollMakeNewRequestBean.confirmPassword}" />
-								</h:panelGroup>
-								<h:panelGroup layout="block" styleClass="pure-control-group"
-									rendered="#{enrollMakeNewRequestBean.getEmailRendered()}">
-									<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
-									<h:inputText id="emailField"
-										value="#{enrollMakeNewRequestBean.endEntityInformation.email}" />
-								</h:panelGroup>
-							</fieldset>
-
-							<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.getCertificatePreviewRendered()}">
-								<h3>
-									<h:outputText value="#{msg.enroll_certificate_preview}" />
-								</h3>
-								<component:certpreview
-									raCertificatePreview="#{enrollMakeNewRequestBean.certificatePreview}" />
-							</h:panelGroup>
-
-							<h:panelGroup layout="block"
-								styleClass="keygeneration-button-group">
-								<h:commandButton id="generateJks"
-									value="#{msg.enroll_request_jks}"
-									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateJks()}"
-									rendered="#{enrollMakeNewRequestBean.getGenerateJksButtonRendered()}"
-									styleClass="pure-button ra-button">
-								</h:commandButton>
-								<h:commandButton id="generateP12"
-									value="#{msg.enroll_request_p12}"
-									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateP12()}"
-									rendered="#{enrollMakeNewRequestBean.getGenerateP12ButtonRendered()}"
-									styleClass="pure-button ra-button">
-								</h:commandButton>
-								<h:commandButton id="generatePem"
-									value="#{msg.enroll_request_pem}"
-									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePem()}"
-									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
-									styleClass="pure-button ra-button">
-								</h:commandButton>
-								<h:commandButton id="generatePemFullChain"
-									value="#{msg.enroll_request_pem_full_chain}"
-									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePemFullChain()}"
-									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
-									styleClass="pure-button ra-button">
-								</h:commandButton>
-								<h:commandButton id="generatePkcs7"
-									value="#{msg.enroll_request_pkcs7}"
-									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePksc7()}"
-									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
-									styleClass="pure-button ra-button">
-								</h:commandButton>
-								<h:commandButton id="generateDer"
-									value="#{msg.enroll_request_der}"
-									action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificeDer()}"
-									rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
-									styleClass="pure-button ra-button">
-								</h:commandButton>
-							</h:panelGroup>
-							<h:panelGroup layout="block"
-								styleClass="keygeneration-button-group"
-								rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
-								<h:outputText
-									value="#{msg.enroll_request_was_successfully_sent}" />
-							</h:panelGroup>
-							<h:panelGroup layout="block"
-								styleClass="keygeneration-button-group"
-								rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
-								<h:outputText value="#{msg.enroll_request_id}" />
-								<h:outputText value="#{enrollMakeNewRequestBean.requestId}" />
-							</h:panelGroup>
-							<h:panelGroup layout="block"
-								styleClass="keygeneration-button-group"
-								rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
-								<h:outputLink value="enrollwithrequestid.xhtml">
-									<h:outputText
-										value="#{msg.menu_pagetitle_enroll_use_request_id}" />
-								</h:outputLink>
-							</h:panelGroup>
+							<component:requestpreview
+								raRequestPreview="#{enrollMakeNewRequestBean.requestPreview}" />
 						</h:panelGroup>
-					
-						
+
+						<h:panelGroup layout="block"
+							styleClass="keygeneration-button-group">
+							<h:commandButton id="updateRequestPreview"
+								value="#{msg.enroll_update_request_preview}"
+								action="#{enrollMakeNewRequestBean.updateRequestDataToPreview()}"
+								rendered="#{enrollMakeNewRequestBean.getUpdateRequestPreviewButtonRendered()}"
+								styleClass="pure-button ra-button">
+							</h:commandButton>
+							<h:commandButton id="generateJks"
+								value="#{msg.enroll_request_jks}"
+								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateJks()}"
+								rendered="#{enrollMakeNewRequestBean.getGenerateJksButtonRendered()}"
+								styleClass="pure-button ra-button">
+							</h:commandButton>
+							<h:commandButton id="generateP12"
+								value="#{msg.enroll_request_p12}"
+								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateP12()}"
+								rendered="#{enrollMakeNewRequestBean.getGenerateP12ButtonRendered()}"
+								styleClass="pure-button ra-button">
+							</h:commandButton>
+							<h:commandButton id="generatePem"
+								value="#{msg.enroll_request_pem}"
+								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePem()}"
+								rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
+								styleClass="pure-button ra-button">
+							</h:commandButton>
+							<h:commandButton id="generatePemFullChain"
+								value="#{msg.enroll_request_pem_full_chain}"
+								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePemFullChain()}"
+								rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
+								styleClass="pure-button ra-button">
+							</h:commandButton>
+							<h:commandButton id="generatePkcs7"
+								value="#{msg.enroll_request_pkcs7}"
+								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePksc7()}"
+								rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
+								styleClass="pure-button ra-button">
+							</h:commandButton>
+							<h:commandButton id="generateDer"
+								value="#{msg.enroll_request_der}"
+								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificeDer()}"
+								rendered="#{enrollMakeNewRequestBean.getGenerateFromCsrButtonRendered()}"
+								styleClass="pure-button ra-button">
+							</h:commandButton>
+						</h:panelGroup>
+						<h:panelGroup layout="block"
+							styleClass="keygeneration-button-group"
+							rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
+							<h:outputText value="#{msg.enroll_request_was_successfully_sent}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block"
+							styleClass="keygeneration-button-group"
+							rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
+							<h:outputText value="#{msg.enroll_request_id}" />
+							<h:outputText value="#{enrollMakeNewRequestBean.requestId}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block"
+							styleClass="keygeneration-button-group"
+							rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
+							<h:outputLink value="enrollwithrequestid.xhtml">
+								<h:outputText
+									value="#{msg.menu_pagetitle_enroll_use_request_id}" />
+							</h:outputLink>
+						</h:panelGroup>
 					</h:panelGroup>
 				</h:panelGroup>
 
@@ -454,11 +477,15 @@ document.getElementById("marker").appendChild(newFileInput);
 					</h:commandButton>
 					<h:commandButton id="resetButton" value="#{msg.generic_reset}"
 						styleClass="pure-button ra-button"
-						action="#{enrollMakeNewRequestBean.reset()}">
+						action="#{enrollMakeNewRequestBean.reset()}" immediate="true">
 					</h:commandButton>
 				</h:panelGroup>
 				<script>
-					document.getElementById('enrollMakeNewRequestForm:resetButton').focus();	<!-- temp solution. proper highlighting solution is needed -->	
+					if(document.getElementById('enrollMakeNewRequestForm:nextButton') != null){
+						document.getElementById('enrollMakeNewRequestForm:nextButton').focus();
+					}else{
+						document.getElementById('enrollMakeNewRequestForm:resetButton').focus();
+					}	<!-- temp solution. proper highlighting solution is needed -->	
 				</script>
 			</h:form>
 		</h:panelGroup>
