@@ -17,9 +17,9 @@ import org.cesecore.certificates.ca.CAInfo;
 /** 
  * UI representation of a certificate preview to be confirmed before enrollment.
  * 
- * @version $Id$
+ * @version $Id: RaCertificatePreview.java 23738 2016-06-28 14:22:39Z marko $
  */
-public class RaCertificatePreview {
+public class RaRequestPreview {
     
     private String issuerDn = "";
     private String subjectDn = "";
@@ -31,7 +31,7 @@ public class RaCertificatePreview {
     private int styleRowCallCounter = 0;
     
 
-    public RaCertificatePreview(){
+    public RaRequestPreview(){
     }
     
     public void updateCA(CAInfo caInfo){

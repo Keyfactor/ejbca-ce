@@ -152,7 +152,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     //5. Key-pair generation on server
     private Map<String, String> availableAlgorithms = new TreeMap<String, String>();
-    private String selectedAlgorithm;
+    private String selectedAlgorithm; //GENERATED ON SERVER
+    private String algorithmFromCsr; //PROVIDED BY USER
     private boolean algorithmChanged;
     private String certificateRequest;
 
@@ -178,28 +179,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
     //7. Download credentials data
     private EndEntityInformation endEntityInformation;
     private String confirmPassword;
-    public enum DownloadCredentialsType {
-        NO_CREDENTIALS_DIRECT_DOWNLOAD("No credentials (direct download)"), USERNAME_PASSWORD("Username and password credentials"), REQUEST_ID(
-                "RequestID");
-        private String value;
-
-        private DownloadCredentialsType(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
-    private Map<String, DownloadCredentialsType> availableDownloadCredentials = new HashMap<String, DownloadCredentialsType>();
-    private String selectedDownloadCredentialsType;
     private boolean downloadCredentialsChanged;
     
     //8. Request data
     private int requestId;
     
     //9. Certificate preview
-    private RaCertificatePreview certificatePreview;
+    private RaRequestPreview requestPreview;
 
     @PostConstruct
     private void postContruct() {
@@ -364,6 +350,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return;
         }
         
+        if(subjectDn != null){
+            return;
+        }
+        
         subjectDn = new SubjectDn(endEntityProfile);
         final X509CAInfo x509cainfo = (X509CAInfo) getCAInfo();
         subjectDn.setLdapOrder(x509cainfo.getUseLdapDnOrder() && getCertificateProfile().getUseLdapDnOrder());
@@ -371,7 +361,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         subjectAlternativeName = new SubjectAlternativeName(endEntityProfile);
         subjectDirectoryAttributes = new SubjectDirectoryAttributes(endEntityProfile);
 
-        //If PROVIDED BY USER key generation is selected, keyAlg and keySpec have to be extracted and Subject DN fields could be parsed from CSR
+        //If PROVIDED BY USER key generation is selected, try fill Subject DN fields from CSR
         if (selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
             PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest); //pkcs10CertificateRequest will not be null at this point
             List<String> subjectDnFieldsFromParsedCsr = CertTools.getX500NameComponents(pkcs10CertificateRequest.getSubject().toString());
@@ -405,27 +395,23 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
-    private void initDownloadCredentialsType() {
-        //TODO if approval is required show only request id option or other, otherwise
-        availableDownloadCredentials.put(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue(),
-                DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD);
-        availableDownloadCredentials.put(DownloadCredentialsType.USERNAME_PASSWORD.getValue(), DownloadCredentialsType.USERNAME_PASSWORD);
-        availableDownloadCredentials.put(DownloadCredentialsType.REQUEST_ID.getValue(), DownloadCredentialsType.REQUEST_ID);
-    }
-
     private void initDownloadCredentialsData() {
         endEntityInformation = new EndEntityInformation();
         
-        updatePreviewCertificate();
+        updateRequestPreview();
     }
     
-    private void updatePreviewCertificate(){
-        certificatePreview = new RaCertificatePreview();
-        certificatePreview.updateSubjectDn(subjectDn);
-        certificatePreview.updateSubjectAlternativeName(subjectAlternativeName);
-        certificatePreview.updateSubjectDirectoryAttributes(subjectDirectoryAttributes);
-        certificatePreview.setPublicKeyAlgorithm(selectedAlgorithm);
-        certificatePreview.updateCA(getCAInfo());
+    private void updateRequestPreview(){
+        if(!certificateDataReady){
+            return;
+        }
+        
+        requestPreview = new RaRequestPreview();
+        requestPreview.updateSubjectDn(subjectDn);
+        requestPreview.updateSubjectAlternativeName(subjectAlternativeName);
+        requestPreview.updateSubjectDirectoryAttributes(subjectDirectoryAttributes);
+        requestPreview.setPublicKeyAlgorithm(getAlgorithm());
+        requestPreview.updateCA(getCAInfo());
     }
 
 
@@ -436,18 +422,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue());
     }
 
-    public boolean getUsernameRendered() {
-        return selectedDownloadCredentialsType != null
-                && selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue());
-    }
-
     public boolean getPasswordRendered() {
-        return getUsernameRendered();
-    }
-
-    public boolean getEmailRendered() {
-        return selectedDownloadCredentialsType != null
-                && !selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.NO_CREDENTIALS_DIRECT_DOWNLOAD.getValue());
+        return selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue());
     }
 
     public boolean getGenerateJksButtonRendered() {
@@ -456,9 +432,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return selectedDownloadCredentialsType != null
-                && availableKeyStores.contains(SecConst.TOKEN_SOFT_JKS + "")
-                && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue());//TODO probably will need to get updated once approvals are implemented in kickassra
+        return availableKeyStores.contains(SecConst.TOKEN_SOFT_JKS + "")
+                && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue());
     }
 
     public boolean getGenerateP12ButtonRendered() {
@@ -467,9 +442,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return selectedDownloadCredentialsType != null
-                && availableKeyStores.contains(SecConst.TOKEN_SOFT_P12 + "")
-                && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue());//TODO probably will need to get updated once approvals are implemented in kickassra
+        return availableKeyStores.contains(SecConst.TOKEN_SOFT_P12 + "")
+                && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue());
     }
 
     public boolean getGenerateFromCsrButtonRendered() {
@@ -478,17 +452,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return selectedDownloadCredentialsType != null
-                && availableKeyStores.contains(EndEntityConstants.TOKEN_USERGEN + "")
-                && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue());//TODO probably will need to get updated once approvals are implemented in kickassra
+        return availableKeyStores.contains(EndEntityConstants.TOKEN_USERGEN + "")
+                && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue());
     }
 
     public boolean getNextButtonRendered() {
-        return !getGenerateJksButtonRendered() && !getGenerateP12ButtonRendered() && !getGenerateFromCsrButtonRendered();
+        return getEndEntityInformation() == null;
     }
     
-    public boolean getCertificatePreviewRendered(){
-        return selectedDownloadCredentialsType != null;
+    public boolean getUpdateRequestPreviewButtonRendered(){
+        return getEndEntityInformation() != null;
     }
     
     //-----------------------------------------------------------------------------------------------
@@ -540,13 +513,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         subjectDirectoryAttributes = null;
         certificateDataReady = false;
 
-        resetDownloadCredentialsType();
-    }
-
-    private final void resetDownloadCredentialsType() {
-        availableDownloadCredentials.clear();
-        selectedDownloadCredentialsType = null;
-
         resetDownloadCredentialsData();
     }
 
@@ -571,12 +537,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
             selectKeyPairGeneration();
         } else if (algorithmChanged) {
             selectAlgorithm();
-        } else if (downloadCredentialsChanged) {
-            selectDownloadCredentialsType();
         } else {
-            if (selectedDownloadCredentialsType != null) {
-                selectDownloadCredentialsType();
-            } else if (subjectDn != null) {
+            if (subjectDn != null) {
                 finalizeCertificateData();
             } else if (certificateRequest != null) {
                 enterCsr();
@@ -644,26 +606,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private final void selectAlgorithm() {
         setAlgorithmChanged(false);
 
-        resetCertificateData();
+        //resetCertificateData();
         initCertificateData();
-        raLocaleBean.addMessageInfo("somefunction_testok", "selectedAlgorithm", selectedAlgorithm);
     }
 
     private final void enterCsr() {
-        resetCertificateData();
+        //resetCertificateData();
         initCertificateData();
     }
 
     private final void finalizeCertificateData() {
         certificateDataReady = true;
 
-        initDownloadCredentialsType();
-    }
-
-    private final void selectDownloadCredentialsType() {
-        setDownloadCredentialsChanged(false);
-
-        resetDownloadCredentialsData();
         initDownloadCredentialsData();
     }
 
@@ -715,6 +669,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
         byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_JKS, "JKS", null);
         downloadToken(token, "application/octet-stream", ".jks");
     }
+    
+    public final void updateRequestDataToPreview(){
+        subjectDn.update();
+        subjectAlternativeName.update();
+        subjectDirectoryAttributes.updateValue();
+        
+        updateRequestPreview();
+    }
 
     /**
      * Adds end entity and creates its token that will be downloaded. This method is responsible for deleting the end entity if something goes wrong with token creation.
@@ -731,8 +693,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         setDownloadCredentialsData();
         endEntityInformation.setTokenType(tokenType);
 
-        //Enter temporary credentials.
-        if (!selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue()) ) {
+        //Enter username
+        if(endEntityInformation.getUsername() == null || endEntityInformation.getUsername().isEmpty()){
             Map<Integer, EndEntityProfile.FieldInstance> commonNameFieldInstances = subjectDn.getFieldInstancesMap().get(DnComponents.COMMONNAME);
             for(EndEntityProfile.FieldInstance commonNameFieldInstance : commonNameFieldInstances.values()){
                 if(commonNameFieldInstance.isRequired()){
@@ -745,14 +707,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         byte[] digest = md.digest();
                         String encodedRandomSha256 = new String(Base64.encode(digest));
                         endEntityInformation.setUsername(encodedRandomSha256);
-                        endEntityInformation.setPassword(encodedRandomSha256);
+                        if(endEntityInformation.getPassword() == null){
+                            md.update(random);
+                            digest = md.digest();
+                            encodedRandomSha256 = new String(Base64.encode(digest));
+                            endEntityInformation.setPassword(encodedRandomSha256);
+                        }
+                        
                     } catch (NoSuchAlgorithmException e) {
                     }
                     break;
                 }
-            }
-            if(endEntityInformation.getUsername() == null){ //in the case common name is not required (not sure if possible though)
-                throw new IllegalStateException("At least one common name is required in end entity profile");
             }
         }
 
@@ -881,7 +846,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
         ec.setResponseContentType(responseContentType);
         ec.setResponseContentLength(token.length);
-        final String filename = StringTools.stripFilename(endEntityInformation.getPassword() + fileExtension);
+        final String filename = StringTools.stripFilename(subjectDn.getValue() + fileExtension);
         ec.setResponseHeader("Content-Disposition",
                 "attachment; filename=\"" + filename + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
         OutputStream output = null;
@@ -947,36 +912,47 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public final void algorithmAjaxListener(final AjaxBehaviorEvent event) {
         selectAlgorithm();
+        
+        updateRequestPreview();
     }
 
     public final void csrInputTextAjaxListener(final AjaxBehaviorEvent event) {
         enterCsr();
+        
+        updateRequestPreview();
     }
-
-    public final void downloadCredentialsTypeAjaxListener(final AjaxBehaviorEvent event) {
-        selectDownloadCredentialsType();
+    
+    public final void subjectDnAjaxListener(final AjaxBehaviorEvent event){
+        updateRequestPreview();
+    }
+    
+    public final void subjectAlternativeNameAjaxListener(final AjaxBehaviorEvent event){
+        updateRequestPreview();
+    }
+    
+    public final void subjectDirectoryAttributesAjaxListener(final AjaxBehaviorEvent event){
+        updateRequestPreview();
     }
     
     //-----------------------------------------------------------------------------------------------
     //Validators
     
     public void validatePassword(ComponentSystemEvent event) {
-        if(selectedDownloadCredentialsType != null && !selectedDownloadCredentialsType.equalsIgnoreCase(DownloadCredentialsType.USERNAME_PASSWORD.getValue())){
-            return;
-        }
-        FacesContext fc = FacesContext.getCurrentInstance();
-        UIComponent components = event.getComponent();
-        UIInput uiInputPassword = (UIInput) components.findComponent("passwordField");
-        String password = uiInputPassword.getLocalValue() == null ? "" : uiInputPassword.getLocalValue().toString();
-        UIInput uiInputConfirmPassword = (UIInput) components.findComponent("passwordConfirmField");
-        String confirmPassword = uiInputConfirmPassword.getLocalValue() == null ? "" : uiInputConfirmPassword.getLocalValue().toString();
-        if (password.isEmpty() || confirmPassword.isEmpty()) {
-            raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_password_can_not_be_empty"));
-            fc.renderResponse();
-            
-        }else if (!password.equals(confirmPassword)) {
-            raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_passwords_are_not_equal"));
-            fc.renderResponse();
+        if(getPasswordRendered()){
+            FacesContext fc = FacesContext.getCurrentInstance();
+            UIComponent components = event.getComponent();
+            UIInput uiInputPassword = (UIInput) components.findComponent("passwordField");
+            String password = uiInputPassword.getLocalValue() == null ? "" : uiInputPassword.getLocalValue().toString();
+            UIInput uiInputConfirmPassword = (UIInput) components.findComponent("passwordConfirmField");
+            String confirmPassword = uiInputConfirmPassword.getLocalValue() == null ? "" : uiInputConfirmPassword.getLocalValue().toString();
+            if (password.isEmpty() || confirmPassword.isEmpty()) {
+                raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_password_can_not_be_empty"));
+                fc.renderResponse();
+                
+            }else if (!password.equals(confirmPassword)) {
+                raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_passwords_are_not_equal"));
+                fc.renderResponse();
+            }
         }
     }
     
@@ -998,6 +974,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     !availableBitLengths.contains(Integer.parseInt(keySpecification))){
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
             }
+            algorithmFromCsr = keyAlgorithm + " " + keySpecification;// Save for later use
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
         }
@@ -1060,6 +1037,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return null;
         }
         return temp.getValue();
+    }
+    
+    public String getAlgorithm(){
+        if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
+            return selectedAlgorithm;
+        } else {
+            return algorithmFromCsr;
+        }
     }
 
     /**
@@ -1366,34 +1351,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     /**
-     * @return the availableDownloadCredentials
-     */
-    public Map<String, DownloadCredentialsType> getAvailableDownloadCredentials() {
-        return availableDownloadCredentials;
-    }
-
-    /**
-     * @param availableDownloadCredentials the availableDownloadCredentials to set
-     */
-    public void setAvailableDownloadCredentials(Map<String, DownloadCredentialsType> availableDownloadCredentials) {
-        this.availableDownloadCredentials = availableDownloadCredentials;
-    }
-
-    /**
-     * @return the selectedDownloadCredentials
-     */
-    public String getSelectedDownloadCredentialsType() {
-        return selectedDownloadCredentialsType;
-    }
-
-    /**
-     * @param selectedDownloadCredentialsType the selectedDownloadCredentials to set
-     */
-    public void setSelectedDownloadCredentialsType(String selectedDownloadCredentialsType) {
-        this.selectedDownloadCredentialsType = selectedDownloadCredentialsType;
-    }
-
-    /**
      * @return the downloadCredentialsChanged
      */
     public boolean isDownloadCredentialsChanged() {
@@ -1435,13 +1392,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.requestId = requestId;
     }
 
-    public RaCertificatePreview getCertificatePreview() {
-        return certificatePreview;
+    public RaRequestPreview getRequestPreview() {
+        return requestPreview;
     }
 
-    public void setCertificatePreview(RaCertificatePreview certificatePreview) {
-        this.certificatePreview = certificatePreview;
+    public void setRequestPreview(RaRequestPreview requestPreview) {
+        this.requestPreview = requestPreview;
     }
-    
-    
 }
