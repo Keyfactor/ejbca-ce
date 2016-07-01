@@ -42,7 +42,7 @@
         <attributes>
             <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR2(255 byte)"/></id>
             <basic fetch="EAGER" name="issuerDN"><column name="issuerDN" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR2(500 byte)" nullable="false"/></basic>
             <basic fetch="EAGER" name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="type"><column name="type" column-definition="NUMBER(10)" nullable="false"/></basic>
@@ -314,9 +314,9 @@
     <entity class="org.ejbca.core.ejb.ra.UserData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="username"><column name="username" column-definition="VARCHAR2(255 byte)"/></id>
-            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR2(500 byte)"/></basic>
             <basic fetch="EAGER" name="caId"><column name="cAId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR2(2000 byte)"/></basic>
             <basic fetch="EAGER" name="subjectEmail"><column name="subjectEmail" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="type"><column name="type" column-definition="NUMBER(10)" nullable="false"/></basic>
