@@ -132,14 +132,20 @@ public interface RaMasterApi {
     void deleteUser(final AuthenticationToken authenticationToken, final String username) throws AuthorizationDeniedException;
     
     /**
-     * Generates keystore for the specified end entity. Used for server side generated key pairs.
+     * Generates keystore for the specified end entity. Used for server side generated key pairs. It can be of PKCS12 or JKS type.
+     * Keystore can be loaded with:
+     *  
+     * KeyStore ks = KeyStore.getInstance(endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12 ? "PKCS12" : "JKS");
+     * ks.load(new ByteArrayInputStream(keystoreAsByteArray), endEntityInformation.getPassword().toCharArray());
+     * 
+     * Note that endEntityInformation are still needed to load a keystore.
      * @param authenticationToken authentication token
-     * @param endEntity holds end entity information (including user's password)
+     * @param endEntityInformation holds end entity information (including user's password)
      * @return generated keystore
      * @throws AuthorizationDeniedException
      * @throws KeyStoreException if something went wrong with keystore creation
      */
-    byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity) throws AuthorizationDeniedException, KeyStoreException;
+    byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation) throws AuthorizationDeniedException, KeyStoreException;
 
     /**
      * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.
