@@ -47,7 +47,7 @@
         <attributes>
             <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(256)"/></id>
             <basic fetch="EAGER" name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(256)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(256)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(500)" nullable="false"/></basic>
             <basic fetch="EAGER" name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="INT4" nullable="false"/></basic>
             <basic fetch="EAGER" name="type"><column name="type" column-definition="INT4" nullable="false"/></basic>
@@ -319,9 +319,9 @@
     <entity class="org.ejbca.core.ejb.ra.UserData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="username"><column name="username" column-definition="VARCHAR(256)"/></id>
-            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(256)"/></basic>
+            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(500)"/></basic>
             <basic fetch="EAGER" name="caId"><column name="cAId" column-definition="INT4" nullable="false"/></basic>
-            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(256)"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(2000)"/></basic>
             <basic fetch="EAGER" name="subjectEmail"><column name="subjectEmail" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="INT4" nullable="false"/></basic>
             <basic fetch="EAGER" name="type"><column name="type" column-definition="INT4" nullable="false"/></basic>
