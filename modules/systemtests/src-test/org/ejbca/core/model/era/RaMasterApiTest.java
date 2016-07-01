@@ -84,7 +84,7 @@ public class RaMasterApiTest {
         } else {
             // No need to show every referenced violation if there is a clear source of this
             for (final String className : violatorsInInterface) {
-                log.debug(" " + className + " matched violation rule.");
+                log.debug(" " + className + " matched violationInterface rule.");
                 if (sb.length()>0) {
                     sb.append(", ");
                 }
