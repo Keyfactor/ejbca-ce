@@ -200,44 +200,6 @@ org.cesecore.authorization.AuthorizationDeniedException
 
 		</h:panelGrid>
 		
-		<%-- Approval Notifications --%>
-
-		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
-			<h:outputLabel for="header_approvalNotifications" value="#{web.text.APPROVALNOTIFICATIONS}" style="font-weight:bold; font-size:1.2em;"/>
-			<h:panelGroup id="header_approvalNotifications"/>
-			
-			<h:panelGroup>
-				<h:outputLabel for="useApprovalNotifications" value="#{web.text.USEAPPROVALNOTIFICATIONS}" styleClass="titles"/>
-				<br/>
-				<h:outputText value="#{web.text.USEAPPROVALNOTIFICATIONS_HELP}" styleClass="help"/>
-			</h:panelGroup>	
-			<h:panelGroup id="useApprovalNotifications">
-				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{systemConfigMBean.currentConfig.useApprovalNotifications}"
-					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" />
-				<h:commandButton id="toggleUseApprovalNotifications" styleClass="checkBoxOverlay" action="#{systemConfigMBean.toggleUseApprovalNotification}"
-					value="#{systemConfigMBean.currentConfig.useApprovalNotifications?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
-					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:outputLabel for="toggleUseApprovalNotifications" value="#{web.text.USE}" styleClass="checkBoxOverlay"/>	
-			</h:panelGroup>
-		
-			<h:panelGroup>
-				<h:outputLabel for="emailToApprovalAdmin" value="#{web.text.EMAILADDRESSTOAPPROVING}" styleClass="titles"/>
-				<br/>
-				<h:outputText value="#{web.text.EMAILADDRESSTOAPPROVING_HELP}" styleClass="help"/>
-			</h:panelGroup>	
-			<h:inputText id="emailToApprovalAdmin" disabled="#{!systemConfigMBean.currentConfig.useApprovalNotifications || !systemConfigMBean.allowedToEditSystemConfiguration}" 
-				value="#{systemConfigMBean.currentConfig.approvalAdminEmail}" size="45" title="#{web.text.FORMAT_EMAILADDRESS}" />
-		
-			<h:panelGroup>
-				<h:outputLabel for="approvalNoteFromAddress" value="#{web.text.APPROVALNOTIFICATIONFROM}" styleClass="titles"/>
-				<br/>
-				<h:outputText value="#{web.text.APPROVALNOTIFICATIONFROM_HELP}" styleClass="help"/>
-			</h:panelGroup>
-			<h:inputText id="approvalNoteFromAddress" disabled="#{!systemConfigMBean.currentConfig.useApprovalNotifications || !systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.currentConfig.approvalNoteFromAddress}" 
-				size="45" title="#{web.text.FORMAT_EMAILADDRESS}"/>
-		</h:panelGrid>
-	
-	
 		<%-- Auto Enrollment --%>
 
 		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">

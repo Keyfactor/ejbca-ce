@@ -14,6 +14,7 @@ package org.ejbca.core.model.approval.profile;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -160,14 +161,19 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
      * @return a copy of the partition with the constant values.
      */
     protected abstract ApprovalPartition addConstantProperties(ApprovalPartition approvalPartition);
+    
+    @Override
+    public boolean isNotificationEnabled(final ApprovalPartition approvalPartition) {
+        return approvalPartition!=null && approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_RECIPIENT) != null;
+    }
 
     @Override
-    public ApprovalPartition addNotificationProperties(final ApprovalPartition approvalPartition) {
+    public ApprovalPartition addNotificationProperties(final ApprovalPartition approvalPartition, String recipient, String sender, String subject, String body) {
         // TODO: It would be nice with the email-address type
-        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NOTIFICATION_EMAIL_RECIPIENT, ""));
-        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NOTIFICATION_EMAIL_SENDER, ""));
-        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, ""));
-        approvalPartition.addProperty(new DynamicUiProperty<MultiLineString>(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY, new MultiLineString("")));
+        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NOTIFICATION_EMAIL_RECIPIENT, recipient));
+        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NOTIFICATION_EMAIL_SENDER, sender));
+        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, subject));
+        approvalPartition.addProperty(new DynamicUiProperty<MultiLineString>(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY, new MultiLineString(body)));
         return approvalPartition;
     }
 
@@ -397,12 +403,35 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         return true;
     }
 
-   
-    
+    @Override
+    public int getNumberOfApprovalsRequired(final int stepIdentifier, final int partitionIdentifier) {
+        final DynamicUiProperty<? extends Serializable> numberOfRequiredApprovals = getStep(stepIdentifier).getPartition(partitionIdentifier).getProperty(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS);
+        if (numberOfRequiredApprovals==null) {
+            return 1;   // Default to 1 required approval per partition
+        }
+        return (Integer) numberOfRequiredApprovals.getValue();
+    }
+
+    @Override
+    public int getRemainingApprovalsInPartition(final Collection<Approval> approvalsPerformed, final int stepIdentifier, final int partitionIdentifier) {
+        int partitionApprovalsRequired = getNumberOfApprovalsRequired(stepIdentifier, partitionIdentifier);
+        int partitionApprovalsPerformed = 0;
+        for (Approval approval : approvalsPerformed) {
+            if (approval.getStepId()==stepIdentifier && approval.getPartitionId()==partitionIdentifier) {
+                partitionApprovalsPerformed++;
+            }
+        }
+        return partitionApprovalsRequired - partitionApprovalsPerformed;
+    }
+
     @Override
     public int getNumberOfSteps() {
         return getSteps().size();
     }
-    
 
+    @Override
+    public boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, String propertyName) {
+        return Arrays.asList( PROPERTY_NOTIFICATION_EMAIL_RECIPIENT, PROPERTY_NOTIFICATION_EMAIL_SENDER,
+                PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY).contains(propertyName);
+    }
 }

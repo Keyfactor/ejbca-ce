@@ -41,11 +41,6 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /**
-     * Key for the data value marking the number of approvals required. 
-     */
-    private static final String PROPERTY_NUMBER_OF_REQUIRED_APPROVALS = "number_of_required_approvals";
-
-    /**
      * Note: do not change, may cause problems in deployed installations.
      */
     private static final String TYPE_IDENTIFIER = "ACCUMULATIVE_APPROVAL";
@@ -79,7 +74,7 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     }
 
     public void setNumberOfApprovalsRequired(int approvalsRequired) {
-        int partitionIdentifier = getSteps().get(FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier();
+        final int partitionIdentifier = getSinglePartitionIdentifier(FIXED_STEP_ID);
         DynamicUiProperty<? extends Serializable> approvalsRequiredProperty = getSteps().get(FIXED_STEP_ID).getPartition(partitionIdentifier)
                 .getProperty(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS);
         approvalsRequiredProperty.setValueGeneric(Integer.valueOf(approvalsRequired));
@@ -88,13 +83,16 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     }
 
     public int getNumberOfApprovalsRequired() {
-        return (Integer) getSteps().get(FIXED_STEP_ID).getPartitions().values().iterator().next().getProperty(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS)
-                .getValue();
+        return getNumberOfApprovalsRequired(FIXED_STEP_ID, getSinglePartitionIdentifier(FIXED_STEP_ID));
+    }
+    
+    private int getSinglePartitionIdentifier(final int stepIdentifier) {
+        return getSteps().get(stepIdentifier).getPartitions().values().iterator().next().getPartitionIdentifier();
     }
 
     @Override
     public boolean isApprovalRequired() {
-        return ((Integer) getSteps().get(FIXED_STEP_ID).getPartitions().values().iterator().next().getProperty(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS).getValue()) > 0;
+        return getNumberOfApprovalsRequired() > 0;
     }
 
     @Override
@@ -121,8 +119,7 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
 
     @Override
     public int getRemainingApprovals(Collection<Approval> approvalsPerformed) {
-        int approvalsRequired = getNumberOfApprovalsRequired();
-        return approvalsRequired - approvalsPerformed.size();
+        return getRemainingApprovalsInPartition(approvalsPerformed, FIXED_STEP_ID, getSinglePartitionIdentifier(FIXED_STEP_ID));
     }
 
     @Override
@@ -176,8 +173,6 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
 
     @Override
     public boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, String propertyName) {
-        return propertyName.equals(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS);
+        return super.isPropertyPredefined(stepIdentifier, partitionIdentifier, propertyName) || propertyName.equals(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS);
     }
-
-
 }

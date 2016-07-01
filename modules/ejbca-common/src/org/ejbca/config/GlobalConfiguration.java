@@ -442,41 +442,23 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
      }
     
     /** @return true of email notification of requested approvals should be sent (default false) */
+     @Deprecated // Used during upgrade to EJBCA 6.6.0
      public boolean getUseApprovalNotifications() { return getBoolean(USEAPPROVALNOTIFICATIONS, false); }
-     public void setUseApprovalNotifications(final boolean value) { putBoolean(USEAPPROVALNOTIFICATIONS, value); }
-    
      /**
       * Returns the email address to the administrators that should recieve notification emails
       * should be an alias to all approval administrators default "" never null
       */
-      public String getApprovalAdminEmailAddress(){
-      	Object value = data.get(APPROVALADMINEMAILADDRESS);
-          if(value == null){
-          	return "";
-          }
-      	
-      	return (String) value;
-      }      
-
-      public   void    setApprovalAdminEmailAddress(String approvalAdminEmailAddress){ 
-      	data.put(APPROVALADMINEMAILADDRESS, approvalAdminEmailAddress);
-      }  
-      
-      /**
-       * Returns the email address used in the from field of approval notification emails
-       */
-       public String getApprovalNotificationFromAddress(){
-       	Object value = data.get(APPROVALNOTIFICATIONFROMADDR);
-           if(value == null){
-           	return "";
-           }
-       	
-       	return (String) value;
-       }      
- 
-       public   void    setApprovalNotificationFromAddress(String approvalNotificationFromAddress){ 
-       	data.put(APPROVALNOTIFICATIONFROMADDR, approvalNotificationFromAddress);
-       }
+     @Deprecated // Used during upgrade to EJBCA 6.6.0
+     public String getApprovalAdminEmailAddress() {
+         final Object value = data.get(APPROVALADMINEMAILADDRESS);
+         return value == null ? "" : (String) value;
+     }      
+     /** @return the email address used in the from field of approval notification emails */
+     @Deprecated // Used during upgrade to EJBCA 6.6.0
+     public String getApprovalNotificationFromAddress() {
+         final Object value = data.get(APPROVALNOTIFICATIONFROMADDR);
+         return value == null ? "" : (String) value;
+     }      
    
        public void setAutoEnrollADServer(String server) { data.put(AUTOENROLL_ADSERVER, server); }
        public String getAutoEnrollADServer() {

@@ -117,11 +117,11 @@
 																							
 					   			<h:panelGroup rendered="#{!property.multiValued}">
 						   			<h:inputText  disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'String'}" 
-						   				value="#{property.value}">
+						   				value="#{property.value}" style="width: 100%">
 						   				<f:converter converterId="stringConverter"/>
 						   			</h:inputText>
                                     <h:inputTextarea disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'MultiLineString'}" 
-                                        value="#{property.value.value}">
+                                        value="#{property.value.value}" style="width: 100%">
                                         <f:converter converterId="stringConverter"/>
                                     </h:inputTextarea>
 						   			<h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" 
