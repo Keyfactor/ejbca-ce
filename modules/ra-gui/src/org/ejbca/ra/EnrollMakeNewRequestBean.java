@@ -17,13 +17,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -395,7 +393,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
-    private void initDownloadCredentialsData() {
+    private void initCredentialsDataAndRequestPreview() {
         endEntityInformation = new EndEntityInformation();
         
         updateRequestPreview();
@@ -618,7 +616,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private final void finalizeCertificateData() {
         certificateDataReady = true;
 
-        initDownloadCredentialsData();
+        initCredentialsDataAndRequestPreview();
     }
 
     private final void setDownloadCredentialsData() {
@@ -760,19 +758,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return null;
         }
         
-        //End entity has been added now! Make sure clean-up is done in this "try-finally" block if something goes wrong inside it
+        //End entity has been added now! Make sure clean-up is done in this "try-finally" block if something goes wrong
         try{
             //Generates a keystore token if user has specified "ON SERVER" key pair generation.
             //Generates a certificate token if user has specified "PROVIDED_BY_USER" key pair generation
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
-                KeyStore keystore = null;
+                
                 try {
-                    keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
-                    log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", tokenName, endEntityInformation.getUsername()));
-    
-                    keystore.store(buffer, endEntityInformation.getPassword().toCharArray());
-                } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | AuthorizationDeniedException e) {
+                    byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+                    buffer.write(keystoreAsByteArray);
+                } catch (KeyStoreException | IOException | AuthorizationDeniedException e) {
                     raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
                     log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
                     return null;

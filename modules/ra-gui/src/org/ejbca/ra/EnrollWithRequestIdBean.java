@@ -155,20 +155,18 @@ public class EnrollWithRequestIdBean implements Serializable {
                 }
             }
         } else {
-            KeyStore keystore = null;
             try {
-                keystore = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+                byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
                 log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", endEntityInformation.getTokenType(),
                         endEntityInformation.getUsername()));
-
-                keystore.store(buffer, endEntityInformation.getPassword().toCharArray());
+                buffer.write(keystoreAsByteArray);
                 generatedToken = buffer.toByteArray();
                 if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS) {
                     downloadJks();
                 } else if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12) {
                     downloadPkcs12();
                 }
-            } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | AuthorizationDeniedException e) {
+            } catch (KeyStoreException | IOException | AuthorizationDeniedException e) {
                 raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
                 log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
                 return;
