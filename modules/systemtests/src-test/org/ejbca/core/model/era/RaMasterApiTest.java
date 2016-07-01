@@ -51,7 +51,7 @@ public class RaMasterApiTest {
 
     @Test
     public void testSerializable() {
-        final Set<Class<?>> referencedClasses = getReferencedClasses(RaMasterApi.class);
+        final Set<Class<?>> referencedClasses = getReferencedClassesInInterface(RaMasterApi.class);
         final Set<Class<?>> allReferencedClasses = new HashSet<>(referencedClasses);
         int size = 0;
         while (size<allReferencedClasses.size()) {
@@ -94,8 +94,8 @@ public class RaMasterApiTest {
         assertEquals("Design violation. The following referenced classes of RaMasterApi are not Serializable: " + sb.toString(), 0, sb.length());
     }
 
-    /** @return a Set of all classes declared as method parameters, method return types, method Exceptions or non-transient, non-static field in the class */
-    private Set<Class<?>> getReferencedClasses(final Class<?> clazz) throws NoClassDefFoundError {
+    /** @return a Set of all classes declared as method parameters, method return types, method Exceptions in the specified interface */
+    private Set<Class<?>> getReferencedClassesInInterface(final Class<?> clazz) throws NoClassDefFoundError {
         final Set<Class<?>> acceptedClasses = new HashSet<>();
         for (final Method method : clazz.getDeclaredMethods()) {
             final Class<?>[] methodParamClasses = method.getParameterTypes();
@@ -108,6 +108,12 @@ public class RaMasterApiTest {
             }
             acceptedClasses.add(method.getReturnType());
         }
+        return acceptedClasses;
+    }
+
+    /** @return a Set of all classes declared as non-transient, non-static field in the class */
+    private Set<Class<?>> getReferencedClasses(final Class<?> clazz) throws NoClassDefFoundError {
+        final Set<Class<?>> acceptedClasses = new HashSet<>();
         for (final Field field : clazz.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isTransient(field.getModifiers())) {
                 acceptedClasses.add(field.getDeclaringClass());
