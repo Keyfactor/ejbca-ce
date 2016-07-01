@@ -74,13 +74,25 @@ public class RaManageRequestBean implements Serializable {
         }
         requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean);
     }
+    private void loadRequestByApprovalId(final int approvalId) {
+        requestData = raMasterApiProxyBean.getApprovalRequestByRequestHash(raAuthenticationBean.getAuthenticationToken(), approvalId);
+        if (requestData == null) {
+            throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
+        }
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean);
+    }
     
     private void initializeRequestInfo() {
         if (requestInfo == null) {
-            final String idHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
-                    .getParameter("id");
-            final int id = Integer.parseInt(idHttpParam);
-            loadRequest(id);
+            final String idHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("id");
+            if (idHttpParam!=null) {
+                final int id = Integer.parseInt(idHttpParam);
+                loadRequest(id);
+            } else {
+                final String aidHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("aid");
+                final int approvalId = Integer.parseInt(aidHttpParam);
+                loadRequestByApprovalId(approvalId);
+            }
         }
     }
     

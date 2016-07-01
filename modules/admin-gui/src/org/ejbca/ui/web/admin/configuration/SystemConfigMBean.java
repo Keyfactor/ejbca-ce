@@ -93,9 +93,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean enableIcaoCANameChange;
         private boolean issueHardwareToken;
         private int hardTokenDataEncryptCA;
-        private boolean useApprovalNotifications;
-        private String approvalAdminEmail;
-        private String approvalNoteFromAddress;
         private boolean useAutoEnrollment;
         private int autoEnrollmentCA;
         private boolean autoEnrollUseSSLConnection;
@@ -133,9 +130,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.enableKeyRecovery = globalConfig.getEnableKeyRecovery();
                 this.issueHardwareToken = globalConfig.getIssueHardwareTokens();
                 this.hardTokenDataEncryptCA = globalConfig.getHardTokenEncryptCA();
-                this.useApprovalNotifications = globalConfig.getUseApprovalNotifications();
-                this.approvalAdminEmail = globalConfig.getApprovalAdminEmailAddress();
-                this.approvalNoteFromAddress = globalConfig.getApprovalNotificationFromAddress();
                 this.useAutoEnrollment = globalConfig.getAutoEnrollUse();
                 this.autoEnrollmentCA = globalConfig.getAutoEnrollCA();
                 this.autoEnrollUseSSLConnection = globalConfig.getAutoEnrollSSLConnection();
@@ -189,12 +183,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setIssueHardwareToken(boolean issueHWtoken) { this.issueHardwareToken=issueHWtoken; }
         public int getHardTokenDataEncryptCA() { return hardTokenDataEncryptCA; }
         public void setHardTokenDataEncryptCA(int caid) { this.hardTokenDataEncryptCA=caid; }
-        public boolean getUseApprovalNotifications() { return useApprovalNotifications; }
-        public void setUseApprovalNotifications(boolean useApprovalNotifications) { this.useApprovalNotifications=useApprovalNotifications; }
-        public String getApprovalAdminEmail() { return approvalAdminEmail; }
-        public void setApprovalAdminEmail(String email) { this.approvalAdminEmail=email; }
-        public String getApprovalNoteFromAddress() { return approvalNoteFromAddress; }
-        public void setApprovalNoteFromAddress(String email) { this.approvalNoteFromAddress=email; }
         public boolean getUseAutoEnrollment() { return this.useAutoEnrollment; }
         public void setUseAutoEnrollment(boolean useAutoEnrollment) { this.useAutoEnrollment=useAutoEnrollment; }
         public int getAutoEnrollmentCA() { return this.autoEnrollmentCA; }
@@ -634,9 +622,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setEnableKeyRecovery(currentConfig.getEnableKeyRecovery());
                 globalConfig.setIssueHardwareTokens(currentConfig.getIssueHardwareToken());
                 globalConfig.setHardTokenEncryptCA(currentConfig.getHardTokenDataEncryptCA());
-                globalConfig.setUseApprovalNotifications(currentConfig.getUseApprovalNotifications());
-                globalConfig.setApprovalAdminEmailAddress(currentConfig.getApprovalAdminEmail());
-                globalConfig.setApprovalNotificationFromAddress(currentConfig.getApprovalNoteFromAddress());
                 globalConfig.setAutoEnrollUse(currentConfig.getUseAutoEnrollment());
                 globalConfig.setAutoEnrollCA(currentConfig.getAutoEnrollmentCA());
                 globalConfig.setAutoEnrollSSLConnection(currentConfig.getAutoEnrollUseSSLConnection());
@@ -715,10 +700,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         availableCustomCertExtensions = null;
         availableCustomCertExtensionsConfig = null;
         selectedCustomCertExtensionID = 0;
-    }
-    
-    public void toggleUseApprovalNotification() {
-        currentConfig.setUseApprovalNotifications(!currentConfig.getUseApprovalNotifications());
     }
     
     public void toggleUseAutoEnrollment() {

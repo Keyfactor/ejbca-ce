@@ -2551,71 +2551,30 @@ Variables used with userdata:
 <li>${requestAdmin.SAN.EMAIL}		= The email address of the administrator adding the end entity according to the administrator's Subject Alternative Name, RFC822Name field.</li>
 <li>${approvalAdmin.XX} variables from below can be used to get the administrator who adds an end entity.</li>
 </ul>
-</p><p>
+</p>
+<p>
 Variables used with approvals:
 <ul>
 <li>
-  ${approvalRequest.DATE}            = The time the approval request was created
+ ${approvalAdmin.USERNAME}        = The last approving administrator's username
 </li>
 <li>
-  ${approvalRequest.ID}              = The id of the approval request
+ ${approvalAdmin.CN}              = The common name of the last approving administrator.
 </li>
 <li>
-  ${approvalRequest.ABS.ID}          = The id of the approval request with out any '-' sign, used for presentation purposes.
+ ${approvalAdmin.SN}              = The last approving administrator's DN serialNumber. 
 </li>
 <li>
-  ${approvalRequest.TYPE}            = The type of approval request
+ ${approvalAdmin.O}               = The last approving administrator's organization
 </li>
 <li>
-  ${approvalRequest.APROVEURL}       = A URL to the review approval page with the current request.
+ ${approvalAdmin.OU}              = The last approving administrator's organization unit
 </li>
 <li>
-  ${approvalRequest.APPROVALSLEFT}   = The number of approvals remaining.
+ ${approvalAdmin.C}               = The last approving administrator's country
 </li>
 <li>
-  ${approvalRequest.APPROVALCOMMENT} = The comment made by the approving/rejecting administrator
-</li>
-<li>
-  ${requestAdmin.USERNAME}         = The requesting administrator's username
-</li>
-<li>
-  ${requestAdmin.CN}               = The common name of the requesting administrator.
-</li>
-<li>
-  ${requestAdmin.SN}               = The requesting administrator's DN serialNumber.
-</li>
-<li>
-  ${requestAdmin.O}                = The requesting administrator's organization
-</li>
-<li>
-  ${requestAdmin.OU}               = The requesting administrator's organization unit
-</li>
-<li>
-  ${requestAdmin.C}                = The requesting administrator's country
-</li>
-<li>
-  ${requestAdmin.E}                = The requesting administrator's email address from Subject DN
-</li>
-<li>
- ${approvalAdmin.USERNAME}        = The approving administrator's username
-</li>
-<li>
- ${approvalAdmin.CN}              = The common name of the approving administrator.
-</li>
-<li>
- ${approvalAdmin.SN}              = The approving administrator's DN serialNumber. 
-</li>
-<li>
- ${approvalAdmin.O}               = The approving administrator's organization
-</li>
-<li>
- ${approvalAdmin.OU}              = The approving administrator's organization unit
-</li>
-<li>
- ${approvalAdmin.C}               = The approving administrator's country
-</li>
-<li>
- ${approvalAdmin.E}               = The approving administrator's email address from Subject DN
+ ${approvalAdmin.E}               = The last approving administrator's email address from Subject DN
 </li>
 </ul>
 </p><p>
@@ -2729,10 +2688,9 @@ Currently are the following actions are enabled for approvals :
 In the main menu there is a new option 'Approve Actions' that lets the 
 administrator to search for waiting requests and review its data and finally 
 gives his approval or reject the action.
-</p><p>
-<i>Configuring Approvals</i>
-</p><p>
-
+</p>
+<subsection name="Configuring Approvals">
+<p>
 Approvals are configured for each CA, in the 'Certificate Authorities' page and for each certificate profile in 
 the 'Certificate Profiles' page. 
 Just select the actions that needs approval and the number of approvers required and save. The actions 'Add End Entity', 
@@ -2740,9 +2698,10 @@ Just select the actions that needs approval and the number of approvers required
 'Revoke Certificate', 'Revoke Token' and 'Reactivate Certificate' are covered by setting 'Revocation'. 
 Approvals will be required if the CA or the certificate profile enforces it and in case the number of approvers differs 
 between the CA and the certificate profile the largest number of approvers will be used.
-</p><p>
-<i>Authorizing Approving Administrators</i>
-</p><p>
+</p>
+</subsection>
+<subsection name="Authorizing Approving Administrators">
+<p>
 In order to authorize an administrator to review approval requests do one of the following.
 </p><p>
 Using Basic Rule Sets:
@@ -2766,18 +2725,20 @@ also have the 'approve_end_entity rule' for at least one of the '/endentityprofi
 actions.</li>
 <li><i>'/endentityprofilerules/&lt;endentityprofilename&gt;/approve_end_entity'</i>see previous rule.</li>
 </ul>
-</p><p>
-<i>Two Different Approval Requests</i>
-</p><p>
+</p>
+</subsection>
+<subsection name="Two Different Approval Requests">
+<p>
 In the system there are basically two different classes of requests. One is requests to do some action, like adding an 
 end entity, and that is executed directly after the last required administrator has approved the action. This type is 
 called 'Executable Action Request'. The other type are requests to get hold of some information, like hard token 
 PUK codes or archived keys. This kind of request is approved when the last administrator gives his consent and is valid 
 for a defined period of time (in conf/ejbca.properties). In this case the requesting administrator is supposed to poll the 
 approval request if it has been approved or not. These requests are called 'Non-Executable Action Requests'. 
-</p><p>
-<i>Explanation of approval status</i>
-</p><p>
+</p>
+</subsection>
+<subsection name="Explanation of approval status">
+<p>
 Here follows an explanation of what the different approval requests statuses.
 <ul>
 <li><i>Waiting</i>: Means that the action request is waiting to be processed by authorized administrators, request are 
@@ -2799,22 +2760,45 @@ about that his request have expired.</li>
 'Rejected' is that this status is only used with executable requests and do not have any expire time. This means that the requesting 
 administrator can apply again directly after the rejection.</li>
 </ul>
+</p>
+</subsection>
+<subsection name="Approval Notification">
+<p>
+EJBCA approval functionality have been enhanced to send e-mail notifications about to administrators affected by the approval workflow.
 </p><p>
-<i>Approval Notification</i>
-</p><p>
-EJBCA approval functionality have been enhanced to sent notifications about approval requests.
-</p><p>
-To enable approval notification go to the system configuration page and check the 'Use Approval Notification' checkbox.
-You are also required to set the email-address to the approving administrators. This should be a mail-alias to all administrators that should be able to review approval requests and the from address that should be used when EJBCA sends emails.
-</p><p>
-Then whenever an approval request is created an e-mail is sent both to the requesting admin (if he has an e-mail configured in his user data) and to the approval administrators.
-</p><p>
-When the approving administrators have recieved the mail, there is a link directly to the approve request page where he can review the requests. When he has approved and rejected the requested all the other administrators in notified about this.
-</p><p>
-The text of notifications is configured in src/intresources/ejbcaresources.xx.properties and intresources.xx.properties. The relevant properties starts with "notification". See the ' Dynamic Substitution Variables' section in this manual for a list of available variables.
-</p><p>
+Notifications are configured per approval partition.
+An approval notification is sent for a partition when the partition:
+<ul>
+ <li>has been acted upon</li>
+ <li>becomes approvable due to the previous step being finished</li>
+ <li>no longer is approvable since a parellel partition has been rejected or the request has expired</li>
+</ul>
+</p>
+<p>
 Remember to configure mail-server settings in the mail.properties file.
 </p>
+<subsubsection name="Dynamic Substitution Variables for approval notifications">
+<p>
+Variables used with approval notifications:
+<ul>
+ <li>${approvalRequest.ID}            The approval request identifier.</li>
+ <li>${approvalRequest.STEP_ID}       The approval step that this notification concerns.</li>
+ <li>${approvalRequest.PARTITION_ID}  The approval partition in the step that this notification concerns.</li>
+ <li>${approvalRequest.TYPE}          The type of approval request.</li>
+ <li>${approvalRequest.WORKFLOWSTATE} The work flow state from the perspective of the one(s) responsible for handling the partition.</li>
+ <li>${approvalRequest.REQUESTOR}     The human readable version of the authentication token that was used to create the request.</li>
+</ul>
+The work flow states are:
+<ul>
+ <li>APPROVED: The partition has been approved and no longer requires any action.</li>
+ <li>APPROVED_PARTIALLY: The partition has been approved, but is still pending additional approvals.</li>
+ <li>REJECTED: The partition has been rejected and no longer requires any action.</li>
+ <li>REQUIRES_ACTION: The partition requires an action from admin.</li>
+ <li>EXPIRED: The partition (and also currently the whole approval) has expired and no longer requires any action.</li>
+</ul>
+</p>
+</subsubsection>
+</subsection>
 </section>
 
 <section name="Self Registration">

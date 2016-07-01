@@ -38,6 +38,8 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     final String PROPERTY_NOTIFICATION_EMAIL_SENDER = "notification_email_sender";
     final String PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT = "notification_email_msg_subject";
     final String PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY = "notification_email_msg_body";
+    /** Key for the data value marking the number of approvals required. */
+    final String PROPERTY_NUMBER_OF_REQUIRED_APPROVALS = "number_of_required_approvals";
 
     /**
      * 
@@ -236,19 +238,28 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
      */
     Set<String> getHiddenProperties();
 
-    /** Add standardized notification properties */
-    ApprovalPartition addNotificationProperties(ApprovalPartition approvalPartition);
+    /** @return true if notifications is configured in the specified partition */
+    boolean isNotificationEnabled(ApprovalPartition approvalPartition);
 
-    /** Remove standardized notification properties */
+    /** Add notification properties */
+    ApprovalPartition addNotificationProperties(ApprovalPartition approvalPartition, String recipient, String sender, String subject, String body);
+
+    /** Remove notification properties */
     ApprovalPartition removeNotificationProperties(ApprovalPartition approvalPartition);
-     
-     /**
-      * Allows for querying a partition of a certain property was defined procedurally.
-      * 
-      * @param stepIdentifier the identifier of the step 
-      * @param partitionIdentifier the identifier of the partition
-      * @param propertyName the name of the property
-      * @return true if the property is considered predefined.
-      */
-     boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, final String propertyName);
+
+    /**
+     * Allows for querying a partition of a certain property was defined procedurally.
+     * 
+     * @param stepIdentifier the identifier of the step 
+     * @param partitionIdentifier the identifier of the partition
+     * @param propertyName the name of the property
+     * @return true if the property is considered predefined.
+     */
+    boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, final String propertyName);
+
+    /** @return the number of required approvals of the specified partition. Defaults to 1. */
+    int getNumberOfApprovalsRequired(int stepIdentifier, int partitionIdentifier);
+
+    /** @return the number of required approvals of the specified partition that has not yet been approved. */
+    int getRemainingApprovalsInPartition(Collection<Approval> approvalsPerformed, int stepIdentifier, int partitionIdentifier);
 }

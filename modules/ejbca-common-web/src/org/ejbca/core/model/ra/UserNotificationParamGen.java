@@ -23,7 +23,7 @@ import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.model.approval.ApprovalNotificationParamGen;
+import org.ejbca.util.NotificationParamGen;
 
 /**
  * Variables used with userdata
@@ -46,9 +46,17 @@ import org.ejbca.core.model.approval.ApprovalNotificationParamGen;
  * ${expiringCert.CERTISSUERDN}    = The certificate issuer dn
  * The variables ${CN}, ${SN}, ${O}, ${OU}, ${C} are also available.
  * 
+ * Variable used with notification where approval is involved in the state change (approvalAdmin = last admin to approve).
+ * ${approvalAdmin.USERNAME}          = The approving administrator's username
+ * ${approvalAdmin.CN}                = The common name of the approving administrator.
+ * ${approvalAdmin.SN}                = The common name of the approving administrator.
+ * ${approvalAdmin.O}                 = The approving administrator's organization
+ * ${approvalAdmin.OU}                = The approving administrator's organization unit
+ * ${approvalAdmin.C}                 = The approving administrator's country
+ * 
  * @version $Id$
  */
-public class UserNotificationParamGen extends ApprovalNotificationParamGen {
+public class UserNotificationParamGen extends NotificationParamGen {
 
 	public UserNotificationParamGen(EndEntityInformation userData) {
 		populateWithUserData(userData);
@@ -64,6 +72,19 @@ public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 		populateWithApprovalAdminDN(approvalAdminDN);
 		populateWithEmailAddresses(userData, admin);
 		populateWithRevokedCertificate(revokedCertificate);
+	}
+
+	private void populateWithApprovalAdminDN(String approvalAdminDN) {
+	    if (approvalAdminDN == null) {
+	        approvalAdminDN = "";
+	    }
+	    DNFieldExtractor dnfields = new DNFieldExtractor(approvalAdminDN, DNFieldExtractor.TYPE_SUBJECTDN);       
+	    paramPut("approvalAdmin.CN", dnfields.getField(DNFieldExtractor.CN, 0));          
+	    paramPut("approvalAdmin.SN", dnfields.getField(DNFieldExtractor.SN, 0));
+	    paramPut("approvalAdmin.O", dnfields.getField(DNFieldExtractor.O, 0));
+	    paramPut("approvalAdmin.OU", dnfields.getField(DNFieldExtractor.OU, 0));
+	    paramPut("approvalAdmin.C", dnfields.getField(DNFieldExtractor.C, 0));
+	    paramPut("approvalAdmin.E", dnfields.getField(DNFieldExtractor.E, 0));
 	}
 
 	protected void populateWithRevokedCertificate(final CertificateDataWrapper revokedCertificate) {

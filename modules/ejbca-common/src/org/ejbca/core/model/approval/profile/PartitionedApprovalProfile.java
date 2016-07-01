@@ -180,8 +180,10 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     public int getRemainingApprovals(Collection<Approval> approvalsPerformed) {
         //Return the total number of partitions lacking approval, minus the number of approvals performed (presume that no approvals performed overlap) 
         int numberOfPartitions = 0;
-        for(ApprovalStep approvalStep : getSteps().values()) {
-            numberOfPartitions += approvalStep.getPartitions().size();
+        for (final ApprovalStep approvalStep : getSteps().values()) {
+            for (final ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
+                numberOfPartitions += getRemainingApprovalsInPartition(approvalsPerformed, approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier());
+            }
         }  
         return numberOfPartitions - approvalsPerformed.size();
     }
@@ -234,7 +236,6 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
     @Override
     public boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, String propertyName) {
-        return predefinedProperties.contains(propertyName);
+        return super.isPropertyPredefined(stepIdentifier, partitionIdentifier, propertyName) || predefinedProperties.contains(propertyName);
     }
-
 }

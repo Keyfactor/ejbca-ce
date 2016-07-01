@@ -14,7 +14,6 @@ package org.ejbca.ui.web.admin.approval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,17 +23,21 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
-import org.cesecore.util.ui.RadioButton;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;
+import org.cesecore.util.ui.RadioButton;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
@@ -88,6 +91,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @ManagedProperty(value = "#{approvalProfilesMBean}")
     private ApprovalProfilesMBean approvalProfilesMBean;
@@ -398,14 +403,23 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         final ApprovalProfile approvalProfile = getApprovalProfile();
         final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
-        return approvalPartition!=null && approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_RECIPIENT) != null;
+        return approvalProfile.isNotificationEnabled(approvalPartition);
     }
 
     public void addNotification(final int partitionIdentifier) {
         final ApprovalProfile approvalProfile = getApprovalProfile();
         final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
-        approvalProfile.addNotificationProperties(approvalPartition);
+        // Configure some nice defaults
+        final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        final String hostnameFromRequest = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getServerName();
+        final String baseUrl = globalConfiguration.getBaseUrl(hostnameFromRequest);
+        final String defaultSubject = "[AR-${approvalRequest.ID}-${approvalRequest.STEP_ID}-${approvalRequest.PARTITION_ID}] " +
+                "Approval Request to ${approvalRequest.TYPE} is now in state ${approvalRequest.WORKFLOWSTATE}";
+        final String defaultBody = "Approval Request to ${approvalRequest.TYPE} from ${approvalRequest.REQUESTOR} is now in state ${approvalRequest.WORKFLOWSTATE}.\n" +
+                "\n" +
+                "Direct link to the request: " + baseUrl + "ra/managerequest.xhtml?aid=${approvalRequest.ID}";
+        approvalProfile.addNotificationProperties(approvalPartition, "approval-admin-group@example.org supervisor@example.org", "no-reply@"+hostnameFromRequest, defaultSubject, defaultBody);
         steps = null;
     }
 

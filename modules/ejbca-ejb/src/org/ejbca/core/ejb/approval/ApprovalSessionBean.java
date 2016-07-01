@@ -16,7 +16,6 @@ package org.ejbca.core.ejb.approval;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,12 +37,11 @@ import org.apache.log4j.Logger;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
@@ -51,7 +49,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.ValueExtractor;
-import org.ejbca.config.GlobalConfiguration;
+import org.cesecore.util.ui.MultiLineString;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -60,10 +58,13 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.ApprovalNotificationParamGen;
+import org.ejbca.core.model.approval.ApprovalNotificationParameterGenerator;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.profile.ApprovalPartition;
+import org.ejbca.core.model.approval.profile.ApprovalPartitionWorkflowState;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -134,13 +135,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 //Kept for legacy reasons
                 approvalData.setRemainingapprovals(approvalRequest.getNumOfRequiredApprovals());
                 entityManager.persist(approvalData);
-                final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-                if (gc.getUseApprovalNotifications()) {
-                    sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl()
-                            + "adminweb/approval/approveaction.jsf?uniqueId=" + freeId,
-                            intres.getLocalizedMessage("notification.newrequest.subject"), intres.getLocalizedMessage("notification.newrequest.msg"),
-                            freeId, approvalRequest.getNumOfRequiredApprovals(), new Date(), approvalRequest, null);
-                }
+                sendApprovalNotifications(admin, approvalRequest, approvalProfile, approvalData.getApprovals(), false);
                 String msg = intres.getLocalizedMessage("approval.addedwaiting", approvalId);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -338,88 +333,80 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public void sendApprovalNotification(AuthenticationToken admin, String approvalAdminsEmail,
-            String approvalNotificationFromAddress, String approvalURL, String notificationSubject, String notificationMsg, Integer id,
-            int numberOfApprovalsLeft, Date requestDate, ApprovalRequest approvalRequest, Approval approval) {
-        if (log.isTraceEnabled()) {
-            log.trace(">sendNotification approval notification: id=" + id);
-        }
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void sendApprovalNotifications(final AuthenticationToken authenticationToken, final ApprovalRequest approvalRequest, final ApprovalProfile approvalProfile,
+            final List<Approval> approvalsPerformed, final boolean expired) {
         try {
-            AuthenticationToken sendAdmin = admin;
-            Certificate requestAdminCert = approvalRequest.getRequestAdminCert();
-            String requestAdminDN = null;
-            String requestAdminUsername = null;
-            if (requestAdminCert != null) {
-                requestAdminDN = CertTools.getSubjectDN(requestAdminCert);
-                // Try to get username from database
-                requestAdminUsername = certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(CertTools.getIssuerDN(requestAdminCert),
-                        CertTools.getSerialNumber(requestAdminCert));
-            } else {
-                requestAdminUsername = intres.getLocalizedMessage("CLITOOL");
-                requestAdminDN = "CN=" + requestAdminUsername;
-            }
-
-            if (approvalAdminsEmail.equals("") || approvalNotificationFromAddress.equals("")) {
-                final String msg = intres.getLocalizedMessage("approval.errornotificationemail", id);
-                log.info(msg);
-            } else {
-                String approvalTypeText = intres.getLocalizedMessage(ApprovalDataVO.APPROVALTYPENAMES[approvalRequest.getApprovalType()]);
-
-                String approvalAdminUsername = null;
-                String approvalAdminDN = null;
-                String approveComment = null;
-                if (approval != null) {
-                	// Do we have an approval admin certificate?
-                	if (approval.getAdmin() instanceof X509CertificateAuthenticationToken) {
-						X509CertificateAuthenticationToken xtoken = (X509CertificateAuthenticationToken) approval.getAdmin();
-	                    approvalAdminDN = CertTools.getSubjectDN(xtoken.getCertificate());
-	                    // Try to get username from database
-	                    approvalAdminUsername = certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(CertTools.getIssuerDN(xtoken.getCertificate()),
-	                            CertTools.getSerialNumber(xtoken.getCertificate()));				
-					} else {
-	                    approvalAdminUsername = approval.getAdmin().toString();						
-					}
-                    approveComment = approval.getComment();
+            // When adding a new approval request the list of performed approvals is empty
+            final Approval approval = approvalsPerformed.isEmpty() ? null : approvalsPerformed.get(approvalsPerformed.size()-1);
+            final ApprovalStep approvalStep = approvalProfile.getStepBeingEvaluated(approvalsPerformed);
+            if (approval!=null && (!approval.isApproved() || expired)) {
+                if (approvalStep.getStepIdentifier()==approval.getStepId()) {
+                    // If the approval has been rejected or expired, we should notify all partition owners in the current step that still has not approved it
+                    final int currentStepId = approvalStep.getStepIdentifier();
+                    final ApprovalPartition currentApprovalPartition = approvalProfile.getStep(currentStepId).getPartition(approval.getPartitionId());
+                    if (expired) {
+                        sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.EXPIRED);
+                    } else {
+                        sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.REJECTED);
+                    }
+                    // Check which of the remaining partitions that need to be notified
+                    for (final ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
+                        final int remainingApprovalsInPartition = approvalProfile.getRemainingApprovalsInPartition(approvalsPerformed, approval.getStepId(),approval.getPartitionId());
+                        if (remainingApprovalsInPartition>0) {
+                            if (expired) {
+                                sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, approvalPartition, ApprovalPartitionWorkflowState.EXPIRED);
+                            } else {
+                                sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, approvalPartition, ApprovalPartitionWorkflowState.REJECTED);
+                            }
+                        }
+                    }
                 }
-                Integer numAppr = Integer.valueOf(numberOfApprovalsLeft);
-                ApprovalNotificationParamGen paramGen = new ApprovalNotificationParamGen(requestDate, id, approvalTypeText, numAppr, approvalURL,
-                        approveComment, requestAdminUsername, requestAdminDN, approvalAdminUsername, approvalAdminDN);
-                String subject = paramGen.interpolate(notificationSubject);
-                String message = paramGen.interpolate(notificationMsg);
-                List<String> toList = Arrays.asList(approvalAdminsEmail);
-                String sendAdminEmail = null;
-            	if (sendAdmin instanceof X509CertificateAuthenticationToken) {
-                    // Firstly, see if it exists in the certificate
-					X509CertificateAuthenticationToken xtoken = (X509CertificateAuthenticationToken) sendAdmin;
-                    // Try to get username from database
-	                sendAdminEmail = CertTools.getEMailAddress(xtoken.getCertificate());
-	                if (sendAdminEmail == null) {
-	                    // Secondly, see if it exists locally
-                        Certificate certificate = xtoken.getCertificate();
-                        String username = certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(CertTools.getIssuerDN(certificate),
-                                CertTools.getSerialNumber(certificate));
-                        EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(admin, username);
-                        if (endEntityInformation != null) {
-                            sendAdminEmail = endEntityInformation.getEmail();
-	                    }
-	                }
-				}
-                if (sendAdminEmail == null || sendAdminEmail.length() == 0) {
-                    final String msg = intres.getLocalizedMessage("approval.errornotificationemail", id);
-                    log.info(msg);
-                } else {
-                    toList = Arrays.asList(approvalAdminsEmail, sendAdminEmail);
+            } else {
+                if (approval!=null) {
+                    // Notify every partition owner who's work flow is affected by the made approval
+                    final int currentStepId = approval.getStepId();
+                    final int remainingApprovalsInPartition = approvalProfile.getRemainingApprovalsInPartition(approvalsPerformed, currentStepId, approval.getPartitionId());
+                    final ApprovalPartition currentApprovalPartition = approvalProfile.getStep(approval.getStepId()).getPartition(approval.getPartitionId());
+                    if (remainingApprovalsInPartition>0) {
+                        sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.APPROVED_PARTIALLY);
+                    } else {
+                        sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.APPROVED);
+                    }
                 }
-                MailSender.sendMailOrThrow(approvalNotificationFromAddress, toList, MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
-                final String msg = intres.getLocalizedMessage("approval.sentnotification", id);
-                log.info(msg);
+                // If this is a new approval request or the current approval has completed a step, we should notify all partition owners in the next step
+                if (approval==null || approvalStep.getStepIdentifier()!=approval.getStepId()) {
+                    for (final ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
+                        sendApprovalNotification(approvalRequest, approvalProfile, approvalStep.getStepIdentifier(), approvalPartition, ApprovalPartitionWorkflowState.REQUIRES_ACTION);
+                    }
+                }
             }
-        } catch (Exception e) {
-            final String msg = intres.getLocalizedMessage("approval.errornotification", id);
-            log.info(msg, e);
+        } catch (AuthenticationFailedException e) {
+            log.warn("Unexpected failure during approval notification. Already performed approval where no longer authorized to do so.");
         }
-        if (log.isTraceEnabled()) {
-            log.trace("<sendNotification approval notification: id=" + id);
+    }
+    
+    /** Send approval notification to the partition owner if it has notifications enabled. */
+    private void sendApprovalNotification(final ApprovalRequest approvalRequest, final ApprovalProfile approvalProfile, final int approvalStepId, final ApprovalPartition approvalPartition,
+            final ApprovalPartitionWorkflowState approvalPartitionWorkflowState) {
+        if (!approvalProfile.isNotificationEnabled(approvalPartition)) {
+            return;
+        }
+        final int approvalId = approvalRequest.generateApprovalId();
+        final int partitionId = approvalPartition.getPartitionIdentifier();
+        final String approvalType = intres.getLocalizedMessage(ApprovalDataVO.APPROVALTYPENAMES[approvalRequest.getApprovalType()]);
+        final String workflowState = intres.getLocalizedMessage("APPROVAL_WFSTATE_" + approvalPartitionWorkflowState.name());
+        final String requestor = approvalRequest.getRequestAdmin().toString();
+        final String recipient = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_RECIPIENT).getValue();
+        final String sender = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_SENDER).getValue();
+        final String subject = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT).getValue();
+        final String body = ((MultiLineString)approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY).getValue()).getValue();
+        final ApprovalNotificationParameterGenerator parameters = new ApprovalNotificationParameterGenerator(approvalId, approvalStepId, partitionId, approvalType, workflowState, requestor);
+        try {
+            MailSender.sendMailOrThrow(sender, Arrays.asList(recipient.split(" ")), MailSender.NO_CC, parameters.interpolate(subject), parameters.interpolate(body), MailSender.NO_ATTACHMENTS);
+            log.info(intres.getLocalizedMessage("approval.sentnotification", approvalId));
+        } catch (Exception e) {
+            log.info(intres.getLocalizedMessage("approval.errornotification", approvalId), e);
         }
     }
 
@@ -432,8 +419,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         };
         return Integer.valueOf( ProfileID.getNotUsedID(db) );
     }
-
-
 
     /**
      * Method used to mark an non-executable approval as done if the last step is performed will the status be set as expired.
@@ -476,7 +461,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             return ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED;
         }
         if (approvalData.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
-            return approvalData.getNumberOfApprovalsRemaining();
+            return approvalData.getApprovalRequest().getApprovalProfile().getRemainingApprovals(approvalData.getApprovals());
         }
         return approvalData.getStatus();
     }

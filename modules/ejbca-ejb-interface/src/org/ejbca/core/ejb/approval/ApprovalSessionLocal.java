@@ -14,23 +14,34 @@
 package org.ejbca.core.ejb.approval;
 
 import java.util.Collection;
-import java.util.Date;
+import java.util.List;
 
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalRequest;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
  * Local interface for ApprovalSession.
+ * 
+ * @version $Id$
  */
 @Local
 public interface ApprovalSessionLocal extends ApprovalSession {
 
-	void sendApprovalNotification(AuthenticationToken admin, String approvalAdminsEmail, String approvalNotificationFromAddress, String approvalURL,
-            String notificationSubject, String notificationMsg, Integer id, int numberOfApprovalsLeft, Date requestDate, ApprovalRequest approvalRequest,
-            Approval approval);
+    /**
+     * Send all work-flow related approval notifications given the last added Approval to the approvalsPerformed.
+     * 
+     * @param authenticationToken the current administrator that triggered the appoval action
+     * @param approvalRequest the approval request
+     * @param approvalProfile the profile determining the approval work flow
+     * @param approvalsPerformed a list of completed approvals so far with the current approval last
+     * @param expired should be set to true if the notification is due to expiration of the approval request
+     */
+    void sendApprovalNotifications(AuthenticationToken authenticationToken, ApprovalRequest approvalRequest, ApprovalProfile approvalProfile,
+            List<Approval> approvalsPerformed, boolean expired);
 
 	/**
 	 * Encode a Collection of Approval and set it in ApprovalData object.
@@ -38,6 +49,6 @@ public interface ApprovalSessionLocal extends ApprovalSession {
 	 */
 	void setApprovals(ApprovalData approvalData, Collection<Approval> approvals);
 	
-	 ApprovalData findNonExpiredApprovalDataLocal(int approvalId);
+	ApprovalData findNonExpiredApprovalDataLocal(int approvalId);
 
 }
