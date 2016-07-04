@@ -13,6 +13,7 @@
 package org.cesecore.authorization.access;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.regex.Matcher;
@@ -138,6 +139,11 @@ public final class AccessSet implements Serializable {
         for (final String resource : set) {
             log.debug("Resource: " + resource);
         }
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(set.toArray());
     }
     
     @Override
