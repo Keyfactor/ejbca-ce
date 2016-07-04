@@ -27,6 +27,7 @@ import javax.persistence.Query;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.LocalJvmOnlyAuthenticationToken;
+import org.cesecore.authentication.tokens.NestableAuthenticationToken;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -97,7 +98,9 @@ public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccess
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<String> getRolesMatchingAuthenticationTokenRemote(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        if (authenticationToken instanceof LocalJvmOnlyAuthenticationToken) {
+        if (authenticationToken instanceof NestableAuthenticationToken) {
+            ((NestableAuthenticationToken) authenticationToken).initRandomToken();
+        } else if (authenticationToken instanceof LocalJvmOnlyAuthenticationToken) {
             // Ensure that the matching procedure below also works for remote EJB calls
             ((LocalJvmOnlyAuthenticationToken) authenticationToken).initRandomToken();
         }
