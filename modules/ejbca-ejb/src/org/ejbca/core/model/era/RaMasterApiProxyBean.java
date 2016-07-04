@@ -13,7 +13,6 @@
 package org.ejbca.core.model.era;
 
 import java.security.KeyStoreException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -479,21 +478,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return null;
     }
     
-    @Override
-    public byte[] createPkcs7(AuthenticationToken authenticationToken, X509Certificate certificate, boolean includeChain)
-            throws AuthorizationDeniedException {
-        for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable()) {
-                try {
-                    return raMasterApi.createPkcs7(authenticationToken, certificate, includeChain);
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        return null;
-    }
-
     @Override
     public boolean changeCertificateStatus(final AuthenticationToken authenticationToken, final String fingerprint, final int newStatus, final int newRevocationReason)
             throws ApprovalException, WaitingForApprovalException {

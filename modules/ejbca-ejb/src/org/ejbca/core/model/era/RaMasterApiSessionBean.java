@@ -1102,17 +1102,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return null;
     }
-    
-    @Override
-    public byte[] createPkcs7(AuthenticationToken authenticationToken, X509Certificate certificate, boolean includeChain) throws AuthorizationDeniedException{
-        try {
-            return signSessionLocal.createPKCS7(authenticationToken, certificate, includeChain);
-        } catch (CADoesntExistsException | SignRequestSignatureException e) {
-            log.error(e);
-            return null;
-        }
-    }
-    
+
     @Override
     public boolean changeCertificateStatus(final AuthenticationToken authenticationToken, final String fingerprint, final int newStatus, final int newRevocationReason)
             throws ApprovalException, WaitingForApprovalException {
