@@ -533,7 +533,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
         } else if(tagnr == CmpPKIBodyConstants.REVOCATIONREQUEST) {
             final String issuerdn = getIssuerDNFromRevRequest((RevReqContent) msg.getBody().getContent());
-            final int caid = issuerdn.hashCode();
+            final int caid = CertTools.stringToBCDNString(issuerdn).hashCode();
             if(!authSession.isAuthorizedNoLogging(reqAuthToken, StandardRules.CAACCESS.resource() + caid)) {
                 if(log.isDebugEnabled()) {
                     log.debug("Administrator " + reqAuthToken.toString() + " NOT authorized to revoke certificates issues by " + issuerdn);
