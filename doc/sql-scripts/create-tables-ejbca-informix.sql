@@ -93,7 +93,7 @@ CREATE TABLE CAData (
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     status INTEGER NOT NULL,
-    subjectDN VARCHAR(255,0),
+    subjectDN VARCHAR(400,0),
     updateTime DECIMAL(18,0) NOT NULL,
     PRIMARY KEY (cAId)
 );
@@ -139,7 +139,7 @@ CREATE TABLE CertificateData (
     rowVersion INTEGER NOT NULL,
     serialNumber VARCHAR(255,0) NOT NULL,
     status INTEGER NOT NULL,
-    subjectDN VARCHAR(255,0) NOT NULL,
+    subjectDN VARCHAR(400,0) NOT NULL,
     subjectAltName LVARCHAR(2000),
     subjectKeyId VARCHAR(255,0),
     tag VARCHAR(255,0),
@@ -337,7 +337,7 @@ CREATE TABLE UserData (
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     status INTEGER NOT NULL,
-    subjectAltName VARCHAR(255,0),
+    subjectAltName VARCHAR(2000,0),
     subjectDN VARCHAR(255,0),
     subjectEmail VARCHAR(255,0),
     timeCreated DECIMAL(18,0) NOT NULL,
