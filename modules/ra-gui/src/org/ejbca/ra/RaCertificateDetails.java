@@ -39,6 +39,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -208,7 +209,8 @@ public class RaCertificateDetails {
                     }
                 }
                 this.hasNameConstraints = x509Certificate.getExtensionValue(Extension.nameConstraints.getId())!=null;
-                this.hasCertificateTransparencyScts = CertificateTransparencyFactory.getInstance().hasSCTs(certificate);
+                final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
+                this.hasCertificateTransparencyScts = ct != null ? ct.hasSCTs(certificate) : false;
                 this.hasQcStatements = QCStatementExtension.hasQcStatement(certificate);
             } else if (certificate instanceof CardVerifiableCertificate) {
                 final CardVerifiableCertificate cardVerifiableCertificate = (CardVerifiableCertificate)certificate;
