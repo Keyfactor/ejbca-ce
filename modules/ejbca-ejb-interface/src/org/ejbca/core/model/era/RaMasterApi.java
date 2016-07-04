@@ -13,7 +13,6 @@
 package org.ejbca.core.model.era;
 
 import java.security.KeyStoreException;
-import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 
@@ -157,17 +156,6 @@ public interface RaMasterApi {
      */
     byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
             byte[] certificateRequest) throws AuthorizationDeniedException;
-
-    /**
-     * Signs the certificate and returns it as PKCS#7. CA about the sign is going to be found using issuer DN from the certificate.
-     * @param authenticationToken authentication token
-     * @param certificate certificate about to be signed
-     * @param includeChain true if all chain should be included, false otherwise
-     * @return PKCS#7 binary data
-     * @throws AuthorizationDeniedException
-     */
-    byte[] createPkcs7(AuthenticationToken authenticationToken, X509Certificate certificate, boolean includeChain)
-            throws AuthorizationDeniedException;
 
     /**
      * Finds end entity by its username.
