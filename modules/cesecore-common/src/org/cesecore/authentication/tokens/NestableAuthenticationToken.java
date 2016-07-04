@@ -69,6 +69,14 @@ public abstract class NestableAuthenticationToken extends LocalJvmOnlyAuthentica
         }
     }
 
+    @Override
+    public void initRandomToken() {
+        super.initRandomToken();
+        if (nestedAuthenticationToken!=null) {
+            nestedAuthenticationToken.initRandomToken();
+        }
+    }
+
     /** Returns information of the entity this authentication token belongs to. */
     @Override
     public String toString() {

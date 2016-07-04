@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.LocalJvmOnlyAuthenticationToken;
+import org.cesecore.authentication.tokens.NestableAuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -443,7 +444,12 @@ public abstract class ApprovalRequest implements Externalizable {
             if (log.isTraceEnabled()) {
                 log.trace("ApprovalRequest has a requestAdmin token of type: "+this.requestAdmin.getClass().getName());
             }
-            if (this.requestAdmin instanceof LocalJvmOnlyAuthenticationToken) {
+            if (this.requestAdmin instanceof NestableAuthenticationToken) {
+                if (log.isTraceEnabled()) {
+                    log.trace("It was a NestableAuthenticationToken so we will re-init it with local random token.");
+                }
+                ((NestableAuthenticationToken)this.requestAdmin).initRandomToken();
+            } else if (this.requestAdmin instanceof LocalJvmOnlyAuthenticationToken) {
                 if (log.isTraceEnabled()) {
                 	log.trace("It was a LocalJvmOnlyAuthenticationToken so we will re-init it with local random token.");
                 }
@@ -471,7 +477,12 @@ public abstract class ApprovalRequest implements Externalizable {
             if (log.isTraceEnabled()) {
                 log.trace("ApprovalRequest has a requestAdmin token of type: "+this.requestAdmin.getClass().getName());
             }
-            if (this.requestAdmin instanceof LocalJvmOnlyAuthenticationToken) {
+            if (this.requestAdmin instanceof NestableAuthenticationToken) {
+                if (log.isTraceEnabled()) {
+                    log.trace("It was a NestableAuthenticationToken so we will re-init it with local random token.");
+                }
+                ((NestableAuthenticationToken)this.requestAdmin).initRandomToken();
+            } else if (this.requestAdmin instanceof LocalJvmOnlyAuthenticationToken) {
                 if (log.isTraceEnabled()) {
                     log.trace("It was a LocalJvmOnlyAuthenticationToken so we will re-init it with local random token.");
                 }
