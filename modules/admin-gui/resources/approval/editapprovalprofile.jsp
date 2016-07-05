@@ -76,7 +76,7 @@
 						onchange="document.getElementById('approvalProfilesForm:selectProfileType').click();" disabled="#{approvalProfilesMBean.viewOnly}">
 					<f:selectItems value="#{approvalProfileMBean.approvalProfileTypesAvailable}"/>
 				</h:selectOneMenu>
-				<h:commandButton id="selectProfileType" action="#{approvalProfileMBean.selectUpdate}" value="#{approvalProfileMBean.currentApprovalProfileTypeName}"
+				<h:commandButton id="selectProfileType" action="#{approvalProfileMBean.selectUpdate}" value="#{web.text.APPROVALPROFILETYPE_UPDATE}"
                     rendered="#{!approvalProfilesMBean.viewOnly}"/>
 				<script>document.getElementById('approvalProfilesForm:selectProfileType').style.display = 'none';</script>
 			</h:panelGroup>		
