@@ -10,7 +10,6 @@
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build-lib.dir" location="${this.dir}/build-lib"/>
 	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="src-gen.dir" location="${this.dir}/src-gen"/>
 
 	<path id="compile.classpath">
 		<path refid="compile-library.classpath"/>
@@ -90,10 +89,8 @@
     <target name="compile-library-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common"/></target>
     <target name="compile-library" depends="compile-library-external-deps">
     	<mkdir dir="${build-lib.dir}" />
-        <javac destdir="${build-lib.dir}" debug="on" includeantruntime="no"
+        <javac destdir="${build-lib.dir}" debug="on" includeantruntime="no" srcdir="${src.dir}"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-library.classpath">
-        	<src path="${src-gen.dir}"/>
-        	<src path="${src.dir}"/>
     	    <include name="org/ejbca/core/protocol/ws/common/*.java"/>
     	    <include name="org/ejbca/core/protocol/ws/objects/*.java"/>
     	</javac>
