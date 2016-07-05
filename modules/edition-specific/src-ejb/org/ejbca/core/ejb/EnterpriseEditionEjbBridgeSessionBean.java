@@ -17,7 +17,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 /**
- * JEE5 EJB lookup helper.
+ * JEE5 EJB lookup helper for Community Edition EJBs.
  * 
  * @version $Id$
  */
