@@ -93,14 +93,14 @@
 		<appender-ref ref="AuditLogger"/>
 	</category>
 	
-	<!-- DEBUG is enabled by default from the root category in the end -->
+	<!-- INFO is enabled by default from the root category in the end -->
 	<!--
 	<category name="org.ejbca">
-        <priority value="TRACE"/>
+        <priority value="DEBUG"/>
     </category>
 
     <category name="org.cesecore">
-        <priority value="TRACE"/>
+        <priority value="DEBUG"/>
     </category>
 	-->
 	
@@ -128,8 +128,7 @@
 	</category>
 
 	<root> 
-		<priority value="DEBUG" />
-		<appender-ref ref="CONSOLE"/>
+		<priority value="INFO" />
 		<appender-ref ref="FILE"/>
 	</root> 
 
