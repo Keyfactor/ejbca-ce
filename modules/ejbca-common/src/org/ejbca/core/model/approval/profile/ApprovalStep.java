@@ -181,11 +181,21 @@ public class ApprovalStep implements Serializable {
         return newPartition;
     }
     
-    public void addPartition(ApprovalPartition partition) {
+    /**
+     * Adds a partition. This method is package specific to avoid outside use. Using this method directly will not lead to values in this step being serialized. 
+     * 
+     * @param partition a partition
+     */
+    void addPartition(ApprovalPartition partition) {
         partitions.put(partition.getPartitionIdentifier(), partition);
     }
     
-    public void removePartition(int partitionIdentifier) {
+    /**
+     * This method is package specific to avoid outside use. Using this method directly will not lead to values in this step being serialized. 
+     * 
+     * @param partitionIdentifier the ID of a partition
+     */
+    void removePartition(int partitionIdentifier) {
        partitions.remove(partitionIdentifier);
     }
 

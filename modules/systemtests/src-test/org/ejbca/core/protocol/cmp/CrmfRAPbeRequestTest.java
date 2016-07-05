@@ -23,6 +23,7 @@ import java.io.File;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.KeyPair;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -468,7 +469,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             userdata.setPassword("foo123");
             this.endEntityManagementSession.addUser(ADMIN, userdata, true);
             fileHandles.addAll(BatchCreateTool.createAllNew(ADMIN, new File(P12_FOLDER_NAME)));
-            Collection<java.security.cert.Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
+            Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
             assertTrue(userCerts.size() == 1);
             X509Certificate cert = (X509Certificate) userCerts.iterator().next();
             // revoke via CMP and verify response

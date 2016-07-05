@@ -56,6 +56,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -456,7 +457,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             int approvalType, int approvalCAID, final ApprovalProfile approvalProfile, final int sequenceId, final int partitionId) throws Exception {
         log.debug("approvingAdmin=" + approvingAdmin.toString() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType
                 + " approvalCAID=" + approvalCAID);
-        Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
+        Collection<CertificateWrapper> wrappedCertificates = certificateStoreSession.findCertificatesByUsername(username);
+        Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(wrappedCertificates);
         int approvedRevocations = 0;
         for(Certificate cert : userCerts) {
             String issuerDN = CertTools.getIssuerDN(cert);

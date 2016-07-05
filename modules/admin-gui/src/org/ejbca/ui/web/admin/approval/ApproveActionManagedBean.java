@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,6 +59,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.RAAuthorization;
@@ -133,7 +135,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     
     
 	private String comment = "";
-	private ApprovalDataVOView approveRequestData = new ApprovalDataVOView();      
+	private ApprovalDataVOView approvalDataVOView = new ApprovalDataVOView();      
 	private HashMap<Integer, String> statustext = null;
 	private Map<Integer, Action> partitionActions;
 	
@@ -158,11 +160,11 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 	}
 
 	public ApprovalDataVOView getApproveRequestData() {
-		return approveRequestData;
+		return approvalDataVOView;
 	}
 
 	public boolean isApprovalRequestComparable() {		
-		return approveRequestData.getApproveActionDataVO().getApprovalRequest().getApprovalRequestType() == ApprovalRequest.REQUESTTYPE_COMPARING;
+		return approvalDataVOView.getApproveActionDataVO().getApprovalRequest().getApprovalRequestType() == ApprovalRequest.REQUESTTYPE_COMPARING;
 	}
 
 	public String getWindowWidth(){
@@ -174,8 +176,8 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 
     public List<ApprovalView> getApprovalViews() {
         List<ApprovalView> approvalViews = new ArrayList<ApprovalView>();
-        if (approveRequestData != null && approveRequestData.getApproveActionDataVO().getApprovals() != null) {
-            for(Approval approval : approveRequestData.getApproveActionDataVO().getApprovals()) {
+        if (approvalDataVOView != null && approvalDataVOView.getApproveActionDataVO().getApprovals() != null) {
+            for(Approval approval : approvalDataVOView.getApproveActionDataVO().getApprovals()) {
                 approvalViews.add(new ApprovalView(approval));
             }
         }
@@ -183,11 +185,11 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
  
     public boolean isExistsApprovals(){
-    	return approveRequestData.getApproveActionDataVO().getApprovals().size() >0;
+    	return approvalDataVOView.getApproveActionDataVO().getApprovals().size() >0;
     }
        
     public boolean isApprovable(){
-    	return approveRequestData.getApproveActionDataVO().getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
+    	return approvalDataVOView.getApproveActionDataVO().getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
     }
 
     public List<SelectItem> getActionsAvailable() {
@@ -206,7 +208,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     private Map<Integer, Action> getPartitionActions() {
         if (partitionActions == null) {
             partitionActions = new HashMap<>();
-            for (Approval approval : approveRequestData.getApproveActionDataVO().getApprovals()) {
+            for (Approval approval : approvalDataVOView.getApproveActionDataVO().getApprovals()) {
                 if (approval.getStepId() == getCurrentStep().getStepIdentifier()) {
                     if (approval.isApproved()) {
                         partitionActions.put(approval.getPartitionId(), Action.APPROVE);
@@ -231,36 +233,53 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
     
     public String saveState(ActionEvent event) {
-        for (Integer partitionId : getPartitionActions().keySet()) {
-            try {
-                final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
-                final Approval approval = new Approval(comment, getCurrentStep().getStepIdentifier(), partitionId);
-                switch (getPartitionActions().get(partitionId)) {
-                case APPROVE:
-                    approvalExecutionSession.approve(admin, approveRequestData.getApprovalId(), approval);
-                    updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
-                    break;
-                case REJECT:
-                    approvalExecutionSession.reject(admin, approveRequestData.getApprovalId(), approval);
-                    updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
-                    break;
-                case NO_ACTION:
-                    break;
-                default:
-                    break;
+        ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(getAdmin(), approvalDataVOView.getApprovalId());
+        ApprovalRequest approvalRequest = approvalDataVO.getApprovalRequest();
+        ApprovalProfile storedApprovalProfile = approvalRequest.getApprovalProfile();
+        for (Iterator<ApprovalPartitionProfileGuiObject> iter = partitionsAuthorizedToView.iterator(); iter.hasNext(); ) {
+            ApprovalPartitionProfileGuiObject approvalPartitionGuiObject = iter.next();
+            Integer partitionId = approvalPartitionGuiObject.getPartitionId();
+            if (partitionsAuthorizedToApprove.contains(partitionId)) {
+                try {
+                    final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
+                    ApprovalStep currentStep = getCurrentStep();
+                    //Overwrite the stored partition in the request in order to persist metadata.
+                    List<DynamicUiProperty<? extends Serializable>> updatedProperties = new ArrayList<>();
+                    for (Iterator<DynamicUiProperty<? extends Serializable>> propertyIterator = approvalPartitionGuiObject.getProfilePropertyList()
+                            .iterator(); propertyIterator.hasNext();) {
+                        updatedProperties.add(propertyIterator.next());
+                    }
+                    storedApprovalProfile.addPropertiesToPartition(currentStep.getStepIdentifier(), partitionId, updatedProperties);
+                    //Update any set meta data. 
+                    final Approval approval = new Approval(comment, currentStep.getStepIdentifier(), partitionId);
+                    switch (getPartitionActions().get(partitionId)) {
+                    case APPROVE:
+                        approvalExecutionSession.approve(admin, approvalDataVOView.getApprovalId(), approval);
+                        updateApprovalRequestData(approvalDataVOView.getApproveActionDataVO().getId());
+                        break;
+                    case REJECT:
+                        approvalExecutionSession.reject(admin, approvalDataVOView.getApprovalId(), approval);
+                        updateApprovalRequestData(approvalDataVOView.getApproveActionDataVO().getId());
+                        break;
+                    case NO_ACTION:
+                        break;
+                    default:
+                        break;
+                    }
+                } catch (ApprovalRequestExpiredException e) {
+                    addErrorMessage("APPROVALREQUESTEXPIRED");
+                } catch (ApprovalRequestExecutionException e) {
+                    addErrorMessage("ERROREXECUTINGREQUEST");
+                } catch (AuthorizationDeniedException | AuthenticationFailedException e) {
+                    addErrorMessage("AUTHORIZATIONDENIED");
+                } catch (ApprovalException e) {
+                    addErrorMessage("ERRORHAPPENDWHENAPPROVING");
+                } catch (AdminAlreadyApprovedRequestException | SelfApprovalException e) {
+                    addErrorMessage(e.getMessage());
                 }
-            } catch (ApprovalRequestExpiredException e) {
-                addErrorMessage("APPROVALREQUESTEXPIRED");
-            } catch (ApprovalRequestExecutionException e) {
-                addErrorMessage("ERROREXECUTINGREQUEST");
-            } catch (AuthorizationDeniedException | AuthenticationFailedException e) {
-                addErrorMessage("AUTHORIZATIONDENIED");
-            } catch (ApprovalException e) {
-                addErrorMessage("ERRORHAPPENDWHENAPPROVING");
-            } catch (AdminAlreadyApprovedRequestException | SelfApprovalException e) {
-                addErrorMessage(e.getMessage());
             }
         }
+        approvalSession.updateApprovalRequest(approvalDataVO.getId(), approvalRequest);
         //Hack for closing the window after saving
         FacesContext facesContext = FacesContext.getCurrentInstance(); 
         //Yeah. I know. 
@@ -272,51 +291,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         //I'm so, so sorry. I have dishonored my dojo. 
         return "approveaction";
     }
-    
-   
-    public String approve() {
-        //TODO FIXME (Retrieve sequence and partition identifiers from GUI)
-        final Approval approval = new Approval(comment, 0, 0);
-        try {
-            final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
-            approvalExecutionSession.approve(admin, approveRequestData.getApprovalId(), approval);
-            updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
-        } catch (ApprovalRequestExpiredException e) {
-            addErrorMessage("APPROVALREQUESTEXPIRED");
-        } catch (ApprovalRequestExecutionException e) {
-            addErrorMessage("ERROREXECUTINGREQUEST");
-        } catch (AuthorizationDeniedException | AuthenticationFailedException e) {
-            addErrorMessage("AUTHORIZATIONDENIED");
-        } catch (ApprovalException e) {
-            addErrorMessage("ERRORHAPPENDWHENAPPROVING");
-        } catch (AdminAlreadyApprovedRequestException | SelfApprovalException e) {
-            addErrorMessage(e.getMessage());
-        } 
-        return "approveaction";
-    }
-
-    public String reject(){
-        
-        final Approval approval = new Approval(comment, 0, 0);
-        try {
-            final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
-            approvalExecutionSession.reject(admin, approveRequestData.getApprovalId(), approval);
-            updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
-        } catch (ApprovalRequestExpiredException e) {
-            addErrorMessage("APPROVALREQUESTEXPIRED");
-        } catch (AuthorizationDeniedException | AuthenticationFailedException e) {
-            addErrorMessage("AUTHORIZATIONDENIED");
-        } catch (ApprovalException e) {
-            addErrorMessage("ERRORHAPPENDWHENAPPROVING");
-        } catch (AdminAlreadyApprovedRequestException e) {
-            addErrorMessage(e.getMessage());
-        } catch (SelfApprovalException e) {
-            addErrorMessage("SELF_APPROVAL_ERROR");
-        }
-
-        return "approveaction";
-    }
-       
+           
     public void setUniqueId(int uniqueId) {
     	log.debug("ApproveActionSessionBean.setApprovalId setting uniqueId : " + uniqueId);
     	updateApprovalRequestData(uniqueId);	
@@ -334,7 +309,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     		        raAuthorization.getEndEntityProfileAuthorizationString(AccessRulesConstants.APPROVE_END_ENTITY), 
     		        raAuthorization.getApprovalProfileAuthorizationString());
     		if (result.size() > 0) {
-    			this.approveRequestData = new ApprovalDataVOView(result.get(0));
+    			this.approvalDataVOView = new ApprovalDataVOView(result.get(0));
     		}
     	} catch (IllegalQueryException e) {
     		addErrorMessage("INVALIDQUERY");
@@ -363,9 +338,9 @@ public class ApproveActionManagedBean extends BaseManagedBean {
      * @return the ordinal of the step currently being evaluated
      */
     public int getCurrentStepOrdinal() {
-        Collection<Approval> approvals = approveRequestData.getApproveActionDataVO().getApprovals();
+        Collection<Approval> approvals = approvalDataVOView.getApproveActionDataVO().getApprovals();
         try {
-            return approveRequestData.getApprovalProfile().getOrdinalOfStepBeingEvaluated(approvals);
+            return approvalDataVOView.getApprovalProfile().getOrdinalOfStepBeingEvaluated(approvals);
         } catch (AuthenticationFailedException e) {
             throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
         }
@@ -377,9 +352,9 @@ public class ApproveActionManagedBean extends BaseManagedBean {
      * @return the step currently being evaluated
      */
     public ApprovalStep getCurrentStep() {
-        Collection<Approval> approvals = approveRequestData.getApproveActionDataVO().getApprovals();
+        Collection<Approval> approvals = approvalDataVOView.getApproveActionDataVO().getApprovals();
         try {
-            return approveRequestData.getApprovalProfile().getStepBeingEvaluated(approvals);
+            return approvalDataVOView.getApprovalProfile().getStepBeingEvaluated(approvals);
         } catch (AuthenticationFailedException e) {
             //We shouldn't have gotten here in the UI with an invalid token
             throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
@@ -394,14 +369,17 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     public ListDataModel<ApprovalPartitionProfileGuiObject> getPreviousPartitions() {
         if (previousPartitions == null) {
             List<ApprovalPartitionProfileGuiObject> authorizedPartitions = new ArrayList<>();
-            ApprovalStep step = approveRequestData.getApprovalProfile().getFirstStep();
+            ApprovalStep step = approvalDataVOView.getApprovalRequest().getApprovalProfile().getFirstStep();
             ApprovalStep currentStep = getCurrentStep();
-            while (!step.equals(currentStep)) {
+            while (step != null) {
+                if(currentStep != null && step.equals(currentStep)) {
+                    break;
+                }
                 for (ApprovalPartition approvalPartition : step.getPartitions().values()) {
                     try {
-                        if (approveRequestData.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
+                        if (approvalDataVOView.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
                             authorizedPartitions
-                                    .add(new ApprovalPartitionProfileGuiObject(approveRequestData.getApprovalProfile().getApprovalProfileIdentifier(),
+                                    .add(new ApprovalPartitionProfileGuiObject(approvalDataVOView.getApprovalProfile().getApprovalProfileIdentifier(),
                                             approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalPartition)));
                         }
                     } catch (AuthenticationFailedException e) {
@@ -409,7 +387,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                         throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
                     }
                 }
-                step = approveRequestData.getApprovalProfile().getStep(step.getNextStep());
+                step = approvalDataVOView.getApprovalProfile().getStep(step.getNextStep());
             }
             previousPartitions = new ListDataModel<ApprovalPartitionProfileGuiObject>(authorizedPartitions);
         }
@@ -425,22 +403,23 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         if (partitionsAuthorizedToView == null) {
             List<ApprovalPartitionProfileGuiObject> authorizedPartitions = new ArrayList<>();
             partitionsAuthorizedToApprove = new HashSet<>();
-            for (ApprovalPartition approvalPartition : getCurrentStep().getPartitions().values()) {
-                try {
-                    if (approveRequestData.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
-                        authorizedPartitions
-                                .add(new ApprovalPartitionProfileGuiObject(approveRequestData.getApprovalProfile().getApprovalProfileIdentifier(),
-                                        approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalPartition)));
+            if (getCurrentStep() != null) {
+                for (ApprovalPartition approvalPartition : getCurrentStep().getPartitions().values()) {
+                    try {
+                        if (approvalDataVOView.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
+                            authorizedPartitions
+                                    .add(new ApprovalPartitionProfileGuiObject(approvalDataVOView.getApprovalProfile().getApprovalProfileIdentifier(),
+                                            approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalPartition)));
+                        }
+                        if (approvalDataVOView.getApprovalProfile().canApprovePartition(getAdmin(), approvalPartition)) {
+                            partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
+                        }
+                    } catch (AuthenticationFailedException e) {
+                        //We shouldn't have gotten here in the UI with an invalid token
+                        throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
                     }
-                    if(approveRequestData.getApprovalProfile().canApprovePartition(getAdmin(), approvalPartition)) {
-                        partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
-                    }
-                } catch (AuthenticationFailedException e) {
-                    //We shouldn't have gotten here in the UI with an invalid token
-                    throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
                 }
             }
-            
             partitionsAuthorizedToView = new ListDataModel<ApprovalPartitionProfileGuiObject>(authorizedPartitions);
 
         }
@@ -460,7 +439,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
      * @return a Map linking partitions IDs to lists of each partitions properties. 
      */
     private List<DynamicUiProperty<? extends Serializable>> getPartitionProperties(ApprovalPartition approvalPartition) {
-        Set<String> hiddenPropertyNames = approveRequestData.getApprovalProfile().getHiddenProperties();    
+        Set<String> hiddenPropertyNames = approvalDataVOView.getApprovalProfile().getHiddenProperties();    
         List<DynamicUiProperty<? extends Serializable>> propertyList = new ArrayList<>();
         for (String propertyName : approvalPartition.getPropertyList().keySet()) {
             if (!hiddenPropertyNames.contains(propertyName)) {

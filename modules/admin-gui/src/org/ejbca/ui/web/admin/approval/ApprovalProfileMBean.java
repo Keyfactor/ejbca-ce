@@ -90,9 +90,10 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     @EJB
     private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
-    private RoleAccessSessionLocal roleAccessSession;
-    @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private RoleAccessSessionLocal roleAccessSession;
+
 
     @ManagedProperty(value = "#{approvalProfilesMBean}")
     private ApprovalProfilesMBean approvalProfilesMBean;
@@ -175,6 +176,9 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             property = new DynamicUiProperty<>(fieldLabel, null, new ArrayList<RadioButton>());
             property.setType(RadioButton.class);
             break;
+        case CHECKBOX: 
+            property = new DynamicUiProperty<>(fieldLabel, Boolean.FALSE);
+            break;
         default:
             return "";
         }
@@ -202,6 +206,10 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                         .getProfilePropertyList().getRowData();
                 Collection<RadioButton> possibleValues = new ArrayList<>(radioButtonProperty.getPossibleValues());
                 RadioButton newRadio = new RadioButton(label);
+                if(possibleValues.contains(newRadio)) {
+                    addErrorMessage("APPROVAL_PROFILE_FIELD_RADIO_EXISTS");
+                    return "";
+                }
                 if (possibleValues.size() == 0) {
                     radioButtonProperty.setDefaultValue(newRadio);
                 }
@@ -227,11 +235,11 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 List<RadioButton> oldValues = new ArrayList<>(radioButtonProperty.getPossibleValues());
                 List<RadioButton> prunedValues = new ArrayList<>();
                 for(RadioButton dynamicRadioButton : oldValues) {
-                    if(dynamicRadioButton.getIdentifier() != radioButton.getIdentifier()) {
+                    if(!dynamicRadioButton.equals(radioButton)) {
                         prunedValues.add(dynamicRadioButton);
                     }
                 }
-                if(radioButtonProperty.getDefaultValue().getIdentifier() == radioButton.getIdentifier()) {
+                if(radioButtonProperty.getDefaultValue().equals(radioButton)) {
                     radioButtonProperty.setDefaultValue(prunedValues.get(0));
                 }        
                 radioButtonProperty.setPossibleValues(prunedValues);

@@ -51,4 +51,11 @@ public interface ApprovalSessionLocal extends ApprovalSession {
 	
 	ApprovalData findNonExpiredApprovalDataLocal(int approvalId);
 
+	 /**
+      * Updates the approval request field for an approval
+      * 
+      * @param approvalDataId the ID of an approvalData object (not the approval ID)
+      * @param approvalRequest the updated approval request
+      */
+     void updateApprovalRequest(final int approvalDataId, final ApprovalRequest approvalRequest);
 }

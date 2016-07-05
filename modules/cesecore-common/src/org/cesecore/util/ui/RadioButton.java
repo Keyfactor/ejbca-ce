@@ -14,8 +14,6 @@ package org.cesecore.util.ui;
 
 import java.io.Serializable;
 
-import org.cesecore.util.ProfileID;
-
 /**
  * POJO for a set of radio buttons in a Dynamic UI Property
  * 
@@ -26,15 +24,13 @@ public class RadioButton implements Serializable {
     
     private static final long serialVersionUID = 1L;
     private String label;
-    private final int identifier;
     
     public RadioButton(final String label) {
-        this.identifier = ProfileID.getRandomIdNumber();
         this.label = label;
     }
 
     public String getLabel() {
-        return "moop";
+        return label;
     }
 
 
@@ -48,15 +44,12 @@ public class RadioButton implements Serializable {
         return label;
     }
 
-    public int getIdentifier() {
-        return identifier;
-    }
-
+    
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + identifier;
+        result = prime * result + ((label == null) ? 0 : label.hashCode());
         return result;
     }
 
@@ -69,11 +62,14 @@ public class RadioButton implements Serializable {
         if (getClass() != obj.getClass())
             return false;
         RadioButton other = (RadioButton) obj;
-        if (identifier != other.identifier)
+        if (label == null) {
+            if (other.label != null)
+                return false;
+        } else if (!label.equals(other.label))
             return false;
         return true;
     }
-    
+
     public boolean equals(String encodedValue) {
         return equals(DynamicUiProperty.getAsObject(encodedValue));
     }

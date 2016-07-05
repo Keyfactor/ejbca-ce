@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.cesecore.util.Base64;
 
 /**
@@ -32,7 +33,6 @@ import org.cesecore.util.Base64;
 public class DynamicUiProperty<T extends Serializable> implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(DynamicUiProperty.class);
 
     private String name;
     private T defaultValue;
@@ -81,14 +81,19 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * Copy constructor for DynamicUiProperty objects
      * @param original the original property
      */
+    @SuppressWarnings("unchecked")
     public DynamicUiProperty(final DynamicUiProperty<T> original) {
         this.name = original.getName();
         this.defaultValue = original.getDefaultValue();
         this.setHasMultipleValues(original.getHasMultipleValues());
-        if (!original.hasMultipleValues) {
-            setValue(original.getValue());
+        if (!original.hasMultipleValues) {           
+            setValue((T) SerializationUtils.clone(original.getValue()));
         } else {
-            setValues(original.getValues());
+            List<T> clonedValues = new ArrayList<>();
+            for(T value : original.getValues()) {
+                clonedValues.add((T) SerializationUtils.clone(value));
+            }
+            setValues(clonedValues);
         }
         this.possibleValues = original.getPossibleValues();
         this.propertyCallback = original.getPropertyCallback();
