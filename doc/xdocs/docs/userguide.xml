@@ -17,7 +17,7 @@ To go straight ahead and learn how to configure profiles and issue server certif
 <ol>
 <li><a href="#Create%20a%20Certificate%20Profile%20for%20SSL%20servers">Create a Certificate Profile for SSL servers</a></li>
 <li><a href="#Create%20an%20End%20Entity%20Profile%20for%20SSL%20servers">Create an End Entity Profile for SSL servers</a></li>
-<li><a href="#Issue%20a%20new%20end%20entity%20certificate%20for%20an%20SSL%20server">Issue a new end entity certificate for an SSL server</a></li>
+<li><a href="#Issue%20a%20new%20server%20certificate%20from%20a%20CSR">Issue a new server certificate from a CSR</a></li>
 </ol>
 </section>
 
