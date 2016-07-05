@@ -14,7 +14,6 @@ package org.ejbca.core.model.approval.profile;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -154,7 +153,7 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
       * @param properties a list of DynamicUiProperties
       * @throws NoSuchApprovalStepException if the step identified by stepId didn't exist
       */
-     void addPropertiesToPartition(final Integer stepId, final int partitionId, final List< DynamicUiProperty<? extends Serializable>> properties) throws NoSuchApprovalStepException;
+     void addPropertiesToPartition(final Integer stepId, final int partitionId, final Collection< DynamicUiProperty<? extends Serializable>> properties) throws NoSuchApprovalStepException;
    
         
     /**

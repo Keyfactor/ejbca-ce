@@ -19,6 +19,7 @@ import javax.faces.convert.ConverterException;
 import javax.faces.convert.FacesConverter;
 
 import org.cesecore.util.ui.DynamicUiProperty;
+import org.cesecore.util.ui.RadioButton;
 
 /**
  * Handles conversions of DynamicTextField objects from the UI 
@@ -26,15 +27,15 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * @version $Id$
  *
  */
-@FacesConverter("radioButtonConverter")
-public class RadioButtonConverter implements Converter{
+@FacesConverter("radioButtonLabelConverter")
+public class RadioButtonLabelConverter implements Converter{
     
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
         if (value == null || value.isEmpty()) {
             return null;
         }
-        return DynamicUiProperty.getAsObject(value);
+        return new RadioButton(value);
     }
 
     @Override
@@ -42,7 +43,7 @@ public class RadioButtonConverter implements Converter{
         if (value == null) {
             return null;
         }
-        return (String) value;
+        return ((RadioButton) DynamicUiProperty.getAsObject((String) value)).toString();
     }
 
 }

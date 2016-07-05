@@ -306,25 +306,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         final List<ApprovalDataVO> returnData = new ArrayList<ApprovalDataVO>(approvalDataList.size());
         for (ApprovalData approvalData : approvalDataList) {
             final ApprovalDataVO approvalInformation = approvalData.getApprovalDataVO();
-            //if(approvalData.getApprovalprofileid() != 0) {
-                //Let approvals created prior to 6.6.0 (which lack data in the profile ID column) pass 
-              //  final ApprovalStep approvalStep = approvalInformation.getApprovalRequest().getNextUnhandledApprovalStepByAdmin(admin);
-               // if(approvalStep == null) {
-               //     continue;
-               // }
-                // Only return approvals that the given admin either can approve, or has approved.
-            //    final ApprovalStep nextStep = approvalInformation.getApprovalRequest().getNextUnhandledApprovalStepByAdmin(admin);
-            //    boolean hasPreviousApprovalByAdmin = false;
-            //    for (final Approval prevApproval : approvalInformation.getApprovals()) {
-           //         if (prevApproval.getAdmin().equals(admin)) {
-           //             hasPreviousApprovalByAdmin = true;
-          //          }
-          //      }
-          //      if (nextStep == null && !hasPreviousApprovalByAdmin && ) {
-          //          continue;
-          //      }
-
-     //       }
             returnData.add(approvalInformation);
             
         }
@@ -468,7 +449,14 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         }
         return approvalData.getStatus();
     }
-
+    
+    @Override
+    public void updateApprovalRequest(final int approvalDataId, final ApprovalRequest approvalRequest) {
+        ApprovalData approvalData = findById(approvalDataId);
+        setApprovalRequest(approvalData, approvalRequest);
+        entityManager.merge(approvalData);
+    }
+    
     private final void setApprovalRequest(final ApprovalData approvalData, final ApprovalRequest approvalRequest) {
         try {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();

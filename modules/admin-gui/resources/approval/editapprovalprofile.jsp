@@ -156,10 +156,9 @@
 									<h:dataTable value="#{partition.propertyPossibleValues}" var="radioButton" 
 										columnClasses="column-checkbox1, column-checkbox2" style="width: 100%;">
 										<h:column>
-											<input type="radio" name="<h:outputText value='#{property.name}'/>" 
-												<h:outputText value="disabled" rendered="#{approvalProfilesMBean.viewOnly}"/> 												
-											/>
-											<h:outputText value="#{radioButton.value}" converter="radioButtonConverter"/>									
+											<!-- Selecting default values hasn't been implemented, so radio buttons are rendered disabled -->
+											<input type="radio" name="<h:outputText value='#{property.name}'/>" disabled /> 	
+											<h:outputText value="#{radioButton.value}" converter="radioButtonLabelConverter"/>									
 										</h:column>
 										<h:column>										
 											<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_REMOVE_ROW}" disabled="#{approvalProfilesMBean.viewOnly}"
