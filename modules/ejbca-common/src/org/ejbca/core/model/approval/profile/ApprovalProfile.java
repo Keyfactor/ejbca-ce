@@ -14,6 +14,7 @@ package org.ejbca.core.model.approval.profile;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -146,14 +147,15 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
      */
      ApprovalPartition addPartition(final int stepIdentifier);
     
-    /**
-     * 
-     * @param stepId the identifier of the step
-     * @param partitionId the ID of a partition in the step
-     * @param properties a list of DynamicUiProperties
-     * @throws NoSuchApprovalStepException if the step identified by stepId didn't exist
-     */
-    void addPropertiesToPartition(final Integer stepId, final int partitionId, final Collection< DynamicUiProperty<? extends Serializable>> properties) throws NoSuchApprovalStepException;
+     /**
+      * 
+      * @param stepId the identifier of the step
+      * @param partitionId the ID of a partition in the step
+      * @param properties a list of DynamicUiProperties
+      * @throws NoSuchApprovalStepException if the step identified by stepId didn't exist
+      */
+     void addPropertiesToPartition(final Integer stepId, final int partitionId, final List< DynamicUiProperty<? extends Serializable>> properties) throws NoSuchApprovalStepException;
+   
         
     /**
      * Identifier of the sequence to read first. 
