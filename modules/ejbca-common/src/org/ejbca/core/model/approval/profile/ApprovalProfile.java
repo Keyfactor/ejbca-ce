@@ -14,7 +14,6 @@ package org.ejbca.core.model.approval.profile;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -154,7 +153,7 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
      * @param properties a list of DynamicUiProperties
      * @throws NoSuchApprovalStepException if the step identified by stepId didn't exist
      */
-    void addPropertiesToPartition(final Integer stepId, final int partitionId, final List< DynamicUiProperty<? extends Serializable>> properties) throws NoSuchApprovalStepException;
+    void addPropertiesToPartition(final Integer stepId, final int partitionId, final Collection< DynamicUiProperty<? extends Serializable>> properties) throws NoSuchApprovalStepException;
         
     /**
      * Identifier of the sequence to read first. 
@@ -206,9 +205,11 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     int getOrdinalOfStepBeingEvaluated(final Collection<Approval> approvalsPerformed) throws AuthenticationFailedException;
     
     /**
+     * Returns the first step which hasn't been fully evaluated by the given collection of approvals, or null if all steps 
+     * have been evaluated. 
      * 
      * @param approvalsPerformed approvalsPerformed a list of performed approvals
-     * @return the step currently being evaluated, given the performed approvals
+     * @return the step currently being evaluated, given the performed approvals, or null if all steps have been evaluated. 
      * @throws AuthenticationFailedException if the authentication of the approvals failed 
      */
     ApprovalStep getStepBeingEvaluated(final Collection<Approval> approvalsPerformed) throws AuthenticationFailedException;
