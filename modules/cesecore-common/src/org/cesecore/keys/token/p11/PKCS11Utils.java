@@ -151,7 +151,7 @@ public class PKCS11Utils {
      */
     public void securityInfo(final Key key, final String providerName, final StringBuilder sb) {
         if ( this.securityInfo==null ) {
-            sb.append("No CESCoreUtils in classpath.");
+            sb.append("No CESeCoreUtils in classpath.");
             return;
         }
         try {
