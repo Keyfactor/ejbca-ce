@@ -207,7 +207,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     }
 
     @Override
-    public void addPropertiesToPartition(Integer stepId, int partitionId, List<DynamicUiProperty<? extends Serializable>> properties)
+    public void addPropertiesToPartition(Integer stepId, int partitionId, Collection<DynamicUiProperty<? extends Serializable>> properties)
             throws NoSuchApprovalStepException {
         for (final DynamicUiProperty<? extends Serializable> property : properties) {
             addPropertyToPartition(stepId, partitionId, property);

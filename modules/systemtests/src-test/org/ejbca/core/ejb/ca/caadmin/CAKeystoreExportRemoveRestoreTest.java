@@ -45,9 +45,8 @@ import org.junit.Test;
 /**
  * Tests for the Soft catoken removal functionality.
  * 
- * A CA keystore can be exported using caAdminSessionBean.exportCAKeyStore(). A
- * CA keystore can be removed using caAdminSessionBean.removeCAKeyStore(). A CA
- * keystore can be restored using caAdminSessionBean.restoreCAKeyStore().
+ * A CA keystore can be exported using caAdminSessionBean.exportCAKeyStore(). A CA keystore can be removed using 
+ * caAdminSessionBean.removeCAKeyStore(). A CA keystore can be restored using caAdminSessionBean.restoreCAKeyStore().
  * 
  * @version $Id$
  */
