@@ -339,25 +339,28 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         try {
             // When adding a new approval request the list of performed approvals is empty
             final Approval approval = approvalsPerformed.isEmpty() ? null : approvalsPerformed.get(approvalsPerformed.size()-1);
+            // If all steps has been satisfied, the ApprovalStep from getStepBeingEvaluated is null
             final ApprovalStep approvalStep = approvalProfile.getStepBeingEvaluated(approvalsPerformed);
             if (approval!=null && (!approval.isApproved() || expired)) {
-                if (approvalStep.getStepIdentifier()==approval.getStepId()) {
+                if (approvalStep==null || approvalStep.getStepIdentifier()==approval.getStepId()) {
                     // If the approval has been rejected or expired, we should notify all partition owners in the current step that still has not approved it
-                    final int currentStepId = approvalStep.getStepIdentifier();
+                    final int currentStepId = approval.getStepId();
                     final ApprovalPartition currentApprovalPartition = approvalProfile.getStep(currentStepId).getPartition(approval.getPartitionId());
                     if (expired) {
                         sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.EXPIRED);
                     } else {
                         sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.REJECTED);
                     }
-                    // Check which of the remaining partitions that need to be notified
-                    for (final ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
-                        final int remainingApprovalsInPartition = approvalProfile.getRemainingApprovalsInPartition(approvalsPerformed, approval.getStepId(),approval.getPartitionId());
-                        if (remainingApprovalsInPartition>0) {
-                            if (expired) {
-                                sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, approvalPartition, ApprovalPartitionWorkflowState.EXPIRED);
-                            } else {
-                                sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, approvalPartition, ApprovalPartitionWorkflowState.REJECTED);
+                    if (approvalStep!=null) {
+                        // Check which of the remaining partitions that need to be notified
+                        for (final ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
+                            final int remainingApprovalsInPartition = approvalProfile.getRemainingApprovalsInPartition(approvalsPerformed, approval.getStepId(),approval.getPartitionId());
+                            if (remainingApprovalsInPartition>0) {
+                                if (expired) {
+                                    sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, approvalPartition, ApprovalPartitionWorkflowState.EXPIRED);
+                                } else {
+                                    sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, approvalPartition, ApprovalPartitionWorkflowState.REJECTED);
+                                }
                             }
                         }
                     }
@@ -375,7 +378,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                     }
                 }
                 // If this is a new approval request or the current approval has completed a step, we should notify all partition owners in the next step
-                if (approval==null || approvalStep.getStepIdentifier()!=approval.getStepId()) {
+                if (approval==null || (approvalStep!=null && approvalStep.getStepIdentifier()!=approval.getStepId())) {
                     for (final ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
                         sendApprovalNotification(approvalRequest, approvalProfile, approvalStep.getStepIdentifier(), approvalPartition, ApprovalPartitionWorkflowState.REQUIRES_ACTION);
                     }
