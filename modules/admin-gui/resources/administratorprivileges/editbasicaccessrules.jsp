@@ -60,7 +60,7 @@ function selectAll(selectElement, selectDisabled, selectedValue) {
 /**
  * Enable and modify the set the state to selected of all the options that appear in the provided array.
  *
- * @param selectElement is a select multiple elemnent
+ * @param selectElement is a select multiple element
  * @param optionValues an array of (String) option values that should be enabled and selected.
  * @param the new boolean option.disabled state for unselected option
  */
@@ -117,7 +117,10 @@ function roleupdated() {
 			'<%=BasicAccessRuleSet.ENDENTITY_CREATE %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_EDIT %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_DELETE %>',
-			'<%=BasicAccessRuleSet.ENDENTITY_REVOKE %>'
+			'<%=BasicAccessRuleSet.ENDENTITY_REVOKE %>,
+			'<%=BasicAccessRuleSet.ENDENTITY_KEYRECOVER %>',
+			'<%=BasicAccessRuleSet.ENDENTITY_APPROVE %>',
+			'<%=BasicAccessRuleSet.ENDENTITY_VIEWPUK %>'
 		], true);
 		selectAll(selectinternalkeybindingrules, true, false);
 		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
