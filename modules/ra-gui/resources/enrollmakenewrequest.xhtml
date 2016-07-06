@@ -446,20 +446,19 @@
 								styleClass="pure-button ra-button">
 							</h:commandButton>
 						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
 						<h:panelGroup layout="block"
-							styleClass="keygeneration-button-group"
-							rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
+							styleClass="keygeneration-button-group">
 							<h:outputText value="#{msg.enroll_request_was_successfully_sent}" />
 						</h:panelGroup>
 						<h:panelGroup layout="block"
-							styleClass="keygeneration-button-group"
-							rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
+							styleClass="keygeneration-button-group">
 							<h:outputText value="#{msg.enroll_request_id}" />
 							<h:outputText value="#{enrollMakeNewRequestBean.requestId}" />
 						</h:panelGroup>
 						<h:panelGroup layout="block"
-							styleClass="keygeneration-button-group"
-							rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
+							styleClass="keygeneration-button-group">
 							<h:outputLink value="enrollwithrequestid.xhtml">
 								<h:outputText
 									value="#{msg.menu_pagetitle_enroll_use_request_id}" />
