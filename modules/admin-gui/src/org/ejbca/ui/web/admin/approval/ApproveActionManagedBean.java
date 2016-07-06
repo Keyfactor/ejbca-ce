@@ -197,7 +197,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
     
     public Action getActionForPartition() {
-        Action result =  getPartitionActions().get(partitionsAuthorizedToView.getRowData().getPartitionId());
+        Action result = getPartitionActions().get(partitionsAuthorizedToView.getRowData().getPartitionId());
         if(result != null) {
             return result;
         } else {
@@ -454,7 +454,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     /**
      * Extract the partition properties, and fill in all and any placeholders. Also cull any properties set to be hidden.
      * 
-     * @return a Map linking partitions IDs to lists of each partitions properties. 
+     * @return a list of dynamic properties 
      */
     private List<DynamicUiProperty<? extends Serializable>> getPartitionProperties(ApprovalPartition approvalPartition) {
         Set<String> hiddenPropertyNames = approvalDataVOView.getApprovalProfile().getHiddenProperties();    
