@@ -60,7 +60,7 @@
                     <h:commandButton action="#{raSearchEesBean.searchAndFilterAction}" value="#{msg.search_ees_page_search_command}" style="display: none;"/>
     
                     <h:panelGroup id="basic" styleClass="pure-g">
-                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-4-5">
+                        <h:panelGroup id="parentGenericSearchString" styleClass="pure-u-1 pure-u-lg-4-5">
                             <h:inputText id="genericSearchString" value="#{raSearchEesBean.genericSearchString}" styleClass="jsAutoFocusOnce jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
                                  title="#{msg.search_ees_page_criteria_generic_title}">
                                 <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
@@ -69,11 +69,11 @@
                             </h:inputText>
                         </h:panelGroup>
 
-                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
+                        <h:panelGroup id="parentGenericSearchButton" styleClass="pure-u-1 pure-u-lg-1-5">
                             <h:commandButton action="#{raSearchEesBean.searchAndFilterAction}" value="#{msg.search_ees_page_search_command}" styleClass="pure-button pure-button-primary jsHide"/>
                         </h:panelGroup>
                         
-                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
+                        <h:panelGroup id="parentCriteriaEepId" styleClass="pure-u-1 pure-u-lg-1-5">
                             <h:selectOneMenu id="criteriaEepId" value="#{raSearchEesBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneEepAvailable}">
                                 <f:selectItems value="#{raSearchEesBean.availableEeps}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
@@ -82,7 +82,7 @@
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
-                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
+                        <h:panelGroup id="parentCriteriaCpId" styleClass="pure-u-1 pure-u-lg-1-5">
                             <h:selectOneMenu id="criteriaCpId" value="#{raSearchEesBean.criteriaCpId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneCpAvailable}">
                                 <f:selectItems value="#{raSearchEesBean.availableCps}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
@@ -91,7 +91,7 @@
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
-                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
+                        <h:panelGroup id="parentCriteriaCaId" styleClass="pure-u-1 pure-u-lg-1-5">
                             <h:selectOneMenu id="criteriaCaId" value="#{raSearchEesBean.criteriaCaId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneCaAvailable}">
                                 <f:selectItems value="#{raSearchEesBean.availableCas}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
@@ -100,7 +100,7 @@
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
-                        <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
+                        <h:panelGroup id="parentCriteriaStatus" styleClass="pure-u-1 pure-u-lg-1-5">
                             <h:selectOneMenu id="criteriaStatus" value="#{raSearchEesBean.criteriaStatus}" styleClass="pure-input-1">
                                 <f:selectItems value="#{raSearchEesBean.availableStatuses}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
