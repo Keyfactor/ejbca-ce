@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.internal;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -98,9 +100,18 @@ public class SernoGeneratorRandom implements SernoGenerator {
                 log.info("Using "+algorithm+" serialNumber RNG algorithm.");
             } else {
                 // If no algorithm is specified use the default, which may differ between different OS:es. 
-                // On Linux the default Java implementation uses the (secure) /dev/(u)random, but on windows something else
-                random = new SecureRandom();
-                log.info("Using default serialNumber RNG algorithm.");
+                try {
+                    final Method methodGetInstanceStrong = SecureRandom.class.getDeclaredMethod("getInstanceStrong");
+                    random = (SecureRandom) methodGetInstanceStrong.invoke(null);
+                    log.info("SecureRandom.getInstanceStrong() with " + random.getAlgorithm() + " for serialNumber RNG algorithm.");
+                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                    log.debug("SecureRandom.getInstanceStrong() is not available or failed invocation. (This method was added in Java 8.)");
+                }
+                if (random==null) {
+                    // On Linux the default Java implementation uses the (secure) /dev/(u)random, but on windows something else
+                    random = new SecureRandom();
+                    log.info("Using default " + random.getAlgorithm() + " serialNumber RNG algorithm.");
+                }
             }
         } catch (NoSuchAlgorithmException e) {
             //This state is unrecoverable, and since algorithm is set in configuration requires a redeploy to handle
