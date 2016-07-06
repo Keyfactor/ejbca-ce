@@ -30,10 +30,10 @@ body.rtlDirection {
   background: #fff;
   padding-bottom: 16.5px; }
 
-h3 {
+.content-body h3 {
   color: #fff;
   font-weight: lighter;
-  margin: 1% 0 0 1.5%; }
+  margin: 2% 0 2% 1.5%; }
 
 .enroll-menu-link:hover, .enroll-menu-link:focus {
   background: #fff; }
@@ -106,6 +106,10 @@ img.menu_logo {
 .content-body {
   padding: 1em 0 1em; }
 
+#content-body {
+  /* välkomstexten liten*/
+  color: #fff; }
+
 .internal-frame {
   /*ramen kring elementen i content*/
   border-radius: 2px;
@@ -113,13 +117,13 @@ img.menu_logo {
   margin: 1% 0 4% 0; }
 
 .pure-control-group {
-  margin: 1% 0 2% 0; }
+  margin: 2% 0 2% 0; }
 
 label {
   color: #fff; }
 
 .pure-form select {
-  font-size: 80%;
+  font-size: 90%;
   min-width: 15%; }
 
 .language_button, .language_button:hover {
@@ -197,20 +201,23 @@ ul.pure-menu-children {
 
 table.pure-table > thead > tr > th {
   color: #444d57; }
-
+table.pure-table > tbody tr:not(.pure-table-odd) td {
+  background-color: #f2f2f2; }
+table.pure-table > tbody tr.pure-table-odd td {
+  background-color: #e0e0e0; }
 table.pure-table > tbody > tr {
   color: #444d57; }
-
 table.pure-table > tbody a {
   color: #e9af13;
   text-decoration: none; }
+  table.pure-table > tbody a:hover {
+    text-decoration: underline; }
 
-table.pure-table > tbody a:hover {
-  text-decoration: underline; }
-
+/*
 > table.pure-table {
-  color: #fff; }
-
+  color:#fff;
+}
+*/
 .tabButton.active {
   background: #e9af13; }
 
@@ -229,7 +236,7 @@ table.pure-table > tbody a:hover {
 
 #contentForm\:filteredResults {
   color: #fff; }
-              
+
 #contentForm\:parentCriteriaEepId {
   margin: 1% 1% 2% 0; }
 
@@ -259,7 +266,8 @@ table.pure-table > tbody a:hover {
   background: #e9af13;
   color: #fff; }
 
-#contentForm\:j_idt94:hover, #contentForm\:j_idt94:focus {
+#contentForm\:j_idt94:hover,
+#contentForm\:j_idt94:focus {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
   background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
@@ -277,7 +285,8 @@ table.pure-table > tbody a:hover {
   background: #e9af13;
   color: #fff; }
 
-#enrollMakeNewRequestForm\:generateJks:hover, #enrollMakeNewRequestForm\:generateJks:focus {
+#enrollMakeNewRequestForm\:generateJks:hover,
+#enrollMakeNewRequestForm\:generateJks:focus {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
   background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
@@ -289,7 +298,8 @@ table.pure-table > tbody a:hover {
   background: #e9af13;
   color: #fff; }
 
-#enrollMakeNewRequestForm\:generateP12:hover, #enrollMakeNewRequestForm\:generateP12:focus {
+#enrollMakeNewRequestForm\:generateP12:hover,
+#enrollMakeNewRequestForm\:generateP12:focus {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
   background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
@@ -301,7 +311,8 @@ table.pure-table > tbody a:hover {
   background: #e9af13;
   color: #fff; }
 
-#enrollMakeNewRequestForm:updateRequestPreview:hover, #enrollMakeNewRequestForm:updateRequestPreview:focus {
+#enrollMakeNewRequestForm:updateRequestPreview:hover,
+#enrollMakeNewRequestForm:updateRequestPreview:focus {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
   background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
@@ -317,26 +328,64 @@ a.keygeneration-button-group {
   color: #e9af13;
   margin: 2% 0 0 0; }
 
+/*
 .pure-table td {
-  background: #fff; }
-
+  background: #fff;
+}
+*/
 .contentForm\:more {
   margin-top: 20px; }
 
-.contentForm:more > span.pure-g > div.pure-u-1 > div.pure-control-group > label {
+.contentForm\:more > span.pure-g > div.pure-u-1 > div.pure-control-group > label {
   /* "max results"-texten i cearch for certificates */
   text-align: left; }
 
-.contentForm:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
+.contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
   /* första boxen för "max results"-texten i cearch for certificates */
   width: 15%; }
 
-.contentForm:more > span.pure-g > div.pure-u-1 {
+.contentForm\:more > span.pure-g > div.pure-u-1 {
   /* resterande boxar för "max results"-texten i cearch for certificates */
   width: 27%; }
 
 #contentForm\:issuedAfterLabel {
   text-align: left; }
+
+.radio-button-table {
+  margin-left: 1em; }
+
+.bodyText {
+  color: #fff; }
+
+#contentForm\:j_idt178 {
+  /*showmore-knapp search for certificates*/
+  background: #e9af13;
+  color: #fff;
+  width: 75%; }
+
+#contentForm\:j_idt178:hover,
+#contentForm\:j_idt178:focus {
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
+  background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
+  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.1));
+  background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
+  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
+
+#contentForm\:j_idt159 {
+  /*showmore-knapp search for end entities*/
+  background: #e9af13;
+  color: #fff;
+  width: 75%; }
+
+#contentForm\:j_idt159:hover,
+#contentForm\:j_idt159:focus {
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
+  background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
+  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.1));
+  background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
+  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
 
 .footer {
   height: 100px;
@@ -352,6 +401,12 @@ a.keygeneration-button-group {
 .footerLogo {
   height: 1.5em;
   display: inline-block; }
+
+#enrollMakeNewRequestForm\:requestPreview > fieldset > .pure-u-lg-1-3 {
+  margin-left: 1.5%; }
+
+#enrollMakeNewRequestForm\requestPreview > fieldset > .pure-u-lg-2-3 {
+  margin-left: 1.5%; }
 
 /*
 - - - Responsivise at breakpoint - - - - */
@@ -381,9 +436,11 @@ a.keygeneration-button-group {
     display: block; }
 
   /* unset background used on desktop view */
+  /*
   tbody > tr :nth-of-type(odd) {
-    background: #eee; }
-
+      background:#eee;
+  }
+  */
   tbody > a {
     display: inline-block; }
 
@@ -397,5 +454,91 @@ a.keygeneration-button-group {
 
   div#content-body > table.pure-table > tbody > tr > td > table > tbody > tr > td {
     background: none; } }
+@media (min-width: 768px) {
+  .header2 {
+    background-color: #fff;
+    box-shadow: 1px 1px 4px 0 rgba(0, 0, 0, 0.1);
+    position: fixed;
+    width: 100%;
+    z-index: 3; }
+
+  .header2 ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow: hidden;
+    background-color: #fff; }
+
+  .header2 li a {
+    display: block;
+    padding: 20px 20px;
+    border-right: 1px solid #f4f4f4;
+    text-decoration: none; }
+
+  .header2 li a:hover {
+    background-color: #f4f4f4; }
+
+  .header2 .logo {
+    display: block;
+    float: left;
+    font-size: 2em;
+    padding: 10px 20px;
+    text-decoration: none; }
+
+  .header2 .menu {
+    clear: both;
+    max-height: 0;
+    transition: max-height .2s ease-out; }
+
+  .header2 .menu-icon {
+    cursor: pointer;
+    display: inline-block;
+    float: right;
+    padding: 28px 20px;
+    position: relative;
+    user-select: none; }
+
+  .header2 .menu-icon .navicon {
+    background: #333;
+    display: block;
+    height: 2px;
+    position: relative;
+    transition: background .2s ease-out;
+    width: 18px; }
+
+  .header2 .menu-icon .navicon:before,
+  .header2 .menu-icon .navicon:after {
+    background: #333;
+    content: '';
+    display: block;
+    height: 100%;
+    position: absolute;
+    transition: all .2s ease-out;
+    width: 100%; }
+
+  .header2 .menu-icon .navicon:before {
+    top: 5px; }
+
+  .header2 .menu-icon .navicon:after {
+    top: -5px; }
+
+  .header2 .menu-btn {
+    display: none; }
+
+  .header2 .menu-btn:checked ~ .menu {
+    max-height: 240px; }
+
+  .header2 .menu-btn:checked ~ .menu-icon .navicon {
+    background: transparent; }
+
+  .header2 .menu-btn:checked ~ .menu-icon .navicon:before {
+    transform: rotate(-45deg); }
+
+  .header2 .menu-btn:checked ~ .menu-icon .navicon:after {
+    transform: rotate(45deg); }
+
+  .header2 .menu-btn:checked ~ .menu-icon:not(.steps) .navicon:before,
+  .header2 .menu-btn:checked ~ .menu-icon:not(.steps) .navicon:after {
+    top: 0; } }
 
 /*# sourceMappingURL=w_e_style.css.map */
