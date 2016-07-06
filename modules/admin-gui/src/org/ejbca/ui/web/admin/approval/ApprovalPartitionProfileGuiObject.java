@@ -24,7 +24,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
  * 
- * A display POJO for approval sequences.
+ * A display POJO for approval partitions.
  * 
  * @version $Id$
  *

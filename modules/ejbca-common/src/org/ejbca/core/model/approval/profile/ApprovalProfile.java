@@ -31,7 +31,7 @@ import org.ejbca.core.model.profiles.Profile;
  */
 public interface ApprovalProfile extends Profile, Serializable, Cloneable {
 
-    public static final String TYPE_NAME = "APPROVAL_PROFILE";
+    static final String TYPE_NAME = "APPROVAL_PROFILE";
 
     final String PROPERTY_NOTIFICATION_EMAIL_RECIPIENT = "notification_email_recipient";
     final String PROPERTY_NOTIFICATION_EMAIL_SENDER = "notification_email_sender";
