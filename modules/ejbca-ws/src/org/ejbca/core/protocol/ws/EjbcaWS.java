@@ -1631,7 +1631,8 @@ public class EjbcaWS implements IEjbcaWS {
 		  }
 		  
 		  CertificateStatus certinfo = certificateStoreSession.getStatus(issuerDN, new BigInteger(certificateSN,16));
-		  if(certinfo != null){
+		  // If certificate is not available, pass this and return null
+		  if(certinfo != null && !certinfo.equals(CertificateStatus.NOT_AVAILABLE)){
 		    return new RevokeStatus(certinfo, issuerDN, certificateSN);
 		  }
 		  return null;
