@@ -1793,7 +1793,7 @@ function checkUseInBatch(){
       </td>
       <td > 
         <input type="checkbox" name="<%=CHECKBOX_SENDNOTIFICATION%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% 
-                                                                                                               if(profile.isRequired(EndEntityProfile.SENDNOTIFICATION,0))
+                                                                                                               if(profile.isRequired(EndEntityProfile.SENDNOTIFICATION,0) && profile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE) && userdata.getSendNotification())
                                                                                                                  out.write(" disabled='true'"); 
                                                                                                                if( userdata.getSendNotification())
                                                                                                                  out.write(" CHECKED ");
