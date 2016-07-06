@@ -40,6 +40,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     private Collection<T> possibleValues;
     private DynamicUiPropertyCallback propertyCallback = DynamicUiPropertyCallback.NONE;
     private Class<? extends Serializable> type;
+    
     /**
      * Denotes whether this property can have multiple values. 
      */

@@ -230,6 +230,11 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     }
 
     @Override
+    public Set<String> getReadOnlyProperties() {
+        return new HashSet<>(Arrays.asList(PROPERTY_NAME));
+    }
+    
+    @Override
     public boolean arePartitionsFixed() {
         return false;
     }

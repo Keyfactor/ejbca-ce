@@ -34,7 +34,7 @@ public class RadioButtonConverter implements Converter{
         if (value == null || value.isEmpty()) {
             return null;
         }
-        return DynamicUiProperty.getAsObject(value);
+        return value;
     }
 
     @Override

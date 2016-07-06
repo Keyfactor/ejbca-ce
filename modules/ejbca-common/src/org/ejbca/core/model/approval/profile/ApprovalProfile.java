@@ -239,6 +239,12 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
      * @return a set of properties to hide at the approval screen. 
      */
     Set<String> getHiddenProperties();
+    
+    /**
+     * 
+     * @return a set of properties to display as read-only on the approval screen
+     */
+    Set<String> getReadOnlyProperties();
 
     /** @return true if notifications is configured in the specified partition */
     boolean isNotificationEnabled(ApprovalPartition approvalPartition);
