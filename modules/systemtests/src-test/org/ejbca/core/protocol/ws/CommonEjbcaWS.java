@@ -1655,24 +1655,27 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void checkRevokeStatus() throws Exception {
 
+        // Create a new user and certificate
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate("12345678");
-
         String issuerdn = cert.getIssuerDN().toString();
         String serno = cert.getSerialNumber().toString(16);
-
+        // Newly issues, certificate is not revoked
         RevokeStatus revokestatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
         assertNotNull(revokestatus);
         assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
-
+        // Revoke the certificate
         ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-
+        // Revocation status should match the revocation
         revokestatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
         assertNotNull(revokestatus);
         assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
         assertTrue(revokestatus.getCertificateSN().equals(serno));
         assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
         assertNotNull(revokestatus.getRevocationDate());
+        // A non existing certificate should return null
+        revokestatus = ejbcaraws.checkRevokationStatus(issuerdn, BigInteger.valueOf(123456L).toString(16));
+        assertNull(revokestatus);
     }
 
     protected void utf8EditUser() throws Exception {
