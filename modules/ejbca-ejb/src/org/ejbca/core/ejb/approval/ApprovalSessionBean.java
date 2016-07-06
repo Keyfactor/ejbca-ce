@@ -335,7 +335,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                     if (approvalStep!=null) {
                         // Check which of the remaining partitions that need to be notified
                         for (final ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
-                            final int remainingApprovalsInPartition = approvalProfile.getRemainingApprovalsInPartition(approvalsPerformed, approval.getStepId(),approval.getPartitionId());
+                            final int remainingApprovalsInPartition = approvalProfile.getRemainingApprovalsInPartition(approvalsPerformed, approval.getStepId(), approvalPartition.getPartitionIdentifier());
                             if (remainingApprovalsInPartition>0) {
                                 if (expired) {
                                     sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, approvalPartition, ApprovalPartitionWorkflowState.EXPIRED);
