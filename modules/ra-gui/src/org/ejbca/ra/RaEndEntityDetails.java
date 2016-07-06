@@ -78,7 +78,7 @@ public class RaEndEntityDetails {
         this.username = endEntity.getUsername();
         this.subjectDn = endEntity.getDN();
         this.subjectAn = endEntity.getSubjectAltName();
-        this.subjectDa = extendedInformation.getSubjectDirectoryAttributes();
+        this.subjectDa = this.extendedInformation.getSubjectDirectoryAttributes();
         this.cpId = endEntity.getCertificateProfileId();
         this.cpName = cpIdToNameMap.get(Integer.valueOf(cpId));
         this.eepId = endEntity.getEndEntityProfileId();
