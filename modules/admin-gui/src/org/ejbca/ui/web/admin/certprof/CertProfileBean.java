@@ -48,7 +48,6 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
@@ -56,6 +55,7 @@ import org.ejbca.core.ejb.approval.ApprovalProfileSession;
 import org.ejbca.cvc.AccessRightAuthTerm;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
  * JSF MBean backing the certificate profile pages.
@@ -68,8 +68,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 public class CertProfileBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfileBean.class);
-
-    private static final InternalResources intres = InternalResources.getInstance();
     
     // Declarations in faces-config.xml
     //@javax.faces.bean.ManagedProperty(value="#{certProfilesBean}")
@@ -257,7 +255,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 return a.getLabel().compareToIgnoreCase(b.getLabel());
             }
         });
-        ret.add(0, new SelectItem(-1, intres.getLocalizedMessage("general.none")));   
+        ret.add(0, new SelectItem(-1, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("NONE")));   
         return ret;
     }
     

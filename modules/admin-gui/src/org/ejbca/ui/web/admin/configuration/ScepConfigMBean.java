@@ -245,7 +245,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         super();
         informationmemory = new InformationMemory(authenticationToken, null, caSession, accessControlSession, null, endentityProfileSession, null,
                 null, null, certProfileSession, globalConfigSession, null, null,
-                (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID), null, null, null);
+                (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID), null, null, getEjbcaWebBean());
         scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
     }
 
