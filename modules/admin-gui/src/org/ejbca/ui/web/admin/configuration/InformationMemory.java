@@ -38,7 +38,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSession;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.management.RoleManagementSession;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
@@ -69,8 +68,6 @@ import org.ejbca.ui.web.admin.rainterface.EndEntityProfileNameProxy;
  * @version $Id$
  */
 public class InformationMemory implements Serializable {
-
-    private static final InternalResources intres = InternalResources.getInstance();
     
     private static final long serialVersionUID = 2L;
     // Private fields
@@ -87,35 +84,38 @@ public class InformationMemory implements Serializable {
     private ApprovalProfileSessionLocal approvalProfileSession;
 
     // Memory variables.
-    RAAuthorization raauthorization = null;
-    CAAuthorization caauthorization = null;
-    HardTokenAuthorization hardtokenauthorization = null;
+    private RAAuthorization raauthorization = null;
+    private CAAuthorization caauthorization = null;
+    private HardTokenAuthorization hardtokenauthorization = null;
 
-    Map<Integer, String> caidtonamemap = null;
-    Map<Integer, HashMap<Integer, List<Integer>>> endentityavailablecas = null;
-    Map<Integer, String> publisheridtonamemap = null;
+    private Map<Integer, String> caidtonamemap = null;
+    private Map<Integer, HashMap<Integer, List<Integer>>> endentityavailablecas = null;
+    private Map<Integer, String> publisheridtonamemap = null;
 
-    TreeMap<String, Integer> authRoles = null;
-    TreeMap<String, Integer> publishernames = null;
-    Map<Integer, String> roldIdMap = null;
+    private TreeMap<String, Integer> authRoles = null;
+    private TreeMap<String, Integer> publishernames = null;
+    private Map<Integer, String> roldIdMap = null;
 
-    Map<String, Set<String>> authorizedaccessrules = null;
-    Map<String, Set<String>> redactedAccessRules = null;
+    private Map<String, Set<String>> authorizedaccessrules = null;
+    private Map<String, Set<String>> redactedAccessRules = null;
 
-    GlobalConfiguration globalconfiguration = null;
-    CmpConfiguration cmpconfiguration = null;
-    AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfiguration = null;
-    AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfiguration = null;
-    EndEntityProfileNameProxy endentityprofilenameproxy = null;
-    CertificateProfileNameProxy certificateprofilenameproxy = null;
+    private GlobalConfiguration globalconfiguration = null;
+    private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfiguration = null;
+    private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfiguration = null;
+    private EndEntityProfileNameProxy endentityprofilenameproxy = null;
+    private CertificateProfileNameProxy certificateprofilenameproxy = null;
 
+    private EjbcaWebBean ejbcaWebBean;
+
+    
     /** Creates a new instance of ProfileNameProxy */
     public InformationMemory(AuthenticationToken administrator, CAAdminSession caadminsession, CaSessionLocal caSession, AccessControlSessionLocal authorizationsession,
             ComplexAccessControlSessionLocal complexAccessControlSession, EndEntityProfileSession endEntityProfileSession,
             HardTokenSession hardtokensession, PublisherSessionLocal publishersession, UserDataSourceSession userdatasourcesession,
             CertificateProfileSession certificateProfileSession, GlobalConfigurationSession globalConfigurationSession, RoleManagementSessionLocal roleManagementSession, 
             ApprovalProfileSessionLocal approvalProfileSession,
-            GlobalConfiguration globalconfiguration, CmpConfiguration cmpconfig, AvailableExtendedKeyUsagesConfiguration ekuConfig, AvailableCustomCertificateExtensionsConfiguration cceConfig) {
+            GlobalConfiguration globalconfiguration, AvailableExtendedKeyUsagesConfiguration ekuConfig, 
+            AvailableCustomCertificateExtensionsConfiguration cceConfig, EjbcaWebBean ejbcaWebBean) {
         this.caadminsession = caadminsession;
         this.casession = caSession;
         this.administrator = administrator;
@@ -123,7 +123,6 @@ public class InformationMemory implements Serializable {
         this.publishersession = publishersession;
         this.userdatasourcesession = userdatasourcesession;
         this.globalconfiguration = globalconfiguration;
-        this.cmpconfiguration = cmpconfig;
         this.availableExtendedKeyUsagesConfiguration = ekuConfig;
         this.availableCustomCertExtensionsConfiguration = cceConfig;
         this.certificateProfileSession = certificateProfileSession;
@@ -134,6 +133,7 @@ public class InformationMemory implements Serializable {
         this.complexAccessControlSession = complexAccessControlSession;
         this.roleManagementSession = roleManagementSession;
         this.approvalProfileSession = approvalProfileSession;
+        this.ejbcaWebBean = ejbcaWebBean;
         
     }
 
@@ -305,7 +305,7 @@ public class InformationMemory implements Serializable {
      */
     public Map<Integer, String> getApprovalProfileIdToNameMap() {
         Map<Integer, String> approvalProfileMap = approvalProfileSession.getApprovalProfileIdToNameMap();
-        approvalProfileMap.put(-1, intres.getLocalizedMessage("general.none"));
+        approvalProfileMap.put(-1, ejbcaWebBean.getText("NONE"));
         return approvalProfileMap;
     }
     
