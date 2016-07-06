@@ -434,6 +434,24 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
     
     /**
+     * 
+     * @return true if the current admin has access to approve any partitions at all
+     */
+    public boolean canApproveAnyPartitions() {
+        return !partitionsAuthorizedToApprove.isEmpty();
+    }
+    
+    /**
+     * Checks whether a certain property was defined in the approval profile to be read only, i.e. displayed but not changeable. 
+     * 
+     * @param propertyName the name of the property
+     * @return true if the property was defined as read-only, false otherwise. 
+     */
+    public boolean isPropertyReadOnly(final String propertyName) {
+        return approvalDataVOView.getApprovalProfile().getReadOnlyProperties().contains(propertyName);
+    }
+    
+    /**
      * Extract the partition properties, and fill in all and any placeholders. Also cull any properties set to be hidden.
      * 
      * @return a Map linking partitions IDs to lists of each partitions properties. 

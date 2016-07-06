@@ -165,6 +165,11 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     public Set<String> getHiddenProperties() {
         return new HashSet<>(Arrays.asList(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS));
     }
+    
+    @Override
+    public Set<String> getReadOnlyProperties() {
+        return new HashSet<>();
+    }
 
     @Override
     public boolean arePartitionsFixed() {
@@ -175,4 +180,6 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     public boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, String propertyName) {
         return super.isPropertyPredefined(stepIdentifier, partitionIdentifier, propertyName) || propertyName.equals(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS);
     }
+
+ 
 }

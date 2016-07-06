@@ -57,10 +57,12 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     private static final long serialVersionUID = -3751383340600251434L;
     private static final InternalResources intres = InternalResources.getInstance();
 
-    private enum FieldType {
-        TEXT(intres.getLocalizedMessage("approval.profile.metadata.field.freetext")), 
-        CHECKBOX(intres.getLocalizedMessage("approval.profile.metadata.field.checkbox")), 
-        RADIOBUTTON(intres.getLocalizedMessage("approval.profile.metadata.field.radio.button"));
+    private enum FieldType {        
+        CHECKBOX(intres.getLocalizedMessage("approval.profile.metadata.field.checkbox")),
+        INTEGER(intres.getLocalizedMessage("approval.profile.metadata.field.integer")),
+        LONG(intres.getLocalizedMessage("approval.profile.metadata.field.long")),
+        RADIOBUTTON(intres.getLocalizedMessage("approval.profile.metadata.field.radio.button")),
+        TEXT(intres.getLocalizedMessage("approval.profile.metadata.field.freetext"));
 
        private static List<SelectItem> selectItems;
        private final String label;
@@ -178,6 +180,12 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             break;
         case CHECKBOX: 
             property = new DynamicUiProperty<>(fieldLabel, Boolean.FALSE);
+            break;
+        case INTEGER:
+            property = new DynamicUiProperty<>(fieldLabel, Integer.valueOf(0));
+            break;
+        case LONG:
+            property = new DynamicUiProperty<>(fieldLabel, Long.valueOf(0L));
             break;
         default:
             return "";
