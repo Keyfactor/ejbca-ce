@@ -323,6 +323,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             // If all steps has been satisfied, the ApprovalStep from getStepBeingEvaluated is null
             final ApprovalStep approvalStep = approvalProfile.getStepBeingEvaluated(approvalsPerformed);
             if (approval!=null && (!approval.isApproved() || expired)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Creating rejected or expired notification for approvalProfile: "+approvalProfile.getProfileName());
+                }
                 if (approvalStep==null || approvalStep.getStepIdentifier()==approval.getStepId()) {
                     // If the approval has been rejected or expired, we should notify all partition owners in the current step that still has not approved it
                     final int currentStepId = approval.getStepId();
@@ -345,9 +348,16 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                             }
                         }
                     }
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("All steps have been satisfied, so no approvals sent for approvalProfile: "+approvalProfile.getProfileName());
+                    }
                 }
             } else {
                 if (approval!=null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Request approved, notify every partition owner who's work flow is affected by the made approval for approvalProfile: "+approvalProfile.getProfileName());
+                    }
                     // Notify every partition owner who's work flow is affected by the made approval
                     final int currentStepId = approval.getStepId();
                     final int remainingApprovalsInPartition = approvalProfile.getRemainingApprovalsInPartition(approvalsPerformed, currentStepId, approval.getPartitionId());
@@ -360,6 +370,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 }
                 // If this is a new approval request or the current approval has completed a step, we should notify all partition owners in the next step
                 if (approval==null || (approvalStep!=null && approvalStep.getStepIdentifier()!=approval.getStepId())) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("this is a new approval request or the current approval has completed a step, we should notify all partition owners in the next step for approvalProfile: "+approvalProfile.getProfileName());
+                    }
                     for (final ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
                         sendApprovalNotification(approvalRequest, approvalProfile, approvalStep.getStepIdentifier(), approvalPartition, ApprovalPartitionWorkflowState.REQUIRES_ACTION);
                     }
@@ -374,6 +387,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private void sendApprovalNotification(final ApprovalRequest approvalRequest, final ApprovalProfile approvalProfile, final int approvalStepId, final ApprovalPartition approvalPartition,
             final ApprovalPartitionWorkflowState approvalPartitionWorkflowState) {
         if (!approvalProfile.isNotificationEnabled(approvalPartition)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Notifications not enabled for approvalProfile: "+approvalProfile.getProfileName());
+            }
             return;
         }
         final int approvalId = approvalRequest.generateApprovalId();
