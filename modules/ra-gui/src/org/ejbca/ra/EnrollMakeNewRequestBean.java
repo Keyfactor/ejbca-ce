@@ -817,6 +817,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public final void algorithmChangedListener(ValueChangeEvent e) {
         setAlgorithmChanged(true);
     }
+    
+    public final void certificateRequestAjaxListener(final AjaxBehaviorEvent event) {
+        uploadCsr();
+    }
 
     public final void downloadCredentialsTypeChangedListener(ValueChangeEvent e) {
         setDownloadCredentialsChanged(true);
