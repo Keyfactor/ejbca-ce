@@ -188,29 +188,35 @@
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<h:panelGroup layout="block">
                             <p id="newFileInputContainer" style="display: inline-block; max-width: 210px;"></p>
+                            <ui:remove>
+                                <!-- Pure JavaScript file upload, since non-JS fallback of pasting upload exists -->
+                            </ui:remove>
                             <script>
                                 ejbca.ra.createFileUploadInput("newFileInput", "newFileInputContainer", function(uploadedText) {
                                     document.getElementById("keyPairForm:certificateRequest").value = uploadedText;
+                                    document.getElementById("keyPairForm:certificateRequest").onchange();
                                 });
                             </script>
-							<ui:remove>
-                                <!-- Pure JavaScript file upload, since non-JS fallback of pasting upload exists -->
-							</ui:remove>
 						</h:panelGroup>
 						<br />
 						<h:panelGroup>
-							<h:inputTextarea id="certificateRequest" styleClass="fineprintMono" style="line-height: 100%;"
+							<h:inputTextarea id="certificateRequest" styleClass="fineprintMono jsDelayKeyUp" style="line-height: 100%;"
 								value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80"
 								rows="20" validator="#{enrollMakeNewRequestBean.validateCsr}">
 								<f:validateRequired />
+                                <f:ajax event="keyup" execute="@this" render=":globalMessages :requestInfoForm"
+                                    listener="#{enrollMakeNewRequestBean.certificateRequestAjaxListener}"/>
+                                <f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm"
+                                    listener="#{enrollMakeNewRequestBean.certificateRequestAjaxListener}"/>
 							</h:inputTextarea>
 						</h:panelGroup>
 						<h:commandButton id="uploadCsrButton"
 							value="#{msg.enroll_upload_csr}"
-							styleClass="pure-button ra-button"
+							styleClass="pure-button ra-button jsHide"
 							action="#{enrollMakeNewRequestBean.uploadCsr}">
 						</h:commandButton>
 						<h:message for="certificateRequest" id="certificateRequestMessage" />
+                        <script>jsTouchUpDocument();</script>
 					</h:panelGroup>
 				</h:panelGroup>
 
