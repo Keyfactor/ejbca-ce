@@ -56,8 +56,7 @@
 									rendered="#{!enrollMakeNewRequestBean.availableEndEntityProfiles.isEmpty()}">
 									<c:if
 										test="#{enrollMakeNewRequestBean.selectedEndEntityProfile == null}">
-										<f:selectItem itemLabel="Select..." itemValue="#{null}"
-											itemDisabled="true" />
+										<f:selectItem itemLabel="#{msg.enroll_select_eep_nochoice}" itemValue="#{null}" itemDisabled="true" />
 									</c:if>
 									<f:selectItems
 										value="#{enrollMakeNewRequestBean.availableEndEntityProfiles.entrySet()}"
@@ -126,26 +125,27 @@
 							</h:panelGroup>
 
 							<h:panelGroup layout="block" styleClass="pure-control-group"
-								rendered="#{!enrollMakeNewRequestBean.availableKeyPairGenerations.isEmpty()}">
-								<h:selectOneRadio id="selectKeyPairGenerationOneMenu"
-									valueChangeListener="#{enrollMakeNewRequestBean.keyPairGenerationChangedListener}"
-									value="#{enrollMakeNewRequestBean.selectedKeyPairGeneration}"
-									layout="pageDirection" styleClass="radio-button-table">
-									<f:selectItems
-										value="#{enrollMakeNewRequestBean.availableKeyPairGenerations.keySet()}"
-										itemLabelEscaped="true" styleClass="pure-radio" />
-									<f:ajax
-										execute=":requestTemplateForm:selectKeyPairGenerationOneMenu"
-										event="change"
-										render=":globalMessages :requestTemplateForm :keyPairForm :requestInfoForm"
-										listener="#{enrollMakeNewRequestBean.keyPairGenerationAjaxListener}" />
-								</h:selectOneRadio>
+								rendered="#{! empty enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems}">
+                                <h:outputLabel for="selectKeyPairGenerationOneMenu" value="#{msg.enroll_key_pair_generation_label}"/>
+                                <h:panelGroup id="selectKeyPairGenerationOneMenu" styleClass="display: inline-block;">
+                                    <h:selectOneRadio
+                                        valueChangeListener="#{enrollMakeNewRequestBean.keyPairGenerationChangedListener}"
+                                        value="#{enrollMakeNewRequestBean.selectedKeyPairGeneration}"
+                                        layout="pageDirection" styleClass="radio-button-table">
+                                        <f:selectItems value="#{enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems}" styleClass="pure-radio" />
+                                        <f:ajax
+                                            execute=":requestTemplateForm:selectKeyPairGenerationOneMenu"
+                                            event="change"
+                                            render=":globalMessages :requestTemplateForm :keyPairForm :requestInfoForm"
+                                            listener="#{enrollMakeNewRequestBean.keyPairGenerationAjaxListener}" />
+                                    </h:selectOneRadio>
+                                </h:panelGroup>
 							</h:panelGroup>
 						</fieldset>
 
 						<h:commandButton id="applyRequestTemplateButton"
 							value="#{msg.enroll_update_request_template}"
-							styleClass="pure-button ra-button"
+							styleClass="pure-button ra-button jsHide"
 							action="#{enrollMakeNewRequestBean.applyRequestTemplate}">
 						</h:commandButton>
 					</h:panelGroup>
@@ -186,38 +186,19 @@
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<h:panelGroup layout="block">
-							<p id="marker" style="display: inline-block; max-width: 210px;"></p>
+                            <p id="newFileInputContainer" style="display: inline-block; max-width: 210px;"></p>
+                            <script>
+                                ejbca.ra.createFileUploadInput("newFileInput", "newFileInputContainer", function(uploadedText) {
+                                    document.getElementById("keyPairForm:certificateRequest").value = uploadedText;
+                                });
+                            </script>
 							<ui:remove>
-								<!-- Pure JavaScript file upload, since non-JS fallback of pasting upload exists -->
+                                <!-- Pure JavaScript file upload, since non-JS fallback of pasting upload exists -->
 							</ui:remove>
-							<script>
-									var newFileInput = document
-											.createElement("input");
-									newFileInput.type = 'file';
-									newFileInput.id = 'newFileInputId';
-									newFileInput.onchange = function() {
-										if (newFileInput.files.length != 0) {
-											var fileReader = new FileReader();
-											fileReader.onloadend = function(
-													event) {
-												if (event.target.readyState == FileReader.DONE) {
-													document
-															.getElementById('keyPairForm:certificateRequest').value = event.target.result;
-													newFileInput.value = '';
-												}
-											};
-											fileReader
-													.readAsText(newFileInput.files[0]);
-										}
-									};
-									document.getElementById("marker")
-											.appendChild(newFileInput);
-								</script>
 						</h:panelGroup>
 						<br />
 						<h:panelGroup>
-							<h:inputTextarea id="certificateRequest"
-								style="font-family:'Courier New', Courier, monospace;"
+							<h:inputTextarea id="certificateRequest" styleClass="fineprintMono" style="line-height: 100%;"
 								value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80"
 								rows="20" validator="#{enrollMakeNewRequestBean.validateCsr}">
 								<f:validateRequired />
@@ -510,7 +491,7 @@
 					document.getElementById('keyPairForm:uploadCsrButton').focus();
 				}else if(document.getElementById('requestTemplateForm:updateRequestTemplateButton') != null){
 					document.getElementById('requestTemplateForm:updateRequestTemplateButton').focus();
-				}else{
+				}else if(document.getElementById('requestTemplateForm:resetButton') != null){
 					document.getElementById('requestTemplateForm:resetButton').focus();
 				}
 					<!-- temp solution. proper highlighting solution is needed -->	
