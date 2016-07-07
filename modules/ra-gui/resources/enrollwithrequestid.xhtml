@@ -58,7 +58,7 @@
 								<h:commandButton id="checkButton"
 									value="#{msg.enrollwithrequestid_check}"
 									styleClass="pure-button ra-button"
-									action="#{enrollWithRequestIdBean.checkRequestId()}">
+									action="#{enrollWithRequestIdBean.checkRequestId}">
 								</h:commandButton>
 							</h:panelGroup>
 						</fieldset>
@@ -66,7 +66,7 @@
 				</h:panelGroup>
 
 				<h:panelGroup layout="block"
-					rendered="#{enrollWithRequestIdBean.isRequestApproved()}">
+					rendered="#{enrollWithRequestIdBean.finalizeEnrollmentRendered}">
 					<h2>
 						<h:outputText
 							value="#{msg.enrollwithrequestid_finalize_enrollment} " />
@@ -85,11 +85,11 @@
 								<h:commandButton id="finalizeEnrollmentButton"
 									value="#{msg.enrollwithrequestid_finalize}"
 									styleClass="pure-button ra-button"
-									action="#{enrollWithRequestIdBean.finalizeEnrollment()}">
+									action="#{enrollWithRequestIdBean.finalizeEnrollment}">
 								</h:commandButton>
 								<h:commandButton id="resetButton" value="#{msg.generic_back}"
 									styleClass="pure-button ra-button"
-									action="#{enrollWithRequestIdBean.reset()}">
+									action="#{enrollWithRequestIdBean.reset}">
 								</h:commandButton>
 							</h:panelGroup>
 						</fieldset>
