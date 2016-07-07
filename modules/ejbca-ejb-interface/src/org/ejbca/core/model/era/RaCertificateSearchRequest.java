@@ -17,6 +17,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 /**
  * Search request for certificates from RA UI.
  * 
@@ -162,6 +164,12 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     public List<Integer> getRevocationReasons() { return revocationReasons; }
     public void setRevocationReasons(final List<Integer> revocationReasons) { this.revocationReasons = revocationReasons; }
 
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
     public boolean equals(final Object object) {
         if (!(object instanceof RaCertificateSearchRequest)) {
             return false;
