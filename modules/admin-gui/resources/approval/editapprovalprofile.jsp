@@ -86,7 +86,6 @@
 		<h:dataTable value="#{approvalProfileMBean.steps}" var="step" style="width: 100%"  rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
 			footerClass="tableFooter">
 			<h:column>			
-				<h:outputText value="#{step.identifier}" />																					
 				<h:dataTable value="#{step.partitionGuiObjects}" var="partition" style="width: 100%" headerClass="listHeader" footerClass="tableFooter" columnClasses="editColumn1,editColumn2" >						
 					<h:column>
 						<f:facet name="header">
@@ -98,7 +97,7 @@
 							rendered="#{not empty partition.profilePropertyList}" styleClass="subTable">							
 							<h:column>
 								<f:facet name="header">
-									<h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION}: #{partition.partitionId}" 
+									<h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION}" 
 										rendered="#{!approvalProfileMBean.stepSizeFixed}"/>
 								</f:facet>
 								<h:outputText value="#{partition.propertyNameLocalized}:"/>
