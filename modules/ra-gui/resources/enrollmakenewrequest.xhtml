@@ -236,26 +236,29 @@
 							</h3>
 							<fieldset>
 								<ui:repeat id="subjectDn"
-									value="#{enrollMakeNewRequestBean.subjectDn.getFieldInstances()}"
+									value="#{enrollMakeNewRequestBean.subjectDn.fieldInstances}"
 									var="instance">
 									<h:panelGroup layout="block" styleClass="pure-control-group"
 										rendered="#{instance.isUsed()}">
 										<h:outputLabel for="subjectDnField"
-											value="#{msg['subject_dn_'.concat(instance.getName())]}"
+											value="#{msg['subject_dn_'.concat(instance.name)]}"
 											rendered="#{!instance.required}" />
 										<h:outputLabel for="subjectDnField"
-											value="#{msg['subject_dn_'.concat(instance.getName())]} *"
+											value="#{msg['subject_dn_'.concat(instance.name)]} *"
 											rendered="#{instance.required}" />
-										<h:inputText id="subjectDnField" value="#{instance.value}"
+										<h:inputText id="subjectDnField" value="#{instance.value}" styleClass="jsDelayKeyUp"
 											rendered="#{!instance.selectable}"
 											disabled="#{!instance.modifiable}">
-											<f:validateRequired disabled="#{!instance.isRequired()}"/>
+											<f:validateRequired disabled="#{!instance.required}"/>
 											<f:validator validatorId="extendedRegexValidator" />
 											<f:attribute name="pattern"
-												value="#{instance.getRegexPattern()}" />
+												value="#{instance.regexPattern}" />
 											<f:ajax execute="@this" event="change"
 												render=":requestInfoForm:requestPreview"
 												listener="#{enrollMakeNewRequestBean.subjectDnAjaxListener}" />
+                                            <f:ajax execute="@this" event="keyup"
+                                                render=":requestInfoForm:requestPreview"
+                                                listener="#{enrollMakeNewRequestBean.subjectDnAjaxListener}" />
 										</h:inputText>
 										<h:selectOneMenu value="#{instance.value}"
 											rendered="#{instance.selectable}">
@@ -271,32 +274,35 @@
 						</h:panelGroup>
 
 						<h:panelGroup layout="block" styleClass="internal-frame"
-							rendered="#{!(enrollMakeNewRequestBean.subjectAlternativeName.getFieldInstances().isEmpty())}">
+							rendered="#{! empty enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances}">
 							<h3>
 								<h:outputText
 									value="#{msg.enroll_subject_alternative_name_attributes}" />
 							</h3>
 							<ui:repeat id="subjectAlternativeName"
-								value="#{enrollMakeNewRequestBean.subjectAlternativeName.getFieldInstances()}"
+								value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances}"
 								var="instance">
 								<h:panelGroup layout="block" styleClass="pure-control-group"
 									rendered="#{instance.isUsed()}">
 									<h:outputLabel for="subjectAltNameField"
-										value="#{msg['subject_alternative_name_'.concat(instance.getName())]}"
+										value="#{msg['subject_alternative_name_'.concat(instance.name)]}"
 										rendered="#{!instance.required}" />
 									<h:outputLabel for="subjectAltNameField"
-										value="#{msg['subject_alternative_name_'.concat(instance.getName())]} *"
+										value="#{msg['subject_alternative_name_'.concat(instance.name)]} *"
 										rendered="#{instance.required}" />
-									<h:inputText id="subjectAltNameField" value="#{instance.value}"
+									<h:inputText id="subjectAltNameField" value="#{instance.value}" styleClass="jsDelayKeyUp"
 										rendered="#{!instance.selectable}"
 										disabled="#{!instance.modifiable}">
-										<f:validateRequired disabled="#{!instance.isRequired()}"/>
+										<f:validateRequired disabled="#{!instance.required}"/>
 										<f:validator validatorId="extendedRegexValidator" />
 										<f:attribute name="pattern"
-											value="#{instance.getRegexPattern()}" />
+											value="#{instance.regexPattern}" />
 										<f:ajax execute="@this" event="change"
 											render=":requestInfoForm:requestPreview"
 											listener="#{enrollMakeNewRequestBean.subjectAlternativeNameAjaxListener}" />
+                                        <f:ajax execute="@this" event="keyup"
+                                            render=":requestInfoForm:requestPreview"
+                                            listener="#{enrollMakeNewRequestBean.subjectAlternativeNameAjaxListener}" />
 									</h:inputText>
 									<h:selectOneMenu value="#{instance.value}"
 										rendered="#{instance.selectable}">
@@ -310,31 +316,34 @@
 							</ui:repeat>
 						</h:panelGroup>
 						<h:panelGroup layout="block" styleClass="internal-frame"
-							rendered="${!(enrollMakeNewRequestBean.subjectDirectoryAttributes.getFieldInstances().isEmpty())}">
+							rendered="${! empty enrollMakeNewRequestBean.subjectDirectoryAttributes.fieldInstances}">
 							<h3>
 								<h:outputText value="#{msg.enroll_subject_directory_attributes}" />
 							</h3>
 							<ui:repeat id="subjectDirectoryAttributes"
-								value="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.getFieldInstances()}"
+								value="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.fieldInstances}"
 								var="instance">
 								<h:panelGroup layout="block" styleClass="pure-control-group"
 									rendered="#{instance.isUsed()}">
 									<h:outputLabel for="subjectDirectoryField"
-										value="#{msg['subject_directory_attributes_'.concat(instance.getName())]}"
+										value="#{msg['subject_directory_attributes_'.concat(instance.name)]}"
 										rendered="#{!instance.required}" />
 									<h:outputLabel for="subjectDirectoryField"
-										value="#{msg['subject_directory_attributes_'.concat(instance.getName())]} *"
+										value="#{msg['subject_directory_attributes_'.concat(instance.name)]} *"
 										rendered="#{instance.required}" />
-									<h:inputText id="subjectDirectoryField"
-										value="#{instance.value}" rendered="#{!instance.selectable}"
+									<h:inputText id="subjectDirectoryField" value="#{instance.value}" styleClass="jsDelayKeyUp"
+                                        rendered="#{!instance.selectable}"
 										disabled="#{!instance.modifiable}">
-										<f:validateRequired disabled="#{!instance.isRequired()}"/>
+										<f:validateRequired disabled="#{!instance.required}"/>
 										<f:validator validatorId="extendedRegexValidator" />
 										<f:attribute name="pattern"
-											value="#{instance.getRegexPattern()}" />
+											value="#{instance.regexPattern}" />
 										<f:ajax execute="@this" event="change"
 											render=":requestInfoForm:requestPreview"
 											listener="#{enrollMakeNewRequestBean.subjectDirectoryAttributesAjaxListener}" />
+                                        <f:ajax execute="@this" event="keyup"
+                                            render=":requestInfoForm:requestPreview"
+                                            listener="#{enrollMakeNewRequestBean.subjectDirectoryAttributesAjaxListener}" />
 									</h:inputText>
 									<h:selectOneMenu value="#{instance.value}"
 										rendered="#{instance.selectable}">
