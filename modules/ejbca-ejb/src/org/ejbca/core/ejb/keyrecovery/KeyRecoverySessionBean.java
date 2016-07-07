@@ -137,7 +137,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @param checkNewest 
      * @throws ApprovalException 
      * @throws WaitingForApprovalException 
-     * @throws CADoesntExistsException 
+     * @throws CADoesntExistsException if the issuer of the certificate doesn't exist
      */
     private void checkIfApprovalRequired(AuthenticationToken admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) 
             throws ApprovalException, WaitingForApprovalException, CADoesntExistsException{    	
@@ -151,7 +151,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         if (approvalProfile != null) {    
 			KeyRecoveryApprovalRequest ar = new KeyRecoveryApprovalRequest(certificate,username,checkNewest, admin,null,caid,
 			        endEntityProfileId, approvalProfile);
-			//TODO HANDLE 100% UPTIME HERE
 			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_KEYRECOVERY)){
 				approvalSession.addApprovalRequest(admin, ar);
 	            String msg = intres.getLocalizedMessage("keyrecovery.addedforapproval");            	
