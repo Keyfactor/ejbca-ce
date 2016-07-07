@@ -225,9 +225,10 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     }
 
     @Override
-    public Set<String> getHiddenProperties() {
-        return new HashSet<>(Arrays.asList(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, PROPERTY_ROLES_WITH_VIEW_RIGHTS));
+    protected String[] getImplementationHiddenProperties() {
+        return new String[]{PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, PROPERTY_ROLES_WITH_VIEW_RIGHTS};
     }
+    
 
     @Override
     public Set<String> getReadOnlyProperties() {

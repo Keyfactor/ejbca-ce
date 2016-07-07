@@ -17,9 +17,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -177,6 +179,21 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         return approvalPartition;
     }
 
+    @Override
+    public final Set<String> getHiddenProperties() {
+        Set<String> result = new HashSet<>(Arrays.asList(PROPERTY_NOTIFICATION_EMAIL_RECIPIENT, PROPERTY_NOTIFICATION_EMAIL_SENDER,
+                PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY));
+        result.addAll(Arrays.asList(getImplementationHiddenProperties()));
+        return result;
+    }
+    
+    /**
+     * Allows implementations to specify their own list of hidden properties
+     * 
+     * @return a list of property keys. 
+     */
+    protected abstract String[] getImplementationHiddenProperties();
+    
     @Override
     public ApprovalPartition removeNotificationProperties(final ApprovalPartition approvalPartition) {
         approvalPartition.removeProperty(PROPERTY_NOTIFICATION_EMAIL_RECIPIENT);
