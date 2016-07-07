@@ -96,6 +96,8 @@ public interface KeyRecoverySession {
      * @param the end entity profile of the user, used for access control
      * @return true if operation went successful or false if no certificates could be found for
      *         user, or user already marked.
+     *         
+     * @throws CADoesntExistsException if the issuer of the certificate doesn't exist
      */
     boolean markNewestAsRecoverable(AuthenticationToken admin, String username, int endEntityProfileId)
             throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, CADoesntExistsException;
@@ -106,6 +108,8 @@ public interface KeyRecoverySession {
      * @param admin the administrator calling the function
      * @param certificate the certificate used with the keys about to be removed.
      * @return true if operation went successful or false if  certificate couldn't be found.
+     * 
+     * @throws CADoesntExistsException if the issuer of the certificate doesn't exist
      */
     boolean markAsRecoverable(AuthenticationToken admin, Certificate certificate, int endEntityProfileId)
             throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException, CADoesntExistsException;
