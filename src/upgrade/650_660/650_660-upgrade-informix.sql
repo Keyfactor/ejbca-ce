@@ -2,4 +2,4 @@
 -- ALTER TABLE CertificateData ADD notBefore DECIMAL(18,0);
 -- ALTER TABLE CertificateData ADD endEntityProfileId INTEGER;
 -- ALTER TABLE CertificateData ADD subjectAltName LVARCHAR(2000);
--- ALTER TABLE ApprovalData ADD approvalprofileid INTEGER DEFAULT 0;
+-- ALTER TABLE ApprovalData ADD approvalProfileId INTEGER DEFAULT 0;
