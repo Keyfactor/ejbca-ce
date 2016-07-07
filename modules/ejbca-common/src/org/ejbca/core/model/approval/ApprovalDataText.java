@@ -26,10 +26,10 @@ public class ApprovalDataText implements Serializable {
     /** Class is also used by the RA. Please keep serialization compatible (do not change the version number) */
 	private static final long serialVersionUID = 1L;
 	
-    String header;
-	String data;
-	boolean headerTranslateable;
-	boolean dataTranslatable;
+    private String header;
+    private String data;
+    private boolean headerTranslateable;
+    private boolean dataTranslatable;
 	
 	public ApprovalDataText(String header, String data, boolean headerTranslateable, boolean dataTranslatable) {
 		super();
