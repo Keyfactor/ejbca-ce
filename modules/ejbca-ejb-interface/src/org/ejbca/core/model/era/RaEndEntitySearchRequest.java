@@ -16,6 +16,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 /**
  * Search request for end entities from RA UI.
  * 
@@ -70,6 +72,12 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
     public List<Integer> getStatuses() { return statuses; }
     public void setStatuses(final List<Integer> statuses) { this.statuses = statuses; }
 
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
     public boolean equals(final Object object) {
         if (!(object instanceof RaEndEntitySearchRequest)) {
             return false;
