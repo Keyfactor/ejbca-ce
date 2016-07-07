@@ -137,3 +137,35 @@ function onAjaxError(data, elementId) {
 	console.log("onAjaxError: " + data.errorMessage);
     document.getElementById(elementId).style.opacity = "0.2";
 }
+
+var ejbca = ejbca || {};
+window.ejbca = window.ejbca || ejbca;
+ejbca.ra = ejbca.ra || {};
+ejbca.ra.createFileUploadInput = function(newElementId, appendToElementId, onUploadFinishedCallback) {
+	if (document.getElementById(newElementId)) {
+		console.log("ejbca.ra.createFileUploadInput: Element '" + newElementId + "' already exists.");
+		return;
+	}
+	if (!document.getElementById(appendToElementId)) {
+		console.log("ejbca.ra.createFileUploadInput: Element '" + appendToElementId + "' does not exist.");
+		return;
+	}
+	var newFileInput = document.createElement("input");
+	newFileInput.type = "file";
+	newFileInput.id = newElementId;
+	newFileInput.onchange = function() {
+		if (newFileInput.files.length != 0) {
+			var fileReader = new FileReader();
+			fileReader.onloadend = function(event) {
+				if (event.target.readyState == FileReader.DONE) {
+					if (onUploadFinishedCallback) {
+						onUploadFinishedCallback(event.target.result);
+					}
+					newFileInput.value = '';
+				}
+			};
+			fileReader.readAsText(newFileInput.files[0]);
+		};
+	};
+	document.getElementById(appendToElementId).appendChild(newFileInput);
+};
