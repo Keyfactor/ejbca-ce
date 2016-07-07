@@ -223,9 +223,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 2L;
     private static final Logger log = Logger.getLogger(ScepConfigMBean.class);
 
-    @SuppressWarnings("rawtypes")
-    //JDK6 does not support typing for ListDataModel
-    private ListDataModel aliasGuiList = null;
+    private ListDataModel<ScepAliasGuiInfo> aliasGuiList = null;
     private String currentAliasStr;
     private ScepAliasGuiInfo currentAlias = null;
     private String newAlias = "";
@@ -283,9 +281,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     /** Build a list sorted by name from the existing SCEP configuration aliases */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    //JDK6 does not support typing for ListDataModel
-    public ListDataModel getAliasGuiList() {
+    public ListDataModel<ScepAliasGuiInfo> getAliasGuiList() {
         flushCache();
         final List<ScepAliasGuiInfo> list = new ArrayList<ScepAliasGuiInfo>();
         for (String alias : scepConfig.getAliasList()) {
@@ -296,7 +292,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     return alias1.getAlias().compareToIgnoreCase(alias2.getAlias());
                 }
             });
-            aliasGuiList = new ListDataModel(list);
+            aliasGuiList = new ListDataModel<ScepAliasGuiInfo>(list);
         }
         // If show the list, then we are on the main page and want to flush the cache
         currentAlias = null;

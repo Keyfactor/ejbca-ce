@@ -242,11 +242,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private static final Logger log = Logger.getLogger(CryptoTokenMBean.class);
 
     private List<CryptoTokenGuiInfo> cryptoTokenGuiInfos = new ArrayList<CryptoTokenGuiInfo>();
-    @SuppressWarnings("rawtypes") //JDK6 does not support typing for ListDataModel
-    private ListDataModel cryptoTokenGuiList = null;
+    private ListDataModel<CryptoTokenGuiInfo> cryptoTokenGuiList = null;
     private List<KeyPairGuiInfo> keyPairGuiInfos = new ArrayList<KeyPairGuiInfo>();
-    @SuppressWarnings("rawtypes") //JDK6 does not support typing for ListDataModel
-    private ListDataModel keyPairGuiList = null;
+    private ListDataModel<KeyPairGuiInfo> keyPairGuiList = null;
     private String keyPairGuiListError = null;
     private int currentCryptoTokenId = 0;
     private CurrentCryptoTokenGuiInfo currentCryptoToken = null;
@@ -298,8 +296,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
     
     /** Build a list sorted by name from the authorized cryptoTokens that can be presented to the user */
-    @SuppressWarnings({ "rawtypes", "unchecked" }) //JDK6 does not support typing for ListDataModel
-    public ListDataModel getCryptoTokenGuiList() throws AuthorizationDeniedException {
+    public ListDataModel<CryptoTokenGuiInfo> getCryptoTokenGuiList() throws AuthorizationDeniedException {
         if (cryptoTokenGuiList==null) {
             final List<Integer> referencedCryptoTokenIds = getReferencedCryptoTokenIds();
             final List<CryptoTokenGuiInfo> list = new ArrayList<CryptoTokenGuiInfo>();
@@ -317,7 +314,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 });
             }
             cryptoTokenGuiInfos = list;
-            cryptoTokenGuiList = new ListDataModel(cryptoTokenGuiInfos);
+            cryptoTokenGuiList = new ListDataModel<CryptoTokenGuiInfo>(cryptoTokenGuiInfos);
         }
         // If show the list, then we are on the main page and want to flush the two caches
         flushCurrent();
@@ -768,8 +765,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
     
     /** @return a list of all the keys in the current CryptoToken. */
-    @SuppressWarnings({ "rawtypes", "unchecked" }) //JDK6 does not support typing for ListDataModel
-    public ListDataModel getKeyPairGuiList() throws AuthorizationDeniedException {
+    public ListDataModel<KeyPairGuiInfo> getKeyPairGuiList() throws AuthorizationDeniedException {
         if (keyPairGuiList==null) {
             final List<KeyPairGuiInfo> ret = new ArrayList<KeyPairGuiInfo>();
             if (getCurrentCryptoToken().isActive()) {
@@ -796,7 +792,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 }
             });
             keyPairGuiInfos = ret;
-            keyPairGuiList = new ListDataModel(keyPairGuiInfos);
+            keyPairGuiList = new ListDataModel<KeyPairGuiInfo>(keyPairGuiInfos);
         }
         return keyPairGuiList;
     }
