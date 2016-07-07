@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -113,49 +112,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.raLocaleBean = raLocaleBean;
     }
 
-    //1. Authorized end entity profiles (certificate types)
-    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();
-    private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
-    private IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<CAInfo>();
-    private String selectedEndEntityProfile;
-    private boolean endEntityProfileChanged;
-    private Map<String, String> availableEndEntityProfiles = new HashMap<String, String>();
-
-    //2. Available certificate profiles (certificate subtypes)
-    private Map<String, String> availableCertificateProfiles = new HashMap<String, String>();
-    private String selectedCertificateProfile;
-    private boolean certificateProfileChanged;
-
-    //3. Available Certificate Authorities
-    private Map<String, String> availableCertificateAuthorities = new HashMap<String, String>();
-    private String selectedCertificateAuthority;
-    private boolean certificateAuthorityChanged;
-
-    //4. Key-pair generation
-    public enum KeyPairGeneration {
-        ON_SERVER("Generated on server"), PROVIDED_BY_USER("Provided by user");
-        private String value;
-
-        private KeyPairGeneration(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
-
-    private Map<String, KeyPairGeneration> availableKeyPairGenerations = new HashMap<String, KeyPairGeneration>();
-    private String selectedKeyPairGeneration;
-    private boolean keyPairGenerationChanged;
-
-    //5. Key-pair generation on server
-    private Map<String, String> availableAlgorithms = new TreeMap<String, String>();
-    private String selectedAlgorithm; //GENERATED ON SERVER
-    private String algorithmFromCsr; //PROVIDED BY USER
-    private boolean algorithmChanged;
-    private String certificateRequest;
-
     public enum TokenDownloadType {
         PEM(1), PEM_FULL_CHAIN(2), PKCS7(3), P12(4), JKS(5), DER(6);
         private int value;
@@ -168,14 +124,57 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return value;
         }
     }
+    
+    //1. Select Request Template
+    private boolean selectRequestTemplateRendered = true;
+    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();
+    private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
+    private IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<CAInfo>();
+    private String selectedEndEntityProfile;
+    private boolean endEntityProfileChanged;
+    private Map<String, String> availableEndEntityProfiles = new HashMap<String, String>();
 
-    //6. Certificate data
+    private Map<String, String> availableCertificateProfiles = new HashMap<String, String>();
+    private String selectedCertificateProfile;
+    private boolean certificateProfileChanged;
+
+    private Map<String, String> availableCertificateAuthorities = new HashMap<String, String>();
+    private String selectedCertificateAuthority;
+    private boolean certificateAuthorityChanged;
+
+    public enum KeyPairGeneration {
+        ON_SERVER("Key-pair generated on server"), PROVIDED_BY_USER("Key-pair provided by user");
+        private String value;
+
+        private KeyPairGeneration(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+    private Map<String, KeyPairGeneration> availableKeyPairGenerations = new HashMap<String, KeyPairGeneration>();
+    private String selectedKeyPairGeneration;
+    private boolean keyPairGenerationChanged;
+
+    //2. Select Key Algorithm / Upload CSR
+    private boolean selectKeyAlgorithmRendered;
+    private boolean uploadCsrRendered;
+    private Map<String, String> availableAlgorithms = new TreeMap<String, String>();
+    private String selectedAlgorithm; //GENERATED ON SERVER
+    private String algorithmFromCsr; //PROVIDED BY USER
+    private boolean algorithmChanged;
+    private String certificateRequest;
+
+    //3. Request Info
+    private boolean provideRequestInfoRendered;
     private SubjectDn subjectDn;
     private SubjectAlternativeName subjectAlternativeName;
     private SubjectDirectoryAttributes subjectDirectoryAttributes;
-    private boolean certificateDataReady;
 
-    //7. Download credentials data
+    //4. Provide request metadata
+    private boolean provideRequestMetadataRendered;
     private EndEntityInformation endEntityInformation;
     private String confirmPassword;
     private boolean downloadCredentialsChanged;
@@ -184,6 +183,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private int requestId;
     
     //9. Certificate preview
+    private boolean confirmRequestRendered;
     private RaRequestPreview requestPreview;
 
     @PostConstruct
@@ -349,18 +349,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return;
         }
         
-        if(subjectDn != null){
-            return;
+        if(subjectDn == null){
+            subjectDn = new SubjectDn(endEntityProfile);
+            final X509CAInfo x509cainfo = (X509CAInfo) getCAInfo();
+            subjectDn.setLdapOrder(x509cainfo.getUseLdapDnOrder() && getCertificateProfile().getUseLdapDnOrder());
+            subjectDn.setNameStyle(x509cainfo.getUsePrintableStringSubjectDN() ? PrintableStringNameStyle.INSTANCE : CeSecoreNameStyle.INSTANCE);
+            subjectAlternativeName = new SubjectAlternativeName(endEntityProfile);
+            subjectDirectoryAttributes = new SubjectDirectoryAttributes(endEntityProfile);
         }
         
-        subjectDn = new SubjectDn(endEntityProfile);
-        final X509CAInfo x509cainfo = (X509CAInfo) getCAInfo();
-        subjectDn.setLdapOrder(x509cainfo.getUseLdapDnOrder() && getCertificateProfile().getUseLdapDnOrder());
-        subjectDn.setNameStyle(x509cainfo.getUsePrintableStringSubjectDN() ? PrintableStringNameStyle.INSTANCE : CeSecoreNameStyle.INSTANCE);
-        subjectAlternativeName = new SubjectAlternativeName(endEntityProfile);
-        subjectDirectoryAttributes = new SubjectDirectoryAttributes(endEntityProfile);
-
-        //If PROVIDED BY USER key generation is selected, try fill Subject DN fields from CSR
+        //If PROVIDED BY USER key generation is selected, try fill Subject DN fields from CSR (Overwrite the fields set by previous CSR upload if any)
         if (selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
             PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(certificateRequest); //pkcs10CertificateRequest will not be null at this point
             List<String> subjectDnFieldsFromParsedCsr = CertTools.getX500NameComponents(pkcs10CertificateRequest.getSubject().toString());
@@ -376,7 +374,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         if (profileName != null) {
                             //In the case of multiple fields (etc. two CNs), find the first one with an empty value
                             for(EndEntityProfile.FieldInstance fieldInstance : subjectDn.getFieldInstancesMap().get(profileName).values()){
-                                if(fieldInstance.getValue() == null || fieldInstance.getValue().isEmpty()){
+                                if(fieldInstance.isModifiable()){
                                     fieldInstance.setValue(nameValue[1]);
                                     subjectDn.getFieldInstancesMap().get(profileName).put(fieldInstance.getNumber(), fieldInstance);
                                     if (log.isDebugEnabled()) {
@@ -393,17 +391,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
             subjectDn.update();
         }
     }
-
-    private void initCredentialsDataAndRequestPreview() {
+   
+    private void initEndEntityInformation() {
         endEntityInformation = new EndEntityInformation();
-        
-        updateRequestPreview();
     }
     
     private void updateRequestPreview(){
-        if(!certificateDataReady){
-            return;
-        }
         
         requestPreview = new RaRequestPreview();
         requestPreview.updateSubjectDn(subjectDn);
@@ -416,47 +409,54 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     //-----------------------------------------------------------------------------------------------
     // Helpers and get*Rendered() methods
-
-    public boolean getCsrUploadRendered() {
-        return selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue());
+    
+    public boolean isUsernameRendered(){
+        return !getEndEntityProfile().useAutoGeneratedPasswd();
     }
 
-    public boolean getPasswordRendered() {
-        return selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue());
+    public boolean isPasswordRendered() {
+        return selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue()) && !getEndEntityProfile().useAutoGeneratedPasswd();
     }
 
-    public boolean getGenerateJksButtonRendered() {
+    public boolean isGenerateJksButtonRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile == null) {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores.contains(SecConst.TOKEN_SOFT_JKS + "")
-                && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue());
+        return availableKeyStores != null && availableKeyStores.contains(SecConst.TOKEN_SOFT_JKS + "")
+                && selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())
+                && !isApprovalRequired();
     }
 
-    public boolean getGenerateP12ButtonRendered() {
+    public boolean isGenerateP12ButtonRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile == null) {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores.contains(SecConst.TOKEN_SOFT_P12 + "")
-                && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue());
+        return availableKeyStores != null && availableKeyStores.contains(SecConst.TOKEN_SOFT_P12 + "")
+                && selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())
+                && !isApprovalRequired();
     }
 
-    public boolean getGenerateFromCsrButtonRendered() {
+    public boolean isGenerateFromCsrButtonRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile == null) {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores.contains(EndEntityConstants.TOKEN_USERGEN + "")
-                && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue());
+        return availableKeyStores != null && availableKeyStores.contains(EndEntityConstants.TOKEN_USERGEN + "")
+                && selectedKeyPairGeneration != null && selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())
+                && !isApprovalRequired();
     }
-
-    public boolean getNextButtonRendered() {
-        return getEndEntityInformation() == null;
+    
+    public boolean isConfirmRequestButtonRendered(){
+        return isApprovalRequired();
+    }
+    
+    private boolean isApprovalRequired(){
+        return raMasterApiProxyBean.getApprovalProfileForAction(1, getCAInfo(), getCertificateProfile()) != null;
     }
     
     public boolean getUpdateRequestPreviewButtonRendered(){
@@ -465,8 +465,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     
     //-----------------------------------------------------------------------------------------------
     //All reset* methods should be able to clear/reset states that have changed during init* methods.
-    //Always make sure that reset methods are chained!
+    //Always make sure that reset methods are properly chained
 
+    //Invoked by commandButton id="resetButton"
     public final String reset() {
         //Invalidate view tree by redirecting to the same page
         String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
@@ -502,61 +503,30 @@ public class EnrollMakeNewRequestBean implements Serializable {
         selectedAlgorithm = null;
         algorithmChanged = false;
         certificateRequest = null;
+        uploadCsrRendered = false;
+        selectKeyAlgorithmRendered = false;
 
-        resetCertificateData();
+        resetRequestInfo();
     }
 
-    private final void resetCertificateData() {
+    private final void resetRequestInfo() {
         subjectDn = null;
         subjectAlternativeName = null;
         subjectDirectoryAttributes = null;
-        certificateDataReady = false;
+        setProvideRequestInfoRendered(false);
 
-        resetDownloadCredentialsData();
+        resetRequestMetadata();
     }
 
-    private final void resetDownloadCredentialsData() {
+    private final void resetRequestMetadata() {
         endEntityInformation = null;
+        setProvideRequestMetadataRendered(false);
+        setConfirmRequestRendered(false);
         setRequestId(0);
     }
 
-    /**
-     * Proceeds to a next step of enrollment phase. In situations where AJAX is provided this method is not needed and used.
-     * This method can be invoked with "Next" button.
-     * @throws IOException
-     */
-    public final void next() throws IOException {
-        if (endEntityProfileChanged) {
-            selectEndEntityProfile();
-        } else if (certificateProfileChanged) {
-            selectCertificateProfile();
-        } else if (certificateAuthorityChanged) {
-            selectCertificateAuthority();
-        } else if (keyPairGenerationChanged) {
-            selectKeyPairGeneration();
-        } else if (algorithmChanged) {
-            selectAlgorithm();
-        } else {
-            if (subjectDn != null) {
-                finalizeCertificateData();
-            } else if (certificateRequest != null) {
-                enterCsr();
-            } else if (selectedAlgorithm != null) {
-                selectAlgorithm();
-            } else if (selectedKeyPairGeneration != null) {
-                selectKeyPairGeneration();
-            } else if (selectedCertificateAuthority != null) {
-                selectCertificateAuthority();
-            } else if (selectedCertificateProfile != null) {
-                selectCertificateProfile();
-            } else {
-                selectEndEntityProfile();
-            }
-        }
-    }
-
     //-----------------------------------------------------------------------------------------------
-    //Action methods (e.g. select*, submit*..) that are called directly from appropriate AJAX listener or from next() method
+    //Action methods
 
     private final void selectEndEntityProfile() {
         setEndEntityProfileChanged(false);
@@ -590,53 +560,52 @@ public class EnrollMakeNewRequestBean implements Serializable {
             selectKeyPairGeneration();
         }
     }
+    
+    public final void applyRequestTemplate(){
+        if (endEntityProfileChanged) {
+            selectEndEntityProfile();
+        } else if (certificateProfileChanged) {
+            selectCertificateProfile();
+        } else if (certificateAuthorityChanged) {
+            selectCertificateAuthority();
+        } else if (keyPairGenerationChanged) {
+            selectKeyPairGeneration();
+        }
+    }
 
     private final void selectKeyPairGeneration() {
         setKeyPairGenerationChanged(false);
 
         resetAlgorithmCsrUpload();
         if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
+            selectKeyAlgorithmRendered = true;
             initAvailableAlgorithms();
+            
+            setProvideRequestInfoRendered(true);
+            initCertificateData();
+            
+            setProvideRequestMetadataRendered(true);
+            setConfirmRequestRendered(true);
+            initEndEntityInformation();
+            updateRequestPreview();
         } else if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.PROVIDED_BY_USER.getValue())) {
+            uploadCsrRendered = true;
             initCsrUpload();
         }
     }
 
     private final void selectAlgorithm() {
         setAlgorithmChanged(false);
-
-        //resetCertificateData();
+    }
+    
+    public final void uploadCsr() {
+        setProvideRequestInfoRendered(true);
         initCertificateData();
-    }
-
-    private final void enterCsr() {
-        //resetCertificateData();
-        initCertificateData();
-    }
-
-    private final void finalizeCertificateData() {
-        certificateDataReady = true;
-
-        initCredentialsDataAndRequestPreview();
-    }
-
-    private final void setDownloadCredentialsData() {
-        endEntityInformation.setCAId(getCAInfo().getCAId());
-        endEntityInformation.setCardNumber(""); //TODO Card Number
-        endEntityInformation.setCertificateProfileId(authorizedCertificateProfiles.get(selectedCertificateProfile).getId());
-        endEntityInformation.setDN(subjectDn.toString());
-        endEntityInformation.setEndEntityProfileId(authorizedEndEntityProfiles.get(selectedEndEntityProfile).getId());
-        endEntityInformation.setExtendedinformation(new ExtendedInformation());//TODO don't know anything about it...
-        endEntityInformation.setHardTokenIssuerId(0); //TODO not sure....
-        endEntityInformation.setKeyRecoverable(false); //TODO not sure...
-        endEntityInformation.setPrintUserData(false); // TODO not sure...
-        endEntityInformation.setSendNotification(false); // TODO will be updated
-        endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
-        endEntityInformation.setSubjectAltName(subjectAlternativeName.toString());
-        endEntityInformation.setTimeCreated(new Date());//TODO client vs server time issues?
-        endEntityInformation.setTimeModified(new Date());//TODO client vs server time issues?
-        endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
-        //TODO how to set subject directory attributes?
+        
+        setProvideRequestMetadataRendered(true);
+        setConfirmRequestRendered(true);
+        initEndEntityInformation();
+        updateRequestPreview();
     }
 
     public final void addEndEntityAndGenerateCertificeDer() {
@@ -689,10 +658,29 @@ public class EnrollMakeNewRequestBean implements Serializable {
         subjectDn.update();
         subjectAlternativeName.update();
         subjectDirectoryAttributes.updateValue();
-        setDownloadCredentialsData();
+        
+        //Fill End Entity information
+        endEntityInformation.setCAId(getCAInfo().getCAId());
+        endEntityInformation.setCardNumber(""); //TODO Card Number
+        endEntityInformation.setCertificateProfileId(authorizedCertificateProfiles.get(selectedCertificateProfile).getId());
+        endEntityInformation.setDN(subjectDn.toString());
+        endEntityInformation.setEndEntityProfileId(authorizedEndEntityProfiles.get(selectedEndEntityProfile).getId());
+        endEntityInformation.setExtendedinformation(new ExtendedInformation());//TODO don't know anything about it...
+        endEntityInformation.setHardTokenIssuerId(0); //TODO not sure....
+        endEntityInformation.setKeyRecoverable(false); //TODO not sure...
+        endEntityInformation.setPrintUserData(false); // TODO not sure...
+        endEntityInformation.setSendNotification(getEndEntityProfile().isRequired(EndEntityProfile.SENDNOTIFICATION, 0)
+                && getEndEntityProfile().getValue(EndEntityProfile.SENDNOTIFICATION, 0).equals(EndEntityProfile.TRUE)
+                && !endEntityInformation.getSendNotification());
+        endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
+        endEntityInformation.setSubjectAltName(subjectAlternativeName.toString());
+        endEntityInformation.setTimeCreated(new Date());
+        endEntityInformation.setTimeModified(new Date());
+        endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
+        //TODO how to set subject directory attributes?
         endEntityInformation.setTokenType(tokenType);
 
-        //Enter username
+        //Fill end-entity information (Username and Password)
         if(endEntityInformation.getUsername() == null || endEntityInformation.getUsername().isEmpty()){
             Map<Integer, EndEntityProfile.FieldInstance> commonNameFieldInstances = subjectDn.getFieldInstancesMap().get(DnComponents.COMMONNAME);
             for(EndEntityProfile.FieldInstance commonNameFieldInstance : commonNameFieldInstances.values()){
@@ -720,7 +708,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
 
-        //Get token's algorithm from CSR (PROVIDED_BY_USER) or it can be specified directly (ON_SERVER)
+        //Fill end-entity information (KeyStoreAlgorithm* or CertificateRequest)
         if (selectedKeyPairGeneration.equalsIgnoreCase(KeyPairGeneration.ON_SERVER.getValue())) {
             final String[] tokenKeySpecSplit = selectedAlgorithm.split("_");
             endEntityInformation.getExtendedinformation().setKeyStoreAlgorithm(tokenKeySpecSplit[0]);
@@ -759,7 +747,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return null;
         }
         
-        //End entity has been added now! Make sure clean-up is done in this "try-finally" block if something goes wrong
+        //The end-entity has been added now! Make sure clean-up is done in this "try-finally" block if something goes wrong
         try{
             //Generates a keystore token if user has specified "ON SERVER" key pair generation.
             //Generates a certificate token if user has specified "PROVIDED_BY_USER" key pair generation
@@ -883,7 +871,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public final void csrInputTextAjaxListener(final AjaxBehaviorEvent event) {
-        enterCsr();
+        uploadCsr();
         
         updateRequestPreview();
     }
@@ -904,19 +892,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
     //Validators
     
     public void validatePassword(ComponentSystemEvent event) {
-        if(getPasswordRendered()){
+        if(isPasswordRendered()){
             FacesContext fc = FacesContext.getCurrentInstance();
             UIComponent components = event.getComponent();
             UIInput uiInputPassword = (UIInput) components.findComponent("passwordField");
             String password = uiInputPassword.getLocalValue() == null ? "" : uiInputPassword.getLocalValue().toString();
             UIInput uiInputConfirmPassword = (UIInput) components.findComponent("passwordConfirmField");
             String confirmPassword = uiInputConfirmPassword.getLocalValue() == null ? "" : uiInputConfirmPassword.getLocalValue().toString();
-            if (password.isEmpty() || confirmPassword.isEmpty()) {
-                raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_password_can_not_be_empty"));
+            /*if (password.isEmpty() || confirmPassword.isEmpty()) {
+                FacesContext.getCurrentInstance().addMessage("passwordFieldMessage", raLocaleBean.getFacesMessage("enroll_password_can_not_be_empty"));
                 fc.renderResponse();
                 
-            }else if (!password.equals(confirmPassword)) {
-                raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_passwords_are_not_equal"));
+            }else */if (!password.equals(confirmPassword)) {
+                FacesContext.getCurrentInstance().addMessage("passwordFieldMessage", raLocaleBean.getFacesMessage("enroll_passwords_are_not_equal"));
                 fc.renderResponse();
             }
         }
@@ -944,7 +932,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
         }
-        
     }
     
     
@@ -1303,20 +1290,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     /**
-     * @return the certificateDataReady
-     */
-    public boolean isCertificateDataReady() {
-        return certificateDataReady;
-    }
-
-    /**
-     * @param certificateDataReady the certificateDataReady to set
-     */
-    public void setCertificateDataReady(boolean certificateDataReady) {
-        this.certificateDataReady = certificateDataReady;
-    }
-
-    /**
      * @return the downloadCredentialsChanged
      */
     public boolean isDownloadCredentialsChanged() {
@@ -1365,4 +1338,90 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setRequestPreview(RaRequestPreview requestPreview) {
         this.requestPreview = requestPreview;
     }
+
+    /**
+     * @return the selectRequestTemplateRendered
+     */
+    public boolean isSelectRequestTemplateRendered() {
+        return selectRequestTemplateRendered;
+    }
+
+    /**
+     * @param selectRequestTemplateRendered the selectRequestTemplateRendered to set
+     */
+    public void setSelectRequestTemplateRendered(boolean selectRequestTemplateRendered) {
+        this.selectRequestTemplateRendered = selectRequestTemplateRendered;
+    }
+
+    /**
+     * @return the selectKeyAlgorithmRendered
+     */
+    public boolean isSelectKeyAlgorithmRendered() {
+        return selectKeyAlgorithmRendered;
+    }
+
+    /**
+     * @param selectKeyAlgorithmRendered the selectKeyAlgorithmRendered to set
+     */
+    public void setSelectKeyAlgorithmRendered(boolean selectKeyAlgorithmRendered) {
+        this.selectKeyAlgorithmRendered = selectKeyAlgorithmRendered;
+    }
+
+    /**
+     * @return the uploadCsrRendered
+     */
+    public boolean isUploadCsrRendered() {
+        return uploadCsrRendered;
+    }
+
+    /**
+     * @param uploadCsrRendered the uploadCsrRendered to set
+     */
+    public void setUploadCsrRendered(boolean uploadCsrRendered) {
+        this.uploadCsrRendered = uploadCsrRendered;
+    }
+
+    /**
+     * @return the provideRequestInfoRendered
+     */
+    public boolean isProvideRequestInfoRendered() {
+        return provideRequestInfoRendered;
+    }
+
+    /**
+     * @param provideRequestInfoRendered the provideRequestInfoRendered to set
+     */
+    public void setProvideRequestInfoRendered(boolean provideRequestInfoRendered) {
+        this.provideRequestInfoRendered = provideRequestInfoRendered;
+    }
+
+    /**
+     * @return the provideRequestMetadataRendered
+     */
+    public boolean isProvideRequestMetadataRendered() {
+        return provideRequestMetadataRendered;
+    }
+
+    /**
+     * @param provideRequestMetadataRendered the provideRequestMetadataRendered to set
+     */
+    public void setProvideRequestMetadataRendered(boolean provideRequestMetadataRendered) {
+        this.provideRequestMetadataRendered = provideRequestMetadataRendered;
+    }
+
+    /**
+     * @return the confirmRequestRendered
+     */
+    public boolean isConfirmRequestRendered() {
+        return confirmRequestRendered;
+    }
+
+    /**
+     * @param confirmRequestRendered the confirmRequestRendered to set
+     */
+    public void setConfirmRequestRendered(boolean confirmRequestRendered) {
+        this.confirmRequestRendered = confirmRequestRendered;
+    }
+
+    
 }

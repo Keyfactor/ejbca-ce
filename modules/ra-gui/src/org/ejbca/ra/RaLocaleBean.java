@@ -173,4 +173,15 @@ public class RaLocaleBean implements Serializable {
         }
         return sb.toString();
     }
+    
+    /**
+     * Wraps the RaLocaleBean.getMessage()
+     * @param messageKey the message key
+     * @param params to replace place holders with. Evaluated with String.valueOf() (null-safe).
+     * @return the localized message or "???messageKey???" if no key way found.
+     * @see RaLocalBean.getMessage 
+     */
+    public FacesMessage getFacesMessage(final String messageKey, final Object...params){
+        return new FacesMessage(getMessage(messageKey, params));
+    }
 }

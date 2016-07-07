@@ -106,6 +106,7 @@ import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -1158,4 +1159,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
         return (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
     }
+    
+    @Override
+    public ApprovalProfile getApprovalProfileForAction(final int action, final CAInfo cainfo, final CertificateProfile certProfile){
+        return approvalProfileSession.getApprovalProfileForAction(action, cainfo, certProfile);
+    }
+
 }

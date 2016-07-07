@@ -48,6 +48,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
@@ -504,6 +505,23 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if(raMasterApi.isBackendAvailable()){
                 try{
                     final CertificateProfile result = raMasterApi.searchCertificateProfile(authenticationToken, certificateProfileId);
+                    if (result != null) {
+                        return result;
+                    }
+                }catch  (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+    
+    @Override
+    public ApprovalProfile getApprovalProfileForAction(final int action, final CAInfo cainfo, final CertificateProfile certProfile){
+        for(final RaMasterApi raMasterApi : raMasterApis){
+            if(raMasterApi.isBackendAvailable()){
+                try{
+                    final ApprovalProfile result = raMasterApi.getApprovalProfileForAction(action, cainfo, certProfile);
                     if (result != null) {
                         return result;
                     }
