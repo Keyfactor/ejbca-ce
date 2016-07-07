@@ -160,10 +160,10 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     public ApprovalStep getStepBeingEvaluated(Collection<Approval> approvalsPerformed) {
         return getStep(FIXED_STEP_ID);
     }
-
+    
     @Override
-    public Set<String> getHiddenProperties() {
-        return new HashSet<>(Arrays.asList(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS));
+    protected String[] getImplementationHiddenProperties() {
+        return new String[]{PROPERTY_NUMBER_OF_REQUIRED_APPROVALS};
     }
     
     @Override
