@@ -83,6 +83,8 @@ public class RaSearchEesBean implements Serializable {
     private RaEndEntitySearchRequest lastExecutedRequest = null;
     private RaEndEntitySearchResponse lastExecutedResponse = null;
 
+    private String genericSearchString = "";
+    
     private String modifiedAfter = "";
     private String modifiedBefore = "";
 
@@ -168,34 +170,18 @@ public class RaSearchEesBean implements Serializable {
         if (lastExecutedResponse != null) {
             for (final EndEntityInformation endEntityInformation : lastExecutedResponse.getEndEntities()) {
                 // ...we don't filter if the requested maxResults is lower than the search request
-                if (!stagedRequest.getGenericSearchString().isEmpty() &&
-                        (endEntityInformation.getUsername() == null || !endEntityInformation.getUsername().contains(stagedRequest.getGenericSearchString())) &&
-                        (endEntityInformation.getDN() == null || !endEntityInformation.getDN().contains(stagedRequest.getGenericSearchString()) &&
-                        (endEntityInformation.getSubjectAltName() == null || !endEntityInformation.getSubjectAltName().contains(stagedRequest.getGenericSearchString())))) {
+                if (!genericSearchString.isEmpty() && (
+                        !stagedRequest.matchUsername(endEntityInformation.getUsername()) &&
+                        !stagedRequest.matchSubjectDn(endEntityInformation.getDN()) &&
+                        !stagedRequest.matchSubjectAn(endEntityInformation.getSubjectAltName())
+                        )) {
                     continue;
                 }
-                if (!stagedRequest.getEepIds().isEmpty() && !stagedRequest.getEepIds().contains(endEntityInformation.getEndEntityProfileId())) {
-                    continue;
-                }
-                if (!stagedRequest.getCpIds().isEmpty() && !stagedRequest.getCpIds().contains(endEntityInformation.getCertificateProfileId())) {
-                    continue;
-                }
-                if (!stagedRequest.getCaIds().isEmpty() && !stagedRequest.getCaIds().contains(endEntityInformation.getCAId())) {
-                    continue;
-                }
-                if (stagedRequest.getModifiedAfter()<Long.MAX_VALUE) {
-                    if (endEntityInformation.getTimeModified().getTime()<stagedRequest.getModifiedAfter()) {
-                        continue;
-                    }
-                }
-                if (stagedRequest.getModifiedBefore()>0L) {
-                    if (endEntityInformation.getTimeModified().getTime()>stagedRequest.getModifiedBefore()) {
-                        continue;
-                    }
-                }
-                if (!stagedRequest.getStatuses().isEmpty() && !stagedRequest.getStatuses().contains(endEntityInformation.getStatus())) {
-                    continue;
-                }
+                if (!stagedRequest.matchEep(endEntityInformation.getEndEntityProfileId())) { continue; }
+                if (!stagedRequest.matchCp(endEntityInformation.getCertificateProfileId())) { continue; }
+                if (!stagedRequest.matchCa(endEntityInformation.getCAId())) { continue; }
+                if (!stagedRequest.matchModifiedInterval(endEntityInformation.getTimeModified().getTime())) { continue; }
+                if (!stagedRequest.matchStatus(endEntityInformation.getStatus())) { continue; }
                 resultsFiltered.add(new RaEndEntityDetails(endEntityInformation, raEndEntityDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caIdToNameMap));
             }
             if (log.isDebugEnabled()) {
@@ -287,8 +273,8 @@ public class RaSearchEesBean implements Serializable {
         moreOptions = !moreOptions;
         // Reset any criteria in the advanced section
         stagedRequest.setMaxResults(RaEndEntitySearchRequest.DEFAULT_MAX_RESULTS);
-        stagedRequest.setModifiedAfter(Long.MAX_VALUE);
-        stagedRequest.setModifiedBefore(0L);
+        stagedRequest.resetModifiedAfter();
+        stagedRequest.resetModifiedBefore();
         modifiedAfter = "";
         modifiedBefore = "";
         searchAndFilterCommon();
@@ -298,8 +284,13 @@ public class RaSearchEesBean implements Serializable {
         return resultsFiltered;
     }
 
-    public String getGenericSearchString() { return stagedRequest.getGenericSearchString(); }
-    public void setGenericSearchString(final String genericSearchString) { stagedRequest.setGenericSearchString(genericSearchString); }
+    public String getGenericSearchString() { return this.genericSearchString; }
+    public void setGenericSearchString(final String genericSearchString) {
+        this.genericSearchString = genericSearchString;
+        stagedRequest.setSubjectDnSearchString(genericSearchString);
+        stagedRequest.setSubjectAnSearchString(genericSearchString);
+        stagedRequest.setUsernameSearchString(genericSearchString);
+    }
     
     public int getCriteriaMaxResults() { return stagedRequest.getMaxResults(); }
     public void setCriteriaMaxResults(final int criteriaMaxResults) { stagedRequest.setMaxResults(criteriaMaxResults); }
@@ -387,18 +378,18 @@ public class RaSearchEesBean implements Serializable {
     }
 
     public String getModifiedAfter() {
-        return getDateAsString(modifiedAfter, stagedRequest.getModifiedAfter(), Long.MAX_VALUE);
+        return getDateAsString(modifiedAfter, stagedRequest.getModifiedAfter(), 0L);
     }
     public void setModifiedAfter(final String modifiedAfter) {
         this.modifiedAfter = modifiedAfter;
-        stagedRequest.setModifiedAfter(parseDateAndUseDefaultOnFail(modifiedAfter, Long.MAX_VALUE));
+        stagedRequest.setModifiedAfter(parseDateAndUseDefaultOnFail(modifiedAfter, 0L));
     }
     public String getModifiedBefore() {
-        return getDateAsString(modifiedBefore, stagedRequest.getModifiedBefore(), 0L);
+        return getDateAsString(modifiedBefore, stagedRequest.getModifiedBefore(), Long.MAX_VALUE);
     }
     public void setModifiedBefore(final String modifiedBefore) {
         this.modifiedBefore = modifiedBefore;
-        stagedRequest.setModifiedBefore(parseDateAndUseDefaultOnFail(modifiedBefore, 0L));
+        stagedRequest.setModifiedBefore(parseDateAndUseDefaultOnFail(modifiedBefore, Long.MAX_VALUE));
     }
 
     /** @return the current value if the staged request value if the default value */
