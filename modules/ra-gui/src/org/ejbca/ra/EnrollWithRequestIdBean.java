@@ -16,10 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -124,8 +121,8 @@ public class EnrollWithRequestIdBean implements Serializable {
         }
     }
 
-    public boolean isRequestApproved() {
-        return requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED;
+    public boolean isFinalizeEnrollmentRendered() {
+        return (requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED) && endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW;
     }
 
     public void finalizeEnrollment() {
