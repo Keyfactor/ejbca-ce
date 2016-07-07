@@ -27,8 +27,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  */
 public class RaEndEntitySearchResponse implements Serializable {
 
-    // TODO: Make Externalizable instead to handle for future versioning
-
     private static final long serialVersionUID = 1L;
 
     private List<EndEntityInformation> endEntities = new ArrayList<>();

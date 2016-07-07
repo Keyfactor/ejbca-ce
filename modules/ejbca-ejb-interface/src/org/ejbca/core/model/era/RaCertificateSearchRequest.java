@@ -26,8 +26,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  */
 public class RaCertificateSearchRequest implements Serializable, Comparable<RaCertificateSearchRequest> {
 
-    // TODO: Make Externalizable instead to handle for future versioning
-
     private static final long serialVersionUID = 1L;
     //private static final Logger log = Logger.getLogger(RaCertificateSearchRequest.class);
     public static int DEFAULT_MAX_RESULTS = 25;
