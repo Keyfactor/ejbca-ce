@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
 
 /**
@@ -153,5 +154,10 @@ public final class AccessSet implements Serializable {
             return set.containsAll(accessSet.set) && accessSet.set.containsAll(set);
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 }
