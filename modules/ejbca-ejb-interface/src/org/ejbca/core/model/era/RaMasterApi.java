@@ -31,6 +31,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
@@ -189,5 +190,15 @@ public interface RaMasterApi {
      * @return certificate profile as CertificateProfile object or null if it can not be found
      */
     CertificateProfile searchCertificateProfile(AuthenticationToken authenticationToken, int certificateProfileId);
+    
+    
+    /**
+     * Gets approval profile for specified action.
+     * 
+     * @param action. Check CAInfo.AVAILABLE_APPROVALSETTINGS for valid values.
+     * @param cainfo CA non sensitive data
+     * @return certProfile certificate profile
+     */
+    public ApprovalProfile getApprovalProfileForAction(final int action, final CAInfo cainfo, final CertificateProfile certProfile);//TODO Authentication
 
 }
