@@ -148,6 +148,7 @@
 							styleClass="pure-button ra-button jsHide"
 							action="#{enrollMakeNewRequestBean.applyRequestTemplate}">
 						</h:commandButton>
+                        <script>jsTouchUpDocument();</script>
 					</h:panelGroup>
 				</h:panelGroup>
 
@@ -393,8 +394,9 @@
 							value="#{msg.enroll_update_request_preview}"
 							action="#{enrollMakeNewRequestBean.updateRequestDataToPreview}"
 							rendered="#{enrollMakeNewRequestBean.updateRequestPreviewButtonRendered}"
-							styleClass="pure-button ra-button">
+							styleClass="pure-button ra-button jsHide">
 						</h:commandButton>
+                        <script>jsTouchUpDocument();</script>
 					</h:panelGroup>
 				</h:panelGroup>
 

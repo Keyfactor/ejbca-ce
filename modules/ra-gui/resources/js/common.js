@@ -90,6 +90,7 @@ function forEachInputElementByStyleClass(styleClassName, callback) {
 					// First remove the class name to avoid processing it multiple times if this method is invoked again
 					inputFields[i].className = inputFields[i].className.replace(styleClassName, "").trim();
 					// Invoke the callback with the matching element. If it returns true we stop looking for more elements.
+					//console.log("forEachInputElementByStyleClass: " + styleClassName + " → will invoke callback for '" + inputFields[i].id + "'");
 					if (callback(inputFields[i])) {
 						return;
 					}
