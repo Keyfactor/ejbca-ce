@@ -857,15 +857,40 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             return response;
         }
-        final String genericSearchString = request.getGenericSearchString();
+        final String subjectDnSearchString = request.getSubjectDnSearchString();
+        final String subjectAnSearchString = request.getSubjectAnSearchString();
+        final String usernameSearchString = request.getUsernameSearchString();
         final StringBuilder sb = new StringBuilder("SELECT a.username FROM UserData a WHERE (a.caId IN (:caId))");
-        if (!genericSearchString.isEmpty()) {
-            sb.append(" AND (a.username LIKE :username OR a.subjectDN LIKE :subjectDN OR a.subjectAltName LIKE :subjectAltName)");
+        if (!subjectDnSearchString.isEmpty() || !subjectAnSearchString.isEmpty() || !usernameSearchString.isEmpty()) {
+            sb.append(" AND (");
+            boolean firstAppended = false;
+            if (!subjectDnSearchString.isEmpty()) {
+                sb.append("a.subjectDN LIKE :subjectDN");
+                firstAppended = true;
+            }
+            if (!subjectAnSearchString.isEmpty()) {
+                if (firstAppended) {
+                    sb.append(" OR ");
+                } else {
+                    firstAppended = true;
+                }
+                sb.append("a.subjectAltName LIKE :subjectAltName");
+            }
+            if (!usernameSearchString.isEmpty()) {
+                if (firstAppended) {
+                    sb.append(" OR ");
+                } else {
+                    firstAppended = true;
+                }
+                sb.append("a.username LIKE :username");
+            }
+            sb.append(")");
         }
-        if (request.getModifiedAfter()<Long.MAX_VALUE) {
+        
+        if (request.isModifiedAfterUsed()) {
             sb.append(" AND (a.timeModified > :modifiedAfter)");
         }
-        if (request.getModifiedBefore()>0L) {
+        if (request.isModifiedBeforeUsed()) {
             sb.append(" AND (a.timeModified < :modifiedBefore)");
         }
         if (!request.getStatuses().isEmpty()) {
@@ -900,15 +925,31 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.debug(" endEntityProfileId: Any (even deleted) profile(s) due to root access.");
             }
         }
-        if (!genericSearchString.isEmpty()) {
-            query.setParameter("username", "%" + genericSearchString + "%");
-            query.setParameter("subjectDN", "%" + genericSearchString + "%");
-            query.setParameter("subjectAltName", "%" + genericSearchString + "%");
+        if (!subjectDnSearchString.isEmpty()) {
+            if (request.isSubjectDnSearchExact()) {
+                query.setParameter("subjectDN", subjectDnSearchString);
+            } else {
+                query.setParameter("subjectDN", "%" + subjectDnSearchString + "%");
+            }
         }
-        if (request.getModifiedAfter()<Long.MAX_VALUE) {
+        if (!subjectAnSearchString.isEmpty()) {
+            if (request.isSubjectAnSearchExact()) {
+                query.setParameter("subjectAltName", subjectAnSearchString);
+            } else {
+                query.setParameter("subjectAltName", "%" + subjectAnSearchString + "%");
+            }
+        }
+        if (!usernameSearchString.isEmpty()) {
+            if (request.isUsernameSearchExact()) {
+                query.setParameter("username", usernameSearchString);
+            } else {
+                query.setParameter("username", "%" + usernameSearchString + "%");
+            }
+        }
+        if (request.isModifiedAfterUsed()) {
             query.setParameter("modifiedAfter", request.getModifiedAfter());
         }
-        if (request.getModifiedBefore()>0) {
+        if (request.isModifiedBeforeUsed()) {
             query.setParameter("modifiedBefore", request.getModifiedBefore());
         }
         if (!request.getStatuses().isEmpty()) {
