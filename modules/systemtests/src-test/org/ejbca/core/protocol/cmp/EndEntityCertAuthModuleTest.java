@@ -298,7 +298,6 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false));            
         accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
         accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, StandardRules.CREATECERT.resource(), AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.REGULAR_STORECERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
         accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false));
         accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.REGULAR_CREATEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
         accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.REGULAR_EDITENDENTITY, AccessRuleState.RULE_ACCEPT, false));
@@ -320,7 +319,6 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false));            
         accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
         accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, StandardRules.CREATECERT.resource(), AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.REGULAR_STORECERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
         accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false));
         accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.REGULAR_CREATEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
         accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.REGULAR_EDITENDENTITY, AccessRuleState.RULE_ACCEPT, false));
