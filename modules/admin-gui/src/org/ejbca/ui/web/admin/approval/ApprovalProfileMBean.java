@@ -43,6 +43,7 @@ import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfilesFactory;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -361,8 +362,13 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                     List<RoleData> allAuthorizedRoles = roleAccessSession.getAllAuthorizedRoles(getAdmin());
                     List<RoleInformation> roleRepresentations = new ArrayList<>();
                     for(RoleData role : allAuthorizedRoles) {
-                        RoleInformation identifierNamePair = new RoleInformation(role.getPrimaryKey(), role.getRoleName(), new ArrayList<>(role.getAccessUsers().values()));
-                        roleRepresentations.add(identifierNamePair);
+                        //Cull roles which would have access to performing or viewing approvals anyway
+                        if (role.hasAccessToRule(AccessRulesConstants.REGULAR_APPROVEENDENTITY)
+                                || role.hasAccessToRule(AccessRulesConstants.REGULAR_APPROVECAACTION)) {
+                            RoleInformation identifierNamePair = new RoleInformation(role.getPrimaryKey(), role.getRoleName(),
+                                    new ArrayList<>(role.getAccessUsers().values()));
+                            roleRepresentations.add(identifierNamePair);
+                        }
                     }                
                     if(!roleRepresentations.contains(propertyClone.getDefaultValue())) {
                         //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else. 
