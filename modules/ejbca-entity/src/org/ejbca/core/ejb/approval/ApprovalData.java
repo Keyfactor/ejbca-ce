@@ -140,7 +140,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
      * The related approval profile id     
      * @since EJBCA 6.6.0
      */
-    public void setApprovalprofileid(int approvalProfileId) { this.approvalProfileId = approvalProfileId; }
+    public void setApprovalprofileid(Integer approvalProfileId) { this.approvalProfileId = approvalProfileId; }
 
 	/**
 	 * For RA specific approval requests should the related end entity profile id be specified
