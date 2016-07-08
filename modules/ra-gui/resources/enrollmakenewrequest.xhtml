@@ -65,7 +65,9 @@
 									<f:ajax execute="@this" event="change"
 										render=":globalMessages :requestTemplateForm"
 										listener="#{enrollMakeNewRequestBean.endEntityProfileAjaxListener}" />
+									<f:validateRequired/>
 								</h:selectOneMenu>
+								<h:message for="selectEEPOneMenu" id="selectEEPOneMenuMessage" />
 								<h:outputText
 									rendered="#{enrollMakeNewRequestBean.availableEndEntityProfiles.isEmpty()}"
 									value="#{msg.enroll_no_available_certificate_types}" />
@@ -92,7 +94,9 @@
 									<f:ajax execute="@this" event="change"
 										render=":globalMessages :requestTemplateForm :keyPairForm :requestInfoForm"
 										listener="#{enrollMakeNewRequestBean.certificateProfileAjaxListener}" />
+									<f:validateRequired/>
 								</h:selectOneMenu>
+								<h:message for="selectCPOneMenu" id="selectCPOneMenuMessage" />
 							</h:panelGroup>
 							<h:outputText
 								rendered="#{enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty() and
@@ -121,24 +125,28 @@
 									<f:ajax execute="@this" event="change"
 										render=":globalMessages :requestTemplateForm :keyPairForm :requestInfoForm"
 										listener="#{enrollMakeNewRequestBean.certificateAuthorityAjaxListener}" />
+									<f:validateRequired/>
 								</h:selectOneMenu>
+								<h:message for="selectCAOneMenu" id="selectCAOneMenuMessage" />
 							</h:panelGroup>
 
 							<h:panelGroup layout="block" styleClass="pure-control-group"
 								rendered="#{! empty enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems}">
                                 <h:outputLabel for="selectKeyPairGenerationOneMenu" value="#{msg.enroll_key_pair_generation_label}"/>
                                 <h:panelGroup id="selectKeyPairGenerationOneMenu" styleClass="display: inline-block;">
-                                    <h:selectOneRadio
+                                    <h:selectOneRadio id="selectKeyPairGeneration"
                                         valueChangeListener="#{enrollMakeNewRequestBean.keyPairGenerationChangedListener}"
                                         value="#{enrollMakeNewRequestBean.selectedKeyPairGeneration}"
                                         layout="pageDirection" styleClass="radio-button-table">
                                         <f:selectItems value="#{enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems}" styleClass="pure-radio" />
+                                        <f:validateRequired/>
                                         <f:ajax
                                             execute=":requestTemplateForm:selectKeyPairGenerationOneMenu"
                                             event="change"
                                             render=":globalMessages :requestTemplateForm :keyPairForm :requestInfoForm"
                                             listener="#{enrollMakeNewRequestBean.keyPairGenerationAjaxListener}" />
                                     </h:selectOneRadio>
+                                    <h:message for="selectKeyPairGeneration" id="selectKeyPairGenerationMessage" />
                                 </h:panelGroup>
 							</h:panelGroup>
 						</fieldset>
@@ -154,31 +162,6 @@
 
 			</h:form>
 			<h:form id="keyPairForm" styleClass="pure-form pure-form-aligned">
-
-				<h:panelGroup layout="block"
-					rendered="#{enrollMakeNewRequestBean.selectKeyAlgorithmRendered}">
-					<h2>
-						<h:outputText value="#{msg.enroll_select_key_algorithm}" />
-					</h2>
-					<h:panelGroup layout="block" styleClass="internal-frame">
-						<h:outputLabel for="selectAlgorithmOneMenu"
-							value="#{msg.enroll_key_algorithm}" />
-						<h:selectOneMenu id="selectAlgorithmOneMenu"
-							value="#{enrollMakeNewRequestBean.selectedAlgorithm}"
-							valueChangeListener="#{enrollMakeNewRequestBean.algorithmChangedListener}">
-							<c:if
-								test="#{enrollMakeNewRequestBean.availableAlgorithms.size()>1}">
-								<f:selectItem itemLabel="Select..." itemValue="#{null}"
-									itemDisabled="true" itemLabelEscaped="true" />
-							</c:if>
-							<f:selectItems
-								value="#{enrollMakeNewRequestBean.availableAlgorithms.keySet()}" />
-							<f:ajax execute="@this" event="change"
-								render=":globalMessages @form :requestInfoForm"
-								listener="#{enrollMakeNewRequestBean.algorithmAjaxListener}" />
-						</h:selectOneMenu>
-					</h:panelGroup>
-				</h:panelGroup>
 
 				<h:panelGroup layout="block"
 					rendered="#{enrollMakeNewRequestBean.uploadCsrRendered}">
@@ -223,7 +206,31 @@
 			</h:form>
 
 			<h:form id="requestInfoForm" styleClass="pure-form pure-form-aligned">
-
+				<h:panelGroup layout="block"
+					rendered="#{enrollMakeNewRequestBean.selectKeyAlgorithmRendered}">
+					<h2>
+						<h:outputText value="#{msg.enroll_select_key_algorithm}" />
+					</h2>
+					<h:panelGroup layout="block" styleClass="internal-frame">
+						<h:outputLabel for="selectAlgorithmOneMenu"
+							value="#{msg.enroll_key_algorithm}" />
+						<h:selectOneMenu id="selectAlgorithmOneMenu"
+							value="#{enrollMakeNewRequestBean.selectedAlgorithm}"
+							valueChangeListener="#{enrollMakeNewRequestBean.algorithmChangedListener}">
+							<c:if
+								test="#{enrollMakeNewRequestBean.availableAlgorithms.size()>1}">
+								<f:selectItem itemLabel="Select..." itemValue="#{null}"
+									itemDisabled="true" itemLabelEscaped="true" />
+							</c:if>
+							<f:selectItems
+								value="#{enrollMakeNewRequestBean.availableAlgorithms.keySet()}" />
+							<f:ajax execute="@this" event="change"
+								render=":globalMessages @form :requestInfoForm"
+								listener="#{enrollMakeNewRequestBean.algorithmAjaxListener}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				
 				<h:panelGroup layout="block"
 					rendered="#{enrollMakeNewRequestBean.provideRequestInfoRendered}">
 					<h2>
@@ -356,8 +363,8 @@
 								</h:panelGroup>
 							</ui:repeat>
 						</h:panelGroup>
-
-
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="internal-frame">
 						<h:panelGroup layout="block"
 							rendered="#{enrollMakeNewRequestBean.provideRequestMetadataRendered}">
 							<h:panelGroup layout="block">
@@ -499,7 +506,7 @@
 				</h:panelGroup>
 				<script>
 				if(document.getElementById('confirmRequestForm:useRequestIdLink') != null){
-					document.getElementById('confirmRequestForm:useRequestIdLink					').focus();
+					document.getElementById('confirmRequestForm:useRequestIdLink').focus();
 				}else if(document.getElementById('confirmRequestForm:confirmRequestButton') != null){
 					document.getElementById('confirmRequestForm:confirmRequestButton').focus();
 				}else if(document.getElementById('requestInfoForm:updateRequestPreviewButton') != null){
