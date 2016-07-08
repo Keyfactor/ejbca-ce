@@ -37,7 +37,13 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 /**
  * API of available methods on the CA that can be invoked by the RA.
  * 
- * Keep in mind that there is latency, so batch things.
+ * Implementation restrictions:
+ * - Keep in mind that there is latency, so batch things and don't for things twice unless it is expected to have change.
+ * - Method names must be unique and signature is not allowed change after a release
+ * - Any used object in this class must be Java Serializable
+ * - Any used object in this class should be possible to use with an older or newer version of the peer
+ * - Checked Exceptions are forwarded in full the implementation is responsible for not leaking sensitive information in
+ *   nested causedBy exceptions.
  * 
  * @version $Id$
  */
