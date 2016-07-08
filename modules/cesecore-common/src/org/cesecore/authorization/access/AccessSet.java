@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
 
 /**
@@ -148,16 +147,32 @@ public final class AccessSet implements Serializable {
     }
     
     @Override
-    public boolean equals(final Object object) {
-        if (object instanceof AccessSet) {
-            AccessSet accessSet = (AccessSet) object;
-            return set.containsAll(accessSet.set) && accessSet.set.containsAll(set);
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-        return false;
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof AccessSet)) {
+            return false;
+        }
+        AccessSet other = (AccessSet) obj;
+        if (set == null) {
+            if (other.set != null) {
+                return false;
+            }
+        } else if (!set.equals(other.set)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((set == null) ? 0 : set.hashCode());
+        return result;
     }
 }
