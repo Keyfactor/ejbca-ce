@@ -200,10 +200,7 @@ public class Approval implements Comparable<Approval>, Externalizable {
 			this.approvalSignature = (String) in.readObject();
 		} else if (version == 4) {
             this.admin = (AuthenticationToken) in.readObject();
-            if (this.admin instanceof AlwaysAllowLocalAuthenticationToken) {
-                // We trust this admin as if it were created internal to EJBCA and fill in the auth token
-                this.admin = new AlwaysAllowLocalAuthenticationToken(this.admin.getPrincipals().iterator().next());
-            } else if (this.admin instanceof X509CertificateAuthenticationToken) {
+            if (this.admin instanceof X509CertificateAuthenticationToken) {
                 X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken) this.admin;
                 this.adminCertIssuerDN = CertTools.getIssuerDN(xtok.getCertificate());
                 this.adminCertSerialNumber = CertTools.getSerialNumberAsString(xtok.getCertificate());          
