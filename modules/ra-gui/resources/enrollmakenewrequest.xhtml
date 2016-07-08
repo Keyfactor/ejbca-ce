@@ -223,7 +223,7 @@
                             <script>jsTouchUpDocument();</script>
                         </h:panelGroup>
                     </h:panelGroup>
-					<h:panelGroup layout="block" styleClass="internal-frame">
+					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.subjectDnRendered}">
 						<h:panelGroup layout="block">
 							<h3>
 								<h:outputText value="#{msg.enroll_subject_dn_attributes}" />
@@ -233,7 +233,7 @@
 									value="#{enrollMakeNewRequestBean.subjectDn.fieldInstances}"
 									var="instance">
 									<h:panelGroup layout="block" styleClass="pure-control-group"
-										rendered="#{instance.used and (enrollMakeNewRequestBean.renderNonModifiable or ((!instance.selectable and instance.modifiable) or (instance.selectable and instance.selectableValues.size()>1)))}">
+    									rendered="#{enrollMakeNewRequestBean.isFieldInstanceRendered(instance)}">
 										<h:outputLabel for="subjectDnField"
 											value="#{msg['subject_dn_'.concat(instance.name)]}"
 											rendered="#{!instance.required}" />
@@ -262,17 +262,15 @@
 							</fieldset>
 						</h:panelGroup>
 
-						<h:panelGroup layout="block" styleClass="internal-frame"
-							rendered="#{! empty enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances}">
+						<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.subjectAlternativeNameRendered}">
 							<h3>
-								<h:outputText
-									value="#{msg.enroll_subject_alternative_name_attributes}" />
+								<h:outputText value="#{msg.enroll_subject_alternative_name_attributes}" />
 							</h3>
 							<ui:repeat id="subjectAlternativeName"
 								value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances}"
 								var="instance">
 								<h:panelGroup layout="block" styleClass="pure-control-group"
-									rendered="#{instance.isUsed()}">
+									rendered="#{enrollMakeNewRequestBean.isFieldInstanceRendered(instance)}">
 									<h:outputLabel for="subjectAltNameField"
 										value="#{msg['subject_alternative_name_'.concat(instance.name)]}"
 										rendered="#{!instance.required}" />
@@ -304,8 +302,7 @@
 								</h:panelGroup>
 							</ui:repeat>
 						</h:panelGroup>
-						<h:panelGroup layout="block" styleClass="internal-frame"
-							rendered="${! empty enrollMakeNewRequestBean.subjectDirectoryAttributes.fieldInstances}">
+						<h:panelGroup layout="block" styleClass="internal-frame" rendered="${enrollMakeNewRequestBean.subjectDirectoryAttributesRendered}">
 							<h3>
 								<h:outputText value="#{msg.enroll_subject_directory_attributes}" />
 							</h3>
@@ -313,7 +310,7 @@
 								value="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.fieldInstances}"
 								var="instance">
 								<h:panelGroup layout="block" styleClass="pure-control-group"
-									rendered="#{instance.isUsed()}">
+									rendered="#{enrollMakeNewRequestBean.isFieldInstanceRendered(instance)}">
 									<h:outputLabel for="subjectDirectoryField"
 										value="#{msg['subject_directory_attributes_'.concat(instance.name)]}"
 										rendered="#{!instance.required}" />
@@ -369,7 +366,7 @@
 								<h:outputLabel for="usernameField"
 									value="#{msg.enroll_username}" />
 								<h:inputText id="usernameField"
-									styleClass="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isRequired() ? 'required-input' : ''}"
+									styleClass="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).required ? 'required-input' : ''}"
 									value="#{enrollMakeNewRequestBean.endEntityInformation.username}" />
 							</h:panelGroup>
 							<f:event listener="#{enrollMakeNewRequestBean.validatePassword}"
