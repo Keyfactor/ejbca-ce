@@ -147,7 +147,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
                 return true;
             } else {
                 for (AccessUserAspectData accessUserAspect : role.getAccessUserAspects()) {
-                    if (authenticationToken.matchIdentity(accessUserAspect)) {
+                    if (authenticationToken.matches(accessUserAspect)) {
                         return true;
                     }
                 }
@@ -167,7 +167,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
                 result = true;
             } else {
                 for (AccessUserAspectData accessUserAspect : role.getAccessUserAspects()) {
-                    if (authenticationToken.matchIdentity(accessUserAspect)) {
+                    if (authenticationToken.matches(accessUserAspect)) {
                         result = true;
                     }
                 }
