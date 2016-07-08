@@ -47,7 +47,6 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
  */
 @Singleton
 @Startup
-@DependsOn("StartupSingletonBean")
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 @TransactionManagement(TransactionManagementType.BEAN)
 public class ApprovalProfileCacheBean {
@@ -96,9 +95,9 @@ public class ApprovalProfileCacheBean {
     /**
      * This method sets the update time back down to zero, effectively forcing the cache to be reloaded on next read. 
      */
-    public void forceCacheExpiration() {
-        lastUpdate = 0;
-    }
+    //public void forceCacheExpiration() {
+    //    lastUpdate = 0;
+   // }
 
     /**
      * Fetch all profiles from the database, unless cache is enabled, valid and we do not force an update.

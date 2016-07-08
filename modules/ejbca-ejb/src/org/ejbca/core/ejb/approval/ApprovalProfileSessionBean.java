@@ -81,7 +81,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             if (findByApprovalProfileName(name).isEmpty()) {
                 profile.setProfileId(id);
                 entityManager.persist(new ProfileData(Integer.valueOf(id), profile));
-                approvalProfileCache.forceCacheExpiration();
+                approvalProfileCache.updateProfileCache(true);
                 final String msg = INTRES.getLocalizedMessage("store.addedprofile", name);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -129,7 +129,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             entityManager.flush();
             LOG.info(INTRES.getLocalizedMessage("store.editedapprovalprofile", name));
         }
-        approvalProfileCache.forceCacheExpiration();
+        approvalProfileCache.updateProfileCache(true);
     }
     
     @Override
@@ -143,7 +143,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         } else {
             authorizedToEditProfile(admin, profileData.getId());
             entityManager.remove(profileData);
-            approvalProfileCache.forceCacheExpiration();
+            approvalProfileCache.updateProfileCache(true);
             LOG.info(INTRES.getLocalizedMessage("store.removedprofile", profile.getProfileName()));
         }
     }
@@ -160,7 +160,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             authorizedToEditProfile(admin, pdl.getId());
             final String name = pdl.getProfileName();
             entityManager.remove(pdl);
-            approvalProfileCache.forceCacheExpiration();
+            approvalProfileCache.updateProfileCache(true);
             LOG.info(INTRES.getLocalizedMessage("store.removedprofile", name));
         }
     } 
@@ -178,7 +178,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
                 authorizedToEditProfile(admin, pdl.getId());
                 String oldName = approvalProfile.getProfileName();
                 pdl.setProfileName(newname);
-                approvalProfileCache.forceCacheExpiration();
+                approvalProfileCache.updateProfileCache(true);
                 final String msg = INTRES.getLocalizedMessage("store.renamedprofile", oldName, newname);
                 LOG.info(msg);
             }
@@ -202,7 +202,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         authorizedToEditProfile(admin, origProfileId);
         if (findByNameAndType(newName, ApprovalProfile.TYPE_NAME).isEmpty()) {
             entityManager.persist(new ProfileData(findFreeApprovalProfileId(), profile));
-            approvalProfileCache.forceCacheExpiration();
+            approvalProfileCache.updateProfileCache(true);
             LOG.info("Cloned approval profile with name " + newName + " from profile with name " + approvalProfile.getProfileName());
         } else {
             throw new ApprovalProfileExistsException("Could not clone profile, profile of name " + newName + " already exists.");
@@ -327,12 +327,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             final String msg = INTRES.getLocalizedMessage("store.editapprovalprofilenotauthorized", admin.toString(), id);
             throw new AuthorizationDeniedException(msg);
         }
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public void forceProfileCacheExpire() {
-       approvalProfileCache.forceCacheExpiration();
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

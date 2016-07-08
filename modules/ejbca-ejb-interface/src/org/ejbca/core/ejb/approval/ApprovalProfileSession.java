@@ -51,9 +51,6 @@ public interface ApprovalProfileSession {
      */
     void changeApprovalProfile(final AuthenticationToken admin, final ApprovalProfile profile) throws AuthorizationDeniedException;
 
-    /** Clear and reload approval profile caches. */
-    void forceProfileCacheExpire();
-
     /**
      * Adds an approval profile with the same content as the original approval profile.
      * 
