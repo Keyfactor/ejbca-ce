@@ -39,92 +39,70 @@
 			<h:form id="requestTemplateForm"
 				styleClass="pure-form pure-form-aligned">
 
-				<h:panelGroup layout="block"
-					rendered="#{enrollMakeNewRequestBean.selectRequestTemplateRendered}"
+				<h:panelGroup layout="block" rendered="#{enrollMakeNewRequestBean.selectRequestTemplateRendered}"
 					id="selectRequestTemplateOuterPanel">
-					<h2>
-						<h:outputText value="#{msg.enroll_select_request_template}" />
-					</h2>
+                    <h:panelGroup styleClass="pure-u-1">
+                        <h:panelGroup styleClass="pure-u-1-2">
+        					<h2>
+        						<h:outputText value="#{msg.enroll_select_request_template}" />
+        					</h2>
+                        </h:panelGroup>
+                        <h:panelGroup styleClass="pure-u-1-2">
+                            <h:selectBooleanCheckbox id="renderNonModifiable" value="#{enrollMakeNewRequestBean.renderNonModifiable}">
+                                <f:ajax event="change" execute="@this" render="@all" listener="#{enrollMakeNewRequestBean.noOperationAjaxListener}" />
+                            </h:selectBooleanCheckbox>
+                            <h:outputLabel for="renderNonModifiable" value="#{msg.enroll_render_non_modifiable_label}"/>
+                            <h:commandButton value="#{msg.enroll_render_non_modifiable_button}" action="#{enrollMakeNewRequestBean.renderNonModifiableToggle}"
+                                styleClass="pure-button ra-button jsHide"/>
+                            <script>jsTouchUpDocument();</script>
+                        </h:panelGroup>
+                    </h:panelGroup>
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<fieldset>
-							<h:panelGroup layout="block" styleClass="pure-control-group">
-								<h:outputLabel for="selectEEPOneMenu"
-									value="#{msg.enroll_certificate_type}" />
+							<h:panelGroup layout="block" styleClass="pure-control-group"
+                                rendered="#{enrollMakeNewRequestBean.selectEndEntityProfileRendered}">
+								<h:outputLabel for="selectEEPOneMenu" value="#{msg.enroll_certificate_type}" />
 								<h:selectOneMenu id="selectEEPOneMenu"
 									value="#{enrollMakeNewRequestBean.selectedEndEntityProfile}"
 									valueChangeListener="#{enrollMakeNewRequestBean.endEntityProfileChangedListener}"
-									disabled="#{enrollMakeNewRequestBean.availableEndEntityProfiles.size()==1}"
-									rendered="#{!enrollMakeNewRequestBean.availableEndEntityProfiles.isEmpty()}">
-									<c:if
-										test="#{enrollMakeNewRequestBean.selectedEndEntityProfile == null}">
-										<f:selectItem itemLabel="#{msg.enroll_select_eep_nochoice}" itemValue="#{null}" itemDisabled="true" />
-									</c:if>
-									<f:selectItems
-										value="#{enrollMakeNewRequestBean.availableEndEntityProfiles.entrySet()}"
-										var="entry" itemValue="#{entry.key}"
-										itemLabel="#{entry.value}" itemLabelEscaped="true" />
-									<f:ajax execute="@this" event="change"
-										render=":globalMessages :requestTemplateForm"
+									disabled="#{enrollMakeNewRequestBean.availableEndEntityProfileSelectItems.size()==1}">
+									<f:selectItems value="#{enrollMakeNewRequestBean.availableEndEntityProfileSelectItems}"/>
+									<f:ajax event="change" execute="@this" render=":globalMessages @form"
 										listener="#{enrollMakeNewRequestBean.endEntityProfileAjaxListener}" />
 									<f:validateRequired/>
 								</h:selectOneMenu>
 								<h:message for="selectEEPOneMenu" id="selectEEPOneMenuMessage" />
-								<h:outputText
-									rendered="#{enrollMakeNewRequestBean.availableEndEntityProfiles.isEmpty()}"
+								<h:outputText rendered="#{empty enrollMakeNewRequestBean.availableEndEntityProfileSelectItems}"
 									value="#{msg.enroll_no_available_certificate_types}" />
 							</h:panelGroup>
-							<h:panelGroup layout="block" styleClass="pure-control-group">
-								<h:outputLabel for="selectCPOneMenu"
-									value="#{msg.enroll_certificate_subtype}"
-									rendered="#{!enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty()}" />
+
+							<h:panelGroup layout="block" styleClass="pure-control-group"
+                                rendered="#{enrollMakeNewRequestBean.selectCertificateProfileRendered}">
+								<h:outputLabel for="selectCPOneMenu" value="#{msg.enroll_certificate_subtype}"/>
 								<h:selectOneMenu id="selectCPOneMenu"
 									value="#{enrollMakeNewRequestBean.selectedCertificateProfile}"
 									valueChangeListener="#{enrollMakeNewRequestBean.certificateProfileChangedListener}"
-									rendered="#{!enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty() and
-											enrollMakeNewRequestBean.selectedEndEntityProfile != null}"
-									disabled="#{enrollMakeNewRequestBean.availableCertificateProfiles.size()==1}">
-									<c:if
-										test="#{enrollMakeNewRequestBean.selectedCertificateProfile == null}">
-										<f:selectItem itemLabel="Select..." itemValue="#{null}"
-											itemDisabled="true" />
-									</c:if>
-									<f:selectItems
-										value="#{enrollMakeNewRequestBean.availableCertificateProfiles.entrySet()}"
-										var="entry" itemValue="#{entry.key}"
-										itemLabel="#{entry.value}" itemLabelEscaped="true" />
-									<f:ajax execute="@this" event="change"
-										render=":globalMessages :requestTemplateForm :keyPairForm :requestInfoForm"
+									disabled="#{enrollMakeNewRequestBean.availableCertificateProfileSelectItems.size()==1}">
+									<f:selectItems value="#{enrollMakeNewRequestBean.availableCertificateProfileSelectItems}"/>
+									<f:ajax event="change" execute="@this" render=":globalMessages @form :keyPairForm :requestInfoForm"
 										listener="#{enrollMakeNewRequestBean.certificateProfileAjaxListener}" />
 									<f:validateRequired/>
 								</h:selectOneMenu>
 								<h:message for="selectCPOneMenu" id="selectCPOneMenuMessage" />
+                                <h:outputText rendered="#{empty enrollMakeNewRequestBean.availableCertificateProfileSelectItems}"
+                                    value="#{msg.enroll_no_available_certificate_subtypes}" />
 							</h:panelGroup>
-							<h:outputText
-								rendered="#{enrollMakeNewRequestBean.availableCertificateProfiles.isEmpty() and
-											enrollMakeNewRequestBean.selectedEndEntityProfile != null}"
-								value="#{msg.enroll_no_available_certificate_subtypes}" />
 
-							<h:panelGroup layout="block" styleClass="pure-control-group">
-								<h:outputLabel for="selectCAOneMenu"
-									value="#{msg.enroll_certificate_authority}"
-									rendered="#{!enrollMakeNewRequestBean.availableCertificateAuthorities.isEmpty()}" />
+							<h:panelGroup layout="block" styleClass="pure-control-group"
+                                rendered="#{enrollMakeNewRequestBean.selectCertificateAuthorityRendered}">
+								<h:outputLabel for="selectCAOneMenu" value="#{msg.enroll_certificate_authority}"/>
 								<h:selectOneMenu id="selectCAOneMenu"
 									value="#{enrollMakeNewRequestBean.selectedCertificateAuthority}"
 									valueChangeListener="#{enrollMakeNewRequestBean.certificateAuthorityChangedListener}"
-									rendered="#{!enrollMakeNewRequestBean.availableCertificateAuthorities.isEmpty() and
-									enrollMakeNewRequestBean.selectedCertificateProfile != null}"
-									disabled="#{enrollMakeNewRequestBean.availableCertificateAuthorities.size()==1}">
-									<c:if
-										test="#{enrollMakeNewRequestBean.selectedCertificateAuthority == null}">
-										<f:selectItem itemLabel="Select..." itemValue="#{null}"
-											itemDisabled="true" />
-									</c:if>
-									<f:selectItems
-										value="#{enrollMakeNewRequestBean.availableCertificateAuthorities.entrySet()}"
-										var="entry" itemValue="#{entry.key}"
-										itemLabel="#{entry.value}" itemLabelEscaped="true" />
-									<f:ajax execute="@this" event="change"
-										render=":globalMessages :requestTemplateForm :keyPairForm :requestInfoForm"
+									disabled="#{enrollMakeNewRequestBean.availableCertificateAuthoritySelectItems.size()==1}">
+									<f:selectItems value="#{enrollMakeNewRequestBean.availableCertificateAuthoritySelectItems}"/>
+									<f:ajax event="change" execute="@this"
+										render=":globalMessages @form :keyPairForm :requestInfoForm"
 										listener="#{enrollMakeNewRequestBean.certificateAuthorityAjaxListener}" />
 									<f:validateRequired/>
 								</h:selectOneMenu>
@@ -132,13 +110,14 @@
 							</h:panelGroup>
 
 							<h:panelGroup layout="block" styleClass="pure-control-group"
-								rendered="#{enrollMakeNewRequestBean.keyPairGenerationRendered}">
+								rendered="#{enrollMakeNewRequestBean.selectKeyPairGenerationRendered}">
                                 <h:outputLabel for="selectKeyPairGenerationOneMenu" value="#{msg.enroll_key_pair_generation_label}"/>
-                                <h:panelGroup id="selectKeyPairGenerationOneMenu" styleClass="display: inline-block;">
+                                <h:panelGroup id="selectKeyPairGenerationOneMenu">
                                     <h:selectOneRadio id="selectKeyPairGeneration"
                                         valueChangeListener="#{enrollMakeNewRequestBean.keyPairGenerationChangedListener}"
                                         value="#{enrollMakeNewRequestBean.selectedKeyPairGeneration}"
-                                        layout="pageDirection" styleClass="radio-button-table">
+                                        layout="lineDirection" styleClass="radio-button-table" style="display: inline-block;"
+                                        disabled="#{enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems.size()==1}">
                                         <f:selectItems value="#{enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems}" styleClass="pure-radio" />
                                         <f:validateRequired/>
                                         <f:ajax
@@ -214,20 +193,11 @@
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
 					<h:panelGroup layout="block" styleClass="pure-control-group">
-						<h:outputLabel for="selectAlgorithmOneMenu"
-							value="#{msg.enroll_key_algorithm}" />
-						<h:selectOneMenu id="selectAlgorithmOneMenu"
-							value="#{enrollMakeNewRequestBean.selectedAlgorithm}"
+						<h:outputLabel for="selectAlgorithmOneMenu" value="#{msg.enroll_key_algorithm}" />
+						<h:selectOneMenu id="selectAlgorithmOneMenu" value="#{enrollMakeNewRequestBean.selectedAlgorithm}"
 							valueChangeListener="#{enrollMakeNewRequestBean.algorithmChangedListener}">
-							<c:if
-								test="#{enrollMakeNewRequestBean.availableAlgorithms.size()>1}">
-								<f:selectItem itemLabel="Select..." itemValue="#{null}"
-									itemDisabled="true" itemLabelEscaped="true" />
-							</c:if>
-							<f:selectItems
-								value="#{enrollMakeNewRequestBean.availableAlgorithms.keySet()}" />
-							<f:ajax execute="@this" event="change"
-								render=":globalMessages @form :requestInfoForm"
+							<f:selectItems value="#{enrollMakeNewRequestBean.availableAlgorithmSelectItems}" />
+							<f:ajax event="change" execute="@this" render=":globalMessages @form :requestInfoForm:requestPreviewOuterPanel"
 								listener="#{enrollMakeNewRequestBean.algorithmAjaxListener}" />
 						</h:selectOneMenu>
 					</h:panelGroup>
@@ -237,9 +207,22 @@
 				<h:panelGroup layout="block"
 					rendered="#{enrollMakeNewRequestBean.provideRequestInfoRendered}"
 					id="requestInfoRendered">
-					<h2>
-						<h:outputText value="#{msg.enroll_provide_request_info}" />
-					</h2>
+                   <h:panelGroup styleClass="pure-u-1">
+                        <h:panelGroup styleClass="pure-u-1-2">
+                            <h2>
+                                <h:outputText value="#{msg.enroll_provide_request_info}" />
+                            </h2>
+                        </h:panelGroup>
+                        <h:panelGroup styleClass="pure-u-1-2">
+                            <h:selectBooleanCheckbox id="renderNonModifiable" value="#{enrollMakeNewRequestBean.renderNonModifiable}">
+                                <f:ajax event="change" execute="@this" render="@all" listener="#{enrollMakeNewRequestBean.noOperationAjaxListener}" />
+                            </h:selectBooleanCheckbox>
+                            <h:outputLabel for="renderNonModifiable" value="#{msg.enroll_render_non_modifiable_label}"/>
+                            <h:commandButton value="#{msg.enroll_render_non_modifiable_button}" action="#{enrollMakeNewRequestBean.renderNonModifiableToggle}"
+                                styleClass="pure-button ra-button jsHide"/>
+                            <script>jsTouchUpDocument();</script>
+                        </h:panelGroup>
+                    </h:panelGroup>
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<h:panelGroup layout="block">
 							<h3>
@@ -250,31 +233,27 @@
 									value="#{enrollMakeNewRequestBean.subjectDn.fieldInstances}"
 									var="instance">
 									<h:panelGroup layout="block" styleClass="pure-control-group"
-										rendered="#{instance.isUsed()}">
+										rendered="#{instance.used and (enrollMakeNewRequestBean.renderNonModifiable or ((!instance.selectable and instance.modifiable) or (instance.selectable and instance.selectableValues.size()>1)))}">
 										<h:outputLabel for="subjectDnField"
 											value="#{msg['subject_dn_'.concat(instance.name)]}"
 											rendered="#{!instance.required}" />
 										<h:outputLabel for="subjectDnField"
 											value="#{msg['subject_dn_'.concat(instance.name)]} *"
 											rendered="#{instance.required}" />
-										<h:inputText id="subjectDnField" value="#{instance.value}"
-											styleClass="jsDelayKeyUp" rendered="#{!instance.selectable}"
-											disabled="#{!instance.modifiable}">
+										<h:inputText id="subjectDnField" value="#{instance.value}" styleClass="jsDelayKeyUp"
+											disabled="#{!instance.modifiable}"
+                                            rendered="#{!instance.selectable}">
 											<f:validateRequired disabled="#{!instance.required}" />
 											<f:validator validatorId="extendedRegexValidator" />
-											<f:attribute name="pattern" value="#{instance.regexPattern}" />
-											<f:ajax execute="@this" event="change"
-												render=":requestInfoForm:requestPreviewOuterPanel"
+											<f:attribute name="pattern" value="#{instance.regexPattern}"/>
+											<f:ajax event="change" execute="@this" render=":requestInfoForm:requestPreviewOuterPanel"
 												listener="#{enrollMakeNewRequestBean.subjectDnAjaxListener}" />
-											<f:ajax execute="@this" event="keyup"
-												render=":requestInfoForm:requestPreviewOuterPanel"
-												listener="#{enrollMakeNewRequestBean.subjectDnAjaxListener}" />
+                                            <f:ajax event="keyup" execute="@this" render=":requestInfoForm:requestPreviewOuterPanel"
+                                                listener="#{enrollMakeNewRequestBean.subjectDnAjaxListener}" />
 										</h:inputText>
-										<h:selectOneMenu value="#{instance.value}"
-											rendered="#{instance.selectable}">
+										<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}">
 											<f:selectItems value="#{instance.selectableValues}" />
-											<f:ajax execute="@this" event="change"
-												render=":requestInfoForm:requestPreviewOuterPanel"
+											<f:ajax event="change" execute="@this" render=":requestInfoForm:requestPreviewOuterPanel"
 												listener="#{enrollMakeNewRequestBean.subjectDnAjaxListener}" />
 										</h:selectOneMenu>
 										<h:message for="subjectDnField" id="subjectDnFieldMessage" />
