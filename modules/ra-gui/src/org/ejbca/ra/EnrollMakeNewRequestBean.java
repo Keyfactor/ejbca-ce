@@ -26,15 +26,14 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -52,6 +51,7 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -126,20 +126,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
     
+    private boolean renderNonModifiable = false;
     //1. Select Request Template
-    private boolean selectRequestTemplateRendered = true;
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
     private IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<CAInfo>();
     private String selectedEndEntityProfile;
     private boolean endEntityProfileChanged;
-    private Map<String, String> availableEndEntityProfiles = new HashMap<String, String>();
 
-    private Map<String, String> availableCertificateProfiles = new HashMap<String, String>();
     private String selectedCertificateProfile;
     private boolean certificateProfileChanged;
 
-    private Map<String, String> availableCertificateAuthorities = new HashMap<String, String>();
     private String selectedCertificateAuthority;
     private boolean certificateAuthorityChanged;
 
@@ -151,9 +148,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private boolean keyPairGenerationChanged;
 
     //2. Select Key Algorithm / Upload CSR
-    private boolean selectKeyAlgorithmRendered;
-    private boolean uploadCsrRendered;
-    private Map<String, String> availableAlgorithms = new TreeMap<String, String>();
+    /** Heavy to calculate and needs to be cached. */
+    private List<SelectItem> availableAlgorithmSelectItems = null;
+    
     private String selectedAlgorithm; //GENERATED ON SERVER
     private String algorithmFromCsr; //PROVIDED BY USER
     private boolean algorithmChanged;
@@ -183,138 +180,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
         initAll();
     }
 
-    public void initAll() {
-        initAuthorizedEndEntityProfiles();
-        if (availableEndEntityProfiles.size() == 1) {
-            setSelectedEndEntityProfile(availableEndEntityProfiles.keySet().iterator().next());
+    private void initAll() {
+        this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken());
+        this.authorizedCertificateProfiles = raMasterApiProxyBean.getAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
+        this.authorizedCAInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
+        if (getAvailableEndEntityProfiles().size() == 1) {
+            setSelectedEndEntityProfile(String.valueOf(getAvailableEndEntityProfiles().get(0)));
             selectEndEntityProfile();
         }
     }
 
     //-----------------------------------------------------------
     //All init* methods should contain ONLY application logic 
-
-    public void initAuthorizedEndEntityProfiles() {
-        setAuthorizedEndEntityProfiles(raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken()));
-        setAuthorizedCertificateProfiles(raMasterApiProxyBean.getAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken()));
-        setAuthorizedCAInfos(raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken()));
-
-        for (Tuple<EndEntityProfile> tuple : authorizedEndEntityProfiles.values()) {
-            availableEndEntityProfiles.put(tuple.getName(), tuple.getName());
-        }
-    }
-
-    private void initAvailableCertificateProfiles() {
-        EndEntityProfile endEntityProfile = getEndEntityProfile();
-        if (endEntityProfile == null) {
-            return;
-        }
-        String[] availableCertificateProfileIds = endEntityProfile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
-        for (String id : availableCertificateProfileIds) {
-            Tuple<CertificateProfile> tuple = authorizedCertificateProfiles.get(Integer.parseInt(id));
-            if (tuple != null) {
-                String defaultCertProfileId = endEntityProfile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
-                if (id.equalsIgnoreCase(defaultCertProfileId)) {
-                    availableCertificateProfiles.put(tuple.getName(), tuple.getName() + " (default)");
-                } else {
-                    availableCertificateProfiles.put(tuple.getName(), tuple.getName());
-                }
-            }
-        }
-    }
-
-    private void initAvailableCertificateAuthorities() {
-        //Get all available CAs from the selected EEP
-        EndEntityProfile endEntityProfile = getEndEntityProfile();
-        if (endEntityProfile == null) {
-            return;
-        }
-        String[] availableCAsFromEEPArray = endEntityProfile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
-        boolean anyCAAvailableFromEEP = availableCAsFromEEPArray.length == 1 && availableCAsFromEEPArray[0].equalsIgnoreCase(SecConst.ALLCAS + "");
-
-        //Get all available CAs from the selected CP
-        CertificateProfile certificateProfile = getCertificateProfile();
-        if (certificateProfile == null) {
-            return;
-        }
-        List<Integer> availableCAsFromCP = certificateProfile.getAvailableCAs();
-        boolean anyCAAvailableFromCP = availableCAsFromCP.size() == 1 && availableCAsFromCP.iterator().next() == CertificateProfile.ANYCA;
-
-        //Intersect both with authorized CAs
-        for (Tuple<CAInfo> tuple : authorizedCAInfos.values()) {
-            if ((anyCAAvailableFromEEP || Arrays.asList(availableCAsFromEEPArray).contains(tuple.getId() + ""))
-                    && (anyCAAvailableFromCP || availableCAsFromCP.contains(tuple.getId()))) {
-                String defaultCAId = endEntityProfile.getValue(EndEntityProfile.DEFAULTCA, 0);
-                if (!defaultCAId.isEmpty() && tuple.getId() == Integer.parseInt(defaultCAId)) {
-                    availableCertificateAuthorities.put(tuple.getName(), tuple.getName() + " (default)");
-                } else {
-                    availableCertificateAuthorities.put(tuple.getName(), tuple.getName());
-                }
-            }
-        }
-    }
-
-    private void initAvailableAlgorithms() {
-        CertificateProfile certificateProfile = getCertificateProfile();
-        final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
-        final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
-        if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
-            for (final int availableBitLength : availableBitLengths) {
-                if (availableBitLength == 1024) {
-                    availableAlgorithms.put(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength,
-                            AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits");
-                }
-            }
-        }
-        if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
-            for (final int availableBitLength : availableBitLengths) {
-                if (availableBitLength >= 1024) {
-                    availableAlgorithms.put(AlgorithmConstants.KEYALGORITHM_RSA + "_" + availableBitLength,
-                            AlgorithmConstants.KEYALGORITHM_RSA + " " + availableBitLength + " bits");
-                }
-            }
-        }
-        if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
-            final Set<String> ecChoices = new HashSet<>();
-            final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(false);
-            if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {
-                final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
-                for (final String ecNamedCurve : keys) {
-                    if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
-                        continue;
-                    }
-                    final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
-                    if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
-                        ecChoices.add(ecNamedCurve);
-                    }
-                }
-            }
-            ecChoices.addAll(certificateProfile.getAvailableEcCurvesAsList());
-            ecChoices.remove(CertificateProfile.ANY_EC_CURVE);
-            final List<String> ecChoicesList = new ArrayList<>(ecChoices);
-            Collections.sort(ecChoicesList);
-            for (final String ecNamedCurve : ecChoicesList) {
-                availableAlgorithms.put(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
-                        + StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(ecNamedCurve)));
-            }
-        }
-        for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
-            if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
-                for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
-                    final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
-                    final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
-                    if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
-                        availableAlgorithms.put(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name,
-                                CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg));
-                    } else {
-                        if (log.isTraceEnabled()) {
-                            log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     private void initCsrUpload() {
         certificateRequest = PEM_CSR_BEGIN + "\n...base 64 encoded request...\n" + PEM_CSR_END;
@@ -374,7 +251,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
     
     private void updateRequestPreview(){
-        
         requestPreview = new RaRequestPreview();
         requestPreview.updateSubjectDn(subjectDn);
         requestPreview.updateSubjectAlternativeName(subjectAlternativeName);
@@ -385,12 +261,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
 
     //-----------------------------------------------------------------------------------------------
-    // Helpers and get*Rendered() methods
-    
-    public boolean isKeyPairGenerationRendered(){
-        return selectedCertificateAuthority != null;
-    }
-    
+    // Helpers and is*Rendered() methods
+
     public boolean isUsernameRendered(){
         return !getEndEntityProfile().useAutoGeneratedPasswd();
     }
@@ -456,15 +328,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     private final void resetCertificateProfile() {
-        availableCertificateProfiles.clear();
-        selectedCertificateProfile = null;
+        setSelectedCertificateProfile(null);
         certificateProfileChanged = false;
 
         resetCertificateAuthority();
     }
 
     private final void resetCertificateAuthority() {
-        availableCertificateAuthorities.clear();
         selectedCertificateAuthority = null;
         certificateAuthorityChanged = false;
 
@@ -479,13 +349,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     private final void resetAlgorithmCsrUpload() {
-        availableAlgorithms.clear();
         selectedAlgorithm = null;
         algorithmChanged = false;
         certificateRequest = null;
-        uploadCsrRendered = false;
-        selectKeyAlgorithmRendered = false;
-
         resetRequestInfo();
     }
 
@@ -494,7 +360,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         subjectAlternativeName = null;
         subjectDirectoryAttributes = null;
         setProvideRequestInfoRendered(false);
-
         resetRequestMetadata();
     }
 
@@ -508,31 +373,26 @@ public class EnrollMakeNewRequestBean implements Serializable {
     //-----------------------------------------------------------------------------------------------
     //Action methods
 
-    private final void selectEndEntityProfile() {
+    private void selectEndEntityProfile() {
         setEndEntityProfileChanged(false);
-
         resetCertificateProfile();
-        initAvailableCertificateProfiles();
-        if (availableCertificateProfiles.size() == 1) {
-            setSelectedCertificateProfile(availableCertificateProfiles.keySet().iterator().next());
+        if (getAuthorizedCertificateProfiles().size() == 1) {
+            setSelectedCertificateProfile(String.valueOf(getAuthorizedCertificateProfiles().get(0)));
             selectCertificateProfile();
         }
     }
 
-    private final void selectCertificateProfile() {
+    private void selectCertificateProfile() {
         setCertificateProfileChanged(false);
-
         resetCertificateAuthority();
-        initAvailableCertificateAuthorities();
-        if (availableCertificateAuthorities.size() == 1) {
-            setSelectedCertificateAuthority(availableCertificateAuthorities.keySet().iterator().next());
+        if (getAvailableCertificateAuthorities().size() == 1) {
+            setSelectedCertificateAuthority(String.valueOf(getAvailableCertificateAuthorities().get(0)));
             selectCertificateAuthority();
         }
     }
 
-    private final void selectCertificateAuthority() {
+    private void selectCertificateAuthority() {
         setCertificateAuthorityChanged(false);
-
         resetKeyPairGeneration();
         if (getAvailableKeyPairGenerations().size() == 1) {
             selectedKeyPairGeneration = getAvailableKeyPairGenerations().get(0);
@@ -557,9 +417,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
         resetAlgorithmCsrUpload();
         if (KeyPairGeneration.ON_SERVER.equals(selectedKeyPairGeneration)) {
-            selectKeyAlgorithmRendered = true;
-            initAvailableAlgorithms();
-            
             setProvideRequestInfoRendered(true);
             initCertificateData();
             
@@ -568,7 +425,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
             initEndEntityInformation();
             updateRequestPreview();
         } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(selectedKeyPairGeneration)) {
-            uploadCsrRendered = true;
             initCsrUpload();
         }
     }
@@ -641,7 +497,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         //Fill End Entity information
         endEntityInformation.setCAId(getCAInfo().getCAId());
         endEntityInformation.setCardNumber(""); //TODO Card Number
-        endEntityInformation.setCertificateProfileId(authorizedCertificateProfiles.get(selectedCertificateProfile).getId());
+        endEntityInformation.setCertificateProfileId(authorizedCertificateProfiles.get(getSelectedCertificateProfile()).getId());
         endEntityInformation.setDN(subjectDn.toString());
         endEntityInformation.setEndEntityProfileId(authorizedEndEntityProfiles.get(selectedEndEntityProfile).getId());
         endEntityInformation.setExtendedinformation(new ExtendedInformation());//TODO don't know anything about it...
@@ -689,7 +545,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
         //Fill end-entity information (KeyStoreAlgorithm* or CertificateRequest)
         if (KeyPairGeneration.ON_SERVER.equals(selectedKeyPairGeneration)) {
-            final String[] tokenKeySpecSplit = selectedAlgorithm.split("_");
+            final String[] tokenKeySpecSplit = getSelectedAlgorithm().split("_");
             endEntityInformation.getExtendedinformation().setKeyStoreAlgorithm(tokenKeySpecSplit[0]);
             endEntityInformation.getExtendedinformation().setKeyStoreAlgorithmLength(tokenKeySpecSplit[1]);
         } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(selectedKeyPairGeneration)) {
@@ -802,6 +658,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
    
     //-----------------------------------------------------------------------------------------------
     //Listeners that will be invoked from xhtml
+    public void noOperationAjaxListener(final AjaxBehaviorEvent event) { }
+    public void renderNonModifiableToggle() {
+        renderNonModifiable = !renderNonModifiable;
+    }
+
     public final void endEntityProfileChangedListener(ValueChangeEvent e) {
         setEndEntityProfileChanged(true);
     }
@@ -927,25 +788,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return authorizedEndEntityProfiles;
     }
 
-    /**
-     * @param authorizedEndEntityProfiles the authorizedEndEntityProfiles to set
-     */
-    private void setAuthorizedEndEntityProfiles(IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles) {
-        this.authorizedEndEntityProfiles = authorizedEndEntityProfiles;
+    /** @return true if fields that the client can't modify should still be rendered */
+    public boolean isRenderNonModifiable() {
+        return renderNonModifiable;
     }
-
-    /**
-     * @return the selectedEndEntityProfile
-     */
-    public String getSelectedEndEntityProfile() {
-        return selectedEndEntityProfile;
+    public void setRenderNonModifiable(final boolean renderNonModifiable) {
+        this.renderNonModifiable = renderNonModifiable;
     }
 
     public EndEntityProfile getEndEntityProfile() {
-        if (selectedEndEntityProfile == null) {
+        if (getSelectedEndEntityProfile() == null) {
             return null;
         }
-        Tuple<EndEntityProfile> temp = authorizedEndEntityProfiles.get(selectedEndEntityProfile);
+        Tuple<EndEntityProfile> temp = authorizedEndEntityProfiles.get(Integer.parseInt(getSelectedEndEntityProfile()));
         if (temp == null) {
             return null;
         }
@@ -953,10 +808,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public CertificateProfile getCertificateProfile() {
-        if (selectedCertificateProfile == null) {
+        if (getSelectedCertificateProfile() == null) {
             return null;
         }
-        Tuple<CertificateProfile> temp = authorizedCertificateProfiles.get(selectedCertificateProfile);
+        Tuple<CertificateProfile> temp = authorizedCertificateProfiles.get(Integer.parseInt(getSelectedCertificateProfile()));
         if (temp == null) {
             return null;
         }
@@ -964,10 +819,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public CAInfo getCAInfo() {
-        if (selectedCertificateAuthority == null) {
+        if (getSelectedCertificateAuthority() == null) {
             return null;
         }
-        Tuple<CAInfo> temp = authorizedCAInfos.get(selectedCertificateAuthority);
+        Tuple<CAInfo> temp = authorizedCAInfos.get(Integer.parseInt(getSelectedCertificateAuthority()));
         if (temp == null) {
             return null;
         }
@@ -976,17 +831,35 @@ public class EnrollMakeNewRequestBean implements Serializable {
     
     public String getAlgorithm(){
         if (KeyPairGeneration.ON_SERVER.equals(selectedKeyPairGeneration)) {
-            return selectedAlgorithm;
+            return getSelectedAlgorithm();
         } else {
             return algorithmFromCsr;
         }
     }
 
     /**
+     * @return the selectedEndEntityProfile
+     */
+    public String getSelectedEndEntityProfile() {
+        final List<Integer> availableEndEntityProfiles = getAvailableEndEntityProfiles();
+        if (availableEndEntityProfiles.size()==1) {
+            selectedEndEntityProfile = String.valueOf(availableEndEntityProfiles.get(0));
+        }
+        if (StringUtils.isNotEmpty(selectedEndEntityProfile)) {
+            if (!availableEndEntityProfiles.contains(Integer.parseInt(selectedEndEntityProfile))) {
+                this.selectedEndEntityProfile = null;
+            }
+        }
+        return selectedEndEntityProfile;
+    }
+
+    /**
      * @param selectedEndEntityProfile the selectedEndEntityProfile to set
      */
-    public void setSelectedEndEntityProfile(String selectedEndEntityProfile) {
-        this.selectedEndEntityProfile = selectedEndEntityProfile;
+    public void setSelectedEndEntityProfile(final String selectedEndEntityProfile) {
+        if (StringUtils.isNotEmpty(selectedEndEntityProfile)) {
+            this.selectedEndEntityProfile = selectedEndEntityProfile;
+        }
     }
 
     /**
@@ -1000,7 +873,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @param selectedKeyPairGeneration the selectedKeyPairGeneration to set
      */
     public void setSelectedKeyPairGeneration(final String selectedKeyStoreGeneration) {
-        this.selectedKeyPairGeneration = KeyPairGeneration.valueOf(selectedKeyStoreGeneration);
+        if (StringUtils.isNotEmpty(selectedKeyStoreGeneration)) {
+            this.selectedKeyPairGeneration = KeyPairGeneration.valueOf(selectedKeyStoreGeneration);
+        }
     }
 
     /**
@@ -1043,6 +918,23 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return ret;
     }
 
+    public List<SelectItem> getAvailableEndEntityProfileSelectItems() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for (final Integer id : getAvailableEndEntityProfiles()) {
+            ret.add(new SelectItem(String.valueOf(id), authorizedEndEntityProfiles.get(id).getName()));
+        }
+        if (ret.size()>1 && StringUtils.isEmpty(getSelectedEndEntityProfile())) {
+            ret.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_eep_nochoice"), raLocaleBean.getMessage("enroll_select_eep_nochoice"), true));
+        }
+        sortSelectItemsByLabel(ret);
+        return ret;
+    }
+
+    /** @return a List end entity profile identifiers */
+    private List<Integer> getAvailableEndEntityProfiles() {
+        return new ArrayList<>(authorizedEndEntityProfiles.idKeySet());
+    }
+
     /**
      * @return the keyPairGenerationChanged
      */
@@ -1057,31 +949,106 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.keyPairGenerationChanged = keyPairGenerationChanged;
     }
 
-    /**
-     * @return the availableCertificateProfiles
-     */
-    public Map<String, String> getAvailableCertificateProfiles() {
-        return availableCertificateProfiles;
+    public List<SelectItem> getAvailableCertificateProfileSelectItems() {
+        final List<SelectItem> ret = new ArrayList<>();
+        final String defaultId = getEndEntityProfile().getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
+        for (final Integer id : getAvailableCertificateProfiles()) {
+            if (defaultId.equals(String.valueOf(id))) {
+                // TODO: Localize
+                ret.add(new SelectItem(String.valueOf(id), authorizedCertificateProfiles.get(id).getName() + " (default)"));
+            } else {
+                ret.add(new SelectItem(String.valueOf(id), authorizedCertificateProfiles.get(id).getName()));
+            }
+        }
+        if (ret.size()>1 && StringUtils.isEmpty(getSelectedCertificateProfile())) {
+            ret.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_cp_nochoice"), raLocaleBean.getMessage("enroll_select_cp_nochoice"), true));
+        }
+        sortSelectItemsByLabel(ret);
+        return ret;
     }
 
-    /**
-     * @param availableCertificateProfiles the availableCertificateProfiles to set
-     */
-    public void setAvailableCertificateProfiles(Map<String, String> availableCertificateProfiles) {
-        this.availableCertificateProfiles = availableCertificateProfiles;
+    /** @return a List certificate profile identifiers */
+    private List<Integer> getAvailableCertificateProfiles() {
+        final List<Integer> ret = new ArrayList<>();
+        final EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if (endEntityProfile != null) {
+            final String[] availableCertificateProfileIds = endEntityProfile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
+            for (final String availableId : availableCertificateProfileIds) {
+                final Integer id = Integer.parseInt(availableId);
+                if (authorizedCertificateProfiles.containsKey(id)) {
+                    ret.add(id);
+                }
+            }
+        }
+        return ret;
+    }
+
+    public List<SelectItem> getAvailableCertificateAuthoritySelectItems() {
+        final List<SelectItem> ret = new ArrayList<>();
+        final String defaultId = getEndEntityProfile().getValue(EndEntityProfile.DEFAULTCA, 0);
+        for (final Integer id : getAvailableCertificateAuthorities()) {
+            if (defaultId.equals(String.valueOf(id))) {
+                // TODO: Localize
+                ret.add(new SelectItem(String.valueOf(id), authorizedCAInfos.get(id).getName() + " (default)"));
+            } else {
+                ret.add(new SelectItem(String.valueOf(id), authorizedCAInfos.get(id).getName()));
+            }
+        }
+        if (ret.size()>1 && StringUtils.isEmpty(getSelectedCertificateAuthority())) {
+            ret.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ca_nochoice"), raLocaleBean.getMessage("enroll_select_ca_nochoice"), true));
+        }
+        sortSelectItemsByLabel(ret);
+        return ret;
+    }
+
+    /** @return a List of CA identifiers */
+    private List<Integer> getAvailableCertificateAuthorities() {
+        final List<Integer> ret = new ArrayList<>();
+        // Get all available CAs from the selected EEP
+        final EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if (endEntityProfile != null) {
+            final String[] availableCAsFromEEPArray = endEntityProfile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
+            final boolean anyCAAvailableFromEEP = availableCAsFromEEPArray.length == 1 && availableCAsFromEEPArray[0].equalsIgnoreCase(SecConst.ALLCAS + "");
+            // Get all available CAs from the selected CP
+            final CertificateProfile certificateProfile = getCertificateProfile();
+            if (certificateProfile != null) {
+                final List<Integer> availableCAsFromCP = certificateProfile.getAvailableCAs();
+                final boolean anyCAAvailableFromCP = availableCAsFromCP.size() == 1 && availableCAsFromCP.iterator().next() == CertificateProfile.ANYCA;
+                for (final Tuple<CAInfo> tuple : authorizedCAInfos.values()) {
+                    if ((anyCAAvailableFromEEP || Arrays.asList(availableCAsFromEEPArray).contains(tuple.getId() + ""))
+                            && (anyCAAvailableFromCP || availableCAsFromCP.contains(tuple.getId()))) {
+                        ret.add(tuple.getId());
+                    }
+                }
+            }
+        }
+        return ret;
     }
 
     /**
      * @return the selectedCertificateProfile
      */
     public String getSelectedCertificateProfile() {
+        final List<Integer> availableCertificateProfiles = getAvailableCertificateProfiles();
+        if (availableCertificateProfiles.size()==1) {
+            setSelectedCertificateProfile(String.valueOf(availableCertificateProfiles.get(0)));
+        }
+        if (StringUtils.isNotEmpty(selectedCertificateProfile)) {
+            if (!availableCertificateProfiles.contains(Integer.parseInt(selectedCertificateProfile))) {
+                setSelectedCertificateProfile(null);
+            }
+        }
         return selectedCertificateProfile;
     }
 
     /**
      * @param selectedCertificateProfile the selectedCertificateProfile to set
      */
-    public void setSelectedCertificateProfile(String selectedCertificateProfile) {
+    public void setSelectedCertificateProfile(final String selectedCertificateProfile) {
+        if (!StringUtils.equals(selectedCertificateProfile, this.selectedCertificateProfile)) {
+            // When ever the certificate profile changes this affects the available key algorithms
+            availableAlgorithmSelectItems = null;
+        }
         this.selectedCertificateProfile = selectedCertificateProfile;
     }
 
@@ -1099,32 +1066,122 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.certificateProfileChanged = certificateProfileChanged;
     }
 
-    /**
-     * @return the availableAlgorithms
-     */
-    public Map<String, String> getAvailableAlgorithms() {
-        return availableAlgorithms;
+    /** @return the availableAlgorithms */
+    public List<SelectItem> getAvailableAlgorithmSelectItems() {
+        if (availableAlgorithmSelectItems == null) {
+            availableAlgorithmSelectItems = new ArrayList<>();
+            final CertificateProfile certificateProfile = getCertificateProfile();
+            final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
+            final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
+            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
+                for (final int availableBitLength : availableBitLengths) {
+                    if (availableBitLength == 1024) {
+                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength,
+                                AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits"));
+                    }
+                }
+            }
+            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
+                for (final int availableBitLength : availableBitLengths) {
+                    if (availableBitLength >= 1024) {
+                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA + "_" + availableBitLength,
+                                AlgorithmConstants.KEYALGORITHM_RSA + " " + availableBitLength + " bits"));
+                    }
+                }
+            }
+            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+                final Set<String> ecChoices = new HashSet<>();
+                final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(false);
+                if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {
+                    final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
+                    for (final String ecNamedCurve : keys) {
+                        if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
+                            continue;
+                        }
+                        final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
+                        if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                            ecChoices.add(ecNamedCurve);
+                        }
+                    }
+                }
+                ecChoices.addAll(certificateProfile.getAvailableEcCurvesAsList());
+                ecChoices.remove(CertificateProfile.ANY_EC_CURVE);
+                final List<String> ecChoicesList = new ArrayList<>(ecChoices);
+                Collections.sort(ecChoicesList);
+                for (final String ecNamedCurve : ecChoicesList) {
+                    availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
+                            + StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(ecNamedCurve))));
+                }
+            }
+            for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
+                if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
+                    for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
+                        final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
+                        final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
+                        if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                            availableAlgorithmSelectItems.add(new SelectItem(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name,
+                                    CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
+                        } else {
+                            if (log.isTraceEnabled()) {
+                                log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");
+                            }
+                        }
+                    }
+                }
+            }
+            if (availableAlgorithmSelectItems.size()>1 && StringUtils.isEmpty(getSelectedAlgorithm())) {
+                availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
+            }
+            sortSelectItemsByLabel(availableAlgorithmSelectItems);
+        }
+        return availableAlgorithmSelectItems;
     }
 
-    /**
-     * @param availableAlgorithms the availableAlgorithms to set
-     */
-    public void setAvailableAlgorithms(Map<String, String> availableAlgorithms) {
-        this.availableAlgorithms = availableAlgorithms;
+    /** Sort the provided list by label with the exception of any item with null value that ends up first. */
+    private void sortSelectItemsByLabel(final List<SelectItem> items) {
+        Collections.sort(items, new Comparator<SelectItem>() {
+            @Override
+            public int compare(final SelectItem item1, final SelectItem item2) {
+                if (item1.getValue()==null || (item1.getValue() instanceof String && ((String)item1.getValue()).isEmpty())) {
+                    return Integer.MIN_VALUE;
+                } else if (item2.getValue()==null || (item2.getValue() instanceof String && ((String)item2.getValue()).isEmpty())) {
+                    return Integer.MAX_VALUE;
+                }
+                return item1.getLabel().compareTo(item2.getLabel());
+            }
+        });
     }
 
     /**
      * @return the selectedAlgorithm
      */
     public String getSelectedAlgorithm() {
+        final List<SelectItem> availableAlgorithmSelectItems = getAvailableAlgorithmSelectItems();
+        if (availableAlgorithmSelectItems.size()==1) {
+            selectedAlgorithm = String.valueOf(availableAlgorithmSelectItems.get(0).getValue());
+        }
+        if (StringUtils.isNotEmpty(selectedAlgorithm)) {
+            boolean found = false;
+            for (final SelectItem selectItem : availableAlgorithmSelectItems) {
+                if (selectedAlgorithm.equals(selectItem.getValue())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                setSelectedCertificateProfile(null);
+            }
+        }
         return selectedAlgorithm;
     }
 
     /**
      * @param selectedAlgorithm the selectedAlgorithm to set
      */
-    public void setSelectedAlgorithm(String selectedAlgorithm) {
-        this.selectedAlgorithm = selectedAlgorithm;
+    public void setSelectedAlgorithm(final String selectedAlgorithm) {
+        if (StringUtils.isNotEmpty(selectedAlgorithm)) {
+            this.selectedAlgorithm = selectedAlgorithm;
+        }
     }
 
     /**
@@ -1170,23 +1227,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     /**
-     * @return the availableCertificateAuthorities
-     */
-    public Map<String, String> getAvailableCertificateAuthorities() {
-        return availableCertificateAuthorities;
-    }
-
-    /**
-     * @param availableCertificateAuthorities the availableCertificateAuthorities to set
-     */
-    public void setAvailableCertificateAuthorities(Map<String, String> availableCertificateAuthorities) {
-        this.availableCertificateAuthorities = availableCertificateAuthorities;
-    }
-
-    /**
      * @return the selectedCertificateAuthority
      */
     public String getSelectedCertificateAuthority() {
+        final List<Integer> availableCertificateAuthorities = getAvailableCertificateAuthorities();
+        if (availableCertificateAuthorities.size()==1) {
+            selectedCertificateAuthority = String.valueOf(availableCertificateAuthorities.get(0));
+        }
+        if (StringUtils.isNotEmpty(selectedCertificateAuthority)) {
+            if (!availableCertificateAuthorities.contains(Integer.parseInt(selectedCertificateAuthority))) {
+                selectedCertificateAuthority = null;
+            }
+        }
         return selectedCertificateAuthority;
     }
 
@@ -1194,7 +1246,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @param selectedCertificateAuthority the selectedCertificateAuthority to set
      */
     public void setSelectedCertificateAuthority(String selectedCertificateAuthority) {
-        this.selectedCertificateAuthority = selectedCertificateAuthority;
+        if (StringUtils.isNotEmpty(selectedCertificateAuthority)) {
+            this.selectedCertificateAuthority = selectedCertificateAuthority;
+        }
     }
 
     /**
@@ -1215,36 +1269,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return authorizedCertificateProfiles;
     }
 
-    public void setAuthorizedCertificateProfiles(IdNameHashMap<CertificateProfile> authorizedCertificateProfiles) {
-        this.authorizedCertificateProfiles = authorizedCertificateProfiles;
-    }
-
     /**
      * @return the authorizedCAInfos
      */
     public IdNameHashMap<CAInfo> getAuthorizedCAInfos() {
         return authorizedCAInfos;
-    }
-
-    /**
-     * @param authorizedCAInfos the authorizedCAInfos to set
-     */
-    public void setAuthorizedCAInfos(IdNameHashMap<CAInfo> authorizedCAInfos) {
-        this.authorizedCAInfos = authorizedCAInfos;
-    }
-
-    /**
-     * @return the availableEndEntityProfiles
-     */
-    public Map<String, String> getAvailableEndEntityProfiles() {
-        return availableEndEntityProfiles;
-    }
-
-    /**
-     * @param availableEndEntityProfiles the availableEndEntityProfiles to set
-     */
-    public void setAvailableEndEntityProfiles(Map<String, String> availableEndEntities) {
-        this.availableEndEntityProfiles = availableEndEntities;
     }
 
     /**
@@ -1339,46 +1368,36 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.requestPreview = requestPreview;
     }
 
-    /**
-     * @return the selectRequestTemplateRendered
-     */
+    /** @return true if the selection of certificate template should be rendered */
     public boolean isSelectRequestTemplateRendered() {
-        return selectRequestTemplateRendered;
+        return isSelectEndEntityProfileRendered() || isSelectCertificateProfileRendered() || isSelectCertificateAuthorityRendered() || isSelectKeyPairGenerationRendered();
+    }
+    public boolean isSelectEndEntityProfileRendered() {
+        return getAvailableEndEntityProfiles().size()>1 ||
+                (getAvailableEndEntityProfiles().size()==1 && isRenderNonModifiable());
+    }
+    public boolean isSelectCertificateProfileRendered() {
+        return StringUtils.isNotEmpty(getSelectedEndEntityProfile()) && (getAvailableCertificateProfiles().size()>1 ||
+                (getAvailableCertificateProfiles().size()==1 && isRenderNonModifiable()));
+    }
+    public boolean isSelectCertificateAuthorityRendered() {
+        return StringUtils.isNotEmpty(getSelectedCertificateProfile()) && (getAvailableCertificateAuthorities().size()>1 ||
+                (getAvailableCertificateAuthorities().size()==1 && isRenderNonModifiable()));
+    }
+    public boolean isSelectKeyPairGenerationRendered() {
+        return StringUtils.isNotEmpty(getSelectedCertificateAuthority()) && (getAvailableKeyPairGenerations().size()>1 ||
+                (getAvailableKeyPairGenerations().size()==1 && isRenderNonModifiable()));
     }
 
-    /**
-     * @param selectRequestTemplateRendered the selectRequestTemplateRendered to set
-     */
-    public void setSelectRequestTemplateRendered(boolean selectRequestTemplateRendered) {
-        this.selectRequestTemplateRendered = selectRequestTemplateRendered;
-    }
-
-    /**
-     * @return the selectKeyAlgorithmRendered
-     */
+    /** @return true if the the selectKeyAlgorithm should be rendered */
     public boolean isSelectKeyAlgorithmRendered() {
-        return selectKeyAlgorithmRendered;
+        return KeyPairGeneration.ON_SERVER.equals(selectedKeyPairGeneration) && (getAvailableAlgorithmSelectItems().size()>1 ||
+                (getAvailableAlgorithmSelectItems().size()==1 && isRenderNonModifiable()));
     }
 
-    /**
-     * @param selectKeyAlgorithmRendered the selectKeyAlgorithmRendered to set
-     */
-    public void setSelectKeyAlgorithmRendered(boolean selectKeyAlgorithmRendered) {
-        this.selectKeyAlgorithmRendered = selectKeyAlgorithmRendered;
-    }
-
-    /**
-     * @return the uploadCsrRendered
-     */
+    /** @return true if the the CSR upload form should be rendered */
     public boolean isUploadCsrRendered() {
-        return uploadCsrRendered;
-    }
-
-    /**
-     * @param uploadCsrRendered the uploadCsrRendered to set
-     */
-    public void setUploadCsrRendered(boolean uploadCsrRendered) {
-        this.uploadCsrRendered = uploadCsrRendered;
+        return KeyPairGeneration.PROVIDED_BY_USER.equals(selectedKeyPairGeneration);
     }
 
     /**
@@ -1422,6 +1441,4 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setConfirmRequestRendered(boolean confirmRequestRendered) {
         this.confirmRequestRendered = confirmRequestRendered;
     }
-
-    
 }

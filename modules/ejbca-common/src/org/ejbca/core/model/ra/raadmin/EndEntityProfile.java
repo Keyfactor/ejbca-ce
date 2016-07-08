@@ -2177,7 +2177,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             this.name = name;
             this.number = number;
             this.defaultValue = EndEntityProfile.this.getValue(name, number);
-            this.value = isSelectable() ? getSelectableValues()[0] : defaultValue;
+            this.value = isSelectable() ? getSelectableValues().get(0) : defaultValue;
             this.profileId = EndEntityProfile.dataConstants.get(name);
             HashMap<String, Serializable> temp = EndEntityProfile.this.getValidation(name, number);
             if(temp != null){
@@ -2197,8 +2197,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public boolean isSelectable(){
             return !isModifiable() && getDefaultValue() != null && getDefaultValue().split(";").length > 1;
         }
-        public String[] getSelectableValues(){
-            return isSelectable() ? defaultValue.split(";") : null;
+        public List<String> getSelectableValues(){
+            return isSelectable() ? Arrays.asList(defaultValue.split(";")) : null;
         }
         @Override
         public int hashCode(){return name.hashCode();}
