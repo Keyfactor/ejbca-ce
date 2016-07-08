@@ -31,20 +31,9 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 
 public class ApprovalDataVOViewList extends AbstractList<ApprovalDataVOView> implements Serializable {
 
-    /**
-     * Determines if a de-serialized file is compatible with this class.
-     * 
-     * Maintainers must change this value if and only if the new version of this
-     * class is not compatible with old versions. See Sun docs for <a
-     * href=http://java.sun.com/products/jdk/1.1/docs/guide
-     * /serialization/spec/version.doc.html> details. </a>
-     * 
-     */
     private static final long serialVersionUID = 1680993305950225012L;
-
-
-    private String _sort;
-    private boolean _ascending;
+    private String sort;
+    private boolean ascending;
     private List<ApprovalDataVOView> listData;
 
     public ApprovalDataVOViewList(Collection<ApprovalDataVO> approvalDataVOs) {
@@ -68,13 +57,9 @@ public class ApprovalDataVOViewList extends AbstractList<ApprovalDataVOView> imp
      * Sort the list.
      */
     protected void sort(final String column, final boolean ascending) {
-
         Comparator<ApprovalDataVOView> comparator = new Comparator<ApprovalDataVOView>() {
             public int compare(ApprovalDataVOView c1, ApprovalDataVOView c2) {
-                if (column == null) {
-                    return 0;
-                }
-                if (column.equals("requestDate")) {
+                if (column == null || column.equals("requestDate")) {
                     return ascending ? c1.getApproveActionDataVO().getRequestDate().compareTo(c2.getApproveActionDataVO().getRequestDate()) : c2
                             .getApproveActionDataVO().getRequestDate().compareTo(c1.getApproveActionDataVO().getRequestDate());
                 } else if (column.equals("approveActionName")) {
@@ -106,20 +91,20 @@ public class ApprovalDataVOViewList extends AbstractList<ApprovalDataVOView> imp
             throw new IllegalArgumentException("Argument sortColumn must not be null.");
         }
 
-        if (_sort.equals(sortColumn)) {
+        if (sort.equals(sortColumn)) {
             // current sort equals new sortColumn -> reverse sort order
-            _ascending = !_ascending;
+            ascending = !ascending;
         } else {
             // sort new column in default direction
-            _sort = sortColumn;
-            _ascending = isDefaultAscending(_sort);
+            sort = sortColumn;
+            ascending = isDefaultAscending(sort);
         }
 
-        sort(_sort, _ascending);
+        sort(sort, ascending);
     }
 
     public void sort() {
-        sort(_sort);
+        sort(sort);
     }
 
     public List<ApprovalDataVOView> getData() {
@@ -132,20 +117,19 @@ public class ApprovalDataVOViewList extends AbstractList<ApprovalDataVOView> imp
     }
 
     public String getSort() {
-
-        return _sort;
+        return sort;
     }
 
     public void setSort(String sort) {
-        _sort = sort;
+        this.sort = sort;
     }
 
     public boolean isAscending() {
-        return _ascending;
+        return ascending;
     }
 
     public void setAscending(boolean ascending) {
-        _ascending = ascending;
+        this.ascending = ascending;
     }
 
 }
