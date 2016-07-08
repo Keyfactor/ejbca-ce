@@ -40,7 +40,8 @@
 				styleClass="pure-form pure-form-aligned">
 
 				<h:panelGroup layout="block"
-					rendered="#{enrollMakeNewRequestBean.selectRequestTemplateRendered}">
+					rendered="#{enrollMakeNewRequestBean.selectRequestTemplateRendered}"
+					id="selectRequestTemplateOuterPanel">
 					<h2>
 						<h:outputText value="#{msg.enroll_select_request_template}" />
 					</h2>
@@ -131,7 +132,7 @@
 							</h:panelGroup>
 
 							<h:panelGroup layout="block" styleClass="pure-control-group"
-								rendered="#{! empty enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems}">
+								rendered="#{enrollMakeNewRequestBean.keyPairGenerationRendered}">
                                 <h:outputLabel for="selectKeyPairGenerationOneMenu" value="#{msg.enroll_key_pair_generation_label}"/>
                                 <h:panelGroup id="selectKeyPairGenerationOneMenu" styleClass="display: inline-block;">
                                     <h:selectOneRadio id="selectKeyPairGeneration"
@@ -164,7 +165,7 @@
 			<h:form id="keyPairForm" styleClass="pure-form pure-form-aligned">
 
 				<h:panelGroup layout="block"
-					rendered="#{enrollMakeNewRequestBean.uploadCsrRendered}">
+					rendered="#{enrollMakeNewRequestBean.uploadCsrRendered}" id="uploadCsrOuterPanel">
 					<h2>
 						<h:outputText value="#{msg.enroll_upload_csr}" />
 					</h2>
@@ -207,7 +208,7 @@
 
 			<h:form id="requestInfoForm" styleClass="pure-form pure-form-aligned">
 				<h:panelGroup layout="block"
-					rendered="#{enrollMakeNewRequestBean.selectKeyAlgorithmRendered}">
+					rendered="#{enrollMakeNewRequestBean.selectKeyAlgorithmRendered}" id="selectKeyAlgorithmOuterPanel">
 					<h2>
 						<h:outputText value="#{msg.enroll_select_key_algorithm}" />
 					</h2>
@@ -230,9 +231,10 @@
 						</h:selectOneMenu>
 					</h:panelGroup>
 				</h:panelGroup>
-				
+
 				<h:panelGroup layout="block"
-					rendered="#{enrollMakeNewRequestBean.provideRequestInfoRendered}">
+					rendered="#{enrollMakeNewRequestBean.provideRequestInfoRendered}"
+					id="requestInfoRendered">
 					<h2>
 						<h:outputText value="#{msg.enroll_provide_request_info}" />
 					</h2>
@@ -253,25 +255,24 @@
 										<h:outputLabel for="subjectDnField"
 											value="#{msg['subject_dn_'.concat(instance.name)]} *"
 											rendered="#{instance.required}" />
-										<h:inputText id="subjectDnField" value="#{instance.value}" styleClass="jsDelayKeyUp"
-											rendered="#{!instance.selectable}"
+										<h:inputText id="subjectDnField" value="#{instance.value}"
+											styleClass="jsDelayKeyUp" rendered="#{!instance.selectable}"
 											disabled="#{!instance.modifiable}">
-											<f:validateRequired disabled="#{!instance.required}"/>
+											<f:validateRequired disabled="#{!instance.required}" />
 											<f:validator validatorId="extendedRegexValidator" />
-											<f:attribute name="pattern"
-												value="#{instance.regexPattern}" />
+											<f:attribute name="pattern" value="#{instance.regexPattern}" />
 											<f:ajax execute="@this" event="change"
-												render=":requestInfoForm:requestPreview"
+												render=":requestInfoForm:requestPreviewOuterPanel"
 												listener="#{enrollMakeNewRequestBean.subjectDnAjaxListener}" />
-                                            <f:ajax execute="@this" event="keyup"
-                                                render=":requestInfoForm:requestPreview"
-                                                listener="#{enrollMakeNewRequestBean.subjectDnAjaxListener}" />
+											<f:ajax execute="@this" event="keyup"
+												render=":requestInfoForm:requestPreviewOuterPanel"
+												listener="#{enrollMakeNewRequestBean.subjectDnAjaxListener}" />
 										</h:inputText>
 										<h:selectOneMenu value="#{instance.value}"
 											rendered="#{instance.selectable}">
 											<f:selectItems value="#{instance.selectableValues}" />
 											<f:ajax execute="@this" event="change"
-												render=":requestInfoForm:requestPreview"
+												render=":requestInfoForm:requestPreviewOuterPanel"
 												listener="#{enrollMakeNewRequestBean.subjectDnAjaxListener}" />
 										</h:selectOneMenu>
 										<h:message for="subjectDnField" id="subjectDnFieldMessage" />
@@ -297,28 +298,28 @@
 									<h:outputLabel for="subjectAltNameField"
 										value="#{msg['subject_alternative_name_'.concat(instance.name)]} *"
 										rendered="#{instance.required}" />
-									<h:inputText id="subjectAltNameField" value="#{instance.value}" styleClass="jsDelayKeyUp"
-										rendered="#{!instance.selectable}"
+									<h:inputText id="subjectAltNameField" value="#{instance.value}"
+										styleClass="jsDelayKeyUp" rendered="#{!instance.selectable}"
 										disabled="#{!instance.modifiable}">
-										<f:validateRequired disabled="#{!instance.required}"/>
+										<f:validateRequired disabled="#{!instance.required}" />
 										<f:validator validatorId="extendedRegexValidator" />
-										<f:attribute name="pattern"
-											value="#{instance.regexPattern}" />
+										<f:attribute name="pattern" value="#{instance.regexPattern}" />
 										<f:ajax execute="@this" event="change"
-											render=":requestInfoForm:requestPreview"
+											render=":requestInfoForm:requestPreviewOuterPanel"
 											listener="#{enrollMakeNewRequestBean.subjectAlternativeNameAjaxListener}" />
-                                        <f:ajax execute="@this" event="keyup"
-                                            render=":requestInfoForm:requestPreview"
-                                            listener="#{enrollMakeNewRequestBean.subjectAlternativeNameAjaxListener}" />
+										<f:ajax execute="@this" event="keyup"
+											render=":requestInfoForm:requestPreviewOuterPanel"
+											listener="#{enrollMakeNewRequestBean.subjectAlternativeNameAjaxListener}" />
 									</h:inputText>
 									<h:selectOneMenu value="#{instance.value}"
 										rendered="#{instance.selectable}">
 										<f:selectItems value="#{instance.selectableValues}" />
 										<f:ajax execute="@this" event="change"
-											render=":requestInfoForm:requestPreview"
+											render=":requestInfoForm:requestPreviewOuterPanel"
 											listener="#{enrollMakeNewRequestBean.subjectAlternativeNameAjaxListener}" />
 									</h:selectOneMenu>
-									<h:message for="subjectAltNameField" id="subjectAltNameFieldMessage" />
+									<h:message for="subjectAltNameField"
+										id="subjectAltNameFieldMessage" />
 								</h:panelGroup>
 							</ui:repeat>
 						</h:panelGroup>
@@ -338,79 +339,31 @@
 									<h:outputLabel for="subjectDirectoryField"
 										value="#{msg['subject_directory_attributes_'.concat(instance.name)]} *"
 										rendered="#{instance.required}" />
-									<h:inputText id="subjectDirectoryField" value="#{instance.value}" styleClass="jsDelayKeyUp"
-                                        rendered="#{!instance.selectable}"
+									<h:inputText id="subjectDirectoryField"
+										value="#{instance.value}" styleClass="jsDelayKeyUp"
+										rendered="#{!instance.selectable}"
 										disabled="#{!instance.modifiable}">
-										<f:validateRequired disabled="#{!instance.required}"/>
+										<f:validateRequired disabled="#{!instance.required}" />
 										<f:validator validatorId="extendedRegexValidator" />
-										<f:attribute name="pattern"
-											value="#{instance.regexPattern}" />
+										<f:attribute name="pattern" value="#{instance.regexPattern}" />
 										<f:ajax execute="@this" event="change"
-											render=":requestInfoForm:requestPreview"
+											render=":requestInfoForm:requestPreviewOuterPanel"
 											listener="#{enrollMakeNewRequestBean.subjectDirectoryAttributesAjaxListener}" />
-                                        <f:ajax execute="@this" event="keyup"
-                                            render=":requestInfoForm:requestPreview"
-                                            listener="#{enrollMakeNewRequestBean.subjectDirectoryAttributesAjaxListener}" />
+										<f:ajax execute="@this" event="keyup"
+											render=":requestInfoForm:requestPreviewOuterPanel"
+											listener="#{enrollMakeNewRequestBean.subjectDirectoryAttributesAjaxListener}" />
 									</h:inputText>
 									<h:selectOneMenu value="#{instance.value}"
 										rendered="#{instance.selectable}">
 										<f:selectItems value="#{instance.selectableValues}" />
 										<f:ajax execute="@this" event="change"
-											render=":requestInfoForm:requestPreview"
+											render=":requestInfoForm:requestPreviewOuterPanel"
 											listener="#{enrollMakeNewRequestBean.subjectDirectoryAttributesAjaxListener}" />
 									</h:selectOneMenu>
-									<h:message for="subjectDirectoryAttributes" id="subjectDirectoryAttributes" />
+									<h:message for="subjectDirectoryAttributes"
+										id="subjectDirectoryAttributes" />
 								</h:panelGroup>
 							</ui:repeat>
-						</h:panelGroup>
-						</h:panelGroup>
-						<h:panelGroup layout="block" styleClass="internal-frame">
-						<h:panelGroup layout="block"
-							rendered="#{enrollMakeNewRequestBean.provideRequestMetadataRendered}">
-							<h:panelGroup layout="block">
-								<h3>
-									<h:outputText value="#{msg.enroll_user_credentials}" />
-								</h3>
-								<fieldset>
-									<h:panelGroup layout="block" styleClass="pure-control-group"
-										rendered="#{enrollMakeNewRequestBean.usernameRendered}">
-										<h:outputLabel for="usernameField"
-											value="#{msg.enroll_username}" />
-										<h:inputText id="usernameField"
-											styleClass="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isRequired() ? 'required-input' : ''}"
-											value="#{enrollMakeNewRequestBean.endEntityInformation.username}" />
-									</h:panelGroup>
-									<f:event
-										listener="#{enrollMakeNewRequestBean.validatePassword}"
-										type="postValidate" />
-									<h:panelGroup layout="block" styleClass="pure-control-group"
-										rendered="#{enrollMakeNewRequestBean.passwordRendered}">
-										<h:outputLabel for="passwordField"
-											value="#{msg.enroll_password}" />
-										<h:inputSecret id="passwordField"
-											value="#{enrollMakeNewRequestBean.endEntityInformation.password}">
-											<f:validateRequired />
-										</h:inputSecret>
-										<h:message for="passwordField" id="passwordFieldMessage" />
-									</h:panelGroup>
-									<h:panelGroup layout="block" styleClass="pure-control-group"
-										rendered="#{enrollMakeNewRequestBean.passwordRendered}">
-										<h:outputLabel for="passwordConfirmField"
-											value="#{msg.enroll_confirm_password}" />
-										<h:inputSecret id="passwordConfirmField"
-											value="#{enrollMakeNewRequestBean.confirmPassword}">
-											<f:validateRequired />
-										</h:inputSecret>
-										<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" />
-									</h:panelGroup>
-									<h:panelGroup layout="block" styleClass="pure-control-group">
-										<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
-										<h:inputText id="emailField"
-											value="#{enrollMakeNewRequestBean.endEntityInformation.email}" />
-										<h:message for="emailField" id="emailFieldMessage" />
-									</h:panelGroup>
-								</fieldset>
-							</h:panelGroup>
 						</h:panelGroup>
 						<h:commandButton id="updateRequestPreview"
 							value="#{msg.enroll_update_request_preview}"
@@ -418,14 +371,62 @@
 							rendered="#{enrollMakeNewRequestBean.updateRequestPreviewButtonRendered}"
 							styleClass="pure-button ra-button jsHide">
 						</h:commandButton>
-                        <script>jsTouchUpDocument();</script>
+						<script>jsTouchUpDocument();</script>
 					</h:panelGroup>
 				</h:panelGroup>
 
+				<h:panelGroup layout="block"
+					rendered="#{enrollMakeNewRequestBean.provideUserCredentialsRendered}"
+					id="userCredentialsOuterPanel">
+					<h2>
+						<h:outputText value="#{msg.enroll_provide_user_credentials}" />
+					</h2>
+					<h:panelGroup layout="block" styleClass="internal-frame">
+						<fieldset>
+							<h:panelGroup layout="block" styleClass="pure-control-group"
+								rendered="#{enrollMakeNewRequestBean.usernameRendered}">
+								<h:outputLabel for="usernameField"
+									value="#{msg.enroll_username}" />
+								<h:inputText id="usernameField"
+									styleClass="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).isRequired() ? 'required-input' : ''}"
+									value="#{enrollMakeNewRequestBean.endEntityInformation.username}" />
+							</h:panelGroup>
+							<f:event listener="#{enrollMakeNewRequestBean.validatePassword}"
+								type="postValidate" />
+							<h:panelGroup layout="block" styleClass="pure-control-group"
+								rendered="#{enrollMakeNewRequestBean.passwordRendered}">
+								<h:outputLabel for="passwordField"
+									value="#{msg.enroll_password}" />
+								<h:inputSecret id="passwordField"
+									value="#{enrollMakeNewRequestBean.endEntityInformation.password}">
+									<f:validateRequired />
+								</h:inputSecret>
+								<h:message for="passwordField" id="passwordFieldMessage" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="pure-control-group"
+								rendered="#{enrollMakeNewRequestBean.passwordRendered}">
+								<h:outputLabel for="passwordConfirmField"
+									value="#{msg.enroll_confirm_password}" />
+								<h:inputSecret id="passwordConfirmField"
+									value="#{enrollMakeNewRequestBean.confirmPassword}">
+									<f:validateRequired />
+								</h:inputSecret>
+								<h:message for="passwordConfirmField"
+									id="passwordConfirmFieldMessage" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="pure-control-group">
+								<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
+								<h:inputText id="emailField"
+									value="#{enrollMakeNewRequestBean.endEntityInformation.email}" />
+								<h:message for="emailField" id="emailFieldMessage" />
+							</h:panelGroup>
+						</fieldset>
+					</h:panelGroup>
+				</h:panelGroup>
 
 				<h:panelGroup layout="block"
 					rendered="#{enrollMakeNewRequestBean.confirmRequestRendered}"
-					id="requestPreview">
+					id="requestPreviewOuterPanel">
 					<h2>
 						<h:outputText value="#{msg.enroll_confirm_request}" />
 					</h2>
@@ -505,10 +506,10 @@
 					</h:commandButton>
 				</h:panelGroup>
 				<script>
-				if(document.getElementById('confirmRequestForm:useRequestIdLink') != null){
-					document.getElementById('confirmRequestForm:useRequestIdLink').focus();
-				}else if(document.getElementById('confirmRequestForm:confirmRequestButton') != null){
-					document.getElementById('confirmRequestForm:confirmRequestButton').focus();
+				if(document.getElementById('requestInfoForm:useRequestIdLink') != null){
+					document.getElementById('requestInfoForm:useRequestIdLink').focus();
+				}else if(document.getElementById('requestInfoForm:confirmRequestButton') != null){
+					document.getElementById('requestInfoForm:confirmRequestButton').focus();
 				}else if(document.getElementById('requestInfoForm:updateRequestPreviewButton') != null){
 					document.getElementById('requestInfoForm:updateRequestPreviewButton').focus();
 				}else if(document.getElementById('keyPairForm:uploadCsrButton') != null){
