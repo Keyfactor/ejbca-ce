@@ -119,7 +119,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public void setApprovalProfilesMBean(ApprovalProfilesMBean approvalProfilesMBean) {
         this.approvalProfilesMBean = approvalProfilesMBean;
     }
-    /** @return the select profile id from the list view or the one cached in this view (this will never change in the view) */
+    /** @return the selected profile id from the list view or the one cached in this view (this will never change in the view) */
     public int getSelectedApprovalProfileId() {
         if (currentApprovalProfileId==-1) {
             final Integer id = approvalProfilesMBean.getSelectedApprovalProfileId();
