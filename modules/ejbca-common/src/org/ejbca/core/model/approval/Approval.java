@@ -22,6 +22,7 @@ import java.util.Date;
 
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.LocalJvmOnlyAuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -145,6 +146,7 @@ public class Approval implements Comparable<Approval>, Externalizable {
 		return approvalDate.compareTo(arg0.approvalDate);
 	}
 
+	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeInt(LATEST_VERSION);
 		out.writeObject(this.admin);
@@ -156,6 +158,7 @@ public class Approval implements Comparable<Approval>, Externalizable {
 		out.writeObject(this.partitionId);
 	}
 
+	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		int version = in.readInt();
 		if(version == 1){
@@ -201,9 +204,13 @@ public class Approval implements Comparable<Approval>, Externalizable {
                 // We trust this admin as if it were created internal to EJBCA and fill in the auth token
                 this.admin = new AlwaysAllowLocalAuthenticationToken(this.admin.getPrincipals().iterator().next());
             } else if (this.admin instanceof X509CertificateAuthenticationToken) {
-                X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken)this.admin;
+                X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken) this.admin;
                 this.adminCertIssuerDN = CertTools.getIssuerDN(xtok.getCertificate());
-                this.adminCertSerialNumber = CertTools.getSerialNumberAsString(xtok.getCertificate());
+                this.adminCertSerialNumber = CertTools.getSerialNumberAsString(xtok.getCertificate());          
+            }
+            if(this.admin instanceof LocalJvmOnlyAuthenticationToken) {
+                LocalJvmOnlyAuthenticationToken localToken = (LocalJvmOnlyAuthenticationToken) this.admin;
+                localToken.initRandomToken();
             }
             this.approved = in.readBoolean();
             this.approvalDate = (Date) in.readObject();
