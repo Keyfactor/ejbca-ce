@@ -122,7 +122,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         checkApprovalPossibility(admin, approvalData, approval);
 		approval.setApprovalAdmin(true, admin);
         try {
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalprofileid());
+            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalProfileIdentifier());
             final List<Approval> approvalsPerformed = approvalData.getApprovals();
             if (approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
                 throw new ApprovalException("Wrong status of approval request.");
@@ -212,7 +212,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         checkApprovalPossibility(admin, approvalData, approval);
         approval.setApprovalAdmin(false, admin);
         try {
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalprofileid());
+            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalProfileIdentifier());
             final List<Approval> approvalsPerformed = approvalData.getApprovals();
             // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
             if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval)) {

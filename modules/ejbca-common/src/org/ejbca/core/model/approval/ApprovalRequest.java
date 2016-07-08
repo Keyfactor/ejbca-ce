@@ -505,22 +505,6 @@ public abstract class ApprovalRequest implements Externalizable {
             }
             this.approvalProfile = (ApprovalProfile) in.readObject();
             this.oldApprovals = new ArrayList<Approval>();
-     /*       this.approvalSteps = new HashMap<>();
-            int length = in.readInt(); 
-            for (int i = 0; i < length; i++) {
-                Integer stepId = (Integer)in.readObject();
-                ApprovalStep step = (ApprovalStep)in.readObject();
-                approvalSteps.put(stepId, step);
-            }
-            
-            this.approvalStepsHandledMap = new HashMap<>();
-            length = in.readInt(); 
-            for (int i = 0; i < length; i++) {
-                Integer stepId = (Integer)in.readObject();
-                Boolean handled = in.readBoolean();
-                approvalStepsHandledMap.put(stepId, handled);
-            }
-            */
             this.oldApprovals = new ArrayList<>();
             int length = in.readInt(); 
             for (int i = 0; i < length; i++) {

@@ -52,7 +52,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	private int approvalId;
 	private int approvalType;
 	/** @since EJBCA 6.6.0 */
-	private int approvalProfileId;
+	private Integer approvalProfileId;
 	private int endEntityProfileId;
 	private int cAId;
 	private String reqAdminCertIssuerDn;
@@ -115,10 +115,27 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	
 	/**
      * The related approval profile id
+     * 
+     * @return the approval profile as an Integer, or null if none has been set.
+     * 
      * @since EJBCA 6.6.0
      */
     //@Column
-    public int getApprovalprofileid() { return approvalProfileId; }
+    public Integer getApprovalprofileid() { return approvalProfileId; }
+    
+    /**
+     * 
+     * @return the approval profile as an int, or null if none has been set.
+     */
+    @Transient
+    public int getApprovalProfileIdentifier() {
+        if(approvalProfileId != null) {
+            return approvalProfileId.intValue();
+        } else {
+            return 0;
+        }
+    }
+    
     /**
      * The related approval profile id     
      * @since EJBCA 6.6.0
