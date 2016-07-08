@@ -43,7 +43,6 @@ public class DefaultRolesTest {
         String externalRule = "/nonexistingrule";
         raAdminRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false));
         raAdminRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
-        raAdminRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.REGULAR_STORECERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
         raAdminRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false)); 
         raAdminRuleSet.add(new AccessRuleData(ROLENAME, externalRule, AccessRuleState.RULE_ACCEPT, false));  
         Collection<AccessRuleTemplate> externalRules = new ArrayList<AccessRuleTemplate>();
@@ -57,7 +56,6 @@ public class DefaultRolesTest {
         Collection<AccessRuleData> raAdminRuleSet = new ArrayList<AccessRuleData>();
         raAdminRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false));
         raAdminRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
-        raAdminRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.REGULAR_STORECERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
         raAdminRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false));      
         assertEquals(DefaultRoles.RAADMINISTRATOR, DefaultRoles.identifyFromRuleSet(raAdminRuleSet, new ArrayList<AccessRuleTemplate>()));
     }
@@ -67,7 +65,6 @@ public class DefaultRolesTest {
         Collection<AccessRuleData> customRuleSet = new ArrayList<AccessRuleData>();
         customRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false));
         customRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
-        customRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.REGULAR_STORECERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
         customRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
         customRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES, AccessRuleState.RULE_ACCEPT, false));      
 
@@ -79,7 +76,6 @@ public class DefaultRolesTest {
         Collection<AccessRuleData> customRuleSet = new ArrayList<AccessRuleData>();
         customRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false));
         customRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
-        customRuleSet.add(new AccessRuleData(ROLENAME, AccessRulesConstants.REGULAR_STORECERTIFICATE, AccessRuleState.RULE_ACCEPT, false));    
         assertEquals(DefaultRoles.CUSTOM, DefaultRoles.identifyFromRuleSet(customRuleSet, new ArrayList<AccessRuleTemplate>()));
     }
     
