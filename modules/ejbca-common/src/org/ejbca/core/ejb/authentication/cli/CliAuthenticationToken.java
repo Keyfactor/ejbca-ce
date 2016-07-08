@@ -108,7 +108,6 @@ public class CliAuthenticationToken extends AuthenticationToken {
 
     @Override
     public boolean matches(AccessUserAspect accessUser) throws AuthenticationFailedException {
-        
         /*
          * We just have to verify once, so that the same token can be used sequentially within EJBCA. 
          */
@@ -118,7 +117,7 @@ public class CliAuthenticationToken extends AuthenticationToken {
         if (isVerified) {
             return true;
         } else {
-            if (matchIdentity(accessUser)) {
+            if (matchTokenType(accessUser.getTokenType()) && userName.equals(accessUser.getMatchValue())) {
                 if (!CliAuthenticationTokenReferenceRegistry.INSTANCE.verifySha1Hash(referenceNumber, sha1Hash)) {
                     //This is an authentication error
                     throw new AuthenticationFailedException("Incorrect one-time hash was passed with CLI token, most likely due to an incorrect password.");
@@ -135,10 +134,6 @@ public class CliAuthenticationToken extends AuthenticationToken {
         return false;
     }
    
-    @Override
-    public boolean matchIdentity(AccessUserAspect accessUser) {
-        return matchTokenType(accessUser.getTokenType()) && userName.equals(accessUser.getMatchValue());
-    }
 
     /**
      * Returns the reference number, a nonce.

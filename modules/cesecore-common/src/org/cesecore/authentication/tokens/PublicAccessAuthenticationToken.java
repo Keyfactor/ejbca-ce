@@ -92,11 +92,6 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
             return true;
         }
     }
-    
-    @Override
-    public boolean matchIdentity(AccessUserAspect accessUser) {
-        return true;
-    }
 
     @Override
     public boolean matchTokenType(final String tokenType) {

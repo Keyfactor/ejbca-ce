@@ -103,13 +103,7 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
         // Protect against spoofing by checking if this token was created locally
         if (!super.isCreatedInThisJvm()) {
             return false;
-        } else {
-            return matchIdentity(accessUser);
-        }
-    }   
-    
-    @Override
-    public boolean matchIdentity(AccessUserAspect accessUser) {
+        } 
         boolean returnvalue = false;
         int parameter;
         int size = 0;
