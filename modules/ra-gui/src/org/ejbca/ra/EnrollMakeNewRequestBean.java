@@ -81,6 +81,7 @@ import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.Tuple;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page
@@ -1276,6 +1277,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return authorizedCAInfos;
     }
 
+    /** @return the if there is at least one field in subject dn that should be rendered */
+    public boolean isSubjectDnRendered() {
+        for (final FieldInstance fieldInstance : subjectDn.getFieldInstances()) {
+            if (isFieldInstanceRendered(fieldInstance)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * @return the subjectDN
      */
@@ -1290,6 +1301,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.subjectDn = subjectDn;
     }
 
+    /** @return the if there is at least one field in subjectAlternativeName that should be rendered */
+    public boolean isSubjectAlternativeNameRendered() {
+        for (final FieldInstance fieldInstance : subjectAlternativeName.getFieldInstances()) {
+            if (isFieldInstanceRendered(fieldInstance)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * @return the subjectAlternativeName
      */
@@ -1304,6 +1325,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.subjectAlternativeName = subjectAlternativeName;
     }
 
+    /** @return the if there is at least one field in subject directory attributes that should be rendered */
+    public boolean isSubjectDirectoryAttributesRendered() {
+        for (final FieldInstance fieldInstance : subjectDirectoryAttributes.getFieldInstances()) {
+            if (isFieldInstanceRendered(fieldInstance)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * @return the subjectDirectoryAttributes
      */
@@ -1316,6 +1347,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public void setSubjectDirectoryAttributes(SubjectDirectoryAttributes subjectDirectoryAttributes) {
         this.subjectDirectoryAttributes = subjectDirectoryAttributes;
+    }
+
+    /** @return true if the field instance should be rendered */
+    public boolean isFieldInstanceRendered(final FieldInstance fieldInstance) {
+        if (fieldInstance.isUsed()) {
+            if (isRenderNonModifiable()) {
+                return true;
+            }
+            if ((!fieldInstance.isSelectable() && fieldInstance.isModifiable()) || (fieldInstance.isSelectable() && fieldInstance.getSelectableValues().size()>1)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
