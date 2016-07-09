@@ -281,12 +281,14 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         if (query != null) {
             customQuery += query.getQueryString();
         }
-        if (!caAuthorizationString.equals("") && query != null) {
-            customQuery += " AND " + caAuthorizationString;
-        } else {
-            customQuery += caAuthorizationString;
-        }
         if (StringUtils.isNotEmpty(caAuthorizationString)) {
+            if (!caAuthorizationString.equals("") && query != null) {
+                customQuery += " AND " + caAuthorizationString;
+            } else {
+                customQuery += caAuthorizationString;
+            }
+        }
+        if (StringUtils.isNotEmpty(endEntityProfileAuthorizationString)) {
             if (endEntityProfileAuthorizationString.equals("") && query == null) {
                 customQuery += endEntityProfileAuthorizationString;
             } else {
