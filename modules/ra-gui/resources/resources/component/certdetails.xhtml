@@ -210,7 +210,7 @@
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:panelGroup styleClass="#{cc.attrs.styleLabel}"/>
-            <h:panelGroup styleClass="#{cc.attrs.styleValue}">
+            <h:panelGroup id="downloadFormatLinks" styleClass="#{cc.attrs.styleValue}">
                 <h:outputLink value="viewcert.xhtml" styleClass="fineprint">
                     <f:param name="fp" value="#{cc.attrs.raCertificateDetails.fingerprint}"/>
                     <h:outputText value="#{msg.component_certdetails_link_perm}"/>
