@@ -243,7 +243,7 @@
                             </h:column>
                             <h:column>
                                 <f:facet name="header"><h:outputText value="#{msg.search_ees_page_colhead_action}"/></f:facet>
-                                <h:commandButton action="#{raSearchEesBean.openEndEntityDetails(raSearchEndEntity)}" value="#{msg.search_ees_page_show_command}"
+                                <h:commandButton id="showMoreDetails" action="#{raSearchEesBean.openEndEntityDetails(raSearchEndEntity)}" value="#{msg.search_ees_page_show_command}"
                                     styleClass="pure-button ra-button"/>
                             </h:column>
                         </h:dataTable>

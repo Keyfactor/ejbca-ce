@@ -148,7 +148,7 @@
                     <h:commandButton id="commandReject" action="#{raManageRequestBean.reject}" value="#{msg.view_request_page_reject_command}" />
                 </h:panelGroup>
                 
-                <h:panelGroup layout="block" rendered="#{not raManageRequestBean.request.canApprove}">
+                <h:panelGroup id="requestApproveMessage" styleClass="bodyText" layout="block" rendered="#{not raManageRequestBean.request.canApprove}">
                     <h:outputText value="#{raManageRequestBean.cantApproveReason}"/>
                 </h:panelGroup>
             </h:panelGroup>
