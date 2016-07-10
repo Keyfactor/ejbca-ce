@@ -420,7 +420,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // Convert RA request steps into approval steps
         
         //final boolean isAccumulativeOnly = advo.getApprovalRequest().getApprovalProfile() instanceof AccumulativeApprovalProfile;
-        final Approval approval = new Approval(requestResponse.getComment(), requestResponse.getStepIdentifier(), requestResponse.getPartitionIdentifier());
+        final Approval approval = new Approval(requestResponse.getComment(), requestResponse.getStepIdentifier(), 0);
         /*final ApprovalStep approvalStep;
         if (isAccumulativeOnly) {
             approvalStep = null;
