@@ -30,7 +30,8 @@ public class ApprovalStepGuiObject {
     private final Integer identifier;
     private final int stepNumber;
     private final List<ApprovalPartitionProfileGuiObject> partitionGuiObjects;
-    private final boolean isFinalStep;
+    private final Integer nextStep;
+    private final Integer previousStep;
 
     /**
      * 
@@ -48,7 +49,8 @@ public class ApprovalStepGuiObject {
         for (Integer partitionId : partitionProperties.keySet()) {
             partitionGuiObjects.add(new ApprovalPartitionProfileGuiObject(approvalProfileIdentifier, partitionId, partitionProperties.get(partitionId)));
         }
-        isFinalStep = approvalStep.isFinalStep();
+        this.nextStep = approvalStep.getNextStep();
+        this.previousStep = approvalStep.getPreviousStep();
     }
 
     public Integer getIdentifier() {
@@ -67,7 +69,19 @@ public class ApprovalStepGuiObject {
     }
     
     public boolean isFinalStep() {
-        return isFinalStep;
+        return nextStep == null;
+    }
+    
+    public Integer getNextStep() {
+        return nextStep;
+    }
+    
+    public Integer getPreviousStep() {
+        return previousStep;
+    }
+    
+    public int getNumberOfPartitions() {
+        return partitionGuiObjects.size();
     }
     
 }

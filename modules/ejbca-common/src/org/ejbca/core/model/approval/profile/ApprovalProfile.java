@@ -109,6 +109,13 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     ApprovalStep addStepFirst();
     
     /**
+     * Creates a new step and adds it last. 
+     * 
+     * @return the new step
+     */
+    ApprovalStep addStepLast();
+    
+    /**
      * Deletes a step and attaches the steps before and after to each other in order. 
      * 
      * @param approvalStepIdentifier the identifier of the approval step
@@ -116,6 +123,14 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     void deleteStep(final int approvalStepIdentifier);
     
     void setSteps(final Map<Integer, ApprovalStep> steps);
+    
+    /**
+     * Switches position betwen two steps
+     * 
+     * @param firstStepIdentifier the ID of the first step
+     * @param secondStepIdentifier the ID of the second step
+     */
+    void switchStepOrder(Integer firstStepIdentifier, Integer secondStepIdentifier);
     
     /**
     * Adds a property to a specific partition in a specific sequence in this approval profile, for display in the UI. If the property already

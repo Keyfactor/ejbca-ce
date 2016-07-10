@@ -80,7 +80,7 @@ public class ApprovalStep implements Serializable {
             ois.close();
             this.id = step.getStepIdentifier();
             this.nextStep = step.getNextStep();
-            this.previousStep = step.getNextStep();
+            this.previousStep = step.getPreviousStep();
             this.partitions = step.getPartitions();
         } catch (IOException | ClassNotFoundException e) {
             throw new IllegalArgumentException("Could not decode encoded ApprovalStep", e);
@@ -131,10 +131,6 @@ public class ApprovalStep implements Serializable {
     
     public void setNextStep(Integer nextStep) {
         this.nextStep = nextStep;
-    }
-    
-    public boolean isFinalStep() {
-        return nextStep == null;
     }
 
     public Integer getPreviousStep() {
