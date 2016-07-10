@@ -107,13 +107,11 @@ public class RAAuthorization implements Serializable {
         StringBuilder stringBuilder = new StringBuilder("");
         if (authApprovalProfilesString == null) {
             authApprovalProfilesString = "";
+            //As is the case for any approvals created prior to 6.6.0
+            stringBuilder.append("approvalProfileId IS NULL");
             Set<Integer> profilesIds = approvalProfileSession.getApprovalProfileIdToNameMap().keySet();
             for (Integer profileId : profilesIds) {
-                if (stringBuilder.toString().equals("")) {
-                    stringBuilder.append(" approvalProfileId = " + profileId);
-                } else {
-                    stringBuilder.append(" OR approvalProfileId = " + profileId);
-                }
+                stringBuilder.append(" OR approvalProfileId = " + profileId);
             }
             authApprovalProfilesString = stringBuilder.toString();
             if (!authApprovalProfilesString.equals("")) {

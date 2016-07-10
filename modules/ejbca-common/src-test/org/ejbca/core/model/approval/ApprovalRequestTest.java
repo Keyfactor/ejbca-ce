@@ -124,11 +124,11 @@ public class ApprovalRequestTest {
         final String serialNumber = "12344711";
         approvalProfile.setNumberOfApprovalsRequired(1);
         ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, 
-                TEST_NONADMIN_CN, serialNumber, true, token, null, 1, 0, 0, approvalProfile, null);
+                TEST_NONADMIN_CN, serialNumber, true, token, null, 1, 0, 0, approvalProfile);
         int approvalId = approvalRequest.generateApprovalId();
         ViewHardTokenDataApprovalRequest ar1 = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, 
                 CertTools.stringToBCDNString(TEST_NONADMIN_CN), serialNumber, true,token,null,1,123456,1, 
-                approvalProfile, null);
+                approvalProfile);
         int approvalId1 = ar1.generateApprovalId();
         assertEquals("Ids should be the same.", approvalId, approvalId1);
 

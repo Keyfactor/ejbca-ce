@@ -344,7 +344,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caInfo, 
                     certProfile);
             if (approvalProfile != null) {
-                //TODO HANDLE 100% UPTIME HERE
                 AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(endEntity, clearpwd, admin, null, caid,
                         endEntityProfileId, approvalProfile);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ADDUSER)) {
@@ -714,7 +713,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 certificateProfile);
         if (approvalProfile != null) {
             final EndEntityInformation orguserdata = userData.toEndEntityInformation();
-            //TODO HANDLE 100% UPTIME HERE
             final EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(endEntityInformation, clearpwd, orguserdata, admin, null,
                      caid, endEntityProfileId, approvalProfile);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)) {
@@ -1176,7 +1174,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, cainfo, 
                 certProfile);
         if (approvalProfile != null) {
-            //TODO HANDLE 100% UPTIME HERE
             final ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status, admin,
                     null, data1.getCaId(), endEntityProfileId, approvalProfile);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)) {
@@ -1453,7 +1450,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(userData.getCertificateProfileId());
         final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, certProfile);
-        //TODO: Handle 100% uptime here
         if (approvalProfile != null) {
             final RevocationApprovalRequest ar = new RevocationApprovalRequest(false, username, reason, admin, caid, userData.getEndEntityProfileId(),
                     approvalProfile);
@@ -1619,7 +1615,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, 
                     certProfile);
             if (approvalProfile != null) {
-                //TODO HANDLE 100% UPTIME HERE
                 final RevocationApprovalRequest ar = new RevocationApprovalRequest(certserno, issuerdn, username, reason, admin, caid,
                         endEntityProfileId, approvalProfile);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {

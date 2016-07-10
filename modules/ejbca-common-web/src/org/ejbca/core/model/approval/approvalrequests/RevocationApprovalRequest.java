@@ -212,4 +212,8 @@ public class RevocationApprovalRequest extends ApprovalRequest {
     		issuerDN = (String) in.readObject();
         }
 	}
+	
+	public String getUsername() {
+	    return username;
+	}
 }
