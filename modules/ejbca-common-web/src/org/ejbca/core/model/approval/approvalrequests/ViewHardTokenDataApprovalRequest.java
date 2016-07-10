@@ -48,7 +48,7 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
 
 	public ViewHardTokenDataApprovalRequest(String username, String userDN, String tokensn, boolean viewPUK, 
 	        AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, 
-	        int endEntityProfileId, ApprovalProfile approvalProfile, ApprovalProfile secondApprovalProfile) {
+	        int endEntityProfileId, ApprovalProfile approvalProfile) {
         super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile);
 		this.username = username;
 		this.dn = userDN;

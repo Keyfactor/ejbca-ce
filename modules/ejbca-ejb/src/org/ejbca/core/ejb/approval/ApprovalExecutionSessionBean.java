@@ -122,7 +122,10 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         checkApprovalPossibility(admin, approvalData, approval);
 		approval.setApprovalAdmin(true, admin);
         try {
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalProfileIdentifier());
+            ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalProfileIdentifier());
+            if(approvalProfile == null) {
+                approvalProfile = approvalData.getApprovalDataVO().getApprovalRequest().getApprovalProfile();
+            }
             final List<Approval> approvalsPerformed = approvalData.getApprovals();
             if (approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
                 throw new ApprovalException("Wrong status of approval request.");
@@ -277,15 +280,6 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         }
         // Check that his admin has not approved this partition before
         for (Approval existingApproval : approvalInformation.getApprovals()) {
-            if (existingApproval.getStepId() == approval.getStepId() 
-                    && existingApproval.getPartitionId() == approval.getPartitionId()
-                    && existingApproval.getAdmin().equals(admin)) {
-                String msg = intres.getLocalizedMessage("approval.error.alreadyapproved", approvalId);
-                log.info(msg);
-                throw new AdminAlreadyApprovedRequestException(msg);
-            }
-        }
-        for (Approval existingApproval : approvalInformation.getApprovalRequest().getOldApprovals()) {
             if (existingApproval.getStepId() == approval.getStepId() 
                     && existingApproval.getPartitionId() == approval.getPartitionId()
                     && existingApproval.getAdmin().equals(admin)) {

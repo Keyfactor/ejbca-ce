@@ -64,7 +64,7 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * @param endEntityProfileId
 	 */
     public ActivateCATokenApprovalRequest(String cAName, String authenticationCode, AuthenticationToken requestAdmin, int cAId,
-            int endEntityProfileId, ApprovalProfile approvalProfile) {
+            int endEntityProfileId, ApprovalProfile approvalProfile, int certificateProfileId) {
         super(requestAdmin, null, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile);
         this.cAName = cAName;
         this.authenticationCode = authenticationCode;
@@ -85,7 +85,7 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 		log.debug("Executing " + ApprovalDataVO.APPROVALTYPENAMES[getApprovalType()] + " (" + getApprovalType() + ").");
 		try {
 			// Use 'null' for GlobalConfiguration here since it's only used to extract approval information in the underlying code..
-			caAdminSession.activateCAService(getRequestAdmin(), getCAId());
+		    caAdminSession.activateCAService(getRequestAdmin(), getCAId());
         } catch (AuthorizationDeniedException e) {
             throw new ApprovalRequestExecutionException("Authorization denied to activate CA Token :" + e.getMessage(), e);
 		} catch (CADoesntExistsException e) {

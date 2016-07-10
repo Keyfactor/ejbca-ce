@@ -67,11 +67,11 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 
     public EditEndEntityApprovalRequest(EndEntityInformation newuserdata, boolean clearpwd, EndEntityInformation orguserdata,
             AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile) {
-		super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, approvalProfile);
-		this.newuserdata = newuserdata;
-		this.clearpwd = clearpwd;
-		this.orguserdata = orguserdata;
-	}
+        super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, approvalProfile);
+        this.newuserdata = newuserdata;
+        this.clearpwd = clearpwd;
+        this.orguserdata = orguserdata;
+    }
 
 	@Override
 	public void execute() throws ApprovalRequestExecutionException {

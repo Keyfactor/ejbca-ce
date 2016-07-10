@@ -113,7 +113,6 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 	public EndEntityInformation getEndEntityInformation() {
 	    return userdata;
 	}
-
 	
 	/** Returns a summary of the information in the request, without doing any database queries. See also the overloaded method */
 	@Override
@@ -189,4 +188,5 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
     		clearpwd = in.readBoolean();
         }
 	}
+
 }

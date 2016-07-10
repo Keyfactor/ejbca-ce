@@ -34,6 +34,8 @@ From EJBCA 6.5.x to EJBCA 6.6.0
 	1. Changes to CertificateData
 	2. Changes to ApprovalData
 	3. Removal of the rule /ca_functionality/store_certificate
+	4. 100% Upgrade Uptime Notes
+		4.a Approval Profiles
 
 *** 	1. Changes to CertificateData
 
@@ -66,6 +68,17 @@ deploying the new code.
 
 The rule /ca_functionality/store_certificate has been removed for the simple reason that it wasn't actually used. It will not be cleaned from any
 existing roles due to being harmless (and invasive to remove). 
+
+***		4. 100% Upgrade Uptime Notes
+
+		4.a Approval Profiles
+		
+Approval profiles (of the Accumulative Approval Profile type) will during startup of the first upgraded node be automatically created and set for 
+CAs and Certificate Profiles using approvals. During the upgrade, approval requests may roll in from unupgraded nodes, and these will automatically
+be reparsed when they are read from the upgraded ones, in other words set to use the same profile as if they'd been created on an upgraded node. For
+the sake of 100% uptime, this means that all actions (enrollment, revocation, ca activation, etc) may continue during the upgrade, and they may be 
+processed from the upgraded nodes. On the other hand, unupgraded nodes will not be able to approve actions created by or read by the upgraded nodes
+until the upgrade process is complete. 
 
 From EJBCA 6.5.1 to EJBCA 6.5.3
 -------------------------------

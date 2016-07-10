@@ -2178,9 +2178,8 @@ public class EjbcaWS implements IEjbcaWS {
                         if(!approveViewHardToken){
                             throw new AuthorizationDeniedException("EjbcaWS is not configured for getHardTokenData approvals.");
                         }
-                        //TODO HANDLE 100% UPTIME HERE
-                        ar = new ViewHardTokenDataApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenSN, true,admin,null,
-                                0,userData.getCAId(),userData.getEndEntityProfileId(), approvalProfile, null);
+                        ar = new ViewHardTokenDataApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenSN, true, admin, null, 0,
+                                userData.getCAId(), userData.getEndEntityProfileId(), approvalProfile);
                         try{
                             status = approvalSession.isApproved(admin, ar.generateApprovalId());
                             isApprovedStep0 = status == ApprovalDataVO.STATUS_APPROVED;

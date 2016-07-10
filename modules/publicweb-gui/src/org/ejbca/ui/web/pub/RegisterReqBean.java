@@ -558,13 +558,10 @@ public class RegisterReqBean {
             errors.add("CA with ID " + caid + " does not exist. " + e1.getMessage());
             return;
         }
-        final ApprovalProfile approvalProfile = getApprovalProfile(cainfo, certProfileId);
-        
+        final ApprovalProfile approvalProfile = getApprovalProfile(cainfo, certProfileId);        
         // Add approval request
-        //TODO HANDLE 100% UPTIME HERE
         final AddEndEntityApprovalRequest approvalReq = new AddEndEntityApprovalRequest(endEntity, false, admin, null, caid,
                 eeProfileId, approvalProfile);
-        
         try {
             approvalSession.addApprovalRequest(admin, approvalReq);
         } catch (EjbcaException e) {

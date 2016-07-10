@@ -21,8 +21,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -91,7 +89,7 @@ public abstract class ApprovalRequest implements Externalizable {
     private int numOfRequiredApprovals = 0;
     private int cAId = 0;
     private int endEntityProfileId = 0;
-    private boolean[] approvalStepsNrOfApprovals = { false };
+    private boolean[] approvalSteps = { false };
     
     private ApprovalProfile approvalProfile;
     
@@ -99,7 +97,6 @@ public abstract class ApprovalRequest implements Externalizable {
     private String blacklistedAdminSerial;
     private String blacklistedAdminIssuerDN;
     
-    private Collection<Approval> oldApprovals;
     /**
      * Main constructor of an approval request for standard one step approval request.
      * 
@@ -120,7 +117,6 @@ public abstract class ApprovalRequest implements Externalizable {
         this.cAId = cAId;
         this.endEntityProfileId = endEntityProfileId;
         this.approvalProfile = approvalProfile;
-        this.oldApprovals = new ArrayList<Approval>();
     }
 
     /**
@@ -144,24 +140,13 @@ public abstract class ApprovalRequest implements Externalizable {
         this.endEntityProfileId = endEntityProfileId;
         
         this.approvalProfile = approvalProfile;
-        this.approvalStepsNrOfApprovals = new boolean[0];
-        this.oldApprovals = new ArrayList<Approval>();
+        this.approvalSteps = new boolean[0];
     }
 
     /** Constuctor used in externaliziation only */
     public ApprovalRequest() {
     }
     
-
-    
-    public Collection<Approval> getOldApprovals() {
-        return oldApprovals;
-    }
-    
-    public void setOldApprovals(final Collection<Approval> approvals) {
-        oldApprovals = approvals;
-    }
-     
     /**
      * Should return true if the request if of the type that should be executed by the last approver.
      * 
@@ -247,6 +232,10 @@ public abstract class ApprovalRequest implements Externalizable {
         return approvalProfile;
     }
     
+    public void setApprovalProfile(final ApprovalProfile approvalProfile) {
+        this.approvalProfile = approvalProfile;
+    }
+    
     /**
      * The type of request type, one of TYPE_ constants
      * 
@@ -268,7 +257,7 @@ public abstract class ApprovalRequest implements Externalizable {
     public int getCAId() {
         return cAId;
     }
-
+    
     /**
      * Returns the related end entity profile id. The approving administrator must be authorized to this profile in order to approve it.
      */
@@ -326,7 +315,7 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param step to query
      */
     public boolean isStepDone(int step) {
-        return approvalStepsNrOfApprovals[step];
+        return approvalSteps[step];
     }
 
     /**
@@ -335,14 +324,14 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param step to query
      */
     public void markStepAsDone(int step) {
-        approvalStepsNrOfApprovals[step] = true;
+        approvalSteps[step] = true;
     }
 
     /**
      * Returns the number of steps that this approval request supports.
      */
     public int getNumberOfApprovalSteps() {
-        return approvalStepsNrOfApprovals.length;
+        return approvalSteps.length;
     }
 
     @Override
@@ -354,17 +343,12 @@ public abstract class ApprovalRequest implements Externalizable {
         out.writeInt(this.numOfRequiredApprovals);
         out.writeInt(this.cAId);
         out.writeInt(this.endEntityProfileId);
-        out.writeInt(this.approvalStepsNrOfApprovals.length);
-        for (int i = 0; i < approvalStepsNrOfApprovals.length; i++) {
-            out.writeBoolean(approvalStepsNrOfApprovals[i]);
+        out.writeInt(this.approvalSteps.length);
+        for (int i = 0; i < approvalSteps.length; i++) {
+            out.writeBoolean(approvalSteps[i]);
         }
         
         out.writeObject(approvalProfile);
-        out.writeInt(this.oldApprovals.size());
-        for (Approval approval : oldApprovals) {
-            out.writeObject(approval);
-        }
-        
         out.writeObject(this.blacklistedAdminIssuerDN);
         out.writeObject(this.blacklistedAdminSerial);
     }
@@ -388,7 +372,7 @@ public abstract class ApprovalRequest implements Externalizable {
             this.numOfRequiredApprovals = in.readInt();
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
-            this.approvalStepsNrOfApprovals = new boolean[1];
+            this.approvalSteps = new boolean[1];
         }
         if (version == 2) {
             final Admin admin = (Admin) in.readObject();
@@ -408,7 +392,7 @@ public abstract class ApprovalRequest implements Externalizable {
             this.numOfRequiredApprovals = in.readInt();
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
-            this.approvalStepsNrOfApprovals = new boolean[1];
+            this.approvalSteps = new boolean[1];
         }
         if (version == 3) {
         	// Version 2 and 3 only care about the certificate from the old Admin object
@@ -433,9 +417,9 @@ public abstract class ApprovalRequest implements Externalizable {
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
             final int stepSize = in.readInt();
-            this.approvalStepsNrOfApprovals = new boolean[stepSize];
-            for (int i = 0; i < approvalStepsNrOfApprovals.length; i++) {
-                approvalStepsNrOfApprovals[i] = in.readBoolean();
+            this.approvalSteps = new boolean[stepSize];
+            for (int i = 0; i < approvalSteps.length; i++) {
+                approvalSteps[i] = in.readBoolean();
             }
         }
         if (version == 4) {
@@ -466,9 +450,9 @@ public abstract class ApprovalRequest implements Externalizable {
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
             final int stepSize = in.readInt();
-            this.approvalStepsNrOfApprovals = new boolean[stepSize];
-            for (int i = 0; i < approvalStepsNrOfApprovals.length; i++) {
-                approvalStepsNrOfApprovals[i] = in.readBoolean();
+            this.approvalSteps = new boolean[stepSize];
+            for (int i = 0; i < approvalSteps.length; i++) {
+                approvalSteps[i] = in.readBoolean();
             }
         }
         if (version == 5) {
@@ -499,19 +483,11 @@ public abstract class ApprovalRequest implements Externalizable {
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
             final int stepSize = in.readInt();
-            this.approvalStepsNrOfApprovals = new boolean[stepSize];
-            for (int i = 0; i < approvalStepsNrOfApprovals.length; i++) {
-                approvalStepsNrOfApprovals[i] = in.readBoolean();
+            this.approvalSteps = new boolean[stepSize];
+            for (int i = 0; i < approvalSteps.length; i++) {
+                approvalSteps[i] = in.readBoolean();
             }
             this.approvalProfile = (ApprovalProfile) in.readObject();
-            this.oldApprovals = new ArrayList<Approval>();
-            this.oldApprovals = new ArrayList<>();
-            int length = in.readInt(); 
-            for (int i = 0; i < length; i++) {
-                Approval approval = (Approval)in.readObject();
-                oldApprovals.add(approval);
-            }
-            
             this.blacklistedAdminIssuerDN = (String) in.readObject();
             this.blacklistedAdminSerial = (String) in.readObject();
         }
