@@ -89,8 +89,15 @@
 				<h:dataTable value="#{step.partitionGuiObjects}" var="partition" style="width: 100%" headerClass="listHeader" footerClass="tableFooter" columnClasses="editColumn1,editColumn2" >						
 					<h:column>
 						<f:facet name="header">
-							<h:outputText value="#{web.text.APPROVAL_PROFILE_STEP}: #{step.stepNumber}" 
-								rendered="#{approvalProfileMBean.steps.getRowCount() > 1 || !approvalProfileMBean.stepSizeFixed}"/>							
+							<h:panelGrid columns="2" width="100%" columnClasses=",column-align-right" 
+								rendered="#{approvalProfileMBean.steps.getRowCount() > 1 || !approvalProfileMBean.stepSizeFixed}">
+								<h:outputText value="#{web.text.APPROVAL_PROFILE_STEP}: #{step.stepNumber}" />
+								<h:panelGroup>
+									<h:commandButton value="▲" disabled="#{step.previousStep == null}" action="#{approvalProfileMBean.moveStepUp}"/>
+									<h:commandButton value="▼" disabled="#{step.nextStep == null}" action="#{approvalProfileMBean.moveStepDown}"/>
+								</h:panelGroup>
+							</h:panelGrid>
+														
 						</f:facet>	
 						<h:dataTable value="#{partition.profilePropertyList}" var="property" headerClass="subheader"
 							columnClasses="editColumn1,editColumn2" style="width: 100%" footerClass="tableFooter" 
@@ -177,6 +184,7 @@
 								<f:facet name="header">
     								<h:panelGroup layout="block" style="text-align: right;">
     									<h:commandButton value="#{web.text.APPROVAL_PROFILE_DELETE_PARTITION}"
+    										disabled="#{step.numberOfPartitions == 1}"
     				    					rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"
                                             action="#{approvalProfileMBean.deletePartition(partition.partitionId)}"/>	 
                                         <h:commandButton value="#{web.text.APPROVAL_PROFILE_PARTITION_NOTIFICATION_ADD}"

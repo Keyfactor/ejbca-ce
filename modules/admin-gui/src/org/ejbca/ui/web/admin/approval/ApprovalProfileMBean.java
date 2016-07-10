@@ -148,12 +148,14 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public String save() {
         try {
             final ApprovalProfile approvalProfile = getApprovalProfile();
+            List<Integer> stepOrder = new ArrayList<>();
             for (final ApprovalStepGuiObject approvalSequenceGuiObject : steps) {
                 final int sequenceIdentifier = approvalSequenceGuiObject.getIdentifier();
                 for (final ApprovalPartitionProfileGuiObject approvalPartitionGuiObject : approvalSequenceGuiObject.getPartitionGuiObjects()) {
                     approvalProfile.addPropertiesToPartition(sequenceIdentifier, approvalPartitionGuiObject.getPartitionId(),
                             (List<DynamicUiProperty<? extends Serializable>>) approvalPartitionGuiObject.getProfilePropertyList().getWrappedData());
                 }
+                stepOrder.add(sequenceIdentifier);
             }
             approvalProfileSession.changeApprovalProfile(getAdmin(), approvalProfile);
             addInfoMessage("APPROVALPROFILESAVED");
@@ -167,7 +169,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public String cancel() {
         return "done";
     }
-    
+
     public String addField(int partitionId) {
         ApprovalProfile updatedApprovalProfile = getApprovalProfile();
         DynamicUiProperty<? extends Serializable> property;
@@ -268,7 +270,17 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
     
     public void addStep() {
-        getApprovalProfile().addStepFirst();
+        getApprovalProfile().addStepLast();
+        steps = null;
+    }
+    
+    public void moveStepDown() {
+        getApprovalProfile().switchStepOrder(steps.getRowData().getIdentifier(), steps.getRowData().getNextStep());
+        steps = null;
+    }
+    
+    public void moveStepUp() {
+        getApprovalProfile().switchStepOrder(steps.getRowData().getPreviousStep(), steps.getRowData().getIdentifier());
         steps = null;
     }
     

@@ -145,7 +145,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         this.steps = null;
         data.put(STEPS_KEY, encodeSteps(stepsToBeEncoded.values()));
     }
- 
+    
     @Override
     public ApprovalPartition addPartition(int stepIdentifier) {
         ApprovalPartition result = getStep(stepIdentifier).addPartition();
@@ -272,6 +272,25 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         setFirstStep(newStep.getStepIdentifier());
         newStep.setNextStep(previousFirstStep.getStepIdentifier());
         previousFirstStep.setPreviousStep(newStep.getStepIdentifier());
+        saveTransientObjects();
+        return newStep;
+    }
+    
+    @Override
+    public ApprovalStep addStepLast() {
+        int identifier;
+        do {
+            identifier = ProfileID.getRandomIdNumber();
+        } while(getSteps().containsKey(identifier));
+        ApprovalStep newStep = new ApprovalStep(identifier);
+        addStep(newStep);
+        //Find the last step and set this one last
+        ApprovalStep step = steps.get(firstStep);
+        while(step.getNextStep() != null) {
+            step = steps.get(step.getNextStep());
+        }
+        step.setNextStep(newStep.getStepIdentifier());
+        newStep.setPreviousStep(step.getStepIdentifier());
         saveTransientObjects();
         return newStep;
     }
@@ -450,5 +469,32 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     public boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, String propertyName) {
         return Arrays.asList( PROPERTY_NOTIFICATION_EMAIL_RECIPIENT, PROPERTY_NOTIFICATION_EMAIL_SENDER,
                 PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY).contains(propertyName);
+    }
+    
+    @Override
+    public void switchStepOrder(Integer firstStepIdentifier, Integer secondStepIdentifier) {
+        if(firstStepIdentifier == null || secondStepIdentifier == null) {
+            return;
+        }
+        ApprovalStep firstStep = getStep(firstStepIdentifier);
+        ApprovalStep secondStep = getStep(secondStepIdentifier);
+        Integer firstStepPrevious = firstStep.getPreviousStep();
+        Integer secondStepNext = secondStep.getNextStep();
+        if(firstStepPrevious != null) {
+            ApprovalStep previousStep = getStep(firstStepPrevious);
+            previousStep.setNextStep(secondStepIdentifier);
+        }
+        secondStep.setPreviousStep(firstStepPrevious);
+        secondStep.setNextStep(firstStepIdentifier);
+        if(secondStepNext != null) {
+            ApprovalStep nextStep = getStep(secondStepNext);
+            nextStep.setPreviousStep(firstStepIdentifier);
+        }
+        firstStep.setPreviousStep(secondStepIdentifier);
+        firstStep.setNextStep(secondStepNext);
+        if(this.firstStep == firstStepIdentifier) {
+            this.firstStep = secondStepIdentifier;
+        }
+        saveTransientObjects();
     }
 }
