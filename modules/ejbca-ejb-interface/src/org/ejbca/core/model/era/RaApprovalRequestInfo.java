@@ -16,9 +16,9 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -27,6 +27,7 @@ import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 
@@ -53,6 +54,7 @@ public class RaApprovalRequestInfo implements Serializable {
     private final String requesterSubjectDN;
     private final Date requestDate;
     private final int status;
+    private final ApprovalProfile approvalProfile;
     
     /** Request data, as text. Not editable */
     private final List<ApprovalDataText> requestData;
@@ -65,6 +67,7 @@ public class RaApprovalRequestInfo implements Serializable {
     
     // Current approval step
     private final ApprovalStep nextApprovalStep;
+    private ApprovalPartition relevantApprovalPartition;
     
     // Previous approval steps that are visible to the admin
     private final List<ApprovalStep> previousApprovalSteps;
@@ -101,7 +104,7 @@ public class RaApprovalRequestInfo implements Serializable {
         }
         
         // The profile contains information about the approval steps
-        final ApprovalProfile approvalProfile = approval.getApprovalProfile();
+        approvalProfile = approval.getApprovalProfile();
         
         // Next steps
         final ApprovalStep nextStep;
@@ -115,6 +118,21 @@ public class RaApprovalRequestInfo implements Serializable {
         } else {
             nextApprovalStep = null;
         }
+
+        relevantApprovalPartition = null;
+        if(nextApprovalStep != null) {
+            Map<Integer, ApprovalPartition> partitions = nextApprovalStep.getPartitions();
+            for(ApprovalPartition partition : partitions.values()) {
+                try {
+                    if(approvalProfile.canApprovePartition(authenticationToken, partition)) {
+                        relevantApprovalPartition = partition;
+                        break;
+                    }
+                } catch (AuthenticationFailedException e) {
+                    // If this admin cannot approve this partition, check the next partition
+                }
+            }
+        }        
         
         // Previous steps
         final Collection<ApprovalStep> previousSteps = new ArrayList<>();
@@ -174,8 +192,16 @@ public class RaApprovalRequestInfo implements Serializable {
         return editableData.clone();
     }
     
+    public ApprovalProfile getApprovalProfile() {
+        return approvalProfile;
+    }
+    
     public ApprovalStep getNextApprovalStep() {
         return nextApprovalStep;
+    }
+    
+    public ApprovalPartition getRelevantApprovalPartition() {
+        return relevantApprovalPartition;
     }
     
     public List<ApprovalStep> getPreviousApprovalSteps() {

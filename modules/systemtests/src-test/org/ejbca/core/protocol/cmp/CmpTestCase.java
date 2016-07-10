@@ -811,7 +811,7 @@ public abstract class CmpTestCase extends CaTestCase {
 
     protected static String getProperty(String key, String defaultValue) {
         //If being run from command line
-        String result = System.getProperty(key);
+        String result = null;  //System.getProperty(key);
         if (result == null) {
             //If being run from Eclipse
             final String testProperties = System.getProperty("sun.java.command");
