@@ -92,6 +92,14 @@ public class ApprovalProfileCacheBean {
     }
 
     /**
+     * This method sets the update time back down to zero, effectively forcing the cache to be reloaded on next read. Required due to the fact that 
+     * the cache can't reload until whatever transaction performing CRUD ops finishes.
+     */
+    public void forceCacheExpiration() {
+        lastUpdate = 0;
+    }
+    
+    /**
      * Fetch all profiles from the database, unless cache is enabled, valid and we do not force an update.
      * 
      * @param entityManager is required for reading the profiles from the database if we need to update the cache

@@ -468,6 +468,10 @@ table.edit tr td {
 	text-align: left;
 }
 
+.column-align-right {
+	text-align: right;
+}
+
 
 /* Titles (and Sections) */
 table tr.section td,
