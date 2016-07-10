@@ -355,8 +355,9 @@ s	 */
     @Transient
     public ApprovalDataVO getApprovalDataVO() {
         hasRequestOrApprovalExpired();
-        return new ApprovalDataVO(getId(), getApprovalid(), getApprovaltype(), getEndentityprofileid(), getCaid(), getReqadmincertissuerdn(),
+        ApprovalDataVO result = new ApprovalDataVO(getId(), getApprovalid(), getApprovaltype(), getEndentityprofileid(), getCaid(), getReqadmincertissuerdn(),
                 getReqadmincertsn(), getStatus(), getApprovals(), getApprovalRequest(), getRequestDate(), getExpireDate());
+        return result;
     }
     
     @Transient

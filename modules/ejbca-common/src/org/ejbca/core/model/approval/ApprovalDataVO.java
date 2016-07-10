@@ -132,6 +132,10 @@ public class ApprovalDataVO implements Serializable {
 		return approvalRequest;
 	}
 	
+	public void setApprovalRequest(ApprovalRequest approvalRequest) {
+	    this.approvalRequest = approvalRequest;
+	}
+	
 	/**
 	 * Collection of created Approvals (never null)
 	 * 
@@ -196,10 +200,14 @@ public class ApprovalDataVO implements Serializable {
         if (status == STATUS_REJECTED) {
             return 0;
         } else {
+            if(getApprovalProfile() != null) { 
             return getApprovalProfile().getRemainingApprovals(getApprovals());
+            } else {
+                return -1;
+            }
         }
     }
-	
+    
 	/**
 	 * The issuerdn of the administrator certificate that generated the request.
 	 * 

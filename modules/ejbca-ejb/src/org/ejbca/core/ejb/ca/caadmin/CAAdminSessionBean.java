@@ -2917,9 +2917,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
         ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_ACTIVATECA, cainfo, certProfile);
-        //TODO HANDLE 100% UPTIME HERE
         final ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(), "", admin, caid,
-                ApprovalDataVO.ANY_ENDENTITYPROFILE, approvalProfile);
+                ApprovalDataVO.ANY_ENDENTITYPROFILE, approvalProfile, cainfo.getCertificateProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {
             approvalSession.addApprovalRequest(admin, ar);
             throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalcaactivation"));

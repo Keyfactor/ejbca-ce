@@ -54,8 +54,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 
     public ChangeStatusEndEntityApprovalRequest(String username, int oldstatus, int newstatus, AuthenticationToken requestAdmin,
             String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile) {
-		super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, 
-		        approvalProfile);
+        super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, approvalProfile);
 		this.username = username;
 		this.oldstatus = oldstatus;
 		this.newstatus = newstatus;
@@ -178,6 +177,11 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	public int getApprovalType() {		
 		return ApprovalDataVO.APPROVALTYPE_CHANGESTATUSENDENTITY;
 	}
+	
+	public String getUsername() {
+	    return username;
+	}
+	
 
 	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {

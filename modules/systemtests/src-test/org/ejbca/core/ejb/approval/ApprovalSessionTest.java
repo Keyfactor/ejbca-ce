@@ -379,7 +379,7 @@ public class ApprovalSessionTest extends CaTestCase {
             // Test approvalId generation with a "real" approval request with a requestAdmin
             approvalProfile.setNumberOfApprovalsRequired(1);
             ViewHardTokenDataApprovalRequest ar = new ViewHardTokenDataApprovalRequest("APPROVALREQTESTTOKENUSER1", 
-                    "CN=APPROVALREQTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0, approvalProfile, null);
+                    "CN=APPROVALREQTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0, approvalProfile);
             log.debug("Adding approval with approvalId: " + ar.generateApprovalId());
             approvalSessionRemote.addApprovalRequest(admin1, ar);
             result = approvalSessionRemote.findApprovalDataVO(admin1, ar.generateApprovalId());
