@@ -25,8 +25,6 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalStepMetadata;
-import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
-import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaEditableRequestData;
@@ -194,7 +192,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private final String status;
     
     private final List<RequestDataRow> requestData;
-    private final List<RequestDataRow> approvalPartitionData;
     
     private final Step nextStep;
     private final List<Step> previousSteps;
@@ -300,21 +297,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
         for (final ApprovalStep prevApprovalStep : request.getPreviousApprovalSteps()) {
             previousSteps.add(new Step(prevApprovalStep, raLocaleBean));
         }
-        
-        approvalPartitionData = new ArrayList<>();
-        final boolean isAccumulativeProfile = request.getApprovalProfile() instanceof AccumulativeApprovalProfile;
-        if((nextStep != null) && !isAccumulativeProfile) {
-            ApprovalPartition partition = request.getRelevantApprovalPartition();
-            ApprovalDataText stepIdText = new ApprovalDataText("Step ID", Integer.toString(nextStep.getStepId()) , false, false);
-            approvalPartitionData.add(new RequestDataRow(raLocaleBean, stepIdText, false, Integer.toString(nextStep.getStepId())));
-            ApprovalDataText partitionIdText = new ApprovalDataText("Partition ID", Integer.toString(partition.getPartitionIdentifier()) , false, false);
-            approvalPartitionData.add(new RequestDataRow(raLocaleBean, partitionIdText, false, Integer.toString(partition.getPartitionIdentifier())));
-          
-            final String partitionName = partition.getProperty("name").getValue().toString();
-            ApprovalDataText partitionNameText = new ApprovalDataText("Partition Name", partitionName , false, false);
-            approvalPartitionData.add(new RequestDataRow(raLocaleBean, partitionNameText, false, partitionName));
-        }
-
     }
     
     private String getCNOrFallback(final String subjectDN, final String fallback) {
@@ -349,9 +331,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
         return null;
     }
-
-    public List<RequestDataRow> getApprovalPartitionData() { return approvalPartitionData; }
-
     
     public boolean isHasNextStep() { return nextStep != null && canApprove; }
     public Step getNextStep() { return nextStep; }

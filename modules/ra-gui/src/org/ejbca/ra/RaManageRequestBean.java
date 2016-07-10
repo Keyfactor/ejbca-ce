@@ -30,13 +30,11 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.SelfApprovalException;
-import org.ejbca.core.model.approval.profile.ApprovalPartition;
-import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.era.RaApprovalEditRequest;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalResponseRequest;
-import org.ejbca.core.model.era.RaApprovalResponseRequest.Action;
 import org.ejbca.core.model.era.RaEditableRequestData;
+import org.ejbca.core.model.era.RaApprovalResponseRequest.Action;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ra.ApprovalRequestGUIInfo.RequestDataRow;
 
@@ -154,12 +152,8 @@ public class RaManageRequestBean implements Serializable {
     private RaApprovalResponseRequest buildApprovalResponseRequest(final Action action) {
         final List<ApprovalRequestGUIInfo.StepControl> controls = getNextStepControls();
         final int id = getRequest().request.getId();
-        
-        final ApprovalStep step = getRequest().request.getNextApprovalStep();
-        final int stepId = step.getStepIdentifier();
-        final ApprovalPartition partition = getRequest().request.getRelevantApprovalPartition();
-        final int partitionId = partition.getPartitionIdentifier();
-        final RaApprovalResponseRequest approval = new RaApprovalResponseRequest(id, stepId, partitionId,  "", action); // TODO comment field. should it be here for partitioned approvals also?
+        final int stepId = 0;
+        final RaApprovalResponseRequest approval = new RaApprovalResponseRequest(id, stepId, 0,  "", action); // TODO comment field. should it be here for partitioned approvals also?
         for (final ApprovalRequestGUIInfo.StepControl control : controls) {
             approval.addMetadata(control.getMetadataId(), control.getOptionValue(), control.getOptionNote());
         }

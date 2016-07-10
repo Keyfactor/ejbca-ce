@@ -112,18 +112,6 @@
                 </ui:repeat>
             </h:panelGroup>
             
-            <h:panelGroup layout="block" rendered="#{raManageRequestBean.viewDataVisible}">
-                <h2><h:outputText value="Partition Data"/></h2>
-                <h:dataTable value="#{raManageRequestBean.request.approvalPartitionData}" var="row" styleClass="pure-table" rowClasses=",pure-table-odd">
-                    <h:column>
-                        <h:outputText value="#{row.header}"/>
-                    </h:column>
-                    <h:column>
-                        <h:outputText value="#{row.data}"/>
-                    </h:column>
-                </h:dataTable>
-            </h:panelGroup>
-            
             <h:panelGroup layout="block" rendered="#{raManageRequestBean.approvalVisible}">
                 <h2><h:outputText value="#{msg.view_request_page_approval_header}"/></h2>
                 
