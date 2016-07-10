@@ -377,7 +377,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     @Override
     public boolean isApprovalAuthorized(Collection<Approval> approvalsPerformed, Approval approval) throws AuthenticationFailedException {
         ApprovalStep previousStep = getFirstStep();
-        ApprovalStep relevantStep = getStep(approval.getStepId());;
+        ApprovalStep relevantStep = getStep(approval.getStepId());
         while(previousStep != null) {
             if(!previousStep.equals(relevantStep)) {
                 if(!isStepSatisfied(previousStep, approvalsPerformed)) {
