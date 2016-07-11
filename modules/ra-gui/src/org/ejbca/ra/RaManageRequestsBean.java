@@ -58,7 +58,7 @@ public class RaManageRequestsBean implements Serializable {
     private List<ApprovalRequestGUIInfo> resultsFiltered = new ArrayList<>();
     
     private enum ViewTab { NEEDS_APPROVAL, PENDING_APPROVAL, PROCESSED, CUSTOM_SEARCH };
-    private ViewTab viewTab; // TODO show the NEEDS_APPROVAL tab automatically?
+    private ViewTab viewTab;
     
     private enum SortBy { REQUEST_DATE, CA, TYPE, DISPLAY_NAME, REQUESTER_NAME, STATUS };
     private SortBy sortBy = SortBy.REQUEST_DATE;
@@ -114,7 +114,7 @@ public class RaManageRequestsBean implements Serializable {
         final RaRequestsSearchRequest searchRequest = new RaRequestsSearchRequest();
         switch (viewTab) {
         case CUSTOM_SEARCH:
-            // TODO
+            // TODO implement custom search (needed for ECA-5124)
             searchRequest.setSearchingWaitingForMe(true);
             searchRequest.setSearchingPending(true);
             searchRequest.setSearchingHistorical(true);
