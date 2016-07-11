@@ -230,8 +230,8 @@
 										<h:inputText id="subjectDnField" value="#{instance.value}" styleClass="jsDelayKeyUp"
 											disabled="#{!instance.modifiable}"
                                             rendered="#{!instance.selectable}">
-											<f:validator disabled="#{!instance.required}" validatorId="extendedRegexValidator" />
-											<f:attribute name="pattern" value="#{instance.regexPattern}"/>
+											<f:validator validatorId="extendedRegexValidator" />
+											<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}"/>
 											<f:ajax event="change" execute="@this"
                                                 render=":requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
                                             <f:ajax event="keyup" execute="@this"
@@ -265,8 +265,8 @@
 									<h:inputText id="subjectAltNameField" value="#{instance.value}"
 										styleClass="jsDelayKeyUp" rendered="#{!instance.selectable}"
 										disabled="#{!instance.modifiable}">
-										<f:validator disabled="#{!instance.required}" validatorId="extendedRegexValidator" />
-										<f:attribute name="pattern" value="#{instance.regexPattern}" />
+										<f:validator validatorId="extendedRegexValidator"/>
+										<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}"/>
 										<f:ajax event="change" execute="@this"
                                             render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage"/>
 										<f:ajax event="keyup" execute="@this"
@@ -301,8 +301,8 @@
 										value="#{instance.value}" styleClass="jsDelayKeyUp"
 										rendered="#{!instance.selectable}"
 										disabled="#{!instance.modifiable}">
-										<f:validator disabled="#{!instance.required}" validatorId="extendedRegexValidator" />
-										<f:attribute name="pattern" value="#{instance.regexPattern}" />
+										<f:validator validatorId="extendedRegexValidator"/>
+										<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}" />
 										<f:ajax event="change" execute="@this"
 											render=":requestInfoForm:requestPreviewOuterPanel subjectDirectoryAttributesMessage"/>
 										<f:ajax event="keyup" execute="@this"
