@@ -1699,7 +1699,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public static boolean isFieldImplemented(final int field) {
     	final String f = getParameter(field);
     	if (f == null) {
-    		log.info("isFieldImplemented got call for non-implemented field: "+field);
+    	    if (log.isTraceEnabled()) {
+                log.trace("isFieldImplemented got call for non-implemented field: "+field);
+    	    }
     		return false;
     	}
     	return isFieldImplemented(f);
