@@ -52,7 +52,7 @@ public class RaRequestsSearchRequest implements Serializable {
         this.searchingHistorical = searchingHistorical;
     }
 
-    // TODO extend with more stuff
+    // TODO extend with more stuff for custom search (e.g. ECA-5124)
 
     
 }
