@@ -245,11 +245,14 @@ public class RaManageRequestBean implements Serializable {
                 break;
             case "EMAIL":
                 String email = (String) dataRow.getEditValue();
-                // TODO validation
+                // TODO validation (ECA-5235)
                 editData.setEmail(email);
                 break;
             }
         }
+        
+        // Check that the end entity profile is fulfilled
+        // TODO: ECA-5235
         
         // TODO error handling
         final RaApprovalEditRequest editReq = new RaApprovalEditRequest(requestData.getId(), editData);
@@ -259,7 +262,7 @@ public class RaManageRequestBean implements Serializable {
     }
     
     public String getDN(final RequestDataRow dataRow) {
-        // TODO validation
+        // TODO validation (ECA-5235)
         return (String) dataRow.getEditValue();
     }
     
