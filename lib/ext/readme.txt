@@ -3,7 +3,7 @@ These are jars used for external activities, not needed for running EJBCA.
 
 External dependencies used just for building (java classes):
 servlet-2.3.jar
-mailapi.jar (javaMail v1.4.3)
+mailapi.jar (javaMail v1.5.5)
 
 User to build docs (license apache):
 jdom-b9.jar (I think)
