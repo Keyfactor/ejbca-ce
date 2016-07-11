@@ -107,28 +107,28 @@ public class WebConfiguration {
 	 * Require administrator certificates to be available in database for revocation checks.
 	 */
 	public static boolean getRequireAdminCertificateInDatabase() {
-		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_REQCERTINDB));
+		return Boolean.valueOf(EjbcaConfigurationHolder.getExpandedString(CONFIG_REQCERTINDB));
 	}
 
 	/**
 	 * Default content encoding used to display JSP pages
 	 */
 	public static String getWebContentEncoding() {
-	   	return EjbcaConfigurationHolder.getString ("web.contentencoding");
+	   	return EjbcaConfigurationHolder.getString("web.contentencoding");
 	}
 	
 	/**
 	 * Whether self-registration (with admin approval) is enabled in public web
 	 */
 	public static boolean getSelfRegistrationEnabled() {
-		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString("web.selfreg.enabled"));
+		return Boolean.valueOf(EjbcaConfigurationHolder.getExpandedString("web.selfreg.enabled"));
 	}
 	
 	/**
 	 * The request browser certificate renewal web application is deployed
 	 */
 	public static boolean getRenewalEnabled() {
-		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString("web.renewalenabled"));
+		return Boolean.valueOf(EjbcaConfigurationHolder.getExpandedString("web.renewalenabled"));
 	}
 
     public static boolean doShowStackTraceOnErrorPage(){
@@ -150,7 +150,7 @@ public class WebConfiguration {
 
     /** @return true if we allow proxied authentication to the Admin GUI. */
     public static boolean isProxiedAuthenticationEnabled(){
-        return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.enableproxiedauth"));
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("web.enableproxiedauth"));
     }
     
         
@@ -171,12 +171,12 @@ public class WebConfiguration {
      * @see getAdminLogRemoteAddress()
      */
     public static boolean getAdminLogForwardedFor() {
-        return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.log.adminforwardedip"));
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("web.log.adminforwardedip"));
     }
     
     /** @return true if the user is allowed to enter class names manually in the Publishers and Services pages */
     public static boolean isManualClassPathsEnabled() {
-        return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.manualclasspathsenabled"));
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("web.manualclasspathsenabled"));
     }
     
     /** @return the script to use to create OpenVPN installers */
@@ -263,7 +263,7 @@ public class WebConfiguration {
     
     /** Returns true if the CRL Store Servlet (search.cgi) is enabled. Default is false */
     public static boolean isCrlStoreEnabled() {
-        return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("crlstore.enabled"));
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("crlstore.enabled"));
     }
     
     /** Returns the base URL path of the CRL store servlet, e.g. /ejbca/publicweb/crls */ 
