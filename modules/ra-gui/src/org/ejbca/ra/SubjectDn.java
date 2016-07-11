@@ -13,10 +13,8 @@
 package org.ejbca.ra;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.bouncycastle.asn1.x500.X500Name;
@@ -38,33 +36,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
 public class SubjectDn {
 
     //private static final Logger log = Logger.getLogger(SubjectDn.class);
-
-    public static final List<String> COMPONENTS = Arrays.asList(
-            DnComponents.DNEMAILADDRESS,
-            DnComponents.DNQUALIFIER,
-            DnComponents.UID,
-            DnComponents.COMMONNAME,
-            DnComponents.DNSERIALNUMBER,
-            DnComponents.GIVENNAME,
-            DnComponents.INITIALS,
-            DnComponents.SURNAME,
-            DnComponents.TITLE,
-            DnComponents.ORGANIZATIONALUNIT,
-            DnComponents.ORGANIZATION,
-            DnComponents.LOCALITY,
-            DnComponents.STATEORPROVINCE,
-            DnComponents.DOMAINCOMPONENT,
-            DnComponents.COUNTRY,
-            DnComponents.UNSTRUCTUREDADDRESS,
-            DnComponents.UNSTRUCTUREDNAME,
-            DnComponents.POSTALCODE,
-            DnComponents.BUSINESSCATEGORY,
-            DnComponents.POSTALADDRESS,
-            DnComponents.TELEPHONENUMBER,
-            DnComponents.PSEUDONYM,
-            DnComponents.STREETADDRESS,
-            DnComponents.NAME
-            );
     
     private final Collection<EndEntityProfile.FieldInstance> fieldInstances = new ArrayList<>();
     private final Map<String, Map<Integer, EndEntityProfile.FieldInstance>> fieldInstancesMap = new HashMap<>();
@@ -81,7 +52,7 @@ public class SubjectDn {
         if (subjectDistinguishedName!=null) {
             dnFieldExtractor = new DNFieldExtractor(subjectDistinguishedName, DNFieldExtractor.TYPE_SUBJECTDN);
         }
-        for (final String key : COMPONENTS) {
+        for (final String key : DnComponents.getDnProfileFields()) {
             final Field field = endEntityProfile.new Field(key);
             fieldInstancesMap.put(key, new HashMap<Integer, EndEntityProfile.FieldInstance>());
             for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
