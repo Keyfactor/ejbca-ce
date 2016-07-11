@@ -13,7 +13,6 @@
 package org.ejbca.ra;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
@@ -28,14 +27,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
  */
 public class SubjectDirectoryAttributes {
 
-    public final static List<String> COMPONENTS = Arrays.asList(
-            DnComponents.DATEOFBIRTH,
-            DnComponents.PLACEOFBIRTH,
-            DnComponents.GENDER,
-            DnComponents.COUNTRYOFCITIZENSHIP,
-            DnComponents.COUNTRYOFRESIDENCE
-            );
-
     private List<EndEntityProfile.FieldInstance> fieldInstances = new ArrayList<>();
     private String value;
 
@@ -48,7 +39,7 @@ public class SubjectDirectoryAttributes {
         if (subjectDirectoryAttributes!=null) {
             dnFieldExtractor = new DNFieldExtractor(subjectDirectoryAttributes, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
         }
-        for (final String key : COMPONENTS) {
+        for (final String key : DnComponents.getDirAttrFields()) {
             final Field field = endEntityProfile.new Field(key);
             for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
                 if (dnFieldExtractor!=null) {

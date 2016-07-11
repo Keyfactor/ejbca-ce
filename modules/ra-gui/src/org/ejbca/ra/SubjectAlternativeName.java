@@ -13,7 +13,6 @@
 package org.ejbca.ra;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
@@ -30,23 +29,6 @@ public class SubjectAlternativeName {
 
     //private static final Logger log = Logger.getLogger(SubjectAlternativeName.class);
 
-    public static final List<String> COMPONENTS = Arrays.asList(
-            DnComponents.RFC822NAME,
-            DnComponents.DNSNAME,
-            DnComponents.IPADDRESS,
-            DnComponents.UNIFORMRESOURCEID,
-            DnComponents.DIRECTORYNAME,
-            DnComponents.UPN,
-            DnComponents.GUID,
-            DnComponents.KRB5PRINCIPAL,
-            DnComponents.PERMANENTIDENTIFIER,
-            // Below are altNames that are not implemented yet
-            DnComponents.OTHERNAME,
-            DnComponents.X400ADDRESS,
-            DnComponents.EDIPARTYNAME,
-            DnComponents.REGISTEREDID
-            );
-    
     private List<EndEntityProfile.FieldInstance> fieldInstances = new ArrayList<>();
     private String value;
 
@@ -59,7 +41,7 @@ public class SubjectAlternativeName {
         if (subjectAlternativeName!=null) {
             dnFieldExtractor = new DNFieldExtractor(subjectAlternativeName, DNFieldExtractor.TYPE_SUBJECTALTNAME);
         }
-        for (final String key : COMPONENTS) {
+        for (final String key : DnComponents.getAltNameFields()) {
             final Field field = endEntityProfile.new Field(key);
             for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
                 if (dnFieldExtractor!=null) {
