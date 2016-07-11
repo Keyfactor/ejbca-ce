@@ -77,19 +77,25 @@ public interface RaMasterApi {
      */
     RaApprovalRequestInfo editApprovalRequest(AuthenticationToken authenticationToken, RaApprovalEditRequest edit) throws AuthorizationDeniedException;
     
-    /** Approves, rejects or saves (not yet implemented) a step of an approval request
-     * @throws SelfApprovalException 
-     * @throws AdminAlreadyApprovedRequestException 
-     * @throws ApprovalRequestExecutionException 
-     * @throws ApprovalRequestExpiredException 
-     * @throws ApprovalException
+    /** Approves, rejects or saves (not yet implemented) a step of an approval request. The action is determined by the "action" value in the given RaApprovalResponseRequest.
+     * @return true if the approval request exists on this node, false if not.
+     * @throws SelfApprovalException if trying to approve one's own action.
+     * @throws AdminAlreadyApprovedRequestException if this approval request has been approved or rejected already.
+     * @throws ApprovalRequestExecutionException if execution of the approval request (e.g. adding an end endity) failed.
+     * @throws ApprovalRequestExpiredException if the approval request is older than the configured expiry time
      * @throws AuthenticationFailedException if the authentication token couldn't be validated
+     * @throws ApprovalException is thrown for other errors, such as the approval being in the wrong state, etc.
      */
     boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException,
             AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException;
     
-    /** @return list of approval requests from the specified search criteria */
+    /**
+     * Searches for approval requests.
+     * @param authenticationToken administrator (affects the search results)
+     * @param raRequestsSearchRequest specifies which requests to include (e.g. requests that can be approved by the given administrator)
+     * @return list of approval requests from the specified search criteria
+     */
     RaRequestsSearchResponse searchForApprovalRequests(AuthenticationToken authenticationToken, RaRequestsSearchRequest raRequestsSearchRequest);
     
     /** @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise*/

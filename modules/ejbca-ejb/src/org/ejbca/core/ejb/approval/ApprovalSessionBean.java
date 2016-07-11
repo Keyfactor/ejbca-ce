@@ -191,7 +191,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public void removeApprovalRequest(AuthenticationToken admin, int id) throws ApprovalException {
+    public void removeApprovalRequest(AuthenticationToken admin, int id) {
         log.trace(">removeApprovalRequest");
         try {
             ApprovalData ad = findById(Integer.valueOf(id));

@@ -109,7 +109,7 @@ public interface ApprovalSession {
      * 
      * @param id the unique id of the approvalrequest, not the same as approvalId
      */
-    void removeApprovalRequest(AuthenticationToken admin, int id) throws ApprovalException;
+    void removeApprovalRequest(AuthenticationToken admin, int id);
 
     /**
      * Method returning an approval requests with status 'waiting', 'Approved'

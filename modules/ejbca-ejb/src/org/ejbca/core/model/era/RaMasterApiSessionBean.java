@@ -350,7 +350,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final ApprovalDataVO advo = getApprovalData(authenticationToken, id);
         if (advo == null) {
             log.debug("Approval not found in editApprovalRequest");
-            return null;
+            throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
         }
         if (advo.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
             throw new IllegalStateException("Was not in waiting for approval state");
@@ -382,12 +382,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         // Remove the old approval
-        try {
-            approvalSession.removeApprovalRequest(authenticationToken, id);
-        } catch (ApprovalException e) {
-            // TODO remove and add to throws declaration
-            throw new RuntimeException(e);
-        }
+        approvalSession.removeApprovalRequest(authenticationToken, id);
         
         try {
             // Re-add the approval. This should leave the requesting admin unchanged
