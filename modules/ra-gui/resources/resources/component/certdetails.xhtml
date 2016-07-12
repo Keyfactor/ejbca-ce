@@ -237,7 +237,7 @@
                     <h:outputText value="#{msg.component_certdetails_link_download_pkcs7}"/>
                 </h:outputLink>
                 <h:outputText value=" " styleClass="pre"/>
-                <h:commandButton value="#{cc.attrs.raCertificateDetails.more ? msg.component_certdetails_show_less : msg.component_certdetails_show_more}"
+                <h:commandButton id="showMoreLessDetailsButton" value="#{cc.attrs.raCertificateDetails.more ? msg.component_certdetails_show_less : msg.component_certdetails_show_more}"
                     styleClass="pure-button ra-button"
                     action="#{cc.attrs.raCertificateDetails.actionToggleMore}">
                     <f:ajax execute="@this" render="@form"/>
@@ -246,7 +246,7 @@
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
-            <h:panelGroup id="moreDetails" styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.raCertificateDetails.more}">
+            <h:panelGroup id="showMoreCertificateDetails" styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.raCertificateDetails.more}">
                 <h:outputLabel for="type" value="#{msg.component_certdetails_field_type}"
                     styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                 <h:outputText id="type" value="#{cc.attrs.raCertificateDetails.type} v#{cc.attrs.raCertificateDetails.typeVersion}"

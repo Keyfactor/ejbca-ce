@@ -51,7 +51,7 @@
                             <h:selectBooleanCheckbox id="renderNonModifiable" value="#{enrollMakeNewRequestBean.renderNonModifiable}" styleClass="jsShow" style="display: none;">
                                 <f:ajax event="change" execute="@this" render="@all"/>
                             </h:selectBooleanCheckbox>
-                            <h:outputLabel for="renderNonModifiable" value="#{msg.enroll_render_non_modifiable_label}"/>
+                            <h:outputLabel styleClass="showNonModifiable" for="renderNonModifiable" value="#{msg.enroll_render_non_modifiable_label}"/>
                             <h:commandButton value="#{msg.enroll_render_non_modifiable_button}" action="#{enrollMakeNewRequestBean.renderNonModifiableToggle}"
                                 styleClass="pure-button ra-button jsHide" immediate="true"/>
                             <script>jsTouchUpDocument();</script>
@@ -412,7 +412,7 @@
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
 								styleClass="pure-button ra-button">
 							</h:commandButton>
-							<h:commandButton value="#{msg.enroll_confirm_request}"
+							<h:commandButton id="confirmRequestButton" value="#{msg.enroll_confirm_request}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificeDer}"
 								rendered="#{enrollMakeNewRequestBean.confirmRequestButtonRendered}"
 								styleClass="pure-button ra-button">
