@@ -45,7 +45,7 @@
                 </h:panelGroup>
             </h:panelGroup>
             
-            <h:panelGroup id="viewRequestPartitionTable" layout="block" rendered="#{raManageRequestBean.viewDataVisible}">
+            <h:panelGroup id="viewRequestDataTable" layout="block" rendered="#{raManageRequestBean.viewDataVisible}">
                 <h2><h:outputText value="#{msg.view_request_page_request_data_header}"/></h2>
                 <h:dataTable value="#{raManageRequestBean.request.requestData}" var="row" styleClass="pure-table" rowClasses=",pure-table-odd">
                     <h:column>
