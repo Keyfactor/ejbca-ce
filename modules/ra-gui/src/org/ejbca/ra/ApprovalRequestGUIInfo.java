@@ -202,6 +202,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     // Whether the current admin can approve this request
     private boolean canApprove;
+    private boolean canEdit;
     
     public ApprovalRequestGUIInfo(final RaApprovalRequestInfo request, final RaLocaleBean raLocaleBean) {
         this.request = request;
@@ -295,6 +296,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
             nextStep = null;
             canApprove = false; // TODO can it be true in "number of approvals" mode?
         }
+        canEdit = request.isEditable();
         
         previousSteps = new ArrayList<>();
         for (final ApprovalStep prevApprovalStep : request.getPreviousApprovalSteps()) {
@@ -304,15 +306,19 @@ public class ApprovalRequestGUIInfo implements Serializable {
         approvalPartitionData = new ArrayList<>();
         final boolean isAccumulativeProfile = request.getApprovalProfile() instanceof AccumulativeApprovalProfile;
         if((nextStep != null) && !isAccumulativeProfile) {
-            ApprovalPartition partition = request.getRelevantApprovalPartition();
             ApprovalDataText stepIdText = new ApprovalDataText("Step ID", Integer.toString(nextStep.getStepId()) , false, false);
             approvalPartitionData.add(new RequestDataRow(raLocaleBean, stepIdText, false, Integer.toString(nextStep.getStepId())));
-            ApprovalDataText partitionIdText = new ApprovalDataText("Partition ID", Integer.toString(partition.getPartitionIdentifier()) , false, false);
-            approvalPartitionData.add(new RequestDataRow(raLocaleBean, partitionIdText, false, Integer.toString(partition.getPartitionIdentifier())));
-          
-            final String partitionName = partition.getProperty("name").getValue().toString();
-            ApprovalDataText partitionNameText = new ApprovalDataText("Partition Name", partitionName , false, false);
-            approvalPartitionData.add(new RequestDataRow(raLocaleBean, partitionNameText, false, partitionName));
+            final ApprovalPartition partition = request.getRelevantApprovalPartition();
+            if (partition != null) {
+                ApprovalDataText partitionIdText = new ApprovalDataText("Partition ID", Integer.toString(partition.getPartitionIdentifier()) , false, false);
+                approvalPartitionData.add(new RequestDataRow(raLocaleBean, partitionIdText, false, Integer.toString(partition.getPartitionIdentifier())));
+              
+                final String partitionName = partition.getProperty("name").getValue().toString();
+                ApprovalDataText partitionNameText = new ApprovalDataText("Partition Name", partitionName , false, false);
+                approvalPartitionData.add(new RequestDataRow(raLocaleBean, partitionNameText, false, partitionName));
+            } else if (log.isDebugEnabled()) {
+                log.debug("Approval "+request.getId()+" has a next step, but there's no partition in it");
+            }
         }
 
     }
@@ -358,7 +364,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public List<Step> getPreviousSteps() { return previousSteps; }
     
     public boolean isCanApprove() { return canApprove; }
-    public boolean isCanEdit() { return canApprove && previousSteps.isEmpty(); }
+    public boolean isCanEdit() { return canEdit; }
     public boolean isEditedByMe() { return request.isEditedByMe(); }
     public boolean isPending() { return request.isPending(); }
     public boolean isPendingExecution() { return request.getStatus() == ApprovalDataVO.STATUS_APPROVED; /* = approved but not executed */ }
