@@ -138,7 +138,7 @@
 					<h2>
 						<h:outputText value="#{msg.enroll_upload_csr}" />
 					</h2>
-					<h:panelGroup layout="block" styleClass="internal-frame">
+					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{!enrollMakeNewRequestBean.uploadCsrDoneRendered}">
 						<h:panelGroup layout="block">
                             <p id="newFileInputContainer" style="display: inline-block; max-width: 210px;"></p>
                             <ui:remove>
@@ -147,30 +147,32 @@
                             <script>
                                 ejbca.ra.createFileUploadInput("newFileInput", "newFileInputContainer", function(uploadedText) {
                                     document.getElementById("keyPairForm:certificateRequest").value = uploadedText;
-                                    document.getElementById("keyPairForm:certificateRequest").onchange();
+                                    document.getElementById("keyPairForm:uploadCsrButton").click();
                                 });
                             </script>
 						</h:panelGroup>
 						<br />
 						<h:panelGroup>
-							<h:inputTextarea id="certificateRequest" styleClass="fineprintMono jsDelayKeyUp" style="line-height: 100%;"
-								value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80"
-								rows="20" validator="#{enrollMakeNewRequestBean.validateCsr}">
-								<f:validateRequired />
-                                <f:ajax event="keyup" execute="@this" render=":globalMessages :requestInfoForm certificateRequestMessage"
-                                    listener="#{enrollMakeNewRequestBean.certificateRequestAjaxListener}"/>
-                                <f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm certificateRequestMessage"
-                                    listener="#{enrollMakeNewRequestBean.certificateRequestAjaxListener}"/>
-							</h:inputTextarea>
+							<h:inputTextarea id="certificateRequest" styleClass="fineprintMono" style="line-height: 100%;"
+								value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80" rows="20"
+                                validator="#{enrollMakeNewRequestBean.validateCsr}"/>
 						</h:panelGroup>
-						<h:commandButton id="uploadCsrButton"
-							value="#{msg.enroll_upload_csr}"
-							styleClass="pure-button ra-button jsHide"
-							action="#{enrollMakeNewRequestBean.uploadCsr}">
-						</h:commandButton>
 						<h:message for="certificateRequest" id="certificateRequestMessage" />
-                        <script>jsTouchUpDocument();</script>
+                        <br/>
+                        <h:commandButton id="uploadCsrButton" value="#{msg.enroll_upload_csr}" styleClass="pure-button ra-button"
+                            action="#{enrollMakeNewRequestBean.uploadCsr}">
+                            <f:ajax event="change" execute="@form" render=":globalMessages @form :requestInfoForm certificateRequestMessage"/>
+                        </h:commandButton>
 					</h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.uploadCsrDoneRendered}">
+                        <h:panelGroup layout="block" styleClass="pure-control-group">
+                            <h:outputLabel for="certificateRequestNode" value="#{msg.enroll_upload_csr_keyalgo_label}"/>
+                            <h:outputText id="certificateRequestNode" value="#{enrollMakeNewRequestBean.algorithm}"/>
+                        </h:panelGroup>
+                        <h:commandButton id="changeCsrButton" value="#{msg.enroll_upload_csr_change}" styleClass="pure-button ra-button"
+                            action="#{enrollMakeNewRequestBean.uploadCsrChange}">
+                        </h:commandButton>
+                    </h:panelGroup>
 				</h:panelGroup>
 
 			</h:form>
