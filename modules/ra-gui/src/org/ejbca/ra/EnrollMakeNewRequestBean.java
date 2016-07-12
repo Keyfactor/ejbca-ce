@@ -868,66 +868,68 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (availableAlgorithmSelectItems == null) {
             availableAlgorithmSelectItems = new ArrayList<>();
             final CertificateProfile certificateProfile = getCertificateProfile();
-            final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
-            final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
-            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
-                for (final int availableBitLength : availableBitLengths) {
-                    if (availableBitLength == 1024) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength,
-                                AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits"));
-                    }
-                }
-            }
-            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
-                for (final int availableBitLength : availableBitLengths) {
-                    if (availableBitLength >= 1024) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA + "_" + availableBitLength,
-                                AlgorithmConstants.KEYALGORITHM_RSA + " " + availableBitLength + " bits"));
-                    }
-                }
-            }
-            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
-                final Set<String> ecChoices = new HashSet<>();
-                final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(false);
-                if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {
-                    final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
-                    for (final String ecNamedCurve : keys) {
-                        if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
-                            continue;
-                        }
-                        final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
-                        if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
-                            ecChoices.add(ecNamedCurve);
+            if (certificateProfile!=null) {
+                final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
+                final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
+                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
+                    for (final int availableBitLength : availableBitLengths) {
+                        if (availableBitLength == 1024) {
+                            availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength,
+                                    AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits"));
                         }
                     }
                 }
-                ecChoices.addAll(certificateProfile.getAvailableEcCurvesAsList());
-                ecChoices.remove(CertificateProfile.ANY_EC_CURVE);
-                final List<String> ecChoicesList = new ArrayList<>(ecChoices);
-                Collections.sort(ecChoicesList);
-                for (final String ecNamedCurve : ecChoicesList) {
-                    availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
-                            + StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(ecNamedCurve))));
+                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
+                    for (final int availableBitLength : availableBitLengths) {
+                        if (availableBitLength >= 1024) {
+                            availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA + "_" + availableBitLength,
+                                    AlgorithmConstants.KEYALGORITHM_RSA + " " + availableBitLength + " bits"));
+                        }
+                    }
                 }
-            }
-            for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
-                if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
-                    for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
-                        final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
-                        final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
-                        if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
-                            availableAlgorithmSelectItems.add(new SelectItem(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name,
-                                    CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
-                        } else {
-                            if (log.isTraceEnabled()) {
-                                log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");
+                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+                    final Set<String> ecChoices = new HashSet<>();
+                    final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(false);
+                    if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {
+                        final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
+                        for (final String ecNamedCurve : keys) {
+                            if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
+                                continue;
+                            }
+                            final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
+                            if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                                ecChoices.add(ecNamedCurve);
+                            }
+                        }
+                    }
+                    ecChoices.addAll(certificateProfile.getAvailableEcCurvesAsList());
+                    ecChoices.remove(CertificateProfile.ANY_EC_CURVE);
+                    final List<String> ecChoicesList = new ArrayList<>(ecChoices);
+                    Collections.sort(ecChoicesList);
+                    for (final String ecNamedCurve : ecChoicesList) {
+                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
+                                + StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(ecNamedCurve))));
+                    }
+                }
+                for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
+                    if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
+                        for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
+                            final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
+                            final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
+                            if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                                availableAlgorithmSelectItems.add(new SelectItem(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name,
+                                        CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
+                            } else {
+                                if (log.isTraceEnabled()) {
+                                    log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");
+                                }
                             }
                         }
                     }
                 }
-            }
-            if (availableAlgorithmSelectItems.size()>1 && StringUtils.isEmpty(getSelectedAlgorithm())) {
-                availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
+                if (availableAlgorithmSelectItems.size()>1 && StringUtils.isEmpty(getSelectedAlgorithm())) {
+                    availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
+                }
             }
             sortSelectItemsByLabel(availableAlgorithmSelectItems);
         }
