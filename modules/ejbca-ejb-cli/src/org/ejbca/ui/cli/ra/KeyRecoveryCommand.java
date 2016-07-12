@@ -95,7 +95,7 @@ public class KeyRecoveryCommand extends BaseRaCommand {
             }
             if (EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).prepareForKeyRecovery(getAuthenticationToken(),
                     userdata.getUsername(), userdata.getEndEntityProfileId(), cert)) {
-                getLogger().info("Keys corresponding to given certificate has been marked for recovery.");
+                getLogger().info("Key pair corresponding to the specified certificate has been marked for recovery.");
                 return CommandResult.SUCCESS;
             } else {
                 getLogger().error("Failed to mark keys corresponding to given certificate for recovery.");
