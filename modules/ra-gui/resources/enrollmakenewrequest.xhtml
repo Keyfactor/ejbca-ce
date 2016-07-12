@@ -48,13 +48,15 @@
         					</h2>
                         </h:panelGroup>
                         <h:panelGroup styleClass="pure-u-1-2">
-                            <h:selectBooleanCheckbox id="renderNonModifiable" value="#{enrollMakeNewRequestBean.renderNonModifiable}" styleClass="jsShow" style="display: none;">
-                                <f:ajax event="change" execute="@this" render="@all"/>
+                            <h:selectBooleanCheckbox id="renderNonModifiable" value="#{enrollMakeNewRequestBean.renderNonModifiable}"
+                                styleClass="jsShow" style="display: none;">
+                                <f:ajax event="change" execute="@this" render="@form :requestInfoForm"/>
                             </h:selectBooleanCheckbox>
-                            <h:outputLabel styleClass="showNonModifiable" for="renderNonModifiable" value="#{msg.enroll_render_non_modifiable_label}"/>
-                            <h:commandButton value="#{msg.enroll_render_non_modifiable_button}" action="#{enrollMakeNewRequestBean.renderNonModifiableToggle}"
+                            <h:outputLabel for="renderNonModifiable" value="#{msg.enroll_render_non_modifiable_label}"
+                                styleClass="showNonModifiable jsShow" style="display: none;"/>
+                            <h:commandButton action="#{enrollMakeNewRequestBean.renderNonModifiableToggle}"
+                                value="#{enrollMakeNewRequestBean.renderNonModifiable ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
                                 styleClass="pure-button ra-button jsHide" immediate="true"/>
-                            <script>jsTouchUpDocument();</script>
                         </h:panelGroup>
                     </h:panelGroup>
 					<h:panelGroup layout="block" styleClass="internal-frame">
@@ -202,12 +204,13 @@
                         </h:panelGroup>
                         <h:panelGroup styleClass="pure-u-1-2">
                             <h:selectBooleanCheckbox id="renderNonModifiable" value="#{enrollMakeNewRequestBean.renderNonModifiable}" styleClass="jsShow" style="display: none;">
-                                <f:ajax event="change" execute="@this" render="@all"/>
+                                <f:ajax event="change" execute="@this" render="@form :requestTemplateForm"/>
                             </h:selectBooleanCheckbox>
-                            <h:outputLabel for="renderNonModifiable" value="#{msg.enroll_render_non_modifiable_label}"/>
-                            <h:commandButton value="#{msg.enroll_render_non_modifiable_button}" action="#{enrollMakeNewRequestBean.renderNonModifiableToggle}"
+                            <h:outputLabel for="renderNonModifiable" value="#{msg.enroll_render_non_modifiable_label}"
+                                styleClass="showNonModifiable jsShow" style="display: none;"/>
+                            <h:commandButton action="#{enrollMakeNewRequestBean.renderNonModifiableToggle}"
+                                value="#{enrollMakeNewRequestBean.renderNonModifiable ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
                                 styleClass="pure-button ra-button jsHide" immediate="true"/>
-                            <script>jsTouchUpDocument();</script>
                         </h:panelGroup>
                     </h:panelGroup>
 					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.subjectDnRendered}">
@@ -444,6 +447,7 @@
 						action="#{enrollMakeNewRequestBean.reset}" immediate="true">
 					</h:commandButton>
 				</h:panelGroup>
+                <script>jsTouchUpDocument();</script>
 				<script>
 				if(document.getElementById('requestInfoForm:useRequestIdLink') != null){
 					document.getElementById('requestInfoForm:useRequestIdLink').focus();
