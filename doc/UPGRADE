@@ -58,9 +58,8 @@ your production database):
     
 ***		2. Changes to ApprovalData
     
-ApprovalData has a new column "approvalProfileId", to handle the new approval profile concept. Either allow your system to upgrade the database 
-automatically, or upgrade it manually with src/upgrade/650_660/650_660-upgrade-<database>.sql. Approvals created prior to 6.6.0 will still be 
-available, but performing approvals on nodes running EJBCA versions prior to 6.6.0 on an upgrade database (i.e during upgrade) is not supported.
+ApprovalData has a new approval profile concept. Approvals created prior to 6.6.0 will still be 
+available, but performing approvals on nodes running EJBCA versions prior to 6.6.0 on an upgraded database (i.e during upgrade) is not supported.
 As part of this change, approval notifications are now configured per approval partition instead of globally. Check your Approval Profile after
 deploying the new code.
 
