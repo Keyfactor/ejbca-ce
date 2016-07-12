@@ -62,8 +62,9 @@ public class RaApprovalRequestInfo implements Serializable {
     private final RaEditableRequestData editableData;
     
     private final boolean requestedByMe;
-    private final boolean editedByMe;
+    private final boolean lastEditedByMe;
     private boolean approvedByMe;
+    private final boolean editable;
     
     // Current approval step
     private final ApprovalStep nextApprovalStep;
@@ -91,9 +92,8 @@ public class RaApprovalRequestInfo implements Serializable {
         this.requestData = requestData;
         this.editableData = editableData;
         
-        editedByMe = StringUtils.equals(approval.getApprovalRequest().getBlacklistedAdminIssuerDN(), adminCertIssuer) &&
-                StringUtils.equalsIgnoreCase(approval.getApprovalRequest().getBlacklistedAdminSerial(), adminCertSerial);
-        // TODO show the Subject DN (or common name) of the admin who last edited the request? 
+        lastEditedByMe = approval.getApprovalRequest().isEditedByMe(authenticationToken);
+        // TODO show the Subject DN (or common name) of the admins who have edited the request (ECA-) 
         
         // Check if approved by self
         approvedByMe = false;
@@ -102,6 +102,9 @@ public class RaApprovalRequestInfo implements Serializable {
                 approvedByMe = true;
             }
         }
+        
+        // Can only edit approvals in waiting state that haven't been approved by any admin yet
+        editable = (status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && approval.getApprovals().isEmpty());
         
         // The profile contains information about the approval steps
         approvalProfile = approval.getApprovalProfile();
@@ -113,7 +116,7 @@ public class RaApprovalRequestInfo implements Serializable {
         } catch (AuthenticationFailedException e) {
             throw new IllegalStateException(e);
         }
-        if (nextStep != null && status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && !editedByMe) {
+        if (nextStep != null && status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && !lastEditedByMe) {
             nextApprovalStep = nextStep;
         } else {
             nextApprovalStep = null;
@@ -238,7 +241,7 @@ public class RaApprovalRequestInfo implements Serializable {
                 status == ApprovalDataVO.STATUS_EXECUTIONDENIED ||
                 status == ApprovalDataVO.STATUS_EXECUTIONFAILED ||
                 status == ApprovalDataVO.STATUS_REJECTED) &&
-                (requestedByMe || editedByMe || approvedByMe);
+                (requestedByMe || lastEditedByMe || approvedByMe);
     }
     
     public boolean isRequestedByMe() {
@@ -250,7 +253,11 @@ public class RaApprovalRequestInfo implements Serializable {
     }
     
     public boolean isEditedByMe() {
-        return editedByMe;
+        return lastEditedByMe;
+    }
+    
+    public boolean isEditable() {
+        return editable;
     }
     
 }

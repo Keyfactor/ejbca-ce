@@ -21,6 +21,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -93,9 +95,8 @@ public abstract class ApprovalRequest implements Externalizable {
     
     private ApprovalProfile approvalProfile;
     
-    /** Admin who last edited the request (or null if none). This admin will not be allowed to approve the request. */
-    private String blacklistedAdminSerial;
-    private String blacklistedAdminIssuerDN;
+    /** Admins who have edited the request, in order of time. The last admin will not be allowed to approve the request. */
+    private List<TimeAndAdmin> editedByAdmins = new ArrayList<>();
     
     /**
      * Main constructor of an approval request for standard one step approval request.
@@ -293,20 +294,22 @@ public abstract class ApprovalRequest implements Externalizable {
         return requestAdmin;
     }
     
-    public String getBlacklistedAdminIssuerDN() {
-        return blacklistedAdminIssuerDN;
+    public boolean isEditedByMe(final AuthenticationToken admin) {
+        // admin who edited last can't approve
+        if (editedByAdmins.isEmpty()) {
+            return false;
+        } else {
+            final AuthenticationToken lastEditedBy = editedByAdmins.get(editedByAdmins.size()-1).getAdmin();
+            return lastEditedBy.equals(admin);
+        }
     }
     
-    public void setBlacklistedAdminIssuerDN(final String blacklistedAdminIssuerDN) {
-        this.blacklistedAdminIssuerDN = blacklistedAdminIssuerDN;
+    public void addEditedByAdmin(final AuthenticationToken admin) {
+        editedByAdmins.add(new TimeAndAdmin(new Date(), admin));
     }
     
-    public String getBlacklistedAdminSerial() {
-        return blacklistedAdminSerial;
-    }
-    
-    public void setBlacklistedAdminSerial(final String blacklistedAdminSerial) {
-        this.blacklistedAdminSerial = blacklistedAdminSerial;
+    public List<TimeAndAdmin> getEditedByAdmins() {
+        return editedByAdmins;
     }
 
     /**
@@ -349,10 +352,10 @@ public abstract class ApprovalRequest implements Externalizable {
         }
         
         out.writeObject(approvalProfile);
-        out.writeObject(this.blacklistedAdminIssuerDN);
-        out.writeObject(this.blacklistedAdminSerial);
+        out.writeObject(editedByAdmins);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         final int version = in.readInt();
@@ -488,8 +491,7 @@ public abstract class ApprovalRequest implements Externalizable {
                 approvalSteps[i] = in.readBoolean();
             }
             this.approvalProfile = (ApprovalProfile) in.readObject();
-            this.blacklistedAdminIssuerDN = (String) in.readObject();
-            this.blacklistedAdminSerial = (String) in.readObject();
+            this.editedByAdmins = (List<TimeAndAdmin>) in.readObject();
         }
     }
 
