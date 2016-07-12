@@ -30,8 +30,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 function jsTouchUpDocument() {
     // Hide elements that should not be shown when JS is enabled
 	forEachInputElementByStyleClass("jsHide", function(inputField) { inputField.style.display = "none"; });
-    // Hide elements that should not be shown when JS is enabled
-	forEachInputElementByStyleClass("jsShow", function(inputField) { inputField.style.display = ""; });
+    // Show elements that should not be hidden when JS is disabled
+	forEachInputElementByStyleClass("jsShow", function(inputField) { inputField.style.display = "inherit"; });
 	// Use title as HTML5 placeholder for elements marked with the style class (JSF2.0 does not support HTML5 attributes)
 	forEachInputElementByStyleClass("jsTitleAsPlaceHolder", function(inputField) {
 		inputField.placeholder = inputField.title;
@@ -85,6 +85,7 @@ function SessionKeepAlive(linkElementId) {
 function forEachInputElementByStyleClass(styleClassName, callback) {
 	forEachInputElementByTagNameAndStyleClass("input", styleClassName, callback);
 	forEachInputElementByTagNameAndStyleClass("textarea", styleClassName, callback);
+	forEachInputElementByTagNameAndStyleClass("label", styleClassName, callback);
 }
 function forEachInputElementByTagNameAndStyleClass(elementTagName, styleClassName, callback) {
 	var inputFields = document.getElementsByTagName(elementTagName);
