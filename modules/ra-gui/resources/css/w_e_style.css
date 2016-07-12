@@ -1,8 +1,4 @@
 @charset "UTF-8";
-/* dölj huvudmenyn i mobil- och ipadläge */
-#menu > .pure-g > .pure-u-md-1-2 > .pure-menu > ul.pure-meu-list {
-  display: none; }
-
 body.ltrDirection {
   /*body class*/
   display: flex;
@@ -36,7 +32,7 @@ body.rtlDirection {
 .pure-menu-heading {
   /*placering av header-logga*/
   float: left;
-  padding: 12px 0 0 10px; }
+  padding: 15px 0 0 15px; }
 
 .pure-u-1.pure-u-lg-1-8 {
   /*topbar del 1*/
@@ -54,7 +50,7 @@ body.rtlDirection {
   font-size: .75em; }
 
 img.menu_logo {
-  height: 2em; }
+  height: 1.5em; }
 
 .content {
   width: 90%;
@@ -470,10 +466,6 @@ div.contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
 #requestApproveMessage {
   margin-left: 2%; }
 
-@-moz-document url-prefix() {
-  .pure-menu-link {
-    padding-bottom: 18px;
-    /* or whatever fits best there */ } }
 .footer {
   height: 100px;
   display: flex;
@@ -538,6 +530,9 @@ div.contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
   #content-body > table.pure-table > tbody > tr > td > table > tbody > tr > td {
     background: none; } }
 @media (min-width: 992px) {
+  img.menu_logo {
+    height: 2em; }
+
   .pure-menu-heading {
     float: right;
     padding: 12px 0 0 0; }
