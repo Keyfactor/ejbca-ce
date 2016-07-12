@@ -156,7 +156,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 approvalData.setApprovalid(approvalRequest.generateApprovalId());
                 approvalData.setApprovaltype(approvalRequest.getApprovalType());
                 final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
-                approvalData.setApprovalprofileid(approvalProfile.getProfileId());
                 approvalData.setEndentityprofileid(approvalRequest.getEndEntityProfileId());
                 approvalData.setCaid(approvalRequest.getCAId());
                 if (approvalRequest.getRequestAdminCert() != null) {

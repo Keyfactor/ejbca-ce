@@ -51,8 +51,6 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	private int id;
 	private int approvalId;
 	private int approvalType;
-	/** @since EJBCA 6.6.0 */
-	private Integer approvalProfileId;
 	private int endEntityProfileId;
 	private int cAId;
 	private String reqAdminCertIssuerDn;
@@ -113,35 +111,6 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	 */
 	public void setApprovaltype(int approvalType) { this.approvalType = approvalType; }
 	
-	/**
-     * The related approval profile id
-     * 
-     * @return the approval profile as an Integer, or null if none has been set.
-     * 
-     * @since EJBCA 6.6.0
-     */
-    //@Column
-    public Integer getApprovalprofileid() { return approvalProfileId; }
-    
-    /**
-     * 
-     * @return the approval profile as an int, or null if none has been set.
-     */
-    @Transient
-    public int getApprovalProfileIdentifier() {
-        if(approvalProfileId != null) {
-            return approvalProfileId.intValue();
-        } else {
-            return 0;
-        }
-    }
-    
-    /**
-     * The related approval profile id     
-     * @since EJBCA 6.6.0
-     */
-    public void setApprovalprofileid(Integer approvalProfileId) { this.approvalProfileId = approvalProfileId; }
-
 	/**
 	 * For RA specific approval requests should the related end entity profile id be specified
 	 * for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
@@ -312,9 +281,6 @@ s	 */
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getId()).append(getApprovalid()).append(getApprovaltype()).append(getEndentityprofileid()).append(getCaid()).append(getReqadmincertissuerdn());
         build.append(getReqadmincertsn()).append(getStatus()).append(getApprovaldata()).append(getRequestdata()).append(getRequestdate()).append(getExpiredate()).append(getRemainingapprovals());
-        if (version>1) {
-            build.append(String.valueOf(getApprovalprofileid()));
-        }
         return build.toString();
     }
 
