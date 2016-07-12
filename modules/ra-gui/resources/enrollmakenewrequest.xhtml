@@ -47,7 +47,7 @@
         						<h:outputText value="#{msg.enroll_select_request_template}" />
         					</h2>
                         </h:panelGroup>
-                        <h:panelGroup styleClass="pure-u-1-2">
+                        <h:panelGroup styleClass="pure-u-1-2" style="text-align: right;">
                             <h:selectBooleanCheckbox id="renderNonModifiable" value="#{enrollMakeNewRequestBean.renderNonModifiable}"
                                 styleClass="jsShow" style="display: none;">
                                 <f:ajax event="change" execute="@this" render="@form :requestInfoForm"/>
@@ -204,7 +204,7 @@
                                 <h:outputText value="#{msg.enroll_provide_request_info}" />
                             </h2>
                         </h:panelGroup>
-                        <h:panelGroup styleClass="pure-u-1-2">
+                        <h:panelGroup styleClass="pure-u-1-2" style="text-align: right;">
                             <h:selectBooleanCheckbox id="renderNonModifiable" value="#{enrollMakeNewRequestBean.renderNonModifiable}" styleClass="jsShow" style="display: none;">
                                 <f:ajax event="change" execute="@this" render="@form :requestTemplateForm"/>
                             </h:selectBooleanCheckbox>
