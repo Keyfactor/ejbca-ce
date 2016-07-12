@@ -337,13 +337,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public RaApprovalRequestInfo editApprovalRequest(final AuthenticationToken authenticationToken, final RaApprovalEditRequest edit) throws AuthorizationDeniedException {
-        if (!(authenticationToken instanceof X509CertificateAuthenticationToken)) {
-            throw new AuthorizationDeniedException("Can only edit an approval request with certificate authentication");
-        }
-        final X509CertificateAuthenticationToken x509admin = (X509CertificateAuthenticationToken) authenticationToken;
-        final String adminIssuerDN = CertTools.getIssuerDN(x509admin.getCertificate());
-        final String adminSerial = CertTools.getSerialNumberAsString(x509admin.getCertificate());
-        
         // TODO perhaps move into ApprovalSessionBean?
         // TODO fix audit logging. currently logs as remove + add
         final int id = edit.getId();
@@ -386,8 +379,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         
         try {
             // Re-add the approval. This should leave the requesting admin unchanged
-            approvalRequest.setBlacklistedAdminIssuerDN(adminIssuerDN); // admins may not approve requests they have edited
-            approvalRequest.setBlacklistedAdminSerial(adminSerial);
+            approvalRequest.addEditedByAdmin(authenticationToken);
             approvalSession.addApprovalRequest(authenticationToken, approvalRequest);
         } catch (ApprovalException e) {
             // TODO remove and add to throws declaration
