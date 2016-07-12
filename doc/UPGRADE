@@ -33,7 +33,7 @@ From EJBCA 6.5.x to EJBCA 6.6.0
 
 	1. Changes to CertificateData
 	2. Changes to ApprovalData
-	3. Removal of the rule /ca_functionality/store_certificate
+	3. Removal of the access rule /ca_functionality/store_certificate
 	4. 100% Upgrade Uptime Notes
 		4.a Approval Profiles
 
@@ -64,9 +64,9 @@ available, but performing approvals on nodes running EJBCA versions prior to 6.6
 As part of this change, approval notifications are now configured per approval partition instead of globally. Check your Approval Profile after
 deploying the new code.
 
-***		3. Removal of the rule /ca_functionality/store_certificate	
+***		3. Removal of the access rule /ca_functionality/store_certificate	
 
-The rule /ca_functionality/store_certificate has been removed for the simple reason that it wasn't actually used. It will not be cleaned from any
+The access rule /ca_functionality/store_certificate has been removed for the simple reason that it wasn't actually used. It will not be cleaned from any
 existing roles due to being harmless (and invasive to remove). 
 
 ***		4. 100% Upgrade Uptime Notes
