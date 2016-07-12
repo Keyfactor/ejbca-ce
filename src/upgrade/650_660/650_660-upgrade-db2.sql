@@ -3,5 +3,3 @@
 -- ALTER TABLE CertificateData ADD endEntityProfileId INTEGER;
 -- ALTER TABLE CertificateData ADD subjectAltName VARCHAR(2000);
 -- CALL SYSPROC.ADMIN_CMD('REORG TABLE CertificateData');
--- ALTER TABLE ApprovalData ADD approvalProfileId INTEGER;
--- CALL SYSPROC.ADMIN_CMD('REORG TABLE ApprovalData');

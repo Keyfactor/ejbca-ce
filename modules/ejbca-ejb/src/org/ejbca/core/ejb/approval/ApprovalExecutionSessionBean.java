@@ -122,7 +122,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         checkApprovalPossibility(admin, approvalData, approval);
 		approval.setApprovalAdmin(true, admin);
         try {
-            ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalProfileIdentifier());
+            ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalRequest().getApprovalProfile().getProfileId());
             if(approvalProfile == null) {
                 approvalProfile = approvalData.getApprovalDataVO().getApprovalRequest().getApprovalProfile();
             }
@@ -215,7 +215,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         checkApprovalPossibility(admin, approvalData, approval);
         approval.setApprovalAdmin(false, admin);
         try {
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalProfileIdentifier());
+            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalRequest().getApprovalProfile().getProfileId());
             final List<Approval> approvalsPerformed = approvalData.getApprovals();
             // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
             if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval)) {
