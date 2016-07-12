@@ -155,9 +155,9 @@
 								value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80"
 								rows="20" validator="#{enrollMakeNewRequestBean.validateCsr}">
 								<f:validateRequired />
-                                <f:ajax event="keyup" execute="@this" render=":globalMessages :requestInfoForm :keyPairForm:certificateRequestMessage"
+                                <f:ajax event="keyup" execute="@this" render=":globalMessages :requestInfoForm certificateRequestMessage"
                                     listener="#{enrollMakeNewRequestBean.certificateRequestAjaxListener}"/>
-                                <f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm :keyPairForm:certificateRequestMessage"
+                                <f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm certificateRequestMessage"
                                     listener="#{enrollMakeNewRequestBean.certificateRequestAjaxListener}"/>
 							</h:inputTextarea>
 						</h:panelGroup>
