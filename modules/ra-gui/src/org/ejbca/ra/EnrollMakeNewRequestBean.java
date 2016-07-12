@@ -1047,9 +1047,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (subjectDn == null) {
             final EndEntityProfile endEntityProfile = getEndEntityProfile();
             final CertificateProfile certificateProfile = getCertificateProfile();
-            if (endEntityProfile != null && certificateProfile != null) {
+            final X509CAInfo x509cainfo = (X509CAInfo) getCAInfo();
+            if (endEntityProfile != null && certificateProfile != null && x509cainfo != null) {
                 subjectDn = new SubjectDn(endEntityProfile);
-                final X509CAInfo x509cainfo = (X509CAInfo) getCAInfo();
                 subjectDn.setLdapOrder(x509cainfo.getUseLdapDnOrder() && certificateProfile.getUseLdapDnOrder());
                 subjectDn.setNameStyle(x509cainfo.getUsePrintableStringSubjectDN() ? PrintableStringNameStyle.INSTANCE : CeSecoreNameStyle.INSTANCE);
             }
