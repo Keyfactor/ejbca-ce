@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -49,8 +48,6 @@ public class RaApprovalRequestInfo implements Serializable {
     private final int endEntityProfileId;
     private final Date expireDate;
     private final int remainingApprovals;
-    private final String requesterIssuerDN;
-    private final String requesterSerialNumber;
     private final String requesterSubjectDN;
     private final Date requestDate;
     private final int status;
@@ -83,8 +80,6 @@ public class RaApprovalRequestInfo implements Serializable {
         endEntityProfileId = approval.getEndEntityProfileiId();
         expireDate = approval.getExpireDate();
         remainingApprovals = approval.getRemainingApprovals();
-        requesterIssuerDN = approval.getReqadmincertissuerdn();
-        requesterSerialNumber = approval.getReqadmincertsn();
         final Certificate requesterCert = approval.getApprovalRequest().getRequestAdminCert();
         requesterSubjectDN = requesterCert != null ? CertTools.getSubjectDN(requesterCert) : null;
         requestDate = approval.getRequestDate();
@@ -92,6 +87,8 @@ public class RaApprovalRequestInfo implements Serializable {
         this.requestData = requestData;
         this.editableData = editableData;
         
+        final AuthenticationToken requestAdmin = approval.getApprovalRequest().getRequestAdmin();
+        requestedByMe = requestAdmin != null && requestAdmin.equals(authenticationToken);
         lastEditedByMe = approval.getApprovalRequest().isEditedByMe(authenticationToken);
         // TODO show the Subject DN (or common name) of the admins who have edited the request (ECA-) 
         
@@ -154,9 +151,6 @@ public class RaApprovalRequestInfo implements Serializable {
         // TODO always add your own approval steps?
 // TODO sort!
 //        Collections.sort(previousApprovalSteps);
-        
-        requestedByMe = StringUtils.equals(requesterIssuerDN, adminCertIssuer) &&
-                StringUtils.equalsIgnoreCase(requesterSerialNumber, adminCertSerial);
     }
 
     public int getId() {
