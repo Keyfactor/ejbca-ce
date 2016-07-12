@@ -39,7 +39,7 @@
 			<h:form id="enrollWithRequestIdForm"
 				styleClass="pure-form pure-form-aligned">
 				
-				<h:panelGroup layout="block" rendered="#{!(enrollWithRequestIdBean.isRequestApproved())}">
+				<h:panelGroup layout="block" rendered="#{!(enrollWithRequestIdBean.finalizeEnrollmentRendered)}">
 					<h2>
 						<h:outputText
 							value="#{msg.enrollwithrequestid_enter_request_id_to_check_the_request_status}" />
