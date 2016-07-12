@@ -260,6 +260,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return getCertificateProfile()!=null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum());
     }
 
+    public boolean isUploadCsrDoneRendered() {
+        return algorithmFromCsr!=null;
+    }
+
     /** @return the provideRequestInfoRendered */
     public boolean isProvideRequestInfoRendered() {
         return isKeyAlgorithmAvailable();
@@ -321,14 +325,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
         renderNonModifiable = !renderNonModifiable;
     }
 
-    public void certificateRequestAjaxListener(final AjaxBehaviorEvent event) {
-        uploadCsr();
+    public void uploadCsrChange() {
+        algorithmFromCsr = null;
     }
 
     public void uploadCsr() {
         //If PROVIDED BY USER key generation is selected, try fill Subject DN fields from CSR (Overwrite the fields set by previous CSR upload if any)
-        if (getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())) {
-            PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(getCertificateRequest()); //pkcs10CertificateRequest will not be null at this point
+        if (getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum()) && algorithmFromCsr!=null) {
+            PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(getCertificateRequest());
             List<String> subjectDnFieldsFromParsedCsr = CertTools.getX500NameComponents(pkcs10CertificateRequest.getSubject().toString());
             bothLoops: for (String subjectDnField : subjectDnFieldsFromParsedCsr) {
                 if(log.isDebugEnabled()){
@@ -583,11 +587,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             String password = uiInputPassword.getLocalValue() == null ? "" : uiInputPassword.getLocalValue().toString();
             UIInput uiInputConfirmPassword = (UIInput) components.findComponent("passwordConfirmField");
             String confirmPassword = uiInputConfirmPassword.getLocalValue() == null ? "" : uiInputConfirmPassword.getLocalValue().toString();
-            /*if (password.isEmpty() || confirmPassword.isEmpty()) {
-                FacesContext.getCurrentInstance().addMessage("passwordFieldMessage", raLocaleBean.getFacesMessage("enroll_password_can_not_be_empty"));
-                fc.renderResponse();
-                
-            }else */if (!password.equals(confirmPassword)) {
+            if (!password.equals(confirmPassword)) {
                 FacesContext.getCurrentInstance().addMessage("passwordFieldMessage", raLocaleBean.getFacesMessage("enroll_passwords_are_not_equal"));
                 fc.renderResponse();
             }
@@ -614,13 +614,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
             }
             algorithmFromCsr = keyAlgorithm + " " + keySpecification;// Save for later use
+            // For yet unknown reasons, the setter is never when invoked during AJAX request
+            certificateRequest = value.toString();
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
         }
     }
-    
-    
-    
+
     //-----------------------------------------------------------------------------------------------
     // Getters and setters
 
