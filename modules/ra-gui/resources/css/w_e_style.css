@@ -204,10 +204,10 @@ table.pure-table > tbody > tr.pure-table-odd td {
   background-color: #e0e0e0; }
 table.pure-table > tbody > tr {
   color: #444d57; }
-table.pure-table > tbody > a {
+table.pure-table > tbody a {
   color: #e9af13;
   text-decoration: none; }
-  table.pure-table > tbody > a a:hover {
+  table.pure-table > tbody a:hover {
     text-decoration: underline; }
 
 #requestTemplateForm\:selectKeyPairGeneration {
@@ -269,10 +269,12 @@ textarea#keyPairForm\:certificateRequest {
 /*Kod för show more options-knapp som förmodligen inte behövs*/
 /*SLUT: Kod för show more options-knapp som förmodligen inte behövs*/
 /*NY search for certificates >  show more-knapp */
-.detailsForm\:j_idt87\:showMoreLessDetailsButton {
+input.detailsForm\:j_idt87\:showMoreLessDetailsButton {
   background: #e9af13;
   color: #fff;
-  width: 75%; }
+  width: 75%;
+  display: block;
+  margin: 2% 0 0 0; }
 
 .detailsForm\:j_idt87\:showMoreLessDetailsButton:hover,
 .detailsForm\:j_idt87\:showMoreLessDetailsButton:focus {
@@ -334,34 +336,20 @@ textarea#keyPairForm\:certificateRequest {
   background: #e9af13;
   color: #fff; }
 
-#enrollMakeNewRequestForm\:generateJks:hover,
-#enrollMakeNewRequestForm\:generateJks:focus {
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
-  background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
-  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.1));
-  background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
-  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
-
 #enrollMakeNewRequestForm\:generateP12 {
   background: #e9af13;
   color: #fff; }
 
-#enrollMakeNewRequestForm\:generateP12:hover,
-#enrollMakeNewRequestForm\:generateP12:focus {
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
-  background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
-  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.1));
-  background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
-  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
-
-#enrollMakeNewRequestForm:updateRequestPreview {
+#enrollMakeNewRequestForm\:updateRequestPreview {
   background: #e9af13;
   color: #fff; }
 
-#enrollMakeNewRequestForm:updateRequestPreview:hover,
-#enrollMakeNewRequestForm:updateRequestPreview:focus {
+#enrollMakeNewRequestForm\:generateJks:hover,
+#enrollMakeNewRequestForm\:generateJks:focus,
+#enrollMakeNewRequestForm\:generateP12:hover,
+#enrollMakeNewRequestForm\:generateP12:focus,
+#enrollMakeNewRequestForm\:updateRequestPreview:hover,
+#enrollMakeNewRequestForm\:updateRequestPreview:focus {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
   background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
@@ -374,15 +362,17 @@ textarea#keyPairForm\:certificateRequest {
   background: #e9af13;
   color: #fff; }
 
+/*
 #contentForm\:j_idt177:hover,
 #contentForm\:j_idt177:focus {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
-  background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
-  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.1));
-  background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
-  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
-
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0,0,0, 0.05)), to(rgba(0,0,0, 0.10)));
+  background-image: -webkit-linear-gradient(transparent, rgba(0,0,0, 0.05) 40%, rgba(0,0,0, 0.10));
+  background-image: -moz-linear-gradient(top, rgba(0,0,0, 0.05) 0%, rgba(0,0,0, 0.10));
+  background-image: -o-linear-gradient(transparent, rgba(0,0,0, 0.05) 40%, rgba(0,0,0, 0.10));
+  background-image: linear-gradient(transparent, rgba(0,0,0, 0.05) 40%, rgba(0,0,0, 0.10));
+}
+*/
 /*SLUT: kanpp kod som förmodligen inte behövs*/
 .keygeneration-button-group {
   color: #fff;
@@ -404,31 +394,13 @@ a {
   text-align: left; }
 
 #contentForm > #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
-  /* första boxen för "max results"-texten i search for certificates */
-  width: 19%; }
+  /* första wrappern för boxen för "max results"-texten i search for certificates */
+  width: 25%; }
 
 .contentForm\:criteriaMaxResults {
   width: 100%; }
 
-/* resterande boxar för "max results"-texten i search for certificates */
-#contentForm\:issuedAfter {
-  width: 27%; }
-
-#contentForm\:issuedBefore {
-  width: 27%; }
-
-#contentForm\:expiresAfter {
-  width: 27%; }
-
-#contentForm\:expiresBefore {
-  width: 27%; }
-
-#contentForm\:revokedAfter {
-  width: 27%; }
-
-#contentForm\:revokedBefore {
-  width: 27%; }
-
+/* resterande text för boxar i show more options i search for certificates */
 #contentForm\:issuedAfterLabel {
   text-align: left; }
 
@@ -502,13 +474,12 @@ a {
 .statusFailed {
   color: #ed6a5f; }
 
-.viewButton {
+#contentForm\:filteredResults .pure-button.ra-button {
   /*view-knappen i search for certificates*/
   color: #e9af13;
   background: none; }
-
-.viewButton:hover {
-  text-decoration: underline; }
+  #contentForm\:filteredResults .pure-button.ra-button:hover {
+    text-decoration: underline; }
 
 #detailsForm\:j_idt87\:showMoreCertificateDetails {
   /* search for certificates > view > showMoreDetails */
@@ -516,7 +487,7 @@ a {
   margin-left: 3%;
   margin-bottom: 5%; }
 
-#detailsForm\:j_idt87\:downloadFormatLinks:hover {
+#detailsForm\:j_idt87\:downloadFormatLinks > a:hover {
   text-decoration: underline; }
 
 #contentForm\:viewRequestPartitionTable > table {
@@ -590,7 +561,7 @@ a {
 
   #content-body > table.pure-table > tbody > tr > td > table > tbody > tr > td {
     background: none; } }
-@media (min-width: 992px) {
+@media (min-width: 64em) {
   img.menu_logo {
     height: 2em; }
 
@@ -602,19 +573,17 @@ a {
     color: #35404e;
     font-size: 90%;
     background: #fff;
-    padding-bottom: 16.5px; }
+    height: 26px; }
 
   @-moz-document url-prefix() {
     /*för Firefox */
     .pure-menu-link {
-      padding-bottom: 17px; } }
+      height: 25.5px; } }
   /*För Retinaskärm*/ }
-@media (min-width: 992px) and (-webkit-min-device-pixel-ratio: 2), (min-width: 992px) and (min-resolution: 192dpi) {
+@media (min-width: 64em) and (-webkit-min-device-pixel-ratio: 2), (min-width: 64em) and (min-resolution: 192dpi) {
   @-moz-document url-prefix() {
-    /*för Firefox */
-    .pure-menu-link {
-      padding-bottom: 18px; } } }
-@media (min-width: 992px) {
+    /*för Firefox */ } }
+@media (min-width: 64em) {
   /*SLUT för retinaskärm*/
   .enroll-menu-link:hover, .enroll-menu-link:focus {
     background: #fff; }
@@ -640,7 +609,7 @@ a {
     text-align: center; }
 
   .content {
-    width: 46%;
+    width: 60em;
     margin: 50px auto 30px auto;
     background: #637b98;
     flex: 1; }
@@ -656,6 +625,13 @@ a {
     left: 50%;
     margin: 0 0 0 -12px;
     color: #fff; } }
+/*
+gamla
+  "base"  // smartphone
+  768px   // tablet
+  992px   // desktop
+  1200px  // large desktop
+*/
 @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
   body.ltrDirection, body.rtlDirection {
     display: -ms-flexbox;
