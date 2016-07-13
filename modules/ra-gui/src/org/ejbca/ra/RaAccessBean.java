@@ -107,7 +107,7 @@ public class RaAccessBean implements Serializable {
     
     public boolean isAuthorizedToEnrollMakeRequest() {
         // Authorized to make request if user have access to at least one end entity profile
-        return this.authorizedEndEntityProfiles.size()>1;
+        return this.authorizedEndEntityProfiles.size()>0;
     }
     
     public boolean isAuthorizedToEnrollWithRequestId() {
