@@ -43,7 +43,6 @@ import javax.persistence.QueryTimeoutException;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -292,16 +291,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     private RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final ApprovalDataVO advo) {
-        // The values are used to check if a request belongs to us or not
-        String adminCertSerial = null; 
-        String adminCertIssuer = null;
-        if (authenticationToken instanceof X509CertificateAuthenticationToken) {
-            final X509CertificateAuthenticationToken certAuth = (X509CertificateAuthenticationToken) authenticationToken;
-            final X509Certificate cert = certAuth.getCertificate();
-            adminCertSerial = CertTools.getSerialNumberAsString(cert);
-            adminCertIssuer = CertTools.getIssuerDN(cert);
-        }
-        
         // By getting the CA we perform an implicit auth check
         String caName;
         if (advo.getCAId() == ApprovalDataVO.ANY_CA) {
@@ -331,7 +320,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         
         // TODO perform ee profile and approval profile authorization checks also
         
-        return new RaApprovalRequestInfo(authenticationToken, adminCertIssuer, adminCertSerial, caName, advo, requestData, editableData);
+        return new RaApprovalRequestInfo(authenticationToken, caName, advo, requestData, editableData);
         
     }
 
@@ -455,16 +444,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return response; // not searching for anything. return empty response
         }
         
-        // The values are used to check if a request belongs to us or not
-        String adminCertSerial = null; 
-        String adminCertIssuer = null;
-        if (authenticationToken instanceof X509CertificateAuthenticationToken) {
-            final X509CertificateAuthenticationToken certAuth = (X509CertificateAuthenticationToken) authenticationToken;
-            final X509Certificate cert = certAuth.getCertificate();
-            adminCertSerial = CertTools.getSerialNumberAsString(cert);
-            adminCertIssuer = CertTools.getIssuerDN(cert);
-        }
-        
         // Filtering
         final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
         // TODO should we limit to add/revoke end entity requests also?
@@ -530,7 +509,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         for (final ApprovalDataVO advo : approvals) {
             final List<ApprovalDataText> requestDataLite = advo.getApprovalRequest().getNewRequestDataAsText(authenticationToken); // this method isn't guaranteed to return the full information
             final RaEditableRequestData editableData = getRequestEditableData(authenticationToken, advo);
-            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, adminCertIssuer, adminCertSerial, caIdToNameMap.get(advo.getCAId()), advo, requestDataLite, editableData);
+            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, caIdToNameMap.get(advo.getCAId()), advo, requestDataLite, editableData);
             
             if ((request.isSearchingWaitingForMe() && ari.isWaitingForMe()) ||
                     (request.isSearchingPending() && ari.isPending()) ||
