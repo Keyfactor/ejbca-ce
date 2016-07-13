@@ -461,16 +461,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setHardTokenIssuerId(0); //TODO not sure....
         endEntityInformation.setKeyRecoverable(false); //TODO not sure...
         endEntityInformation.setPrintUserData(false); // TODO not sure...
-        endEntityInformation.setSendNotification(getEndEntityProfile().isRequired(EndEntityProfile.SENDNOTIFICATION, 0)
-                && getEndEntityProfile().getValue(EndEntityProfile.SENDNOTIFICATION, 0).equals(EndEntityProfile.TRUE)
-                && !endEntityInformation.getSendNotification());
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation.setSubjectAltName(getSubjectAlternativeName().toString());
         endEntityInformation.setTimeCreated(new Date());
         endEntityInformation.setTimeModified(new Date());
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
-        //TODO how to set subject directory attributes?
+        // sendnotification must be set after setType, because it adds to the type
+        endEntityInformation.setSendNotification(getEndEntityProfile().isRequired(EndEntityProfile.SENDNOTIFICATION, 0)
+                && getEndEntityProfile().getValue(EndEntityProfile.SENDNOTIFICATION, 0).equals(EndEntityProfile.TRUE)
+                && !endEntityInformation.getSendNotification());
+        log.error("SENDNOTIFICATION: "+endEntityInformation.getSendNotification());
         endEntityInformation.setTokenType(tokenType);
+
+        //TODO how to set subject directory attributes?
 
         //Fill end-entity information (Username and Password)
         if(endEntityInformation.getUsername() == null || endEntityInformation.getUsername().isEmpty()){
