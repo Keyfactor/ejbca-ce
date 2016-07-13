@@ -50,7 +50,7 @@
                         <h:panelGroup styleClass="pure-u-1-2" style="text-align: right;">
                             <h:selectBooleanCheckbox id="renderNonModifiable" value="#{enrollMakeNewRequestBean.renderNonModifiable}"
                                 styleClass="jsShow" style="display: none;">
-                                <f:ajax event="change" execute="@this" render="@form :requestInfoForm"/>
+                                <f:ajax event="change" execute="@this" render=":requestInfoForm @form"/>
                             </h:selectBooleanCheckbox>
                             <h:outputLabel for="renderNonModifiable" value="#{msg.enroll_render_non_modifiable_label}"
                                 styleClass="showNonModifiable jsShow" style="display: none;"/>
@@ -68,7 +68,7 @@
 									value="#{enrollMakeNewRequestBean.selectedEndEntityProfile}"
 									disabled="#{enrollMakeNewRequestBean.availableEndEntityProfileSelectItems.size()==1}">
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableEndEntityProfileSelectItems}"/>
-									<f:ajax event="change" execute="@this" render=":globalMessages @form :keyPairForm :requestInfoForm"/>
+									<f:ajax event="change" execute="@this" render=":globalMessages :keyPairForm :requestInfoForm @form"/>
 									<f:validateRequired/>
 								</h:selectOneMenu>
 								<h:message for="selectEEPOneMenu" id="selectEEPOneMenuMessage" />
@@ -83,7 +83,7 @@
 									value="#{enrollMakeNewRequestBean.selectedCertificateProfile}"
 									disabled="#{enrollMakeNewRequestBean.availableCertificateProfileSelectItems.size()==1}">
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableCertificateProfileSelectItems}"/>
-									<f:ajax event="change" execute="@this" render=":globalMessages @form :keyPairForm :requestInfoForm"/>
+									<f:ajax event="change" execute="@this" render=":globalMessages :keyPairForm :requestInfoForm @form"/>
 									<f:validateRequired/>
 								</h:selectOneMenu>
 								<h:message for="selectCPOneMenu" id="selectCPOneMenuMessage" />
@@ -98,7 +98,7 @@
 									value="#{enrollMakeNewRequestBean.selectedCertificateAuthority}"
 									disabled="#{enrollMakeNewRequestBean.availableCertificateAuthoritySelectItems.size()==1}">
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableCertificateAuthoritySelectItems}"/>
-									<f:ajax event="change" execute="@this" render=":globalMessages @form :keyPairForm :requestInfoForm"/>
+									<f:ajax event="change" execute="@this" render=":globalMessages :keyPairForm :requestInfoForm @form"/>
 									<f:validateRequired/>
 								</h:selectOneMenu>
 								<h:message for="selectCAOneMenu" id="selectCAOneMenuMessage" />
@@ -114,7 +114,7 @@
                                         disabled="#{enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems.size()==1}">
                                         <f:selectItems value="#{enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems}" styleClass="pure-radio" />
                                         <f:validateRequired/>
-                                        <f:ajax event="change" execute="@this" render=":globalMessages @form :keyPairForm :requestInfoForm"/>
+                                        <f:ajax event="change" execute="@this" render=":globalMessages :keyPairForm :requestInfoForm @form"/>
                                     </h:selectOneRadio>
                                     <h:message for="selectKeyPairGeneration" id="selectKeyPairGenerationMessage" />
                                 </h:panelGroup>
@@ -161,7 +161,7 @@
                         <br/>
                         <h:commandButton id="uploadCsrButton" value="#{msg.enroll_upload_csr}" styleClass="pure-button ra-button"
                             action="#{enrollMakeNewRequestBean.uploadCsr}">
-                            <f:ajax event="change" execute="@form" render=":globalMessages @form :requestInfoForm certificateRequestMessage"/>
+                            <f:ajax event="change" execute="@form" render=":globalMessages :requestInfoForm certificateRequestMessage @form"/>
                         </h:commandButton>
 					</h:panelGroup>
                     <h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.uploadCsrDoneRendered}">
@@ -189,7 +189,7 @@
 						<h:selectOneMenu id="selectAlgorithmOneMenu" value="#{enrollMakeNewRequestBean.selectedAlgorithm}"
                             disabled="#{enrollMakeNewRequestBean.availableAlgorithmSelectItems.size()==1}">
 							<f:selectItems value="#{enrollMakeNewRequestBean.availableAlgorithmSelectItems}" />
-							<f:ajax event="change" execute="@this" render=":globalMessages @form :requestInfoForm:requestPreviewOuterPanel"/>
+							<f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm:requestPreviewOuterPanel @form"/>
 						</h:selectOneMenu>
 					</h:panelGroup>
 					</h:panelGroup>
@@ -206,7 +206,7 @@
                         </h:panelGroup>
                         <h:panelGroup styleClass="pure-u-1-2" style="text-align: right;">
                             <h:selectBooleanCheckbox id="renderNonModifiable" value="#{enrollMakeNewRequestBean.renderNonModifiable}" styleClass="jsShow" style="display: none;">
-                                <f:ajax event="change" execute="@this" render="@form :requestTemplateForm"/>
+                                <f:ajax event="change" execute="@this" render=":requestTemplateForm @form"/>
                             </h:selectBooleanCheckbox>
                             <h:outputLabel for="renderNonModifiable" value="#{msg.enroll_render_non_modifiable_label}"
                                 styleClass="showNonModifiable jsShow" style="display: none;"/>
