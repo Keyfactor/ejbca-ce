@@ -74,6 +74,11 @@ public class MailSender {
 	 */
 	public static boolean sendMail(String fromAddress, List<String> toList, List<String> ccList, String subject, String content, List<MailAttachment> attachments) {
         Session mailSession = ServiceLocator.getInstance().getMailSession(MailConfiguration.getMailJndiName());
+        // It would be good if we could set mail session properties, but it seems not possible
+        // See https://javamail.java.net/nonav/docs/api/com/sun/mail/smtp/package-summary.html
+        // mail.smtp.timeout
+        // mail.smtp.connectiontimeout
+        // mail.smtp.writetimeout
         Message msg = new MimeMessage(mailSession);
         try {
         	if (log.isDebugEnabled()) {
