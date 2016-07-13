@@ -240,6 +240,10 @@ public class EndEntityInformation implements Serializable {
         return getType().contains(EndEntityTypes.SENDNOTIFICATION);
     }
 
+    /** Sets flag (part of end entity type) that an email notification (triggered through the End Entity Profile) should be sent.
+     * setSendNotification() must be called after setType(), because it adds to the type
+     * @param sendnotification true or false
+     */
     public void setSendNotification(final boolean sendnotification){
         final EndEntityType type = getType();
         if (sendnotification) {
