@@ -70,7 +70,7 @@ public class RaApprovalRequestInfo implements Serializable {
     // Previous approval steps that are visible to the admin
     private final List<ApprovalStep> previousApprovalSteps;
     
-    public RaApprovalRequestInfo(final AuthenticationToken authenticationToken, final String adminCertIssuer, final String adminCertSerial, final String caName, final ApprovalDataVO approval,
+    public RaApprovalRequestInfo(final AuthenticationToken authenticationToken, final String caName, final ApprovalDataVO approval,
             final List<ApprovalDataText> requestData, final RaEditableRequestData editableData) {
         id = approval.getId();
         approvalCalculatedUniqueId = approval.getApprovalId();
