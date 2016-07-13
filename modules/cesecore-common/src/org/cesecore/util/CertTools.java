@@ -27,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
@@ -92,8 +93,10 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -105,6 +108,7 @@ import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.GeneralSubtree;
@@ -3051,6 +3055,29 @@ public abstract class CertTools {
         return getDerObjectFromByteArray(crl.getExtensionValue(oid));
     }
 
+    /** @return the PKCS#10's extension of the specified OID or null if no such extension exists */
+    public static Extension getExtension(final PKCS10CertificationRequest pkcs10CertificateRequest, String oid) {
+        if (pkcs10CertificateRequest != null && oid != null) {
+            final Extensions extensions = getPKCS10Extensions(pkcs10CertificateRequest);
+            if (extensions!=null) {
+                return extensions.getExtension(new ASN1ObjectIdentifier(oid));
+            }
+        }
+        return null;
+    }
+
+    /** @return the first found extensions or null if PKCSObjectIdentifiers.pkcs_9_at_extensionRequest was not present in the PKCS#10 */
+    private static Extensions getPKCS10Extensions(final PKCS10CertificationRequest pkcs10CertificateRequest) {
+        final Attribute[] attributes = pkcs10CertificateRequest.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+        for (final Attribute attribute : attributes) {
+            final ASN1Set attributeValues = attribute.getAttrValues();
+            if (attributeValues.size()>0) {
+                return Extensions.getInstance(attributeValues.getObjectAt(0));
+            }
+        }
+        return null;
+    }
+
     private static ASN1Primitive getDerObjectFromByteArray(byte[] bytes) {
         if (bytes == null) {
             return null;
@@ -3812,31 +3839,16 @@ public abstract class CertTools {
      */
     public static PKCS10CertificationRequest getCertificateRequestFromPem(final String pemEncodedCsr){
         PKCS10CertificationRequest csr = null;
-        ByteArrayInputStream pemStream = null;
-        try {
-            pemStream = new ByteArrayInputStream(pemEncodedCsr.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-            log.warn("UnsupportedEncodingException while decoding certificate request from PEM", ex);
-        }
-
-        Reader pemReader = new BufferedReader(new InputStreamReader(pemStream));
-        PEMParser pemParser = new PEMParser(pemReader);
-        try {
-            Object parsedObj = pemParser.readObject();
+        final ByteArrayInputStream pemStream = new ByteArrayInputStream(pemEncodedCsr.getBytes(StandardCharsets.UTF_8));
+        try (PEMParser pemParser = new PEMParser(new BufferedReader(new InputStreamReader(pemStream)));) {
+            final Object parsedObj = pemParser.readObject();
             if (parsedObj instanceof PKCS10CertificationRequest) {
                 csr = (PKCS10CertificationRequest) parsedObj;
             }
-        } catch (IOException | DecoderException ex) {//IOException that will be wrapped as (runtime) DecoderException
-            log.warn("IOException while decoding certificate request from PEM", ex);
-        } finally{
-            if(pemParser != null){
-                try {
-                    pemParser.close();
-                } catch (IOException e) {
-                }
-            }
+        } catch (IOException | DecoderException e) {//IOException that will be wrapped as (runtime) DecoderException
+            log.info("IOException while decoding certificate request from PEM: " + e.getMessage());
+            log.debug("IOException while decoding certificate request from PEM.", e);
         }
-
         return csr;
     }
 

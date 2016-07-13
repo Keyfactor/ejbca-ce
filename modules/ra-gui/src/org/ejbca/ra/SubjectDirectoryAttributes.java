@@ -58,7 +58,7 @@ public class SubjectDirectoryAttributes {
         this.fieldInstances = fieldInstances;
     }
 
-    public void updateValue(){
+    public void update(){
         StringBuilder subjectDn = new StringBuilder();
         for(EndEntityProfile.FieldInstance fieldInstance : fieldInstances){
             if(!fieldInstance.getValue().isEmpty()){
@@ -85,13 +85,13 @@ public class SubjectDirectoryAttributes {
      */
     public String getValue() {
         if(value == null){
-            updateValue();
+            update();
         }
         return value;
     }
     
     public String getUpdatedValue() {
-        updateValue();
+        update();
         return value;
     }
 
