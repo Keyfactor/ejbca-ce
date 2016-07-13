@@ -1,4 +1,7 @@
 @charset "UTF-8";
+html {
+  height: 100%; }
+
 body.ltrDirection {
   /*body class*/
   display: flex;
@@ -21,6 +24,7 @@ body.rtlDirection {
 
 #menu {
   height: 55px;
+  min-height: 55px;
   font-weight: bold;
   background: #fff; }
 
@@ -157,25 +161,28 @@ ul.pure-menu-list > li.pure-menu-item > ul.pure-menu-children {
 ul.pure-menu-children {
   text-align: left; }
 
+label.showNonModifiable {
+  /* texten till radioknappen 'show non modifiable'*/
+  margin-left: 2%; }
+
 .navigation-button-group {
-  /*nästa- och återställknappens wrapper*/
+  /*återställknappens wrapper*/
   margin: 2% 0 0 0; }
 
 .pure-button {
-  /*nästa- och återställknappen*/
+  /*återställknappen*/
   font-size: 76%;
   font-weight: bold;
   padding: 1% 2.5% 1% 2.5%;
   height: 35px; }
 
-.navigation-button-group > #enrollMakeNewRequestForm\:nextButton {
+#requestInfoForm\:confirmRequestButton {
+  /*confirm request-knappen*/
   background: #e9af13;
-  color: #fff;
-  float: right;
-  margin: 0 2% 0 0; }
+  color: #fff; }
 
-.navigation-button-group > #enrollMakeNewRequestForm\:nextButton:hover,
-.navigation-button-group > #enrollMakeNewRequestForm\:nextButton:focus {
+#requestInfoForm\:confirmRequestButton:hover,
+#requestInfoForm\:confirmRequestButton:focus {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
   background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
@@ -183,6 +190,8 @@ ul.pure-menu-children {
   background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
   background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
 
+/*FÖLJANDE KOD BEHÖVS EV INTE EFTERSOM DENNA KNAPP EV TAGITS BORT*/
+/*SLUT: FÖLJANDE KOD BEHÖVS EV INTE EFTERSOM DENNA KNAPP EV TAGITS BORT*/
 .navigation-button-group > #enrollMakeNewRequestForm\:resetButton {
   float: left;
   margin: 0 0 0 2%; }
@@ -198,14 +207,33 @@ table.pure-table > tbody > tr {
 table.pure-table > tbody > a {
   color: #e9af13;
   text-decoration: none; }
-  table.pure-table > tbody > a:hover {
+  table.pure-table > tbody > a a:hover {
     text-decoration: underline; }
 
-/*
-> table.pure-table {
-  color:#fff;
-}
-*/
+#requestTemplateForm\:selectKeyPairGeneration {
+  /*radioknappar make a request > select request-template > key-pair generation*/
+  margin: 0;
+  padding: 0; }
+
+#requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset {
+  /*make a request > confirm request-fältet*/
+  margin-top: 1%; }
+  #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > label {
+    /* listan i confirm request*/
+    margin-left: 2%;
+    width: 31%; }
+
+textarea#keyPairForm\:certificateRequest {
+  /* make request > Upload CSR > formuläret */
+  width: 98%;
+  margin: 0 auto 2% auto;
+  display: block; }
+
+#newFileInput {
+  /* make request > Upload CSR > knappen+texten */
+  margin-left: 5%;
+  color: #fff; }
+
 .tabButton.active {
   background: #e9af13; }
 
@@ -238,13 +266,16 @@ table.pure-table > tbody > a {
 #contentForm\:parentCriteriaStatus {
   margin: 1% 1% 2% 0; }
 
-#contentForm\:j_idt185 {
+/*Kod för show more options-knapp som förmodligen inte behövs*/
+/*SLUT: Kod för show more options-knapp som förmodligen inte behövs*/
+/*NY search for certificates >  show more-knapp */
+.detailsForm\:j_idt87\:showMoreLessDetailsButton {
   background: #e9af13;
-  color: #fff; }
+  color: #fff;
+  width: 75%; }
 
-/*slut på dropdowns i search*/
-#contentForm\:j_idt185:hover,
-#contentForm\:j_idt185:focus {
+.detailsForm\:j_idt87\:showMoreLessDetailsButton:hover,
+.detailsForm\:j_idt87\:showMoreLessDetailsButton:focus {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
   background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
@@ -252,6 +283,8 @@ table.pure-table > tbody > a {
   background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
   background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
 
+/*NY search for certificates >  show more-knapp */
+/*knappar: kod som förmodligen inte behövs*/
 #contentForm\:j_idt94 {
   background: #e9af13;
   color: #fff; }
@@ -293,6 +326,7 @@ table.pure-table > tbody > a {
   background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
   background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
 
+/*SLUT: knappar: kod som förmodligen inte behövs*/
 .row-odd {
   background: none; }
 
@@ -335,6 +369,7 @@ table.pure-table > tbody > a {
   background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
   background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
 
+/*kanpp kod som förmodligen inte behövs*/
 #contentForm\:j_idt177 {
   background: #e9af13;
   color: #fff; }
@@ -348,6 +383,7 @@ table.pure-table > tbody > a {
   background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
   background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
 
+/*SLUT: kanpp kod som förmodligen inte behövs*/
 .keygeneration-button-group {
   color: #fff;
   margin: 2% 0 0 0; }
@@ -359,19 +395,15 @@ a {
   color: #e9af13;
   text-decoration: none; }
 
-/*
-.pure-table td {
-  background: #fff;
-}
-*/
-.contentForm\:more {
-  margin-top: 20px; }
+#contentForm > #contentForm\:more {
+  margin-top: 20px;
+  width: 83%; }
 
-.contentForm\:more > span.pure-g > div.pure-u-1 > div.pure-control-group > label {
+#contentForm > #contentForm\:more > span.pure-g > div.pure-u-1 > div.pure-control-group > label {
   /* "max results"-texten i search for certificates */
   text-align: left; }
 
-div.contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
+#contentForm > #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
   /* första boxen för "max results"-texten i search for certificates */
   width: 19%; }
 
@@ -422,14 +454,14 @@ div.contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
 .bodyText {
   color: #fff; }
 
-#contentForm\:j_idt178 {
+#contentForm\:showMoreButton {
   /*showmore-knapp search for certificates*/
   background: #e9af13;
   color: #fff;
   width: 75%; }
 
-#contentForm\:j_idt178:hover,
-#contentForm\:j_idt178:focus {
+#contentForm\:showMoreButton:hover,
+#contentForm\:showMoreButton:focus {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
   background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
@@ -437,14 +469,14 @@ div.contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
   background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
   background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
 
-#contentForm\:j_idt159 {
-  /*showmore-knapp search for end entities*/
+#contentForm\:showLessButton {
+  /*showelss-knapp search for certificates*/
   background: #e9af13;
   color: #fff;
   width: 75%; }
 
-#contentForm\:j_idt159:hover,
-#contentForm\:j_idt159:focus {
+#contentForm\:showLessButton:hover,
+#contentForm\:showLessButton:focus {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
   background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
@@ -452,6 +484,7 @@ div.contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
   background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
   background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
 
+/*SLUT: knappar kod som förmodligen inte beövs*/
 #enrollMakeNewRequestForm\:requestPreview > fieldset > .pure-u-lg-2-3 {
   color: #fff; }
 
@@ -461,10 +494,38 @@ div.contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
   font-style: italic; }
 
 #viewRequestTable {
-  margin: 1% 0 1% 2%; }
+  margin: 1% 0 4% 2%; }
 
-#requestApproveMessage {
-  margin-left: 2%; }
+#contentForm\:requestApproveMessage {
+  margin: 1% 0 0 2%; }
+
+.statusFailed {
+  color: #ed6a5f; }
+
+.viewButton {
+  /*view-knappen i search for certificates*/
+  color: #e9af13;
+  background: none; }
+
+.viewButton:hover {
+  text-decoration: underline; }
+
+#detailsForm\:j_idt87\:showMoreCertificateDetails {
+  /* search for certificates > view > showMoreDetails */
+  width: 90%;
+  margin-left: 3%;
+  margin-bottom: 5%; }
+
+#detailsForm\:j_idt87\:downloadFormatLinks:hover {
+  text-decoration: underline; }
+
+#contentForm\:viewRequestPartitionTable > table {
+  /*tabellen under 'Partition Data' i Manage Requests > Needs Approval > View More */
+  margin: 1% 0 0 2%; }
+
+#cofirmRequestData {
+  /*Padding för innehållet i sista internal-fram (blå boxen) i make request*/
+  padding: 1% 0 0 2%; }
 
 .footer {
   height: 100px;
@@ -483,7 +544,7 @@ div.contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
 
 /*
 - - - Responsivise at breakpoint - - - - */
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   /* make tds into single column full width rows */
   tr, td {
     display: block;
@@ -543,6 +604,18 @@ div.contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
     background: #fff;
     padding-bottom: 16.5px; }
 
+  @-moz-document url-prefix() {
+    /*för Firefox */
+    .pure-menu-link {
+      padding-bottom: 17px; } }
+  /*För Retinaskärm*/ }
+@media (min-width: 992px) and (-webkit-min-device-pixel-ratio: 2), (min-width: 992px) and (min-resolution: 192dpi) {
+  @-moz-document url-prefix() {
+    /*för Firefox */
+    .pure-menu-link {
+      padding-bottom: 18px; } } }
+@media (min-width: 992px) {
+  /*SLUT för retinaskärm*/
   .enroll-menu-link:hover, .enroll-menu-link:focus {
     background: #fff; }
 
@@ -562,10 +635,6 @@ div.contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
     padding: 15px 0 0 0;
     text-align: center; }
 
-  @-moz-document url-prefix() {
-    .pure-menu-link {
-      padding-bottom: 18px;
-      /* or whatever fits best there */ } }
   .pure-menu.pure-menu-horizontal {
     /*centrerar menyvalen*/
     text-align: center; }
@@ -587,5 +656,15 @@ div.contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
     left: 50%;
     margin: 0 0 0 -12px;
     color: #fff; } }
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  body.ltrDirection, body.rtlDirection {
+    display: -ms-flexbox;
+    height: 100%; }
+
+  .footer {
+    display: -ms-flexbox; }
+
+  .content {
+    -ms-flex: 0 1 auto; } }
 
 /*# sourceMappingURL=w_e_style.css.map */
