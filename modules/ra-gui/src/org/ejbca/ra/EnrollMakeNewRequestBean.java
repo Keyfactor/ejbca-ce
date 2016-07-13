@@ -336,7 +336,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             List<String> subjectDnFieldsFromParsedCsr = CertTools.getX500NameComponents(pkcs10CertificateRequest.getSubject().toString());
             bothLoops: for (String subjectDnField : subjectDnFieldsFromParsedCsr) {
                 if(log.isDebugEnabled()){
-                    log.debug("Parsing the subject DN field '" + subjectDnField + "'...");
+                    log.debug("Parsing the subject DN field '" + subjectDnField + "' from CSR");
                 }
                 String[] nameValue = subjectDnField.split("=");
                 if (nameValue != null && nameValue.length == 2) {
