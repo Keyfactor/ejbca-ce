@@ -39,24 +39,9 @@
 
 				<h:panelGroup layout="block" rendered="#{enrollMakeNewRequestBean.selectRequestTemplateRendered}"
 					id="selectRequestTemplateOuterPanel">
-                    <h:panelGroup styleClass="pure-u-1">
-                        <h:panelGroup styleClass="pure-u-1-2">
-        					<h2>
-        						<h:outputText value="#{msg.enroll_select_request_template}" />
-        					</h2>
-                        </h:panelGroup>
-                        <h:panelGroup styleClass="pure-u-1-2" style="text-align: right;">
-                            <h:selectBooleanCheckbox id="renderNonModifiable" value="#{enrollMakeNewRequestBean.renderNonModifiable}"
-                                styleClass="jsShow" style="display: none;">
-                                <f:ajax event="change" execute="@this" render=":requestInfoForm @form"/>
-                            </h:selectBooleanCheckbox>
-                            <h:outputLabel for="renderNonModifiable" value="#{msg.enroll_render_non_modifiable_label}"
-                                styleClass="showNonModifiable jsShow" style="display: none;"/>
-                            <h:commandButton action="#{enrollMakeNewRequestBean.renderNonModifiableToggle}"
-                                value="#{enrollMakeNewRequestBean.renderNonModifiable ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
-                                styleClass="pure-button ra-button jsHide" immediate="true"/>
-                        </h:panelGroup>
-                    </h:panelGroup>
+					<h2>
+						<h:outputText value="#{msg.enroll_select_request_template}" />
+					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<fieldset>
 							<h:panelGroup layout="block" styleClass="pure-control-group"
@@ -119,11 +104,18 @@
 							</h:panelGroup>
 						</fieldset>
 
-						<h:commandButton id="applyRequestTemplateButton"
-							value="#{msg.enroll_update_request_template}"
-							styleClass="pure-button ra-button jsHide"
-							action="#{enrollMakeNewRequestBean.applyRequestTemplate}">
-						</h:commandButton>
+                        <fieldset>
+                            <h:commandButton id="applyRequestTemplateButton"
+                                value="#{msg.enroll_update_request_template}"
+                                styleClass="pure-button ra-button jsHide"
+                                action="#{enrollMakeNewRequestBean.applyRequestTemplate}">
+                            </h:commandButton>
+                            <h:commandButton action="#{enrollMakeNewRequestBean.renderNonModifiableTemplatesToggle}"
+                                value="#{enrollMakeNewRequestBean.renderNonModifiableTemplates ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
+                                styleClass="toggleMoreButton" immediate="true">
+                                <f:ajax execute="@this" render="@form"/>
+                            </h:commandButton>
+                        </fieldset>
                         <script>jsTouchUpDocument();</script>
 					</h:panelGroup>
 				</h:panelGroup>
@@ -149,12 +141,9 @@
                                 });
                             </script>
 						</h:panelGroup>
-						<br />
-						<h:panelGroup>
-							<h:inputTextarea id="certificateRequest" styleClass="fineprintMono" style="line-height: 100%;"
-								value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80" rows="20"
-                                validator="#{enrollMakeNewRequestBean.validateCsr}"/>
-						</h:panelGroup>
+						<h:inputTextarea id="certificateRequest" styleClass="fineprintMono" style="line-height: 100%;"
+							value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80" rows="20"
+                            validator="#{enrollMakeNewRequestBean.validateCsr}"/>
 						<h:message for="certificateRequest" id="certificateRequestMessage" />
                         <br/>
                         <h:commandButton id="uploadCsrButton" value="#{msg.enroll_upload_csr}" styleClass="pure-button ra-button"
@@ -196,23 +185,9 @@
 				<h:panelGroup layout="block"
 					rendered="#{enrollMakeNewRequestBean.provideRequestInfoRendered}"
 					id="requestInfoRendered">
-                   <h:panelGroup styleClass="pure-u-1">
-                        <h:panelGroup styleClass="pure-u-1-2">
-                            <h2>
-                                <h:outputText value="#{msg.enroll_provide_request_info}" />
-                            </h2>
-                        </h:panelGroup>
-                        <h:panelGroup styleClass="pure-u-1-2" style="text-align: right;">
-                            <h:selectBooleanCheckbox id="renderNonModifiable" value="#{enrollMakeNewRequestBean.renderNonModifiable}" styleClass="jsShow" style="display: none;">
-                                <f:ajax event="change" execute="@this" render=":requestTemplateForm @form"/>
-                            </h:selectBooleanCheckbox>
-                            <h:outputLabel for="renderNonModifiable" value="#{msg.enroll_render_non_modifiable_label}"
-                                styleClass="showNonModifiable jsShow" style="display: none;"/>
-                            <h:commandButton action="#{enrollMakeNewRequestBean.renderNonModifiableToggle}"
-                                value="#{enrollMakeNewRequestBean.renderNonModifiable ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
-                                styleClass="pure-button ra-button jsHide" immediate="true"/>
-                        </h:panelGroup>
-                    </h:panelGroup>
+                    <h2>
+                        <h:outputText value="#{msg.enroll_provide_request_info}" />
+                    </h2>
 					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.subjectDnRendered}">
 						<h:panelGroup layout="block">
 							<h3>
@@ -321,12 +296,19 @@
 								</h:panelGroup>
 							</ui:repeat>
 						</h:panelGroup>
-						<h:commandButton id="updateRequestPreview"
-							value="#{msg.enroll_update_request_preview}"
-							action="#{enrollMakeNewRequestBean.updateRequestDataToPreview}"
-							rendered="#{enrollMakeNewRequestBean.updateRequestPreviewButtonRendered}"
-							styleClass="pure-button ra-button jsHide">
-						</h:commandButton>
+                        <fieldset>
+    						<h:commandButton id="updateRequestPreview"
+    							value="#{msg.enroll_update_request_preview}"
+    							action="#{enrollMakeNewRequestBean.updateRequestDataToPreview}"
+    							rendered="#{enrollMakeNewRequestBean.updateRequestPreviewButtonRendered}"
+    							styleClass="pure-button ra-button jsHide">
+    						</h:commandButton>
+                            <h:commandButton action="#{enrollMakeNewRequestBean.renderNonModifiableFieldsToggle}"
+                                value="#{enrollMakeNewRequestBean.renderNonModifiableFields ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
+                                styleClass="toggleMoreButton" immediate="true">
+                                <f:ajax execute="@this" render="@form"/>
+                            </h:commandButton>
+                        </fieldset>
 						<script>jsTouchUpDocument();</script>
 					</h:panelGroup>
 				</h:panelGroup>
