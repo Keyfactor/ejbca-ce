@@ -14,6 +14,7 @@ package org.ejbca.ra;
 
 import java.io.Serializable;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
@@ -27,7 +28,9 @@ import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.util.ConcurrentCache;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
  * Managed bean with isAuthorized method. 
@@ -50,6 +53,13 @@ public class RaAccessBean implements Serializable {
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
     
+    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();
+
+    @PostConstruct
+    private void postContruct() {
+        this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken());
+    }
+
     private boolean isAuthorized(String... resources) {
         final AuthenticationToken authenticationToken = raAuthenticationBean.getAuthenticationToken();
         AccessSet myAccess;
@@ -96,7 +106,8 @@ public class RaAccessBean implements Serializable {
     }
     
     public boolean isAuthorizedToEnrollMakeRequest() {
-        return true; // TODO
+        // Authorized to make request if user have access to at least one end entity profile
+        return this.authorizedEndEntityProfiles.size()>1;
     }
     
     public boolean isAuthorizedToEnrollWithRequestId() {

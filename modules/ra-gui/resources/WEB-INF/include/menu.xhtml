@@ -54,20 +54,36 @@
                                         	<h:outputLink value="enrollwithrequestid.xhtml" styleClass="pure-menu-link enroll-menu-link"><h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}"/></h:outputLink>
                                         </li>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollSeeRequestStatus}">
-                                        <li class="pure-menu-item"><a href="#" class="pure-menu-link enroll-menu-link">See Request Status</a></li>
-                                    </ui:fragment><!-- Hiding until these items have been implemented
+									<!-- Hiding until these items have been implemented -->
+									<ui:remove>
                                     <ui:fragment rendered="#{raAccessBean.authorizedToEnrollRenewBrowserCert}">
                                         <li class="pure-menu-item"><a href="#" class="pure-menu-link enroll-menu-link">Renew Browser Certificate</a></li>
-                                    </ui:fragment>-->
+                                    </ui:fragment>
+                                    </ui:remove>
                                 </ul>
                             </li>
                         </ui:fragment>
-                        <ui:fragment rendered="#{raAccessBean.authorizedToCas}">
-                            <li class="pure-menu-item">
-                                <h:outputLink value="cas.xhtml" styleClass="pure-menu-link cas-menu-link"><h:outputText value="#{msg.menu_pagetitle_cas}"/></h:outputLink>
-                            </li>
-                        </ui:fragment>
+                        <ui:fragment rendered="#{raAccessBean.authorizedToSearch}">
+                        	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+                                <a href="#" id="search" class="pure-menu-link search-menu-link">Search</a>
+                               	<ul class="pure-menu-children">
+                                   	<ui:fragment rendered="#{raAccessBean.authorizedToSearchCerts}">
+                                       	<li class="pure-menu-item">
+                                           	<h:outputLink value="search_certs.xhtml" styleClass="pure-menu-link search-menu-link">
+                                           		<h:outputText value="#{msg.menu_pagetitle_search_certs}"/>
+                                           	</h:outputLink>
+                                      		</li>
+                                   	</ui:fragment>
+                                   	<ui:fragment rendered="#{raAccessBean.authorizedToSearchEndEntities}">
+                                   		<li class="pure-menu-item">
+                                    	    	<h:outputLink value="search_ees.xhtml" styleClass="pure-menu-link search-menu-link">
+                                    	    		<h:outputText value="#{msg.menu_pagetitle_search_ees}"/>
+                                    	    	</h:outputLink>
+                                      		</li>
+                                   	</ui:fragment>
+                               	</ul>
+                           	</li>
+                       	</ui:fragment>
                         <ui:fragment rendered="#{raAccessBean.authorizedToManageRequests}">
                         	<li class="pure-menu-item">
                             	<h:outputLink value="managerequests.xhtml" styleClass="pure-menu-link requests-menu-link">
@@ -75,36 +91,11 @@
                             	</h:outputLink>
                             </li>
                         </ui:fragment>
-                        <ui:fragment rendered="#{raAccessBean.authorizedToSearch}">
-                        	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
-                                <a href="#" id="search" class="pure-menu-link search-menu-link">Search</a>
-                                	<ul class="pure-menu-children">
-                                    	<ui:fragment rendered="#{raAccessBean.authorizedToSearchCerts}">
-                                        	<li class="pure-menu-item">
-                                            	<h:outputLink value="search_certs.xhtml" styleClass="pure-menu-link search-menu-link">
-                                            		<h:outputText value="#{msg.menu_pagetitle_search_certs}"/>
-                                            	</h:outputLink>
-                                       		</li>
-                                    	</ui:fragment>
-                                    	<ui:fragment rendered="#{raAccessBean.authorizedToSearchEndEntities}">
-                                    		<li class="pure-menu-item">
-                                     	    	<h:outputLink value="search_ees.xhtml" styleClass="pure-menu-link search-menu-link">
-                                     	    		<h:outputText value="#{msg.menu_pagetitle_search_ees}"/>
-                                     	    	</h:outputLink>
-                                       		</li>
-                                    	</ui:fragment>
-                                	</ul>
-                            	</li>
-                        	</ui:fragment>
-                        	<ui:remove>
-                        	<!-- Not yet implemented for 6.6.0, but put here as a placeholder. 
-                        <ui:fragment rendered="#{raAccessBean.authorizedToRoles}">
+                        <ui:fragment rendered="#{raAccessBean.authorizedToCas}">
                             <li class="pure-menu-item">
-                                <a href="#" id="rolesManagement" class="pure-menu-link">Roles Management</a>
+                                <h:outputLink value="cas.xhtml" styleClass="pure-menu-link cas-menu-link"><h:outputText value="#{msg.menu_pagetitle_cas}"/></h:outputLink>
                             </li>
                         </ui:fragment>
-                        -->
-                         </ui:remove>
                     	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
                         	<a href="#" id="language" class="pure-menu-link">Language</a>
                         	<ul class="pure-menu-children">
@@ -118,7 +109,16 @@
                         		</h:form>
                         	</ul>
                         </li>
+                        	<ui:remove>
+                        	<!-- Not yet implemented for 6.6.0, but put here as a placeholder. 
+                        <ui:fragment rendered="#{raAccessBean.authorizedToRoles}">
+                            <li class="pure-menu-item">
+                                <a href="#" id="rolesManagement" class="pure-menu-link">Roles Management</a>
+                            </li>
+                        </ui:fragment>
+                        -->
                         <li class="pure-menu-item pure-menu-allow-hover"><a href="#" class="pure-menu-link">Documentation</a></li>
+                         </ui:remove>
                         <ui:fragment rendered="#{raAuthenticationBean.publicUser}">
                             <li class="pure-menu-item"><a href="#" class="pure-menu-link">Login</a></li>
                         </ui:fragment>
