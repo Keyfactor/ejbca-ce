@@ -25,6 +25,7 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -45,13 +46,13 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
@@ -332,25 +333,55 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void uploadCsr() {
         //If PROVIDED BY USER key generation is selected, try fill Subject DN fields from CSR (Overwrite the fields set by previous CSR upload if any)
         if (getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum()) && algorithmFromCsr!=null) {
-            PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(getCertificateRequest());
-            List<String> subjectDnFieldsFromParsedCsr = CertTools.getX500NameComponents(pkcs10CertificateRequest.getSubject().toString());
-            bothLoops: for (String subjectDnField : subjectDnFieldsFromParsedCsr) {
-                if(log.isDebugEnabled()){
-                    log.debug("Parsing the subject DN field '" + subjectDnField + "' from CSR");
+            final PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(getCertificateRequest());
+            if (pkcs10CertificateRequest.getSubject()!=null) {
+                populateRequestFields(false, pkcs10CertificateRequest.getSubject().toString(), getSubjectDn().getFieldInstances());
+                getSubjectDn().update();
+            }
+            final Extension sanExtension = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectAlternativeName.getId());
+            if (sanExtension!=null) {
+                populateRequestFields(true, CertTools.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getFieldInstances());
+                getSubjectAlternativeName().update();
+            }
+            // Don't make the effort to populate Subject Directory Attribute fields. Too little real world use for that.
+        }
+    }
+    
+    private void populateRequestFields(final boolean isSubjectAlternativeName, final String subject, final Collection<FieldInstance> fieldInstances) {
+        final List<String> subjectFieldsFromParsedCsr = CertTools.getX500NameComponents(subject);
+        bothLoops: for (final String subjectField : subjectFieldsFromParsedCsr) {
+            if (log.isDebugEnabled()){
+                log.debug("Parsing the subject " + (isSubjectAlternativeName?"AN":"DN") + " field '" + subjectField + "'...");
+            }
+            final String[] nameValue = subjectField.split("=");
+            if (nameValue != null && nameValue.length == 2) {
+                final Integer dnId = isSubjectAlternativeName ? DnComponents.getDnIdFromAltName(nameValue[0]) : DnComponents.getDnIdFromDnName(nameValue[0]);
+                if (log.isDebugEnabled()) {
+                    log.debug(" dnId="+dnId);
                 }
-                String[] nameValue = subjectDnField.split("=");
-                if (nameValue != null && nameValue.length == 2) {
-                    Integer dnId = DnComponents.getDnIdFromDnName(nameValue[0]);
-                    if (dnId != null) {
-                        String profileName = DnComponents.dnIdToProfileName(dnId);
-                        if (profileName != null) {
-                            //In the case of multiple fields (etc. two CNs), find the first one with an empty value
-                            for(EndEntityProfile.FieldInstance fieldInstance : getSubjectDn().getFieldInstancesMap().get(profileName).values()){
-                                if(fieldInstance.isModifiable()){
+                if (dnId != null) {
+                    //In the case of multiple fields (etc. two CNs), find the first modifiable with a non-default value
+                    for (final FieldInstance fieldInstance : fieldInstances) {
+                        if (DnComponents.profileIdToDnId(fieldInstance.getProfileId()) == dnId.intValue()) {
+                            if (fieldInstance.isModifiable()) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug(" fieldInstance.value="+fieldInstance.getValue() + " fieldInstance.defaultValue="+fieldInstance.getDefaultValue());
+                                }
+                                if (StringUtils.isEmpty(fieldInstance.getValue()) || fieldInstance.getValue().equals(fieldInstance.getDefaultValue())) {
                                     fieldInstance.setValue(nameValue[1]);
-                                    getSubjectDn().getFieldInstancesMap().get(profileName).put(fieldInstance.getNumber(), fieldInstance);
                                     if (log.isDebugEnabled()) {
-                                        log.debug(raLocaleBean.getMessage("enroll_subject_dn_field_successfully_parsed_from_csr", subjectDnField));
+                                        log.debug("Modifiable subject field '"+subjectField+"' successfully parsed from CSR");
+                                    }
+                                    continue bothLoops;
+                                }
+                            } else if (fieldInstance.isSelectable()) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug(" fieldInstance.value="+fieldInstance.getValue() + " fieldInstance.defaultValue="+fieldInstance.getDefaultValue());
+                                }
+                                if (fieldInstance.getSelectableValues().contains(nameValue[1])) {
+                                    fieldInstance.setValue(nameValue[1]);
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("Selectable subject field '"+subjectField+"' successfully parsed from CSR");
                                     }
                                     continue bothLoops;
                                 }
@@ -358,10 +389,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         }
                     }
                 }
-                log.info(raLocaleBean.getMessage("enroll_unparsable_subject_dn_field_from_csr", subjectDnField));
             }
-            getSubjectDn().update();
-            // TODO: Populate subject AN and DA fields
+            if (log.isDebugEnabled()) {
+                log.debug("Unparsable subject " + (isSubjectAlternativeName?"AN":"DN") + " field '"+ subjectField +
+                        "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+            }
         }
     }
 
@@ -398,7 +430,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void updateRequestDataToPreview(){
         getSubjectDn().update();
         getSubjectAlternativeName().update();
-        getSubjectDirectoryAttributes().updateValue();
+        getSubjectDirectoryAttributes().update();
     }
 
     /**
@@ -412,7 +444,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         //Update the EndEntityInformation data
         getSubjectDn().update();
         getSubjectAlternativeName().update();
-        getSubjectDirectoryAttributes().updateValue();
+        getSubjectDirectoryAttributes().update();
         
         //Fill End Entity information
         endEntityInformation.setCAId(getCAInfo().getCAId());
