@@ -125,7 +125,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
     
-    private boolean renderNonModifiable = false;
+    private boolean renderNonModifiableTemplates = false;
+    private boolean renderNonModifiableFields = false;
     //1. Select Request Template
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
@@ -235,30 +236,31 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
     public boolean isSelectEndEntityProfileRendered() {
         return getAvailableEndEntityProfiles().size()>1 ||
-                (getAvailableEndEntityProfiles().size()==1 && isRenderNonModifiable());
+                (getAvailableEndEntityProfiles().size()==1 && isRenderNonModifiableTemplates());
     }
     public boolean isSelectCertificateProfileRendered() {
         return StringUtils.isNotEmpty(getSelectedEndEntityProfile()) && (getAvailableCertificateProfiles().size()>1 ||
-                (getAvailableCertificateProfiles().size()==1 && isRenderNonModifiable()));
+                (getAvailableCertificateProfiles().size()==1 && isRenderNonModifiableTemplates()));
     }
     public boolean isSelectCertificateAuthorityRendered() {
         return StringUtils.isNotEmpty(getSelectedCertificateProfile()) && (getAvailableCertificateAuthorities().size()>1 ||
-                (getAvailableCertificateAuthorities().size()==1 && isRenderNonModifiable()));
+                (getAvailableCertificateAuthorities().size()==1 && isRenderNonModifiableTemplates()));
     }
     public boolean isSelectKeyPairGenerationRendered() {
         return StringUtils.isNotEmpty(getSelectedCertificateAuthority()) && (getAvailableKeyPairGenerations().size()>1 ||
-                (getAvailableKeyPairGenerations().size()==1 && isRenderNonModifiable()));
+                (getAvailableKeyPairGenerations().size()==1 && isRenderNonModifiableTemplates()));
     }
 
     /** @return true if the the selectKeyAlgorithm should be rendered */
     public boolean isSelectKeyAlgorithmRendered() {
         return KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum()) && (getAvailableAlgorithmSelectItems().size()>1 ||
-                (getAvailableAlgorithmSelectItems().size()==1 && isRenderNonModifiable()));
+                (getAvailableAlgorithmSelectItems().size()==1 && isRenderNonModifiableTemplates()));
     }
 
     /** @return true if the the CSR upload form should be rendered */
     public boolean isUploadCsrRendered() {
-        return getCertificateProfile()!=null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum());
+        return getEndEntityProfile()!=null && getCertificateProfile()!=null && getCAInfo()!=null &&
+                KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum());
     }
 
     public boolean isUploadCsrDoneRendered() {
@@ -322,8 +324,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         // NOOP here. Validators and setters do the real work.
     }
 
-    public void renderNonModifiableToggle() {
-        renderNonModifiable = !renderNonModifiable;
+    public void renderNonModifiableTemplatesToggle() {
+        renderNonModifiableTemplates = !renderNonModifiableTemplates;
+    }
+    public void renderNonModifiableFieldsToggle() {
+        renderNonModifiableFields = !renderNonModifiableFields;
     }
 
     public void uploadCsrChange() {
@@ -662,11 +667,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     /** @return true if fields that the client can't modify should still be rendered */
-    public boolean isRenderNonModifiable() {
-        return renderNonModifiable;
+    public boolean isRenderNonModifiableTemplates() {
+        return renderNonModifiableTemplates;
     }
-    public void setRenderNonModifiable(final boolean renderNonModifiable) {
-        this.renderNonModifiable = renderNonModifiable;
+    public void setRenderNonModifiableTemplates(final boolean renderNonModifiableTemplates) {
+        this.renderNonModifiableTemplates = renderNonModifiableTemplates;
+    }
+    /** @return true if fields that the client can't modify should still be rendered */
+    public boolean isRenderNonModifiableFields() {
+        return renderNonModifiableFields;
+    }
+    public void setRenderNonModifiableFields(final boolean renderNonModifiableFields) {
+        this.renderNonModifiableFields = renderNonModifiableFields;
     }
 
     public EndEntityProfile getEndEntityProfile() {
@@ -1151,7 +1163,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         // For the email fields "used" means use EE email address
         if (fieldInstance.isUsed() || DnComponents.DNEMAILADDRESS.equals(fieldInstance.getName()) || DnComponents.RFC822NAME.equals(fieldInstance.getName())) {
-            if (isRenderNonModifiable()) {
+            if (isRenderNonModifiableFields()) {
                 return true;
             }
             if ((!fieldInstance.isSelectable() && fieldInstance.isModifiable()) || (fieldInstance.isSelectable() && fieldInstance.getSelectableValues().size()>1)) {
