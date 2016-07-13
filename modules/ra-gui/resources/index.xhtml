@@ -31,16 +31,56 @@
             <h:panelGroup layout="block" class="header" id="title">
                 <h1><h:outputText value="#{msg.welcome_page_header}"/></h1>
             </h:panelGroup> 
-            <h:panelGroup layout="block" class="content-body" id="content-body">
-                <h:outputText value="#{msg.welcome_page_text}"/>
-            </h:panelGroup>
+            <h:panelGroup layout="block" class="content-body" id="content-body-request" rendered="#{raAccessBean.authorizedToEnrollMakeRequest}">
+                <h2><h:outputText value="Request new certificate"/></h2>
+                <fieldset>
+					<h:panelGroup layout="block" styleClass="pure-control-group">
+				        <h:outputText value="If you need to request a new certificate you use the function to make a new request. The types of certificates you can request depends on your privileges."/>
+				        <h:outputText value="After making a request, your request is sent for approval, or if you have enough privileges is approved immediately."/>
+				        <h:outputText value="When a request has been submitted for approval, you will be given a requestID. Save this requestID and use it to check the status of your request."/>
+					</h:panelGroup>
+					<h:panelGroup layout="block" id="makeRequestButtonGroup">
+					        <h:outputLink value="enrollmakenewrequest.xhtml" id="makeRequestButton" styleClass="pure-button ra-button">
+					        <h:outputText value="#{msg.menu_pagetitle_enroll_make_new_request}"/>
+			                </h:outputLink>
+					</h:panelGroup>
+				</fieldset>
+	        </h:panelGroup>
+            <h:panelGroup layout="block" class="content-body" id="content-body-requeststatus" rendered="#{raAccessBean.authorizedToEnrollWithRequestId}">
+   	            <h2><h:outputText value="Status of a certificate request"/></h2>
+       	        <fieldset>
+					<h:panelGroup layout="block" styleClass="pure-control-group">
+				        <h:outputText value="When you want to see the status of a request you have submitted. You can enter your requestID. If the request is not yet approved you will be provided with a status message."/>
+				        <h:outputText value="If you request has been approved you will be given the ability to finalize your request, which means retrieving the certificate for download."/>
+		            </h:panelGroup>
+					<h:panelGroup layout="block" id="requestStatusButtonGroup">
+					        <h:outputLink value="enrollwithrequestid.xhtml" id="requestStatusButton" styleClass="pure-button ra-button">
+					        <h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}"/>
+			                </h:outputLink>
+					</h:panelGroup>
+				</fieldset>
+	        </h:panelGroup>
+            <h:panelGroup layout="block" class="content-body" id="content-body-revocation" rendered="#{raAccessBean.authorizedToSearch}">
+   	            <h2><h:outputText value="Revoke existing certificate"/></h2>
+       	        <fieldset>
+					<h:panelGroup layout="block" styleClass="pure-control-group">
+				        <h:outputText value="In order to revoke a certificate you first find the certificate you want to revoke using the Search function."/>
+				        <h:outputText value="Once the certificate is found you can request revocation, which happens immediately if you have this privilege while looking at the certificate details."/>
+		            </h:panelGroup>
+					<h:panelGroup layout="block" id="searchCertsButtonGroup">
+					        <h:outputLink value="search_certs.xhtml" id="searchCertsButton" styleClass="pure-button ra-button">
+					        <h:outputText value="#{msg.search_certs_page_title}"/>
+			                </h:outputLink>
+					</h:panelGroup>
+				</fieldset>
+	        </h:panelGroup>
         
         <!-- Testing stuff below -->
         <ui:remove>
-        	<h:panelGroup layout="block" class="header" id="title">
+        	<h:panelGroup layout="block" class="header">
 				<h1>A Title!</h1>
 			</h:panelGroup>	
-        	<h:panelGroup layout="block" class="content-body" id="content-body">
+        	<h:panelGroup layout="block" class="content-body">
 				<h2 class="content-body-subhead">Generic Sample Text!</h2>
 	            <h:outputText value="#{msg.generic_sampleText}"/>
 		       
