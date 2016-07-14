@@ -470,7 +470,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setSendNotification(getEndEntityProfile().isRequired(EndEntityProfile.SENDNOTIFICATION, 0)
                 && getEndEntityProfile().getValue(EndEntityProfile.SENDNOTIFICATION, 0).equals(EndEntityProfile.TRUE)
                 && !endEntityInformation.getSendNotification());
-        log.error("SENDNOTIFICATION: "+endEntityInformation.getSendNotification());
         endEntityInformation.setTokenType(tokenType);
 
         //TODO how to set subject directory attributes?
