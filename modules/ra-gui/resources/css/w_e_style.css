@@ -31,7 +31,8 @@ body.rtlDirection {
 .content-body h3 {
   color: #fff;
   font-weight: lighter;
-  margin: 2% 0 2% 1.5%; }
+  margin: 2% 0 2% 1.5%;
+  width: 90%; }
 
 .pure-menu-heading {
   /*placering av header-logga*/
@@ -93,8 +94,15 @@ img.menu_logo {
   background: #4f6177;
   margin: 1% 0 4% 0; }
 
-#enrollMakeNewRequestForm\:internal-frame-black {
-  background: #000; }
+.internal-frame-black {
+  background: #000;
+  border-radius: 2px;
+  margin: 1% 0 4% 0; }
+
+.internal-frame-black > .keygeneration-button-group:nth-of-type(1) {
+  padding: 3% 2% 0 2%; }
+.internal-frame-black > .keygeneration-button-group:nth-of-type(2) {
+  padding: 0px 0px 2% 0; }
 
 #detailsForm {
   background: #4f6177;
@@ -287,47 +295,6 @@ input.detailsForm\:j_idt87\:showMoreLessDetailsButton {
 
 /*NY search for certificates >  show more-knapp */
 /*knappar: kod som förmodligen inte behövs*/
-#contentForm\:j_idt94 {
-  background: #e9af13;
-  color: #fff; }
-
-#contentForm\:j_idt94:hover,
-#contentForm\:j_idt94:focus {
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
-  background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
-  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.1));
-  background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
-  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
-
-#contentForm\:j_idt153 {
-  background: #e9af13;
-  color: #fff;
-  width: 75%; }
-
-#contentForm\:j_idt153:hover,
-#contentForm\:j_idt153:focus {
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
-  background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
-  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.1));
-  background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
-  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
-
-#contentForm\:j_idt152 {
-  background: #e9af13;
-  color: #fff;
-  width: 75%; }
-
-#contentForm\:j_idt152:hover,
-#contentForm\:j_idt152:focus {
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
-  background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
-  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.1));
-  background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
-  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
-
 /*SLUT: knappar: kod som förmodligen inte behövs*/
 .row-odd {
   background: none; }
@@ -494,6 +461,10 @@ a {
   /*tabellen under 'Partition Data' i Manage Requests > Needs Approval > View More */
   margin: 1% 0 0 2%; }
 
+#contentForm\:approvalButtonsPanel {
+  /*tabellen under 'Approve' i Manage Requests > Needs Aprroval > View More*/
+  margin: 1% 0 0 2%; }
+
 #cofirmRequestData {
   /*Padding för innehållet i sista internal-fram (blå boxen) i make request*/
   padding: 1% 0 0 2%; }
@@ -561,6 +532,9 @@ a {
 
   #content-body > table.pure-table > tbody > tr > td > table > tbody > tr > td {
     background: none; } }
+@media (min-width: 48em) {
+  .content {
+    width: 45em; } }
 @media (min-width: 64em) {
   img.menu_logo {
     height: 2em; }
@@ -641,6 +615,32 @@ gamla
     display: -ms-flexbox; }
 
   .content {
-    -ms-flex: 0 1 auto; } }
+    -ms-flex: 0 1 auto; }
+
+  #contentForm > #contentForm:more > span.pure-g > div:nth-of-type(1).pure-u-1 {
+    width: 16%; }
+
+  #contentForm:issuedAfter {
+    width: 119%; }
+
+  #contentForm:issuedBefore {
+    width: 119%; }
+
+  #contentForm:expiresAfter {
+    width: 119%; }
+
+  #contentForm:expiresBefore {
+    width: 119%; }
+
+  #contentForm:revokedAfter {
+    width: 119%; }
+
+  #contentForm:revokedBefore {
+    width: 119%; }
+
+  #contentForm\:more > .pure-g > .pure-u-1:nth-of-type(3) {
+    margin: 0 0 0 3%; }
+  #contentForm\:more > .pure-g > .pure-u-1:nth-of-type(4) {
+    margin: 0 0 0 3%; } }
 
 /*# sourceMappingURL=w_e_style.css.map */
