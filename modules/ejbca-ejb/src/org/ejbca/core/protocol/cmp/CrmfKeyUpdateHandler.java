@@ -304,8 +304,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_MESSAGE_CHECK, errMsg);
             }
 
-        } catch (AuthorizationDeniedException | CADoesntExistsException | UserDoesntFullfillEndEntityProfile | WaitingForApprovalException
-                | InvalidAlgorithmException | CAOfflineException | IllegalValidityException | CertificateSerialNumberException
+        } catch (AuthorizationDeniedException | CADoesntExistsException | UserDoesntFullfillEndEntityProfile | InvalidAlgorithmException | CAOfflineException | IllegalValidityException | CertificateSerialNumberException
                 | NoSuchEndEntityException | CustomCertificateSerialNumberException | CryptoTokenOfflineException | IllegalKeyException
                 | SignRequestException | SignRequestSignatureException | IllegalNameException | CertificateCreateException
                 | CertificateRevokeException | FinderException | EjbcaException | CertificateExtensionException e) {

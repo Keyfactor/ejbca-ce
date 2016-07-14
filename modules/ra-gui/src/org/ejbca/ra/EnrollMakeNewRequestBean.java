@@ -56,6 +56,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.cesecore.ErrorCode;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -74,6 +75,7 @@ import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -472,8 +474,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 && !endEntityInformation.getSendNotification());
         endEntityInformation.setTokenType(tokenType);
 
-        //TODO how to set subject directory attributes?
-
         //Fill end-entity information (Username and Password)
         if(endEntityInformation.getUsername() == null || endEntityInformation.getUsername().isEmpty()){
             Map<Integer, EndEntityProfile.FieldInstance> commonNameFieldInstances = getSubjectDn().getFieldInstancesMap().get(DnComponents.COMMONNAME);
@@ -535,8 +535,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return null;
         } catch (WaitingForApprovalException e) {
             requestId = e.getApprovalId();
-            log.info(requestId);
-            log.info(e);
+            log.info(raLocaleBean.getMessage("enroll_waiting_for_approval_request_with_request_id_received", requestId));
             return null;
         }
         
@@ -549,8 +548,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 try {
                     ret = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
                 } catch (KeyStoreException | AuthorizationDeniedException e) {
-                    raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-                    log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
+                    ErrorCode errorCode = EjbcaException.getErrorCode(e);
+                    if(errorCode != null){
+                        if(errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)){
+                            raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
+                            log.error(raLocaleBean.getMessage("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue(), e.getMessage()), e);
+                        }else{
+                            raLocaleBean.addMessageError(errorCode);
+                            log.error(raLocaleBean.getErrorCodeMessage(errorCode), e);
+                        }
+                    }else{
+                        raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
+                        log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
+                    }
                 }
             } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())) {
                 try {

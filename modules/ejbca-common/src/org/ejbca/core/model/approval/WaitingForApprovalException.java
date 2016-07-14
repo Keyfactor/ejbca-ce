@@ -14,13 +14,16 @@ package org.ejbca.core.model.approval;
 
 import javax.xml.ws.WebFault;
 
+import org.cesecore.NonSensitiveCloneable;
+import org.ejbca.core.EjbcaException;
+
 /**
  * Exception thrown from actions that stop to wait for approvals
  * 
  * @version $Id$
  */
 @WebFault
-public class WaitingForApprovalException extends Exception {
+public class WaitingForApprovalException extends EjbcaException {
 
 	private static final long serialVersionUID = 6808192333114783496L;
     private int approvalId = 0;
@@ -44,6 +47,13 @@ public class WaitingForApprovalException extends Exception {
 	
 	public void setApprovalId(int approvalId){
 		this.approvalId = approvalId;
+	}
+	
+	@Override
+    public final NonSensitiveCloneable getNonSensitiveClone() {
+	    WaitingForApprovalException nonSensitiveClone = (WaitingForApprovalException)super.getNonSensitiveClone();
+	    nonSensitiveClone.setApprovalId(getApprovalId());
+	    return nonSensitiveClone;
 	}
 
 }

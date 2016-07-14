@@ -13,9 +13,13 @@
  
 package org.ejbca.core;
 
+import java.lang.reflect.InvocationTargetException;
+
 import javax.xml.ws.WebFault;
 
+import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
+import org.cesecore.NonSensitiveCloneable;
 
 
 /**
@@ -26,9 +30,11 @@ import org.cesecore.ErrorCode;
  * @version $Id$
  */
 @WebFault
-public class EjbcaException extends Exception {
+public class EjbcaException extends Exception implements NonSensitiveCloneable{
 
     private static final long serialVersionUID = -3754146611270578813L;
+    
+    //private static final Logger log = Logger.getLogger(EjbcaException.class);
 
     /** The error code describes the cause of the exception. */
     ErrorCode errorCode = null;
@@ -129,5 +135,43 @@ public class EjbcaException extends Exception {
      */
     public void setErrorCode(ErrorCode errorCode) {
         this.errorCode = errorCode;
+    }
+    
+    /**
+     * Get non sensitive clone of the exception. All other data except error code will be purged from the clone.
+     */
+    @Override
+    public NonSensitiveCloneable getNonSensitiveClone() {
+        try {
+            if (this.getClass().getConstructor(ErrorCode.class) != null) {
+                return this.getClass().getConstructor(ErrorCode.class).newInstance(getErrorCode());
+            } else {
+                EjbcaException e = (EjbcaException)this.getClass().getConstructor().newInstance();
+                e.setErrorCode(getErrorCode());
+                return e;
+            }
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+                | SecurityException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /** Get EJBCA ErrorCode from any exception that is, extends or just wraps EjbcaException
+     * or CesecoreException.
+     * @param exception exception or its cause from error code should be retrieved
+     * @return error code as ErrorCode object, or null if CesecoreException or EjbcaException could not be found
+     */
+    public static ErrorCode getErrorCode(Throwable exception){
+        if(exception == null){
+            return null;
+        }
+        if(exception instanceof EjbcaException){
+            return ((EjbcaException)exception).getErrorCode();
+        }else if(exception instanceof CesecoreException){
+            return ((CesecoreException)exception).getErrorCode();
+        }else{
+            return getErrorCode(exception.getCause());
+        }
     }
 }

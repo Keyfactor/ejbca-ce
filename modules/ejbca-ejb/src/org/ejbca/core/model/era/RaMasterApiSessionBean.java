@@ -1117,7 +1117,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         EndEntityExistsException, WaitingForApprovalException{
         try {
             endEntityManagementSessionLocal.addUser(admin, endEntity, clearpwd);
-        } catch (CADoesntExistsException | UserDoesntFullfillEndEntityProfile | EjbcaException e) {
+        } catch(WaitingForApprovalException e){
+            throw e;
+        }catch (CADoesntExistsException | UserDoesntFullfillEndEntityProfile | EjbcaException e) {
             log.error(e);
             return false;
         }

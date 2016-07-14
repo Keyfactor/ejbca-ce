@@ -13,6 +13,8 @@
  
 package org.cesecore;
 
+import java.lang.reflect.InvocationTargetException;
+
 import javax.xml.ws.WebFault;
 
 
@@ -26,7 +28,7 @@ import javax.xml.ws.WebFault;
  *
  */
 @WebFault
-public class CesecoreException extends Exception {
+public class CesecoreException extends Exception implements NonSensitiveCloneable {
 
     private static final long serialVersionUID = -3754146611270578813L;
 
@@ -129,5 +131,40 @@ public class CesecoreException extends Exception {
      */
     public void setErrorCode(final ErrorCode errorCode) {
         this.errorCode = errorCode;
+    }
+    
+    /**
+     * Get non sensitive clone of the exception. All other data except error code will be purged from the clone.
+     */
+    @Override
+    public NonSensitiveCloneable getNonSensitiveClone() {
+        try {
+            if (this.getClass().getConstructor(ErrorCode.class) != null) {
+                return this.getClass().getConstructor(ErrorCode.class).newInstance(getErrorCode());
+            } else {
+                CesecoreException e = (CesecoreException) this.getClass().getConstructor().newInstance();
+                e.setErrorCode(getErrorCode());
+                return e;
+            }
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+                | SecurityException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /** Get EJBCA ErrorCode from any exception that is, extends or just wraps CesecoreException
+     * @param exception exception or its cause from error code should be retrieved
+     * @return error code as ErrorCode object, or null if CesecoreException could not be found
+     */
+    public static ErrorCode getErrorCode(Throwable exception){
+        if(exception == null){
+            return null;
+        }
+        if(exception instanceof CesecoreException){
+            return ((CesecoreException)exception).getErrorCode();
+        }else{
+            return getErrorCode(exception.getCause());
+        }
     }
 }
