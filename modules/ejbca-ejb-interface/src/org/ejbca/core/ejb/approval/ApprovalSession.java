@@ -145,5 +145,5 @@ public interface ApprovalSession {
      * @throws IllegalQueryException
      */
     List<ApprovalDataVO> query(AuthenticationToken admin, Query query, int index, int numberofrows, String caAuthorizationString,
-            String endEntityProfileAuthorizationString, final String approvalProfileAuthorizationString) throws AuthorizationDeniedException, IllegalQueryException;
+            String endEntityProfileAuthorizationString) throws AuthorizationDeniedException, IllegalQueryException;
 }
