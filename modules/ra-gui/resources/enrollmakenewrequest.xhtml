@@ -111,6 +111,7 @@
                                 action="#{enrollMakeNewRequestBean.applyRequestTemplate}">
                             </h:commandButton>
                             <h:commandButton action="#{enrollMakeNewRequestBean.renderNonModifiableTemplatesToggle}"
+                                rendered="#{enrollMakeNewRequestBean.renderNonModifiableTemplatesRendered}"
                                 value="#{enrollMakeNewRequestBean.renderNonModifiableTemplates ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
                                 styleClass="toggleMoreButton" immediate="true">
                                 <f:ajax execute="@this" render="@form"/>
@@ -300,6 +301,7 @@
     							styleClass="pure-button ra-button jsHide">
     						</h:commandButton>
                             <h:commandButton action="#{enrollMakeNewRequestBean.renderNonModifiableFieldsToggle}"
+                                rendered="#{enrollMakeNewRequestBean.renderNonModifiableFieldsRendered}"
                                 value="#{enrollMakeNewRequestBean.renderNonModifiableFields ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
                                 styleClass="toggleMoreButton" immediate="true">
                                 <f:ajax execute="@this" render="@form"/>
