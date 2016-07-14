@@ -178,16 +178,16 @@ ejbca.ra.createFileUploadInput = function(newElementId, appendToElementId, onUpl
 	document.getElementById(appendToElementId).appendChild(newFileInput);
 };
 
-function toggleDetails(element) {
+function toggleDetails(element, show, hide) {
     var detailsId = element.id + 'Details';
     //alert(detailsId);
     var details = document.getElementById(detailsId);
     if (details.style.display == 'none') {
         details.style.display = 'block';
-        element.src = 'img/collapse.png';
+        element.value = hide;
     } else {
         details.style.display = 'none';
-        element.src = 'img/expand.png';
+        element.value = show;
     }
 }
 

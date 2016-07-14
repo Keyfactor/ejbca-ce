@@ -31,6 +31,10 @@
             <h:panelGroup layout="block" class="header" id="title">
                 <h1><h:outputText value="#{msg.welcome_page_header}"/></h1>
             </h:panelGroup> 
+            <script>
+    		var messageshowmore = '#{msg.enroll_render_non_modifiable_button_show}';
+    		var messagehidemore = '#{msg.enroll_render_non_modifiable_button_hide}';
+			</script>
             <h:panelGroup layout="block" class="content-body" id="content-body-request" rendered="#{raAccessBean.authorizedToEnrollMakeRequest}">
                 <h2><h:outputText value="Request new certificate"/></h2>
                 <fieldset>
@@ -38,14 +42,16 @@
 					        <h:outputLink value="enrollmakenewrequest.xhtml" id="makeRequestButton" styleClass="pure-button ra-button">
 					        <h:outputText value="#{msg.menu_pagetitle_enroll_make_new_request}"/>
 			                </h:outputLink>
-							<h:graphicImage value="img/expand.png" id="expandRequest" styleClass="pure-button ra-button" onclick="toggleDetails(this);"></h:graphicImage>
+                            <h:commandButton onclick="toggleDetails(this, messageshowmore, messagehidemore);" id="expandRequest"
+                                value="#{msg.enroll_render_non_modifiable_button_hide}"
+                                styleClass="toggleMoreButton"/>
 					</h:panelGroup>
 					<h:panelGroup id="expandRequestDetails" layout="block" style="display: block" styleClass="pure-control-group">
 				        <h:outputText value="If you need to request a new certificate you use the function to make a new request. The types of certificates you can request depends on your privileges."/>
 				        <h:outputText value="After making a request, your request is sent for approval, or if you have enough privileges is approved immediately."/>
 				        <h:outputText value="When a request has been submitted for approval, you will be given a requestID. Save this requestID and use it to check the status of your request."/>
 					</h:panelGroup>
-					<script>toggleDetails(document.getElementById("expandRequest"));</script>
+					<script>toggleDetails(document.getElementById("expandRequest"), messageshowmore, messagehidemore);</script>
 				</fieldset>
 	        </h:panelGroup>
             <h:panelGroup layout="block" class="content-body" id="content-body-requeststatus" rendered="#{raAccessBean.authorizedToEnrollWithRequestId}">
@@ -55,13 +61,15 @@
 					        <h:outputLink value="enrollwithrequestid.xhtml" id="requestStatusButton" styleClass="pure-button ra-button">
 					        <h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}"/>
 			                </h:outputLink>
-							<h:graphicImage value="img/expand.png" id="expandStatus" styleClass="pure-button ra-button" onclick="toggleDetails(this);"></h:graphicImage>
+                            <h:commandButton onclick="toggleDetails(this, messageshowmore, messagehidemore);" id="expandStatus"
+                                value="#{msg.enroll_render_non_modifiable_button_hide}"
+                                styleClass="toggleMoreButton"/>
 					</h:panelGroup>
 					<h:panelGroup id="expandStatusDetails" layout="block" style="display: block" styleClass="pure-control-group">
 				        <h:outputText value="When you want to see the status of a request you have submitted. You can enter your requestID. If the request is not yet approved you will be provided with a status message."/>
 				        <h:outputText value="If you request has been approved you will be given the ability to finalize your request, which means retrieving the certificate for download."/>
 		            </h:panelGroup>
-					<script>toggleDetails(document.getElementById("expandStatus"));</script>
+					<script>toggleDetails(document.getElementById("expandStatus"), messageshowmore, messagehidemore);</script>
 				</fieldset>
 	        </h:panelGroup>
             <h:panelGroup layout="block" class="content-body" id="content-body-revocation" rendered="#{raAccessBean.authorizedToSearch}">
@@ -71,13 +79,15 @@
 					        <h:outputLink value="search_certs.xhtml" id="searchCertsButton" styleClass="pure-button ra-button">
 					        <h:outputText value="#{msg.search_certs_page_title}"/>
 			                </h:outputLink>
-							<h:graphicImage value="img/expand.png" id="expandSearch" styleClass="pure-button ra-button" onclick="toggleDetails(this);"></h:graphicImage>
+                            <h:commandButton onclick="toggleDetails(this, messageshowmore, messagehidemore);" id="expandSearch"
+                                value="#{msg.enroll_render_non_modifiable_button_hide}"
+                                styleClass="toggleMoreButton"/>
 					</h:panelGroup>
 					<h:panelGroup id="expandSearchDetails" layout="block" style="display: block" styleClass="pure-control-group">
 				        <h:outputText value="In order to revoke a certificate you first find the certificate you want to revoke using the Search function."/>
 				        <h:outputText value="Once the certificate is found you can request revocation, which happens immediately if you have this privilege while looking at the certificate details."/>
 		            </h:panelGroup>
-					<script>toggleDetails(document.getElementById("expandSearch"));</script>
+					<script>toggleDetails(document.getElementById("expandSearch"), messageshowmore, messagehidemore);</script>
 				</fieldset>
 	        </h:panelGroup>
         
