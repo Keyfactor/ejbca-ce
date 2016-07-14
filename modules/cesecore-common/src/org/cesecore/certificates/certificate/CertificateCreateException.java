@@ -70,5 +70,4 @@ public class CertificateCreateException extends CesecoreException {
     public CertificateCreateException(ErrorCode errorCode, String msg) {
        super(errorCode, msg);
     }
-
 }
