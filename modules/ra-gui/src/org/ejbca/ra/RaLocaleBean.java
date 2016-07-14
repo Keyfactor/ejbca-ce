@@ -29,6 +29,7 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.ErrorCode;
 
 /**
  * JSF Managed Bean for handling localization of clients.
@@ -116,6 +117,11 @@ public class RaLocaleBean implements Serializable {
     public void addMessageError(final String messageKey, final Object...params) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, getMessage(messageKey, params), null));
     }
+    
+    /** Add a faces message with the localized error code message with level FacesMessage.SEVERITY_ERROR. */
+    public void addMessageError(ErrorCode errorCode) {
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, getErrorCodeMessage(errorCode), null));
+    }
 
     /** Add a faces message with the localized message summary with level FacesMessage.SEVERITY_WARN. */
     public void addMessageWarn(final String messageKey, final Object...params) {
@@ -172,6 +178,18 @@ public class RaLocaleBean implements Serializable {
             }
         }
         return sb.toString();
+    }
+    
+    /**
+     * Get localized error code.
+     * @param errorCode
+     * @return localized error code
+     */
+    public String getErrorCodeMessage(final ErrorCode errorCode){
+        if(errorCode == null){
+            return "???errorCodeNull???";
+        }
+        return getMessage("errorcode_" + errorCode.getInternalErrorCode());
     }
     
     /**
