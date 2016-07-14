@@ -215,7 +215,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         
         final List<ApprovalDataVO> approvals;
         try {
-            approvals = approvalSession.query(authenticationToken, query, 0, 100, "", "", ""); // authorization checks are performed afterwards
+            approvals = approvalSession.query(authenticationToken, query, 0, 100, "", ""); // authorization checks are performed afterwards
         } catch (AuthorizationDeniedException e) {
             // Not currently ever thrown by query()
             throw new IllegalStateException(e);
@@ -498,8 +498,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     approvalProfileSession);
             //approvals = approvalSession.query(authenticationToken, query, 0, 100, caAuthorizationString, endEntityProfileAuthorizationString, approvalProfileAuthorizationString);
             approvals = approvalSession.query(authenticationToken, query, 0, 100, 
-                    raAuthorization.getCAAuthorizationString(), endEntityProfileAuthorizationString, 
-                    raAuthorization.getApprovalProfileAuthorizationString());
+                    raAuthorization.getCAAuthorizationString(), endEntityProfileAuthorizationString);
         } catch (AuthorizationDeniedException e) {
             // Not currently ever thrown by query()
             throw new IllegalStateException(e);

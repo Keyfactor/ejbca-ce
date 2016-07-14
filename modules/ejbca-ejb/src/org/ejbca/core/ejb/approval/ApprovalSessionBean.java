@@ -304,7 +304,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<ApprovalDataVO> query(AuthenticationToken admin, Query query, int index, int numberofrows, String caAuthorizationString,
-            String endEntityProfileAuthorizationString, final String approvalProfileAuthorizationString) throws AuthorizationDeniedException, IllegalQueryException {
+            String endEntityProfileAuthorizationString) throws AuthorizationDeniedException, IllegalQueryException {
         log.trace(">query()");
         String customQuery = "";
         // Check if query is legal.
@@ -326,14 +326,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 customQuery += endEntityProfileAuthorizationString;
             } else {
                 customQuery += " AND " + endEntityProfileAuthorizationString;
-            }
-        }
-        
-        if (StringUtils.isNotEmpty(approvalProfileAuthorizationString)) {
-            if (StringUtils.isEmpty(customQuery)) {
-                customQuery += approvalProfileAuthorizationString;
-            } else {
-                customQuery += " AND " + approvalProfileAuthorizationString;
             }
         }
         
