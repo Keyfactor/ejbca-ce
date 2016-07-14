@@ -254,6 +254,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return StringUtils.isNotEmpty(getSelectedCertificateAuthority()) && (getAvailableKeyPairGenerations().size()>1 ||
                 (getAvailableKeyPairGenerations().size()==1 && isRenderNonModifiableTemplates()));
     }
+    /** @return true if there are hidden static template options */
+    public boolean isRenderNonModifiableTemplatesRendered() {
+        if (renderNonModifiableTemplates) {
+            return true;
+        }
+        return !isSelectEndEntityProfileRendered() || !isSelectCertificateProfileRendered() || !isSelectCertificateAuthorityRendered() || !isSelectKeyPairGenerationRendered();
+    }
 
     /** @return true if the the selectKeyAlgorithm should be rendered */
     public boolean isSelectKeyAlgorithmRendered() {
@@ -274,6 +281,40 @@ public class EnrollMakeNewRequestBean implements Serializable {
     /** @return the provideRequestInfoRendered */
     public boolean isProvideRequestInfoRendered() {
         return isKeyAlgorithmAvailable();
+    }
+    
+    /** @return true if not all fields are rendered by default */
+    public boolean isRenderNonModifiableFieldsRendered() {
+        if (renderNonModifiableFields) {
+            return true;
+        }
+        if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum()) && getAvailableAlgorithmSelectItems().size()<=1) {
+            return true;
+        }
+        if (getSubjectDn() != null) {
+            if (!isAllFieldInstancesRendered(getSubjectDn().getFieldInstances())) {
+                return true;
+            }
+        }
+        if (getSubjectAlternativeName() != null) {
+            if (!isAllFieldInstancesRendered(getSubjectAlternativeName().getFieldInstances())) {
+                return true;
+            }
+        }
+        if (getSubjectDirectoryAttributes() != null) {
+            if (!isAllFieldInstancesRendered(getSubjectDirectoryAttributes().getFieldInstances())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private boolean isAllFieldInstancesRendered(final Collection<FieldInstance> fieldInstances) {
+        for (final FieldInstance instance : fieldInstances) {
+            if (!isFieldInstanceRendered(instance)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** @return the provideRequestMetadataRendered */
