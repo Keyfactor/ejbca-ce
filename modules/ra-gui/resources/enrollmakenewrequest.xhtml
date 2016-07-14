@@ -429,6 +429,7 @@
 					</h:commandButton>
 				</h:panelGroup>
                 <script>jsTouchUpDocument();</script>
+                <ui:remove><!--
 				<script>
 				if(document.getElementById('requestInfoForm:useRequestIdLink') != null){
 					document.getElementById('requestInfoForm:useRequestIdLink').focus();
@@ -443,8 +444,8 @@
 				}else if(document.getElementById('requestTemplateForm:resetButton') != null){
 					document.getElementById('requestTemplateForm:resetButton').focus();
 				}
-					<!-- temp solution. proper highlighting solution is needed -->	
-				</script>
+				</script>-->
+                </ui:remove>
 			</h:form>
 		</h:panelGroup>
 	</ui:define>
