@@ -20,7 +20,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -90,37 +89,6 @@ public class RAAuthorization implements Serializable {
       }
       return authcastring;
     } 
-    
-    /**
-     * 
-     * @return a query friendly list of all authorized approvals. 
-     * @throws AuthorizationDeniedException if current administrator is not authorized to approvals
-     */
-    public String getApprovalProfileAuthorizationString() throws AuthorizationDeniedException {
-        boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
-        boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE  
-        authorizedToApproveCAActions = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
-        authorizedToApproveRAActions = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
-        if (!authorizedToApproveCAActions && !authorizedToApproveRAActions) {
-            throw new AuthorizationDeniedException("Not authorized to query approvals");
-        }
-        StringBuilder stringBuilder = new StringBuilder("");
-        if (authApprovalProfilesString == null) {
-            authApprovalProfilesString = "";
-            //As is the case for any approvals created prior to 6.6.0
-            stringBuilder.append("approvalProfileId IS NULL");
-            Set<Integer> profilesIds = approvalProfileSession.getApprovalProfileIdToNameMap().keySet();
-            for (Integer profileId : profilesIds) {
-                stringBuilder.append(" OR approvalProfileId = " + profileId);
-            }
-            authApprovalProfilesString = stringBuilder.toString();
-            if (!authApprovalProfilesString.equals("")) {
-                authApprovalProfilesString = "( " + authApprovalProfilesString + " )";
-            }
-        }
-        return authApprovalProfilesString;
-
-    }
     
     /**
      * @return a string of end entity profile privileges that should be used in the where clause of SQL queries, or null if no authorized end entity profiles exist.
