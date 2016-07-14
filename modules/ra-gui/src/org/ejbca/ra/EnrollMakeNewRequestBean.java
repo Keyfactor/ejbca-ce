@@ -287,7 +287,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     private boolean isKeyAlgorithmAvailable() {
-        if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
+        if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum()) && StringUtils.isNotEmpty(getSelectedAlgorithm())) {
             return true;
         }
         if (KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum()) && algorithmFromCsr!=null) {
@@ -917,8 +917,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     /** @return the availableAlgorithms */
     public List<SelectItem> getAvailableAlgorithmSelectItems() {
-        if (availableAlgorithmSelectItems == null) {
-            availableAlgorithmSelectItems = new ArrayList<>();
+        if (this.availableAlgorithmSelectItems == null) {
+            final List<SelectItem> availableAlgorithmSelectItems = new ArrayList<>();
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (certificateProfile!=null) {
                 final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
@@ -979,11 +979,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         }
                     }
                 }
-                if (availableAlgorithmSelectItems.size()>1 && StringUtils.isEmpty(getSelectedAlgorithm())) {
+                if (availableAlgorithmSelectItems.size()>1 && StringUtils.isEmpty(getSelectedAlgorithm(availableAlgorithmSelectItems))) {
                     availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
                 }
             }
             sortSelectItemsByLabel(availableAlgorithmSelectItems);
+            this.availableAlgorithmSelectItems = availableAlgorithmSelectItems;
         }
         return availableAlgorithmSelectItems;
     }
@@ -998,6 +999,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 } else if (item2.getValue()==null || (item2.getValue() instanceof String && ((String)item2.getValue()).isEmpty())) {
                     return Integer.MAX_VALUE;
                 }
+                if (item1.getLabel()==null) {
+                    return Integer.MIN_VALUE;
+                }
                 return item1.getLabel().compareTo(item2.getLabel());
             }
         });
@@ -1005,7 +1009,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     /** @return the selectedAlgorithm */
     public String getSelectedAlgorithm() {
-        final List<SelectItem> availableAlgorithmSelectItems = getAvailableAlgorithmSelectItems();
+        return getSelectedAlgorithm(getAvailableAlgorithmSelectItems());
+    }
+
+    /** @return the selectedAlgorithm */
+    private String getSelectedAlgorithm(final List<SelectItem> availableAlgorithmSelectItems) {
         if (availableAlgorithmSelectItems.size()==1) {
             selectedAlgorithm = String.valueOf(availableAlgorithmSelectItems.get(0).getValue());
         }
@@ -1018,7 +1026,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             }
             if (!found) {
-                setSelectedCertificateProfile(null);
+                selectedAlgorithm = null;
             }
         }
         return selectedAlgorithm;
