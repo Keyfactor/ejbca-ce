@@ -22,8 +22,10 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,6 +81,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -111,6 +114,7 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.GenerateToken;
@@ -443,9 +447,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!request.isSearchingWaitingForMe() && !request.isSearchingPending() && !request.isSearchingHistorical()) {
             return response; // not searching for anything. return empty response
         }
-        
-        // Filtering
+
         final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
+        Date newDate = new Date();
+        // TODO when should the start date be?
+        Date startDate = new Date(newDate.getTime() - (8 * 60 * 60 * 1000));
+        query.add(startDate, new Date());          
+
+        /*
+        // FIXME for some reason, these two if statements cause an IndexOutOfBound Exception when executing the query even when they are not executed.
+                 Need to be fixed, but will leave it commented out temporarily to get something to test approvals with.
+         
+        // Filtering
         // TODO should we limit to add/revoke end entity requests also?
         if (request.isSearchingHistorical()) {
             // Everything except waiting and "approved" (which means approved but not excecuted)
@@ -461,6 +474,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
             query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED));
         }
+        
         if (request.isSearchingWaitingForMe() || request.isSearchingPending()) {
             if (request.isSearchingHistorical()) {
                 query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
@@ -470,31 +484,22 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // Certain requests (not add end entity) can require the requesting admin to retry the action
             query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_APPROVED));
         }
-        
-        // Build CA authorization string (a part of the query) 
-        StringBuilder sb = new StringBuilder();
-        sb.append("caId IN (");
-        boolean first = true;
-        for (CAInfo ca : authorizedCas) {
-            if (!first) {
-                sb.append(',');
-            }
-            sb.append(ca.getCAId());
-            first = false;
-        }
-        sb.append(')');
-        final String caAuthorizationString = sb.toString();
-        
-        // TODO perform ee profile and approval profile authorization checks
-        final String endEntityProfileAuthorizationString = "";
-        final String approvalProfileAuthorizationString = "";
+        */
         
         // TODO use a more efficient method that doesn't use a starting index?
         //      perhaps modify the query method?
         //      or create a query manually? (in this case we need to construct either the ApprovalDataVO, or the RaApprovalRequestInfo directly)
+        
         final List<ApprovalDataVO> approvals;
         try {
-            approvals = approvalSession.query(authenticationToken, query, 0, 100, caAuthorizationString, endEntityProfileAuthorizationString, approvalProfileAuthorizationString);
+            String endEntityProfileAuthorizationString = getEndEntityProfileAuthorizationString(authenticationToken, AccessRulesConstants.APPROVE_END_ENTITY);
+            RAAuthorization raAuthorization = new RAAuthorization(authenticationToken, globalConfigurationSession,
+                    accessControlSession, null, caSession, endEntityProfileSession,  
+                    approvalProfileSession);
+            //approvals = approvalSession.query(authenticationToken, query, 0, 100, caAuthorizationString, endEntityProfileAuthorizationString, approvalProfileAuthorizationString);
+            approvals = approvalSession.query(authenticationToken, query, 0, 100, 
+                    raAuthorization.getCAAuthorizationString(), endEntityProfileAuthorizationString, 
+                    raAuthorization.getApprovalProfileAuthorizationString());
         } catch (AuthorizationDeniedException e) {
             // Not currently ever thrown by query()
             throw new IllegalStateException(e);
@@ -519,6 +524,81 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         return response;
+    }
+    
+    // TODO this method is copied from RAAuthorization because we couldn't use ComplexAccessControlSession. 
+    // We should find a way to use ComplexAccessControlSession here instead
+    private String getEndEntityProfileAuthorizationString(AuthenticationToken authenticationToken, String endentityAccessRule) throws AuthorizationDeniedException {
+        boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
+        boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
+     
+        authorizedToApproveCAActions = accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_APPROVECAACTION);
+
+        authorizedToApproveRAActions = accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+
+        if (!authorizedToApproveCAActions && !authorizedToApproveRAActions) {
+            throw new AuthorizationDeniedException("Not authorized to query apporvals");
+        }
+
+        String endentityauth = null;
+        GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        if (globalconfiguration.getEnableEndEntityProfileLimitations()){
+            endentityauth = getEndEntityProfileAuthorizationString(authenticationToken, true, endentityAccessRule);
+            if(authorizedToApproveCAActions && authorizedToApproveRAActions){
+                endentityauth = getEndEntityProfileAuthorizationString(authenticationToken, true, endentityAccessRule);
+                if(endentityauth != null){
+                  endentityauth = "(" + getEndEntityProfileAuthorizationString(authenticationToken, false, endentityAccessRule) + " OR endEntityProfileId=" + ApprovalDataVO.ANY_ENDENTITYPROFILE + " ) ";
+                }
+            }else if (authorizedToApproveCAActions) {
+                endentityauth = " endEntityProfileId=" + ApprovalDataVO.ANY_ENDENTITYPROFILE;
+            }else if (authorizedToApproveRAActions) {
+                endentityauth = getEndEntityProfileAuthorizationString(authenticationToken, true, endentityAccessRule);
+            }           
+            
+        }
+        return endentityauth == null ? endentityauth : endentityauth.trim();
+    }
+    
+    // TODO this method is copied from RAAuthorization because we couldn't use ComplexAccessControlSession. 
+    // We should find a way to use ComplexAccessControlSession here instead
+    private String getEndEntityProfileAuthorizationString(AuthenticationToken authenticationToken, boolean includeparanteses, String endentityAccessRule){
+        String authendentityprofilestring=null;
+          Collection<Integer> profileIds = new ArrayList<Integer>(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
+          Collection<Integer> result = getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY, profileIds);        
+          result.retainAll(this.endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, endentityAccessRule));
+          Iterator<Integer> iter = result.iterator();
+                              
+          while(iter.hasNext()){
+            if(authendentityprofilestring == null) {
+              authendentityprofilestring = " endEntityProfileId = " + iter.next().toString();   
+            } else {    
+              authendentityprofilestring = authendentityprofilestring + " OR endEntityProfileId = " + iter.next().toString();
+            }
+          }
+          
+          if(authendentityprofilestring != null) {
+            authendentityprofilestring = "( " + authendentityprofilestring + " )"; 
+          }
+        
+        return authendentityprofilestring; 
+      }
+    
+    // TODO this method is copied from ComplexAccessControlSession. We should find a way to use ComplexAccessControlSession here instead
+    private Collection<Integer> getAuthorizedEndEntityProfileIds(AuthenticationToken authenticationToken, String rapriviledge,
+            Collection<Integer> availableEndEntityProfileId) {
+        ArrayList<Integer> returnval = new ArrayList<Integer>();
+        Iterator<Integer> iter = availableEndEntityProfileId.iterator();
+        while (iter.hasNext()) {
+            Integer profileid = iter.next();
+            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rapriviledge)) {
+                returnval.add(profileid);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Admin not authorized to end entity profile: " + profileid);
+                }
+            }
+        }
+        return returnval;
     }
 
     @Override
