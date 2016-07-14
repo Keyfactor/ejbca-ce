@@ -61,11 +61,11 @@
     
                     <h:panelGroup id="basic" styleClass="pure-g">
                         <h:panelGroup id="parentGenericSearchString" styleClass="pure-u-1 pure-u-lg-4-5">
-                            <h:inputText id="genericSearchString" value="#{raSearchEesBean.genericSearchString}" styleClass="jsAutoFocusOnce jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
+                            <h:inputText id="genericSearchString" value="#{raSearchEesBean.genericSearchString}" styleClass="jsAutoFocusFirst jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
                                  title="#{msg.search_ees_page_criteria_generic_title}">
                                 <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
-                                    onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                    onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                             </h:inputText>
                         </h:panelGroup>
 
@@ -77,8 +77,8 @@
                             <h:selectOneMenu id="criteriaEepId" value="#{raSearchEesBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneEepAvailable}">
                                 <f:selectItems value="#{raSearchEesBean.availableEeps}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
-                                    onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                    onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
@@ -86,8 +86,8 @@
                             <h:selectOneMenu id="criteriaCpId" value="#{raSearchEesBean.criteriaCpId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneCpAvailable}">
                                 <f:selectItems value="#{raSearchEesBean.availableCps}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
-                                    onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                    onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
@@ -95,8 +95,8 @@
                             <h:selectOneMenu id="criteriaCaId" value="#{raSearchEesBean.criteriaCaId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneCaAvailable}">
                                 <f:selectItems value="#{raSearchEesBean.availableCas}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
-                                    onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                    onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
@@ -104,8 +104,8 @@
                             <h:selectOneMenu id="criteriaStatus" value="#{raSearchEesBean.criteriaStatus}" styleClass="pure-input-1">
                                 <f:selectItems value="#{raSearchEesBean.availableStatuses}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
-                                    onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                    onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
@@ -113,13 +113,13 @@
                             <h:commandButton id="showMoreButton" rendered="#{raSearchEesBean.moreOptions}" action="#{raSearchEesBean.moreOptionsAction}" value="#{msg.search_ees_page_lessoptions_command}"
                                 styleClass="pure-button ra-button">
                                 <f:ajax execute="@this" render=":contentForm:basic :contentForm:more :contentForm:filteredResults"
-                                    onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');if(data.status=='success'){jsTouchUpDocument();}"
-                                    onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');if(data.status=='success'){ejbca.ra.touchUpDocument();}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                             </h:commandButton>
                             <h:commandButton id="showLessButton" rendered="#{!raSearchEesBean.moreOptions}" action="#{raSearchEesBean.moreOptionsAction}" value="#{msg.search_ees_page_moreoptions_command}"
                                 styleClass="pure-button ra-button">
                                 <f:ajax execute="@this" render=":contentForm:basic :contentForm:more"
-                                    onevent="function(data){if(data.status=='success'){jsTouchUpDocument();}}"/>
+                                    onevent="function(data){if(data.status=='success'){ejbca.ra.touchUpDocument();}}"/>
                             </h:commandButton>
                         </h:panelGroup>
                     </h:panelGroup>
@@ -132,8 +132,8 @@
                                     <h:selectOneMenu id="criteriaMaxResults" value="#{raSearchEesBean.criteriaMaxResults}">
                                         <f:selectItems value="#{raSearchEesBean.availableMaxResults}"/>
                                         <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:selectOneMenu>
                                 </h:panelGroup>
                            </h:panelGroup>
@@ -144,8 +144,8 @@
                                     <h:inputText id="modifiedAfter" value="#{raSearchEesBean.modifiedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
                                         styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
                                         <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:modifiedAfterLabel" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:inputText>
                                 </h:panelGroup>
                                 <h:panelGroup layout="block" styleClass="pure-control-group">
@@ -153,8 +153,8 @@
                                     <h:inputText id="modifiedBefore" value="#{raSearchEesBean.modifiedBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
                                         styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
                                         <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:modifiedBeforeLabel" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:inputText>
                                 </h:panelGroup>
                         </h:panelGroup>
@@ -172,8 +172,8 @@
                                     <h:outputLabel for="sortCa" value="#{msg.search_ees_page_colhead_ca} #{raSearchEesBean.sortedByCa}"/>
                                     <h:commandButton id="sortCa" action="#{raSearchEesBean.sortByCa}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
                                         <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:commandButton>
                                 </f:facet>
                                 <h:outputText styleClass="fineprint" value="#{raSearchEndEntity.caName}"/>
@@ -183,8 +183,8 @@
                                     <h:outputLabel for="sortProfile" value="#{msg.search_ees_page_colhead_profile} #{raSearchEesBean.sortedByProfile}"/>
                                     <h:commandButton id="sortProfile" action="#{raSearchEesBean.sortByProfile}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
                                         <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:commandButton>
                                 </f:facet>
                                 <h:outputText styleClass="fineprint" value="#{raSearchEndEntity.eepName}"/>
@@ -195,8 +195,8 @@
                                     <h:outputLabel for="sortUsername" value="#{msg.search_ees_page_colhead_username} #{raSearchEesBean.sortedByUsername}"/>
                                     <h:commandButton id="sortUsername" action="#{raSearchEesBean.sortByUsername}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
                                         <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:commandButton>
                                 </f:facet>
                                 <h:outputText styleClass="fineprint" value="#{raSearchEndEntity.username}"/>
@@ -206,8 +206,8 @@
                                     <h:outputLabel for="sortSubject" value="#{msg.search_ees_page_colhead_subject} #{raSearchEesBean.sortedBySubject}"/>
                                     <h:commandButton id="sortSubject" action="#{raSearchEesBean.sortBySubject}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
                                         <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:commandButton>
                                 </f:facet>
                                 <h:panelGrid columns="1" styleClass="nopadding noborder">
@@ -220,8 +220,8 @@
                                     <h:outputLabel for="sortModified" value="#{msg.search_ees_page_colhead_updates} #{raSearchEesBean.sortedByModified}"/>
                                     <h:commandButton id="sortModified" action="#{raSearchEesBean.sortByModified}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
                                         <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:commandButton>
                                 </f:facet>
                                 <h:panelGrid columns="1" styleClass="nopadding noborder">
@@ -233,8 +233,8 @@
                                     <h:outputLabel for="sortStatus" value="#{msg.search_ees_page_colhead_status} #{raSearchEesBean.sortedByStatus}"/>
                                     <h:commandButton id="sortStatus" action="#{raSearchEesBean.sortByStatus}" value="#{msg.search_ees_page_sort_command}" style="display: none;">
                                         <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:commandButton>
                                 </f:facet>
                                 <h:panelGrid columns="1" styleClass="nopadding noborder">

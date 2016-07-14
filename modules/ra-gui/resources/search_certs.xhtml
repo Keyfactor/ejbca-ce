@@ -61,11 +61,11 @@
 	
 	                <h:panelGroup id="basic" styleClass="pure-g">
 	               		<h:panelGroup id="parentGenericSearchString" styleClass="pure-u-1 pure-u-lg-4-5">
-		                    <h:inputText id="genericSearchString" value="#{raSearchCertsBean.genericSearchString}" styleClass="jsAutoFocusOnce jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
+		                    <h:inputText id="genericSearchString" value="#{raSearchCertsBean.genericSearchString}" styleClass="jsAutoFocusFirst jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
 		                         title="#{msg.search_certs_page_criteria_generic_title}">
 		                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-		                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-		                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 		                    </h:inputText>
 	                    </h:panelGroup>
     
@@ -77,8 +77,8 @@
                             <h:selectOneMenu id="criteriaEepId" value="#{raSearchCertsBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneEepAvailable}">
 		                        <f:selectItems value="#{raSearchCertsBean.availableEeps}"/>
 		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-		                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-		                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 		                    </h:selectOneMenu>
 	                    </h:panelGroup>
 	                    
@@ -86,8 +86,8 @@
 		                    <h:selectOneMenu id="criteriaCpId" value="#{raSearchCertsBean.criteriaCpId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneCpAvailable}">
 		                        <f:selectItems value="#{raSearchCertsBean.availableCps}"/>
 		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-		                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-		                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 		                    </h:selectOneMenu>
 						</h:panelGroup>
 						
@@ -95,8 +95,8 @@
 		                    <h:selectOneMenu id="criteriaCaId" value="#{raSearchCertsBean.criteriaCaId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneCaAvailable}">
 		                        <f:selectItems value="#{raSearchCertsBean.availableCas}"/>
 		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-		                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-		                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 		                    </h:selectOneMenu>
 						</h:panelGroup>
 						
@@ -104,8 +104,8 @@
 		                    <h:selectOneMenu id="criteriaStatus" value="#{raSearchCertsBean.criteriaStatus}" styleClass="pure-input-1">
 		                        <f:selectItems value="#{raSearchCertsBean.availableStatuses}"/>
 		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-		                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-		                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 		                    </h:selectOneMenu>
 						</h:panelGroup>
 						
@@ -113,13 +113,13 @@
 		                    <h:commandButton id="showMoreButton" rendered="#{raSearchCertsBean.moreOptions}" action="#{raSearchCertsBean.moreOptionsAction}" value="#{msg.search_certs_page_lessoptions_command}"
 		                    	styleClass="pure-button ra-button">
 		                        <f:ajax execute="@this" render=":contentForm:basic :contentForm:more :contentForm:filteredResults"
-		                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');if(data.status=='success'){jsTouchUpDocument();}"
-		                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');if(data.status=='success'){ejbca.ra.touchUpDocument();}"
+		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 		                    </h:commandButton>
 		                    <h:commandButton id="showLessButton" rendered="#{!raSearchCertsBean.moreOptions}" action="#{raSearchCertsBean.moreOptionsAction}" value="#{msg.search_certs_page_moreoptions_command}"
 		                    	styleClass="pure-button ra-button">
 		                        <f:ajax execute="@this" render=":contentForm:basic :contentForm:more"
-		                            onevent="function(data){if(data.status=='success'){jsTouchUpDocument();}}"/>
+		                            onevent="function(data){if(data.status=='success'){ejbca.ra.touchUpDocument();}}"/>
 		                    </h:commandButton>
 						</h:panelGroup>
 	                </h:panelGroup>
@@ -132,8 +132,8 @@
 	                                <h:selectOneMenu id="criteriaMaxResults" value="#{raSearchCertsBean.criteriaMaxResults}">
 	                                    <f:selectItems value="#{raSearchCertsBean.availableMaxResults}"/>
 	                                    <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:selectOneMenu>
                                 </h:panelGroup>
 	                       </h:panelGroup>
@@ -143,8 +143,8 @@
                                     <h:inputText id="issuedAfter" value="#{raSearchCertsBean.issuedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
                                         styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
                                         <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:issuedAfterLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:inputText>
                                 </h:panelGroup>
                                 <h:panelGroup layout="block" styleClass="pure-control-group">
@@ -152,8 +152,8 @@
                                     <h:inputText id="issuedBefore" value="#{raSearchCertsBean.issuedBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
                                         styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
                                         <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:issuedBeforeLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:inputText>
                                  </h:panelGroup>
                             </h:panelGroup>
@@ -163,8 +163,8 @@
 	                                <h:inputText id="expiresAfter" value="#{raSearchCertsBean.expiresAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
 	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
 	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:expiresAfterLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:inputText>
 	                            </h:panelGroup>
 	                            <h:panelGroup layout="block" styleClass="pure-control-group">
@@ -172,8 +172,8 @@
 	                                <h:inputText id="expiresBefore" value="#{raSearchCertsBean.expiresBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
 	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
 	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:expiresBeforeLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:inputText>
                                  </h:panelGroup>
 							</h:panelGroup>
@@ -183,8 +183,8 @@
 	                                <h:inputText id="revokedAfter" value="#{raSearchCertsBean.revokedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
 	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
 	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:revokedAfterLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:inputText>
 	                            </h:panelGroup>
 	                            <h:panelGroup layout="block" styleClass="pure-control-group">	                            		                            
@@ -192,8 +192,8 @@
 	                                <h:inputText id="revokedBefore" value="#{raSearchCertsBean.revokedBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
 	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
 	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:revokedBeforeLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:inputText>
 	                            </h:panelGroup>
 							</h:panelGroup>
@@ -211,8 +211,8 @@
 	                                <h:outputLabel for="sortCa" value="#{msg.search_certs_page_colhead_ca} #{raSearchCertsBean.sortedByCa}"/>
 	                                <h:commandButton id="sortCa" action="#{raSearchCertsBean.sortByCa}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
 	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:commandButton>
 	                            </f:facet>
 	                            <h:outputText styleClass="fineprint" value="#{raSearchCertificate.caName}"/>
@@ -222,8 +222,8 @@
 	                                <h:outputLabel for="sortProfile" value="#{msg.search_certs_page_colhead_profile} #{raSearchCertsBean.sortedByProfile}"/>
 	                                <h:commandButton id="sortProfile" action="#{raSearchCertsBean.sortByProfile}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
 	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:commandButton>
 	                            </f:facet>
                                 <h:outputText styleClass="fineprint" value="#{raSearchCertificate.eepName}"/>
@@ -234,8 +234,8 @@
 	                                <h:outputLabel for="sortSerialNumber" value="#{msg.search_certs_page_colhead_serialnumber} #{raSearchCertsBean.sortedBySerialNumber}"/>
 	                                <h:commandButton id="sortSerialNumber" action="#{raSearchCertsBean.sortBySerialNumber}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
 	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:commandButton>
 	                            </f:facet>
 	                            <h:panelGrid columns="1" styleClass="nopadding noborder">
@@ -248,8 +248,8 @@
 	                                <h:outputLabel for="sortSubject" value="#{msg.search_certs_page_colhead_subject} #{raSearchCertsBean.sortedBySubject}"/>
 	                                <h:commandButton id="sortSubject" action="#{raSearchCertsBean.sortBySubject}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
 	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:commandButton>
 	                            </f:facet>
 	                            <h:panelGrid columns="1" styleClass="nopadding noborder">
@@ -262,8 +262,8 @@
                                     <h:outputLabel for="sortIssuance" value="#{msg.search_certs_page_colhead_notbefore} #{raSearchCertsBean.sortedByIssuance}"/>
                                     <h:commandButton id="sortIssuance" action="#{raSearchCertsBean.sortByIssuance}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
                                         <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                            onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:commandButton>
                                 </f:facet>
                                 <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.created}"/>
@@ -273,8 +273,8 @@
 	                                <h:outputLabel for="sortExpiration" value="#{msg.search_certs_page_colhead_notafter} #{raSearchCertsBean.sortedByExpiration}"/>
 	                                <h:commandButton id="sortExpiration" action="#{raSearchCertsBean.sortByExpiration}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
 	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:commandButton>
 	                            </f:facet>
                                 <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.expires}"/>
@@ -284,8 +284,8 @@
 	                                <h:outputLabel for="sortStatus" value="#{msg.search_certs_page_colhead_status} #{raSearchCertsBean.sortedByStatus}"/>
 	                                <h:commandButton id="sortStatus" action="#{raSearchCertsBean.sortByStatus}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
 	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:commandButton>
 	                            </f:facet>
 	                            <h:panelGrid columns="1" styleClass="nopadding noborder">
@@ -298,8 +298,8 @@
 	                                <h:outputLabel for="sortUsername" value="#{msg.search_certs_page_colhead_username} #{raSearchCertsBean.sortedByUsername}"/>
 	                                <h:commandButton id="sortUsername" action="#{raSearchCertsBean.sortByUsername}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
 	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){onAjaxError(data,'contentForm:filteredResults');}"/>
+	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:commandButton>
 	                            </f:facet>
 	                            <h:outputText styleClass="fineprint" value="#{raSearchCertificate.username}"/>
