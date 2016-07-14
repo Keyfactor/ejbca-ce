@@ -406,22 +406,22 @@
 					</h:panelGroup>
 				</h:panelGroup>
 
-				<h:panelGroup layout="block" styleClass="keygeneration-button-group"
-					rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
-					<h:outputText value="#{msg.enroll_request_was_successfully_sent}" />
-				</h:panelGroup>
-				<h:panelGroup layout="block" styleClass="keygeneration-button-group"
-					rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
-					<h:outputText value="#{msg.enroll_request_id}" />
-					<h:outputText value="#{enrollMakeNewRequestBean.requestId}" />
-				</h:panelGroup>
-				<h:panelGroup layout="block" styleClass="keygeneration-button-group"
-					rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
-					<h:outputLink value="enrollwithrequestid.xhtml" id="useRequestIdLink">
-						<h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}" />
-					</h:outputLink>
-				</h:panelGroup>
-
+                <h:panelGroup layout="block" styleClass="internal-frame-black" rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
+					<h:panelGroup layout="block" styleClass="keygeneration-button-group">
+						<h:outputText value="#{msg.enroll_request_was_successfully_sent}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="keygeneration-button-group"
+						rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
+						<h:outputText value="#{msg.enroll_request_id}" />
+						<h:outputText value="#{enrollMakeNewRequestBean.requestId}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="keygeneration-button-group">
+						<h:outputLink value="enrollwithrequestid.xhtml" id="useRequestIdLink">
+							<h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}" />
+						</h:outputLink>
+					</h:panelGroup>
+                </h:panelGroup>
+                
 				<h:panelGroup layout="block" id="navigationButtonGroup"
 					styleClass="navigation-button-group">
 					<h:commandButton id="resetButton" value="#{msg.generic_reset}"
