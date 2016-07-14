@@ -47,7 +47,7 @@
 							<h:panelGroup layout="block" styleClass="pure-control-group"
                                 rendered="#{enrollMakeNewRequestBean.selectEndEntityProfileRendered}">
 								<h:outputLabel for="selectEEPOneMenu" value="#{msg.enroll_certificate_type}" />
-								<h:selectOneMenu id="selectEEPOneMenu"
+								<h:selectOneMenu id="selectEEPOneMenu" styleClass="jsAutoFocusLast"
 									value="#{enrollMakeNewRequestBean.selectedEndEntityProfile}"
 									disabled="#{enrollMakeNewRequestBean.availableEndEntityProfileSelectItems.size()==1}">
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableEndEntityProfileSelectItems}"/>
@@ -62,7 +62,7 @@
 							<h:panelGroup layout="block" styleClass="pure-control-group"
                                 rendered="#{enrollMakeNewRequestBean.selectCertificateProfileRendered}">
 								<h:outputLabel for="selectCPOneMenu" value="#{msg.enroll_certificate_subtype}"/>
-								<h:selectOneMenu id="selectCPOneMenu"
+								<h:selectOneMenu id="selectCPOneMenu" styleClass="jsAutoFocusLast"
 									value="#{enrollMakeNewRequestBean.selectedCertificateProfile}"
 									disabled="#{enrollMakeNewRequestBean.availableCertificateProfileSelectItems.size()==1}">
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableCertificateProfileSelectItems}"/>
@@ -77,7 +77,7 @@
 							<h:panelGroup layout="block" styleClass="pure-control-group"
                                 rendered="#{enrollMakeNewRequestBean.selectCertificateAuthorityRendered}">
 								<h:outputLabel for="selectCAOneMenu" value="#{msg.enroll_certificate_authority}"/>
-								<h:selectOneMenu id="selectCAOneMenu"
+								<h:selectOneMenu id="selectCAOneMenu" styleClass="jsAutoFocusLast"
 									value="#{enrollMakeNewRequestBean.selectedCertificateAuthority}"
 									disabled="#{enrollMakeNewRequestBean.availableCertificateAuthoritySelectItems.size()==1}">
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableCertificateAuthoritySelectItems}"/>
@@ -91,11 +91,11 @@
 								rendered="#{enrollMakeNewRequestBean.selectKeyPairGenerationRendered}">
                                 <h:outputLabel for="selectKeyPairGenerationOneMenu" value="#{msg.enroll_key_pair_generation_label}"/>
                                 <h:panelGroup id="selectKeyPairGenerationOneMenu">
-                                    <h:selectOneRadio id="selectKeyPairGeneration"
-                                        value="#{enrollMakeNewRequestBean.selectedKeyPairGeneration}"
-                                        layout="lineDirection" styleClass="radio-button-table" style="display: inline-block;"
+                                    <h:selectOneRadio id="selectKeyPairGeneration" styleClass="radio-button-table"
+                                        value="#{enrollMakeNewRequestBean.selectedKeyPairGeneration}" 
+                                        layout="lineDirection" style="display: inline-block;"
                                         disabled="#{enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems.size()==1}">
-                                        <f:selectItems value="#{enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems}" styleClass="pure-radio" />
+                                        <f:selectItems value="#{enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems}"/>
                                         <f:validateRequired/>
                                         <f:ajax event="change" execute="@this" render=":globalMessages :keyPairForm :requestInfoForm @form"/>
                                     </h:selectOneRadio>
@@ -116,7 +116,7 @@
                                 <f:ajax execute="@this" render="@form"/>
                             </h:commandButton>
                         </fieldset>
-                        <script>jsTouchUpDocument();</script>
+                        <script>ejbca.ra.touchUpDocument(); ejbca.ra.handleAutoFocus();</script>
 					</h:panelGroup>
 				</h:panelGroup>
 
@@ -141,7 +141,7 @@
                                 });
                             </script>
 						</h:panelGroup>
-						<h:inputTextarea id="certificateRequest" styleClass="fineprintMono" style="line-height: 100%;"
+						<h:inputTextarea id="certificateRequest" styleClass="fineprintMono jsAutoFocusLast" style="line-height: 100%;"
 							value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80" rows="20"
                             validator="#{enrollMakeNewRequestBean.validateCsr}"/>
 						<h:message for="certificateRequest" id="certificateRequestMessage" />
@@ -161,6 +161,7 @@
                         </h:commandButton>
                     </h:panelGroup>
 				</h:panelGroup>
+                <script>ejbca.ra.handleAutoFocus();</script>
 
 			</h:form>
 
@@ -173,7 +174,8 @@
 					<h:panelGroup layout="block" styleClass="internal-frame">
 					<h:panelGroup layout="block" styleClass="pure-control-group">
 						<h:outputLabel for="selectAlgorithmOneMenu" value="#{msg.enroll_key_algorithm}" />
-						<h:selectOneMenu id="selectAlgorithmOneMenu" value="#{enrollMakeNewRequestBean.selectedAlgorithm}"
+						<h:selectOneMenu id="selectAlgorithmOneMenu" styleClass="jsAutoFocusLast"
+                            value="#{enrollMakeNewRequestBean.selectedAlgorithm}"
                             disabled="#{enrollMakeNewRequestBean.availableAlgorithmSelectItems.size()==1}">
 							<f:selectItems value="#{enrollMakeNewRequestBean.availableAlgorithmSelectItems}" />
 							<f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm:requestPreviewOuterPanel @form"/>
@@ -205,9 +207,8 @@
 										<h:outputLabel for="subjectDnField"
 											value="#{msg['subject_dn_'.concat(instance.name)]} *"
 											rendered="#{instance.required}" />
-										<h:inputText id="subjectDnField" value="#{instance.value}" styleClass="jsDelayKeyUp"
-											disabled="#{!instance.modifiable}"
-                                            rendered="#{!instance.selectable}">
+										<h:inputText id="subjectDnField" value="#{instance.value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
+											rendered="#{!instance.selectable}" disabled="#{!instance.modifiable}">
 											<f:validator validatorId="extendedRegexValidator" />
 											<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}"/>
 											<f:ajax event="change" execute="@this"
@@ -215,7 +216,7 @@
                                             <f:ajax event="keyup" execute="@this"
                                                 render=":requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
 										</h:inputText>
-										<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}">
+										<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
 											<f:selectItems value="#{instance.selectableValues}" />
 											<f:ajax event="change" execute="@this"
                                                 render=":requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
@@ -240,9 +241,8 @@
 									<h:outputLabel for="subjectAltNameField"
 										value="#{msg['subject_alternative_name_'.concat(instance.name)]} *"
 										rendered="#{instance.required}" />
-									<h:inputText id="subjectAltNameField" value="#{instance.value}"
-										styleClass="jsDelayKeyUp" rendered="#{!instance.selectable}"
-										disabled="#{!instance.modifiable}">
+									<h:inputText id="subjectAltNameField" value="#{instance.value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
+                                        rendered="#{!instance.selectable}" disabled="#{!instance.modifiable}">
 										<f:validator validatorId="extendedRegexValidator"/>
 										<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}"/>
 										<f:ajax event="change" execute="@this"
@@ -250,8 +250,7 @@
 										<f:ajax event="keyup" execute="@this"
                                             render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage"/>
 									</h:inputText>
-									<h:selectOneMenu value="#{instance.value}"
-										rendered="#{instance.selectable}">
+									<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
 										<f:selectItems value="#{instance.selectableValues}" />
 										<f:ajax event="change" execute="@this"
                                             render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage"/>
@@ -275,10 +274,8 @@
 									<h:outputLabel for="subjectDirectoryField"
 										value="#{msg['subject_directory_attributes_'.concat(instance.name)]} *"
 										rendered="#{instance.required}" />
-									<h:inputText id="subjectDirectoryField"
-										value="#{instance.value}" styleClass="jsDelayKeyUp"
-										rendered="#{!instance.selectable}"
-										disabled="#{!instance.modifiable}">
+									<h:inputText id="subjectDirectoryField" value="#{instance.value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
+										rendered="#{!instance.selectable}" disabled="#{!instance.modifiable}">
 										<f:validator validatorId="extendedRegexValidator"/>
 										<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}" />
 										<f:ajax event="change" execute="@this"
@@ -286,8 +283,7 @@
 										<f:ajax event="keyup" execute="@this"
 											render=":requestInfoForm:requestPreviewOuterPanel subjectDirectoryAttributesMessage"/>
 									</h:inputText>
-									<h:selectOneMenu value="#{instance.value}"
-										rendered="#{instance.selectable}">
+									<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
 										<f:selectItems value="#{instance.selectableValues}" />
 										<f:ajax event="change" execute="@this"
 											render=":requestInfoForm:requestPreviewOuterPanel subjectDirectoryAttributesMessage"/>
@@ -309,7 +305,7 @@
                                 <f:ajax execute="@this" render="@form"/>
                             </h:commandButton>
                         </fieldset>
-						<script>jsTouchUpDocument();</script>
+						<script>ejbca.ra.touchUpDocument(); ejbca.ra.handleAutoFocus();</script>
 					</h:panelGroup>
 				</h:panelGroup>
 
@@ -329,21 +325,21 @@
 							<h:panelGroup layout="block" styleClass="pure-control-group"
 								rendered="#{enrollMakeNewRequestBean.passwordRendered}">
 								<h:outputLabel for="passwordField" value="#{msg.enroll_password}" />
-								<h:inputSecret id="passwordField" value="#{enrollMakeNewRequestBean.endEntityInformation.password}">
+								<h:inputSecret id="passwordField" value="#{enrollMakeNewRequestBean.endEntityInformation.password}" styleClass="#{component.valid?'':'jsAutoFocusError'}">
 									<f:validateRequired/>
 								</h:inputSecret>
 								<h:message for="passwordField" id="passwordFieldMessage" />
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.passwordRendered}">
 								<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password}" />
-								<h:inputSecret id="passwordConfirmField" value="#{enrollMakeNewRequestBean.confirmPassword}">
+								<h:inputSecret id="passwordConfirmField" value="#{enrollMakeNewRequestBean.confirmPassword}" styleClass="#{component.valid?'':'jsAutoFocusError'}">
 									<f:validateRequired/>
 								</h:inputSecret>
 								<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" />
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.emailRendered}">
 								<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
-								<h:inputText id="emailField" value="#{enrollMakeNewRequestBean.endEntityInformation.email}" />
+								<h:inputText id="emailField" value="#{enrollMakeNewRequestBean.endEntityInformation.email}" styleClass="#{component.valid?'':'jsAutoFocusError'}"/>
 								<h:message for="emailField" id="emailFieldMessage" />
 							</h:panelGroup>
 						</fieldset>
@@ -428,24 +424,7 @@
 						action="#{enrollMakeNewRequestBean.reset}" immediate="true">
 					</h:commandButton>
 				</h:panelGroup>
-                <script>jsTouchUpDocument();</script>
-                <ui:remove><!--
-				<script>
-				if(document.getElementById('requestInfoForm:useRequestIdLink') != null){
-					document.getElementById('requestInfoForm:useRequestIdLink').focus();
-				}else if(document.getElementById('requestInfoForm:confirmRequestButton') != null){
-					document.getElementById('requestInfoForm:confirmRequestButton').focus();
-				}else if(document.getElementById('requestInfoForm:updateRequestPreviewButton') != null){
-					document.getElementById('requestInfoForm:updateRequestPreviewButton').focus();
-				}else if(document.getElementById('keyPairForm:uploadCsrButton') != null){
-					document.getElementById('keyPairForm:uploadCsrButton').focus();
-				}else if(document.getElementById('requestTemplateForm:updateRequestTemplateButton') != null){
-					document.getElementById('requestTemplateForm:updateRequestTemplateButton').focus();
-				}else if(document.getElementById('requestTemplateForm:resetButton') != null){
-					document.getElementById('requestTemplateForm:resetButton').focus();
-				}
-				</script>-->
-                </ui:remove>
+                <script>ejbca.ra.touchUpDocument(); ejbca.ra.handleAutoFocus();</script>
 			</h:form>
 		</h:panelGroup>
 	</ui:define>
