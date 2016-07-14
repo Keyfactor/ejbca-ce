@@ -305,14 +305,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 caName = cainfo.getName();
             } catch (AuthorizationDeniedException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Authorization to CA " + advo.getCAId() + " was denied. Returning null instead of the approval with id " + advo.getId());
+                    log.debug("Authorization to CA " + advo.getCAId() + " was denied. Returning null instead of the approval with ID " + advo.getId());
                 }
                 return null;
             } catch (CADoesntExistsException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Appproval request " + advo.getId() + " references CA id " + advo.getCAId() + " which doesn't exist");
+                    log.debug("Appproval request " + advo.getId() + " references CA ID " + advo.getCAId() + " which doesn't exist");
                 }
-                caName = "Missing CA id " + advo.getCAId();
+                caName = "Missing CA ID " + advo.getCAId();
             }
         }
         
@@ -382,7 +382,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final int newCalculatedId = approvalRequest.generateApprovalId();
         final Collection<ApprovalDataVO> advosNew = approvalSession.findApprovalDataVO(authenticationToken, newCalculatedId);
         if (advosNew.isEmpty()) {
-            throw new IllegalStateException("Approval with calculated id (approvalId) " + newCalculatedId + " could not be found");
+            throw new IllegalStateException("Approval with calculated ID (approvalId) " + newCalculatedId + " could not be found");
         }
         final ApprovalDataVO advoNew = advosNew.iterator().next();
         return getApprovalRequest(authenticationToken, advoNew);
@@ -1070,7 +1070,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.EDIT_END_ENTITY);
         Map<Integer, String> idToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
         IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
-        for(Integer id: ids){
+        for (Integer id : ids){
             authorizedEndEntityProfiles.put(id, idToNameMap.get(id), endEntityProfileSession.getEndEntityProfile(id));
         }
         return authorizedEndEntityProfiles;
@@ -1080,7 +1080,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken){
         IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
         List<Integer> authorizedCertificateProfileIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, CertificateConstants.CERTTYPE_ENDENTITY);
-        for(Integer certificateProfileId : authorizedCertificateProfileIds){
+        for (Integer certificateProfileId : authorizedCertificateProfileIds){
             CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
             String certificateProfilename = certificateProfileSession.getCertificateProfileName(certificateProfileId);
             authorizedCertificateProfiles.put(certificateProfileId, certificateProfilename, certificateProfile);
@@ -1092,8 +1092,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public CertificateProfile searchCertificateProfile(AuthenticationToken authenticationToken, int certificateProfileId){
         List<Integer> authorizedCertificateProfileIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, CertificateConstants.CERTTYPE_ENDENTITY);
-        for(Integer i: authorizedCertificateProfileIds){
-            if(i == certificateProfileId){
+        for (Integer i : authorizedCertificateProfileIds){
+            if (i == certificateProfileId){
                 return certificateProfileSession.getCertificateProfile(certificateProfileId);
             }
         }
@@ -1104,7 +1104,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken) {
         IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
         List<CAInfo> authorizedCAInfosList = caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
-        for(CAInfo caInfo : authorizedCAInfosList){
+        for (CAInfo caInfo : authorizedCAInfosList){
             if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
                 authorizedCAInfos.put(caInfo.getCAId(), caInfo.getName(), caInfo);
             }
