@@ -90,6 +90,8 @@ public class EjbcaException extends Exception implements NonSensitiveCloneable{
         super(exception);
         if (exception instanceof EjbcaException) {
         	errorCode = ((EjbcaException) exception).getErrorCode();
+        }else if(exception instanceof CesecoreException){
+            errorCode = ((CesecoreException) exception).getErrorCode();
         }
     }
 

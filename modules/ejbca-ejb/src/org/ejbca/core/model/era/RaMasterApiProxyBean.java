@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
-import java.security.KeyStoreException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +32,7 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 
 import org.apache.log4j.Logger;
+import org.cesecore.CesecoreException;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -41,7 +41,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.ejbca.core.ejb.ra.EndEntityExistsException;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
@@ -406,11 +406,11 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     
     @Override
     public boolean addUser(AuthenticationToken admin, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException,
-            EndEntityExistsException, WaitingForApprovalException {
+    EjbcaException, WaitingForApprovalException {
         for (final RaMasterApi raMasterApi : raMasterApis) {
             try {
                 if (raMasterApi.isBackendAvailable()) {
-                    return raMasterApi.addUser(admin, endEntity, clearpwd); //TODO check with Johan if this is ok?
+                    return raMasterApi.addUser(admin, endEntity, clearpwd); 
                 }
             } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                 // Just try next implementation
@@ -451,7 +451,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity)
-            throws AuthorizationDeniedException, KeyStoreException {
+            throws AuthorizationDeniedException, EjbcaException {
         for(final RaMasterApi raMasterApi : raMasterApis){
             if(raMasterApi.isBackendAvailable()){
                 try{
@@ -465,8 +465,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
-            byte[] certificateRequest) throws AuthorizationDeniedException {
+    public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, byte[] certificateRequest)
+            throws AuthorizationDeniedException, EjbcaException {
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {

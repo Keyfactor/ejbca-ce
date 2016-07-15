@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
@@ -76,7 +75,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.IdNameHashMap;
@@ -553,20 +551,31 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 log.info(raLocaleBean.getMessage("enroll_end_entity_has_been_successfully_added", endEntityInformation.getUsername()));
             } else {
                 raLocaleBean.addMessageInfo("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername());
-                log.error(raLocaleBean.getMessage("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername()));
+                log.info(raLocaleBean.getMessage("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername()));
                 return null;
             }
-        } catch (EndEntityExistsException e) {
-            raLocaleBean.addMessageInfo("enroll_username_already_exists", endEntityInformation.getUsername(), e.getMessage());
-            log.info(raLocaleBean.getMessage("enroll_username_already_exists", endEntityInformation.getUsername(), e.getMessage()), e);
-            return null;
         } catch (AuthorizationDeniedException e) {
-            raLocaleBean.addMessageInfo("enroll_unauthorized_operation", endEntityInformation.getUsername(), e.getMessage());
-            log.info(raLocaleBean.getMessage("enroll_unauthorized_operation", endEntityInformation.getUsername(), e.getMessage()), e);
+            raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
+            log.info(raLocaleBean.getMessage("enroll_unauthorized_operation", e.getMessage()), e);
             return null;
         } catch (WaitingForApprovalException e) {
             requestId = e.getApprovalId();
             log.info(raLocaleBean.getMessage("enroll_waiting_for_approval_request_with_request_id_received", requestId));
+            return null;
+        } catch(EjbcaException e){
+            ErrorCode errorCode = EjbcaException.getErrorCode(e);
+            if(errorCode != null){
+                if(errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)){
+                    raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
+                    log.info(raLocaleBean.getMessage("enroll_username_already_exists", endEntityInformation.getUsername()), e);
+                }else{
+                    raLocaleBean.addMessageError(errorCode);
+                    log.info(raLocaleBean.getErrorCodeMessage(errorCode), e);
+                }
+            }else{
+                raLocaleBean.addMessageError("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage());
+                log.info(raLocaleBean.getMessage("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage()), e);
+            }
             return null;
         }
         
@@ -578,27 +587,34 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
                 try {
                     ret = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
-                } catch (KeyStoreException | AuthorizationDeniedException e) {
+                } catch (AuthorizationDeniedException e) {
+                    raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
+                    log.info(raLocaleBean.getMessage("enroll_unauthorized_operation", e.getMessage()), e);
+                }catch(EjbcaException e){
                     ErrorCode errorCode = EjbcaException.getErrorCode(e);
                     if(errorCode != null){
                         if(errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)){
                             raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
-                            log.error(raLocaleBean.getMessage("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue(), e.getMessage()), e);
+                            log.info(raLocaleBean.getMessage("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue(), e.getMessage()), e);
                         }else{
                             raLocaleBean.addMessageError(errorCode);
-                            log.error(raLocaleBean.getErrorCodeMessage(errorCode), e);
+                            log.info(raLocaleBean.getErrorCodeMessage(errorCode), e);
                         }
                     }else{
-                        raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-                        log.error(raLocaleBean.getMessage("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
+                        raLocaleBean.addMessageError("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage());
+                        log.info(raLocaleBean.getMessage("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage()), e);
                     }
+                    return null;
                 }
             } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())) {
                 try {
                     endEntityInformation.getExtendedinformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
                     final byte[] certificateDataToDownload = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(),
                             endEntityInformation, CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
-                    if (tokenDownloadType == TokenDownloadType.PEM_FULL_CHAIN) {
+                    if(certificateDataToDownload == null){
+                        raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername());
+                        log.info(raLocaleBean.getMessage("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername()));
+                    } else if (tokenDownloadType == TokenDownloadType.PEM_FULL_CHAIN) {
                         X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
                         LinkedList<Certificate> chain = new LinkedList<Certificate>(getCAInfo().getCertificateChain());
                         chain.addFirst(certificate);
@@ -614,10 +630,20 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     } else {
                         ret = certificateDataToDownload;
                     }
-                } catch (CertificateParsingException | CertificateEncodingException | CMSException | AuthorizationDeniedException | IOException | ClassCastException e) {
-                    raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-                    log.info(raLocaleBean.getMessage("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage()), e);
-                }
+                } catch (AuthorizationDeniedException e) {
+                    raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
+                    log.info(raLocaleBean.getMessage("enroll_unauthorized_operation", e.getMessage()), e);
+                } catch (EjbcaException | CertificateEncodingException | CertificateParsingException | ClassCastException | CMSException | IOException e) {
+                    ErrorCode errorCode = EjbcaException.getErrorCode(e);
+                    if (errorCode != null) {
+                        raLocaleBean.addMessageError(errorCode);
+                        log.info(raLocaleBean.getErrorCodeMessage(errorCode), e);
+                    } else {
+                        raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
+                        log.info(raLocaleBean.getMessage("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(),
+                                e.getMessage()), e);
+                    }
+                } 
             }
             return ret;
         } finally {
@@ -651,7 +677,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             output.flush();
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
-            log.error(raLocaleBean.getMessage("enroll_token_could_not_be_downloaded", filename), e);
+            log.info(raLocaleBean.getMessage("enroll_token_could_not_be_downloaded", filename), e);
             raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", filename);
         }
     }
