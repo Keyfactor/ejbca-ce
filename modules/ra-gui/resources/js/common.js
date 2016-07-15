@@ -11,7 +11,12 @@
  *                                                                       *
  *************************************************************************/
 
-/* version: $Id$ */
+/* javascript functions declared to "use strict" to execute in strict mode.
+ * JS methods are put under the "ejbca.ra" namespace and only expose 
+ * those used explicitly by the RA pages. 
+ * I.e. methods has to called by ejbca.ra.toggleDetails()
+ * version: $Id$ 
+ */
 (function() {
     "use strict";
 
