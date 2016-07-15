@@ -10,27 +10,22 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ra;
+ package org.cesecore;
 
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
+ /**
+  * Must be used only with wrapping exceptions that still don't extends CesecoreException but they should do to
+  * reduce API signatures and later be refactored safely one by one.
+  * @version $Id$
+  */
+public class NonHandledCesecoreException extends RuntimeException {
 
-/**
- * An exception thrown when someone tries to create and end-entity that already exists.
- *
- * @version $Id$
- */
-public class EndEntityExistsException extends CesecoreException {
-
-    private static final long serialVersionUID = -6700250563735120223L;
-
-    public EndEntityExistsException() {
-        super();
-        setErrorCode(ErrorCode.USER_ALREADY_EXISTS);
+    private static final long serialVersionUID = 1L;
+    
+    public NonHandledCesecoreException(Throwable cause){
+        super(cause);
     }
     
-    public EndEntityExistsException(String msg) {
-        super(msg);
-        setErrorCode(ErrorCode.USER_ALREADY_EXISTS);
+    public NonHandledCesecoreException(String message, Throwable cause){
+        super(message, cause);
     }
 }
