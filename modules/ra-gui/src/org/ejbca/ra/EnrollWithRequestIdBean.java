@@ -132,27 +132,27 @@ public class EnrollWithRequestIdBean implements Serializable {
         if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN) {
             byte[] certificateRequest = endEntityInformation.getExtendedinformation().getCertificateRequest();
             if (certificateRequest == null) {
-                raLocaleBean.addMessageError("enrollwithrequestid_could_not_find_csr_inside_enrollment_request", endEntityInformation.getUsername());
-                log.error(raLocaleBean.getMessage("enrollwithrequestid_could_not_find_csr_inside_enrollment_request",
-                        endEntityInformation.getUsername()));
+                raLocaleBean.addMessageError("enrollwithrequestid_could_not_find_csr_inside_enrollment_request_with_request_id", requestId);
+                log.info("Could not find CSR inside enrollment request with request ID " + requestId);
                 return;
             }
             try {
                 generatedToken = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(), endEntityInformation,
                         certificateRequest);
+                log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
+                        endEntityInformation.getUsername());
                 downloadAsDer();
             } catch (AuthorizationDeniedException e){
                 raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
-                log.info(raLocaleBean.getMessage("enroll_unauthorized_operation", e.getMessage()), e);
+                log.info("You are not authorized to execute this operation", e);
             } catch (EjbcaException e) {
                 ErrorCode errorCode = EjbcaException.getErrorCode(e);
                 if (errorCode != null) {
                     raLocaleBean.addMessageError(errorCode);
-                    log.error(raLocaleBean.getErrorCodeMessage(errorCode), e);
+                    log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
                 } else {
                     raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-                    log.info(raLocaleBean.getMessage("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(),
-                            e.getMessage()), e);
+                    log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername(), e);
                 }
                 return;
             } finally {
@@ -166,8 +166,8 @@ public class EnrollWithRequestIdBean implements Serializable {
         } else {
             try {
                 byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
-                log.info(raLocaleBean.getMessage("enroll_token_has_been_successfully_generated", endEntityInformation.getTokenType(),
-                        endEntityInformation.getUsername()));
+                log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
+                        endEntityInformation.getUsername());
                 buffer.write(keystoreAsByteArray);
                 generatedToken = buffer.toByteArray();
                 if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS) {
@@ -177,16 +177,15 @@ public class EnrollWithRequestIdBean implements Serializable {
                 }
             } catch (AuthorizationDeniedException e){
                 raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
-                log.info(raLocaleBean.getMessage("enroll_unauthorized_operation", e.getMessage()), e);
+                log.info("You are not authorized to execute this operation", e);
             } catch (EjbcaException | IOException e) {
                 ErrorCode errorCode = EjbcaException.getErrorCode(e);
                 if (errorCode != null) {
                     raLocaleBean.addMessageError(errorCode);
-                    log.error(raLocaleBean.getErrorCodeMessage(errorCode), e);
+                    log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
                 } else {
-                    raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-                    log.info(raLocaleBean.getMessage("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(),
-                            e.getMessage()), e);
+                    raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
+                    log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
                 }
                 return;
             } finally {
@@ -244,7 +243,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             output.flush();
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
-            log.error(raLocaleBean.getMessage("enroll_token_could_not_be_downloaded", filename), e);
+            log.info("Token " + filename + " could not be downloaded", e);
             raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", filename);
         } finally {
             if (output != null) {
