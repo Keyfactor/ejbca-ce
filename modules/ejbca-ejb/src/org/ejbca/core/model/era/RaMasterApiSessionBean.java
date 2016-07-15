@@ -43,6 +43,8 @@ import javax.persistence.Query;
 import javax.persistence.QueryTimeoutException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.CesecoreException;
+import org.cesecore.NonHandledCesecoreException;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -1113,15 +1115,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public boolean addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd) throws AuthorizationDeniedException,
-        EndEntityExistsException, WaitingForApprovalException{
+    EjbcaException, WaitingForApprovalException{
         try {
             endEntityManagementSessionLocal.addUser(admin, endEntity, clearpwd);
-        } catch(WaitingForApprovalException e){
-            throw e;
-        }catch (CADoesntExistsException | UserDoesntFullfillEndEntityProfile | EjbcaException e) {
-            log.error(e);
-            return false;
-        }
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+            throw new NonHandledCesecoreException(e);
+        } catch (CesecoreException e) {
+            throw new EjbcaException(e.getErrorCode(), e);
+        } 
         
         return endEntityAccessSession.findUser(endEntity.getUsername()) != null;
     }
@@ -1141,7 +1142,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public byte[] generateKeystore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, KeyStoreException{
+    public byte[] generateKeystore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException{
         GenerateToken tgen = new GenerateToken(endEntityAuthenticationSessionLocal, endEntityAccessSession, endEntityManagementSessionLocal, caSession, keyRecoverySessionLocal, signSessionLocal);
         try {
             KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), endEntity.getExtendedinformation().getKeyStoreAlgorithmLength(), endEntity.getExtendedinformation().getKeyStoreAlgorithm(), endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
@@ -1149,12 +1150,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             keyStore.store(outputStream, endEntity.getPassword().toCharArray());
             return outputStream.toByteArray();
         } catch (Exception e) {
-            throw new KeyStoreException(e);
+            throw new NonHandledCesecoreException(e);
         }
     }
     
     @Override
-    public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, byte[] certificateRequest)throws AuthorizationDeniedException{
+    public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, byte[] certificateRequest)
+            throws AuthorizationDeniedException, EjbcaException {
         PKCS10RequestMessage req = null;
         req = RequestMessageUtils.genPKCS10RequestMessage(certificateRequest);
         req.setUsername(endEntity.getUsername());
@@ -1165,15 +1167,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
             X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             return cert.getEncoded();
-        } catch (NoSuchEndEntityException | CustomCertificateSerialNumberException | CryptoTokenOfflineException | IllegalKeyException
-                | CADoesntExistsException | SignRequestException | SignRequestSignatureException | AuthStatusException | AuthLoginException
-                | IllegalNameException | CertificateCreateException | CertificateRevokeException | CertificateSerialNumberException
-                | IllegalValidityException | CAOfflineException | InvalidAlgorithmException | CertificateExtensionException e) {
-            log.error(e);
+        } catch(CesecoreException e){
+            throw new EjbcaException(e);
         } catch (CertificateParsingException | CertificateEncodingException e) {
             throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage");
+        } catch (CertificateExtensionException e) {
+            throw new NonHandledCesecoreException(e);
         }
-        return null;
     }
 
     @Override

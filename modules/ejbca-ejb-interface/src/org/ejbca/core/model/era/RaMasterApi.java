@@ -16,6 +16,7 @@ import java.security.KeyStoreException;
 import java.util.List;
 import java.util.Map;
 
+import org.cesecore.CesecoreException;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -24,6 +25,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -128,12 +130,12 @@ public interface RaMasterApi {
      * @param endEntity end entity data as EndEntityInformation object
      * @param clearpwd 
      * @throws AuthorizationDeniedException
-     * @throws EndEntityExistsException if end entity already exists
+     * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
      * @throws WaitingForApprovalException if approval is required to finalize the adding of the end entity
      * @return true if used has been added, false otherwise
      */
     boolean addUser(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException,
-            EndEntityExistsException, WaitingForApprovalException;
+    EjbcaException, WaitingForApprovalException;
 
     /**
      * Deletes (end entity) user. Does not propagate the exceptions but logs them.
@@ -157,7 +159,7 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException
      * @throws KeyStoreException if something went wrong with keystore creation
      */
-    byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation) throws AuthorizationDeniedException, KeyStoreException;
+    byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation) throws AuthorizationDeniedException, EjbcaException;
 
     /**
      * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.
@@ -166,9 +168,10 @@ public interface RaMasterApi {
      * @param certificateRequest CSR as PKCS10CertificateRequst object
      * @return certificate binary data
      * @throws AuthorizationDeniedException
+     * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
      */
-    byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
-            byte[] certificateRequest) throws AuthorizationDeniedException;
+    byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, byte[] certificateRequest)
+            throws AuthorizationDeniedException, EjbcaException;
 
     /**
      * Finds end entity by its username.
