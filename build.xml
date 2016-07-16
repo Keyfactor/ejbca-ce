@@ -467,7 +467,7 @@
             <zipfileset prefix="lib" dir="${lib}">
                 <include name="bcpkix-jdk15on-154.jar"/>
                 <include name="bcprov-jdk15on-154.jar"/>
-                <include name="cert-cvc-1.4.4.jar" />
+                <include name="cert-cvc-1.4.5.jar" />
             	<!-- JBoss EAP 6 comes with a new Log4j and there may be issues if we bundle it. -->
                 <include name="log4j-1.2.16.jar" unless="jbosseap6-specials"/>
                 <include name="ldap.jar" />
