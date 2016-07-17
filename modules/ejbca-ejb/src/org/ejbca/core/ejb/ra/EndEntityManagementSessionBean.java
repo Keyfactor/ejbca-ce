@@ -1387,7 +1387,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 } catch (CADoesntExistsException e) {
                     // If CA does not exist, the user is a bit "weird", but things can happen in reality and CAs can disappear
                     // So the CA not existing should not prevent us from revoking the user.
-                    // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation 
+                    // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation
+                    log.info("Trying to revokeAndDelete an End Entity connected to a CA, with id "+caid+", that does not exist.");
+                    if (log.isDebugEnabled()) {
+                        log.debug("CADoesntExistsException for caid "+caid+": ", e);
+                    }
                 }
                 final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(data.getCertificateProfileId());
                 final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, 
@@ -1447,6 +1451,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             // If CA does not exist, the user is a bit "weird", but things can happen in reality and CAs can disappear
             // So the CA not existing should not prevent us from revoking the user.
             // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation 
+            log.info("Trying to revoke an End Entity connected to a CA, with id "+caid+", that does not exist.");
+            if (log.isDebugEnabled()) {
+                log.debug("CADoesntExistsException for caid "+caid+": ", e1);
+            }
         }
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(userData.getCertificateProfileId());
         final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, certProfile);
@@ -1610,6 +1618,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // If CA does not exist, the certificate is a bit "weird", but things can happen in reality and CAs can disappear
                 // So the CA not existing should not prevent us from revoking the certificate.
                 // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation 
+                log.info("Trying to revoke a certificate issued by a CA, with id "+caid+", that does not exist. IssuerDN='"+certificateData.getIssuerDN()+"'.");
+                if (log.isDebugEnabled()) {
+                    log.debug("CADoesntExistsException for caid "+caid+": ", e);
+                }
             }
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
             final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, 
