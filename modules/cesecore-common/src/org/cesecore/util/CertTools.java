@@ -3838,6 +3838,9 @@ public abstract class CertTools {
      * @return PKCS10CertificateRequest object
      */
     public static PKCS10CertificationRequest getCertificateRequestFromPem(final String pemEncodedCsr){
+        if(pemEncodedCsr == null){
+            return null;
+        }
         PKCS10CertificationRequest csr = null;
         final ByteArrayInputStream pemStream = new ByteArrayInputStream(pemEncodedCsr.getBytes(StandardCharsets.UTF_8));
         try (PEMParser pemParser = new PEMParser(new BufferedReader(new InputStreamReader(pemStream)));) {
