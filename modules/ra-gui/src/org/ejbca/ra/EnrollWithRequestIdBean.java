@@ -22,8 +22,10 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+import javax.faces.component.UIComponent;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.ErrorCode;
@@ -66,9 +68,10 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     private String requestId;
-    public int requestStatus;
-    EndEntityInformation endEntityInformation;
-    byte[] generatedToken;
+    private int requestStatus;
+    private EndEntityInformation endEntityInformation;
+    private byte[] generatedToken;
+    private String password;
 
     @PostConstruct
     private void postConstruct() {
@@ -117,7 +120,6 @@ public class EnrollWithRequestIdBean implements Serializable {
                 log.error("Could not find endEntity for the username='" + username + "'");
                 return;
             }
-            endEntityInformation.setPassword(username);
 
         }
     }
@@ -128,7 +130,6 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     public void finalizeEnrollment() {
         //Generate token
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN) {
             byte[] certificateRequest = endEntityInformation.getExtendedinformation().getCertificateRequest();
             if (certificateRequest == null) {
@@ -137,6 +138,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                 return;
             }
             try {
+                endEntityInformation.setPassword(endEntityInformation.getUsername());
                 generatedToken = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(), endEntityInformation,
                         certificateRequest);
                 log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
@@ -155,21 +157,16 @@ public class EnrollWithRequestIdBean implements Serializable {
                     log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername(), e);
                 }
                 return;
-            } finally {
-                if (buffer != null) {
-                    try {
-                        buffer.close();
-                    } catch (IOException e) {
-                    }
-                }
             }
         } else {
             try {
                 byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
                 log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
                         endEntityInformation.getUsername());
-                buffer.write(keystoreAsByteArray);
-                generatedToken = buffer.toByteArray();
+                try(ByteArrayOutputStream buffer = new ByteArrayOutputStream()){
+                    buffer.write(keystoreAsByteArray);
+                    generatedToken = buffer.toByteArray();
+                }        
                 if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS) {
                     downloadJks();
                 } else if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12) {
@@ -188,13 +185,6 @@ public class EnrollWithRequestIdBean implements Serializable {
                     log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
                 }
                 return;
-            } finally {
-                if (buffer != null) {
-                    try {
-                        buffer.close();
-                    } catch (IOException e) {
-                    }
-                }
             }
         }
         
@@ -255,8 +245,10 @@ public class EnrollWithRequestIdBean implements Serializable {
         }
     }
 
-    public boolean isUserGeneratedToken() {
-        return endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN;
+    public boolean isRenderPassword() {
+        return endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS ||
+                endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12||
+                        endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM;
     }
 
     //-----------------------------------------------------------------
@@ -300,5 +292,19 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     public void setGeneratedToken(byte[] generatedToken) {
         this.generatedToken = generatedToken;
+    }
+
+    /**
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

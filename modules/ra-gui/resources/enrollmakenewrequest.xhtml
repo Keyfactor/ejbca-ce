@@ -373,30 +373,30 @@
 							</h:commandButton>
 							<h:commandButton id="generatePem"
 								value="#{msg.enroll_generate_pem}"
-								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePem}"
+								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificatePem}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
 								styleClass="pure-button ra-button">
 							</h:commandButton>
 							<h:commandButton id="generatePemFullChain"
 								value="#{msg.enroll_generate_pem_full_chain}"
-								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePemFullChain}"
+								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificatePemFullChain}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
 								styleClass="pure-button ra-button">
 							</h:commandButton>
 							<h:commandButton id="generatePkcs7"
 								value="#{msg.enroll_generate_pkcs7}"
-								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificePksc7}"
+								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificatePksc7}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
 								styleClass="pure-button ra-button">
 							</h:commandButton>
 							<h:commandButton id="generateDer"
 								value="#{msg.enroll_generate_der}"
-								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificeDer}"
+								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificateDer}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
 								styleClass="pure-button ra-button">
 							</h:commandButton>
 							<h:commandButton id="confirmRequestButton" value="#{msg.enroll_confirm_request}"
-								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificeDer}"
+								action="#{enrollMakeNewRequestBean.confirmRequest}"
 								rendered="#{enrollMakeNewRequestBean.confirmRequestButtonRendered}"
 								styleClass="pure-button ra-button">
 							</h:commandButton>
@@ -404,7 +404,7 @@
 					</h:panelGroup>
 				</h:panelGroup>
 
-                <h:panelGroup layout="block" styleClass="internal-frame-black" rendered="#{enrollMakeNewRequestBean.requestId ne 0}">
+                <h:panelGroup layout="block" styleClass="internal-frame-black" rendered="#{enrollMakeNewRequestBean.requestIdInfoRendered}">
 					<h:panelGroup layout="block" styleClass="keygeneration-button-group">
 						<h:outputText value="#{msg.enroll_request_was_successfully_sent}" />
 					</h:panelGroup>
