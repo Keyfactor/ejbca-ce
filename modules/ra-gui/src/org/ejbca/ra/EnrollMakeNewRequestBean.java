@@ -534,8 +534,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         //Fill end-entity information (KeyStoreAlgorithm* or CertificateRequest)
         if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
             final String[] tokenKeySpecSplit = getSelectedAlgorithm().split("_");
-            endEntityInformation.getExtendedinformation().setKeyStoreAlgorithm(tokenKeySpecSplit[0]);
-            endEntityInformation.getExtendedinformation().setKeyStoreAlgorithmLength(tokenKeySpecSplit[1]);
+            endEntityInformation.getExtendedinformation().setKeyStoreAlgorithmType(tokenKeySpecSplit[0]);
+            endEntityInformation.getExtendedinformation().setKeyStoreAlgorithmSubType(tokenKeySpecSplit[1]);
         } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())) {
             try {
                 endEntityInformation.getExtendedinformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
