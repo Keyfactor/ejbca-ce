@@ -196,15 +196,6 @@ public interface RaMasterApi {
      */
     boolean changeCertificateStatus(AuthenticationToken authenticationToken, String fingerprint, int newStatus, int newRevocationReason)
             throws ApprovalException, WaitingForApprovalException;
-
-    /**
-     * Finds the certificate profile by certificate profile id
-     * 
-     * @param authenticationToken of the requesting administrator or client
-     * @param certificateProfileId certificate profile unique id
-     * @return certificate profile as CertificateProfile object or null if it can not be found
-     */
-    CertificateProfile searchCertificateProfile(AuthenticationToken authenticationToken, int certificateProfileId);
     
     
     /**
