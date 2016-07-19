@@ -1,4 +1,5 @@
 @charset "UTF-8";
+/* web express main SCSS */
 .web-express.tablet {
   display: none; }
 
@@ -21,6 +22,20 @@ body.rtlDirection .pure-menu-heading {
   min-height: 55px;
   font-weight: bold;
   background: #fff; }
+
+#menu > .pure-g > .pure-u-1:nth-of-type(2) > .pure-menu > .pure-menu-list {
+  /*Gör att huvudmenyns dropdown-menyval får marginaler*/ }
+  #menu > .pure-g > .pure-u-1:nth-of-type(2) > .pure-menu > .pure-menu-list > .pure-menu-item:nth-of-type(1) > .pure-menu-children > .pure-menu-item:nth-of-type(1) > a,
+  #menu > .pure-g > .pure-u-1:nth-of-type(2) > .pure-menu > .pure-menu-list .pure-menu-item:nth-of-type(2) > .pure-menu-children > .pure-menu-item:nth-of-type(1) > a {
+    padding-top: 12%;
+    padding-bottom: 0;
+    width: 100px; }
+  #menu > .pure-g > .pure-u-1:nth-of-type(2) > .pure-menu > .pure-menu-list > .pure-menu-item:nth-of-type(1) > .pure-menu-children > .pure-menu-item:nth-of-type(2) > a,
+  #menu > .pure-g > .pure-u-1:nth-of-type(2) > .pure-menu > .pure-menu-list .pure-menu-item:nth-of-type(2) > .pure-menu-children > .pure-menu-item:nth-of-type(2) > a {
+    padding-top: 0; }
+
+h1, h2, h3, h4, p, span {
+  font-family: Helvetica; }
 
 .content-body h3 {
   color: #fff;
@@ -118,6 +133,8 @@ img.menu_logo {
 #detailsForm > .pure-u-1:nth-of-type(2) {
   width: 90%;
   margin: 0 0 2% 3%; }
+  #detailsForm > .pure-u-1:nth-of-type(2) > {
+    display: block; }
   #detailsForm > .pure-u-1:nth-of-type(2) > label {
     margin-left: 0; }
 
@@ -148,6 +165,9 @@ label {
 .pure-form select {
   font-size: 90%;
   min-width: 15%; }
+
+.internal-frame > fieldset input {
+  font-size: 90%; }
 
 .language_button, .language_button:hover {
   background: #517397;
@@ -226,7 +246,11 @@ table.pure-table > tbody a {
   #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > label {
     /* listan i confirm request*/
     margin-left: 2%;
-    width: 31%; }
+    width: 31%;
+    display: block; }
+  #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > span {
+    margin-left: 2%;
+    display: block; }
 
 textarea#keyPairForm\:certificateRequest {
   /* make request > Upload CSR > formuläret */
@@ -272,14 +296,14 @@ textarea#keyPairForm\:certificateRequest {
 #detailsForm\:certDetails\:showMoreLessDetailsButton {
   background: #e9af13;
   color: #fff;
-  width: 25%;
+  width: 23%;
   display: block;
   margin: 2% 0 0 0; }
 
 #detailsForm\:certDetails\:showMoreCertificateDetails {
   /* search for certificates > view > showMoreDetails */
   width: 90%;
-  margin-left: 0 0 5% 3%; }
+  margin: 0 0 5% 3%; }
 
 /*
 #detailsForm\:certDetails\:showMoreLessDetailsButton { //Ev. dublett av datailsForm:certDetails:showMoreLessDetailsButton ovan
@@ -295,7 +319,7 @@ textarea#keyPairForm\:certificateRequest {
 
 #requestInfoForm\:resetButton,
 #enrollWithRequestIdForm\:checkButton {
-  width: 13%; }
+  width: 890px; }
 
 #searchCertsButton,
 #requestStatusButton,
@@ -311,6 +335,8 @@ textarea#keyPairForm\:certificateRequest {
   background: #e9af13;
   color: #fff; }
 
+#detailsForm\:certDetails\:showMoreLessDetailsButton:hover,
+#detailsForm\:certDetails\:showMoreLessDetailsButton:focus,
 #searchCertsButton:hover,
 #searchCertsButton:focus,
 #requestStatusButton:hover,
@@ -365,22 +391,18 @@ a {
   color: #e9af13;
   text-decoration: none; }
 
-#contentForm > #contentForm\:more {
-  margin-top: 20px;
-  width: 83%; }
-
 #contentForm > #contentForm\:more > span.pure-g > div.pure-u-1 > div.pure-control-group > label {
   /* "max results"-texten i search for certificates */
   text-align: left; }
 
 #contentForm > #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
   /* första wrappern för boxen för "max results"-texten i search for certificates */
-  width: 16%; }
+  width: 147px; }
 
 .contentForm\:criteriaMaxResults {
   width: 100%; }
 
-/* resterande text för boxar i show more options i search for certificates */
+/* resterande text för inputs samt inputs i show more options i search for certificates */
 #contentForm\:issuedAfterLabel,
 #contentForm\:issuedBeforeLabel,
 #contentForm\:expiresAfterLabel,
@@ -389,20 +411,7 @@ a {
 #contentForm\:revokedBeforeLabel {
   text-align: left; }
 
-#contentForm\:issuedAfter,
-#contentForm\:issuedBefore,
-#contentForm\:expiresAfter,
-#contentForm\:expiresBefore,
-#contentForm\:revokedAfter,
-#contentForm\:revokedBefore {
-  width: 119%; }
-
-#contentForm\:more > .pure-g > .pure-u-1:nth-of-type(3) {
-  margin: 0 0 0 3%; }
-#contentForm\:more > .pure-g > .pure-u-1:nth-of-type(4) {
-  margin: 0 0 0 3%; }
-
-/*slut på resterande boxar för max-result-texten*/
+/*SLUT resterande inputs för max-result-texten*/
 .contentForm\:filteredResults > table.pure-table > thead {
   line-height: 110%;
   background: #a9a9a9; }
@@ -472,11 +481,6 @@ a {
 #keyPairForm\:uploadCsrButton {
   margin: 0 0 1% 1.5%; }
 
-#requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > {
-  display: block; }
-#requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > span {
-  margin-left: 2%; }
-
 #expandRequestDetails,
 #expandStatusDetails,
 #expandSearchDetails {
@@ -501,6 +505,12 @@ a {
 .tabButtonBar {
   width: 73%; }
 
+#requestInfoForm\:useRequestIdLink:hover {
+  text-decoration: underline; }
+
+.tabBbutton > input {
+  border-radius: 0; }
+
 .footer {
   height: 100px;
   display: flex;
@@ -516,8 +526,32 @@ a {
   height: 1.5em;
   display: inline-block; }
 
-/* - - - Responsivise at breakpoint (för tables) - - - - */
-@media (max-width: 48em) {
+/*CSS för scroll to top-funktion*/
+#web-express-scroll-to-top {
+  background: #fcba00;
+  bottom: 150px;
+  display: none;
+  position: fixed;
+  right: 40px;
+  width: 31px;
+  height: 31px; }
+  #web-express-scroll-to-top > span {
+    top: 14.375px;
+    position: absolute;
+    display: block;
+    background: #637b98;
+    width: 11px;
+    height: 3px; }
+    #web-express-scroll-to-top > span:first-child {
+      transform: rotate(45deg);
+      left: 12.5px; }
+    #web-express-scroll-to-top > span:last-child {
+      transform: rotate(-45deg);
+      left: 7.25px; }
+
+/*SLUT CSS för scroll to top-funktion*/
+/* - - - responsivise (?) at breakpoint (för tables) - - - - */
+@media (max-width: 47.99em) {
   /* make tds into single column full width rows */
   tr, td {
     display: block;
@@ -563,6 +597,117 @@ a {
 
   #content-body > table.pure-table > tbody > tr > td > table > tbody > tr > td {
     background: none; } }
+@media (max-width: 63.99em) {
+  div#div_menu_logo {
+    z-index: 1; }
+
+  div#menu.ejbca-menu {
+    position: fixed;
+    width: 100%; }
+    div#menu.ejbca-menu ul.pure-menu-list {
+      background: #435d7a;
+      letter-spacing: 1px;
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 100%; }
+      div#menu.ejbca-menu ul.pure-menu-list li.pure-menu-item {
+        background: #435d7a;
+        display: block; }
+        div#menu.ejbca-menu ul.pure-menu-list li.pure-menu-item a, div#menu.ejbca-menu ul.pure-menu-list li.pure-menu-item input.language_button {
+          color: white;
+          font-weight: 400;
+          padding: 0.625em 2em; }
+        div#menu.ejbca-menu ul.pure-menu-list li.pure-menu-item input.language_button {
+          background: #435d7a; }
+      div#menu.ejbca-menu ul.pure-menu-list > li.pure-menu-item:last-child a {
+        padding-bottom: 2em; }
+      div#menu.ejbca-menu ul.pure-menu-list ul.pure-menu-children li.pure-menu-item:hover {
+        background: #336699; }
+        div#menu.ejbca-menu ul.pure-menu-list ul.pure-menu-children li.pure-menu-item:hover input.language_button {
+          background: #336699; }
+      div#menu.ejbca-menu ul.pure-menu-list a.pure-menu-link:hover {
+        color: #fcba00; }
+      div#menu.ejbca-menu ul.pure-menu-list li#menu-title.web-express.tablet {
+        padding: 1.25em 1.5em 0.125em 1.5em; }
+        div#menu.ejbca-menu ul.pure-menu-list li#menu-title.web-express.tablet > span {
+          color: white;
+          display: block;
+          font-size: 1.375em;
+          font-weight: 400;
+          padding: 0.125em; }
+      div#menu.ejbca-menu ul.pure-menu-list hr.web-express.tablet {
+        background: #fcba00;
+        border: none;
+        height: 3px;
+        margin-left: 1.25em;
+        position: static;
+        width: 88%; }
+      div#menu.ejbca-menu ul.pure-menu-list input#we-menu-open-close.web-express.tablet:checked ~ li#menu-head-is-closed, div#menu.ejbca-menu ul.pure-menu-list input#we-menu-open-close.web-express.tablet:not(:checked) ~ li#menu-head-is-open, div#menu.ejbca-menu ul.pure-menu-list input#we-menu-open-close.web-express.tablet:not(:checked) ~ li.pure-menu-item {
+        display: none; }
+      div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-closed.web-express.tablet,
+      div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-open.web-express.tablet {
+        background: white;
+        display: block;
+        height: 55px; }
+        div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-closed.web-express.tablet > label,
+        div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-open.web-express.tablet > label {
+          cursor: pointer;
+          position: absolute; }
+          div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-closed.web-express.tablet > label > span,
+          div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-open.web-express.tablet > label > span {
+            background: #637b98;
+            display: block;
+            height: 3px; }
+      div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-closed.web-express.tablet > label {
+        top: 16px;
+        right: 16px;
+        width: 30px;
+        height: 23px; }
+        div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-closed.web-express.tablet > label > span {
+          width: 100%; }
+          div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-closed.web-express.tablet > label > span:not(:last-child) {
+            margin-bottom: 7px; }
+      div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-open.web-express.tablet > label {
+        top: 26.25px;
+        right: 13.75px;
+        width: 35px;
+        height: 35px; }
+        div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-open.web-express.tablet > label > span {
+          position: absolute;
+          width: 100%; }
+          div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-open.web-express.tablet > label > span:first-child {
+            transform: rotate(45deg); }
+          div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-open.web-express.tablet > label > span:last-child {
+            transform: rotate(-45deg); }
+      div#menu.ejbca-menu ul.pure-menu-list > li.pure-menu-has-children > label.web-express.tablet {
+        cursor: pointer;
+        display: inline-block;
+        height: 1.875em;
+        position: absolute;
+        width: 100%;
+        z-index: 1; }
+        div#menu.ejbca-menu ul.pure-menu-list > li.pure-menu-has-children > label.web-express.tablet:hover ~ a.pure-menu-link {
+          background: #336699;
+          color: #fcba00; }
+      div#menu.ejbca-menu ul.pure-menu-list > li.pure-menu-has-children ul.pure-menu-children li.pure-menu-item {
+        padding-left: 1em; }
+      div#menu.ejbca-menu ul.pure-menu-list > li.pure-menu-has-children ul.pure-menu-children li.pure-menu-item > a {
+        background: #435d7a; }
+        div#menu.ejbca-menu ul.pure-menu-list > li.pure-menu-has-children ul.pure-menu-children li.pure-menu-item > a:hover {
+          background: #336699; }
+      div#menu.ejbca-menu ul.pure-menu-list a.pure-menu-link ~ ul.pure-menu-children {
+        display: none;
+        position: relative; }
+      div#menu.ejbca-menu ul.pure-menu-list input[type="checkbox"].web-express.tablet:checked ~ ul.pure-menu-children {
+        display: block; }
+      div#menu.ejbca-menu ul.pure-menu-list input[type="checkbox"].web-express.tablet:checked ~ hr {
+        display: inline-block; }
+      div#menu.ejbca-menu ul.pure-menu-list input[type="checkbox"].web-express.tablet:checked ~ a {
+        color: #fcba00; }
+
+  div#content.content {
+    margin-top: 65.3125px; } }
 @media (min-width: 48em) {
   #detailsForm > span.pure-u-1:nth-of-type(2) {
     width: 100%;
@@ -576,62 +721,39 @@ a {
       margin-left: 2.5%; }
 
   #title h1 {
-    font-size: 28px; }
+    font-size: 30px; }
 
   #contentForm\:filteredResults > .pure-table {
     line-height: normal; }
-    #contentForm\:filteredResults > .pure-table > thead {
-      font-size: 70%; }
     #contentForm\:filteredResults > .pure-table > tbody td {
       word-break: break-all;
-      max-width: 100px; }
+      max-width: 180px; }
 
-  /* awifstrand */
-  /*
-  position: absolute;
-  display: inline-block;
-  outline: 1px dashed magenta;
-  width: 100%;
-  height: 1.875em;
-  z-index: 4;
-  */ }
-@media (min-width: 48em) and (max-width: 64em) {
   div#menu.ejbca-menu ul.pure-menu-list {
-    position: absolute;
-    top: 0;
-    right: 0; }
-    div#menu.ejbca-menu ul.pure-menu-list li.pure-menu-item {
-      display: block; }
-    div#menu.ejbca-menu ul.pure-menu-list input#we-menu-open-close.web-express.tablet:checked ~ li#menu-head-is-closed, div#menu.ejbca-menu ul.pure-menu-list input#we-menu-open-close.web-express.tablet:not(:checked) ~ li#menu-head-is-open, div#menu.ejbca-menu ul.pure-menu-list input#we-menu-open-close.web-express.tablet:not(:checked) ~ li.pure-menu-item {
-      display: none; }
-    div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-closed.web-express.tablet,
-    div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-open.web-express.tablet {
-      display: block;
-      font-size: 24px;
-      height: 55px; }
-      div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-closed.web-express.tablet > label,
-      div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-open.web-express.tablet > label {
-        color: #637b98;
-        cursor: pointer;
-        position: absolute;
-        right: 18px;
-        top: 13.5px; }
-    div#menu.ejbca-menu ul.pure-menu-list > li.pure-menu-has-children > label.web-express.tablet {
-      cursor: pointer;
-      display: inline-block;
-      height: 1.875em;
-      position: absolute;
-      width: 100%;
-      z-index: 1; }
-      div#menu.ejbca-menu ul.pure-menu-list > li.pure-menu-has-children > label.web-express.tablet:hover ~ a.pure-menu-link {
-        background: #336699; }
-    div#menu.ejbca-menu ul.pure-menu-list a.pure-menu-link ~ ul.pure-menu-children {
-      display: none;
-      position: relative; }
-    div#menu.ejbca-menu ul.pure-menu-list input[type="checkbox"].web-express.tablet:checked ~ ul.pure-menu-children {
-      display: block; } }
-@media (min-width: 48em) {
-  /* awifstrand END */ }
+    width: 346px; }
+
+  #contentForm\:more > .pure-g > .pure-u-1:nth-of-type(3) {
+    margin: 0 0 0 0; }
+  #contentForm\:more > .pure-g > .pure-u-1:nth-of-type(4) {
+    margin: 0 0 0 0; }
+
+  #contentForm > #contentForm\:more {
+    /*margin-top: 20px;*/
+    width: 100%; }
+
+  #contentForm\:issuedAfter,
+  #contentForm\:issuedBefore,
+  #contentForm\:expiresAfter,
+  #contentForm\:expiresBefore,
+  #contentForm\:revokedAfter,
+  #contentForm\:revokedBefore {
+    width: 100%;
+    font-size: 95%; }
+
+  #contentForm\:modifiedAfter,
+  #contentForm:modifiedBefore {
+    width: 100%;
+    font-size: 95%; } }
 @media (min-width: 64em) {
   .header {
     padding: 1.5em 1em 0; }
@@ -707,7 +829,7 @@ a {
     /*showelss-knapp search for certificates*/
     width: 75%; }
 
-  #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > {
+  #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > label, #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset span {
     display: inline-block; }
   #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > span {
     margin-left: 0; }
@@ -715,10 +837,29 @@ a {
   #contentForm\:parentGenericSearchString {
     margin: 0; }
 
-  #contentForm\:filteredResults > .pure-table > thead {
-    font-size: 100%; }
   #contentForm\:filteredResults > .pure-table > tbody > tr > td {
-    max-width: initial; } }
+    max-width: initial; }
+
+  #contentForm\:more > .pure-g > .pure-u-1:nth-of-type(3) {
+    margin: 0 0 0 3%; }
+  #contentForm\:more > .pure-g > .pure-u-1:nth-of-type(4) {
+    margin: 0 0 0 3%; }
+
+  #contentForm > #contentForm\:more {
+    margin-top: 20px;
+    width: 83%; }
+
+  #contentForm\:issuedAfter,
+  #contentForm\:issuedBefore,
+  #contentForm\:expiresAfter,
+  #contentForm\:expiresBefore,
+  #contentForm\:revokedAfter,
+  #contentForm\:revokedBefore {
+    width: 119%; }
+
+  #contentForm\:modifiedAfter,
+  #contentForm:modifiedBefore {
+    width: 152%; } }
 /*
 "gamla"
     "base"  // smartphone

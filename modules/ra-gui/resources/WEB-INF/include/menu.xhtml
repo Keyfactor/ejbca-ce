@@ -30,7 +30,7 @@
 <h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
     <ui:composition>
         <h:panelGroup layout="block" class="pure-g">
-            <h:panelGroup layout="block"  class="pure-u-1 pure-u-lg-1-8">
+            <h:panelGroup id="div_menu_logo" layout="block"  class="pure-u-1 pure-u-lg-1-8">
                    <h:panelGroup layout="block" class="pure-menu pure-menu-horizontal" >
                    <h:outputLink value="index.xhtml" styleClass="pure-menu-heading">
                         <img class="menu_logo" alt="EJBCA by PrimeKey" src="#{facesContext.externalContext.context.contextPath}/img/pk_logo.png" /> 
@@ -41,8 +41,29 @@
                 <h:panelGroup layout="block" class="pure-menu pure-menu-horizontal">
                     <ul class="pure-menu-list">
                         <ui:fragment rendered="#{raAccessBean.authorizedToEnroll}">
+                        <ui:remove><!-- BEGIN: show/hide menu items on tablet/phone --></ui:remove>
+                        <h:selectBooleanCheckbox id="we-menu-open-close" class="web-express tablet"/>
+        				<li id="menu-head-is-closed" class="web-express tablet">
+	            			<label for="we-menu-open-close">
+	                			<span></span>
+	                			<span></span>
+	                			<span></span>
+	            			</label>
+        				</li>
+        				<li id="menu-head-is-open" class="web-express tablet">
+	            			<label for="we-menu-open-close">
+	                			<span></span>
+	                			<span></span>
+	            			</label>
+        				</li>
+				        <li id="menu-title" class="web-express tablet pure-menu-item"><span>Menu</span></li>
+        				<hr class="web-express tablet"/>
+                        <ui:remove><!-- END: show/hide menu items on tablet/phone --></ui:remove>
+                        
                             <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
-                                <a href="#" id="enrollment" class="pure-menu-link enroll-menu-link">Enroll</a>
+                                <h:selectBooleanCheckbox id="web-express-enrollment" class="web-express tablet"/>
+            					<label for="web-express-enrollment" class="web-express tablet">&nbsp;</label>
+            					<a href="#" id="enrollment" class="pure-menu-link enroll-menu-link">Enroll</a>                            
                                 <ul class="pure-menu-children">
                                     <ui:fragment rendered="#{raAccessBean.authorizedToEnrollMakeRequest}">
                                     	<li class="pure-menu-item">
@@ -65,6 +86,8 @@
                         </ui:fragment>
                         <ui:fragment rendered="#{raAccessBean.authorizedToSearch}">
                         	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+                                <h:selectBooleanCheckbox id="web-express-search" class="web-express tablet"/>
+            					<label for="web-express-search" class="web-express tablet">&nbsp;</label>
                                 <a href="#" id="search" class="pure-menu-link search-menu-link">Search</a>
                                	<ul class="pure-menu-children">
                                    	<ui:fragment rendered="#{raAccessBean.authorizedToSearchCerts}">
@@ -96,7 +119,10 @@
                                 <h:outputLink value="cas.xhtml" styleClass="pure-menu-link cas-menu-link"><h:outputText value="#{msg.menu_pagetitle_cas}"/></h:outputLink>
                             </li>
                         </ui:fragment>
+                        <hr class="web-express tablet"/>
                     	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+				            <h:selectBooleanCheckbox id="web-express-language" class="web-express tablet" type="checkbox"/>
+            				<label for="web-express-language" class="web-express tablet">&nbsp;</label>
                         	<a href="#" id="language" class="pure-menu-link">Language</a>
                         	<ul class="pure-menu-children">
                         		<h:form>
