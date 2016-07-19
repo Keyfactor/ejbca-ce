@@ -1,4 +1,7 @@
 @charset "UTF-8";
+.web-express.tablet {
+  display: none; }
+
 html {
   height: 100%; }
 
@@ -49,8 +52,8 @@ img.menu_logo {
   height: 1.5em; }
 
 .content {
-  width: 90%;
-  margin: 50px auto 30px auto;
+  width: 95%;
+  margin: 10px auto 30px auto;
   background: #637b98;
   flex: 1; }
 
@@ -62,7 +65,7 @@ img.menu_logo {
 .header {
   /* Vy-titlar med gul border*/
   width: 45%;
-  padding: 1.5em 1em 0;
+  padding: 0em 1em 0;
   border-bottom: 3px solid #fcba00;
   text-align: left; }
 
@@ -89,11 +92,10 @@ img.menu_logo {
   background: #000;
   border-radius: 2px;
   margin: 1% 0 4% 0; }
-
-.internal-frame-black > .keygeneration-button-group:nth-of-type(1) {
-  padding: 3% 2% 0 2%; }
-.internal-frame-black > .keygeneration-button-group:nth-of-type(2) {
-  padding: 0px 0px 2% 0; }
+  .internal-frame-black > .keygeneration-button-group:nth-of-type(1) {
+    padding: 3% 2% 0 2%; }
+  .internal-frame-black > .keygeneration-button-group:nth-of-type(3) {
+    padding: 0px 0px 2% 0; }
 
 #detailsForm {
   background: #4f6177;
@@ -109,13 +111,14 @@ img.menu_logo {
 #detailsForm > span.pure-u-1 > .pure-u-2-3 {
   display: block;
   margin: 2% 0 1% 2%; }
+#detailsForm > span.pure-u-1 > .pure-u-lg-2-3:nth-of-type(13) > input {
+  /*knappen revoke inne i search > certificate details*/
+  margin: 0 0 0 2%; }
 
-#detailsForm > span:nth-of-type(1).pure-u-1 {
+#detailsForm > .pure-u-1:nth-of-type(2) {
   width: 90%;
-  margin-left: 3%; }
-  #detailsForm > span:nth-of-type(1).pure-u-1 > {
-    display: block; }
-  #detailsForm > span:nth-of-type(1).pure-u-1 > label {
+  margin: 0 0 2% 3%; }
+  #detailsForm > .pure-u-1:nth-of-type(2) > label {
     margin-left: 0; }
 
 /*följande kod har nu flyttats till em64-filen:
@@ -125,10 +128,6 @@ img.menu_logo {
   margin-left:2.5%;
 }
 */
-/*Följande kod är tänkt att ersätta koden som kommenterats ut ovan*/
-.content-body > #detailsForm > span.pure-u-1:nth-of-type(2) > label {
-  margin-left: 0; }
-
 #detailsForm > span.pure-u-1 > .pure-u-1-3 {
   margin-top: 2%; }
 
@@ -273,7 +272,7 @@ textarea#keyPairForm\:certificateRequest {
 #detailsForm\:certDetails\:showMoreLessDetailsButton {
   background: #e9af13;
   color: #fff;
-  width: 75%;
+  width: 25%;
   display: block;
   margin: 2% 0 0 0; }
 
@@ -374,13 +373,9 @@ a {
   /* "max results"-texten i search for certificates */
   text-align: left; }
 
-#contentForm > #contentForm:more > span.pure-g > div.pure-u-1:nth-of-type(1).pure-u-1 {
-  /*wrapper för max results, kan behövas läggas ihop med ovanstående*/
-  width: 16%; }
-
 #contentForm > #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
   /* första wrappern för boxen för "max results"-texten i search for certificates */
-  width: 25%; }
+  width: 16%; }
 
 .contentForm\:criteriaMaxResults {
   width: 100%; }
@@ -489,16 +484,23 @@ a {
 
 /*gör att långa rader i tabeller bryts, ska högst troligt tas bort*/
 /*SLUT gör att långa rader i tabeller bryts*/
-/*Kod för att lägga radioknappar, som ligger inom första ramen i make request, under varandra */
-#requestTemplateForm\:selectKeyPairGenerationOneMenu > .internal-frame > fieldset > .pure-control-group:nth-of-type(4) > label {
+#requestTemplateForm\:selectRequestTemplateOuterPanel > .internal-frame > fieldset > .pure-control-group:nth-of-type(4) > label {
   float: left; }
-#requestTemplateForm\:selectKeyPairGenerationOneMenu > .internal-frame > fieldset > .pure-control-group:nth-of-type(4) > #requestTemplateForm\:selectKeyPairGenerationOneMenu > #requestTemplateForm\:selectKeyPairGeneration > tbody > tr > td {
+
+/*Kod för att lägga radioknappar, som ligger inom första ramen i make request, under varandra */
+#requestTemplateForm\:selectKeyPairGeneration > tbody > tr > td {
   display: block; }
-  #requestTemplateForm\:selectKeyPairGenerationOneMenu > .internal-frame > fieldset > .pure-control-group:nth-of-type(4) > #requestTemplateForm\:selectKeyPairGenerationOneMenu > #requestTemplateForm\:selectKeyPairGeneration > tbody > tr > td > label {
+  #requestTemplateForm\:selectKeyPairGeneration > tbody > tr > td > label {
     text-align: left;
-    padding: 2% 0 0 3%; }
+    padding: 2% 0 0 5%; }
 
 /*SLUT Kod för att lägga radioknappar, som ligger inom första ramen i make request, under varandra */
+#contentForm\:viewRequestDataTable {
+  margin: 1% 0 1% 2%; }
+
+.tabButtonBar {
+  width: 73%; }
+
 .footer {
   height: 100px;
   display: flex;
@@ -545,7 +547,7 @@ a {
   /* unset background used on desktop view */
   /*
   tbody > tr :nth-of-type(odd) {
-      background:#eee;
+    background:#eee;
   }
   */
   tbody > a {
@@ -582,10 +584,60 @@ a {
       font-size: 70%; }
     #contentForm\:filteredResults > .pure-table > tbody td {
       word-break: break-all;
-      max-width: 50px; } }
+      max-width: 100px; }
+
+  /* awifstrand */
+  /*
+  position: absolute;
+  display: inline-block;
+  outline: 1px dashed magenta;
+  width: 100%;
+  height: 1.875em;
+  z-index: 4;
+  */ }
+@media (min-width: 48em) and (max-width: 64em) {
+  div#menu.ejbca-menu ul.pure-menu-list {
+    position: absolute;
+    top: 0;
+    right: 0; }
+    div#menu.ejbca-menu ul.pure-menu-list li.pure-menu-item {
+      display: block; }
+    div#menu.ejbca-menu ul.pure-menu-list input#we-menu-open-close.web-express.tablet:checked ~ li#menu-head-is-closed, div#menu.ejbca-menu ul.pure-menu-list input#we-menu-open-close.web-express.tablet:not(:checked) ~ li#menu-head-is-open, div#menu.ejbca-menu ul.pure-menu-list input#we-menu-open-close.web-express.tablet:not(:checked) ~ li.pure-menu-item {
+      display: none; }
+    div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-closed.web-express.tablet,
+    div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-open.web-express.tablet {
+      display: block;
+      font-size: 24px;
+      height: 55px; }
+      div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-closed.web-express.tablet > label,
+      div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-open.web-express.tablet > label {
+        color: #637b98;
+        cursor: pointer;
+        position: absolute;
+        right: 18px;
+        top: 13.5px; }
+    div#menu.ejbca-menu ul.pure-menu-list > li.pure-menu-has-children > label.web-express.tablet {
+      cursor: pointer;
+      display: inline-block;
+      height: 1.875em;
+      position: absolute;
+      width: 100%;
+      z-index: 1; }
+      div#menu.ejbca-menu ul.pure-menu-list > li.pure-menu-has-children > label.web-express.tablet:hover ~ a.pure-menu-link {
+        background: #336699; }
+    div#menu.ejbca-menu ul.pure-menu-list a.pure-menu-link ~ ul.pure-menu-children {
+      display: none;
+      position: relative; }
+    div#menu.ejbca-menu ul.pure-menu-list input[type="checkbox"].web-express.tablet:checked ~ ul.pure-menu-children {
+      display: block; } }
+@media (min-width: 48em) {
+  /* awifstrand END */ }
 @media (min-width: 64em) {
+  .header {
+    padding: 1.5em 1em 0; }
+
   #title h1 {
-    font-size: 35px; }
+    font-size: 33px; }
 
   img.menu_logo {
     height: 2em; }
@@ -665,25 +717,35 @@ a {
 
   #contentForm\:filteredResults > .pure-table > thead {
     font-size: 100%; }
-  #contentForm\:filteredResults > .pure-table > td {
-    word-break: none;
-    max-width: none; } }
+  #contentForm\:filteredResults > .pure-table > tbody > tr > td {
+    max-width: initial; } }
 /*
 "gamla"
-  "base"  // smartphone
-  768px   // tablet
-  992px   // desktop
-  1200px  // large desktop
+    "base"  // smartphone
+    768px   // tablet
+    992px   // desktop
+    1200px  // large desktop
 */
 @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  body.ltrDirection, body.rtlDirection {
-    display: -ms-flexbox;
+  * {
+    margin: 0; }
+
+  html, body.ltrDirection, body.rtlDirection {
+    /*display: -ms-flexbox;*/
     height: 100%; }
 
-  .footer {
-    display: -ms-flexbox; }
-
   .content {
-    -ms-flex: 0 1 auto; } }
+    /*-ms-flex: 0 1 auto;*/
+    min-height: 100%;
+    margin-bottom: -100px; }
+
+  .content:after {
+    /*-ms-flex: 0 1 auto;*/
+    content: "";
+    display: block; }
+
+  .footer, .content:after {
+    /*display: -ms-flexbox;*/
+    height: 100px; } }
 
 /*# sourceMappingURL=w_e_style.css.map */
