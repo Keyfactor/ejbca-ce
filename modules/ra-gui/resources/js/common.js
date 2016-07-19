@@ -77,7 +77,7 @@
 
     /** Set focus to component by class names (JSF2.0 does not support HTML5 attributes like autofocus) */
     var handleAutoFocus = function() {
-    	var focusElementTypes = ["input", "textarea", "select"];
+    	var focusElementTypes = ["a", "input", "textarea", "select"];
         // Auto focus last found element tagged "jsAutoFocusLast"
     	forEachInputElementByTagNameAndStyleClass(focusElementTypes, "jsAutoFocusLast", function(inputField) {
     		inputField.focus();
