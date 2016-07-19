@@ -95,6 +95,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EnrollMakeNewRequestBean.class);
 
+    public static String PARAM_REQUESTID = "requestId";
+    
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
@@ -1300,5 +1302,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         requestPreview.setPublicKeyAlgorithm(getAlgorithm());
         requestPreview.updateCA(getCAInfo());
         return requestPreview;
+    }
+    
+    public final String getParamRequestId(){
+        return PARAM_REQUESTID;
     }
 }

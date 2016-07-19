@@ -53,7 +53,7 @@
 									<f:validateLongRange minimum="-2147483648" maximum="2147483647" />
 								</h:inputText>
 							</h:panelGroup>
-							<h:panelGroup layout="block" id="navigationButtonGroup"
+							<h:panelGroup layout="block" id="checkRequestButtonGroup"
 								styleClass="keygeneration-button-group">
 								<h:commandButton id="checkButton"
 									value="#{msg.enrollwithrequestid_check}"
@@ -77,10 +77,6 @@
 								<h:outputText value="#{msg.enroll_request_id} " />
 								<h:outputText value="#{enrollWithRequestIdBean.requestId}" />
 							</h:panelGroup>
-							<h:panelGroup layout="block" styleClass="pure-control-group">
-								<h:outputText value="Token Type: " />
-								<h:outputText value="#{msg['tokentype_'.concat(enrollWithRequestIdBean.endEntityInformation.tokenType)]}" />
-							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group"
 								rendered="#{enrollWithRequestIdBean.renderPassword}">
 								<h:outputLabel for="passwordField" value="#{msg.enroll_password}" />
@@ -90,18 +86,52 @@
 								<h:message for="passwordField" id="passwordFieldMessage" />
 							</h:panelGroup>
 							<h:panelGroup layout="block">
-								<h:commandButton id="finalizeEnrollmentButton"
-									value="#{msg.enrollwithrequestid_finalize}"
-									styleClass="pure-button ra-button"
-									action="#{enrollWithRequestIdBean.finalizeEnrollment}">
+								<h:commandButton id="generatePem"
+									value="#{msg.enroll_generate_pem}"
+									action="#{enrollWithRequestIdBean.generateCertificatePem}"
+									rendered="#{enrollWithRequestIdBean.renderGenerateCertificate}"
+									styleClass="pure-button ra-button">
 								</h:commandButton>
-								<h:commandButton id="resetButton" value="#{msg.generic_back}"
-									styleClass="pure-button ra-button"
-									action="#{enrollWithRequestIdBean.reset}">
+								<h:commandButton id="generatePemFullChain"
+									value="#{msg.enroll_generate_pem_full_chain}"
+									action="#{enrollWithRequestIdBean.generateCertificatePemFullChain}"
+									rendered="#{enrollWithRequestIdBean.renderGenerateCertificate}"
+									styleClass="pure-button ra-button">
+								</h:commandButton>
+								<h:commandButton id="generatePkcs7"
+									value="#{msg.enroll_generate_pkcs7}"
+									action="#{enrollWithRequestIdBean.generateCertificatePkcs7}"
+									rendered="#{enrollWithRequestIdBean.renderGenerateCertificate}"
+									styleClass="pure-button ra-button">
+								</h:commandButton>
+								<h:commandButton id="generateDer"
+									value="#{msg.enroll_generate_der}"
+									action="#{enrollWithRequestIdBean.generateCertificateDer}"
+									rendered="#{enrollWithRequestIdBean.renderGenerateCertificate}"
+									styleClass="pure-button ra-button">
+								</h:commandButton>
+								<h:commandButton id="generateJks"
+									value="#{msg.enroll_generate_jks}"
+									action="#{enrollWithRequestIdBean.generateKeyStoreJks}"
+									rendered="#{enrollWithRequestIdBean.renderGenerateKeyStoreJks}"
+									styleClass="pure-button ra-button">
+								</h:commandButton>
+								<h:commandButton id="generatePkcs12"
+									value="#{msg.enroll_generate_p12}"
+									action="#{enrollWithRequestIdBean.generateKeyStorePkcs12}"
+									rendered="#{enrollWithRequestIdBean.renderGenerateKeyStorePkcs12}"
+									styleClass="pure-button ra-button">
 								</h:commandButton>
 							</h:panelGroup>
 						</fieldset>
 					</h:panelGroup>
+					<h:panelGroup layout="block" id="navigationButtonGroup"
+					styleClass="navigation-button-group">
+					<h:commandButton id="resetButton" value="#{msg.generic_back}"
+						styleClass="pure-button ra-button"
+						action="#{enrollWithRequestIdBean.reset}" immediate="true">
+					</h:commandButton>
+				</h:panelGroup>
 				</h:panelGroup>
 			</h:form>
 		</h:panelGroup>
