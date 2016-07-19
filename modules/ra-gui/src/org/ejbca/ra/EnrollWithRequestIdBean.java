@@ -16,6 +16,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.LinkedList;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -29,15 +35,20 @@ import javax.faces.validator.ValidatorException;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSException;
 import org.cesecore.ErrorCode;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
@@ -75,9 +86,13 @@ public class EnrollWithRequestIdBean implements Serializable {
     private EndEntityInformation endEntityInformation;
     private byte[] generatedToken;
     private String password;
+    private IdNameHashMap<CAInfo> authorizedCAInfos;
 
     @PostConstruct
     private void postConstruct() {
+        HttpServletRequest httpServletRequest = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        requestId = httpServletRequest.getParameter(EnrollMakeNewRequestBean.PARAM_REQUESTID);
+        this.authorizedCAInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
         reset();
     }
 
@@ -130,90 +145,132 @@ public class EnrollWithRequestIdBean implements Serializable {
     public boolean isFinalizeEnrollmentRendered() {
         return (requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED) && endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW;
     }
-
-    public void finalizeEnrollment() {
-        //Generate token
-        if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN) {
-            byte[] certificateRequest = endEntityInformation.getExtendedinformation().getCertificateRequest();
-            if (certificateRequest == null) {
-                raLocaleBean.addMessageError("enrollwithrequestid_could_not_find_csr_inside_enrollment_request_with_request_id", requestId);
-                log.info("Could not find CSR inside enrollment request with request ID " + requestId);
-                return;
-            }
-            try {
-                endEntityInformation.setPassword(endEntityInformation.getUsername());
-                generatedToken = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(), endEntityInformation,
-                        certificateRequest);
-                log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
-                        endEntityInformation.getUsername());
-                downloadAsDer();
-            } catch (AuthorizationDeniedException e){
-                raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
-                log.info("You are not authorized to execute this operation", e);
-            } catch (EjbcaException e) {
-                ErrorCode errorCode = EjbcaException.getErrorCode(e);
-                if (errorCode != null) {
-                    raLocaleBean.addMessageError(errorCode);
-                    log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
-                } else {
-                    raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-                    log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername(), e);
-                }
-                return;
-            }
-        } else {
-            try {
-                byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
-                log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
-                        endEntityInformation.getUsername());
-                try(ByteArrayOutputStream buffer = new ByteArrayOutputStream()){
-                    buffer.write(keystoreAsByteArray);
-                    generatedToken = buffer.toByteArray();
-                }        
-                if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS) {
-                    downloadJks();
-                } else if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12) {
-                    downloadPkcs12();
-                }
-            } catch (AuthorizationDeniedException e){
-                raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
-                log.info("You are not authorized to execute this operation", e);
-            } catch (EjbcaException | IOException e) {
-                ErrorCode errorCode = EjbcaException.getErrorCode(e);
-                if (errorCode != null) {
-                    raLocaleBean.addMessageError(errorCode);
-                    log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
-                } else {
-                    raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-                    log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
-                }
-                return;
-            }
+    
+    public void generateCertificatePem() {
+        generateCertificate();
+        try {
+            X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);        
+            byte[] pemToDownload = CertTools.getPemFromCertificateChain(Arrays.asList((Certificate) certificate));
+            downloadToken(pemToDownload, "application/octet-stream", ".pem");
+        } catch (CertificateParsingException | CertificateEncodingException e) {
+            log.info(e);
         }
-        
         reset();
-
     }
-
-    public final void downloadAsDer() {
-        if (endEntityInformation.getTokenType() != EndEntityConstants.TOKEN_USERGEN) {
-            throw new IllegalStateException();
+    
+    public void generateCertificatePemFullChain() {
+        generateCertificate();
+        try {
+            X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);
+            CAInfo caInfo = authorizedCAInfos.get(endEntityInformation.getCAId()).getValue();
+            LinkedList<Certificate> chain = new LinkedList<Certificate>(caInfo.getCertificateChain());
+            chain.addFirst(certificate);
+            byte[] pemToDownload = CertTools.getPemFromCertificateChain(chain);
+            downloadToken(pemToDownload, "application/octet-stream", ".pem");
+        } catch (CertificateParsingException | CertificateEncodingException e) {
+            log.info(e);
         }
+        reset();
+    }
+    
+    public void generateCertificateDer() {
+        generateCertificate();
         downloadToken(generatedToken, "application/octet-stream", ".der");
+        reset();
     }
-
-    public final void downloadPkcs12() {
-        if (endEntityInformation.getTokenType() != EndEntityConstants.TOKEN_SOFT_P12) {
-            throw new IllegalStateException();
+    
+    public void generateCertificatePkcs7() {
+        generateCertificate();
+        try {
+            X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);
+            CAInfo caInfo = authorizedCAInfos.get(endEntityInformation.getCAId()).getValue();
+            LinkedList<Certificate> chain = new LinkedList<Certificate>(caInfo.getCertificateChain());
+            chain.addFirst(certificate);
+            byte[] pkcs7ToDownload = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain)));
+            downloadToken(pkcs7ToDownload, "application/octet-stream", ".der");
+        } catch (CertificateParsingException | CertificateEncodingException | ClassCastException | CMSException e) {
+            log.info(e);
         }
-        downloadToken(generatedToken, "application/x-pkcs12", ".p12");
+        reset();
     }
-
-    public final void downloadJks() {
-        if (endEntityInformation.getTokenType() != EndEntityConstants.TOKEN_SOFT_JKS) {
-            throw new IllegalStateException();
+    
+    private final void generateCertificate(){
+        byte[] certificateRequest = endEntityInformation.getExtendedinformation().getCertificateRequest();
+        if (certificateRequest == null) {
+            raLocaleBean.addMessageError("enrollwithrequestid_could_not_find_csr_inside_enrollment_request_with_request_id", requestId);
+            log.info("Could not find CSR inside enrollment request with request ID " + requestId);
+            return;
         }
+        try {
+            endEntityInformation.setPassword(endEntityInformation.getUsername());
+            generatedToken = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(), endEntityInformation,
+                    certificateRequest);
+            log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
+                    endEntityInformation.getUsername());
+        } catch (AuthorizationDeniedException e){
+            raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
+            log.info("You are not authorized to execute this operation", e);
+        } catch (EjbcaException e) {
+            ErrorCode errorCode = EjbcaException.getErrorCode(e);
+            if (errorCode != null) {
+                raLocaleBean.addMessageError(errorCode);
+                log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
+            } else {
+                raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
+                log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername(), e);
+            }
+        }
+    }
+    
+    public void generateKeyStoreJks() {
+        endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_JKS);
+        generateKeyStore();
         downloadToken(generatedToken, "application/octet-stream", ".jks");
+        reset();
+    }
+    
+    public void generateKeyStorePkcs12() {
+        endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_P12);
+        generateKeyStore();
+        downloadToken(generatedToken, "application/x-pkcs12", ".p12");
+        reset();
+    }
+    
+    private final void generateKeyStore(){
+        try {
+            byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+            log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
+                    endEntityInformation.getUsername());
+            try(ByteArrayOutputStream buffer = new ByteArrayOutputStream()){
+                buffer.write(keystoreAsByteArray);
+                generatedToken = buffer.toByteArray();
+            }
+        } catch (AuthorizationDeniedException e){
+            raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
+            log.info("You are not authorized to execute this operation", e);
+        } catch (EjbcaException | IOException e) {
+            ErrorCode errorCode = EjbcaException.getErrorCode(e);
+            if (errorCode != null) {
+                raLocaleBean.addMessageError(errorCode);
+                log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
+            } else {
+                raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
+                log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
+            }
+            return;
+        }
+    }
+    
+    public boolean isRenderGenerateCertificate(){
+        return endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN;
+    }
+    
+    public boolean isRenderGenerateKeyStoreJks(){
+        return endEntityInformation.getTokenType() != EndEntityConstants.TOKEN_USERGEN;
+    }
+    
+    public boolean isRenderGenerateKeyStorePkcs12(){
+        return endEntityInformation.getTokenType() != EndEntityConstants.TOKEN_USERGEN;
     }
 
     private final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
@@ -262,9 +319,9 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public boolean isRenderPassword() {
-        return endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS ||
-                endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12||
-                        endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM;
+        return endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS
+                || endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12
+                || endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM;
     }
 
     //-----------------------------------------------------------------

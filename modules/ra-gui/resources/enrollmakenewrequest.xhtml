@@ -413,8 +413,9 @@
 						<h:outputText value="#{enrollMakeNewRequestBean.requestId}" />
 					</h:panelGroup>
 					<h:panelGroup layout="block" styleClass="keygeneration-button-group">
-						<h:outputLink value="enrollwithrequestid.xhtml" id="useRequestIdLink">
+						<h:outputLink value="enrollwithrequestid.xhtml" id="useRequestIdLink" styleClass="jsAutoFocusFirst">
 							<h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}&nbsp;&gt;&gt;" />
+							<f:param name="#{enrollMakeNewRequestBean.paramRequestId}" value="#{enrollMakeNewRequestBean.requestId}" />
 						</h:outputLink>
 					</h:panelGroup>
                 </h:panelGroup>
