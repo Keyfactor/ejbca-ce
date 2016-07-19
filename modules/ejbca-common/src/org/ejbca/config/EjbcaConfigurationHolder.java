@@ -47,7 +47,7 @@ public final class EjbcaConfigurationHolder {
 
 	private static final Logger log = Logger.getLogger(EjbcaConfigurationHolder.class);
 
-	private static CompositeConfiguration activeConfig = null;
+	private static CompositeConfiguration config = null;
 	private static CompositeConfiguration configBackup = null;
 	
 	/** ejbca.properties must be first in this file, because CONFIGALLOWEXTERNAL is defined in there. */
@@ -65,12 +65,12 @@ public final class EjbcaConfigurationHolder {
     /** Use static code block to instantiate the instance at class load and prevent the thread synchronization issues.
      * This solution takes advantage of the Java memory model's guarantees about class initialization to ensure thread safety. */
     static {
-        activeConfig = instanceInternal();
+        instanceInternal();
     }
 
     /** Method used to retrieve the singleton Configuration instance */
     public static Configuration instance() {
-        return activeConfig;
+        return config;
     }
 
 	private static CompositeConfiguration instanceInternal() {
@@ -88,7 +88,7 @@ public final class EjbcaConfigurationHolder {
 			} catch (ConfigurationException e) {
 				log.error("Error intializing configuration: ", e);
 			}
-			CompositeConfiguration config = new CompositeConfiguration();
+			config = new CompositeConfiguration();
 
 			// Only add these config sources if we allow external configuration
 			if (allowexternal) {
@@ -154,7 +154,7 @@ public final class EjbcaConfigurationHolder {
 			f = new File(filename);
 			final PropertiesConfiguration pc = new PropertiesConfiguration(f);
 			pc.setReloadingStrategy(new FileChangedReloadingStrategy());
-			activeConfig.addConfiguration(pc);
+			config.addConfiguration(pc);
 			log.info("Added file to configuration source: "+f.getAbsolutePath());	        		
 		} catch (ConfigurationException e) {
 			log.error("Failed to load configuration from file " + f.getAbsolutePath());
@@ -171,7 +171,7 @@ public final class EjbcaConfigurationHolder {
 			final URL url = EjbcaConfigurationHolder.class.getResource("/conf/" + resourcename);
 			if (url != null) {
 				final PropertiesConfiguration pc = new PropertiesConfiguration(url);
-				activeConfig.addConfiguration(pc);
+				config.addConfiguration(pc);
 				log.debug("Added url to configuration source: " + url);
 			}
 		} catch (ConfigurationException e) {
@@ -272,7 +272,7 @@ public final class EjbcaConfigurationHolder {
 		if (configBackup != null) {
 			return false;
 		}
-		configBackup = (CompositeConfiguration) activeConfig.clone();
+		configBackup = (CompositeConfiguration) config.clone();
 		return true;
 	}
 	
@@ -285,7 +285,7 @@ public final class EjbcaConfigurationHolder {
 		if (configBackup == null) {
 			return false;
 		}
-		activeConfig = configBackup;
+		config = configBackup;
 		configBackup = null;
 		return true;
 	}
@@ -301,7 +301,7 @@ public final class EjbcaConfigurationHolder {
 		while (i.hasNext()) {
 			final String key = (String) i.next();
 			final String value = (String) properties.get(key);
-			activeConfig.setProperty(key, value);
+			config.setProperty(key, value);
 		}
 		return true;
 	}
@@ -313,7 +313,7 @@ public final class EjbcaConfigurationHolder {
 	 */
 	public static boolean updateConfiguration(final String key, final String value) {
 		backupConfiguration();	// Only takes a backup if necessary.
-		activeConfig.setProperty(key, value);
+		config.setProperty(key, value);
 		return true;
 	}
 
