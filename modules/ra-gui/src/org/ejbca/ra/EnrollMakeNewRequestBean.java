@@ -702,7 +702,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
         ec.setResponseContentType(responseContentType);
         ec.setResponseContentLength(token.length);
-        final String filename = StringTools.stripFilename(getSubjectDn().getFieldInstancesMap().get(DnComponents.COMMONNAME).get(0).getValue() + fileExtension);
+        String fileName = "certificatetoken";
+        Map<Integer, FieldInstance> commonName = getSubjectDn().getFieldInstancesMap().get(DnComponents.COMMONNAME);
+        if(commonName != null && !StringUtils.isEmpty(commonName.get(0).getValue())){
+            fileName = commonName.get(0).getValue();
+        }
+        final String filename = StringTools.stripFilename(fileName + fileExtension);
         ec.setResponseHeader("Content-Disposition",
                 "attachment; filename=\"" + filename + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
         try (final OutputStream output = ec.getResponseOutputStream();) {

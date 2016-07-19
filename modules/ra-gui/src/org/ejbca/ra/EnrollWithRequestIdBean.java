@@ -293,12 +293,12 @@ public class EnrollWithRequestIdBean implements Serializable {
         ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
         ec.setResponseContentType(responseContentType);
         ec.setResponseContentLength(token.length);
-        String commonName = "dummyTokenName";
+        String fileName = "certificatetoken";
         try {
             LdapName ldapName = new LdapName(endEntityInformation.getDN());
             for(Rdn rdn : ldapName.getRdns()) {
                 if(rdn.getType().equalsIgnoreCase("CN")) {
-                    commonName = (String) rdn.getValue();
+                    fileName = (String) rdn.getValue();
                     break;
                 }
             }
@@ -306,7 +306,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             log.info(e1);
         } 
                 
-        final String filename = StringTools.stripFilename(commonName + fileExtension);
+        final String filename = StringTools.stripFilename(fileName + fileExtension);
         ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + filename + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
         OutputStream output = null;
         try {
