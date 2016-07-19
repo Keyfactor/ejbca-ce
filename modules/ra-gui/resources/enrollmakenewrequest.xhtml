@@ -371,6 +371,12 @@
 								rendered="#{enrollMakeNewRequestBean.generateP12ButtonRendered}"
 								styleClass="pure-button ra-button">
 							</h:commandButton>
+							<h:commandButton id="generateKeyStorePem"
+								value="#{msg.enroll_generate_pem}"
+								action="#{enrollMakeNewRequestBean.addEndEntityAndGeneratePem}"
+								rendered="#{enrollMakeNewRequestBean.generatePemButtonRendered}"
+								styleClass="pure-button ra-button">
+							</h:commandButton>
 							<h:commandButton id="generatePem"
 								value="#{msg.enroll_generate_pem}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificatePem}"

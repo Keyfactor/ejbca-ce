@@ -214,6 +214,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
+    
+    public boolean isGeneratePemButtonRendered() {
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if (endEntityProfile == null) {
+            return false;
+        }
+        String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
+        return availableKeyStores != null && availableKeyStores.contains(SecConst.TOKEN_SOFT_PEM + "")
+                && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
+                && !isApprovalRequired();
+    }
 
     public boolean isGenerateFromCsrButtonRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
@@ -487,6 +498,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void addEndEntityAndGenerateJks() {
         byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_JKS, "JKS", null);
         downloadToken(token, "application/octet-stream", ".jks");
+    }
+    
+    public void addEndEntityAndGeneratePem() {
+        byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_PEM, "PEM", null);
+        downloadToken(token, "application/octet-stream", ".pem");
     }
     
     public void updateRequestDataToPreview(){

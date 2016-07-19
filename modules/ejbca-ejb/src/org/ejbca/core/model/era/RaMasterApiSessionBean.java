@@ -63,11 +63,13 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -1118,9 +1120,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         GenerateToken tgen = new GenerateToken(endEntityAuthenticationSessionLocal, endEntityAccessSession, endEntityManagementSessionLocal, caSession, keyRecoverySessionLocal, signSessionLocal);
         try {
             KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), endEntity.getExtendedinformation().getKeyStoreAlgorithmSubType(), endEntity.getExtendedinformation().getKeyStoreAlgorithmType(), endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            keyStore.store(outputStream, endEntity.getPassword().toCharArray());
-            return outputStream.toByteArray();
+            if(endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM){
+                try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
+                    outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
+                    return outputStream.toByteArray();
+                }
+            }else{
+                try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
+                    keyStore.store(outputStream, endEntity.getPassword().toCharArray());
+                    return outputStream.toByteArray();
+                }
+            }
         } catch (Exception e) {
             throw new NonHandledCesecoreException(e);
         }

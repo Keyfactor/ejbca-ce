@@ -28,10 +28,8 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
-import javax.faces.component.UIComponent;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.validator.ValidatorException;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
@@ -236,6 +234,13 @@ public class EnrollWithRequestIdBean implements Serializable {
         reset();
     }
     
+    public void generateKeyStorePem() {
+        endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_PEM);
+        generateKeyStore();
+        downloadToken(generatedToken, "application/octet-stream", ".pem");
+        reset();
+    }
+    
     private final void generateKeyStore(){
         try {
             byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
@@ -270,6 +275,10 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
     
     public boolean isRenderGenerateKeyStorePkcs12(){
+        return endEntityInformation.getTokenType() != EndEntityConstants.TOKEN_USERGEN;
+    }
+    
+    public boolean isRenderGenerateKeyStorePem(){
         return endEntityInformation.getTokenType() != EndEntityConstants.TOKEN_USERGEN;
     }
 
@@ -319,9 +328,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public boolean isRenderPassword() {
-        return endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS
-                || endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12
-                || endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM;
+        return endEntityInformation.getTokenType() != EndEntityConstants.TOKEN_USERGEN;
     }
 
     //-----------------------------------------------------------------
