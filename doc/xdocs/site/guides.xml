@@ -250,7 +250,7 @@ Got request for nonexisting user: 12013150
   So, you know you must add an entity using the serial number as username, the password you define in IOS, and serialNumber/unstructuredNamed as subject DN fields.
   </p>
   <p>
-  After adding the end entity, do the password enrollment again. If you see this you have enrolled succesfully:
+  After adding the end entity, do the password enrollment again. If you see this you have enrolled successfully:
   </p>
   <source>
 saroumane#sh crypto ca cert
