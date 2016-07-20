@@ -57,7 +57,7 @@ public class RevokeCertificateCommand extends BaseRaCommand {
                 MandatoryMode.MANDATORY,
                 StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT,
-                "Reason: unused(0), keyCompromise(1), cACompromise(2), affiliationChanged(3),"
+                "Reason integer value: unused(0), keyCompromise(1), cACompromise(2), affiliationChanged(3),"
                         + " superseded(4), cessationOfOperation(5), certficateHold(6), removeFromCRL(8), privilegeWithdrawn(9), aACompromise(10). Normal reason is 0"));
     }
 
@@ -139,7 +139,8 @@ public class RevokeCertificateCommand extends BaseRaCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Revokes a certificate";
+        return "Command used to revoke or unrevoke a certificate.\n"
+                + "Unrevocation is done using the reason removeFromCRL(8), and can only be done if the certificate is revoked with reason removeFromCRL(6).";
     }
 
     @Override
