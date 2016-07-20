@@ -39,6 +39,10 @@ import org.ejbca.util.NotificationParamGen;
  * ${user.TIMECREATED}             = The time the user was created
  * ${user.TIMEMODIFIED}            = The time the user was modified          
  * 
+ * ${requestAdmin.CN}              = The common name of the requesting administrator.
+ * ${requestAdmin.EE.EMAIL}        = The email address of the administrator adding the end entity according to the administrator's End Entity data.
+ * ${requestAdmin.SAN.EMAIL}       = The email address of the administrator adding the end entity according to the administrator's Subject Alternative Name, RFC822Name field.
+ *
  * Variables used with  expiring certificates. 
  * ${expiringCert.CERTSERIAL}      = The serial number of the certificate about to expire 
  * ${expiringCert.EXPIREDATE}      = The date the certificate will expire
@@ -67,10 +71,17 @@ public class UserNotificationParamGen extends NotificationParamGen {
 		populateWithExpiringCert(expiringCert);
 	}
 
-	public UserNotificationParamGen(EndEntityInformation userData, String approvalAdminDN, EndEntityInformation admin, CertificateDataWrapper revokedCertificate) {
+	/** Notification parameter generation when notifying about end entity events (new, generated, revoked etc).
+	 * 
+	 * @param userData The end entity that is being operated on. Populates USERNAME, CN etc variables
+	 * @param approvalAdminDN The DN of the administrator that approved the request, if approvals were used. Populates approvalAdmin variables.
+	 * @param requestAdmin The end entity that requested the event from the beginning, either the admin that adds an end entity if no approvals are used, of if approvals were used the admin requesting (creating the approval request) to add an end entity. Populates requestAdmin variables
+	 * @param revokedCertificate the certificate that is revoked, in case of a revocation event. Populates revokedCertificate variables
+	 */
+	public UserNotificationParamGen(EndEntityInformation userData, String approvalAdminDN, EndEntityInformation requestAdmin, CertificateDataWrapper revokedCertificate) {
 		populateWithUserData(userData);
 		populateWithApprovalAdminDN(approvalAdminDN);
-		populateWithEmailAddresses(userData, admin);
+		populateWithEmailAddresses(userData, requestAdmin);
 		populateWithRevokedCertificate(revokedCertificate);
 	}
 
@@ -173,17 +184,17 @@ public class UserNotificationParamGen extends NotificationParamGen {
 		}
 	}
 	
-	protected void populateWithEmailAddresses(EndEntityInformation userdata, EndEntityInformation admin) {
+	protected void populateWithEmailAddresses(EndEntityInformation userdata, EndEntityInformation requestAdmin) {
 		if(userdata != null) {
 			paramPut("user.EE.EMAIL", userdata.getEmail());
 			final DNFieldExtractor sanfields = new DNFieldExtractor(userdata.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
 			paramPut("user.SAN.EMAIL", sanfields.getField(DNFieldExtractor.RFC822NAME, 0));
 		}
-		if(admin != null) {
-			paramPut("requestAdmin.EE.EMAIL", admin.getEmail());
-			final DNFieldExtractor sdnFields = new DNFieldExtractor(admin.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
+		if(requestAdmin != null) {
+			paramPut("requestAdmin.EE.EMAIL", requestAdmin.getEmail());
+			final DNFieldExtractor sdnFields = new DNFieldExtractor(requestAdmin.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
 			paramPut("requestAdmin.CN", sdnFields.getField(DNFieldExtractor.CN, 0));
-			final DNFieldExtractor sanFields = new DNFieldExtractor(admin.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
+			final DNFieldExtractor sanFields = new DNFieldExtractor(requestAdmin.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
 			paramPut("requestAdmin.SAN.EMAIL", sanFields.getField(DNFieldExtractor.RFC822NAME, 0));
 		}
 	}
