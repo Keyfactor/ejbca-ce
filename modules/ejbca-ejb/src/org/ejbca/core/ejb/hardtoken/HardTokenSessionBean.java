@@ -93,8 +93,8 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 
 /**
- * Stores data used by web server clients. Uses JNDI name for datasource as
- * defined in env 'Datasource' in ejb-jar.xml.
+ * HardToken API, this mimics "smart card" tokens where one token that has a serial number
+ * may care multiple certificates. Different types of hard tokens have different profiles.
  * 
  * @version $Id$
  */
