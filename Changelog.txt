@@ -2778,7 +2778,7 @@ Bug
     [ECA-1266] - Upgrade may cause "use authority information access" to be enabled though it was not before in certificate profile
     [ECA-1639] - The CAR of a CV Certificate can hold an incorrect sequence number (which makes the CAR incorrect)
     [ECA-1645] - Exception in CertTools parsing CRL Distribution Point with name but no URI
-    [ECA-1646] - class isolation does not work with Jboss AS 4.2.3 GA : unable to "ant install" succesfully
+    [ECA-1646] - class isolation does not work with JBoss AS 4.2.3 GA : unable to "ant install" successfully
     [ECA-1651] - Some cli commands does not work on JBoss 5
     [ECA-1652] - Trying to use plus sign in DN with WS-API results in double escaping
     [ECA-1653] - Trying to get delta CRL when none exists with cli gives ugly error message
