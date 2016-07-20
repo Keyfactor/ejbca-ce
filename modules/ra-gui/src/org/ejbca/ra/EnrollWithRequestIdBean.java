@@ -185,7 +185,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             LinkedList<Certificate> chain = new LinkedList<Certificate>(caInfo.getCertificateChain());
             chain.addFirst(certificate);
             byte[] pkcs7ToDownload = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain)));
-            downloadToken(pkcs7ToDownload, "application/octet-stream", ".der");
+            downloadToken(pkcs7ToDownload, "application/octet-stream", ".p7b");
         } catch (CertificateParsingException | CertificateEncodingException | ClassCastException | CMSException e) {
             log.info(e);
         }
@@ -201,8 +201,7 @@ public class EnrollWithRequestIdBean implements Serializable {
         }
         try {
             endEntityInformation.setPassword(endEntityInformation.getUsername());
-            generatedToken = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(), endEntityInformation,
-                    certificateRequest);
+            generatedToken = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
             log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
                     endEntityInformation.getUsername());
         } catch (AuthorizationDeniedException e){
