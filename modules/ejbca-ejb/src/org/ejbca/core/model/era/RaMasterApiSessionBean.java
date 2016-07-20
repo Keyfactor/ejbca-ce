@@ -1141,10 +1141,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, byte[] certificateRequest)
+    public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity)
             throws AuthorizationDeniedException, EjbcaException {
         PKCS10RequestMessage req = null;
-        req = RequestMessageUtils.genPKCS10RequestMessage(certificateRequest);
+        req = RequestMessageUtils.genPKCS10RequestMessage(endEntity.getExtendedinformation().getCertificateRequest());
         req.setUsername(endEntity.getUsername());
         req.setPassword(endEntity.getPassword());
         

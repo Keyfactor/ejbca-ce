@@ -644,7 +644,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 try {
                     endEntityInformation.getExtendedinformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
                     final byte[] certificateDataToDownload = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(),
-                            endEntityInformation, CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
+                            endEntityInformation);
                     if(certificateDataToDownload == null){
                         raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername());
                         log.info("Certificate could not be generated for end entity with usernamne " + endEntityInformation.getUsername());
