@@ -42,12 +42,16 @@ public interface ApprovalExecutionSession {
      * authorized to AccessRulesConstants.REGULAR_APPROVECAACTION otherwise
      * AccessRulesConstants.REGULAR_APPORVEENDENTITY and APPROVAL_RIGHTS for the
      * end entity profile.
-     * 2.2 Checks if the admin is authoried to the approval requests getCAId()
+     * 2.2 Checks if the admin is authorized to the approval requests getCAId()
      * 
      * 3. looks up the username of the administrator and checks that no
      * approval have been made by this user earlier.
      * 
      * 4. Runs the approval command in the end entity bean.
+     * 
+     * @param admin The administrator approving the request
+     * @param approvalId the approvalId of the request that the admin tries to approve
+     * @param approval the new approval to vet
      * 
      * @throws ApprovalRequestExpiredException
      * @throws ApprovalRequestExecutionException
