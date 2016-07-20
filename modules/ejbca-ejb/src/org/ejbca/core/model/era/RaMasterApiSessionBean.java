@@ -72,6 +72,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
@@ -436,10 +437,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
 
         final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
-        Date newDate = new Date();
-        // TODO when should the start date be?
-        Date startDate = new Date(newDate.getTime() - (8 * 60 * 60 * 1000));
-        query.add(startDate, new Date());          
+        if (!request.isSearchingHistorical()) {
+            Date newDate = new Date();
+            Date startDate = new Date(newDate.getTime() - EjbcaConfiguration.getApprovalDefaultRequestValidity());
+            query.add(startDate, new Date());
+        }
 
         /*
         // FIXME for some reason, these two if statements cause an IndexOutOfBound Exception when executing the query even when they are not executed.
@@ -483,7 +485,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             RAAuthorization raAuthorization = new RAAuthorization(authenticationToken, globalConfigurationSession,
                     accessControlSession, null, caSession, endEntityProfileSession,  
                     approvalProfileSession);
-            //approvals = approvalSession.query(authenticationToken, query, 0, 100, caAuthorizationString, endEntityProfileAuthorizationString, approvalProfileAuthorizationString);
             approvals = approvalSession.query(authenticationToken, query, 0, 100, 
                     raAuthorization.getCAAuthorizationString(), endEntityProfileAuthorizationString);
         } catch (AuthorizationDeniedException e) {
@@ -508,6 +509,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 // This approval should be included in the search results
                 response.getApprovalRequests().add(ari);
             }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Returning "  +response.getApprovalRequests().size() + " approvals from search");
         }
         return response;
     }
