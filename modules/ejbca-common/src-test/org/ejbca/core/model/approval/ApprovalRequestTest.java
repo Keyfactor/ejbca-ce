@@ -14,6 +14,7 @@
 package org.ejbca.core.model.approval;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -27,6 +28,7 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -61,6 +63,25 @@ public class ApprovalRequestTest {
             + "emox1mlQ5rgO9sSel6jHkwceaq4A55+qXAjQVsuy76UJnc8ncYX8f98uSYKcjxo/"
             + "ifn1eHMbL8dGLd5bc2GNBZkmhFIEoDvbfn9jo7phlS8iyvF2YhC4eso8Xb+T7+BZ"
             + "QUOBOvc=").getBytes());
+    
+    private static byte[] testcertenc2 = Base64.decode(("MIIDTTCCAjWgAwIBAgIIboZwZjMm33EwDQYJKoZIhvcNAQELBQAwNzEVMBMGA1UE"
+            + "AwwMTWFuYWdlbWVudENBMREwDwYDVQQKDAhEZXYgQ0EgMTELMAkGA1UEBhMCU0Uw"
+            + "HhcNMTUwNDE5MTk0OTUzWhcNMTcwNDE4MTk0OTUzWjAVMRMwEQYDVQQDDApTdXBl"
+            + "ckFkbWluMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0TtZKgKBOwKW"
+            + "SOOTxx0+zqhfzWz0LaUTVTaC06iaQ1w3x+wGSGxA/oF7n6zRdCsG85k/1NbQpO25"
+            + "tQ3vtpqW2U1a0YB6yvTdEpApHofxjd9GV/JtKpKJqRPZEqv4pnG21GK6WeWxvAEc"
+            + "RFsFi6ZO/yxVrB9e3LSUUhDA0kfQEaRf+x6toFT4w0mG8pDxQSWINBMZ/LVwvEA+"
+            + "OCahG3a4KUREbgqIylFf6auv3HQ/k8kIvmbtzUu9v3ixfArvvZH6DnRleLINUB3t"
+            + "NYXrEsLcfAkjzV9W+Nzgdjm34Xhvg8+aIvmbO3OaR7z3O1VXoXDaHHnTv3R7888U"
+            + "edVD1jc0jwIDAQABo38wfTAdBgNVHQ4EFgQU7ZA2TWTXZfNUD8rnYmx6il2YDfUw"
+            + "DAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBTM2eQQAXey4PApuOauspuJcEKByTAO"
+            + "BgNVHQ8BAf8EBAMCBeAwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMEMA0G"
+            + "CSqGSIb3DQEBCwUAA4IBAQBiA3r6bbuCKkI4cZtg/DlnX2pzj0jr8rhJYEvZLhGk"
+            + "t0JSYwwuPQi9YVKS/X6+V5b3VzwviR6MtLHrBOkNd64sS3M5nGxSkwxn7S5IewkT"
+            + "7DOml2uhCOuxOVK59mtHbb/HCcp99IUFq8otgie5gt0LWpmYUGeEbeRH0guNtBaJ"
+            + "N2zA/jXNlPxhGNZg9LoVtd2DSTWQIwD6xojiaCC3ZeQaLMyoOZCvFWMnm8hMSWzX"
+            + "eXB7cRIf/48RsyOYyoHNDo2Z5JsZMS0nqdkeLtFLyVGWHWmpSebA3qP3E8cZtDJS"
+            + "d4Msz2fuxKqNDnxIRPcbjHbn0cOa/tmC1aN/MJ1QymRD").getBytes());
 	
     @Test
 	public void testWriteExternal() throws Exception {
@@ -134,6 +155,42 @@ public class ApprovalRequestTest {
 
 
 	}
+    
+    /** Tests editing (but not actually saving to the database, since this is handled in the ApprovalSessionBean class) */
+    @Test
+    public void testEditedByMe() throws Exception {
+        X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
+        AuthenticationToken token = new X509CertificateAuthenticationToken(testcert);
+        
+        X509Certificate testcertDup = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
+        AuthenticationToken tokenDup = new X509CertificateAuthenticationToken(testcertDup);
+        
+        X509Certificate testcert2 = CertTools.getCertfromByteArray(testcertenc2, X509Certificate.class);
+        AuthenticationToken token2 = new X509CertificateAuthenticationToken(testcert2);
+        
+        AuthenticationToken token3 = new PublicAccessAuthenticationToken("127.0.0.1", true);
+        
+        AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile("AccumulativeApprovalProfile");
+        approvalProfile.setNumberOfApprovalsRequired(2);
+        DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false, approvalProfile);
+        
+        assertFalse("Fresh approval request should not say it has been edited.", ar.isEditedByMe(token));
+        assertFalse(ar.isEditedByMe(tokenDup));
+        assertFalse(ar.isEditedByMe(token2));
+        assertFalse(ar.isEditedByMe(token3));
+        
+        ar.addEditedByAdmin(token);
+        assertTrue(ar.isEditedByMe(token));
+        assertTrue(ar.isEditedByMe(tokenDup));
+        assertFalse(ar.isEditedByMe(token2));
+        assertFalse(ar.isEditedByMe(token3));
+        
+        ar.addEditedByAdmin(token2);
+        assertFalse(ar.isEditedByMe(token)); // no longer the last admin who edited it, so this admin may edit again
+        assertFalse(ar.isEditedByMe(tokenDup));
+        assertTrue(ar.isEditedByMe(token2));
+        assertFalse(ar.isEditedByMe(token3));
+    }
 
     @BeforeClass
 	public static void beforeClass() throws Exception {		
