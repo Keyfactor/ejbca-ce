@@ -157,7 +157,7 @@ public class RaManageRequestBean implements Serializable {
         
         final ApprovalStep step = getRequest().request.getNextApprovalStep();
         final int stepId = step.getStepIdentifier();
-        final ApprovalPartition partition = getRequest().request.getRelevantApprovalPartition();
+        final ApprovalPartition partition = getRequest().request.getNextApprovalStepPartition();
         final int partitionId = partition.getPartitionIdentifier();
         final RaApprovalResponseRequest approval = new RaApprovalResponseRequest(id, stepId, partitionId,  "", action); // TODO comment field. should it be here for partitioned approvals also?
         for (final ApprovalRequestGUIInfo.StepControl control : controls) {

@@ -308,7 +308,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         if((nextStep != null) && !isAccumulativeProfile) {
             ApprovalDataText stepIdText = new ApprovalDataText("Step ID", Integer.toString(nextStep.getStepId()) , false, false);
             approvalPartitionData.add(new RequestDataRow(raLocaleBean, stepIdText, false, Integer.toString(nextStep.getStepId())));
-            final ApprovalPartition partition = request.getRelevantApprovalPartition();
+            final ApprovalPartition partition = request.getNextApprovalStepPartition();
             if (partition != null) {
                 ApprovalDataText partitionIdText = new ApprovalDataText("Partition ID", Integer.toString(partition.getPartitionIdentifier()) , false, false);
                 approvalPartitionData.add(new RequestDataRow(raLocaleBean, partitionIdText, false, Integer.toString(partition.getPartitionIdentifier())));
