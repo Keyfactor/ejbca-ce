@@ -106,7 +106,7 @@ public class InternalSecurityEventsLoggerSessionBean implements InternalSecurity
                     ServiceTypes.CORE, ModuleTypes.SECURITY_AUDIT, "auditLogCryptoTest", null, null, null);
             auditRecordData.calculateProtection();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Audit log integrity protection test completed succesfully.");
+                LOG.debug("Audit log integrity protection test completed successfully.");
             }
             return true;
         }

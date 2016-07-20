@@ -2081,7 +2081,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                             }
                         }
                         // TODO: approvalAdmin below should be the requestingAdmin, how to get that from the request?
-                        // TODO: approvalAdminDNB below should be the approving admin, how to get that from the request?
+                        // TODO: approvalAdminDN below should be the approving admin, how to get that from the request?
                         final UserNotificationParamGen paramGen = new UserNotificationParamGen(endEntityInformation, approvalAdminDN, approvalAdmin, revokedCertificate);
                         // substitute any $ fields in the recipient and from fields
                         recipientEmail = paramGen.interpolate(recipientEmail);

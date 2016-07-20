@@ -47,7 +47,7 @@ public class AccessRuleManagementSessionBeanTest {
         
         try {
             AccessRuleData retrievedRule = accessRuleManagementSession.find(primaryKey);
-            assertNotNull("Access rule with primary key " + primaryKey + " was not collected succesfully from database.", retrievedRule);
+            assertNotNull("Access rule with primary key " + primaryKey + " was not collected successfully from database.", retrievedRule);
             assertEquals("Two rules with the same primary key were not equal.", accessRule, retrievedRule);
         } finally {
             AccessRuleData retrievedRule = accessRuleManagementSession.find(primaryKey);
@@ -55,7 +55,7 @@ public class AccessRuleManagementSessionBeanTest {
                 accessRuleManagementSession.remove(retrievedRule);
             }
             retrievedRule = accessRuleManagementSession.find(primaryKey);
-            assertNull("Access rule with primary key " + primaryKey + " was not removed succesfully from database.", retrievedRule);
+            assertNull("Access rule with primary key " + primaryKey + " was not removed successfully from database.", retrievedRule);
         }
 
     }
@@ -75,7 +75,7 @@ public class AccessRuleManagementSessionBeanTest {
         
         try {
             AccessRuleData retrievedRule = accessRuleManagementSession.find(primaryKey);
-            assertNotNull("Access rule with primary key " + primaryKey + " was not collected succesfully from database.", retrievedRule);
+            assertNotNull("Access rule with primary key " + primaryKey + " was not collected successfully from database.", retrievedRule);
             assertEquals("Rule was not created with the correct state.", AccessRuleState.RULE_DECLINE, retrievedRule.getInternalState());
             assertFalse("Rule was created decline+recursive", retrievedRule.getRecursive());
         } finally {
@@ -84,7 +84,7 @@ public class AccessRuleManagementSessionBeanTest {
                 accessRuleManagementSession.remove(retrievedRule);
             }
             retrievedRule = accessRuleManagementSession.find(primaryKey);
-            assertNull("Access rule with primary key " + primaryKey + " was not removed succesfully from database.", retrievedRule);
+            assertNull("Access rule with primary key " + primaryKey + " was not removed successfully from database.", retrievedRule);
         }
 
     }
