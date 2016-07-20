@@ -782,7 +782,7 @@ public interface IEjbcaWS {
 	 * - /ca/&lt;ca of user&gt;
 	 * </pre>
 	 * 
-	 * If the user isn't an administrator the request willbe added to a queue for approval.
+	 * If the user isn't an administrator the request will be added to a queue for approval.
 	 * 
 	 * @param hardTokenSN of the token to look for.
 	 * @param viewPUKData if PUK data of the hard token should be returned.

@@ -24,13 +24,13 @@ import org.cesecore.NonSensitiveCloneable;
 
 /**
  * Base for all specific application exceptions thrown by EJBCA. Can be used to catch any
- * non-crititcal application exceptions they may be possible to handle: <code> try { . . . } catch
+ * non-critical application exceptions they may be possible to handle: <code> try { . . . } catch
  * (EjbcaException e) { error("Error: blahblah", e); ... }</code>
  *
  * @version $Id$
  */
 @WebFault
-public class EjbcaException extends Exception implements NonSensitiveCloneable{
+public class EjbcaException extends Exception implements NonSensitiveCloneable {
 
     private static final long serialVersionUID = -3754146611270578813L;
     
@@ -40,7 +40,7 @@ public class EjbcaException extends Exception implements NonSensitiveCloneable{
     ErrorCode errorCode = null;
 
     /**
-     * Constructor used to create exception without an errormessage. Calls the same constructor in
+     * Constructor used to create exception without an error message. Calls the same constructor in
      * baseclass <code>Exception</code>.
      */
     public EjbcaException() {
@@ -48,7 +48,7 @@ public class EjbcaException extends Exception implements NonSensitiveCloneable{
     }
 
     /**
-     * Constructor used to create exception with an errormessage. Calls the same constructor in
+     * Constructor used to create exception with an error message. Calls the same constructor in
      * baseclass <code>Exception</code>.
      *
      * @param message Human redable error message, can not be NULL.
@@ -69,11 +69,11 @@ public class EjbcaException extends Exception implements NonSensitiveCloneable{
     }
 
     /**
-     * Constructor used to create exception with an errormessage. Calls the same constructor in
+     * Constructor used to create exception with an error message. Calls the same constructor in
      * baseclass <code>Exception</code>.
      *
      * @param errorCode defines the cause of the exception.
-     * @param message Human redable error message, can not be NULL.
+     * @param message Human readable error message, can not be NULL.
      */
     public EjbcaException(ErrorCode errorCode, String message) {
         super(message);
@@ -108,7 +108,7 @@ public class EjbcaException extends Exception implements NonSensitiveCloneable{
     }
 
     /**
-     * Constructor used to create exception with an errormessage. Calls the same constructor in
+     * Constructor used to create exception with an error message. Calls the same constructor in
      * baseclass <code>Exception</code>.
      *
      * @param message Human readable error message, can not be NULL.

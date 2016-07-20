@@ -165,7 +165,7 @@ public class EjbcaWSHelper {
 	 * - If (allowNonAdmin == false), checks that the admin have access to /administrator, i.e. really is an administrator with the certificate mapped in an admin role. 
 	 *   Does not check any other authorization though, other than that it is an administrator.
 	 * 
-	 * @param allowNonAdmins true if we should verify that it is a real administrator, false only extracts the certificate and checks that it is not revoked.
+	 * @param allowNonAdmins false if we should verify that it is a real administrator, true only extracts the certificate and checks that it is not revoked.
 	 * @return AuthenticationToken object based on the SSL client certificate
 	 * @throws AuthorizationDeniedException if no client certificate or allowNonAdmins == false and the cert does not belong to an admin
 	 */
@@ -195,7 +195,7 @@ public class EjbcaWSHelper {
             }
             return admin;
 		} catch (EJBException e) {
-			log.error("EJBCA WebService error: ",e);
+			log.error("EJBCA WebService error, getAdmin: ",e);
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}
 	}
