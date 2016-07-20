@@ -1,5 +1,5 @@
 @charset "UTF-8";
-/* web express main SCSS */
+/* web express main SCSS version 160720-1202 */
 .web-express.tablet {
   display: none; }
 
@@ -33,6 +33,16 @@ body.rtlDirection .pure-menu-heading {
   #menu > .pure-g > .pure-u-1:nth-of-type(2) > .pure-menu > .pure-menu-list > .pure-menu-item:nth-of-type(1) > .pure-menu-children > .pure-menu-item:nth-of-type(2) > a,
   #menu > .pure-g > .pure-u-1:nth-of-type(2) > .pure-menu > .pure-menu-list .pure-menu-item:nth-of-type(2) > .pure-menu-children > .pure-menu-item:nth-of-type(2) > a {
     padding-top: 0; }
+
+form#contentForm.pure-form > div.tabButtonBar > input {
+  -webkit-appearance: none;
+  border-radius: 0; }
+  form#contentForm.pure-form > div.tabButtonBar > input:disabled {
+    -webkit-opacity: 1;
+    -webkit-text-fill-color: white;
+    background: #e9af13; }
+  form#contentForm.pure-form > div.tabButtonBar > input:not(:disabled) {
+    background: #cea01a; }
 
 h1, h2, h3, h4, p, span {
   font-family: Helvetica; }
@@ -75,11 +85,12 @@ img.menu_logo {
 #title h1 {
   color: #fff;
   font-weight: bold;
-  font-size: 28px; }
+  font-size: 28px;
+  padding-bottom: 1%; }
 
 .header {
   /* Vy-titlar med gul border*/
-  width: 45%;
+  width: 60%;
   padding: 0em 1em 0;
   border-bottom: 3px solid #fcba00;
   text-align: left; }
@@ -123,12 +134,14 @@ img.menu_logo {
   display: block;
   margin: 2% auto 0 auto; }
 
-#detailsForm > span.pure-u-1 > .pure-u-2-3 {
-  display: block;
-  margin: 2% 0 1% 2%; }
-#detailsForm > span.pure-u-1 > .pure-u-lg-2-3:nth-of-type(13) > input {
-  /*knappen revoke inne i search > certificate details*/
-  margin: 0 0 0 2%; }
+#detailsForm > span.pure-u-1:nth-last-of-type(2) {
+  /*> .pure-u-2-3 {
+      display: block;
+      margin: 2% 0 1% 2%;
+  }*/ }
+  #detailsForm > span.pure-u-1:nth-last-of-type(2) > .pure-u-lg-2-3:nth-of-type(13) > input {
+    /*knappen revoke inne i search > certificate details*/
+    margin: 0 0 0 2%; }
 
 #detailsForm > .pure-u-1:nth-of-type(2) {
   width: 90%;
@@ -138,19 +151,20 @@ img.menu_logo {
   #detailsForm > .pure-u-1:nth-of-type(2) > label {
     margin-left: 0; }
 
-/*följande kod har nu flyttats till em64-filen:
-
-#detailsForm > span.pure-u-1:nth-of-type(2) > label {
-  width: 30.8%;
-  margin-left:2.5%;
-}
-*/
 #detailsForm > span.pure-u-1 > .pure-u-1-3 {
   margin-top: 2%; }
 
-.content-body > #detailsForm > span.pure-u-1:nth-of-type(2) > span {
+#detailsForm > span.pure-u-1:nth-of-type(2) {
   /*ska bryta alla långa rader inne i search > view > details*/
-  word-break: break-all; }
+  width: 97%;
+  margin-left: 0; }
+  #detailsForm > span.pure-u-1:nth-of-type(2) > label {
+    width: 30.8%;
+    margin-left: 2.5%;
+    display: block; }
+  #detailsForm > span.pure-u-1:nth-of-type(2) > span {
+    word-break: break-all;
+    margin-left: 2.5%; }
 
 .finger-print {
   /* är tänkt för blå länkar i certficate details-vyn*/
@@ -220,6 +234,9 @@ label.showNonModifiable {
 .navigation-button-group > #enrollMakeNewRequestForm\:resetButton {
   float: left;
   margin: 0 0 0 2%; }
+
+requestInfoForm\:resetButton {
+  width: 13%; }
 
 table.pure-table > thead > tr > th {
   color: #444d57; }
@@ -317,9 +334,8 @@ textarea#keyPairForm\:certificateRequest {
 .row-odd {
   background: none; }
 
-#requestInfoForm\:resetButton,
 #enrollWithRequestIdForm\:checkButton {
-  width: 890px; }
+  padding: 1% 2.5% 1% 2.5%; }
 
 #searchCertsButton,
 #requestStatusButton,
@@ -402,6 +418,12 @@ a {
 .contentForm\:criteriaMaxResults {
   width: 100%; }
 
+#contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) {
+  width: 100%; }
+  #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) > .pure-control-group > #contentForm\:modifiedBefore,
+  #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) > .pure-control-group #contentForm\:modifiedAfter {
+    width: 100%; }
+
 /* resterande text för inputs samt inputs i show more options i search for certificates */
 #contentForm\:issuedAfterLabel,
 #contentForm\:issuedBeforeLabel,
@@ -479,7 +501,8 @@ a {
   padding: 1% 0 0 2%; }
 
 #keyPairForm\:uploadCsrButton {
-  margin: 0 0 1% 1.5%; }
+  margin: 0 0 1% 1.5%;
+  padding: 1% 2.5% 1% 2.5%; }
 
 #expandRequestDetails,
 #expandStatusDetails,
@@ -492,11 +515,17 @@ a {
   float: left; }
 
 /*Kod för att lägga radioknappar, som ligger inom första ramen i make request, under varandra */
+#requestTemplateForm\:selectKeyPairGeneration > tbody > tr {
+  background: none; }
+
 #requestTemplateForm\:selectKeyPairGeneration > tbody > tr > td {
+  padding: 0;
   display: block; }
   #requestTemplateForm\:selectKeyPairGeneration > tbody > tr > td > label {
+    display: inline-block;
     text-align: left;
-    padding: 2% 0 0 5%; }
+    margin-left: .5em;
+    width: auto; }
 
 /*SLUT Kod för att lägga radioknappar, som ligger inom första ramen i make request, under varandra */
 #contentForm\:viewRequestDataTable {
@@ -510,6 +539,17 @@ a {
 
 .tabBbutton > input {
   border-radius: 0; }
+
+/* Styling av felmeddelanden som dyker upp när man inte fyllt i lösenord i make request*/
+#requestInfoForm\:userCredentialsOuterPanel > internal-frame > .pure-control-group:nth-last-of-type(2) #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:userCredentialsOuterPanel > internal-frame > .pure-control-group:nth-last-of-type(2) #requestInfoForm\:passwordConfirmField, .pure-control-group:nth-last-of-type(3) #requestInfoForm\:passwordFieldMessage, .pure-control-group:nth-last-of-type(3) #requestInfoForm\:passwordConfirmField {
+  display: block;
+  margin: 0% 0 2% 19%;
+  color: #ed6a5f; }
+
+.errorMessage {
+  /* gör att 'generella' felmeddelanden visas var man än står på sidan */
+  position: fixed;
+  color: #ed6a5f; }
 
 .footer {
   height: 100px;
@@ -597,7 +637,7 @@ a {
 
   #content-body > table.pure-table > tbody > tr > td > table > tbody > tr > td {
     background: none; } }
-@media (max-width: 63.99em) {
+@media (max-width: 64.0525em) {
   div#div_menu_logo {
     z-index: 1; }
 
@@ -713,13 +753,6 @@ a {
     width: 100%;
     margin: 0; }
 
-  #detailsForm > span.pure-u-1:nth-of-type(2) {
-    width: 100%;
-    margin-left: 0; }
-    #detailsForm > span.pure-u-1:nth-of-type(2) > label {
-      width: 30.8%;
-      margin-left: 2.5%; }
-
   #title h1 {
     font-size: 30px; }
 
@@ -751,12 +784,19 @@ a {
     font-size: 95%; }
 
   #contentForm\:modifiedAfter,
-  #contentForm:modifiedBefore {
+  #contentForm\:modifiedBefore {
     width: 100%;
     font-size: 95%; } }
-@media (min-width: 64em) {
+@media (min-width: 64.0625em) {
+  div#div_menu_logo {
+    width: 13.5%; }
+
+  #menu > div > div.pure-u-1.pure-u-md-1-2.pure-u-lg-13-24 {
+    width: 39%; }
+
   .header {
-    padding: 1.5em 1em 0; }
+    padding: 1.5em 1em 0;
+    width: 45%; }
 
   #title h1 {
     font-size: 33px; }
@@ -769,9 +809,9 @@ a {
     padding: 12px 0 0 0; }
 
   .pure-menu-link {
+    background: #fff;
     color: #35404e;
     font-size: 90%;
-    background: #fff;
     height: 26px; }
 
   @-moz-document url-prefix() {
@@ -791,6 +831,11 @@ a {
   }
   */
   /*SLUT för retinaskärm*/
+  /*
+  a#enrollment:not(:hover) ~ ul.pure-menu-children {
+      border: 4px solid black;
+  }
+  */
   .cas-menu-link:hover, .cas-menu-link:focus,
   .enroll-menu-link:hover, .enroll-menu-link:focus,
   .pure-menu-link:hover, .pure-menu-link:focus,
@@ -807,22 +852,27 @@ a {
     text-align: center; }
 
   .content {
-    width: 60em;
-    margin: 50px auto 30px auto;
     background: #637b98;
-    flex: 1; }
+    flex: 1;
+    margin: 50px auto 30px auto;
+    width: 60em; }
 
   ul.pure-menu-list > li.pure-menu-item:hover:after {
     /*hover-effekt för pil i dropdown*/
+    border-bottom-color: #517397;
+    border: 5px solid transparent;
+    bottom: 0px;
+    color: #fff;
     content: "";
     display: block;
-    border: 5px solid transparent;
-    border-bottom-color: #517397;
-    position: absolute;
-    bottom: 0px;
     left: 50%;
     margin: 0 0 0 -12px;
-    color: #fff; }
+    position: absolute; }
+
+  ul.pure-menu-list > li.pure-menu-item > ul.pure-menu-children > li.pure-menu-item:first-child a {
+    padding-top: 1em; }
+  ul.pure-menu-list > li.pure-menu-item > ul.pure-menu-children > form > li.pure-menu-item input {
+    padding: 1em 2.5em 1em 1em; }
 
   #contentForm\:showMoreButton,
   #contentForm\:showLessButton {
@@ -857,9 +907,16 @@ a {
   #contentForm\:revokedBefore {
     width: 119%; }
 
-  #contentForm\:modifiedAfter,
-  #contentForm:modifiedBefore {
-    width: 152%; } }
+  #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) {
+    width: 20%; }
+    #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) > .pure-control-group #contentForm\:modifiedAfter,
+    #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) > .pure-control-group #contentForm\:modifiedBefore {
+      width: 152%; }
+
+  #detailsForm > span.pure-u-1:nth-of-type(2) > label {
+    display: inline-block; }
+  #detailsForm > span.pure-u-1:nth-of-type(2) > span {
+    margin-left: 0; } }
 /*
 "gamla"
     "base"  // smartphone
@@ -868,25 +925,28 @@ a {
     1200px  // large desktop
 */
 @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  * {
-    margin: 0; }
+  html {
+    height: auto; }
 
-  html, body.ltrDirection, body.rtlDirection {
-    /*display: -ms-flexbox;*/
-    height: 100%; }
-
-  .content {
-    /*-ms-flex: 0 1 auto;*/
-    min-height: 100%;
-    margin-bottom: -100px; }
-
-  .content:after {
-    /*-ms-flex: 0 1 auto;*/
-    content: "";
-    display: block; }
-
-  .footer, .content:after {
-    /*display: -ms-flexbox;*/
-    height: 100px; } }
+  body > #content.content {
+    flex: none;
+    min-height: 440px; }
+  body > #footer.footer {
+    background: none;
+    color: white;
+    align-items: stretch;
+    display: block;
+    height: auto; }
+    body > #footer.footer > div.align-center {
+      background: #517397;
+      display: table;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 1em; }
+      body > #footer.footer > div.align-center > img.footerLogo {
+        height: 1.25em;
+        margin-right: 1em; }
+      body > #footer.footer > div.align-center > p {
+        margin: 0; } }
 
 /*# sourceMappingURL=w_e_style.css.map */
