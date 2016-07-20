@@ -2068,6 +2068,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         }
                         // Get the administrators DN from the admin certificate, if one exists
                         // When approvals is used, this will be the DN of the admin that approves the request
+                        // TODO: the above does not seem correct, it seems to be the requesting admin
                         String approvalAdminDN = null;
                         EndEntityInformation approvalAdmin = null;
                         if (admin instanceof X509CertificateAuthenticationToken) {
@@ -2079,6 +2080,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                                 approvalAdmin = endEntityAccessSession.findUser(username);
                             }
                         }
+                        // TODO: approvalAdmin below should be the requestingAdmin, how to get that from the request?
+                        // TODO: approvalAdminDNB below should be the approving admin, how to get that from the request?
                         final UserNotificationParamGen paramGen = new UserNotificationParamGen(endEntityInformation, approvalAdminDN, approvalAdmin, revokedCertificate);
                         // substitute any $ fields in the recipient and from fields
                         recipientEmail = paramGen.interpolate(recipientEmail);
