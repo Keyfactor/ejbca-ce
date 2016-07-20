@@ -64,8 +64,8 @@ public class RaApprovalRequestInfo implements Serializable {
     private final boolean editable;
     
     // Current approval step
-    private final ApprovalStep nextApprovalStep;
-    private ApprovalPartition relevantApprovalPartition;
+    private ApprovalStep nextApprovalStep;
+    private ApprovalPartition nextApprovalStepPartition;
     
     // Previous approval steps that are visible to the admin
     private final List<ApprovalStep> previousApprovalSteps;
@@ -113,19 +113,16 @@ public class RaApprovalRequestInfo implements Serializable {
         } catch (AuthenticationFailedException e) {
             throw new IllegalStateException(e);
         }
+        
+        nextApprovalStep = null;
+        nextApprovalStepPartition = null;
         if (nextStep != null && status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && !lastEditedByMe) {
-            nextApprovalStep = nextStep;
-        } else {
-            nextApprovalStep = null;
-        }
-
-        relevantApprovalPartition = null;
-        if(nextApprovalStep != null) {
-            Map<Integer, ApprovalPartition> partitions = nextApprovalStep.getPartitions();
-            for(ApprovalPartition partition : partitions.values()) {
+            Map<Integer, ApprovalPartition> partitions = nextStep.getPartitions();
+            for (ApprovalPartition partition : partitions.values()) {
                 try {
-                    if(approvalProfile.canApprovePartition(authenticationToken, partition)) {
-                        relevantApprovalPartition = partition;
+                    if (approvalProfile.canApprovePartition(authenticationToken, partition)) {
+                        nextApprovalStep = nextStep;
+                        nextApprovalStepPartition = partition;
                         break;
                     }
                 } catch (AuthenticationFailedException e) {
@@ -141,6 +138,7 @@ public class RaApprovalRequestInfo implements Serializable {
             // TODO check if we should check against currentApprovalStep.getPreviousStepsDependency()
             previousApprovalSteps = new ArrayList<>();
             for (final ApprovalStep step : previousSteps) {
+                // FIXME should check if we have view access. And should work similar to the code in ApproveActionManagedBean
                 if (step.getStepIdentifier() < nextStep.getStepIdentifier()) {
                     previousApprovalSteps.add(step);
                 }
@@ -197,8 +195,8 @@ public class RaApprovalRequestInfo implements Serializable {
         return nextApprovalStep;
     }
     
-    public ApprovalPartition getRelevantApprovalPartition() {
-        return relevantApprovalPartition;
+    public ApprovalPartition getNextApprovalStepPartition() {
+        return nextApprovalStepPartition;
     }
     
     public List<ApprovalStep> getPreviousApprovalSteps() {
