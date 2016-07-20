@@ -131,7 +131,7 @@ public class Approval implements Comparable<Approval>, Externalizable {
 
 	/**
 	 * Used specify rejection or approval
-	 * @param approved true for approved, flase for rejected
+	 * @param approved true for approved, false for rejected
 	 * @param admin is the Admin that approved or rejected the current Approval
 	 */
 	public void setApprovalAdmin(boolean approved, AuthenticationToken admin) {
