@@ -79,19 +79,19 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		try{
 			endEntityManagementSession.addUser(getRequestAdmin(), userdata, clearpwd);
 		} catch (EndEntityExistsException e) {
-			throw new ApprovalRequestExecutionException("Error, user already exists ocurred", e);		
+			throw new ApprovalRequestExecutionException("Error, user already exist", e);		
 		} catch (AuthorizationDeniedException e) {
-			throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
+			throw new ApprovalRequestExecutionException("Authorization denied :" + e.getMessage(), e);
 		} catch (UserDoesntFullfillEndEntityProfile e) {
-			throw new ApprovalRequestExecutionException("User Doesn't fullfil end entity profile :" + e.getMessage()  + e.getMessage(), e);			
+			throw new ApprovalRequestExecutionException("User doesn't fullfil end entity profile:" + e.getMessage()  + e.getMessage(), e);			
 		} catch (ApprovalException e) {
-			throw new EJBException("This should never happen",e);
+			throw new EJBException("This ApprovalException should never happen", e);
 		} catch (WaitingForApprovalException e) {
-			throw new EJBException("This should never happen",e);
+			throw new EJBException("This WaitingForApprovalException should never happen", e);
 		} catch (CADoesntExistsException e) {
-			throw new ApprovalRequestExecutionException("CA does not exist :" + e.getMessage(), e);
+			throw new ApprovalRequestExecutionException("CA does not exist:" + e.getMessage(), e);
 		} catch (EjbcaException e){
-			throw new ApprovalRequestExecutionException("Failed adding user :" + e.getErrorCode() + e.getMessage(), e);
+			throw new ApprovalRequestExecutionException("Failed adding user:" + e.getErrorCode() + e.getMessage(), e);
 		} catch (PersistenceException e) {
 		  throw new ApprovalRequestExecutionException("Database error", e);
 		}
