@@ -52,11 +52,22 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -69,6 +80,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -84,6 +96,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -1147,18 +1160,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         req = RequestMessageUtils.genPKCS10RequestMessage(endEntity.getExtendedinformation().getCertificateRequest());
         req.setUsername(endEntity.getUsername());
         req.setPassword(endEntity.getPassword());
-        
-        ResponseMessage resp;
         try {
-            resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
+            ResponseMessage resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
             X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             return cert.getEncoded();
-        } catch(CesecoreException e){
+        } catch (NoSuchEndEntityException | CustomCertificateSerialNumberException | CryptoTokenOfflineException | IllegalKeyException
+                | CADoesntExistsException | SignRequestException | SignRequestSignatureException | IllegalNameException | CertificateCreateException
+                | CertificateRevokeException | CertificateSerialNumberException | IllegalValidityException | CAOfflineException
+                | InvalidAlgorithmException | CertificateExtensionException e) {
             throw new EjbcaException(e);
         } catch (CertificateParsingException | CertificateEncodingException e) {
             throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage");
-        } catch (CertificateExtensionException e) {
-            throw new NonHandledCesecoreException(e);
         }
     }
 

@@ -74,6 +74,7 @@ import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNu
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
@@ -133,7 +134,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
     @Override
     public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final CA ca,
-            final RequestMessage req, final Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams, final long updateTime) throws CryptoTokenOfflineException,
+            final RequestMessage providedRequestMessage, final Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams, final long updateTime) throws CryptoTokenOfflineException,
             SignRequestSignatureException, IllegalKeyException, IllegalNameException, CustomCertificateSerialNumberException,
             CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, AuthorizationDeniedException,
             IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
@@ -147,7 +148,15 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final String alias;
             final Collection<Certificate> cachain;
             final Certificate cacert;
-            if (ca.getUseNextCACert(req)) {
+            RequestMessage requestMessage = providedRequestMessage; //The request message was provided outside of endEntityInformation
+            //Request inside endEntityInformation has priority since its algorithm is approved
+            if(endEntityInformation.getExtendedinformation().getCertificateRequest() != null){
+                requestMessage = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getExtendedinformation().getCertificateRequest());
+                if (log.isDebugEnabled()) {
+                    log.debug("CSR request found inside the endEntityInformation. Using this one instead of one provided separately.");
+                }
+            }
+            if (ca.getUseNextCACert(requestMessage)) {
                 alias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
                 cachain = ca.getRolloverCertificateChain();
                 cacert = cachain.iterator().next();
@@ -157,17 +166,17 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 cacert = ca.getCACertificate();
             }
             // See if we need some key material to decrypt request
-            if (req.requireKeyInfo()) {
+            if (requestMessage.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo(cacert, cryptoToken.getPrivateKey(alias), cryptoToken.getEncProviderName());
+                requestMessage.setKeyInfo(cacert, cryptoToken.getPrivateKey(alias), cryptoToken.getEncProviderName());
             }
             // Verify the request
             final PublicKey reqpk;
             try {
-                if (!req.verify()) {
+                if (!requestMessage.verify()) {
                     throw new SignRequestSignatureException(intres.getLocalizedMessage("createcert.popverificationfailed"));
                 }
-                reqpk = req.getRequestPublicKey();
+                reqpk = requestMessage.getRequestPublicKey();
                 if (reqpk == null) {
                     final String msg = intres.getLocalizedMessage("createcert.nokeyinrequest");
                     throw new InvalidKeyException(msg);
@@ -178,9 +187,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 throw new IllegalKeyException(e);
             }
 
-            final Date notBefore = req.getRequestValidityNotBefore(); // Optionally requested validity
-            final Date notAfter = req.getRequestValidityNotAfter(); // Optionally requested validity
-            final Extensions exts = req.getRequestExtensions(); // Optionally requested extensions
+            final Date notBefore = requestMessage.getRequestValidityNotBefore(); // Optionally requested validity
+            final Date notAfter = requestMessage.getRequestValidityNotAfter(); // Optionally requested validity
+            final Extensions exts = requestMessage.getRequestExtensions(); // Optionally requested extensions
             int keyusage = -1;
             if (exts != null) {
                 if (log.isDebugEnabled()) {
@@ -196,7 +205,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 }
             }
             String sequence = null;
-            byte[] ki = req.getRequestKeyInfo();
+            byte[] ki = requestMessage.getRequestKeyInfo();
             // CVC sequence is only 5 characters, don't fill with a lot of garbage here, it must be a readable string
             if ((ki != null) && (ki.length > 0) && (ki.length < 10) ) {
                 final String str = new String(ki);
@@ -206,9 +215,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 }
             }
             
-            CertificateDataWrapper certWrapper = createCertificate(admin, endEntityInformation, ca, req, reqpk, keyusage, notBefore, notAfter, exts, sequence, certGenParams, updateTime);
+            CertificateDataWrapper certWrapper = createCertificate(admin, endEntityInformation, ca, requestMessage, reqpk, keyusage, notBefore, notAfter, exts, sequence, certGenParams, updateTime);
             // Create the response message with all nonces and checks etc
-            ret = ResponseMessageUtils.createResponseMessage(responseClass, req, cachain, cryptoToken.getPrivateKey(alias), cryptoToken.getEncProviderName());
+            ret = ResponseMessageUtils.createResponseMessage(responseClass, requestMessage, cachain, cryptoToken.getPrivateKey(alias), cryptoToken.getEncProviderName());
             ResponseStatus status = ResponseStatus.SUCCESS;
             FailInfo failInfo = null;
             String failText = null;
