@@ -69,8 +69,8 @@ public class GenerateToken {
      * @param username username in ejbca
      * @param password password for user
      * @param caid caid of the CA the user is registered for
-     * @param keyspec name of ECDSA key or length of RSA and DSA keys  
-     * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA
+     * @param keyspec name of ECDSA key or length of RSA and DSA keys (endEntityInformation.extendedInformation.keyStoreAlgorithmSubType has priority over this value) 
+     * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA (endEntityInformation.extendedInformation.keyStoreAlgorithmType has priority over this value)
      * @param createJKS true to create a JKS, false to create a PKCS12
      * @param loadkeys true if keys should be recovered
      * @param savekeys true if generated keys should be stored for keyrecovery
@@ -87,6 +87,7 @@ public class GenerateToken {
         }
     	KeyRecoveryInformation keyData = null;
     	KeyPair rsaKeys = null;
+    	EndEntityInformation userdata = endEntityAccessSession.findUser(administrator, username);
     	if (loadkeys) {
     	    if (log.isDebugEnabled()) {
     	        log.debug("Recovering keys for user: "+ username);
@@ -109,8 +110,21 @@ public class GenerateToken {
             if (log.isDebugEnabled()) {
                 log.debug("Generating new keys for user: "+ username);
             }
+            
+            //KeyStore algorithm specification inside endEntityInformation has priority since its algorithm is approved
+            if (userdata.getExtendedinformation() != null) {
+                if (userdata.getExtendedinformation().getKeyStoreAlgorithmType() != null
+                        && userdata.getExtendedinformation().getKeyStoreAlgorithmSubType() != null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Using the key-store algorithm specification found inside the endEntityInformation (" + userdata.getExtendedinformation().getKeyStoreAlgorithmType() + "_" + userdata.getExtendedinformation().getKeyStoreAlgorithmSubType()
+                                + ") instead of one provided separately (" + keyalg + "_" + keyspec + ")");
+                    }
+                    keyalg = userdata.getExtendedinformation().getKeyStoreAlgorithmType();
+                    keyspec = userdata.getExtendedinformation().getKeyStoreAlgorithmSubType();
+                }
+            }
             // generate new keys.
-    		rsaKeys = KeyTools.genKeys(keyspec, keyalg);
+            rsaKeys = KeyTools.genKeys(keyspec, keyalg);
     	}
     	X509Certificate cert = null;
     	if ((reusecertificate) && (keyData != null)) {
@@ -118,7 +132,6 @@ public class GenerateToken {
     		boolean finishUser = true;
 			finishUser = caSession.getCAInfo(administrator,caid).getFinishUser();
     		if (finishUser) {
-    			EndEntityInformation userdata = endEntityAccessSession.findUser(administrator, username);
 				authenticationSession.finishUser(userdata);
     		}
     	} else {
@@ -128,7 +141,6 @@ public class GenerateToken {
 			cert = (X509Certificate)signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()));
     	}
     	// Clear password from database
-    	EndEntityInformation userdata = endEntityAccessSession.findUser(administrator, username);
         if (userdata.getStatus() == EndEntityConstants.STATUS_GENERATED) {
             // If we have a successful key recovery via EJBCA WS we implicitly want to allow resetting of the password without edit_end_entity rights (ECA-4947)
             if (loadkeys && endEntityManagementSession instanceof EndEntityManagementSessionLocal) {
