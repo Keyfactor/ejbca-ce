@@ -530,7 +530,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     /**
      * Method used by the requestadmin to check if an approval request have been approved
      * 
-     * @return the number of approvals left, 0 if approved otherwise the ApprovalDataVO.STATUS constants returned indicating the status.
+     * @return the number of approvals left if still waiting for approval, 0 (ApprovalDataVO.STATUS_APROVED) if approved otherwise the ApprovalDataVO.STATUS constants indicating the status.
      * @throws ApprovalRequestExpiredException if the request or approval have expired, the status will be EXPIREDANDNOTIFIED in this case.
      */
     private int isApproved(final ApprovalData approvalData, final int step) throws ApprovalRequestExpiredException {

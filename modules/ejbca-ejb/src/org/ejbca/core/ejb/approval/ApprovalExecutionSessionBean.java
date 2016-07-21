@@ -111,7 +111,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             }
             final List<Approval> approvalsPerformed = approvalData.getApprovals();
             if (approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
-                throw new ApprovalException("Wrong status of approval request.");
+                throw new ApprovalException("Wrong status of approval request, expected STATUS_WAITINGFORAPPROVAL(-1): "+approvalData.getStatus());
             }
             // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
             if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval)) {
@@ -179,7 +179,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             throw e;
         }
         if (log.isTraceEnabled()) {
-            log.trace(">approve: " + approvalId);
+            log.trace("<approve: " + approvalId+", "+approvalData.getStatus());
         }
     }
 
