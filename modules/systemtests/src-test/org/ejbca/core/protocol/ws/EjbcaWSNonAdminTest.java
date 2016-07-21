@@ -82,6 +82,7 @@ import org.ejbca.core.protocol.ws.client.gen.ApprovalRequestExecutionException_E
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
+import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -231,10 +232,15 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         }
 
         try {
-            revokeCert();
+            // Don't call super.revokeCert() here because it will throw authorization_denied
+            // from a findUser call, not the revokeCert call that we actually want to test
+            // revokeCert();
+            this.ejbcaraws.revokeCert("CN=NO CA", "1234567890", RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             fail("should not have been allowed to revoke cert");
         } catch (AuthorizationDeniedException_Exception e) {
             // NOPMD: this is what we want
+        } catch (NotFoundException_Exception e) {
+            fail("should not have been allowed to revoke cert, or even try to find it");            
         }
 
         try {
@@ -275,7 +281,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         try {
             getExistsHardToken();
             fail("should not have been allowed to check hard tokens");
-        } catch (EjbcaException_Exception e) {
+        } catch (AuthorizationDeniedException_Exception e) {
             // NOPMD: this is what we want
         }
 
