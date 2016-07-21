@@ -152,7 +152,7 @@ public class CesecoreException extends Exception implements NonSensitiveCloneabl
             } 
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
                 | SecurityException e) {
-            log.info(e);
+            log.error("getNonSensitiveClone: ", e);
             return null;
         }
     }
