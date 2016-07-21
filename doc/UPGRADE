@@ -33,9 +33,10 @@ From EJBCA 6.5.x to EJBCA 6.6.0
 
 	1. Changes to CertificateData
 	2. Changes to ApprovalData
-	3. Removal of the access rule /ca_functionality/store_certificate
-	4. 100% Upgrade Uptime Notes
-		4.a Approval Profiles
+	3. Changes to WebService Approvals
+	4. Removal of the access rule /ca_functionality/store_certificate
+	5. 100% Upgrade Uptime Notes
+		5.a Approval Profiles
 
 *** 	1. Changes to CertificateData
 
@@ -63,14 +64,19 @@ available, but performing approvals on nodes running EJBCA versions prior to 6.6
 As part of this change, approval notifications are now configured per approval partition instead of globally. Check your Approval Profile after
 deploying the new code.
 
-***		3. Removal of the access rule /ca_functionality/store_certificate	
+***		3. Changes to WebService Approvals
+    
+If you have been using Approvals with the WebService API you have configured approval settings in jaxws.properties. This configuration setting has changed
+as part of the new approval profile concept. Look at jaxws.properties and configure a new approval profile for the WebService Approvals.  
+
+***		4. Removal of the access rule /ca_functionality/store_certificate	
 
 The access rule /ca_functionality/store_certificate has been removed for the simple reason that it wasn't actually used. It will not be cleaned from any
 existing roles due to being harmless (and invasive to remove). 
 
-***		4. 100% Upgrade Uptime Notes
+***		5. 100% Upgrade Uptime Notes
 
-		4.a Approval Profiles
+		5.a Approval Profiles
 		
 Approval profiles (of the Accumulative Approval Profile type) will during startup of the first upgraded node be automatically created and set for 
 CAs and Certificate Profiles using approvals. During the upgrade, approval requests may roll in from unupgraded nodes, and these will automatically
