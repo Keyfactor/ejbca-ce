@@ -48,15 +48,15 @@ public interface ApprovalSession {
      * Method that goes through exists approvals in database to see if there
      * exists any approved action.
      * 
-     * If goes through all approvalrequests with the given Id and checks their
+     * If goes through all approval requests with the given Id and checks their
      * status, if any have status approved it returns STATUS_APPROVED.
      * 
      * This method should be used by action requiring the requesting
      * administrator to poll to see if it have been approved and only have one
      * step, otherwise use the method with the step parameter.
      * 
-     * @return the number of approvals left, 0 if approved otherwise is the
-     *         ApprovalDataVO.STATUS constants returned indicating the status.
+     * @return the number of approvals left if still waiting for approval, 0 (ApprovalDataVO.STATUS_APROVED) 
+     * if approved otherwise the ApprovalDataVO.STATUS constants returned indicating the status.
      * @throws ApprovalException
      *             if approvalId does not exist
      * @throws ApprovalRequestExpiredException
@@ -77,12 +77,12 @@ public interface ApprovalSession {
      * 
      * This method should be used by action requiring the requesting
      * administrator to poll to see if it have been approved and only have one
-     * step, othervise use the method with the step parameter.
+     * step, otherwise use the method with the step parameter.
      * 
      * @param admin
      * @param approvalId
-     * @return the number of approvals left, 0 if approved othervis is the
-     *         ApprovalDataVO.STATUS constants returned indicating the status.
+     * @return the number of approvals left if still waiting for approval, 0 (ApprovalDataVO.STATUS_APROVED) 
+     * if approved otherwise the ApprovalDataVO.STATUS constants returned indicating the status.
      * @throws ApprovalException
      *             if approvalId does not exist
      * @throws ApprovalRequestExpiredException
