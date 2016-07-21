@@ -148,14 +148,14 @@ public class EjbcaException extends Exception implements NonSensitiveCloneable {
         try {
             try {
                 return this.getClass().getConstructor(ErrorCode.class).newInstance(getErrorCode()); 
-            } catch (NoSuchMethodError nsme) { 
+            } catch (NoSuchMethodException nsme) { 
                 EjbcaException e = (EjbcaException)this.getClass().getConstructor().newInstance(); 
                 e.setErrorCode(getErrorCode()); 
                 return e; 
             } 
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
                 | SecurityException e) {
-            log.info(e);
+            log.error("getNonSensitiveClone: ", e);
             return null;
         }
     }

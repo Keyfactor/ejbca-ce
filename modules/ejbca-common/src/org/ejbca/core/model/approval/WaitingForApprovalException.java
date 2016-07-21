@@ -14,6 +14,7 @@ package org.ejbca.core.model.approval;
 
 import javax.xml.ws.WebFault;
 
+import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
 
 /**
@@ -27,7 +28,17 @@ public class WaitingForApprovalException extends EjbcaException {
 	private static final long serialVersionUID = 6808192333114783496L;
     private int approvalId = 0;
 
-	public WaitingForApprovalException(String message, Throwable cause) {
+    /**
+     * Constructor used to create exception with an errorCode. Calls the same default constructor
+     * in the base class <code>EjbcaException</code>.
+     *
+     * @param errorCode defines the cause of the exception.
+     */
+    public WaitingForApprovalException(ErrorCode errorCode) {
+        super(errorCode);
+    }
+
+    public WaitingForApprovalException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
