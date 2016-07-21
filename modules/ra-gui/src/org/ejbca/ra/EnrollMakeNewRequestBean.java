@@ -1323,6 +1323,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         requestPreview.updateSubjectDirectoryAttributes(getSubjectDirectoryAttributes());
         requestPreview.setPublicKeyAlgorithm(getAlgorithm());
         requestPreview.updateCA(getCAInfo());
+        requestPreview.updateCertificateProfile(getCertificateProfile());
         return requestPreview;
     }
     
