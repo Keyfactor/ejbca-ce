@@ -17,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.xml.ws.WebFault;
 
+import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.NonSensitiveCloneable;
@@ -34,7 +35,7 @@ public class EjbcaException extends Exception implements NonSensitiveCloneable {
 
     private static final long serialVersionUID = -3754146611270578813L;
     
-    //private static final Logger log = Logger.getLogger(EjbcaException.class);
+    private static final Logger log = Logger.getLogger(EjbcaException.class);
 
     /** The error code describes the cause of the exception. */
     ErrorCode errorCode = null;
@@ -145,16 +146,16 @@ public class EjbcaException extends Exception implements NonSensitiveCloneable {
     @Override
     public Object getNonSensitiveClone() {
         try {
-            if (this.getClass().getConstructor(ErrorCode.class) != null) {
-                return this.getClass().getConstructor(ErrorCode.class).newInstance(getErrorCode());
-            } else {
-                EjbcaException e = (EjbcaException)this.getClass().getConstructor().newInstance();
-                e.setErrorCode(getErrorCode());
-                return e;
-            }
+            try {
+                return this.getClass().getConstructor(ErrorCode.class).newInstance(getErrorCode()); 
+            } catch (NoSuchMethodError nsme) { 
+                EjbcaException e = (EjbcaException)this.getClass().getConstructor().newInstance(); 
+                e.setErrorCode(getErrorCode()); 
+                return e; 
+            } 
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
                 | SecurityException e) {
-            e.printStackTrace();
+            log.info(e);
             return null;
         }
     }
