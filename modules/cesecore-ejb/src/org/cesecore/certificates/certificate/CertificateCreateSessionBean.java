@@ -150,7 +150,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final Certificate cacert;
             RequestMessage requestMessage = providedRequestMessage; //The request message was provided outside of endEntityInformation
             //Request inside endEntityInformation has priority since its algorithm is approved
-            if(endEntityInformation.getExtendedinformation().getCertificateRequest() != null){
+            if(endEntityInformation.getExtendedinformation() != null && endEntityInformation.getExtendedinformation().getCertificateRequest() != null){
                 requestMessage = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getExtendedinformation().getCertificateRequest());
                 if (log.isDebugEnabled()) {
                     log.debug("CSR request found inside the endEntityInformation. Using this one instead of one provided separately.");
