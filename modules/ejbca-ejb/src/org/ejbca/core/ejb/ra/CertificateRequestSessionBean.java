@@ -319,16 +319,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             String username = userdata.getUsername();
             int caid = userdata.getCAId();
             GenerateToken tgen = new GenerateToken(authenticationSession, endEntityAccessSession, endEntityManagementSession, caSession, keyRecoverySession, signSession);
-            //KeyStore algorithm specification inside endEntityInformation has priority since its algorithm is approved
-            if (userdata.getExtendedinformation().getKeyStoreAlgorithmType() != null
-                    && userdata.getExtendedinformation().getKeyStoreAlgorithmSubType() != null) {
-                keyalg = userdata.getExtendedinformation().getKeyStoreAlgorithmType();
-                keyspec = userdata.getExtendedinformation().getKeyStoreAlgorithmSubType();
-                if (log.isDebugEnabled()) {
-                    log.debug("KeyStore algorithm specification found inside the endEntityInformation. Using this one (" + keyalg + "_" + keyspec
-                            + ") instead of one provided separately.");
-                }
-            }
             KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys,
                     reusecertificate, endEntityProfileId);
             String alias = keyStore.aliases().nextElement();
