@@ -113,7 +113,8 @@ img.menu_logo {
 
 .content-body {
   /*placerar brödtext*/
-  padding: 1em 0 1em; }
+  padding: 1em 0 1em;
+  overflow-x: auto; }
 
 #content-body {
   /* välkomstexten liten*/
@@ -629,50 +630,51 @@ a {
 /* - - - responsivise (?) at breakpoint (för tables) - - - - */
 @media (max-width: 47.99em) {
   /* make tds into single column full width rows */
-  tr, td {
-    display: block;
-    width: 100%; }
-
-  /* hide table head */
-  thead {
-    display: none; }
-
-  /* place data attribute before td as a label */
-  td[data-header-title]:before {
-    content: attr(data-header-title) ":";
-    display: block;
-    color: #666;
-    /* labels will stack by default but optionally float to left */
-    float: left;
-    width: 100%; }
-
-  tbody {
-    border-collapse: collapse;
-    display: block; }
-
-  tbody tr {
-    margin-bottom: 20px;
-    display: block; }
-
-  /* unset background used on desktop view */
-  /*
-  tbody > tr :nth-of-type(odd) {
-    background:#eee;
-  }
-  */
-  tbody > a {
-    display: inline-block; }
-
-  .pure-table > tbody > tr > td > table > tbody > tr > td {
-    /*tar bort bakgrund på rubriker i celler*/
-    background: none; }
-
-  .pure-table-odd > td > table > tbody > tr {
-    /*tar bort bakgrund på länkar i vita celler*/
-    background: none; }
-
-  #content-body > table.pure-table > tbody > tr > td > table > tbody > tr > td {
-    background: none; } }
+  /*    tr,td {
+          display: block;
+          width: 100%;
+          //  padding: 5px;
+      }
+  
+      // hide table head
+      thead {
+          display: none;
+      }
+  
+      // place data attribute before td as a label
+      td[data-header-title]:before {
+          content: attr(data-header-title)':';
+          display: block;
+          color: #666;
+          //labels will stack by default but optionally float to left
+          float:left;
+          width:100%;
+      }
+  
+      tbody {
+          border-collapse: collapse;
+          display:block;
+      }
+  
+      tbody tr {
+          margin-bottom:20px;
+          display:block;
+      }                                               */
+  /*    tbody > a {
+          display:inline-block;
+      }
+  
+      .pure-table > tbody > tr > td > table > tbody > tr > td { // tar bort bakgrund på rubriker i celler
+          background:none;
+      }
+  
+      .pure-table-odd > td > table > tbody > tr { //tar bort bakgrund på länkar i vita celler
+          background:none;
+      }
+  
+      #content-body > table.pure-table > tbody > tr > td > table > tbody > tr > td {
+          background: none;
+      } */ }
 @media (max-width: 64.0525em) {
   div#div_menu_logo {
     z-index: 1; }
@@ -887,19 +889,23 @@ a {
     margin: 50px auto 30px auto;
     width: 60em; }
 
-  ul.pure-menu-list > li.pure-menu-item:hover:after {
+  ul.pure-menu-list > li.pure-menu-item:hover:before {
     /*hover-effekt för pil i dropdown*/
-    -webkit-transform: rotate(360deg);
-    border-bottom-color: #517397;
-    border: 5px solid transparent;
-    bottom: 0px;
-    color: #517397;
-    content: "\25B2";
+    content: "";
     display: block;
-    font-size: 8px;
-    left: 50%;
-    margin: 0 0 -8px -6px;
-    position: absolute; }
+    border-image-source: initial;
+    border-image-slice: initial;
+    border-image-width: initial;
+    border-image-outset: initial;
+    border-image-repeat: initial;
+    position: absolute;
+    bottom: 0px;
+    left: 53%;
+    color: white;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent #517397;
+    margin: 0px 0px 0px -12px; }
 
   ul.pure-menu-list > li.pure-menu-item > ul.pure-menu-children > li.pure-menu-item:first-child a {
     padding-top: 1em; }
