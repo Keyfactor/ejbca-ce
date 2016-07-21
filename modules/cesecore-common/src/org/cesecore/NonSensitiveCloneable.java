@@ -22,5 +22,8 @@ import java.io.Serializable;
  */
 public interface NonSensitiveCloneable extends Serializable{
 
-    NonSensitiveCloneable getNonSensitiveClone();
+    /**
+     * Classes that implements the interface uses this method to clone itself without sensitive data inside the clone.
+     */
+    Object getNonSensitiveClone();
 }

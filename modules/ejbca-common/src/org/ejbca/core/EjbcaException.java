@@ -143,7 +143,7 @@ public class EjbcaException extends Exception implements NonSensitiveCloneable {
      * Get non sensitive clone of the exception. All other data except error code will be purged from the clone.
      */
     @Override
-    public NonSensitiveCloneable getNonSensitiveClone() {
+    public Object getNonSensitiveClone() {
         try {
             if (this.getClass().getConstructor(ErrorCode.class) != null) {
                 return this.getClass().getConstructor(ErrorCode.class).newInstance(getErrorCode());
