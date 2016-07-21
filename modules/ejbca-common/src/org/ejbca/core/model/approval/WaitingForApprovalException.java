@@ -14,7 +14,6 @@ package org.ejbca.core.model.approval;
 
 import javax.xml.ws.WebFault;
 
-import org.cesecore.NonSensitiveCloneable;
 import org.ejbca.core.EjbcaException;
 
 /**
@@ -50,7 +49,7 @@ public class WaitingForApprovalException extends EjbcaException {
 	}
 	
 	@Override
-    public final NonSensitiveCloneable getNonSensitiveClone() {
+    public final Object getNonSensitiveClone() {
 	    WaitingForApprovalException nonSensitiveClone = (WaitingForApprovalException)super.getNonSensitiveClone();
 	    nonSensitiveClone.setApprovalId(getApprovalId());
 	    return nonSensitiveClone;
