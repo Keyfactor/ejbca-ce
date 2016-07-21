@@ -1,5 +1,5 @@
 @charset "UTF-8";
-/* web express main SCSS version 160720-1202 */
+/* web express main SCSS */
 .web-express.tablet {
   display: none; }
 
@@ -17,6 +17,17 @@ body.ltrDirection, body.rtlDirection {
 body.rtlDirection .pure-menu-heading {
   float: left; }
 
+/* styling av show more options i search for certificates (Arabiska)*/
+body.rtlDirection .contentForm\:more > .pure-g {
+  width: 100%; }
+  body.rtlDirection .contentForm\:more > .pure-g > .pure-u-1:nth-of-type(1) > .pure-control-group > #contentForm\:criteriaMaxResults {
+    float: right; }
+  body.rtlDirection .contentForm\:more > .pure-g > .pure-u-1:nth-of-type(1) > .pure-control-group > label {
+    text-align: right; }
+  body.rtlDirection .contentForm\:more > .pure-g > .pure-u-1:nth-of-type(2) {
+    margin-left: 3%; }
+
+/*SLUT styling av show more options i search for certificates (Arabiska)*/
 #menu {
   height: 55px;
   min-height: 55px;
@@ -134,30 +145,28 @@ img.menu_logo {
   display: block;
   margin: 2% auto 0 auto; }
 
-#detailsForm > span.pure-u-1:nth-last-of-type(2) {
-  /*> .pure-u-2-3 {
-      display: block;
-      margin: 2% 0 1% 2%;
-  }*/ }
-  #detailsForm > span.pure-u-1:nth-last-of-type(2) > .pure-u-lg-2-3:nth-of-type(13) > input {
-    /*knappen revoke inne i search > certificate details*/
-    margin: 0 0 0 2%; }
+/*#detailsForm > span.pure-u-1:nth-last-of-type(2) {
 
-#detailsForm > .pure-u-1:nth-of-type(2) {
-  width: 90%;
-  margin: 0 0 2% 3%; }
-  #detailsForm > .pure-u-1:nth-of-type(2) > {
-    display: block; }
-  #detailsForm > .pure-u-1:nth-of-type(2) > label {
-    margin-left: 0; }
+    > { display: block; }
 
-#detailsForm > span.pure-u-1 > .pure-u-1-3 {
+    > label {
+        margin-left:0;
+    }
+
+    > .pure-u-lg-2-3:nth-of-type(13) > input { //knappen revoke inne i search > certificate details
+            margin: 0 0 0 2%;
+    }
+}*/
+#detailsForm > span.pure-u-1:nth-of-type(1) > .pure-u-1-3 {
   margin-top: 2%; }
+#detailsForm > span.pure-u-1:nth-of-type(1) > .pure-u-2-3 {
+  display: block;
+  margin: 1% 0 0 2%; }
 
 #detailsForm > span.pure-u-1:nth-of-type(2) {
   /*ska bryta alla långa rader inne i search > view > details*/
   width: 97%;
-  margin-left: 0; }
+  margin-bottom: 2%; }
   #detailsForm > span.pure-u-1:nth-of-type(2) > label {
     width: 30.8%;
     margin-left: 2.5%;
@@ -165,6 +174,9 @@ img.menu_logo {
   #detailsForm > span.pure-u-1:nth-of-type(2) > span {
     word-break: break-all;
     margin-left: 2.5%; }
+  #detailsForm > span.pure-u-1:nth-of-type(2) > .pure-u-lg-2-3:nth-of-type(13) > input {
+    /*knappen revoke inne i search > certificate details*/
+    margin: 0 0 0 2%; }
 
 .finger-print {
   /* är tänkt för blå länkar i certficate details-vyn*/
@@ -321,6 +333,10 @@ textarea#keyPairForm\:certificateRequest {
   /* search for certificates > view > showMoreDetails */
   width: 90%;
   margin: 0 0 5% 3%; }
+  #detailsForm\:certDetails\:showMoreCertificateDetails > label {
+    display: block; }
+  #detailsForm\:certDetails\:showMoreCertificateDetails > span {
+    margin-left: 2%; }
 
 /*
 #detailsForm\:certDetails\:showMoreLessDetailsButton { //Ev. dublett av datailsForm:certDetails:showMoreLessDetailsButton ovan
@@ -413,7 +429,7 @@ a {
 
 #contentForm > #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
   /* första wrappern för boxen för "max results"-texten i search for certificates */
-  width: 147px; }
+  width: 100%; }
 
 .contentForm\:criteriaMaxResults {
   width: 100%; }
@@ -461,7 +477,8 @@ a {
   /*showelss-knapp search for certificates*/
   background: #e9af13;
   color: #fff;
-  width: 150px; }
+  width: 150px;
+  margin: 3% 0 0 0; }
 
 /*SLUT: knappar kod som förmodligen inte beövs*/
 #enrollMakeNewRequestForm\:requestPreview > fieldset > .pure-u-lg-2-3 {
@@ -488,8 +505,10 @@ a {
   #contentForm\:filteredResults .pure-button.ra-button:hover {
     text-decoration: underline; }
 
-#detailsForm\:certDetails\:downloadFormatLinks > a:hover {
-  text-decoration: underline; }
+#detailsForm\:certDetails\:downloadFormatLinks {
+  display: block; }
+  #detailsForm\:certDetails\:downloadFormatLinks > a:hover {
+    text-decoration: underline; }
 
 #contentForm\:viewRequestPartitionTable > table,
 #contentForm\:approvalButtonsPanel {
@@ -517,15 +536,14 @@ a {
 /*Kod för att lägga radioknappar, som ligger inom första ramen i make request, under varandra */
 #requestTemplateForm\:selectKeyPairGeneration > tbody > tr {
   background: none; }
-
-#requestTemplateForm\:selectKeyPairGeneration > tbody > tr > td {
-  padding: 0;
-  display: block; }
-  #requestTemplateForm\:selectKeyPairGeneration > tbody > tr > td > label {
-    display: inline-block;
-    text-align: left;
-    margin-left: .5em;
-    width: auto; }
+  #requestTemplateForm\:selectKeyPairGeneration > tbody > tr > td {
+    padding: 0;
+    display: block; }
+    #requestTemplateForm\:selectKeyPairGeneration > tbody > tr > td > label {
+      display: inline-block;
+      text-align: left;
+      margin-left: .5em;
+      width: auto; }
 
 /*SLUT Kod för att lägga radioknappar, som ligger inom första ramen i make request, under varandra */
 #contentForm\:viewRequestDataTable {
@@ -551,6 +569,24 @@ a {
   position: fixed;
   color: #ed6a5f; }
 
+#contentForm > #contentForm\:more {
+  /*margin-top: 20px;*/
+  width: 100%; }
+
+#contentForm\:issuedAfter,
+#contentForm\:issuedBefore,
+#contentForm\:expiresAfter,
+#contentForm\:expiresBefore,
+#contentForm\:revokedAfter,
+#contentForm\:revokedBefore {
+  width: 100%;
+  font-size: 95%; }
+
+#contentForm\:modifiedAfter,
+#contentForm\:modifiedBefore {
+  width: 100%;
+  font-size: 95%; }
+
 .footer {
   height: 100px;
   display: flex;
@@ -559,7 +595,7 @@ a {
 
 .footer > .align-center > p {
   /*footer-texten*/
-  margin: 0 0 35px 20px;
+  margin: 0 0 5.5% 10px;
   display: inline-block; }
 
 .footerLogo {
@@ -569,10 +605,10 @@ a {
 /*CSS för scroll to top-funktion*/
 #web-express-scroll-to-top {
   background: #fcba00;
-  bottom: 150px;
+  bottom: 130px;
   display: none;
   position: fixed;
-  right: 40px;
+  right: 20px;
   width: 31px;
   height: 31px; }
   #web-express-scroll-to-top > span {
@@ -693,7 +729,8 @@ a {
         div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-closed.web-express.tablet > label,
         div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-open.web-express.tablet > label {
           cursor: pointer;
-          position: absolute; }
+          position: absolute;
+          z-index: 1; }
           div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-closed.web-express.tablet > label > span,
           div#menu.ejbca-menu ul.pure-menu-list > li#menu-head-is-open.web-express.tablet > label > span {
             background: #637b98;
@@ -754,7 +791,8 @@ a {
     margin: 0; }
 
   #title h1 {
-    font-size: 30px; }
+    font-size: 30px;
+    margin-top: 4%; }
 
   #contentForm\:filteredResults > .pure-table {
     line-height: normal; }
@@ -770,23 +808,14 @@ a {
   #contentForm\:more > .pure-g > .pure-u-1:nth-of-type(4) {
     margin: 0 0 0 0; }
 
-  #contentForm > #contentForm\:more {
-    /*margin-top: 20px;*/
-    width: 100%; }
+  #contentForm\:showMoreButton,
+  #contentForm\:showLessButton {
+    /*showelss-knapp search for certificates*/
+    margin: 0 0 0 0; }
 
-  #contentForm\:issuedAfter,
-  #contentForm\:issuedBefore,
-  #contentForm\:expiresAfter,
-  #contentForm\:expiresBefore,
-  #contentForm\:revokedAfter,
-  #contentForm\:revokedBefore {
-    width: 100%;
-    font-size: 95%; }
-
-  #contentForm\:modifiedAfter,
-  #contentForm\:modifiedBefore {
-    width: 100%;
-    font-size: 95%; } }
+  #contentForm > #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
+    /* första wrappern för boxen för "max results"-texten i search for certificates */
+    width: 125px; } }
 @media (min-width: 64.0625em) {
   div#div_menu_logo {
     width: 13.5%; }
@@ -799,7 +828,8 @@ a {
     width: 45%; }
 
   #title h1 {
-    font-size: 33px; }
+    font-size: 33px;
+    margin-top: 0; }
 
   img.menu_logo {
     height: 2em; }
@@ -859,14 +889,16 @@ a {
 
   ul.pure-menu-list > li.pure-menu-item:hover:after {
     /*hover-effekt för pil i dropdown*/
+    -webkit-transform: rotate(360deg);
     border-bottom-color: #517397;
     border: 5px solid transparent;
     bottom: 0px;
-    color: #fff;
-    content: "";
+    color: #517397;
+    content: "\25B2";
     display: block;
+    font-size: 8px;
     left: 50%;
-    margin: 0 0 0 -12px;
+    margin: 0 0 -8px -6px;
     position: absolute; }
 
   ul.pure-menu-list > li.pure-menu-item > ul.pure-menu-children > li.pure-menu-item:first-child a {
@@ -916,7 +948,15 @@ a {
   #detailsForm > span.pure-u-1:nth-of-type(2) > label {
     display: inline-block; }
   #detailsForm > span.pure-u-1:nth-of-type(2) > span {
-    margin-left: 0; } }
+    margin-left: 0; }
+
+  #detailsForm\:certDetails\:downloadFormatLinks {
+    display: inline-block; }
+
+  #detailsForm\:certDetails\:showMoreCertificateDetails {
+    /* search for certificates > view > showMoreDetails */ }
+    #detailsForm\:certDetails\:showMoreCertificateDetails > label {
+      display: inline-block; } }
 /*
 "gamla"
     "base"  // smartphone
