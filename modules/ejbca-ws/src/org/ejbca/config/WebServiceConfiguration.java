@@ -23,9 +23,10 @@ public class WebServiceConfiguration {
 	/**
      * Indicating if a call to genTokenCertificates and/or viewHardToken for non-authorized users should result in an
      * approval request instead of an authorized denied exception.
+     * @return the id of the approval profile (not the name as that can be changed)
      */
-    public static String getApprovalProfile() {
-      return EjbcaConfigurationHolder.getExpandedString("jaxws.approvalprofile");
+    public static String getApprovalProfileId() {
+      return EjbcaConfigurationHolder.getExpandedString("jaxws.approvalprofileid");
     }
 
 	/**

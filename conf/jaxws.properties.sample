@@ -18,13 +18,14 @@
 # Settings indicating if a call to gentokencertificates or viewhardtoken for non-authorized users
 # should result in an approval request instead of an authorized denied exception.
 
-# Setting indicating the name of the approval profile applied to allow an action for
+# Setting indicating the id of the approval profile applied to allow an action for
 # a non-authorized administrator. If not set, actions for non-authorized administrators 
 # are not allowed and are rejected right away. Please note that in the approval profile, 
-# it is possible to allow some actions for non-authorized administors and reject other 
-#actions.
+# it is possible to allow some actions for non-authorized administrators and reject other 
+# actions. 
+# The id is used instead of the name, since the name can be changed while the id remain the same.
 # Default : empty
-#jaxws.approvalprofile=
+#jaxws.approvalprofileid=
 
 # Disable authorization control on the fetchUserData call, making it possible
 # for all with a valid certificate to retrieve userData
