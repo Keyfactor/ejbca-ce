@@ -1781,7 +1781,7 @@ public class EjbcaWS implements IEjbcaWS {
             }
 		} else {
 		    boolean approveGenTokenCert = false; // will cause AuthorizationDeniedException
-		    final String approvalProfileIdString = WebServiceConfiguration.getApprovalProfile();   
+		    final String approvalProfileIdString = WebServiceConfiguration.getApprovalProfileId();   
 	        ApprovalProfile approvalProfile = null;
 		    if(StringUtils.isNotEmpty(approvalProfileIdString) && NumberUtils.isNumber(approvalProfileIdString)) {
 		        Integer approvalProfileId = Integer.valueOf(approvalProfileIdString);
@@ -2080,17 +2080,17 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 	
     @Override
-	public boolean existsHardToken(String hardTokenSN) throws EjbcaException{
-		final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+    public boolean existsHardToken(String hardTokenSN) throws EjbcaException{
+        final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
 
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try {
             final AuthenticationToken admin = ejbhelper.getAdmin();
             logAdminName(admin,logger);
-			return hardTokenSession.existsHardToken(hardTokenSN);
-		} catch (AuthorizationDeniedException e) {
+            return hardTokenSession.existsHardToken(hardTokenSN);
+        } catch (AuthorizationDeniedException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
-        } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
+        } catch (RuntimeException e) {  // EJBException, ClassCastException, ...
             throw EjbcaWSHelper.getInternalException(e, logger);
         } finally {
             logger.writeln();
@@ -2126,7 +2126,7 @@ public class EjbcaWS implements IEjbcaWS {
                 
                 boolean approveViewHardToken = false; // will cause AuthorizationDeniedException
                 boolean approveGenTokeCert = false;
-                final String approvalProfileIdString = WebServiceConfiguration.getApprovalProfile();   
+                final String approvalProfileIdString = WebServiceConfiguration.getApprovalProfileId();   
                 ApprovalProfile approvalProfile = null;
                 if(StringUtils.isNotEmpty(approvalProfileIdString) && NumberUtils.isNumber(approvalProfileIdString)) {
                     Integer approvalProfileId = Integer.valueOf(approvalProfileIdString);
@@ -2148,7 +2148,7 @@ public class EjbcaWS implements IEjbcaWS {
                     EndEntityInformation userData = endEntityAccessSession.findUser(intAdmin, hardTokenData.getUsername());
                     if (userData == null) {
                         log.info(intres.getLocalizedMessage("ra.errorentitynotexist", hardTokenData.getUsername()));
-                        String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");            	
+                        String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");              
                         throw new NotFoundException(msg);
                     }
                     int caid = userData.getCAId();
@@ -2200,7 +2200,7 @@ public class EjbcaWS implements IEjbcaWS {
                             if (log.isDebugEnabled()) {
                                 log.debug("Adding an approval request for "+userData.getUsername());
                             }
-                            //	Add approval Request
+                            //  Add approval Request
                             try{
                                 approvalSession.addApprovalRequest(admin, ar);
                                 throw new WaitingForApprovalException("Adding approval to view hard token data with id " + ar.generateApprovalId(), ar.generateApprovalId());
@@ -2208,7 +2208,7 @@ public class EjbcaWS implements IEjbcaWS {
                                 throw EjbcaWSHelper.getEjbcaException(e4, logger, ErrorCode.APPROVAL_ALREADY_EXISTS, null);
                             }
                         }
-                    }		
+                    }       
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("Not generating any approval request for: "+hardTokenSN);

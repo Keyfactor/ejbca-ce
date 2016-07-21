@@ -13,7 +13,6 @@
 package org.ejbca.core.protocol.ws;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -75,8 +74,10 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.GenerateTokenApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
+import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalRequestExecutionException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
@@ -133,7 +134,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         setAdminCAName();
         fileHandles =  setupAccessRights(WS_ADMIN_ROLENAME);
-        assertNotNull("Unable to fetch GlobalConfiguration.");
     }
 
     @AfterClass
@@ -146,14 +146,14 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        
-        configurationSession.backupConfiguration();
-        configurationSession.updateProperty("jaxws.approvalprofile", WS_APPROVAL_PROFILE_NAME);
-   
+           
         approvalProfile = new AccumulativeApprovalProfile(WS_APPROVAL_PROFILE_NAME);
         approvalProfile.setNumberOfApprovalsRequired(2);
         int approvalProfileId = approvalProfileSession.addApprovalProfile(intadmin, approvalProfile);
         approvalProfile.setProfileId(approvalProfileId);
+
+        configurationSession.backupConfiguration();
+        configurationSession.updateProperty("jaxws.approvalprofileid", String.valueOf(approvalProfileId));
     }
 
     @After
@@ -498,9 +498,16 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         }
 
         removeApprovalAdmins();
-        hardTokenSessionRemote.removeHardToken(intAdmin, "12345678");
-        endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-
+        try {
+            hardTokenSessionRemote.removeHardToken(intAdmin, "12345678");
+        } catch (HardTokenDoesntExistsException e) {
+            // NOPMD: ignore that it did not exist, it means the previous test failed but we still want to do the next cleanup 
+        }
+        try {
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        } catch (NotFoundException e) {
+            // NOPMD: ignore that it did not exist, it means the previous test failed
+        }
     }
 
     @AfterClass
