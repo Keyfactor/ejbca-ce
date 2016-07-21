@@ -13,6 +13,8 @@
 package org.ejbca.ra;
 
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.util.ValidityDate;
 
 /** 
  * UI representation of a certificate preview to be confirmed before enrollment.
@@ -26,6 +28,7 @@ public class RaRequestPreview {
     private String publicKeyAlgorithm = "";
     private String subjectAlternativeName = "";
     private String subjectDirectoryAttributes = "";
+    private String validity = ""; 
 
     private boolean more = false;
     private int styleRowCallCounter = 0;
@@ -34,36 +37,40 @@ public class RaRequestPreview {
     public RaRequestPreview(){
     }
     
-    public void updateCA(CAInfo caInfo){
+    public final void updateCertificateProfile(CertificateProfile certificateProfile){
+        validity = ValidityDate.getString(certificateProfile.getValidity());
+    }
+    
+    public final void updateCA(CAInfo caInfo){
         issuerDn = caInfo.getSubjectDN();
     }
     
-    public void updateSubjectDn(SubjectDn subjectDn){
+    public final void updateSubjectDn(SubjectDn subjectDn){
         this.subjectDn = subjectDn.getUpdatedValue();
     }
     
-    public void updateSubjectAlternativeName(SubjectAlternativeName subjectAlternativeName){
+    public final void updateSubjectAlternativeName(SubjectAlternativeName subjectAlternativeName){
         this.subjectAlternativeName = subjectAlternativeName.getUpdatedValue();
     }
     
-    public void updateSubjectDirectoryAttributes(SubjectDirectoryAttributes subjectDirectoryAttributes){
+    public final void updateSubjectDirectoryAttributes(SubjectDirectoryAttributes subjectDirectoryAttributes){
         this.subjectDirectoryAttributes = subjectDirectoryAttributes.getUpdatedValue();
     }
 
     /** @return true if more details should be shown */
-    public boolean isMore() { return more; }
-    public void actionToggleMore() {
+    public final boolean isMore() { return more; }
+    public final void actionToggleMore() {
         more = !more;
         styleRowCallCounter = 0;    // Reset
     }
 
     /** @return true every twice starting with every forth call */
-    public boolean isEven() {
+    public final boolean isEven() {
         styleRowCallCounter++;
         return (styleRowCallCounter+1) / 2 % 2 == 0;
     }
 
-    public String getSubjectDn() {
+    public final String getSubjectDn() {
         return subjectDn;
     }
 
@@ -123,5 +130,19 @@ public class RaRequestPreview {
      */
     public void setIssuerDn(String issuerDn) {
         this.issuerDn = issuerDn;
+    }
+
+    /**
+     * @return the validity
+     */
+    public String getValidity() {
+        return validity;
+    }
+
+    /**
+     * @param validity the validity to set
+     */
+    public void setValidity(String validity) {
+        this.validity = validity;
     }
 }

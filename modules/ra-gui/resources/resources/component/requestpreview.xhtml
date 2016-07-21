@@ -81,6 +81,13 @@
 				<h:outputText id="subjectDirectoryAttributes" rendered="#{cc.attrs.raRequestPreview.subjectDirectoryAttributesUsed}"
 					value="#{cc.attrs.raRequestPreview.subjectDirectoryAttributes}"
 					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
+
+				<h:outputLabel for="validity"
+					value="#{msg.component_certdetails_field_validity}"
+					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+				<h:outputText id="validity"
+					value="#{cc.attrs.raRequestPreview.validity}"
+					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
 			</fieldset>
 		</composite:implementation>
 	</h:body>
