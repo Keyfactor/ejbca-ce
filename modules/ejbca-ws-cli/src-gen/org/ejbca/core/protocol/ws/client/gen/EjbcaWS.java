@@ -835,6 +835,7 @@ public interface EjbcaWS {
      * @param arg0
      * @return
      *     returns boolean
+     * @throws AuthorizationDeniedException_Exception
      * @throws EjbcaException_Exception
      */
     @WebMethod
@@ -844,7 +845,7 @@ public interface EjbcaWS {
     public boolean existsHardToken(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0)
-        throws EjbcaException_Exception
+        throws AuthorizationDeniedException_Exception, EjbcaException_Exception
     ;
 
     /**

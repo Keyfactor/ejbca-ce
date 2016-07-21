@@ -2080,7 +2080,7 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 	
     @Override
-    public boolean existsHardToken(String hardTokenSN) throws EjbcaException{
+    public boolean existsHardToken(String hardTokenSN) throws AuthorizationDeniedException, EjbcaException{
         final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
 
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
@@ -2088,8 +2088,6 @@ public class EjbcaWS implements IEjbcaWS {
             final AuthenticationToken admin = ejbhelper.getAdmin();
             logAdminName(admin,logger);
             return hardTokenSession.existsHardToken(hardTokenSN);
-        } catch (AuthorizationDeniedException e) {
-            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
         } catch (RuntimeException e) {  // EJBException, ClassCastException, ...
             throw EjbcaWSHelper.getInternalException(e, logger);
         } finally {
