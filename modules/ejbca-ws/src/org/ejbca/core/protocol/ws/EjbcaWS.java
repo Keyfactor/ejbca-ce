@@ -310,36 +310,36 @@ public class EjbcaWS implements IEjbcaWS {
 			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ApprovalException, WaitingForApprovalException {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try {
-        	final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
-        	final AuthenticationToken admin = ejbhelper.getAdmin();
-        	logAdminName(admin,logger);
-        	final EndEntityInformation endEntityInformation = ejbhelper.convertUserDataVOWS(admin, userdata);
+            final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+            final AuthenticationToken admin = ejbhelper.getAdmin();
+            logAdminName(admin,logger);
+            final EndEntityInformation endEntityInformation = ejbhelper.convertUserDataVOWS(admin, userdata);
             if (endEntityManagementSession.existsUser(endEntityInformation.getUsername())) {
-            	if (log.isDebugEnabled()) {
-            		log.debug("User " + userdata.getUsername() + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );				  
-            	}
-            	endEntityManagementSession.changeUser(admin,endEntityInformation,userdata.isClearPwd(), true);
+                if (log.isDebugEnabled()) {
+                    log.debug("User " + userdata.getUsername() + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );                
+                }
+                endEntityManagementSession.changeUser(admin,endEntityInformation,userdata.isClearPwd(), true);
             } else {
-            	if (log.isDebugEnabled()) {
-            		log.debug("New User " + userdata.getUsername() + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
-            	}
-            	endEntityManagementSession.addUserFromWS(admin,endEntityInformation,userdata.isClearPwd());
+                if (log.isDebugEnabled()) {
+                    log.debug("New User " + userdata.getUsername() + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
+                }
+                endEntityManagementSession.addUserFromWS(admin,endEntityInformation,userdata.isClearPwd());
             }
-		} catch (UserDoesntFullfillEndEntityProfile e) {
-			log.debug(e.toString());
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+            log.debug(e.toString());
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
-			throw e;
-		} catch (AuthorizationDeniedException e) {
+            throw e;
+        } catch (AuthorizationDeniedException e) {
             final String errorMessage = "AuthorizationDeniedException when editing user "+userdata.getUsername()+": "+e.getMessage();
-			log.info(errorMessage);
+            log.info(errorMessage);
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), errorMessage);
-			throw e;
-		} catch (EndEntityExistsException e) {
+            throw e;
+        } catch (EndEntityExistsException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_ALREADY_EXISTS, Level.INFO);
-        } catch (RuntimeException e) {	// ClassCastException, EJBException, ...
+        } catch (RuntimeException e) {  // ClassCastException, EJBException, ...
             throw EjbcaWSHelper.getInternalException(e, logger);
-		} finally {
-		    logger.writeln();
+        } finally {
+            logger.writeln();
             logger.flush();
         }
 	}
@@ -2122,26 +2122,20 @@ public class EjbcaWS implements IEjbcaWS {
             }catch(AuthorizationDeniedException e){
                 boolean genNewRequest = false;
                 
-                boolean approveViewHardToken = false; // will cause AuthorizationDeniedException
-                boolean approveGenTokeCert = false;
-                final String approvalProfileIdString = WebServiceConfiguration.getApprovalProfileId();   
+                final String approvalProfileIdString = WebServiceConfiguration.getApprovalProfileId();
+                if (log.isDebugEnabled()) {
+                    log.debug("approvalProfileIdString: "+approvalProfileIdString);
+                }
                 ApprovalProfile approvalProfile = null;
                 if(StringUtils.isNotEmpty(approvalProfileIdString) && NumberUtils.isNumber(approvalProfileIdString)) {
                     Integer approvalProfileId = Integer.valueOf(approvalProfileIdString);
                     approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
                 }
-                if(approvalProfile!=null) {
-                // TODO: FIX ME!
-                    //    approveViewHardToken = arrayContainsValue(approvalProfile.getActionsRequireApproval(), ApprovalRequest.REQ_APPROVAL_VIEW_HARD_TOKEN);
-                //    approveGenTokeCert = arrayContainsValue(approvalProfile.getActionsRequireApproval(), ApprovalRequest.REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE);
-                }
-                
-                if(approveViewHardToken){
+                if(approvalProfile != null){
+                    // Check if an approval request for GenTokenCertificates exists, in that case we can not view the hard token data
                     if (log.isDebugEnabled()) {
-                        log.debug("Checking for approvals for getHardTokenData("+hardTokenSN+")");
+                        log.debug("Checking for existing Generate approvals for getHardTokenData("+hardTokenSN+")");
                     }
-                    // Check Approvals
-                    // Exists an GenTokenCertificates
                     AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EJBCAWS.getHardTokenData"));
                     EndEntityInformation userData = endEntityAccessSession.findUser(intAdmin, hardTokenData.getUsername());
                     if (userData == null) {
@@ -2154,10 +2148,7 @@ public class EjbcaWS implements IEjbcaWS {
                     ar = new GenerateTokenApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenData.getHardToken().getLabel(),
                             admin,null,caid,userData.getEndEntityProfileId(), approvalProfile);
                     int status = ApprovalDataVO.STATUS_REJECTED;
-                    try{
-                        if(!approveGenTokeCert){
-                            throw new ApprovalException("");
-                        }
+                    try {
                         status = approvalSession.isApproved(admin, ar.generateApprovalId(), 0);
                         isApprovedStep0 =  status == ApprovalDataVO.STATUS_APPROVED;
 
@@ -2167,14 +2158,11 @@ public class EjbcaWS implements IEjbcaWS {
                             throw new ApprovalException("");
                         }
                         if (log.isDebugEnabled()) {
-                            log.debug("A GenerateTokenApprovalRequest exists for "+userData.getUsername()+", "+ar.generateApprovalId());
+                            log.debug("A GenerateTokenApprovalRequest exists for "+userData.getUsername()+", "+ar.generateApprovalId()+", we can not get the data yet.");
                         }
-                    }catch(ApprovalException e2){
-                        if (log.isTraceEnabled()) {
-                            log.trace("GenTokenCertificates approval does not exist, try a getHardTokenData request");
-                        }
-                        if(!approveViewHardToken){
-                            throw new AuthorizationDeniedException("EjbcaWS is not configured for getHardTokenData approvals.");
+                    } catch(ApprovalException e2) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("A GenerateTokenApprovalRequest does not exist, looking for a View getHardTokenData request: "+e2.getMessage());
                         }
                         ar = new ViewHardTokenDataApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenSN, true, admin, null, 0,
                                 userData.getCAId(), userData.getEndEntityProfileId(), approvalProfile);
@@ -2184,7 +2172,7 @@ public class EjbcaWS implements IEjbcaWS {
                             isRejectedStep0 =  status == ApprovalDataVO.STATUS_REJECTED;
                             if(   status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED 
                                     || status == ApprovalDataVO.STATUS_EXPIRED){
-                                throw new ApprovalException("");
+                                genNewRequest = true;
                             }
                         }catch(ApprovalException e3){
                             genNewRequest = true; 
@@ -2194,7 +2182,7 @@ public class EjbcaWS implements IEjbcaWS {
                         if (log.isDebugEnabled()) {
                             log.debug("Will generate a ViewHardTokenDataApprovalRequest for "+userData.getUsername()+", "+ar.generateApprovalId());
                         }
-                        if(genNewRequest){
+                        if (genNewRequest) {
                             if (log.isDebugEnabled()) {
                                 log.debug("Adding an approval request for "+userData.getUsername());
                             }
@@ -2209,7 +2197,7 @@ public class EjbcaWS implements IEjbcaWS {
                     }       
                 } else {
                     if (log.isDebugEnabled()) {
-                        log.debug("Not generating any approval request for: "+hardTokenSN);
+                        log.debug("No approval profile found, not generating any approval request for: "+hardTokenSN);
                     }
                     throw e;
                 }

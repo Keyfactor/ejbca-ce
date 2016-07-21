@@ -80,7 +80,6 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalRequestExecutionException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
@@ -149,7 +148,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         super.setUp();
            
         approvalProfile = new AccumulativeApprovalProfile(WS_APPROVAL_PROFILE_NAME);
-        approvalProfile.setNumberOfApprovalsRequired(2);
+        // We will use 1 single approval to test with
+        approvalProfile.setNumberOfApprovalsRequired(1);
         int approvalProfileId = approvalProfileSession.addApprovalProfile(intadmin, approvalProfile);
         approvalProfile.setProfileId(approvalProfileId);
 
@@ -318,8 +318,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         
         setUpNonAdmin();
         setupApprovals();
-        // TODO: FIX ME! 
-    //    approvalProfile.setActionsRequireApproval(new int[] {ApprovalRequest.REQ_APPROVAL_VIEW_HARD_TOKEN});
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         
         ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, 
@@ -358,8 +356,9 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
             Approval approval1 = new Approval("ap1test", AccumulativeApprovalProfile.FIXED_STEP_ID, approvalProfile
                     .getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier());
             try {
-                log.debug("ID: "+approvalRequest.generateApprovalId());
+                log.debug("Approval ID that we will approve: "+approvalRequest.generateApprovalId());
                 approvalExecutionSession.approve(admin1, approvalRequest.generateApprovalId(), approval1);
+                // Once approved we should be able to view it
                 getHardTokenData(serialNumber, true);
                 try {
                     getHardTokenData(serialNumber, true);
