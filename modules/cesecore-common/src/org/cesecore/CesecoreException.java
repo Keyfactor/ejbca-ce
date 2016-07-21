@@ -17,6 +17,8 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.xml.ws.WebFault;
 
+import org.apache.log4j.Logger;
+
 
 
 /**
@@ -31,6 +33,8 @@ import javax.xml.ws.WebFault;
 public class CesecoreException extends Exception implements NonSensitiveCloneable {
 
     private static final long serialVersionUID = -3754146611270578813L;
+    
+    private static final Logger log = Logger.getLogger(CesecoreException.class);
 
     /** The error code describes the cause of the exception. */
     ErrorCode errorCode = null;
@@ -137,18 +141,18 @@ public class CesecoreException extends Exception implements NonSensitiveCloneabl
      * Get non sensitive clone of the exception. All other data except error code will be purged from the clone.
      */
     @Override
-    public NonSensitiveCloneable getNonSensitiveClone() {
+    public Object getNonSensitiveClone() {
         try {
-            if (this.getClass().getConstructor(ErrorCode.class) != null) {
-                return this.getClass().getConstructor(ErrorCode.class).newInstance(getErrorCode());
-            } else {
-                CesecoreException e = (CesecoreException) this.getClass().getConstructor().newInstance();
-                e.setErrorCode(getErrorCode());
-                return e;
-            }
+            try {
+                return this.getClass().getConstructor(ErrorCode.class).newInstance(getErrorCode()); 
+            } catch (NoSuchMethodError nsme) { 
+                CesecoreException e = (CesecoreException)this.getClass().getConstructor().newInstance(); 
+                e.setErrorCode(getErrorCode()); 
+                return e; 
+            } 
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
                 | SecurityException e) {
-            e.printStackTrace();
+            log.info(e);
             return null;
         }
     }
