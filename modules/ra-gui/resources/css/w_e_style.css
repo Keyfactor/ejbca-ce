@@ -183,6 +183,9 @@ label {
 .internal-frame > fieldset input {
   font-size: 90%; }
 
+#requestInfoForm\:requestInfoRendered > .internal-frame > .internal-frame > .pure-control-group > input {
+  font-size: 90%; }
+
 .language_button, .language_button:hover {
   background: #517397;
   color: #fff; }
@@ -238,9 +241,11 @@ label.showNonModifiable {
 table.pure-table > thead > tr > th {
   color: #444d57; }
 table.pure-table > tbody > tr:not(.pure-table-odd) td {
-  background-color: #f2f2f2; }
+  background-color: #f2f2f2;
+  font-size: 90%; }
 table.pure-table > tbody > tr.pure-table-odd td {
-  background-color: #e0e0e0; }
+  background-color: #e0e0e0;
+  font-size: 90%; }
 table.pure-table > tbody > tr {
   color: #444d57; }
 table.pure-table > tbody a {
@@ -327,16 +332,19 @@ textarea#keyPairForm\:certificateRequest {
 #detailsForm > span.pure-u-1:nth-of-type(2) {
   /*ska bryta alla långa rader inne i search > view > details*/
   width: 97%;
-  margin-bottom: 2%; }
+  margin-bottom: 2%;
+  word-break: break-word; }
   #detailsForm > span.pure-u-1:nth-of-type(2) > label {
     width: 30.8%;
     margin-left: 2.5% !important;
     display: block; }
   #detailsForm > span.pure-u-1:nth-of-type(2) > span {
     margin-left: 2.5%; }
-  #detailsForm > span.pure-u-1:nth-of-type(2) > .pure-u-lg-2-3:nth-of-type(13) > .pure-button {
-    /*knappen revoke inne i search > certificate details*/
-    margin: 0 0 0 2%; }
+  #detailsForm > span.pure-u-1:nth-of-type(2) > span.pure-u-lg-2-3:nth-of-type(13) > input.pure-button {
+    /*knappen revoke inne i search > certificate details*/ }
+
+select#detailsForm\:certDetails\:newRevocationReason ~ input {
+  margin: 0 0 0 2%; }
 
 /*
 #detailsForm\:certDetails\:showMoreLessDetailsButton { //Ev. dublett av datailsForm:certDetails:showMoreLessDetailsButton ovan
@@ -418,7 +426,7 @@ textarea#keyPairForm\:certificateRequest {
 
 #requestInfoForm\:confirmRequestButton {
   /*confirm request-knappen*/
-  width: 35%;
+  width: 140px;
   height: 40px; }
 
 #requestInfoForm\:generateKeyStorePem,
@@ -552,7 +560,7 @@ a {
 
 /*gör att långa rader i tabeller bryts, ska högst troligt tas bort*/
 /*SLUT gör att långa rader i tabeller bryts*/
-#requestTemplateForm\:selectRequestTemplateOuterPanel > .internal-frame > fieldset > .pure-control-group:nth-of-type(4) > label {
+label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   float: left; }
 
 /*Kod för att lägga radioknappar, som ligger inom första ramen i make request, under varandra */
@@ -569,7 +577,7 @@ a {
 
 /*SLUT Kod för att lägga radioknappar, som ligger inom första ramen i make request, under varandra */
 #contentForm\:viewRequestDataTable {
-  margin: 1% 0 1% 2%; }
+  margin: 1% 0 1% 2.5%; }
 
 .tabButtonBar {
   width: 73%; }
@@ -581,9 +589,14 @@ a {
   border-radius: 0; }
 
 /* Styling av felmeddelanden som dyker upp när man inte fyllt i lösenord i make request*/
-#requestInfoForm\:userCredentialsOuterPanel > internal-frame > .pure-control-group:nth-last-of-type(2) #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:userCredentialsOuterPanel > internal-frame > .pure-control-group:nth-last-of-type(2) #requestInfoForm\:passwordConfirmField, .pure-control-group:nth-last-of-type(3) #requestInfoForm\:passwordFieldMessage, .pure-control-group:nth-last-of-type(3) #requestInfoForm\:passwordConfirmField {
+#requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage {
   display: block;
   margin: 0% 0 2% 19%;
+  color: #ed6a5f; }
+
+#keyPairForm\:certificateRequestMessage {
+  display: block;
+  margin: 0% 0 0% 1.5%;
   color: #ed6a5f; }
 
 .errorMessage {
@@ -874,8 +887,7 @@ a {
 
   #requestInfoForm\:confirmRequestButton {
     /*confirm request-knappen*/
-    width: auto;
-    height: auto; }
+    width: auto; }
 
   #requestInfoForm\:resetButton {
     width: 13%;
@@ -1020,7 +1032,7 @@ a {
       width: 152%; }
 
   #contentForm\:endEntititesMoreInputs {
-    width: 20%; }
+    width: 20% !important; }
 
   #detailsForm > span.pure-u-1:nth-of-type(2) > label {
     display: inline-block; }
@@ -1042,7 +1054,20 @@ a {
       display: inline-block; }
 
   #detailsForm\:certDetails\:showMoreLessDetailsButton {
-    width: 23%; } }
+    width: 23%; }
+
+  .errorMessage {
+    /* gör att 'generella' felmeddelanden visas var man än står på sidan */
+    margin: 0 0 0 0; }
+
+  #requestInfoForm\:confirmRequestButton, #requestInfoForm\:generateKeyStorePem, #requestInfoForm\:generateP12, #requestInfoForm\:generateJks {
+    /*confirm request-knappen*/
+    height: auto; }
+
+  table.pure-table > tbody > tr:not(.pure-table-odd) td {
+    font-size: 100%; }
+  table.pure-table > tbody > tr.pure-table-odd td {
+    font-size: 100%; } }
 /*
 "gamla"
     "base"  // smartphone
