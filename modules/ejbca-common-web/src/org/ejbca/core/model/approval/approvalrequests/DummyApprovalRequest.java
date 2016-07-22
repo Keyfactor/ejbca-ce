@@ -65,7 +65,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
 		this.executable = executable;
 	} 
 	
-    /** Constuctor used in externaliziation only */
+    /** Constructor used in externalization only */
     public DummyApprovalRequest() {
     }
     
