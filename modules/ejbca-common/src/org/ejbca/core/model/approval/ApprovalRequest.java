@@ -141,7 +141,7 @@ public abstract class ApprovalRequest implements Externalizable {
         this.endEntityProfileId = endEntityProfileId;
         
         this.approvalProfile = approvalProfile;
-        this.approvalSteps = new boolean[0];
+        this.approvalSteps = new boolean[numberOfSteps];
     }
 
     /** Constructor used in externalization only */

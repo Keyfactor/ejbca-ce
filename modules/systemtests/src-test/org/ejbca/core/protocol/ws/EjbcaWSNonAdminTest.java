@@ -422,10 +422,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     public void test04GenTokenCertificatesWithApprovals() throws Exception {
         setUpNonAdmin();
         setupApprovals();
-// TODO: FIX ME!
-       // approvalProfile.setActionsRequireApproval(new int[] {ApprovalRequest.REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE, 
-       //         ApprovalRequest.REQ_APPROVAL_VIEW_HARD_TOKEN});
-        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         
         try {
             genTokenCertificates(true);
