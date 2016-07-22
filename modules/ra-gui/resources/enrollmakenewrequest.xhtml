@@ -354,7 +354,14 @@
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<component:requestpreview
-							raRequestPreview="#{enrollMakeNewRequestBean.requestPreview}" />
+							raRequestPreview="#{enrollMakeNewRequestBean.requestPreview}"/>
+						<h:commandButton id="requestPreviewMoreDetails"
+							action="#{enrollMakeNewRequestBean.renderRequestPreviewMoreToggle}"
+							value="#{enrollMakeNewRequestBean.requestPreviewMoreDetails ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
+							styleClass="#{htmlElementFocusBean.requestPreviewMoreDetails?'jsAutoFocusJsf':''} toggleMoreButton" immediate="true">
+							<f:actionListener binding="#{htmlElementFocusBean.setRequestPreviewMoreDetails(true)}"/>
+							<f:ajax execute="@this" render="@form" />
+						</h:commandButton>
 
 
 						<h:panelGroup layout="block"

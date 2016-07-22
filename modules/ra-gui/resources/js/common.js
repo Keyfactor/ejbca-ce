@@ -88,6 +88,11 @@
     		inputField.focus();
     		return true;
     	});
+    	// Auto focus last found element tagged "jsAutoFocusJsf" (overriding previously set focus)
+    	forEachInputElementByTagNameAndStyleClass(focusElementTypes, "jsAutoFocusJsf", function(inputField) {
+    		inputField.focus();
+    		return true;
+    	});
         // Auto focus first found element tagged "jsAutoFocusError" (overriding previously set focus)
     	forEachInputElementByTagNameAndStyleClass(focusElementTypes, "jsAutoFocusError", function(inputField) {
     		inputField.focus();

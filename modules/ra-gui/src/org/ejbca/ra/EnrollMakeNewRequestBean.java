@@ -165,8 +165,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
     
     //8. Request data
     private int requestId;
+    private boolean requestPreviewMoreDetails;
     
     //9. Certificate preview
+
+    
 
     @PostConstruct
     private void postContruct() {
@@ -390,6 +393,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
     public void renderNonModifiableFieldsToggle() {
         renderNonModifiableFields = !renderNonModifiableFields;
+    }
+    
+    public void renderRequestPreviewMoreToggle(){
+        requestPreviewMoreDetails = !requestPreviewMoreDetails;
     }
 
     public void uploadCsrChange() {
@@ -1166,6 +1173,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
     }
+    
+    public boolean isRequestPreviewMoreDetails() {
+        return requestPreviewMoreDetails;
+    }
+
+    public void setRequestPreviewMoreDetails(boolean requestPreviewMoreDetails) {
+        this.requestPreviewMoreDetails = requestPreviewMoreDetails;
+    }
 
     /** @return the selectedCertificateAuthority */
     public String getSelectedCertificateAuthority() {
@@ -1324,6 +1339,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         requestPreview.setPublicKeyAlgorithm(getAlgorithm());
         requestPreview.updateCA(getCAInfo());
         requestPreview.updateCertificateProfile(getCertificateProfile());
+        requestPreview.setMore(requestPreviewMoreDetails);
         return requestPreview;
     }
     

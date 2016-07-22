@@ -31,7 +31,7 @@
 	<h:head dir="#{raLocaleBean.direction}" />
 	<h:body>
 		<composite:interface>
-			<composite:attribute name="raRequestPreview" required="false" />
+			<composite:attribute name="raRequestPreview" required="true" />
 			<composite:attribute name="styleLabel" required="false"
 				default="pure-u-lg-1-3" />
 			<composite:attribute name="styleValue" required="false"
@@ -46,7 +46,6 @@
 
 		<composite:implementation>
 			<fieldset>
-			
 				<h:outputLabel for="issuerDn"
 					value="#{msg.component_certdetails_field_issuerdn}"
 					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
