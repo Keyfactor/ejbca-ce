@@ -144,7 +144,7 @@ public abstract class ApprovalRequest implements Externalizable {
         this.approvalSteps = new boolean[0];
     }
 
-    /** Constuctor used in externaliziation only */
+    /** Constructor used in externalization only */
     public ApprovalRequest() {
     }
     
@@ -164,7 +164,7 @@ public abstract class ApprovalRequest implements Externalizable {
 
     /**
      * Method that should generate an approval id for this type of approval, the same request i.e the same admin want's to do the same thing twice
-     * should result in the same approvalId.
+     * should result in the same approvalId. This is the ID that will be stored in ApprovalData.approvalId
      */
     public abstract int generateApprovalId();
 
@@ -453,9 +453,15 @@ public abstract class ApprovalRequest implements Externalizable {
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
             final int stepSize = in.readInt();
+            if (log.isTraceEnabled()) {
+                log.trace("ApprovalRequest have "+stepSize+" approval steps.");                
+            }
             this.approvalSteps = new boolean[stepSize];
             for (int i = 0; i < approvalSteps.length; i++) {
                 approvalSteps[i] = in.readBoolean();
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("ApprovalRequest (version 4) of type "+getApprovalType()+" read.");
             }
         }
         if (version == 5) {
@@ -486,12 +492,18 @@ public abstract class ApprovalRequest implements Externalizable {
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
             final int stepSize = in.readInt();
+            if (log.isTraceEnabled()) {
+                log.trace("ApprovalRequest have "+stepSize+" approval steps.");                
+            }
             this.approvalSteps = new boolean[stepSize];
             for (int i = 0; i < approvalSteps.length; i++) {
                 approvalSteps[i] = in.readBoolean();
             }
             this.approvalProfile = (ApprovalProfile) in.readObject();
             this.editedByAdmins = (List<TimeAndAdmin>) in.readObject();
+            if (log.isDebugEnabled()) {
+                log.debug("ApprovalRequest (version 5) of type "+getApprovalType()+" read.");
+            }
         }
     }
 
