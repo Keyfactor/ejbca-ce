@@ -242,10 +242,10 @@ table.pure-table > thead > tr > th {
   color: #444d57; }
 table.pure-table > tbody > tr:not(.pure-table-odd) td {
   background-color: #f2f2f2;
-  font-size: 90%; }
+  font-size: 83%; }
 table.pure-table > tbody > tr.pure-table-odd td {
   background-color: #e0e0e0;
-  font-size: 90%; }
+  font-size: 83%; }
 table.pure-table > tbody > tr {
   color: #444d57; }
 table.pure-table > tbody a {
@@ -343,6 +343,11 @@ textarea#keyPairForm\:certificateRequest {
   #detailsForm > span.pure-u-1:nth-of-type(2) > span.pure-u-lg-2-3:nth-of-type(13) > input.pure-button {
     /*knappen revoke inne i search > certificate details*/ }
 
+@-moz-document url-prefix() {
+  /*För Firefox*/
+  #detailsForm > span.pure-u-1:nth-of-type(2) {
+    /*ska bryta alla långa rader inne i search > view > details*/
+    word-break: break-all; } }
 select#detailsForm\:certDetails\:newRevocationReason ~ input {
   margin: 0 0 0 2%; }
 
@@ -521,7 +526,7 @@ a {
   margin: 1% 0 4% 2%; }
 
 #contentForm\:requestApproveMessage {
-  margin: 1% 0 0 2%; }
+  margin: 1% 0 0 2.5%; }
 
 .statusFailed {
   color: #ed6a5f; }
@@ -591,18 +596,30 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 /* Styling av felmeddelanden som dyker upp när man inte fyllt i lösenord i make request*/
 #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage {
   display: block;
-  margin: 0% 0 2% 19%;
-  color: #ed6a5f; }
+  margin: 1% 0 2% 19%;
+  color: #fff;
+  border-style: solid;
+  background: black;
+  border-color: black;
+  padding: 1%; }
 
 #keyPairForm\:certificateRequestMessage {
   display: block;
   margin: 0% 0 0% 1.5%;
-  color: #ed6a5f; }
+  color: #fff;
+  border-style: solid;
+  background: black;
+  border-color: black;
+  padding: 1%; }
 
 .errorMessage {
   /* gör att 'generella' felmeddelanden visas var man än står på sidan */
-  position: fixed;
-  color: #ed6a5f;
+  border-style: solid;
+  background: black;
+  color: #fff;
+  border-color: black;
+  padding: 1%;
+  list-style: none;
   margin: 8% 0 0 0; }
 
 #contentForm > #contentForm\:more {
@@ -862,6 +879,13 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
       word-break: break-word;
       max-width: 180px; }
 
+  @-moz-document url-prefix() {
+    /*För Firefox*/
+    #contentForm\:filteredResults > .pure-table {
+      line-height: normal; }
+      #contentForm\:filteredResults > .pure-table > tbody td {
+        word-break: break-all;
+        max-width: 180px; } }
   div#menu.ejbca-menu ul.pure-menu-list {
     width: 346px; }
 
@@ -890,14 +914,18 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     width: auto; }
 
   #requestInfoForm\:resetButton {
-    width: 13%;
-    height: auto; }
+    width: 13%; }
 
   #keyPairForm\:uploadCsrButton,
   #requestInfoForm\:generateKeyStorePem,
   #requestInfoForm\:generateP12,
   #requestInfoForm\:generateJks {
-    width: auto; } }
+    width: auto; }
+
+  .infoMessage {
+    color: #fff;
+    position: fixed;
+    margin: 8% 0 0 0; } }
 @media (min-width: 64.0625em) {
   div#div_menu_logo {
     width: 13.5%; }
@@ -1060,14 +1088,19 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     /* gör att 'generella' felmeddelanden visas var man än står på sidan */
     margin: 0 0 0 0; }
 
-  #requestInfoForm\:confirmRequestButton, #requestInfoForm\:generateKeyStorePem, #requestInfoForm\:generateP12, #requestInfoForm\:generateJks {
+  #requestInfoForm\:confirmRequestButton, #requestInfoForm\:generateKeyStorePem, #requestInfoForm\:generateP12, #requestInfoForm\:generateJks, #requestInfoForm\:resetButton {
     /*confirm request-knappen*/
     height: auto; }
 
   table.pure-table > tbody > tr:not(.pure-table-odd) td {
     font-size: 100%; }
   table.pure-table > tbody > tr.pure-table-odd td {
-    font-size: 100%; } }
+    font-size: 100%; }
+
+  .infoMessage {
+    color: #fff;
+    position: fixed;
+    margin: 0 0 0 0; } }
 /*
 "gamla"
     "base"  // smartphone
@@ -1098,6 +1131,15 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
         height: 1.25em;
         margin-right: 1em; }
       body > #footer.footer > div.align-center > p {
-        margin: 0; } }
+        margin: 0; }
+
+  #contentForm\:filteredResults > .pure-table {
+    line-height: normal; }
+    #contentForm\:filteredResults > .pure-table > tbody td {
+      word-break: break-all; }
+
+  #detailsForm > span.pure-u-1:nth-of-type(2) {
+    /*ska bryta alla långa rader inne i search > view > details*/
+    word-break: break-all; } }
 
 /*# sourceMappingURL=w_e_style.css.map */
