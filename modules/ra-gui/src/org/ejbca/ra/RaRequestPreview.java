@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.util.ValidityDate;
@@ -23,12 +26,15 @@ import org.cesecore.util.ValidityDate;
  */
 public class RaRequestPreview {
     
+    //private static final Logger log = Logger.getLogger(RaRequestPreview.class);
     private String issuerDn = "";
     private String subjectDn = "";
     private String publicKeyAlgorithm = "";
     private String subjectAlternativeName = "";
     private String subjectDirectoryAttributes = "";
-    private String validity = ""; 
+    private String validity = "";
+    private List<String> keyUsages = new ArrayList<>();
+    private List<String> extendedKeyUsages = new ArrayList<>();
 
     private boolean more = false;
     private int styleRowCallCounter = 0;
@@ -38,22 +44,49 @@ public class RaRequestPreview {
     }
     
     public final void updateCertificateProfile(CertificateProfile certificateProfile){
+        if(certificateProfile == null){
+            return;
+        }
         validity = ValidityDate.getString(certificateProfile.getValidity());
+        keyUsages.clear();
+        final boolean[] keyUsageArray = certificateProfile.getKeyUsage();
+        for (int i=0; i<keyUsageArray.length; i++) {
+            if (keyUsageArray[i]) {
+                keyUsages.add(String.valueOf(i));
+            }
+        }
+        extendedKeyUsages.clear();
+        final List<String> extendedKeyUsages = certificateProfile.getExtendedKeyUsageOids();
+        if (extendedKeyUsages != null) {
+            this.extendedKeyUsages.addAll(extendedKeyUsages);
+        }
     }
     
     public final void updateCA(CAInfo caInfo){
+        if(caInfo == null){
+            return;
+        }
         issuerDn = caInfo.getSubjectDN();
     }
     
     public final void updateSubjectDn(SubjectDn subjectDn){
+        if(subjectDn == null){
+            return;
+        }
         this.subjectDn = subjectDn.getUpdatedValue();
     }
     
     public final void updateSubjectAlternativeName(SubjectAlternativeName subjectAlternativeName){
+        if(subjectAlternativeName == null){
+            return;
+        }
         this.subjectAlternativeName = subjectAlternativeName.getUpdatedValue();
     }
     
     public final void updateSubjectDirectoryAttributes(SubjectDirectoryAttributes subjectDirectoryAttributes){
+        if(subjectDirectoryAttributes == null){
+            return;
+        }
         this.subjectDirectoryAttributes = subjectDirectoryAttributes.getUpdatedValue();
     }
 
@@ -148,4 +181,22 @@ public class RaRequestPreview {
     public void setValidity(String validity) {
         this.validity = validity;
     }
+
+    public List<String> getKeyUsages() {
+        return keyUsages;
+    }
+
+    public void setKeyUsages(List<String> keyUsages) {
+        this.keyUsages = keyUsages;
+    }
+
+    public List<String> getExtendedKeyUsages() {
+        return extendedKeyUsages;
+    }
+
+    public void setExtendedKeyUsages(List<String> extendedKeyUsages) {
+        this.extendedKeyUsages = extendedKeyUsages;
+    }
+    
+    
 }
