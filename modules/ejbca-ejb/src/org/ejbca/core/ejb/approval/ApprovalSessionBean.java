@@ -139,7 +139,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @Override
     public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException {
     	if (log.isTraceEnabled()) {
-    		log.trace(">addApprovalRequest");
+    		log.trace(">addApprovalRequest: "+approvalRequest.generateApprovalId());
     	}
         int approvalId = approvalRequest.generateApprovalId();
 
@@ -185,7 +185,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             }
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<addApprovalRequest");
+        	log.trace("<addApprovalRequest: "+approvalRequest.generateApprovalId());
         }
     }
 
@@ -226,7 +226,13 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         if (result.size() == 0) {
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, "Approval request with id : " + approvalId + " does not exist");
         }
+        if (log.isTraceEnabled()) {
+            log.trace("Found "+result.size()+" ApprovalData with id "+approvalId);
+        }
         for(ApprovalData adl : result) {
+            if (log.isTraceEnabled()) {
+                log.trace("Checking if ApprovalRequest of type "+adl.getApprovaltype()+" with databaseID "+adl.getId()+" and approvalID "+adl.getApprovalid()+" is approved: "+adl.getStatus());
+            }
             retval = isApproved(adl, step);
             if (adl.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL || adl.getStatus() == ApprovalDataVO.STATUS_APPROVED
                     || adl.getStatus() == ApprovalDataVO.STATUS_REJECTED) {
