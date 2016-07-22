@@ -58,10 +58,13 @@ public class RaRequestPreview {
     }
 
     /** @return true if more details should be shown */
-    public final boolean isMore() { return more; }
-    public final void actionToggleMore() {
-        more = !more;
-        styleRowCallCounter = 0;    // Reset
+    public final boolean isMore() {
+        return more;
+    }
+
+    public final void setMore(boolean more) {
+        this.more = more;
+        styleRowCallCounter = 0; // Reset
     }
 
     /** @return true every twice starting with every forth call */
@@ -111,11 +114,11 @@ public class RaRequestPreview {
     }
 
     public boolean isSubjectDirectoryAttributesUsed() {
-        return !subjectDirectoryAttributes.isEmpty();
+        return !subjectDirectoryAttributes.isEmpty() && isMore();
     }
 
     public boolean isSubjectAlternativeNameUsed() {
-        return !subjectAlternativeName.isEmpty();
+        return !subjectAlternativeName.isEmpty() && isMore();
     }
 
     /**
