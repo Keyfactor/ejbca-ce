@@ -1780,23 +1780,21 @@ public class EjbcaWS implements IEjbcaWS {
                 throw new AuthorizationDeniedException(msg);
             }
 		} else {
-		    boolean approveGenTokenCert = false; // will cause AuthorizationDeniedException
 		    final String approvalProfileIdString = WebServiceConfiguration.getApprovalProfileId();   
-	        ApprovalProfile approvalProfile = null;
-		    if(StringUtils.isNotEmpty(approvalProfileIdString) && NumberUtils.isNumber(approvalProfileIdString)) {
-		        Integer approvalProfileId = Integer.valueOf(approvalProfileIdString);
-		        approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
-		    }
-		    if(approvalProfile!=null) {
-		        approveGenTokenCert = true; // arrayContainsValue(approvalProfile.getActionsRequireApproval(), ApprovalRequest.REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE);
-		    }
-		    
-			if(approveGenTokenCert){
+            if (log.isDebugEnabled()) {
+                log.debug("approvalProfileIdString: "+approvalProfileIdString);
+            }
+            ApprovalProfile approvalProfile = null;
+            if(StringUtils.isNotEmpty(approvalProfileIdString) && NumberUtils.isNumber(approvalProfileIdString)) {
+                Integer approvalProfileId = Integer.valueOf(approvalProfileIdString);
+                approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
+            }
+		    if (approvalProfile!=null) {
                     ar = new GenerateTokenApprovalRequest(userDataWS.getUsername(), userDataWS.getSubjectDN(), hardTokenDataWS.getLabel(), admin,
                             null, significantcAInfo.getCAId(), endEntityProfileId, approvalProfile);
 				int status = ApprovalDataVO.STATUS_REJECTED; 					
 				try{
-					status = approvalSession.isApproved(admin, ar.generateApprovalId(), 1);
+					status = approvalSession.isApproved(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_1_GENERATETOKEN);
                     approvalSuccessfullStep1 = (status == ApprovalDataVO.STATUS_APPROVED);
                     isRejectedStep1 = (status == ApprovalDataVO.STATUS_REJECTED);
 					if(status == ApprovalDataVO.STATUS_APPROVED){
@@ -1826,6 +1824,9 @@ public class EjbcaWS implements IEjbcaWS {
 		if (ar != null && !approvalSuccessfullStep1) {
 		    throw new WaitingForApprovalException("The approval for id " + ar.generateApprovalId() + " has not yet been approved", ar.generateApprovalId());
 		}
+        if (log.isDebugEnabled() && ar != null && approvalSuccessfullStep1) {
+            log.debug("The approval for id " + ar.generateApprovalId() + " has been approved");
+        }
 
 		if (ar != null) {
 		    // We need to create a new AuthenticationToken here that has the "name" of the admin making the request, but that 
@@ -2065,7 +2066,9 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 			hardTokenSession.addHardToken(admin, hardTokenDataWS.getHardTokenSN(), userDataWS.getUsername(), significantcAInfo.getSubjectDN(), tokenType, hardToken, genCertificates, hardTokenDataWS.getCopyOfSN());
 
-			if(ar!= null){
+			if (ar!= null) {
+			    // TODO: Don't really understand what this does, but it marks this generate option as "partly done" somehow
+			    // after a call to genTokenCertificates this affect a follow up call to getHardTokenData
 				approvalSession.markAsStepDone(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_1_GENERATETOKEN);
 			}
         } catch (FinderException e) {
@@ -2149,7 +2152,7 @@ public class EjbcaWS implements IEjbcaWS {
                             admin,null,caid,userData.getEndEntityProfileId(), approvalProfile);
                     int status = ApprovalDataVO.STATUS_REJECTED;
                     try {
-                        status = approvalSession.isApproved(admin, ar.generateApprovalId(), 0);
+                        status = approvalSession.isApproved(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_0_VIEWHARDTOKENDATA);
                         isApprovedStep0 =  status == ApprovalDataVO.STATUS_APPROVED;
 
                         if(   status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED
@@ -2221,7 +2224,7 @@ public class EjbcaWS implements IEjbcaWS {
 
             if(ar != null){
                 try {
-                    approvalSession.markAsStepDone(admin, ar.generateApprovalId(), 0);
+                    approvalSession.markAsStepDone(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_0_VIEWHARDTOKENDATA);
                 } catch (ApprovalException e) {
                     throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, null);
                 }
@@ -2261,15 +2264,6 @@ public class EjbcaWS implements IEjbcaWS {
         }
 	}
     
-    private boolean arrayContainsValue(final int[] array, final int value) {
-        for(int v : array) {
-            if(v==value) {
-                return true;
-            }
-        }
-        return false;
-    }
-	
 	private List<HardTokenDataWS> getHardTokenDatas(AuthenticationToken admin, String username, boolean viewPUKData, boolean onlyValidCertificates, IPatternLogger logger)
 		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
 		List<HardTokenDataWS> retval = new  ArrayList<HardTokenDataWS>();

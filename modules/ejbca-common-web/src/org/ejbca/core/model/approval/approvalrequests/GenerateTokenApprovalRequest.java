@@ -27,11 +27,11 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
- * Special Approval Request created when an adminsitrator wants
+ * Special Approval Request created when an administrator wants
  * to generate a token through the Web Service interface.
  *  
  * It is a two step approval request were the first step is
- * a view hard token puk data and the second is the actual
+ * a view hard token PUK data and the second is the actual
  * hard token generation
  * 
  * @version $Id$
@@ -54,6 +54,7 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 
 	public GenerateTokenApprovalRequest(String username, String userDN, String tokenTypeLabel, AuthenticationToken requestAdmin, 
 	        String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile) {
+        // This is a 2 step approval, whatever that means...
         super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, 2, approvalProfile);
 		this.username = username;
 		this.dn = userDN;
@@ -68,7 +69,7 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
     /**
      * Approval Id is generated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
-	public int generateApprovalId() {					
+	public int generateApprovalId() {
 		return new String(getApprovalType() + ";" + username + ";" + CertTools.getFingerprintAsString(getRequestAdminCert()) + 
 		        ";" + getApprovalProfile().getProfileName()).hashCode();
 	}
