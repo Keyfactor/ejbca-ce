@@ -60,13 +60,6 @@
 					value="#{cc.attrs.raRequestPreview.subjectDn}"
 					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
 
-				<h:outputLabel for="publicKeySpec"
-					value="#{msg.component_certdetails_field_publickeyspec}"
-					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
-				<h:outputText id="publicKeySpec"
-					value="#{cc.attrs.raRequestPreview.publicKeyAlgorithm}"
-					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
-
 				<h:outputLabel for="subjectAlternativeName" rendered="#{cc.attrs.raRequestPreview.subjectAlternativeNameUsed}"
 					value="#{msg.component_certdetails_field_subjectan}"
 					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
@@ -80,13 +73,58 @@
 				<h:outputText id="subjectDirectoryAttributes" rendered="#{cc.attrs.raRequestPreview.subjectDirectoryAttributesUsed}"
 					value="#{cc.attrs.raRequestPreview.subjectDirectoryAttributes}"
 					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
-
+					
+				<h:outputLabel for="publicKeySpec"
+					value="#{msg.component_certdetails_field_publickeyspec}"
+					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+				<h:outputText id="publicKeySpec"
+					value="#{cc.attrs.raRequestPreview.publicKeyAlgorithm}"
+					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
+				
 				<h:outputLabel for="validity"
 					value="#{msg.component_certdetails_field_validity}"
 					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
 				<h:outputText id="validity"
 					value="#{cc.attrs.raRequestPreview.validity}"
 					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
+
+				<h:outputLabel for="keyusage"
+					value="#{msg.component_certdetails_field_keyusage}"
+					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+					rendered="#{cc.attrs.raRequestPreview.more}" />
+				<h:panelGroup id="keyusage"
+					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+					rendered="#{cc.attrs.raRequestPreview.more}">
+					<ui:repeat var="keyUsageIndex"
+						value="#{cc.attrs.raRequestPreview.keyUsages}"
+						varStatus="status">
+						<h:outputText value=", " rendered="#{status.index!=0}" />
+						<h:outputText value="#{'Key usage '.concat(keyUsageIndex)}"
+							rendered="#{msg['component_certdetails_field_keyusage_'.concat(keyUsageIndex)].equals('???component_certdetails_field_keyusage_'.concat(keyUsageIndex).concat('???'))}" />
+						<h:outputText
+							value="#{msg['component_certdetails_field_keyusage_'.concat(keyUsageIndex)]}"
+							rendered="#{not msg['component_certdetails_field_keyusage_'.concat(keyUsageIndex)].equals('???component_certdetails_field_keyusage_'.concat(keyUsageIndex).concat('???'))}" />
+					</ui:repeat>
+				</h:panelGroup>
+
+				<h:outputLabel for="extendedkeyusage"
+					value="#{msg.component_certdetails_field_extendedkeyusage}"
+					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+					rendered="#{cc.attrs.raRequestPreview.more}" />
+				<h:panelGroup id="extendedkeyusage"
+					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+					rendered="#{cc.attrs.raRequestPreview.more}">
+					<ui:repeat var="extendedKeyUsageOid"
+						value="#{cc.attrs.raRequestPreview.extendedKeyUsages}"
+						varStatus="status">
+						<h:outputText value=", " rendered="#{status.index!=0}" />
+						<h:outputText value="#{extendedKeyUsageOid}"
+							rendered="#{msg['extendedkeyusage_'.concat(extendedKeyUsageOid)].equals('???extendedkeyusage_'.concat(extendedKeyUsageOid).concat('???'))}" />
+						<h:outputText
+							value="#{msg['extendedkeyusage_'.concat(extendedKeyUsageOid)]}"
+							rendered="#{not msg['extendedkeyusage_'.concat(extendedKeyUsageOid)].equals('???extendedkeyusage_'.concat(extendedKeyUsageOid).concat('???'))}" />
+					</ui:repeat>
+				</h:panelGroup>
 			</fieldset>
 		</composite:implementation>
 	</h:body>
