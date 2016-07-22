@@ -95,7 +95,7 @@ public interface ApprovalSession {
 
     /**
      * Method that marks a certain step of a a non-executable approval as done.
-     * When the last step is performed the approvel is marked as EXPRIED.
+     * When the last step is performed the approval is marked as EXPRIED.
      * 
      * @param admin
      * @param approvalId
