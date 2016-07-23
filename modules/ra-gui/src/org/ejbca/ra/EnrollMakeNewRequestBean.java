@@ -203,7 +203,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(SecConst.TOKEN_SOFT_JKS + "")
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_JKS))
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
@@ -214,7 +214,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(SecConst.TOKEN_SOFT_P12 + "")
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_P12))
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
@@ -225,7 +225,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(SecConst.TOKEN_SOFT_PEM + "")
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_PEM))
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
@@ -236,7 +236,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(EndEntityConstants.TOKEN_USERGEN + "")
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_USERGEN))
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
@@ -483,7 +483,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         downloadToken(token, "application/octet-stream", ".der");
     }
 
-    public void addEndEntityAndGenerateCertificatePksc7() {
+    public void addEndEntityAndGenerateCertificatePkcs7() {
         byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, "PKCS#7", TokenDownloadType.PKCS7);
         downloadToken(token, "application/octet-stream", ".p7b");
     }
@@ -985,14 +985,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile != null) {
             final String[] availableCAsFromEEPArray = endEntityProfile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
-            final boolean anyCAAvailableFromEEP = availableCAsFromEEPArray.length == 1 && availableCAsFromEEPArray[0].equalsIgnoreCase(SecConst.ALLCAS + "");
+            final boolean anyCAAvailableFromEEP = availableCAsFromEEPArray.length == 1 && availableCAsFromEEPArray[0].equalsIgnoreCase(String.valueOf(SecConst.ALLCAS));
             // Get all available CAs from the selected CP
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (certificateProfile != null) {
                 final List<Integer> availableCAsFromCP = certificateProfile.getAvailableCAs();
                 final boolean anyCAAvailableFromCP = availableCAsFromCP.size() == 1 && availableCAsFromCP.iterator().next() == CertificateProfile.ANYCA;
                 for (final Tuple<CAInfo> tuple : authorizedCAInfos.values()) {
-                    if ((anyCAAvailableFromEEP || Arrays.asList(availableCAsFromEEPArray).contains(tuple.getId() + ""))
+                    if ((anyCAAvailableFromEEP || Arrays.asList(availableCAsFromEEPArray).contains(String.valueOf(tuple.getId())))
                             && (anyCAAvailableFromCP || availableCAsFromCP.contains(tuple.getId()))) {
                         ret.add(tuple.getId());
                     }
