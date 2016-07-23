@@ -95,29 +95,36 @@ public class SernoGeneratorRandom implements SernoGenerator {
         // SecureRandom provides a cryptographically strong random number generator (RNG).
         try {
             // Use a specified algorithm if ca.rngalgorithm is provided and it's not set to default
-            if (!StringUtils.isEmpty(algorithm) && !StringUtils.equalsIgnoreCase(algorithm, "default")) {
+            if (!StringUtils.isEmpty(algorithm) && !StringUtils.containsIgnoreCase(algorithm, "default")) {
                 random = SecureRandom.getInstance(algorithm);
                 log.info("Using "+algorithm+" serialNumber RNG algorithm.");
-            } else {
-                // If no algorithm is specified use the default, which may differ between different OS:es. 
+            } else if (!StringUtils.isEmpty(algorithm) && StringUtils.equalsIgnoreCase(algorithm, "defaultstrong")) {
+                // If defaultstrong is specified and we use >=JDK8 try the getInstanceStrong to get a guaranteed strong random number generator.
+                // Note that this may give you a generator that takes >30 seconds to create a single random number. 
+                // On JDK8/Linux this gives you a NativePRNGBlocking, while SecureRandom.getInstance() gives a NativePRNG.
                 try {
                     final Method methodGetInstanceStrong = SecureRandom.class.getDeclaredMethod("getInstanceStrong");
                     random = (SecureRandom) methodGetInstanceStrong.invoke(null);
-                    log.info("SecureRandom.getInstanceStrong() with " + random.getAlgorithm() + " for serialNumber RNG algorithm.");
+                    log.info("Using SecureRandom.getInstanceStrong() with " + random.getAlgorithm() + " for serialNumber RNG algorithm.");
                 } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    log.debug("SecureRandom.getInstanceStrong() is not available or failed invocation. (This method was added in Java 8.)");
+                    throw new IllegalStateException("SecureRandom.getInstanceStrong() is not available or failed invocation. (This method was added in Java 8.)");
                 }
-                if (random==null) {
-                    // On Linux the default Java implementation uses the (secure) /dev/(u)random, but on windows something else
-                    random = new SecureRandom();
-                    log.info("Using default " + random.getAlgorithm() + " serialNumber RNG algorithm.");
-                }
+            } else if (!StringUtils.isEmpty(algorithm) && StringUtils.equalsIgnoreCase(algorithm, "default")) {
+                // We entered "default" so let's use a good default SecureRandom this should be good enough for just about everyone (on Linux at least)
+                // On Linux the default Java implementation uses the (secure) /dev/(u)random, but on windows something else
+                // On JDK8/Linux this gives you a NativePRNG, while SecureRandom.getInstanceStrong() gives a NativePRNGBlocking.
+                random = new SecureRandom();
+                log.info("Using default " + random.getAlgorithm() + " serialNumber RNG algorithm.");
             }
         } catch (NoSuchAlgorithmException e) {
             //This state is unrecoverable, and since algorithm is set in configuration requires a redeploy to handle
             throw new IllegalStateException("Algorithm " + algorithm + " was not a valid algorithm.", e);
         }
-        // Call nextBytes directly after in order to force seeding (secure) if not already done
+        if (random == null) {
+            //This state is unrecoverable, and since algorithm is set in configuration requires a redeploy to handle
+            throw new IllegalStateException("Algorithm " + algorithm + " was not a valid algorithm.");
+        }
+        // Call nextBytes directly after in order to force seeding if not already done. SecureRandom typically seeds on first call.
         random.nextBytes(new byte[20]);
     }
 
@@ -181,11 +188,19 @@ public class SernoGeneratorRandom implements SernoGenerator {
         // Since re-initialization is expensive, we only do it if we changed the algo
         if (this.algorithm == null || !this.algorithm.equals(algo)) {
             this.algorithm = algo;
-            // We must re-init after choosing a new algorithm
+            // We must force re-init after choosing a new algorithm
+            this.random = null;
             init();
         }
     }
 
+    /** Available for testing so we can compare that we actually use what we think 
+     * @return the random generator algorithm as reported by the underlying Java random number generator.
+     */
+    protected String getAlgorithm() {
+        return random.getAlgorithm();
+    }
+    
     @Override
     public void setSernoOctetSize(final int noOctets) {
         if (this.noOctets != noOctets) {
