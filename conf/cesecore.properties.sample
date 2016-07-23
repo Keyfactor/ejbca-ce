@@ -20,6 +20,7 @@
 # Available algorithms are: SHA1PRNG
 # This value can be configured to the value "default" (or an empty value which is hard to set here) to use the OS:es default implementation, 
 # which may vary. See the documentation of SecureRandom for more information 
+# Default value (if property left unset) is SHA1PRNG
 #ca.rngalgorithm=SHA1PRNG
 
 # The length in octets of certificate serial numbers generated. 8 octets is a 64 bit serial number.
