@@ -80,6 +80,7 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalRequestExecutionException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
@@ -281,7 +282,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         try {
             getExistsHardToken();
             fail("should not have been allowed to check hard tokens");
-        } catch (AuthorizationDeniedException_Exception e) {
+        } catch (EjbcaException_Exception e) {
             // NOPMD: this is what we want
         }
 
