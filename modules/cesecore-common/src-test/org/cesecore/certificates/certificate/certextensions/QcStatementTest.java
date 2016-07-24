@@ -45,9 +45,7 @@ public class QcStatementTest {
         prof.setUseQCStatement(true);
         prof.setUseQCEtsiQCCompliance(true);
         prof.setUseQCEtsiSignatureDevice(true);
-        prof.setUseQCEtsiType(true);
         prof.setQCEtsiType("0.4.0.1862.1.6.1");
-        prof.setUseQCEtsiPDS(true);
         prof.setQCEtsiPdsUrl("http://qcs.localhost/QcPDS");
         prof.setQCEtsiPdsLang("en");
         QcStatement statement = new QcStatement();
