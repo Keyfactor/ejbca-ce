@@ -119,17 +119,14 @@ public class QcStatement extends StandardCertificateExtension {
 			qcs.add(qc);
 		}
 		// ETSI QC Type and PDS is new fields in EN 319 412-05 (2016)
-        if (certProfile.getUseQCEtsiType()) {
-            if  (StringUtils.isEmpty(certProfile.getQCEtsiType())) {
-                throw new CertificateExtensionException("ETSI QC Type must have a value when used");
-            }
+		if  (StringUtils.isNotEmpty(certProfile.getQCEtsiType())) {
             final ASN1EncodableVector vec = new ASN1EncodableVector();
             vec.add(new ASN1ObjectIdentifier(certProfile.getQCEtsiType()));
             ASN1Sequence seq = new DERSequence(vec);
             qc = new QCStatement(new ASN1ObjectIdentifier("0.4.0.1862.1.6"), seq); // ETSIQCObjectIdentifiers.id_etsi_qcs_QcType
             qcs.add(qc);
         }
-        if (certProfile.getUseQCEtsiPDS()) {
+        if (StringUtils.isNotEmpty(certProfile.getQCEtsiPdsUrl())) {
             if (StringUtils.isEmpty(certProfile.getQCEtsiPdsUrl()) || StringUtils.isEmpty(certProfile.getQCEtsiPdsLang())) {
                 throw new CertificateExtensionException("ETSI QC PDS URL and Language must have a value when used");
             }
