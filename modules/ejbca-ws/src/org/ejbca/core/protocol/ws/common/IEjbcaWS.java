@@ -767,10 +767,9 @@ public interface IEjbcaWS {
 	 * @param hardTokenSN the serial number of the token to look for.
 	 * @return true if hard token exists
 	 * @throws EjbcaException if error occurred server side
-	 * @throws AuthorizationDeniedException 
 	 */
 	boolean existsHardToken(String hardTokenSN)
-			throws AuthorizationDeniedException, EjbcaException;
+			throws EjbcaException;
 
 	/**
 	 * Fetches information about a hard token.
