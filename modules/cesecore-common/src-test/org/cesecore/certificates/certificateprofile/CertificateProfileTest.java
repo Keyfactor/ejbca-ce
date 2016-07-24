@@ -529,10 +529,9 @@ public class CertificateProfileTest {
         assertTrue(profile.isApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY));
         assertFalse(profile.isApprovalRequired(CAInfo.REQ_APPROVAL_KEYRECOVER));
         
-        profile.setUseQCEtsiPDS(true);
-        assertTrue(profile.getUseQCEtsiPDS());
-        profile.setUseQCEtsiType(true);
-        assertTrue(profile.getUseQCEtsiType());
+        assertNull(profile.getQCEtsiPdsLang());
+        assertNull(profile.getQCEtsiPdsUrl());
+        assertNull(profile.getQCEtsiType());
         profile.setQCEtsiPdsLang("en");
         assertEquals("en", profile.getQCEtsiPdsLang());
         profile.setQCEtsiPdsUrl("http://pds.foo.bar/pds");
