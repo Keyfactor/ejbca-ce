@@ -43,7 +43,7 @@
                     <h:outputText value="#{raManageRequestBean.request.status}" styleClass="statusFailed" rendered="#{raManageRequestBean.request.unsuccessful}" />
                     <h:outputText value="#{raManageRequestBean.request.status}" rendered="#{raManageRequestBean.request.waitingForApproval}" />
                 </h:panelGroup>
-                <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.waitingForApproval}">
+                <h:panelGroup layout="block" styleClass="smallStatus" rendered="#{raManageRequestBean.request.waitingForApproval}">
                     <h:outputText value="#{raManageRequestBean.stepInfoText}"/>
                 </h:panelGroup>
             </h:panelGroup>
@@ -60,6 +60,11 @@
                 </h:dataTable>
                 <h:commandButton id="commandEditData" action="#{raManageRequestBean.editRequestData}" value="#{msg.view_request_page_edit_data_command}" rendered="#{raManageRequestBean.request.canEdit}"/>
             </h:panelGroup>
+            <ui:repeat value="#{raManageRequestBean.request.editLogEntries}" var="entryText" rendered="#{raManageRequestBean.viewDataVisible}">
+                <h:panelGroup layout="block" styleClass="editLogEntry">
+                    <h:outputText value="#{entryText}"/>
+                </h:panelGroup>
+            </ui:repeat>
             
             <h:panelGroup id="editRequestDataTable" layout="block" rendered="#{raManageRequestBean.editDataVisible}">
                 <ui:remove>

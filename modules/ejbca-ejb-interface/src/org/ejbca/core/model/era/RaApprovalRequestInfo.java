@@ -30,6 +30,7 @@ import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.TimeAndAdmin;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
@@ -67,6 +68,7 @@ public class RaApprovalRequestInfo implements Serializable {
     private final boolean lastEditedByMe;
     private boolean approvedByMe;
     private final boolean editable;
+    private final List<TimeAndAdmin> editedByAdmins;
     
     // Current approval step
     private ApprovalStep nextApprovalStep;
@@ -119,6 +121,7 @@ public class RaApprovalRequestInfo implements Serializable {
         final AuthenticationToken requestAdmin = approval.getApprovalRequest().getRequestAdmin();
         requestedByMe = requestAdmin != null && requestAdmin.equals(authenticationToken);
         lastEditedByMe = approval.getApprovalRequest().isEditedByMe(authenticationToken);
+        editedByAdmins = approval.getApprovalRequest().getEditedByAdmins();
         // TODO show the Subject DN (or common name) of the admins who have edited the request (ECA-) 
         
         // Check if approved by self
@@ -306,6 +309,10 @@ public class RaApprovalRequestInfo implements Serializable {
     
     public boolean isEditable() {
         return editable;
+    }
+    
+    public List<TimeAndAdmin> getEditedByAdmin() {
+        return editedByAdmins;
     }
     
 }
