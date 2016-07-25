@@ -196,6 +196,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean isEmailRendered(){
         return getEndEntityProfile().getUse(EndEntityProfile.EMAIL, 0);
     }
+    
+    public boolean isEmailRequired(){
+        return getEndEntityProfile().isRequired(EndEntityProfile.SENDNOTIFICATION, 0) ||
+                getEndEntityProfile().isRequired(EndEntityProfile.EMAIL, 0);
+    }
 
     public boolean isGenerateJksButtonRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
@@ -548,8 +553,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setTimeModified(new Date());
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
         // sendnotification must be set after setType, because it adds to the type
-        endEntityInformation.setSendNotification(getEndEntityProfile().isRequired(EndEntityProfile.SENDNOTIFICATION, 0)
-                && getEndEntityProfile().getValue(EndEntityProfile.SENDNOTIFICATION, 0).equals(EndEntityProfile.TRUE)
+        endEntityInformation.setSendNotification(getEndEntityProfile().getValue(EndEntityProfile.SENDNOTIFICATION, 0).equals(EndEntityProfile.TRUE)
                 && !endEntityInformation.getSendNotification());
         endEntityInformation.setTokenType(tokenType);
 

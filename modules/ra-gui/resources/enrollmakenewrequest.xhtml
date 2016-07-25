@@ -341,7 +341,8 @@
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.emailRendered}">
 								<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
-								<h:inputText id="emailField" value="#{enrollMakeNewRequestBean.endEntityInformation.email}" styleClass="#{component.valid?'':'jsAutoFocusError'}"/>
+								<h:inputText id="emailField" value="#{enrollMakeNewRequestBean.endEntityInformation.email}" styleClass="#{component.valid?'':'jsAutoFocusError'}" required="#{enrollMakeNewRequestBean.emailRequired}">
+								</h:inputText>
 								<h:message for="emailField" id="emailFieldMessage" />
 							</h:panelGroup>
 						</fieldset>
