@@ -24,9 +24,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.cert.X509Certificate;
 
-import javax.ejb.EJBException;
-
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -43,8 +40,6 @@ import org.junit.Test;
  * @version $Id$
  */
 public class ApprovalRequestTest {
-
-    private static final Logger log = Logger.getLogger(ApprovalRequestTest.class);
     
     private static byte[] testcertenc = Base64.decode(("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDky"
@@ -112,17 +107,16 @@ public class ApprovalRequestTest {
 		
 	}
     
-    private  ApprovalRequest getApprovalRequest(String data) {
-        ApprovalRequest retval = null;      
+    private  ApprovalRequest getApprovalRequest(String data) throws IOException, ClassNotFoundException {
+        ApprovalRequest retval = null; 
+        ObjectInputStream ois = null;
         try {
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Base64.decode(data.getBytes())));
+            ois = new ObjectInputStream(new ByteArrayInputStream(Base64.decode(data.getBytes())));
             retval= (ApprovalRequest) ois.readObject();
-        } catch (IOException e) {
-            log.error("Error building approval request.",e);
-            throw new EJBException(e);
-        } catch (ClassNotFoundException e) {
-            log.error("Error building approval request.",e);
-            throw new EJBException(e);
+        }finally {
+            if(ois != null) {
+                ois.close();
+            }
         }
         return retval;
     }
