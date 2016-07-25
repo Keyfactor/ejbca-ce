@@ -140,10 +140,13 @@
 .bigStatus {
 	font-size: 1.1em;
 	font-weight: bold;
-	padding-bottom: 1.5em;
 }
 .statusApproved { color: #53983d; }
 .statusFailed { color: #e53e33; }
+.editLogEntry {
+	color: #fff;
+	font-size: 0.875em;
+}
 
 .tabButtonBar {
 	border-bottom: 0.2ex solid #1e599f;

@@ -517,7 +517,7 @@ a {
 #enrollMakeNewRequestForm\:requestPreview > fieldset > .pure-u-lg-2-3 {
   color: #fff; }
 
-.bigStatus {
+.bigStatus, .smallStatus, .editLogEntry {
   margin: 1% 0 0 2%;
   color: #fff;
   font-style: italic; }
