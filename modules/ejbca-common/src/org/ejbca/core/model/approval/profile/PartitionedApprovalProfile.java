@@ -179,13 +179,13 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     @Override
     public int getRemainingApprovals(Collection<Approval> approvalsPerformed) {
         //Return the total number of partitions lacking approval, minus the number of approvals performed (presume that no approvals performed overlap) 
-        int numberOfPartitions = 0;
+        int remainingApprovalsInAllPartitions = 0;
         for (final ApprovalStep approvalStep : getSteps().values()) {
             for (final ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
-                numberOfPartitions += getRemainingApprovalsInPartition(approvalsPerformed, approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier());
+                remainingApprovalsInAllPartitions += getRemainingApprovalsInPartition(approvalsPerformed, approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier());
             }
         }  
-        return numberOfPartitions - approvalsPerformed.size();
+        return remainingApprovalsInAllPartitions;
     }
 
     @Override

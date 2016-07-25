@@ -58,6 +58,10 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     private static final long serialVersionUID = -3751383340600251434L;
     private static final InternalResources intres = InternalResources.getInstance();
 
+    /**
+     * This enum field represents the types of data fields that can be added to an approval partition dynamically.  
+     *
+     */
     private enum FieldType {        
         CHECKBOX(intres.getLocalizedMessage("approval.profile.metadata.field.checkbox")),
         INTEGER(intres.getLocalizedMessage("approval.profile.metadata.field.integer")),
@@ -170,6 +174,13 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         return "done";
     }
 
+    /**
+     * Adds the currently selected field to the partition specified by the parameter. The step that the partition resides in is retrieved from 
+     * the steps class member.
+     * 
+     * @param partitionId the ID of the partition to add the field to
+     * @return an empty string to keep the scope. 
+     */
     public String addField(int partitionId) {
         ApprovalProfile updatedApprovalProfile = getApprovalProfile();
         DynamicUiProperty<? extends Serializable> property;
@@ -206,6 +217,14 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         }
     }
     
+    /**
+     * A special method for adding rows to radio button arrays. The ID of the partition is required, but the step identity and the radio button
+     * field identity can be divined from class members.
+     * 
+     * @param partitionId the ID of the partition that the radio button resides in 
+     * @param label the label for the new row
+     * @return an empty string to keep the scope. 
+     */
     public String addRowToRadioButton(int partitionId, String label) {
         ApprovalProfile updatedApprovalProfile = getApprovalProfile();
         List<ApprovalPartitionProfileGuiObject> guiPartitions = steps.getRowData().getPartitionGuiObjects();
@@ -234,6 +253,13 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         return "";
     }
     
+    /**
+     * Similar to the above, the below method removes a row from a radio button array.
+     * 
+     * @param partitionId the ID of the partition that the radio button resides in 
+     * @param encodedRadioButton the encoded radio button
+     * @return an empty string to keep the scope. 
+     */
     public String removeRowFromRadioButton(int partitionId, String encodedRadioButton) {
         ApprovalProfile updatedApprovalProfile = getApprovalProfile();
         RadioButton radioButton = (RadioButton) DynamicUiProperty.getAsObject(encodedRadioButton);

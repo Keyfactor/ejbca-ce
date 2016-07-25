@@ -283,6 +283,13 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     /** @return the number of required approvals of the specified partition. Defaults to 1. */
     int getNumberOfApprovalsRequired(int stepIdentifier, int partitionIdentifier);
 
-    /** @return the number of required approvals of the specified partition that has not yet been approved. */
+    /**
+     * Return the number of required approvals of the specified partition that have not yet been approved
+     * 
+     * @param approvalsPerformed a collection of performed approvals 
+     * @param stepIdentifier the ID of the step to check in
+     * @param partitionIdentifier the ID of the partition to check in 
+     * @return the number of required approvals of the specified partition that has not yet been approved
+     */
     int getRemainingApprovalsInPartition(Collection<Approval> approvalsPerformed, int stepIdentifier, int partitionIdentifier);
 }
