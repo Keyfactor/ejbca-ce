@@ -141,6 +141,7 @@ public class GenerateToken {
 			cert = (X509Certificate)signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()));
     	}
     	// Clear password from database
+    	userdata = endEntityAccessSession.findUser(administrator, username); //Get GENERATED end entity information
         if (userdata.getStatus() == EndEntityConstants.STATUS_GENERATED) {
             // If we have a successful key recovery via EJBCA WS we implicitly want to allow resetting of the password without edit_end_entity rights (ECA-4947)
             if (loadkeys && endEntityManagementSession instanceof EndEntityManagementSessionLocal) {
