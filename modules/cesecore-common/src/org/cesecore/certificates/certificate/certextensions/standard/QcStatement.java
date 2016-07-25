@@ -127,8 +127,8 @@ public class QcStatement extends StandardCertificateExtension {
             qcs.add(qc);
         }
         if (StringUtils.isNotEmpty(certProfile.getQCEtsiPdsUrl())) {
-            if (StringUtils.isEmpty(certProfile.getQCEtsiPdsUrl()) || StringUtils.isEmpty(certProfile.getQCEtsiPdsLang())) {
-                throw new CertificateExtensionException("ETSI QC PDS URL and Language must have a value when used");
+            if (StringUtils.isEmpty(certProfile.getQCEtsiPdsLang())) {
+                throw new CertificateExtensionException("When using ETSI QC PDS URL, a Language (ISO 639-1 code) must also be set.");
             }
             final ASN1EncodableVector locations = new ASN1EncodableVector();
             final ASN1EncodableVector location = new ASN1EncodableVector();
