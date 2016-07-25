@@ -15,6 +15,7 @@ package org.ejbca.ra;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -108,21 +109,28 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public static final class Step implements Serializable {
         private static final long serialVersionUID = 1L;
         private final int stepId;
+        private final int stepOrdinal;
         private final String headingText;
         private final List<StepControl> controls;
         
-        public Step(final ApprovalStep approvalStep, final RaLocaleBean raLocaleBean) {
+        public Step(final ApprovalStep approvalStep, final RaApprovalRequestInfo request, final RaLocaleBean raLocaleBean) {
             controls = new ArrayList<>();
             // TODO
             /*for (final ApprovalStepMetadata metadata : approvalStep.getMetadata()) {
                 controls.add(new StepControl(metadata));
             }*/
             stepId = approvalStep.getStepIdentifier();
-            headingText = raLocaleBean.getMessage("view_request_page_step", stepId);
+            final Map<Integer,Integer> stepToOrdinal = request.getStepIdToOrdinalMap();
+            stepOrdinal = stepToOrdinal.get(approvalStep.getStepIdentifier());
+            headingText = raLocaleBean.getMessage("view_request_page_step", stepOrdinal, stepToOrdinal.size());
         }
         
         public int getStepId() {
             return stepId;
+        }
+        
+        public int getStepOrdinal() {
+            return stepOrdinal;
         }
         
         public List<StepControl> getControls() {
@@ -290,7 +298,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         // Steps
         final ApprovalStep nextApprovalStep = request.getNextApprovalStep();
         if (nextApprovalStep != null && !request.isEditedByMe() && !request.isApprovedByMe() && !request.isRequestedByMe()) {
-            nextStep = new Step(nextApprovalStep, raLocaleBean);
+            nextStep = new Step(nextApprovalStep, request, raLocaleBean);
             canApprove = true;
         } else {
             nextStep = null;
@@ -300,7 +308,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         
         previousSteps = new ArrayList<>();
         for (final ApprovalStep prevApprovalStep : request.getPreviousApprovalSteps()) {
-            previousSteps.add(new Step(prevApprovalStep, raLocaleBean));
+            previousSteps.add(new Step(prevApprovalStep, request, raLocaleBean));
         }
         
         approvalPartitionData = new ArrayList<>();
@@ -362,6 +370,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean isHasNextStep() { return nextStep != null && canApprove; }
     public Step getNextStep() { return nextStep; }
     public List<Step> getPreviousSteps() { return previousSteps; }
+    public int getStepCount() { return request.getStepCount(); }
+    public int getCurrentStepOrdinal() { return request.getCurrentStepOrdinal(); }
     
     public boolean isCanApprove() { return canApprove; }
     public boolean isCanEdit() { return canEdit; }

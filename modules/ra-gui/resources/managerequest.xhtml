@@ -43,6 +43,9 @@
                     <h:outputText value="#{raManageRequestBean.request.status}" styleClass="statusFailed" rendered="#{raManageRequestBean.request.unsuccessful}" />
                     <h:outputText value="#{raManageRequestBean.request.status}" rendered="#{raManageRequestBean.request.waitingForApproval}" />
                 </h:panelGroup>
+                <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.waitingForApproval}">
+                    <h:outputText value="#{raManageRequestBean.stepInfoText}"/>
+                </h:panelGroup>
             </h:panelGroup>
             
             <h2><h:outputText value="#{msg.view_request_page_request_data_header}"/></h2>
