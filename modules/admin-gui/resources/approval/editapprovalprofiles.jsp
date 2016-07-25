@@ -56,15 +56,15 @@
 		
 		
 		<h:panelGroup rendered="#{approvalProfilesMBean.addFromTemplateInProgress}">
-			<h3><h:outputText value="#{web.text.USEAPPROVALPROFILEASTEMPLATE}"/></h3>
+			<h3><h:outputText value="#{web.text.CLONE_APPROVAL_PROFILE}"/></h3>
 			<h:panelGrid columns="2">
-				<h:outputLabel for="addFromTemplateProfileOld" value="#{web.text.USECERTPROFILEASTEMPLATE_FROM}:"/>
+				<h:outputLabel for="addFromTemplateProfileOld" value="#{web.text.CLONE_APPROVAL_PROFILE_TEMPLATE_NAME}:"/>
 				<h:outputText id="addFromTemplateProfileOld" value="#{approvalProfilesMBean.selectedApprovalProfileName}"/>
-				<h:outputLabel for="addFromTemplateProfileNew" value="#{web.text.USECERTPROFILEASTEMPLATE_NEWNAME}:"/>
+				<h:outputLabel for="addFromTemplateProfileNew" value="#{web.text.CLONED_APPROVAL_PROFILE_NAME}:"/>
   				<h:inputText id="addFromTemplateProfileNew" value="#{approvalProfilesMBean.approvalProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
   				<h:panelGroup/>
 				<h:panelGroup>
-					<h:commandButton value="#{web.text.USECERTPROFILEASTEMPLATE_CONFIRM}" action="#{approvalProfilesMBean.actionAddFromTemplateConfirm}"/>
+					<h:commandButton value="#{web.text.USE_APPROVAL_PROFILE_AS_TEMPLATE_CONFIRM}" action="#{approvalProfilesMBean.actionAddFromTemplateConfirm}"/>
 					<h:commandButton value="#{web.text.CANCEL}" action="#{approvalProfilesMBean.actionCancel}"/>
 				</h:panelGroup>
 			</h:panelGrid>
