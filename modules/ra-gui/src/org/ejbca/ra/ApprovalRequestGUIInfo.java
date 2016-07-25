@@ -21,11 +21,13 @@ import java.util.TimeZone;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalStepMetadata;
+import org.ejbca.core.model.approval.TimeAndAdmin;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
@@ -207,6 +209,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private final Step nextStep;
     private final List<Step> previousSteps;
 
+    private final List<String> editLogEntries;
     
     // Whether the current admin can approve this request
     private boolean canApprove;
@@ -295,6 +298,19 @@ public class ApprovalRequestGUIInfo implements Serializable {
             status = "???";
         }
         
+        editLogEntries = new ArrayList<>();
+        for (final TimeAndAdmin entry : request.getEditedByAdmin()) {
+            final String editDate = ValidityDate.formatAsISO8601(entry.getDate(), TimeZone.getDefault());
+            final String adminName;
+            if (entry.getAdmin() instanceof X509CertificateAuthenticationToken) {
+                final String adminDN = CertTools.getSubjectDN(((X509CertificateAuthenticationToken)entry.getAdmin()).getCertificate());
+                adminName = getCNOrFallback(adminDN, adminDN);
+            } else {
+                adminName = entry.getAdmin().toString();
+            }
+            editLogEntries.add(raLocaleBean.getMessage("view_request_page_edit_log_entry", editDate, adminName));
+        }
+        
         // Steps
         final ApprovalStep nextApprovalStep = request.getNextApprovalStep();
         if (nextApprovalStep != null && !request.isEditedByMe() && !request.isApprovedByMe() && !request.isRequestedByMe()) {
@@ -365,7 +381,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     }
 
     public List<RequestDataRow> getApprovalPartitionData() { return approvalPartitionData; }
-
+    public List<String> getEditLogEntries() { return editLogEntries; }
     
     public boolean isHasNextStep() { return nextStep != null && canApprove; }
     public Step getNextStep() { return nextStep; }
