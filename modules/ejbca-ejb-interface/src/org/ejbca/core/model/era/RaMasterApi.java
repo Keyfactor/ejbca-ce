@@ -162,7 +162,7 @@ public interface RaMasterApi {
     /**
      * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.
      * @param authenticationToken authentication token
-     * @param endEntity end entity information
+     * @param endEntity end entity information. CertificateRequest (CSR) must be set under extendedInformation of the endEntityInformation. 
      * @param certificateRequest CSR as PKCS10CertificateRequst object
      * @return certificate binary data
      * @throws AuthorizationDeniedException

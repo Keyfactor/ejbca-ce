@@ -120,6 +120,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory;
 import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
 import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificatetransparency.CTLogException;
@@ -768,6 +769,8 @@ public class X509CA extends CA implements Serializable {
     /**
      * Sequence is ignored by X509CA. The ctParams argument will NOT be kept after the function call returns,
      * and is allowed to contain references to session beans.
+     * @param subject end entity information. If it contains CSR under extended information, it will be used instead of providedRequestMessage. 
+     * Otherwise, providedRequestMessage will be used.
      * 
      * @throws CAOfflineException if the CA wasn't active
      * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.  
@@ -778,7 +781,7 @@ public class X509CA extends CA implements Serializable {
      * @throws CertificateCreateException if an error occurred when trying to create a certificate. 
      * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
      */
-    private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage request, final PublicKey publicKey,
+    private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey publicKey,
             final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
             final String sequence, final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider, 
             CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean linkCertificate, boolean caNameChange)
@@ -793,6 +796,15 @@ public class X509CA extends CA implements Serializable {
                 log.debug(msg); // This is something we handle so no need to log with higher priority
             }
             throw new CAOfflineException(msg);
+        }
+        
+        RequestMessage request = providedRequestMessage; //The request message was provided outside of endEntityInformation
+        //Request inside endEntityInformation has priority since its algorithm is approved
+        if(subject.getExtendedinformation() != null && subject.getExtendedinformation().getCertificateRequest() != null){
+            request = RequestMessageUtils.genPKCS10RequestMessage(subject.getExtendedinformation().getCertificateRequest());
+            if (log.isDebugEnabled()) {
+                log.debug("CSR request found inside the endEntityInformation. Using this one instead of one provided separately.");
+            }
         }
 
         final String sigAlg;
