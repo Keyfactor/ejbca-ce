@@ -249,7 +249,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         } else {
             getSteps().put(step.getStepIdentifier(), step);
             if (log.isDebugEnabled()) {
-                log.debug("Added step " + step.toString() + " to profile " + getProfileName());
+                log.debug("Added step with ID " + step.getStepIdentifier() + " to profile " + getProfileName());
             }
             //All steps must have one partition minimum. This will also add standard fields from the underlying profile implementation
             if (step.getPartitions().size() == 0) {
