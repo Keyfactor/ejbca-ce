@@ -1154,12 +1154,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity)
+    public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, EjbcaException {
+        if(endEntityInformation.getExtendedinformation() == null || endEntityInformation.getExtendedinformation().getCertificateRequest() == null){
+            throw new IllegalArgumentException("CSR MUST be set under endEntityInformation.extendedInformation.certificateRequest");
+        }
+        
         PKCS10RequestMessage req = null;
-        req = RequestMessageUtils.genPKCS10RequestMessage(endEntity.getExtendedinformation().getCertificateRequest());
-        req.setUsername(endEntity.getUsername());
-        req.setPassword(endEntity.getPassword());
+        req = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getExtendedinformation().getCertificateRequest());
+        req.setUsername(endEntityInformation.getUsername());
+        req.setPassword(endEntityInformation.getPassword());
         try {
             ResponseMessage resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
             X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);

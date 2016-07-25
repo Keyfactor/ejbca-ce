@@ -264,13 +264,23 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 	}
 	
     @Override
-    public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request, PublicKey publicKey,
+    public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage providedRequestMessage, PublicKey publicKey,
             int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence, 
             CertificateGenerationParams certGenParams, final AvailableCustomCertificateExtensionsConfiguration cceConfig)
             throws IllegalValidityException, CryptoTokenOfflineException, CertificateCreateException, SignatureException {
         if (log.isTraceEnabled()) {
 			log.trace(">generateCertificate("+notBefore+", "+notAfter+")");
 		}
+        
+        RequestMessage request = providedRequestMessage; //The request message was provided outside of endEntityInformation
+        //Request inside endEntityInformation has priority since its algorithm is approved
+        if(subject.getExtendedinformation() != null && subject.getExtendedinformation().getCertificateRequest() != null){
+            request = RequestMessageUtils.genPKCS10RequestMessage(subject.getExtendedinformation().getCertificateRequest());
+            if (log.isDebugEnabled()) {
+                log.debug("CSR request found inside the endEntityInformation. Using this one instead of one provided separately.");
+            }
+        }
+        
 		// Get the fields for the Holder Reference fields
 		// country is taken from C in a DN string, mnemonic from CN in a DN string and seq from the sequence passed as parameter
         String subjectDn = subject.getCertificateDN();

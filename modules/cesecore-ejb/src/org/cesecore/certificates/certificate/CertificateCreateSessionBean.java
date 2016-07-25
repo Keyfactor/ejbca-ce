@@ -134,7 +134,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
     @Override
     public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final CA ca,
-            final RequestMessage providedRequestMessage, final Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams, final long updateTime) throws CryptoTokenOfflineException,
+            final RequestMessage requestMessage, final Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams, final long updateTime) throws CryptoTokenOfflineException,
             SignRequestSignatureException, IllegalKeyException, IllegalNameException, CustomCertificateSerialNumberException,
             CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, AuthorizationDeniedException,
             IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
@@ -148,14 +148,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final String alias;
             final Collection<Certificate> cachain;
             final Certificate cacert;
-            RequestMessage requestMessage = providedRequestMessage; //The request message was provided outside of endEntityInformation
-            //Request inside endEntityInformation has priority since its algorithm is approved
-            if(endEntityInformation.getExtendedinformation() != null && endEntityInformation.getExtendedinformation().getCertificateRequest() != null){
-                requestMessage = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getExtendedinformation().getCertificateRequest());
-                if (log.isDebugEnabled()) {
-                    log.debug("CSR request found inside the endEntityInformation. Using this one instead of one provided separately.");
-                }
-            }
             if (ca.getUseNextCACert(requestMessage)) {
                 alias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
                 cachain = ca.getRolloverCertificateChain();
