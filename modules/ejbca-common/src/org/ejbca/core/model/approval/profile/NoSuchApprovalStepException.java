@@ -13,6 +13,8 @@
 package org.ejbca.core.model.approval.profile;
 
 /**
+ * This exception is thrown when trying to access a nonexistent approval step in an approval profile. 
+ * 
  * @version $Id$
  *
  */
@@ -46,16 +48,6 @@ public class NoSuchApprovalStepException extends RuntimeException {
      */
     public NoSuchApprovalStepException(String message, Throwable cause) {
         super(message, cause);
-    }
-
-    /**
-     * @param message
-     * @param cause
-     * @param enableSuppression
-     * @param writableStackTrace
-     */
-    public NoSuchApprovalStepException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
     }
 
 }
