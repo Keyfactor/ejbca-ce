@@ -199,6 +199,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             throw new ApprovalProfileDoesNotExistException("Approval profile of name " + approvalProfile.getProfileName() + " does not exist.");
         }
         profile = getApprovalProfile(origProfileId).clone();
+        profile.setProfileName(newName);
         authorizedToEditProfile(admin, origProfileId);
         if (findByNameAndType(newName, ApprovalProfile.TYPE_NAME).isEmpty()) {
             entityManager.persist(new ProfileData(findFreeApprovalProfileId(), profile));
