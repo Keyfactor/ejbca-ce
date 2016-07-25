@@ -22,7 +22,7 @@ import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.RadioButton;
 
 /**
- * Handles conversions of DynamicTextField objects from the UI 
+ * Handles conversions of radio button labels, mainly for display reasons. 
  * 
  * @version $Id$
  *
