@@ -18,10 +18,9 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.ConverterException;
 import javax.faces.convert.FacesConverter;
 
-import org.cesecore.util.ui.DynamicUiProperty;
-
 /**
- * Handles conversions of DynamicTextField objects from the UI 
+ * Handles conversions of radio buttons from the UI. Radio buttons will generally be handled in the UI as encoded strings, so this converter simply 
+ * treats them as such. 
  * 
  * @version $Id$
  *
