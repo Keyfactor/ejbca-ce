@@ -131,6 +131,10 @@ public class RaManageRequestBean implements Serializable {
         }
     }
     
+    public String getStepInfoText() {
+        return raLocaleBean.getMessage("view_request_page_step_of", requestInfo.getCurrentStepOrdinal(), requestInfo.getStepCount());
+    }
+    
     public String getCantApproveReason() {
         if (requestInfo.isExpired()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_expired");

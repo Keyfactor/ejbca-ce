@@ -15,11 +15,15 @@ package org.ejbca.core.model.era;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -38,6 +42,7 @@ import org.ejbca.core.model.approval.profile.ApprovalStep;
 public class RaApprovalRequestInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(RaApprovalRequestInfo.class);
     
     // Request information from ApprovalDataVO
     private final int id;
@@ -66,9 +71,33 @@ public class RaApprovalRequestInfo implements Serializable {
     // Current approval step
     private ApprovalStep nextApprovalStep;
     private ApprovalPartition nextApprovalStepPartition;
+    private int currentStepOrdinal;
     
     // Previous approval steps that are visible to the admin
     private final List<ApprovalStep> previousApprovalSteps;
+    
+    private final Map<Integer,Integer> stepToOrdinalMap;
+    
+    private static class StepPartitionId {
+        final int stepId;
+        final int partitionId;
+        StepPartitionId(final int stepId, final int partitionId) {
+            this.stepId = stepId;
+            this.partitionId = partitionId;
+        }
+        @Override
+        public boolean equals(final Object other) {
+            if (other instanceof StepPartitionId) {
+                final StepPartitionId o = (StepPartitionId)other;
+                return o.stepId == stepId && o.partitionId == partitionId;
+            }
+            return false;
+        }
+        @Override
+        public int hashCode() {
+            return stepId ^ (partitionId << 16);
+        }
+    }
     
     public RaApprovalRequestInfo(final AuthenticationToken authenticationToken, final String caName, final ApprovalDataVO approval,
             final List<ApprovalDataText> requestData, final RaEditableRequestData editableData) {
@@ -94,9 +123,11 @@ public class RaApprovalRequestInfo implements Serializable {
         
         // Check if approved by self
         approvedByMe = false;
+        final Set<StepPartitionId> approvedByMeSet = new HashSet<>();
         for (final Approval prevApproval : approval.getApprovals()) {
             if (authenticationToken.equals(prevApproval.getAdmin())) {
                 approvedByMe = true;
+                approvedByMeSet.add(new StepPartitionId(prevApproval.getStepId(), prevApproval.getPartitionId()));
             }
         }
         
@@ -117,7 +148,7 @@ public class RaApprovalRequestInfo implements Serializable {
         nextApprovalStep = null;
         nextApprovalStepPartition = null;
         if (nextStep != null && status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && !lastEditedByMe) {
-            Map<Integer, ApprovalPartition> partitions = nextStep.getPartitions();
+            final Map<Integer, ApprovalPartition> partitions = nextStep.getPartitions();
             for (ApprovalPartition partition : partitions.values()) {
                 try {
                     if (approvalProfile.canApprovePartition(authenticationToken, partition)) {
@@ -129,26 +160,39 @@ public class RaApprovalRequestInfo implements Serializable {
                     // If this admin cannot approve this partition, check the next partition
                 }
             }
-        }        
+        }
+        try {
+            currentStepOrdinal = approvalProfile.getOrdinalOfStepBeingEvaluated(approval.getApprovals());
+        } catch (AuthenticationFailedException e) {
+            // Should never happen
+            log.debug("Exception occurred while getting current step", e);
+            currentStepOrdinal = -1;
+        }
         
         // Previous steps
-        final Collection<ApprovalStep> previousSteps = new ArrayList<>();
-        // TODO get previous steps
-        if (nextStep != null/* && nextStep.canSeePreviousSteps()*/) {
-            // TODO check if we should check against currentApprovalStep.getPreviousStepsDependency()
-            previousApprovalSteps = new ArrayList<>();
-            for (final ApprovalStep step : previousSteps) {
-                // FIXME should check if we have view access. And should work similar to the code in ApproveActionManagedBean
-                if (step.getStepIdentifier() < nextStep.getStepIdentifier()) {
-                    previousApprovalSteps.add(step);
+        final List<Integer> allStepIds = new ArrayList<>(approvalProfile.getSteps().keySet());
+        Collections.sort(allStepIds);
+        previousApprovalSteps = new ArrayList<>();
+        stepToOrdinalMap = new HashMap<>();
+        int stepOrdinal = 0;
+        for (final int stepId : allStepIds) {
+            stepToOrdinalMap.put(stepId, ++stepOrdinal);
+            if (stepId <= nextStep.getStepIdentifier()) {
+                final ApprovalStep step = approvalProfile.getSteps().get(stepId);
+                final Map<Integer, ApprovalPartition> partitions = nextStep.getPartitions();
+                for (ApprovalPartition partition : partitions.values()) {
+                    try {
+                        final StepPartitionId spId = new StepPartitionId(step.getStepIdentifier(), partition.getPartitionIdentifier());
+                        if (approvedByMeSet.contains(spId) || approvalProfile.canViewPartition(authenticationToken, partition)) {
+                            previousApprovalSteps.add(step);
+                            break;
+                        }
+                    } catch (AuthenticationFailedException e) {
+                        // If this admin cannot approve this partition, check the next partition
+                    }
                 }
             }
-        } else {
-            previousApprovalSteps = new ArrayList<>();
         }
-        // TODO always add your own approval steps?
-// TODO sort!
-//        Collections.sort(previousApprovalSteps);
     }
 
     public int getId() {
@@ -201,6 +245,18 @@ public class RaApprovalRequestInfo implements Serializable {
     
     public List<ApprovalStep> getPreviousApprovalSteps() {
         return previousApprovalSteps;
+    }
+    
+    public Map<Integer,Integer> getStepIdToOrdinalMap() {
+        return stepToOrdinalMap;
+    }
+    
+    public int getStepCount() {
+        return stepToOrdinalMap.size();
+    }
+    
+    public int getCurrentStepOrdinal() {
+        return currentStepOrdinal;
     }
     
     /** Is waiting for the given admin to do something */
