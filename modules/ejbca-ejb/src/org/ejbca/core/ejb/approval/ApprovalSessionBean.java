@@ -92,7 +92,6 @@ import org.ejbca.util.query.Query;
  * 
  * @version $Id$
  */
-@SuppressWarnings("deprecation")
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ApprovalSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessionRemote {
@@ -136,6 +135,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         approvalSession = sessionContext.getBusinessObject(ApprovalSessionLocal.class);
     }
     
+    @SuppressWarnings("deprecation")
     @Override
     public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException {
     	if (log.isTraceEnabled()) {
@@ -307,6 +307,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         return retval;
     }
 
+    @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<ApprovalDataVO> query(AuthenticationToken admin, Query query, int index, int numberofrows, String caAuthorizationString,
@@ -320,15 +321,13 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         if (query != null) {
             customQuery += query.getQueryString();
         }
-        if (StringUtils.isNotEmpty(caAuthorizationString)) {
-            if (!caAuthorizationString.equals("") && query != null) {
-                customQuery += " AND " + caAuthorizationString;
-            } else {
-                customQuery += caAuthorizationString;
-            }
+        if (!caAuthorizationString.equals("") && query != null) {
+            customQuery += " AND " + caAuthorizationString;
+        } else {
+            customQuery += caAuthorizationString;
         }
         if (StringUtils.isNotEmpty(endEntityProfileAuthorizationString)) {
-            if (endEntityProfileAuthorizationString.equals("") && query == null) {
+            if (caAuthorizationString.equals("") && query == null) {
                 customQuery += endEntityProfileAuthorizationString;
             } else {
                 customQuery += " AND " + endEntityProfileAuthorizationString;
