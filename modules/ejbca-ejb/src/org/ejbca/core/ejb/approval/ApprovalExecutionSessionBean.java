@@ -105,6 +105,8 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         checkApprovalPossibility(admin, approvalData, approval);
 		approval.setApprovalAdmin(true, admin);
         try {
+            //Retrieve the latest non-stale version of the approval profile from the approval request (as the copy of the profile stored in the request may 
+            //contain metadata which was added during the approval process. 
             ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalRequest().getApprovalProfile().getProfileId());
             if(approvalProfile == null) {
                 approvalProfile = approvalData.getApprovalDataVO().getApprovalRequest().getApprovalProfile();
@@ -198,7 +200,12 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         checkApprovalPossibility(admin, approvalData, approval);
         approval.setApprovalAdmin(false, admin);
         try {
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalRequest().getApprovalProfile().getProfileId());
+            //Retrieve the latest non-stale version of the approval profile from the approval request (as the copy of the profile stored in the request may 
+            //contain metadata which was added during the approval process. 
+            ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalRequest().getApprovalProfile().getProfileId());
+            if(approvalProfile == null) {
+                approvalProfile = approvalData.getApprovalDataVO().getApprovalRequest().getApprovalProfile();
+            }
             final List<Approval> approvalsPerformed = approvalData.getApprovals();
             // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
             if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval)) {
