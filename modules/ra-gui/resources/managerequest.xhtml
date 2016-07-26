@@ -147,7 +147,7 @@
 					   			<h:inputTextarea disabled="#{raManageRequestBean.isPartitionHandled(partition) 
                         			|| !raManageRequestBean.canApproveParition(partition)
 					   				|| raManageRequestBean.isPropertyReadOnly(property.name)}" 
-	                                value="#{property.value.value}">
+	                                value="#{property.value}">
 	                            	<f:converter converterId="stringConverter"/>
 	                            </h:inputTextarea>
                         	</h:panelGroup>
