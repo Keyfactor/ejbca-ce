@@ -15,6 +15,7 @@ package org.ejbca.core.model.era;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -74,6 +75,7 @@ public class RaApprovalRequestInfo implements Serializable {
     private ApprovalStep nextApprovalStep;
     private ApprovalPartition nextApprovalStepPartition;
     private int currentStepOrdinal;
+    private Collection<String> nextStepAllowedRoles;
     
     // Previous approval steps that are visible to the admin
     private final List<ApprovalStep> previousApprovalSteps;
@@ -172,6 +174,12 @@ public class RaApprovalRequestInfo implements Serializable {
             currentStepOrdinal = -1;
         }
         
+        // Determine which admins can approve the next step (ECA-5123)
+        nextStepAllowedRoles = new HashSet<>();
+        for (final ApprovalPartition partition : nextStep.getPartitions().values()) {
+            nextStepAllowedRoles.addAll(approvalProfile.getAllowedRoleNames(partition));
+        }
+        
         // Previous steps
         final List<Integer> allStepIds = new ArrayList<>(approvalProfile.getSteps().keySet());
         Collections.sort(allStepIds);
@@ -260,6 +268,10 @@ public class RaApprovalRequestInfo implements Serializable {
     
     public int getCurrentStepOrdinal() {
         return currentStepOrdinal;
+    }
+    
+    public Collection<String> getNextStepAllowedRoles() {
+        return nextStepAllowedRoles;
     }
     
     /** Is waiting for the given admin to do something */

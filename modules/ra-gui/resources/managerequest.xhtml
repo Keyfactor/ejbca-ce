@@ -89,7 +89,7 @@
                 <ui:repeat value="#{raManageRequestBean.request.previousSteps}" var="prevStep">
                     <h:panelGroup layout="block" styleClass="approvalStep">
                         <h3><h:outputText value="#{prevStep.headingText}"/></h3>
-                
+<ui:remove><!-- temporarily hidden. needs update to work with the new approval meta data -->
                         <ui:repeat value="#{prevStep.controls}" var="control">
                             <h:panelGroup layout="block" styleClass="approvalControl">
                                 <h:panelGroup layout="block">
@@ -116,6 +116,7 @@
                                 </h:panelGroup>
                             </h:panelGroup>
                         </ui:repeat>
+</ui:remove>
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
