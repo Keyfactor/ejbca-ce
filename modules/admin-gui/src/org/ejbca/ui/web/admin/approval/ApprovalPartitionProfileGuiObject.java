@@ -29,7 +29,9 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * @version $Id$
  *
  */
-public class ApprovalPartitionProfileGuiObject {
+public class ApprovalPartitionProfileGuiObject implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private ListDataModel<DynamicUiProperty<? extends Serializable>> profilePropertyList = null;
 

@@ -43,7 +43,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
     /**
      * A display POJO for approval partitions.
      */
-    public class ApprovalPartitionProfileGuiObject {
+    public static final class ApprovalPartitionProfileGuiObject implements Serializable {
+        private static final long serialVersionUID = 1L;
 
         private List<DynamicUiProperty<? extends Serializable>> profilePropertyList = null;
 
