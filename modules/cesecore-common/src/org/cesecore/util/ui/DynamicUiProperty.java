@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.util.Base64;
 
 /**
@@ -177,6 +178,22 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         return values.get(0);
     }
 
+    public List<String> getPossibleValuesAsStrings() {
+        List<String> pvs = new ArrayList<String>();
+        
+        if(StringUtils.equals(type.getSimpleName(), RadioButton.class.getSimpleName())) {
+            for(T pv : getPossibleValues()) {
+                RadioButton rb = (RadioButton) pv;
+                pvs.add(rb.getLabel());
+            }
+        } else {
+            for(T pv : getPossibleValues()) {
+                pvs.add(pv.toString());
+            }
+        }
+        return pvs;
+    }
+    
     public Collection<T> getPossibleValues() {
         return possibleValues;
     }

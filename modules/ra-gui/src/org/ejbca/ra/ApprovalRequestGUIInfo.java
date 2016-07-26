@@ -18,18 +18,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.ApprovalStepMetadata;
 import org.ejbca.core.model.approval.TimeAndAdmin;
-import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
-import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaEditableRequestData;
@@ -43,6 +39,41 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ApprovalRequestGUIInfo.class);
+    
+    /**
+     * A display POJO for approval partitions.
+     */
+    public class ApprovalPartitionProfileGuiObject {
+
+        private List<DynamicUiProperty<? extends Serializable>> profilePropertyList = null;
+
+        private final int partitionId;
+        private final int stepId;
+
+        public ApprovalPartitionProfileGuiObject(final int stepId, final int partitionId,
+                List<DynamicUiProperty<? extends Serializable>> propertyValues) {
+            //Pass property values as a parameter because it may need some outside poking
+            setProfilePropertyList(propertyValues);
+            this.stepId = stepId;
+            this.partitionId = partitionId;
+        }
+
+        public List<DynamicUiProperty<? extends Serializable>> getProfilePropertyList() {
+            return profilePropertyList;
+        }
+        
+        public void setProfilePropertyList(List<DynamicUiProperty<? extends Serializable>> profilePropertyList) {
+            this.profilePropertyList = profilePropertyList;
+        }
+
+        public int getPartitionId() {
+            return partitionId;
+        }
+        public int getStepId() {
+            return stepId;
+        }
+        
+    }
     
     public static final class StepOption implements Serializable {
         private static final long serialVersionUID = 1L;
@@ -66,61 +97,13 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
     }
     
-    public static final class StepControl implements Serializable {
-        private static final long serialVersionUID = 1L;
-        private final int metadataId;
-        /** Type of control, corresponds to ApprovalStep.METADATATYPE_* constants*/
-        private final int optionsType;
-        private final String instruction;
-        private final String[] options;
-        private String optionNote;
-        private String optionValue;
-        
-        public StepControl(final ApprovalStepMetadata metadata) {
-            metadataId = metadata.getMetadataId();
-            instruction = metadata.getInstruction();
-            optionsType = metadata.getOptionsType();
-            final List<String> optionsList = metadata.getOptions();
-            options = optionsList.toArray(new String[optionsList.size()]);
-            optionValue = metadata.getOptionValue();
-            optionNote = metadata.getOptionNote();
-        }
-        
-        public String getInstruction() { return instruction; }
-        public boolean isCheckbox() { return optionsType == ApprovalStepMetadata.METADATATYPE_CHECKBOX; }
-        public boolean isRadiobutton() { return optionsType == ApprovalStepMetadata.METADATATYPE_RADIOBUTTON; }
-        public boolean isTextbox() { return optionsType == ApprovalStepMetadata.METADATATYPE_TEXTBOX; }
-        
-        public String[] getOptions() { return options; }
-        public String getRadiobuttonValue() { return optionValue; }
-        public void setRadiobuttonValue(final String rbvalue) { optionValue = rbvalue; }
-        public String[] getCheckboxValue() { return (optionValue != null ? optionValue.split("; *") : ArrayUtils.EMPTY_STRING_ARRAY); }
-        public void setCheckboxValue(final String[] cbvalue) { optionValue = StringUtils.join(cbvalue, "; "); }
-        public String getTextValue() { return optionValue; }
-        public void setTextValue(final String textValue) { optionValue = textValue; }
-        
-        public String getOptionNote() { return optionNote; }
-        public void setOptionNote(final String optionNote) { this.optionNote = optionNote; }
-        
-        /** Returns the value to store in the database */
-        public String getOptionValue() { return optionValue; }
-        /** Returns the id */
-        public int getMetadataId() { return metadataId; }
-    }
-    
     public static final class Step implements Serializable {
         private static final long serialVersionUID = 1L;
         private final int stepId;
-        private final int stepOrdinal;
+        private final Integer stepOrdinal;
         private final String headingText;
-        private final List<StepControl> controls;
         
         public Step(final ApprovalStep approvalStep, final RaApprovalRequestInfo request, final RaLocaleBean raLocaleBean) {
-            controls = new ArrayList<>();
-            // TODO
-            /*for (final ApprovalStepMetadata metadata : approvalStep.getMetadata()) {
-                controls.add(new StepControl(metadata));
-            }*/
             stepId = approvalStep.getStepIdentifier();
             final Map<Integer,Integer> stepToOrdinal = request.getStepIdToOrdinalMap();
             stepOrdinal = stepToOrdinal.get(approvalStep.getStepIdentifier());
@@ -132,11 +115,10 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
         
         public int getStepOrdinal() {
+            if(stepOrdinal==null) {
+                return 0;
+            }
             return stepOrdinal;
-        }
-        
-        public List<StepControl> getControls() {
-            return controls;
         }
         
         public String getHeadingText() {
@@ -204,7 +186,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private final String status;
     
     private final List<RequestDataRow> requestData;
-    private final List<RequestDataRow> approvalPartitionData;
     
     private final Step nextStep;
     private final List<Step> previousSteps;
@@ -327,24 +308,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
             previousSteps.add(new Step(prevApprovalStep, request, raLocaleBean));
         }
         
-        approvalPartitionData = new ArrayList<>();
-        final boolean isAccumulativeProfile = request.getApprovalProfile() instanceof AccumulativeApprovalProfile;
-        if((nextStep != null) && !isAccumulativeProfile) {
-            ApprovalDataText stepIdText = new ApprovalDataText("Step ID", Integer.toString(nextStep.getStepId()) , false, false);
-            approvalPartitionData.add(new RequestDataRow(raLocaleBean, stepIdText, false, Integer.toString(nextStep.getStepId())));
-            final ApprovalPartition partition = request.getNextApprovalStepPartition();
-            if (partition != null) {
-                ApprovalDataText partitionIdText = new ApprovalDataText("Partition ID", Integer.toString(partition.getPartitionIdentifier()) , false, false);
-                approvalPartitionData.add(new RequestDataRow(raLocaleBean, partitionIdText, false, Integer.toString(partition.getPartitionIdentifier())));
-              
-                final String partitionName = partition.getProperty("name").getValue().toString();
-                ApprovalDataText partitionNameText = new ApprovalDataText("Partition Name", partitionName , false, false);
-                approvalPartitionData.add(new RequestDataRow(raLocaleBean, partitionNameText, false, partitionName));
-            } else if (log.isDebugEnabled()) {
-                log.debug("Approval "+request.getId()+" has a next step, but there's no partition in it");
-            }
-        }
-
     }
     
     private String getCNOrFallback(final String subjectDN, final String fallback) {
@@ -380,7 +343,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
         return null;
     }
 
-    public List<RequestDataRow> getApprovalPartitionData() { return approvalPartitionData; }
     public List<String> getEditLogEntries() { return editLogEntries; }
     
     public boolean isHasNextStep() { return nextStep != null && canApprove; }

@@ -400,27 +400,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         // Convert RA request steps into approval steps
         
-        //final boolean isAccumulativeOnly = advo.getApprovalRequest().getApprovalProfile() instanceof AccumulativeApprovalProfile;
         final Approval approval = new Approval(requestResponse.getComment(), requestResponse.getStepIdentifier(), requestResponse.getPartitionIdentifier());
-        /*final ApprovalStep approvalStep;
-        if (isAccumulativeOnly) {
-            approvalStep = null;
-            if (requestResponse.getStepIdentifier() != -1) {
-                throw new IllegalStateException("An approval step was provided for a plain accumulative approval request");
-            }
-        } else {
-            if (requestResponse.getStepIdentifier() == -1) {
-                throw new IllegalStateException("No approval step was provided for partitioned approval request");
-            }
-            approvalStep = advo.getApprovalRequest().getApprovalStep(requestResponse.getStepIdentifier());
-            for (final MetadataResponse metadata : requestResponse.getMetadataList()) {
-                approvalStep.updateOneMetadataValue(metadata.getMetadataId(), metadata.getOptionValue(), metadata.getOptionNote());
-            
-        }
-        }*/
         switch (requestResponse.getAction()) {
         case APPROVE:
-            // FIXME this method used to take an ApprovalStep parameter which included the metadata. We need to pass the meta data somehow to the approve method.
             approvalExecutionSession.approve(authenticationToken, advo.getApprovalId(), approval);
             return true;
         case REJECT:
