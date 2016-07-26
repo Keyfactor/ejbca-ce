@@ -486,7 +486,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             return null;
         }
         
-        // ------------ Return the sigle response ---------------//
+        // ------------ Return the single response ---------------//
         return singleResponse;        
     }
     
