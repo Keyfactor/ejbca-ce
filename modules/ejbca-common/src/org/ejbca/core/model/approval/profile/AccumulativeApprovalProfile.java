@@ -13,8 +13,10 @@
 package org.ejbca.core.model.approval.profile;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -149,6 +151,17 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     public boolean canApprovePartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException {
         // We all good here, homie. 
         return true;
+    }
+    
+    @Override
+    public boolean canAnyoneApprovePartition(final ApprovalPartition approvalPartition) {
+        // Anyone can allow (given that their role has the needed access rules)
+        return true;
+    }
+    
+    @Override
+    public List<String> getAllowedRoleNames(final ApprovalPartition approvalPartition) {
+        return new ArrayList<>();
     }
     
     @Override

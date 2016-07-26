@@ -160,7 +160,30 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
             }
         }
         return false;
-    }  
+    }
+    
+    @Override
+    public boolean canAnyoneApprovePartition(final ApprovalPartition approvalPartition) {
+        @SuppressWarnings("unchecked")
+        final List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS).getValues();
+        for (final RoleInformation role : roles) {
+            if (role.equals(ANYBODY)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public List<String> getAllowedRoleNames(final ApprovalPartition approvalPartition) {
+        final List<String> ret = new ArrayList<>();
+        @SuppressWarnings("unchecked")
+        final List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS).getValues();
+        for (final RoleInformation role : roles) {
+            ret.add(role.getName());
+        }
+        return ret;
+    }
     
     @Override
     public boolean canViewPartition(AuthenticationToken authenticationToken, ApprovalPartition approvalPartition)

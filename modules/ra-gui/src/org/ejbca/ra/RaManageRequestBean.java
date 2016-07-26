@@ -15,6 +15,7 @@ package org.ejbca.ra;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +29,7 @@ import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -130,6 +132,9 @@ public class RaManageRequestBean implements Serializable {
     
     public ApprovalRequestGUIInfo getRequest() {
         initializeRequestInfo();
+        if (requestInfo == null) {
+            throw new IllegalStateException("Internal Error: requestInfo was null");
+        }
         return requestInfo;
     }
     
@@ -151,6 +156,9 @@ public class RaManageRequestBean implements Serializable {
     }
     
     public List<DynamicUiProperty<? extends Serializable>> getPartitionProperties(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
+        if (guiPartition == null) {
+            throw new IllegalArgumentException("parameter may not be null");
+        }
         final ApprovalProfile approvalProfile = getRequest().request.getApprovalProfile();
         final ApprovalStep step = approvalProfile.getStep(guiPartition.getStepId());
         final ApprovalPartition partition = step.getPartition(guiPartition.getPartitionId());
@@ -257,7 +265,9 @@ public class RaManageRequestBean implements Serializable {
     }
     
     public String getStepInfoText() {
-        return raLocaleBean.getMessage("view_request_page_step_of", requestInfo.getCurrentStepOrdinal(), requestInfo.getStepCount());
+        final List<String> roles = new ArrayList<>(requestData.getNextStepAllowedRoles());
+        Collections.sort(roles);
+        return raLocaleBean.getMessage("view_request_page_step_of", requestInfo.getCurrentStepOrdinal(), requestInfo.getStepCount(), StringUtils.join(roles, ", "));
     }
     
     public String getCantApproveReason() {
