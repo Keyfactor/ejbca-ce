@@ -232,8 +232,9 @@ public class Query implements Serializable {
     }
 
     /** 
-     * Output the current query string 
+     * @return the current query string 
      */
+    @Override
     public String toString() {
         return getQueryString();
     }
