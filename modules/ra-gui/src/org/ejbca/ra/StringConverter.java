@@ -21,7 +21,7 @@ import javax.faces.convert.FacesConverter;
 /**
  * When using dynamic properties, JSF can't handle String conversions for some strange reason. This converter takes care of that. 
  * 
- * @version $Id: StringConverter.java 23688 2016-06-17 10:46:42Z mikekushner $
+ * @version $Id$
  *
  */
 @FacesConverter("stringConverter")
