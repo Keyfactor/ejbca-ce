@@ -35,6 +35,16 @@ public enum EjbcaEventTypes implements EventType {
     APPROVAL_REJECT,
     /** <i>Event type is currently only used by EJBCA development tests.</i> */
     APPROVAL_REMOVE,
+    /** Adding an approval profile */
+    APPROVAL_PROFILE_ADD,
+    /** Cloning an approval profile */
+    APPROVAL_PROFILE_CLONE,
+    /** Editing an approval profile */
+    APPROVAL_PROFILE_EDIT,
+    /** Removing an approval profile */
+    APPROVAL_PROFILE_REMOVE,
+    /** Renaming an approval profile */
+    APPROVAL_PROFILE_RENAME,
     /** Export of a Certificate Authority's (soft) Crypto Token. */
     CA_EXPORTTOKEN,
     /** Execution of one of the Certificate Authority's extended services. */

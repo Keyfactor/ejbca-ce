@@ -34,6 +34,8 @@ public enum EjbcaModuleTypes implements ModuleType {
     KEYRECOVERY,
     /** Approval module. */
     APPROVAL,
+    /** Approval Profiles */
+    APPROVAL_PROFILE,
     /** Publisher module. */
     PUBLISHER,
     /** EJBCA background service module. */
