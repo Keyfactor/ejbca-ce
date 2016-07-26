@@ -66,6 +66,10 @@ public interface Profile extends Serializable{
      */
     Class<? extends Profile> getType();
     
+    /**
+     * This method only needs to be called by the factory method (and some unit tests), because it sets a ton of boilerplate stuff which isn't 
+     * required by already initialized profiles.
+     */
     void initialize();
     
     /** Create a Map with the differences between the current object and the parameter object.

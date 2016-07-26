@@ -65,6 +65,10 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         super(name);
     }
     
+    /*
+     * This method only needs to be called by the factory method (and some unit tests), because it sets a ton of boilerplate stuff which isn't 
+     * required by already initialized profiles.
+     */
     @Override
     public void initialize() {
         super.initialize();

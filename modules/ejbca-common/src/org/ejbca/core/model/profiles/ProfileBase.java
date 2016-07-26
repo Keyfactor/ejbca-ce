@@ -48,6 +48,10 @@ public abstract class ProfileBase extends UpgradeableDataHashMap implements Prof
         initialize();
     }
     
+    /*
+     * This method only needs to be called by the factory method (and some unit tests), because it sets a ton of boilerplate stuff which isn't 
+     * required by already initialized profiles.
+     */
     @Override
     public void initialize() {
         data.put(PROFILE_TYPE, getImplementationClass()); 
