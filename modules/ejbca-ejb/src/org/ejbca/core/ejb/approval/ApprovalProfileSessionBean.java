@@ -131,7 +131,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         } else {
             authorizedToEditProfile(admin, profileData.getId());
             // Get the diff of what changed
-            Map<Object, Object> diff = profileData.getProfile().diff(profile);
             // Do the actual change
             profileData.setProfile(profile);
             entityManager.merge(profileData);
@@ -140,10 +139,8 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             LOG.info(msg);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);         
-            //Note that steps are serialized, so output will not give better information than a diff. 
-            for (Map.Entry<Object, Object> entry : diff.entrySet()) {
-                details.put(entry.getKey().toString(), entry.getValue().toString());
-            }
+            //TODO: Include a diff in the changelog (profileData.getProfile().diff(profile);), but make sure to resolve all steps so that we don't
+            //      output a ton of serialized garbage (see ECA-5276)
             logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
                     admin.toString(), null, null, null, details);
         }
