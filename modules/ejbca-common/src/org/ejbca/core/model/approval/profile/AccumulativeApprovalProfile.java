@@ -44,15 +44,6 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
      */
     private static final String TYPE_IDENTIFIER = "ACCUMULATIVE_APPROVAL";
         
-    {
-        //Workaround, since this profile normally doesn't allow adding sequences. 
-        if (getSteps().isEmpty()) {
-            getSteps().put(FIXED_STEP_ID, new ApprovalStep(FIXED_STEP_ID));
-            addPartition(FIXED_STEP_ID);
-            setFirstStep(FIXED_STEP_ID);
-        }
-    }
-
     public AccumulativeApprovalProfile() {
         //Public constructor needed deserialization 
         super();
@@ -61,6 +52,18 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     public AccumulativeApprovalProfile(final String name) {
         super(name);
     }
+    
+    @Override
+    public void initialize() {
+        super.initialize();
+        //Workaround, since this profile normally doesn't allow adding sequences. 
+        if (getSteps().isEmpty()) {
+            getSteps().put(FIXED_STEP_ID, new ApprovalStep(FIXED_STEP_ID));
+            addPartition(FIXED_STEP_ID);
+            setFirstStep(FIXED_STEP_ID);
+        }
+    }
+
 
     @Override
     public String getApprovalProfileIdentifier() {

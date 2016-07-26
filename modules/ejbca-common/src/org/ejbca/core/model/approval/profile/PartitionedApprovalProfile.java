@@ -51,13 +51,6 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     
     private static final Set<String> predefinedProperties = new HashSet<>(Arrays.asList(PROPERTY_NAME, PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, PROPERTY_ROLES_WITH_VIEW_RIGHTS));
 
-    {
-        //Default step, which is the default execution step. It contains a single partition, and only a list of approved executors. 
-        ApprovalStep executionStep = new ApprovalStep(EXECUTION_STEP_ID);
-        addStep(executionStep);
-        setFirstStep(executionStep.getStepIdentifier());
-    }
-
     /**
      * Note: do not change, may cause problems in deployed installations.
      */
@@ -70,6 +63,15 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
     public PartitionedApprovalProfile(final String name) {
         super(name);
+    }
+    
+    @Override
+    public void initialize() {
+        super.initialize();
+        //Default step, which is the default execution step. It contains a single partition, and only a list of approved executors. 
+        ApprovalStep executionStep = new ApprovalStep(EXECUTION_STEP_ID);
+        addStep(executionStep);
+        setFirstStep(executionStep.getStepIdentifier());
     }
 
     @Override
