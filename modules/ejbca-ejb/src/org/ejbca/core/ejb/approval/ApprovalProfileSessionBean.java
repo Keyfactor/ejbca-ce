@@ -82,20 +82,20 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
                 profile.setProfileId(id);
                 entityManager.persist(new ProfileData(Integer.valueOf(id), profile));
                 approvalProfileCache.forceCacheExpiration();
-                final String msg = INTRES.getLocalizedMessage("store.addedprofile", name);
+                final String msg = INTRES.getLocalizedMessage("approval.profile.store.add", name);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 logSession.log(EventTypes.CERTPROFILE_CREATION, EventStatus.SUCCESS, ModuleTypes.CERTIFICATEPROFILE, ServiceTypes.CORE,
                         admin.toString(), null, null, null, details);
                 return id;
             } else {
-                final String msg = INTRES.getLocalizedMessage("store.errorprofileexists", name);
+                final String msg = INTRES.getLocalizedMessage("approval.profile.store.error.profile.name.exists", name);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 throw new ApprovalProfileExistsException(msg);
             }
         } else {
-            final String msg = INTRES.getLocalizedMessage("store.errorprofileexists", id);
+            final String msg = INTRES.getLocalizedMessage("approval.profile.store.error.profile.id.exists", id);
             throw new ApprovalProfileExistsException(msg);
         }
     }
@@ -120,14 +120,14 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         }
         final ProfileData profileData = findById(profile.getProfileId());
         if (profileData == null) {
-            LOG.info(INTRES.getLocalizedMessage("store.erroreditapprovalprofile", name) + ". No such profile was found");
+            LOG.info(INTRES.getLocalizedMessage("approval.profile.store.error.profile.not.found", name));
         } else {
             authorizedToEditProfile(admin, profileData.getId());
             // Do the actual change
             profileData.setProfile(profile);
             entityManager.merge(profileData);
             entityManager.flush();
-            LOG.info(INTRES.getLocalizedMessage("store.editedapprovalprofile", name));
+            LOG.info(INTRES.getLocalizedMessage("approval.profile.store.edit", name));
         }
         approvalProfileCache.forceCacheExpiration();
     }
@@ -144,7 +144,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             authorizedToEditProfile(admin, profileData.getId());
             entityManager.remove(profileData);
             approvalProfileCache.forceCacheExpiration();
-            LOG.info(INTRES.getLocalizedMessage("store.removedprofile", profile.getProfileName()));
+            LOG.info(INTRES.getLocalizedMessage("approval.profile.store.remove", profile.getProfileName()));
         }
     }
     
@@ -161,29 +161,29 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             final String name = pdl.getProfileName();
             entityManager.remove(pdl);
             approvalProfileCache.forceCacheExpiration();
-            LOG.info(INTRES.getLocalizedMessage("store.removedprofile", name));
+            LOG.info(INTRES.getLocalizedMessage("approval.profile.store.remove", name));
         }
     } 
     
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void renameApprovalProfile(final AuthenticationToken admin, final ApprovalProfile approvalProfile, final String newname)
+    public void renameApprovalProfile(final AuthenticationToken admin, final ApprovalProfile approvalProfile, final String newName)
             throws ApprovalProfileExistsException, ApprovalProfileDoesNotExistException, AuthorizationDeniedException {
-        if (findByNameAndType(newname,ApprovalProfile.TYPE_NAME) == null) {
+        if (findByNameAndType(newName, ApprovalProfile.TYPE_NAME).isEmpty()) {
             final ProfileData pdl = findById(approvalProfile.getProfileId());
             if (pdl == null) {
-                final String msg = INTRES.getLocalizedMessage("store.errorprofilenotexist", approvalProfile.getProfileName());
+                final String msg = INTRES.getLocalizedMessage("approval.profile.store.error.profile.not.found", approvalProfile.getProfileName());
                 throw new ApprovalProfileDoesNotExistException(msg);
             } else {
                 authorizedToEditProfile(admin, pdl.getId());
                 String oldName = approvalProfile.getProfileName();
-                pdl.setProfileName(newname);
+                pdl.setProfileName(newName);
                 approvalProfileCache.forceCacheExpiration();
-                final String msg = INTRES.getLocalizedMessage("store.renamedprofile", oldName, newname);
+                final String msg = INTRES.getLocalizedMessage("approval.profile.store.rename", oldName, newName);
                 LOG.info(msg);
             }
         } else {
-            final String msg = INTRES.getLocalizedMessage("store.errorprofileexists", newname);
+            final String msg = INTRES.getLocalizedMessage("approval.profile.store.error.profile.name.exists", newName);
             throw new ApprovalProfileExistsException(msg);
         }
     }
@@ -204,7 +204,8 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         if (findByNameAndType(newName, ApprovalProfile.TYPE_NAME).isEmpty()) {
             entityManager.persist(new ProfileData(findFreeApprovalProfileId(), profile));
             approvalProfileCache.forceCacheExpiration();
-            LOG.info("Cloned approval profile with name " + newName + " from profile with name " + approvalProfile.getProfileName());
+            final String msg = INTRES.getLocalizedMessage("approval.profile.store.clone", approvalProfile.getProfileName(), newName);
+            LOG.info(msg);
         } else {
             throw new ApprovalProfileExistsException("Could not clone profile, profile of name " + newName + " already exists.");
         }
