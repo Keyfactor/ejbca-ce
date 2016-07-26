@@ -120,46 +120,58 @@
                 </ui:repeat>
             </h:panelGroup>
             
-            <h:panelGroup id="viewRequestPartitionTable" layout="block" rendered="#{raManageRequestBean.viewDataVisible}">
-                <h2><h:outputText value="#{msg.view_request_page_request_partition_header}"/></h2>
-                <h:dataTable value="#{raManageRequestBean.request.approvalPartitionData}" var="row" styleClass="pure-table" rowClasses=",pure-table-odd">
-                    <h:column>
-                        <h:outputText value="#{row.header}"/>
-                    </h:column>
-                    <h:column>
-                        <h:outputText value="#{row.data}"/>
-                    </h:column>
-                </h:dataTable>
-            </h:panelGroup>
-            
             <h:panelGroup layout="block" rendered="#{raManageRequestBean.approvalVisible}">
                 <h2><h:outputText value="#{msg.view_request_page_approval_header}"/></h2>
                 
-                <ui:repeat value="#{raManageRequestBean.nextStepControls}" var="control">
-                    <h:panelGroup layout="block" styleClass="approvalControl">
-                        <h:panelGroup layout="block" styleClass="stepInstruction">
-                            <h:outputText value="#{control.instruction}"/>
-                        </h:panelGroup>
+                <ui:repeat value="#{raManageRequestBean.partitionsAuthorizedToView}" var="partition">
+                
+                	<ui:repeat value="#{raManageRequestBean.getPartitionProperties(partition)}" var="property">
+                    	<h:panelGroup layout="block" styleClass="approvalControl">
+                    	
+                        	<h:panelGroup layout="block" styleClass="stepInstruction" rendered="#{!property.multiValued}">
+                            	<h:outputText 
+                            		value="#{property.name}"/>
+                        	</h:panelGroup>
                         
-                        <h:panelGroup layout="block" rendered="#{control.checkbox}">
-                            <h:selectManyCheckbox value="#{control.checkboxValue}">
-                                <f:selectItems value="#{control.options}"/>
-                            </h:selectManyCheckbox>
-                        </h:panelGroup>
-                        <h:panelGroup layout="block" rendered="#{control.radiobutton}">
-                            <h:selectOneRadio value="#{control.radiobuttonValue}">
-                                <f:selectItems value="#{control.options}"/>
-                            </h:selectOneRadio>
-                        </h:panelGroup>
-                        <h:panelGroup layout="block" rendered="#{control.textbox}">
-                            <h:inputText value="#{control.textValue}" size="25"/>
-                        </h:panelGroup>
                         
-                        <h:panelGroup layout="block">
-                            <h:outputText value="#{msg.view_request_page_note}"/>
-                            <h:inputText value="#{control.optionNote}" size="25"/>
-                        </h:panelGroup>
-                    </h:panelGroup>
+                            <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'String' and !property.multiValued}" >
+                        		<h:inputText value="#{property.value}" disabled="#{raManageRequestBean.getPropertyReadOnly(property.name)}">
+					   					<f:converter converterId="stringConverter"/>
+					   			</h:inputText>
+                        	</h:panelGroup>
+                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'MultiLineString' and !property.multiValued}">
+					   			<h:inputTextarea  
+	                                value="#{property.value.value}">
+	                            	<f:converter converterId="stringConverter"/>
+	                            </h:inputTextarea>
+                        	</h:panelGroup>
+                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Long' and !property.multiValued}">
+					   			<h:inputText  
+					   				value="#{property.value}" style="text-align: right;" >
+				                   <f:converter converterId="javax.faces.Long"/>
+					   			</h:inputText>
+                        	</h:panelGroup>
+                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Integer' and !property.multiValued}">
+                        		<h:inputText  
+					   				value="#{property.value}" style="text-align: right;" size="6">
+				                   <f:converter converterId="javax.faces.Integer"/>
+					   			</h:inputText>
+					   		</h:panelGroup>
+                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Boolean' and !property.multiValued}">
+                        		<h:selectBooleanCheckbox value="#{property.value}"/>
+                        	</h:panelGroup>
+                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'RadioButton' and property.multiValued  and !property.hasMultipleValues}">
+                        		<h:selectOneRadio 
+									value="#{property.encodedValue}">
+									<f:selectItems value="#{property.possibleValuesAsStrings}" />
+									<f:converter converterId="radioButtonConverter"/>
+								</h:selectOneRadio>
+                        	</h:panelGroup>
+
+                        
+                    	</h:panelGroup>
+                	</ui:repeat>
+                	
                 </ui:repeat>
                 
                 

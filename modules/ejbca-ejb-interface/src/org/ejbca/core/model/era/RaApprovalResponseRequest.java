@@ -13,8 +13,6 @@
 package org.ejbca.core.model.era;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Used for approving requests from RaManageRequestBean
@@ -27,31 +25,13 @@ public class RaApprovalResponseRequest implements Serializable {
         APPROVE,
         REJECT;
     }
-    
-    public final static class MetadataResponse implements Serializable {
-        private static final long serialVersionUID = 1L;
-        private final int metadataId;
-        private final String optionValue;
-        private final String optionNote;
-        
-        public MetadataResponse(final int metadataId, final String optionValue, final String optionNote) {
-            this.metadataId = metadataId;
-            this.optionValue = optionValue;
-            this.optionNote = optionNote;
-        }
-        
-        public int getMetadataId() { return metadataId; }
-        public String getOptionValue() { return optionValue; }
-        public String getOptionNote() { return optionNote; }
-    }
-    
+
     private static final long serialVersionUID = 1L;
     /** id of approval */
     private final int id;
     private final int stepIdentifier;
     private final int partitionIdentifier;
     private final String comment;
-    private final List<MetadataResponse> metadataList = new ArrayList<>();
     private final Action action;
     
     public RaApprovalResponseRequest(final int id, final int stepIdentifier, final int partitionIdentifier, final String comment, final Action action) {
@@ -60,10 +40,6 @@ public class RaApprovalResponseRequest implements Serializable {
         this.partitionIdentifier = partitionIdentifier;
         this.comment = comment;
         this.action = action;
-    }
-    
-    public void addMetadata(final int metadataId, final String optionValue, final String optionNote) {
-        metadataList.add(new MetadataResponse(metadataId, optionValue, optionNote));
     }
 
     public int getId() {
@@ -75,10 +51,6 @@ public class RaApprovalResponseRequest implements Serializable {
 
     public String getComment() {
         return comment;
-    }
-    
-    public List<MetadataResponse> getMetadataList() {
-        return metadataList;
     }
     
     public Action getAction() {
