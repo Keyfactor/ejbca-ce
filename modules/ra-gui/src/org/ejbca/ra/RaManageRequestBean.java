@@ -14,6 +14,7 @@ package org.ejbca.ra;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +38,7 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
+import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
@@ -155,7 +157,7 @@ public class RaManageRequestBean implements Serializable {
         return getPartitionProperties(approvalProfile, partition);
     }
     
-    public List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> getPartitionsAuthorizedToView() {
+    public List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> getPartitions() {
         if (partitionsAuthorizedToView == null) {
             List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> authorizedPartitions = new ArrayList<>();
             partitionsAuthorizedToApprove = new HashSet<>();
@@ -185,14 +187,27 @@ public class RaManageRequestBean implements Serializable {
         return partitionsAuthorizedToView;
         
     }
-    
-    public boolean isPartitionApproved() {
-        return getRequest().isWaitingForMe();
+
+    /** 
+     * @return true if there already exists an approval for this partition 
+     */
+    public boolean isPartitionHandled(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partition) {
+        final ApprovalDataVO advo = getApprovalData(raAuthenticationBean.getAuthenticationToken(), getRequest().request.getId());
+        Collection<Approval> approvals = advo.getApprovals();
+        for(Approval approval : approvals) {
+            if((approval.getStepId()==partition.getStepId()) && (approval.getPartitionId()==partition.getPartitionId())) {
+                return true;
+            }
+        }
+        return false;
     }
-    public boolean canApprovalParition() {
-        return getRequest().isCanApprove();
+    public boolean canApproveParition(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partition) {
+        if(partitionsAuthorizedToApprove == null) {
+            getPartitions();
+        }
+        return partitionsAuthorizedToApprove.contains(partition.getPartitionId());
     }
-    public boolean getPropertyReadOnly(String propertyName) {
+    public boolean isPropertyReadOnly(String propertyName) {
         return getRequest().request.getApprovalProfile().getReadOnlyProperties().contains(propertyName);
     }
     
