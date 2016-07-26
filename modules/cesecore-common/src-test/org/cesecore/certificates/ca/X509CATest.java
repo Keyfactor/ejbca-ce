@@ -925,7 +925,7 @@ public class X509CATest {
     /**
      * Testing that CSR algorithm is inforced from end entity information if there is one.
      */
-   /* @Test
+    @Test
     public void testEndEntityInformationCsrAlgorithmEnforced() throws Exception {
         final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
         final CryptoToken cryptoToken = getNewCryptoToken();
@@ -958,7 +958,7 @@ public class X509CATest {
         //RSA_1024 from requestMessage will be overriden with RSA_2048 from endEntityInformation.getCertificateRequest
         assertEquals("2048", AlgorithmTools.getKeySpecification(usercert.getPublicKey()));
         assertEquals(AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(usercert.getPublicKey()));
-    }*/
+    }
 
     private static ASN1Encodable getValueFromDN(Certificate cert, ASN1ObjectIdentifier oid) {
         final X500Principal principal = ((X509Certificate)cert).getSubjectX500Principal();
