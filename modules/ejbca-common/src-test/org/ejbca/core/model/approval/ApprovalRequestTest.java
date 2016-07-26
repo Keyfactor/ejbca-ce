@@ -84,6 +84,7 @@ public class ApprovalRequestTest {
         AuthenticationToken token = new X509CertificateAuthenticationToken(testcert);
 
         AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile("AccumulativeApprovalProfile");
+        approvalProfile.initialize();
         approvalProfile.setNumberOfApprovalsRequired(2);
 		DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false, approvalProfile);
 		
@@ -127,6 +128,7 @@ public class ApprovalRequestTest {
         AuthenticationToken token = new X509CertificateAuthenticationToken(testcert);
 
         AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile("AccumulativeApprovalProfile");
+        approvalProfile.initialize();
         approvalProfile.setNumberOfApprovalsRequired(2);
         DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false, approvalProfile);
 		
@@ -165,6 +167,7 @@ public class ApprovalRequestTest {
         AuthenticationToken token3 = new PublicAccessAuthenticationToken("127.0.0.1", true);
         
         AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile("AccumulativeApprovalProfile");
+        approvalProfile.initialize();
         approvalProfile.setNumberOfApprovalsRequired(2);
         DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false, approvalProfile);
         

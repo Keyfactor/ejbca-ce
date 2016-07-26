@@ -43,6 +43,7 @@ public class ApprovalExecutorUtilTest {
 	public void testNoOfApprovals() {
 		int numOfApprovalsRequired = 1;
 		AccumulativeApprovalProfile nrOfApprovalsApprovalProfile = new AccumulativeApprovalProfile("nrOfApprovalApprovalProfile");
+		nrOfApprovalsApprovalProfile.initialize();
 		nrOfApprovalsApprovalProfile.setNumberOfApprovalsRequired(numOfApprovalsRequired);
 		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, 
 		        EndEntityConstants.STATUS_NEW, admin, null, 1, 1, nrOfApprovalsApprovalProfile);
@@ -60,6 +61,7 @@ public class ApprovalExecutorUtilTest {
 	public void testGloballyExcludedClasses() {
 		int numOfApprovalsRequired = 1;
 		AccumulativeApprovalProfile nrOfApprovalsApprovalProfile = new AccumulativeApprovalProfile("testGloballyExcludedClasses");
+	    nrOfApprovalsApprovalProfile.initialize();
 		nrOfApprovalsApprovalProfile.setNumberOfApprovalsRequired(numOfApprovalsRequired);
 		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, 
 		        EndEntityConstants.STATUS_NEW, admin, null, 1, 1, nrOfApprovalsApprovalProfile);
@@ -89,6 +91,7 @@ public class ApprovalExecutorUtilTest {
 
 		int numOfApprovalsRequired = 1;
 		AccumulativeApprovalProfile nrOfApprovalsApprovalProfile = new AccumulativeApprovalProfile("nrOfApprovalApprovalProfile");
+		nrOfApprovalsApprovalProfile.initialize();
 		nrOfApprovalsApprovalProfile.setNumberOfApprovalsRequired(numOfApprovalsRequired);
 		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_GENERATED, 
 		        EndEntityConstants.STATUS_NEW, admin, null, 1, 1, nrOfApprovalsApprovalProfile);
@@ -137,6 +140,7 @@ public class ApprovalExecutorUtilTest {
 	public void testAllowedTransitions() {
 		int numOfApprovalsRequired = 1;
 		AccumulativeApprovalProfile nrOfApprovalsApprovalProfile = new AccumulativeApprovalProfile("nrOfApprovalApprovalProfile");
+		nrOfApprovalsApprovalProfile.initialize();
 		nrOfApprovalsApprovalProfile.setNumberOfApprovalsRequired(numOfApprovalsRequired);
 		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", EndEntityConstants.STATUS_NEW, 
 		        EndEntityConstants.STATUS_INPROCESS, admin, null, 1, 1, nrOfApprovalsApprovalProfile);
@@ -165,6 +169,7 @@ public class ApprovalExecutorUtilTest {
     public void testAccumulativeApprovalProfile() throws Exception {
         final String approvalProfileName = "testAccumulativeApprovalProfile";
         final AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile(approvalProfileName);
+        approvalProfile.initialize();
         approvalProfile.setNumberOfApprovalsRequired(0);
         assertEquals(0, approvalProfile.getNumberOfApprovalsRequired());
         

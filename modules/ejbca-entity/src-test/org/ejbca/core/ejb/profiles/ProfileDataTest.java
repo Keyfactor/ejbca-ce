@@ -35,6 +35,7 @@ public class ProfileDataTest {
         final int numberOfApprovalsRequired = 4711;
         final String profileName = "testApprovalProfile";
         AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile(profileName);
+        approvalProfile.initialize();
         approvalProfile.setNumberOfApprovalsRequired(numberOfApprovalsRequired);
         ProfileData profileData = new ProfileData(0, approvalProfile);
         ApprovalProfile retrievedApprovalProfile = null;

@@ -41,6 +41,7 @@ public class PartitionedApprovalProfileTest {
     public void testCanApprovalExecute() throws ApprovalException, AuthenticationFailedException {
         //Create a profile with two steps, two partitions in each. 
         PartitionedApprovalProfile approvalProfile = new PartitionedApprovalProfile("PartitionedApprovalProfile");
+        approvalProfile.initialize();
         //Create another step (one is default)
         approvalProfile.addStepFirst();
         for (ApprovalStep approvalStep : approvalProfile.getSteps().values()) {
