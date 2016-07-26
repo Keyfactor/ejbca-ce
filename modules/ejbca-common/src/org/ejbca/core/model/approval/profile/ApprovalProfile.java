@@ -14,6 +14,7 @@ package org.ejbca.core.model.approval.profile;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -250,6 +251,20 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
      */
     boolean canViewPartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException;
 
+    /**
+     * Returns true if the given partition has been configured to allow any administrator to approve it.
+     * @param approvalPartition the approval partition.
+     * @return true if any admin is allowed
+     */
+    boolean canAnyoneApprovePartition(final ApprovalPartition approvalPartition);
+    
+    /**
+     * Returns the list of roles which have been configured in the given partition to be allowed to approve it. 
+     * @param approvalPartition the approval partition.
+     * @return list of names of administrator roles. May return an empty list if canAnyoneApprovePartition returns true.
+     */
+    List<String> getAllowedRoleNames(final ApprovalPartition approvalPartition);
+    
     /**
      * @return a set of properties to hide at the approval screen. 
      */
