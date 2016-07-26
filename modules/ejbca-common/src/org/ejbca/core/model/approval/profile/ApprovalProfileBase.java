@@ -318,6 +318,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
             previousStep.setNextStep(nextStep.getStepIdentifier());
             nextStep.setPreviousStep(previousStep.getStepIdentifier());
         }
+        getSteps().remove(approvalStepIdentifier);      
         saveTransientObjects();
     }
     
