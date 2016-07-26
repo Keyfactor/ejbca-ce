@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.approval;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +115,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
      * The type of metadata field to add to a partition, if any. 
      */
     private FieldType fieldToAdd = null;
-    private String fieldLabel = null;
+    private Map<Integer, String> fieldLabel = new HashMap<>();
 
    public ApprovalProfilesMBean getApprovalProfilesMBean() {
         return approvalProfilesMBean;
@@ -184,6 +185,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public String addField(int partitionId) {
         ApprovalProfile updatedApprovalProfile = getApprovalProfile();
         DynamicUiProperty<? extends Serializable> property;
+        String fieldLabel = this.fieldLabel.get(partitionId);
         switch (fieldToAdd) {
         case TEXT:
             property = new DynamicUiProperty<>(fieldLabel, new MultiLineString(""));
@@ -211,7 +213,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         } else {
             updatedApprovalProfile.addPropertyToPartition(steps.getRowData().getIdentifier(), partitionId, property);
             steps = createStepListFromProfile(updatedApprovalProfile);
-            fieldLabel = null;
+            this.fieldLabel = new HashMap<>();
             fieldToAdd = null;
             return "";
         }
@@ -446,18 +448,15 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public FieldType getFieldToAdd() {
         return fieldToAdd;
     }
-
-    public void setFieldToAdd(FieldType fieldToAdd) {
+    
+    public void setFieldToAdd(final FieldType fieldToAdd) {
         this.fieldToAdd = fieldToAdd;
     }
 
-    public String getFieldLabel() {
+    public Map<Integer, String> getFieldLabel() {
         return fieldLabel;
     }
 
-    public void setFieldLabel(String fieldLabel) {
-        this.fieldLabel = fieldLabel;
-    }
 
     public boolean isNotificationEnabled(final int partitionIdentifier) {
         final ApprovalProfile approvalProfile = getApprovalProfile();
