@@ -433,18 +433,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
         final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
         if (!request.isSearchingHistorical()) {
+            // Search for everything that's not expired
             Date newDate = new Date();
             Date startDate = new Date(newDate.getTime() - EjbcaConfiguration.getApprovalDefaultRequestValidity());
             query.add(startDate, new Date());
-        }
-
-        /*
-        // FIXME for some reason, these two if statements cause an IndexOutOfBound Exception when executing the query even when they are not executed.
-                 Need to be fixed, but will leave it commented out temporarily to get something to test approvals with.
-         
-        // Filtering
-        // TODO should we limit to add/revoke end entity requests also?
-        if (request.isSearchingHistorical()) {
+        } else {
             // Everything except waiting and "approved" (which means approved but not excecuted)
             query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXECUTED));
             query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
@@ -458,17 +451,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
             query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED));
         }
-        
-        if (request.isSearchingWaitingForMe() || request.isSearchingPending()) {
-            if (request.isSearchingHistorical()) {
-                query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
-            }
-            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL));
-            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
-            // Certain requests (not add end entity) can require the requesting admin to retry the action
-            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_APPROVED));
-        }
-        */
         
         // TODO use a more efficient method that doesn't use a starting index?
         //      perhaps modify the query method?
