@@ -111,7 +111,7 @@
 								
 								<f:facet name="footer">
 									<h:panelGroup rendered="#{!approvalProfileMBean.arePartitionsFixed() && !approvalProfilesMBean.viewOnly}">
-										<h:inputText value="#{approvalProfileMBean.fieldLabel}"/>
+										<h:inputText value="#{approvalProfileMBean.fieldLabel[partition.partitionId]}"/>
 										<h:selectOneMenu id="selectAction" value="#{approvalProfileMBean.fieldToAdd}">
 											<f:selectItems value="#{approvalProfileMBean.fieldsAvailable}"/>
 										</h:selectOneMenu>	
