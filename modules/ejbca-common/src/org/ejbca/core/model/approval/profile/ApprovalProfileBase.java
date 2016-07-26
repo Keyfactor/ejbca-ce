@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.util.ProfileID;
@@ -248,7 +249,8 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
                     "Attempted adding a step to an approval profile implementation which does not support it.");
         } else {
             getSteps().put(step.getStepIdentifier(), step);
-            if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled() && !StringUtils.isEmpty(getProfileName())) {
+                //This method may be called from the factory when creating archetypes, so don't debug log that case. 
                 log.debug("Added step with ID " + step.getStepIdentifier() + " to profile " + getProfileName());
             }
             //All steps must have one partition minimum. This will also add standard fields from the underlying profile implementation
@@ -384,8 +386,8 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     private void loadStepsFromMap() {
         @SuppressWarnings("unchecked")
         ArrayList<String> loadedSteps = (ArrayList<String>) data.get(STEPS_KEY);
+        steps = new HashMap<>();
         if (loadedSteps != null && loadedSteps.size() > 0) {
-            steps = new HashMap<>();
             for(String encodedStep : loadedSteps) {
                 ApprovalStep step = new ApprovalStep(encodedStep);
                 steps.put(step.getStepIdentifier(), step);
