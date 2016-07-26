@@ -231,4 +231,8 @@ public class Query implements Serializable {
         return hasIllegalSqlChars;
     }
 
+    /** toString simply outputs the current query string */
+    public String toString() {
+        return getQueryString();
+    }
 }
