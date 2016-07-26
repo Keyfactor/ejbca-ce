@@ -769,7 +769,7 @@ public class X509CA extends CA implements Serializable {
     /**
      * Sequence is ignored by X509CA. The ctParams argument will NOT be kept after the function call returns,
      * and is allowed to contain references to session beans.
-     * @param subject end entity information. If it contains CSR under extended information, it will be used instead of providedRequestMessage. 
+     * @param subject end entity information. If it contains CSR under extended information, it will be used instead of providedRequestMessage and providedPublicKey. 
      * Otherwise, providedRequestMessage will be used.
      * 
      * @throws CAOfflineException if the CA wasn't active
@@ -781,7 +781,7 @@ public class X509CA extends CA implements Serializable {
      * @throws CertificateCreateException if an error occurred when trying to create a certificate. 
      * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
      */
-    private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey publicKey,
+    private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey providedPublicKey,
             final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
             final String sequence, final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider, 
             CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean linkCertificate, boolean caNameChange)
@@ -799,9 +799,17 @@ public class X509CA extends CA implements Serializable {
         }
         
         RequestMessage request = providedRequestMessage; //The request message was provided outside of endEntityInformation
+        PublicKey publicKey = providedPublicKey;
         //Request inside endEntityInformation has priority since its algorithm is approved
         if(subject.getExtendedinformation() != null && subject.getExtendedinformation().getCertificateRequest() != null){
             request = RequestMessageUtils.genPKCS10RequestMessage(subject.getExtendedinformation().getCertificateRequest());
+            try {
+                publicKey = request.getRequestPublicKey();
+            } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Error occured with extracting public key from endEntityInformation.extendedInformation. Proceeding with one providede separately", e);
+                }
+            }
             if (log.isDebugEnabled()) {
                 log.debug("CSR request found inside the endEntityInformation. Using this one instead of one provided separately.");
             }
