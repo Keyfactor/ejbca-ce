@@ -14,6 +14,7 @@ package org.ejbca.core.model.profiles;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.cesecore.internal.UpgradeableDataHashMap;
 
@@ -132,5 +133,11 @@ public abstract class ProfileBase extends UpgradeableDataHashMap implements Prof
     /** Store data in the underlying map. Encourages use of String valued keys. */
     protected void putData(final String key, final Object value) {
         data.put(key, value);
+    }
+   
+    @Override
+    public Map<Object, Object> diff(Profile newobj) {
+        Map<Object, Object> newmap = (Map<Object, Object>) newobj.getDataMap();
+        return diffMaps(data, newmap);
     }
 }
