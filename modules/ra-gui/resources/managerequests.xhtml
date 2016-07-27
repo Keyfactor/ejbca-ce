@@ -36,13 +36,23 @@
             <h:form id="contentForm" class="pure-form">
                 
                 <h:panelGroup layout="block" styleClass="tabButtonBar">
-                    <!-- or use links.  the active tab should appear as selected -->
-                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewNeedsApproval}" disabled="#{raManageRequestsBean.viewingNeedsApproval}" styleClass="tabButton #{raManageRequestsBean.viewingNeedsApproval ? 'active' : ''}" value="#{msg.manage_requests_page_view_needs_approval}" />
-                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewPendingApproval}" disabled="#{raManageRequestsBean.viewingPendingApproval}" styleClass="tabButton #{raManageRequestsBean.viewingPendingApproval ? 'active' : ''}" value="#{msg.manage_requests_page_view_pending_approval}" />
-                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewProcessed}" disabled="#{raManageRequestsBean.viewingProcessed}" styleClass="tabButton #{raManageRequestsBean.viewingProcessed ? 'active' : ''}" value="#{msg.manage_requests_page_view_processed}" />
+                    <h:outputLink value="managerequests.xhtml?tab=needsApproval" styleClass="tabButton #{raManageRequestsBean.viewingNeedsApproval ? 'active' : ''}">
+                        <h:outputText value="#{msg.manage_requests_page_view_needs_approval}"/>
+                    </h:outputLink>
+                    
+                    <h:outputLink value="managerequests.xhtml?tab=pending" styleClass="tabButton #{raManageRequestsBean.viewingPendingApproval ? 'active' : ''}">
+                        <h:outputText value="#{msg.manage_requests_page_view_pending_approval}"/>
+                    </h:outputLink>
+                    
+                    <h:outputLink value="managerequests.xhtml?tab=processed" styleClass="tabButton #{raManageRequestsBean.viewingProcessed ? 'active' : ''}">
+                        <h:outputText value="#{msg.manage_requests_page_view_processed}"/>
+                    </h:outputLink>
+                    
                     <ui:remove>
                     <!--
-                    <h:commandButton immediate="true" action="#{raManageRequestsBean.viewCustom}" disabled="#{raManageRequestsBean.viewingCustom}" styleClass="tabButton #{raManageRequestsBean.viewingCustom ? 'active' : ''}" value="#{msg.manage_requests_page_view_custom}" />
+                    <h:outputLink value="managerequests.xhtml?tab=custom" styleClass="tabButton #{raManageRequestsBean.viewingCustom ? 'active' : ''}">
+                        <h:outputText value="#{msg.manage_requests_page_view_processed}"/>
+                    </h:outputLink>
                     -->
                     </ui:remove>
                 </h:panelGroup>
