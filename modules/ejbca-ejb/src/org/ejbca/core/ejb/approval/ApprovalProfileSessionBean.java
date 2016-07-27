@@ -90,10 +90,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
                 return id;
             } else {
                 final String msg = INTRES.getLocalizedMessage("approval.profile.store.error.profile.name.exists", name);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
-                logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_ADD, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
-                        admin.toString(), null, null, null, details);
                 throw new ApprovalProfileExistsException(msg);
             }
         } else {
@@ -132,7 +128,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             entityManager.merge(profileData);
             entityManager.flush();
             String msg = INTRES.getLocalizedMessage("approval.profile.store.edit", name);
-            LOG.info(msg);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);         
             //TODO: Include a diff in the changelog (profileData.getProfile().diff(profile);), but make sure to resolve all steps so that we don't
@@ -156,7 +151,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             entityManager.remove(profileData);
             approvalProfileCache.forceCacheExpiration();
             String msg = INTRES.getLocalizedMessage("approval.profile.store.remove", profile.getProfileName()); 
-            LOG.info(msg);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);    
             logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_REMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
@@ -178,7 +172,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             entityManager.remove(profileData);
             approvalProfileCache.forceCacheExpiration();
             String msg = INTRES.getLocalizedMessage("approval.profile.store.remove", name); 
-            LOG.info(msg);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);    
             logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_REMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
@@ -201,7 +194,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
                 profileData.setProfileName(newName);
                 approvalProfileCache.forceCacheExpiration();
                 final String msg = INTRES.getLocalizedMessage("approval.profile.store.rename", oldName, newName);
-                LOG.info(msg);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);    
                 logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_RENAME, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
@@ -235,7 +227,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             details.put("msg", msg);    
             logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
                     admin.toString(), null, null, null, details);
-            LOG.info(msg);
         } else {
             final String msg = INTRES.getLocalizedMessage("approval.profile.store.clone.error.profile.name.exists", newName);
             throw new ApprovalProfileExistsException(msg);

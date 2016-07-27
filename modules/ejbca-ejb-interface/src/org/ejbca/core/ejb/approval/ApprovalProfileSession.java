@@ -37,7 +37,7 @@ public interface ApprovalProfileSession {
      * @param admin administrator performing the task
      * @param profile the profile to be added
      * @return the generated approval profile id
-     * @throws ApprovalProfileExistsException
+     * @throws ApprovalProfileExistsException trying to add a profile with a name or id that already exists
      * @throws AuthorizationDeniedException if current administrator is not authorized to modify profiles
      */
     int addApprovalProfile(final AuthenticationToken admin, final ApprovalProfile profile) throws ApprovalProfileExistsException, AuthorizationDeniedException;
@@ -47,7 +47,6 @@ public interface ApprovalProfileSession {
      * 
      * @param admin Administrator performing the operation
      * @throws AuthorizationDeniedException if current administrator is not authorized to modify profiles
-     * @throws AuthorizationDeniedException
      */
     void changeApprovalProfile(final AuthenticationToken admin, final ApprovalProfile profile) throws AuthorizationDeniedException;
 
@@ -57,8 +56,8 @@ public interface ApprovalProfileSession {
      * @param admin Administrator performing the operation
      * @param orgname name of original approval profile
      * @param newname name of new approval profile
-     * @throws ApprovalProfileExistsException
-     * @throws ApprovalProfileDoesNotExistException
+     * @throws ApprovalProfileExistsException if a profile with newname already exists
+     * @throws ApprovalProfileDoesNotExistException if a profile with orgname does not exist
      * @throws AuthorizationDeniedException if current administrator is not authorized to modify profiles
      */
     void cloneApprovalProfile(final AuthenticationToken admin, final ApprovalProfile profile, final String newname) 
@@ -103,7 +102,7 @@ public interface ApprovalProfileSession {
      * @param admin Administrator performing the operation
      * @param profile the profile to rename
      * @param newname the new name of the approval profile
-     * @throws ApprovalProfileExistsException if a profile of that name already exists
+     * @throws ApprovalProfileExistsException if a profile with name newname already exists
      * @throws ApprovalProfileDoesNotExistException if the profile to be renamed hasn't been persisted.
      * @throws AuthorizationDeniedException if current administrator is not authorized to rename profiles
      */
