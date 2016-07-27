@@ -438,7 +438,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             Date startDate = new Date(newDate.getTime() - EjbcaConfiguration.getApprovalDefaultRequestValidity());
             query.add(startDate, new Date());
         } else {
-            // Everything except waiting and "approved" (which means approved but not excecuted)
+            // Everything except waiting and "approved" (note that the latter means approved but not excecuted yet)
             query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXECUTED));
             query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
             query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXECUTIONDENIED));
