@@ -63,6 +63,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
     public PartitionedApprovalProfile(final String name) {
         super(name);
+        initialize();
     }
     
     /*
