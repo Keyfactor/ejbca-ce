@@ -2214,6 +2214,16 @@ The configuration is done in conf/jaxws.properties.
 In jboss-log4j.xml 'org.ejbca.core.protocol.ws.logger.TransactionLogger' should be used as category name for the appender.
 </p>
 </subsection>
+<subsection name="WS message debugging">
+<p>
+When integrating it can be good to log the SOAP messages in order to debug and see what is going on behind the scenes.
+You can accomplish this by adding the following to JAVA_OPTS:
+</p>
+<source>
+-Dcom.sun.xml.ws.transport.http.client.HttpTransportPipe.dump=true 
+</source>
+<p>In JBoss 7/EAP6/WildFly 9 and 10 this can be done by adding the above line to JAVA_OPTS in JBOSS_HOME/bin/standalone.conf.</p>
+</subsection>
 </section>
 
 <section name="Certificate Transparency (Enterprise only)">
