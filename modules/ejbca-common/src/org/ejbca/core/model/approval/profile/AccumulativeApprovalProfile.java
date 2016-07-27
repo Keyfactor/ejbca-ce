@@ -53,6 +53,7 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
 
     public AccumulativeApprovalProfile(final String name) {
         super(name);
+        initialize();
     }
     
     /*
