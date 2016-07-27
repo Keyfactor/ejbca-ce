@@ -157,6 +157,7 @@
 	padding: 0.5em;
 	margin: 0 0.25em;
 	border: 0 none;
+	display: inline-block;
 }
 .tabButton.active {
 	background: #1e599f;
