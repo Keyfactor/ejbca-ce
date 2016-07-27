@@ -37,8 +37,6 @@ public enum EjbcaEventTypes implements EventType {
     APPROVAL_REMOVE,
     /** Adding an approval profile */
     APPROVAL_PROFILE_ADD,
-    /** Cloning an approval profile */
-    APPROVAL_PROFILE_CLONE,
     /** Editing an approval profile */
     APPROVAL_PROFILE_EDIT,
     /** Removing an approval profile */
