@@ -153,20 +153,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             try {
                 final Integer freeId = findFreeApprovalId();
                 final ApprovalData approvalData = new ApprovalData(freeId);
-                approvalData.setApprovalid(approvalRequest.generateApprovalId());
-                approvalData.setApprovaltype(approvalRequest.getApprovalType());
                 final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
-                approvalData.setEndentityprofileid(approvalRequest.getEndEntityProfileId());
-                approvalData.setCaid(approvalRequest.getCAId());
-                if (approvalRequest.getRequestAdminCert() != null) {
-                    approvalData.setReqadmincertissuerdn(CertTools.getIssuerDN(approvalRequest.getRequestAdminCert()));
-                    approvalData.setReqadmincertsn(CertTools.getSerialNumberAsString(approvalRequest.getRequestAdminCert()));
-                }
-                setApprovalRequest(approvalData, approvalRequest);
-                setApprovals(approvalData, new ArrayList<Approval>());
-                approvalData.setExpiredate((new Date()).getTime() + approvalRequest.getRequestValidity());
-                //Kept for legacy reasons
-                approvalData.setRemainingapprovals(approvalRequest.getNumOfRequiredApprovals());
+                updateApprovalData(approvalData, approvalRequest);
                 entityManager.persist(approvalData);
                 sendApprovalNotifications(admin, approvalRequest, approvalProfile, approvalData.getApprovals(), false);
                 String msg = intres.getLocalizedMessage("approval.addedwaiting", approvalId);
@@ -187,6 +175,57 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         if (log.isTraceEnabled()) {
         	log.trace("<addApprovalRequest: "+approvalRequest.generateApprovalId());
         }
+    }
+    
+    @Override
+    public void editApprovalRequest(final AuthenticationToken admin, final int id, final ApprovalRequest approvalRequest) throws ApprovalException {
+        if (log.isTraceEnabled()) {
+            log.trace(">editApprovalRequest: hash="+approvalRequest.generateApprovalId()+", id="+id);
+        }
+        final ApprovalData ad = findById(id);
+        if (ad == null) {
+            throw new ApprovalException("The approval request does not exist");
+        }
+        if (ad.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
+            throw new ApprovalException("The approval request is not in the Waiting For Approval state, and cannot be edited");
+        }
+        try {
+            approvalRequest.addEditedByAdmin(admin);
+            updateApprovalData(ad, approvalRequest);
+            String msg = intres.getLocalizedMessage("approval.edited", id);
+            final Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
+                    admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
+        } catch (Exception e) {
+            String msg = intres.getLocalizedMessage("approval.errorediting", id);
+            log.error(msg, e);
+            final Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            details.put("Error", e.getMessage());
+            auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
+                    admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace(">editApprovalRequest: hash="+approvalRequest.generateApprovalId()+", id="+id);
+        }
+    }
+    
+    /** Updates the ApprovalData from the given approval request, and initializes the list of approvals to an empty list. */
+    private void updateApprovalData(final ApprovalData approvalData, final ApprovalRequest approvalRequest) {
+        approvalData.setApprovalid(approvalRequest.generateApprovalId());
+        approvalData.setApprovaltype(approvalRequest.getApprovalType());
+        approvalData.setEndentityprofileid(approvalRequest.getEndEntityProfileId());
+        approvalData.setCaid(approvalRequest.getCAId());
+        if (approvalRequest.getRequestAdminCert() != null) {
+            approvalData.setReqadmincertissuerdn(CertTools.getIssuerDN(approvalRequest.getRequestAdminCert()));
+            approvalData.setReqadmincertsn(CertTools.getSerialNumberAsString(approvalRequest.getRequestAdminCert()));
+        }
+        setApprovalRequest(approvalData, approvalRequest);
+        setApprovals(approvalData, new ArrayList<Approval>());
+        approvalData.setExpiredate((new Date()).getTime() + approvalRequest.getRequestValidity());
+        //Kept for legacy reasons
+        approvalData.setRemainingapprovals(approvalRequest.getNumOfRequiredApprovals());
     }
 
     @Override

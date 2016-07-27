@@ -110,6 +110,17 @@ public interface ApprovalSession {
      * @param id the unique id of the approvalrequest, not the same as approvalId
      */
     void removeApprovalRequest(AuthenticationToken admin, int id);
+    
+    /**
+     * Changes an approval request. The administrator will be blacklisted from approving the request.
+     * This operation changes the approvalId (the hash of the request), but not the id of the request.
+     * 
+     * @param admin administrator, will be added to the list of admins who have edited the request.
+     * @param id the unique id of the approvalrequest, not the same as approvalId.
+     * @param approvalRequest modified request
+     * @throws ApprovalException if the approval request does not exist, or may not be edited.
+     */
+    void editApprovalRequest(AuthenticationToken admin, int id, ApprovalRequest approvalRequest) throws ApprovalException;
 
     /**
      * Method returning an approval requests with status 'waiting', 'Approved'

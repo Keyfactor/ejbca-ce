@@ -41,6 +41,7 @@ import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.persistence.QueryTimeoutException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.NonHandledCesecoreException;
@@ -331,8 +332,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public RaApprovalRequestInfo editApprovalRequest(final AuthenticationToken authenticationToken, final RaApprovalEditRequest edit) throws AuthorizationDeniedException {
-        // TODO perhaps move into ApprovalSessionBean?
-        // TODO fix audit logging. currently logs as remove + add
         final int id = edit.getId();
         final ApprovalDataVO advo = getApprovalData(authenticationToken, id);
         if (advo == null) {
@@ -351,7 +350,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final RaEditableRequestData editData = edit.getEditableData();
         
         if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-            // TODO validate the values and check that they aren't null?
+            // Quick check for obviously illegal values
+            if (StringUtils.isEmpty(editData.getUsername()) || StringUtils.isEmpty(editData.getSubjectDN())) {
+                throw new IllegalArgumentException("Attempted to set Username or Subject DN to an empty value");
+            }
+            
             final AddEndEntityApprovalRequest addReq = (AddEndEntityApprovalRequest) approvalRequest;
             final EndEntityInformation userdata = addReq.getEndEntityInformation();
             userdata.setUsername(editData.getUsername());
@@ -368,16 +371,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new IllegalStateException("Editing of this type of request is not implemented: " + approvalRequest.getClass().getName());
         }
         
-        // Remove the old approval
-        approvalSession.removeApprovalRequest(authenticationToken, id);
-        
         try {
-            // Re-add the approval. This should leave the requesting admin unchanged
-            approvalRequest.addEditedByAdmin(authenticationToken);
-            approvalSession.addApprovalRequest(authenticationToken, approvalRequest);
+            approvalSession.editApprovalRequest(authenticationToken, id, approvalRequest);
         } catch (ApprovalException e) {
-            // TODO remove and add to throws declaration
-            throw new RuntimeException(e);
+            // Shouldn't happen
+            throw new IllegalStateException(e);
         }
         
         final int newCalculatedId = approvalRequest.generateApprovalId();
