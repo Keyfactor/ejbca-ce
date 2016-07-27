@@ -23,7 +23,7 @@
 # Using the value "defaultstrong" is only available in JDK 8 and later and will use the SecureRandom.getInstanceStrong(), to get
 #   an ensured "strong" random number generator. On JDK's below 8 if will throw an error if used. 
 #   Before using "defaultstrong" take note that it will on most cases use a blocking random number generator, 
-#   and if you don't have enough entripy it may take a long time, >60 seconds, to create a single random number (i.e. to generate a certificate). 
+#   and if you don't have enough entropy it may take a long time, >60 seconds, to create a single random number (i.e. to generate a certificate). 
 #   Test well before using. 
 # Default value (if property left unset) is SHA1PRNG which is FIPS compliant according to Java documentation
 #ca.rngalgorithm=SHA1PRNG
