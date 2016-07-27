@@ -22,6 +22,8 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
@@ -63,46 +65,38 @@ public class RaManageRequestsBean implements Serializable {
     private enum SortBy { REQUEST_DATE, CA, TYPE, DISPLAY_NAME, REQUESTER_NAME, STATUS };
     private SortBy sortBy = SortBy.REQUEST_DATE;
     private boolean sortAscending = true;
-
+    
     /** Returns the currently viewed tab, and initializes and shows the "Needs Approval" tab if no tab has been clicked */ 
     private ViewTab getViewedTab() {
         if (viewTab == null) {
-            viewTab = ViewTab.NEEDS_APPROVAL;
+            final String tabHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("tab");
+            if (tabHttpParam != null) {
+                switch (tabHttpParam) {
+                case "needsApproval": viewTab = ViewTab.NEEDS_APPROVAL; break;
+                case "pending": viewTab = ViewTab.PENDING_APPROVAL; break;
+                case "processed": viewTab = ViewTab.PROCESSED; break;
+                case "custom": viewTab = ViewTab.CUSTOM_SEARCH; break;
+                default:
+                    throw new IllegalStateException("Internal Error: Invalid tab parameter value");
+                }
+            } else {
+                viewTab = ViewTab.NEEDS_APPROVAL;
+            }
             searchAndFilter();
         }
         return viewTab;
-    }
-    
-    public void viewNeedsApproval() {
-        viewTab = ViewTab.NEEDS_APPROVAL;
-        searchAndFilter();
     }
     
     public boolean isViewingNeedsApproval() {
         return getViewedTab() == ViewTab.NEEDS_APPROVAL;
     }
     
-    public void viewPendingApproval() {
-        viewTab = ViewTab.PENDING_APPROVAL;
-        searchAndFilter();
-    }
-    
     public boolean isViewingPendingApproval() {
         return getViewedTab() == ViewTab.PENDING_APPROVAL;
-    }
-    
-    public void viewProcessed() {
-        viewTab = ViewTab.PROCESSED;
-        searchAndFilter();
     }
 
     public boolean isViewingProcessed() {
         return getViewedTab() == ViewTab.PROCESSED;
-    }
-    
-    public void viewCustom() {
-        viewTab = ViewTab.CUSTOM_SEARCH;
-        searchAndFilter();
     }
     
     public boolean isViewingCustom() {
