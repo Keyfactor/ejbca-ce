@@ -145,7 +145,7 @@
 						<h:inputTextarea id="certificateRequest" styleClass="fineprintMono jsAutoFocusLast" style="line-height: 100%;"
 							value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80" rows="20"
                             validator="#{enrollMakeNewRequestBean.validateCsr}"/>
-						<h:message for="certificateRequest" id="certificateRequestMessage"  errorClass="showErrorMessage" fatalClass="showErrorMessage"/>
+						<h:message for="certificateRequest" id="certificateRequestMessage" errorClass="showErrorMessage" fatalClass="showErrorMessage"/>
                         <br/>
                         <h:commandButton id="uploadCsrButton" value="#{msg.enroll_upload_csr}" styleClass="pure-button ra-button"
                             action="#{enrollMakeNewRequestBean.uploadCsr}">
