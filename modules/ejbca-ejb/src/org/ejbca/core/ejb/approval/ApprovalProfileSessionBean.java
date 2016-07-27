@@ -124,10 +124,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         if (profileData == null) {
             String msg = INTRES.getLocalizedMessage("approval.profile.store.error.profile.not.found", name);
             LOG.info(msg);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
-                    admin.toString(), null, null, null, details);
         } else {
             authorizedToEditProfile(admin, profileData.getId());
             // Get the diff of what changed
@@ -198,10 +194,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             final ProfileData profileData = findById(approvalProfile.getProfileId());
             if (profileData == null) {
                 final String msg = INTRES.getLocalizedMessage("approval.profile.store.error.profile.not.found", approvalProfile.getProfileName());
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);    
-                logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_RENAME, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
-                        admin.toString(), null, null, null, details);
                 throw new ApprovalProfileDoesNotExistException(msg);
             } else {
                 authorizedToEditProfile(admin, profileData.getId());
@@ -217,10 +209,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             }
         } else {
             final String msg = INTRES.getLocalizedMessage("approval.profile.store.error.profile.name.exists", newName);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);    
-            logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_RENAME, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
-                    admin.toString(), null, null, null, details);
             throw new ApprovalProfileExistsException(msg);
         }
     }
@@ -234,10 +222,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         final Integer origProfileId = approvalProfile.getProfileId();
         if (origProfileId == null) {
             final String msg = INTRES.getLocalizedMessage("approval.profile.store.error.profile.not.found", approvalProfile.getProfileName());
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);    
-            logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_CLONE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
-                    admin.toString(), null, null, null, details);
             throw new ApprovalProfileDoesNotExistException(msg);
         }
         profile = getApprovalProfile(origProfileId).clone();
@@ -249,15 +233,11 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             final String msg = INTRES.getLocalizedMessage("approval.profile.store.clone", approvalProfile.getProfileName(), newName);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);    
-            logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_CLONE, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
+            logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
                     admin.toString(), null, null, null, details);
             LOG.info(msg);
         } else {
             final String msg = INTRES.getLocalizedMessage("approval.profile.store.clone.error.profile.name.exists", newName);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);    
-            logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_CLONE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
-                    admin.toString(), null, null, null, details);
             throw new ApprovalProfileExistsException(msg);
         }
       
