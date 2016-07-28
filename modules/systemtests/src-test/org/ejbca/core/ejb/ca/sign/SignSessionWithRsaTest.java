@@ -551,7 +551,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
             // Change a user that we know...
             EndEntityInformation userData = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
-                    rsacaid, "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1", 
+                    rsacaid, "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2", 
                     "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
@@ -576,9 +576,11 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertTrue(list.contains("www.b.se"));
             name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
             assertEquals("10.1.1.1", name);
+            name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
+            assertEquals("1.1.1.2", name);
             // Change a user that we know...
             EndEntityInformation endEntity = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
-                    rsacaid, "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1", 
+                    rsacaid, "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2", 
                     "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
@@ -588,7 +590,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             altNames = CertTools.getSubjectAlternativeName(cert);
-            log.debug(altNames);
+            log.debug("Altnames: "+altNames);
             list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
             assertEquals(2, list.size());
             assertTrue(list.contains("foo@a.se"));
@@ -603,6 +605,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertTrue(list.contains("www.b.se"));
             name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
             assertEquals("10.1.1.1", name);
+            name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
+            assertEquals("1.1.1.2", name);
         } finally {
             // Clean up
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName);
