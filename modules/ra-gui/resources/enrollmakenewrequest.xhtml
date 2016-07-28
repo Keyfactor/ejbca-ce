@@ -54,7 +54,7 @@
 									<f:ajax event="change" execute="@this" render=":globalMessages :keyPairForm :requestInfoForm @form"/>
 									<f:validateRequired/>
 								</h:selectOneMenu>
-								<h:message for="selectEEPOneMenu" id="selectEEPOneMenuMessage" errorClass="showErrorMessage" fatalClass="showErrorMessage"/>
+								<h:message for="selectEEPOneMenu" id="selectEEPOneMenuMessage" styleClass="showErrorMessage"/>
 								<h:outputText rendered="#{empty enrollMakeNewRequestBean.availableEndEntityProfileSelectItems}"
 									value="#{msg.enroll_no_available_certificate_types}" />
 							</h:panelGroup>
@@ -69,7 +69,7 @@
 									<f:ajax event="change" execute="@this" render=":globalMessages :keyPairForm :requestInfoForm @form"/>
 									<f:validateRequired/>
 								</h:selectOneMenu>
-								<h:message for="selectCPOneMenu" id="selectCPOneMenuMessage" errorClass="showErrorMessage" fatalClass="showErrorMessage"/>
+								<h:message for="selectCPOneMenu" id="selectCPOneMenuMessage" styleClass="showErrorMessage"/>
                                 <h:outputText rendered="#{empty enrollMakeNewRequestBean.availableCertificateProfileSelectItems}"
                                     value="#{msg.enroll_no_available_certificate_subtypes}" />
 							</h:panelGroup>
@@ -84,7 +84,7 @@
 									<f:ajax event="change" execute="@this" render=":globalMessages :keyPairForm :requestInfoForm @form"/>
 									<f:validateRequired/>
 								</h:selectOneMenu>
-								<h:message for="selectCAOneMenu" id="selectCAOneMenuMessage" errorClass="showErrorMessage" fatalClass="showErrorMessage"/>
+								<h:message for="selectCAOneMenu" id="selectCAOneMenuMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
 
 							<h:panelGroup layout="block" styleClass="pure-control-group"
@@ -99,7 +99,7 @@
                                         <f:validateRequired/>
                                         <f:ajax event="change" execute="@this" render=":globalMessages :keyPairForm :requestInfoForm @form"/>
                                     </h:selectOneRadio>
-                                    <h:message for="selectKeyPairGeneration" id="selectKeyPairGenerationMessage" errorClass="showErrorMessage" fatalClass="showErrorMessage"/>
+                                    <h:message for="selectKeyPairGeneration" id="selectKeyPairGenerationMessage" styleClass="showErrorMessage"/>
                                 </h:panelGroup>
 							</h:panelGroup>
 						</fieldset>
@@ -222,7 +222,7 @@
 											<f:ajax event="change" execute="@this"
                                                 render=":requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
 										</h:selectOneMenu>
-										<h:message for="subjectDnField" id="subjectDnFieldMessage" errorClass="showErrorMessage" fatalClass="showErrorMessage"/>
+										<h:message for="subjectDnField" id="subjectDnFieldMessage" styleClass="showErrorMessage"/>
 									</h:panelGroup>
 								</ui:repeat>
 							</fieldset>
@@ -256,7 +256,7 @@
 										<f:ajax event="change" execute="@this"
                                             render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage"/>
 									</h:selectOneMenu>
-									<h:message for="subjectAltNameField" id="subjectAltNameFieldMessage" errorClass="showErrorMessage" fatalClass="showErrorMessage"/>
+									<h:message for="subjectAltNameField" id="subjectAltNameFieldMessage" styleClass="showErrorMessage"/>
 								</h:panelGroup>
 							</ui:repeat>
 						</h:panelGroup>
@@ -289,7 +289,7 @@
 										<f:ajax event="change" execute="@this"
 											render=":requestInfoForm:requestPreviewOuterPanel subjectDirectoryAttributesMessage"/>
 									</h:selectOneMenu>
-									<h:message for="subjectDirectoryAttributes" id="subjectDirectoryAttributesMessage" errorClass="showErrorMessage" fatalClass="showErrorMessage"/>
+									<h:message for="subjectDirectoryAttributes" id="subjectDirectoryAttributesMessage" styleClass="showErrorMessage"/>
 								</h:panelGroup>
 							</ui:repeat>
 						</h:panelGroup>
@@ -330,20 +330,20 @@
 								<h:inputSecret id="passwordField" value="#{enrollMakeNewRequestBean.endEntityInformation.password}" styleClass="#{component.valid?'':'jsAutoFocusError'}">
 									<f:validateRequired/>
 								</h:inputSecret>
-								<h:message for="passwordField" id="passwordFieldMessage" errorClass="showErrorMessage" fatalClass="showErrorMessage"/>
+								<h:message for="passwordField" id="passwordFieldMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.passwordRendered}">
 								<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password}" />
 								<h:inputSecret id="passwordConfirmField" value="#{enrollMakeNewRequestBean.confirmPassword}" styleClass="#{component.valid?'':'jsAutoFocusError'}">
 									<f:validateRequired/>
 								</h:inputSecret>
-								<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" errorClass="showErrorMessage" fatalClass="showErrorMessage"/>
+								<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.emailRendered}">
 								<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
 								<h:inputText id="emailField" value="#{enrollMakeNewRequestBean.endEntityInformation.email}" styleClass="#{component.valid?'':'jsAutoFocusError'}" required="#{enrollMakeNewRequestBean.emailRequired}">
 								</h:inputText>
-								<h:message for="emailField" id="emailFieldMessage" errorClass="showErrorMessage" fatalClass="showErrorMessage"/>
+								<h:message for="emailField" id="emailFieldMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
 						</fieldset>
 					</h:panelGroup>
