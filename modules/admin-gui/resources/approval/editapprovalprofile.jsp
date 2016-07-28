@@ -84,7 +84,7 @@
 				<script>document.getElementById('approvalProfilesForm:selectProfileType').style.display = 'none';</script>
 			</h:panelGroup>	
 		
-			<h:outputLabel for="reqExpPeriod" value="Request Expiration Period #{web.text.FORMAT_TIME_YMDHMIN}"/>
+			<h:outputLabel for="reqExpPeriod" value="#{web.text.REQUEST_EXPIRATION_PERIOD} #{web.text.FORMAT_TIME_YMDHMIN}"/>
 			<h:panelGroup>
 				<h:inputText id="reqExpPeriod" disabled="#{approvalProfilesMBean.viewOnly}" value="#{approvalProfileMBean.requestExpirationPeriod}" />
 				<br/>
@@ -93,7 +93,7 @@
 				</h:panelGroup>
 			</h:panelGroup>
 			
-			<h:outputLabel for="approvalExpPeriod" value="Approval Expiration Period #{web.text.FORMAT_TIME_YMDHMIN}"/>
+			<h:outputLabel for="approvalExpPeriod" value="#{web.text.APPROVAL_EXPIRATION_PERIOD} #{web.text.FORMAT_TIME_YMDHMIN}"/>
 			<h:panelGroup>
 				<h:inputText id="approvalExpPeriod" disabled="#{approvalProfilesMBean.viewOnly}" value="#{approvalProfileMBean.approvalExpirationPeriod}" />
 				<br/>
