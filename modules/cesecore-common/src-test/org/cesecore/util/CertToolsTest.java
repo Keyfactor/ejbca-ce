@@ -681,13 +681,14 @@ public class CertToolsTest {
 
         // We try to examine the general case and som special cases, which we
         // want to be able to handle
-        String alt1 = "rfc822Name=ejbca@primekey.se, dNSName=www.primekey.se, uri=http://www.primekey.se/ejbca";
+        String alt1 = "rfc822Name=ejbca@primekey.se, dNSName=www.primekey.se, uri=http://www.primekey.se/ejbca,registeredID=1.1.1.3";
         assertEquals(CertTools.getPartFromDN(alt1, CertTools.EMAIL), "ejbca@primekey.se");
         assertNull(CertTools.getPartFromDN(alt1, CertTools.EMAIL1));
         assertNull(CertTools.getPartFromDN(alt1, CertTools.EMAIL2));
         assertEquals(CertTools.getPartFromDN(alt1, CertTools.DNS), "www.primekey.se");
         assertNull(CertTools.getPartFromDN(alt1, CertTools.URI));
         assertEquals(CertTools.getPartFromDN(alt1, CertTools.URI1), "http://www.primekey.se/ejbca");
+        assertEquals(CertTools.getPartFromDN(alt1, CertTools.REGISTEREDID), "1.1.1.3");
 
         String alt2 = "email=ejbca@primekey.se, dNSName=www.primekey.se, uniformResourceIdentifier=http://www.primekey.se/ejbca";
         assertEquals(CertTools.getPartFromDN(alt2, CertTools.EMAIL1), "ejbca@primekey.se");
