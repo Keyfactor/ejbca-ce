@@ -307,7 +307,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
         } catch (AuthorizationDeniedException | CADoesntExistsException | UserDoesntFullfillEndEntityProfile | InvalidAlgorithmException | CAOfflineException | IllegalValidityException | CertificateSerialNumberException
                 | NoSuchEndEntityException | CustomCertificateSerialNumberException | CryptoTokenOfflineException | IllegalKeyException
                 | SignRequestException | SignRequestSignatureException | IllegalNameException | CertificateCreateException
-                | CertificateRevokeException | FinderException | EjbcaException | CertificateExtensionException e) {
+                | CertificateRevokeException | FinderException | EjbcaException | CertificateExtensionException | WaitingForApprovalException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);
             resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage());

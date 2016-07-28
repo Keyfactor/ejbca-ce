@@ -13,13 +13,7 @@
  
 package org.cesecore;
 
-import java.lang.reflect.InvocationTargetException;
-
 import javax.xml.ws.WebFault;
-
-import org.apache.log4j.Logger;
-
-
 
 /**
  * Base for all specific application exceptions thrown by EJBCA. Can be used to catch any
@@ -30,11 +24,11 @@ import org.apache.log4j.Logger;
  *
  */
 @WebFault
-public class CesecoreException extends Exception implements NonSensitiveCloneable {
+public class CesecoreException extends Exception {
 
     private static final long serialVersionUID = -3754146611270578813L;
     
-    private static final Logger log = Logger.getLogger(CesecoreException.class);
+    //private static final Logger log = Logger.getLogger(CesecoreException.class);
 
     /** The error code describes the cause of the exception. */
     ErrorCode errorCode = null;
@@ -135,26 +129,6 @@ public class CesecoreException extends Exception implements NonSensitiveCloneabl
      */
     public void setErrorCode(final ErrorCode errorCode) {
         this.errorCode = errorCode;
-    }
-    
-    /**
-     * Get non sensitive clone of the exception. All other data except error code will be purged from the clone.
-     */
-    @Override
-    public Object getNonSensitiveClone() {
-        try {
-            try {
-                return this.getClass().getConstructor(ErrorCode.class).newInstance(getErrorCode()); 
-            } catch (NoSuchMethodError nsme) { 
-                CesecoreException e = (CesecoreException)this.getClass().getConstructor().newInstance(); 
-                e.setErrorCode(getErrorCode()); 
-                return e; 
-            } 
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
-                | SecurityException e) {
-            log.error("getNonSensitiveClone: ", e);
-            return null;
-        }
     }
     
     /** Get EJBCA ErrorCode from any exception that is, extends or just wraps CesecoreException
