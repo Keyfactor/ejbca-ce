@@ -89,34 +89,6 @@
                 <ui:repeat value="#{raManageRequestBean.request.previousSteps}" var="prevStep">
                     <h:panelGroup layout="block" styleClass="approvalStep">
                         <h3><h:outputText value="#{prevStep.headingText}"/></h3>
-<ui:remove><!-- temporarily hidden. needs update to work with the new approval meta data -->
-                        <ui:repeat value="#{prevStep.controls}" var="control">
-                            <h:panelGroup layout="block" styleClass="approvalControl">
-                                <h:panelGroup layout="block">
-                                    <h:outputText value="#{control.instruction}"/>
-                                </h:panelGroup>
-                                
-                                <h:panelGroup layout="block" rendered="#{control.checkbox}">
-                                    <h:selectManyCheckbox value="#{control.checkboxValue}" disabled="true">
-                                        <f:selectItems value="#{control.options}"/>
-                                    </h:selectManyCheckbox>
-                                </h:panelGroup>
-                                <h:panelGroup layout="block" rendered="#{control.radiobutton}">
-                                    <h:selectOneRadio value="#{control.radiobuttonValue}" disabled="true">
-                                        <f:selectItems value="#{control.options}"/>
-                                    </h:selectOneRadio>
-                                </h:panelGroup>
-                                <h:panelGroup layout="block" rendered="#{control.textbox}">
-                                    <h:inputText value="#{control.textValue}" size="25" disabled="true" />
-                                </h:panelGroup>
-                                
-                                <h:panelGroup layout="block">
-                                    <h:outputText value="#{msg.view_request_page_note}"/>
-                                    <h:inputText value="#{control.optionNote}" size="25" disabled="true" />
-                                </h:panelGroup>
-                            </h:panelGroup>
-                        </ui:repeat>
-</ui:remove>
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
@@ -124,69 +96,68 @@
             <h:panelGroup layout="block" rendered="#{raManageRequestBean.approvalVisible}">
                 <h2><h:outputText value="#{msg.view_request_page_approval_header}"/></h2>
                 
-                <ui:repeat value="#{raManageRequestBean.partitions}" var="partition">
+                <ui:repeat value="#{raManageRequestBean.partitions}" var="partition">     
                 
-                	<ui:repeat value="#{raManageRequestBean.getPartitionProperties(partition)}" var="property">
-                    	<h:panelGroup layout="block" styleClass="approvalControl">
-                    	
-                        	<h:panelGroup layout="block" styleClass="stepInstruction" rendered="#{!property.multiValued}">
+                	<h:dataTable value="#{raManageRequestBean.getPartitionProperties(partition)}" var="property"
+						 style="width: 100%" rendered="#{not empty raManageRequestBean.getPartitionProperties(partition)}" styleClass="subTable">   
+					    <h:column>
+					    	<h:panelGroup layout="block" styleClass="stepInstruction">
                             	<h:outputText 
                             		value="#{property.name}"/>
-                        	</h:panelGroup>
-                        
-                        
-                            <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'String' and !property.multiValued}" >
-                        		<h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
-                        			|| !raManageRequestBean.canApproveParition(partition)
-					   				|| raManageRequestBean.isPropertyReadOnly(property.name)}" 
-					   				value="#{property.value}" >
-					   					<f:converter converterId="stringConverter"/>
-					   			</h:inputText>
-                        	</h:panelGroup>
-                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'MultiLineString' and !property.multiValued}">
-					   			<h:inputTextarea disabled="#{raManageRequestBean.isPartitionHandled(partition) 
-                        			|| !raManageRequestBean.canApproveParition(partition)
-					   				|| raManageRequestBean.isPropertyReadOnly(property.name)}" 
-	                                value="#{property.value}">
-	                            	<f:converter converterId="stringConverter"/>
-	                            </h:inputTextarea>
-                        	</h:panelGroup>
-                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Long' and !property.multiValued}">
-					   			<h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
-                        			|| !raManageRequestBean.canApproveParition(partition)
-					   				|| raManageRequestBean.isPropertyReadOnly(property.name)}" 
-					   				value="#{property.value}" style="text-align: right;" >
-				                   <f:converter converterId="javax.faces.Long"/>
-					   			</h:inputText>
-                        	</h:panelGroup>
-                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Integer' and !property.multiValued}">
-                        		<h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
-                        			|| !raManageRequestBean.canApproveParition(partition)
-					   				|| raManageRequestBean.isPropertyReadOnly(property.name)}" 
-					   				value="#{property.value}" style="text-align: right;" size="6">
-				                   <f:converter converterId="javax.faces.Integer"/>
-					   			</h:inputText>
-					   		</h:panelGroup>
-                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Boolean' and !property.multiValued}">
-                        		<h:selectBooleanCheckbox disabled="#{raManageRequestBean.isPartitionHandled(partition) 
-                        			|| !raManageRequestBean.canApproveParition(partition)
-					   				|| raManageRequestBean.isPropertyReadOnly(property.name)}"  
-                        		value="#{property.value}"/>
-                        	</h:panelGroup>
-                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'RadioButton' and property.multiValued  and !property.hasMultipleValues}">
-                        		<h:selectOneRadio disabled="#{raManageRequestBean.isPartitionHandled(partition) 
-                        			|| !raManageRequestBean.canApproveParition(partition)
-					   				|| raManageRequestBean.isPropertyReadOnly(property.name)}" 
-									value="#{property.encodedValue}">
-									<f:selectItems value="#{property.possibleValuesAsStrings}" />
-									<f:converter converterId="radioButtonConverter"/>
-								</h:selectOneRadio>
-                        	</h:panelGroup>
-
-                        
-                    	</h:panelGroup>
-                	</ui:repeat>
-                	
+                        	</h:panelGroup>    
+					    </h:column>   
+					    <h:column>
+	                    	<h:panelGroup layout="block" styleClass="approvalControl">	                    	              
+	                            <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'String' and !property.multiValued}" >
+	                        		<h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
+	                        			|| !raManageRequestBean.canApproveParition(partition)
+						   				|| raManageRequestBean.isPropertyReadOnly(property.name)}" 
+						   				value="#{property.value}" >
+						   					<f:converter converterId="stringConverter"/>
+						   			</h:inputText>
+	                        	</h:panelGroup>
+	                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'MultiLineString' and !property.multiValued}">
+						   			<h:inputTextarea disabled="#{raManageRequestBean.isPartitionHandled(partition) 
+	                        			|| !raManageRequestBean.canApproveParition(partition)
+						   				|| raManageRequestBean.isPropertyReadOnly(property.name)}" 
+		                                value="#{property.value}">
+		                            	<f:converter converterId="stringConverter"/>
+		                            </h:inputTextarea>
+	                        	</h:panelGroup>
+	                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Long' and !property.multiValued}">
+						   			<h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
+	                        			|| !raManageRequestBean.canApproveParition(partition)
+						   				|| raManageRequestBean.isPropertyReadOnly(property.name)}" 
+						   				value="#{property.value}" style="text-align: right;" >
+					                   <f:converter converterId="javax.faces.Long"/>
+						   			</h:inputText>
+	                        	</h:panelGroup>
+	                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Integer' and !property.multiValued}">
+	                        		<h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
+	                        			|| !raManageRequestBean.canApproveParition(partition)
+						   				|| raManageRequestBean.isPropertyReadOnly(property.name)}" 
+						   				value="#{property.value}" style="text-align: right;" size="6">
+					                   <f:converter converterId="javax.faces.Integer"/>
+						   			</h:inputText>
+						   		</h:panelGroup>	           	
+	                        	<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'RadioButton' and property.multiValued  and !property.hasMultipleValues}">
+	                        		<h:selectOneRadio disabled="#{raManageRequestBean.isPartitionHandled(partition) 
+	                        										|| !raManageRequestBean.canApproveParition(partition)
+						   											|| raManageRequestBean.isPropertyReadOnly(property.name)}"
+										value="#{property.encodedValue}" layout="pageDirection">
+										<f:selectItems value="#{partition.getPropertyPossibleValues(property)}" var="radioButton" itemLabel="#{radioButton.label}" />
+										<f:converter converterId="radioButtonConverter"/>
+									</h:selectOneRadio>
+	                        	</h:panelGroup>
+								<h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Boolean' and !property.multiValued}">
+	                        		<h:selectBooleanCheckbox disabled="#{raManageRequestBean.isPartitionHandled(partition) 
+                        				|| !raManageRequestBean.canApproveParition(partition)
+					   					|| raManageRequestBean.isPropertyReadOnly(property.name)}"  
+                        			value="#{property.value}"/>
+		                     	</h:panelGroup>                    
+	                    	</h:panelGroup>
+                    	</h:column>
+					</h:dataTable>                	
                 </ui:repeat>
                 
                 

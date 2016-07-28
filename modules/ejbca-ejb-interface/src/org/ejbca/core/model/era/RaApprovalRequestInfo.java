@@ -176,8 +176,10 @@ public class RaApprovalRequestInfo implements Serializable {
         
         // Determine which admins can approve the next step (ECA-5123)
         nextStepAllowedRoles = new HashSet<>();
-        for (final ApprovalPartition partition : nextStep.getPartitions().values()) {
-            nextStepAllowedRoles.addAll(approvalProfile.getAllowedRoleNames(partition));
+        if (nextStep != null) {
+            for (final ApprovalPartition partition : nextStep.getPartitions().values()) {
+                nextStepAllowedRoles.addAll(approvalProfile.getAllowedRoleNames(partition));
+            }
         }
         
         // Previous steps
@@ -188,7 +190,7 @@ public class RaApprovalRequestInfo implements Serializable {
         int stepOrdinal = 0;
         for (final int stepId : allStepIds) {
             stepToOrdinalMap.put(stepId, ++stepOrdinal);
-            if (stepId <= nextStep.getStepIdentifier()) {
+            if (nextStep != null && stepId <= nextStep.getStepIdentifier()) {
                 final ApprovalStep step = approvalProfile.getSteps().get(stepId);
                 final Map<Integer, ApprovalPartition> partitions = nextStep.getPartitions();
                 for (ApprovalPartition partition : partitions.values()) {
