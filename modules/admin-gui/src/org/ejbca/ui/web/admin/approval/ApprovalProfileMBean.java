@@ -35,6 +35,7 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;
 import org.cesecore.util.ui.RadioButton;
@@ -46,6 +47,7 @@ import org.ejbca.core.model.approval.profile.ApprovalProfilesFactory;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.util.CombineTime;
 
 /**
  * JSF MBean backing the approval profile pages.
@@ -149,6 +151,28 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         return currentApprovalProfile;
     }
 
+    public String getRequestExpirationPeriod() {
+        long milisecs = getApprovalProfile().getRequestExpirationPeriod();
+        CombineTime combTime = CombineTime.getInstance(milisecs);
+        return combTime.toString(SimpleTime.TYPE_DAYS);    
+    }
+    
+    public void setRequestExpirationPeriod(String expirationPeriod) {
+        CombineTime combTime = CombineTime.getInstance(expirationPeriod);
+        getApprovalProfile().setRequestExpirationPeriod(combTime.getLong());
+    }
+
+    public String getApprovalExpirationPeriod() {
+        long milisecs = getApprovalProfile().getApprovalExpirationPeriod();
+        CombineTime combTime = CombineTime.getInstance(milisecs);
+        return combTime.toString(SimpleTime.TYPE_DAYS);
+    }
+    
+    public void setApprovalExpirationPeriod(String expirationPeriod) {
+        CombineTime combTime = CombineTime.getInstance(expirationPeriod);
+        getApprovalProfile().setApprovalExpirationPeriod(combTime.getLong());
+    }
+    
     @SuppressWarnings("unchecked")
     public String save() {
         try {

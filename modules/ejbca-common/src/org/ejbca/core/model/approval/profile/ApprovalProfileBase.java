@@ -48,8 +48,8 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
 
     private static final int NO_SEQUENCES = -1;
 
-    private static final String REQUEST_EXPIRATION_PERIOD = "requestExpirationPeriod";
-    private static final String APPROVAL_EXPIRATION_PERIOD = "approvalExpirationPeriod";
+    private static final String REQUEST_EXPIRATION_PERIOD_PROPERTY = "requestExpirationPeriod";
+    private static final String APPROVAL_EXPIRATION_PERIOD_PROPERTY = "approvalExpirationPeriod";
 
     private static final String STEPS_KEY = "steps";
     private static final String FIRST_STEP_KEY = "firstStep";
@@ -71,8 +71,8 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
 
     public ApprovalProfileBase(final String name) {
         super(name);
-        data.put(REQUEST_EXPIRATION_PERIOD, getDefaultRequestExpirationPeriod());
-        data.put(APPROVAL_EXPIRATION_PERIOD, getDefaultApprovalExpirationPeriod());
+        data.put(REQUEST_EXPIRATION_PERIOD_PROPERTY, DEFAULT_REQUEST_EXPIRATION_PERIOD);
+        data.put(APPROVAL_EXPIRATION_PERIOD_PROPERTY, DEFAULT_APPROVAL_EXPIRATION_PERIOD);
 
     }
 
@@ -81,32 +81,32 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         return TYPE_NAME;
     }
 
+    @Override
     public long getRequestExpirationPeriod() {
-        return (long) data.get(REQUEST_EXPIRATION_PERIOD);
+        final Object value = data.get(REQUEST_EXPIRATION_PERIOD_PROPERTY);
+        if(value == null) {
+            return DEFAULT_REQUEST_EXPIRATION_PERIOD;
+        }
+        return (long) value;
     }
 
+    @Override
     public void setRequestExpirationPeriod(final long expirationPeriod) {
-        data.put(REQUEST_EXPIRATION_PERIOD, expirationPeriod);
+        data.put(REQUEST_EXPIRATION_PERIOD_PROPERTY, expirationPeriod);
     }
 
+    @Override
     public long getApprovalExpirationPeriod() {
-        return (long) data.get(APPROVAL_EXPIRATION_PERIOD);
+        final Object value = data.get(APPROVAL_EXPIRATION_PERIOD_PROPERTY);
+        if(value == null) {
+            return DEFAULT_APPROVAL_EXPIRATION_PERIOD;
+        }
+        return (long) value;
     }
 
+    @Override
     public void setApprovalExpirationPeriod(final long expirationPeriod) {
-        data.put(APPROVAL_EXPIRATION_PERIOD, expirationPeriod);
-    }
-
-    @Override
-    public long getDefaultRequestExpirationPeriod() {
-        // TODO return a real value, i.e. the value in conf/ejbca.properties
-        return 0;
-    }
-
-    @Override
-    public long getDefaultApprovalExpirationPeriod() {
-        // TODO return a real value, i.e, the value in conf/ejbca.properties
-        return 0;
+        data.put(APPROVAL_EXPIRATION_PERIOD_PROPERTY, expirationPeriod);
     }
 
     @Override

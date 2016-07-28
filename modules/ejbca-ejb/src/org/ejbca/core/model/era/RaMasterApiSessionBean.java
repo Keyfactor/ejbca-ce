@@ -85,7 +85,6 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
@@ -433,7 +432,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!request.isSearchingHistorical()) {
             // Search for everything that's not expired
             Date newDate = new Date();
-            Date startDate = new Date(newDate.getTime() - EjbcaConfiguration.getApprovalDefaultRequestValidity());
+            Date startDate = new Date(newDate.getTime() - ApprovalProfile.DEFAULT_APPROVAL_EXPIRATION_PERIOD);
             query.add(startDate, new Date());
         } else {
             // Everything except waiting and "approved" (note that the latter means approved but not excecuted yet)

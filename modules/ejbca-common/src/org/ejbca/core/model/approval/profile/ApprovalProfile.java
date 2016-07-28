@@ -40,6 +40,9 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     final String PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY = "notification_email_msg_body";
     /** Key for the data value marking the number of approvals required. */
     final String PROPERTY_NUMBER_OF_REQUIRED_APPROVALS = "number_of_required_approvals";
+    
+    final long DEFAULT_REQUEST_EXPIRATION_PERIOD = 28800L * 1000L; // 8 hours
+    final long DEFAULT_APPROVAL_EXPIRATION_PERIOD = 28800L * 1000L; // 8 hours
 
     /**
      * 
@@ -49,9 +52,13 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     
     String getApprovalProfileIdentifier();
 
-    long getDefaultRequestExpirationPeriod();
-
-    long getDefaultApprovalExpirationPeriod();
+    long getRequestExpirationPeriod();
+    
+    void setRequestExpirationPeriod(long reqExpirationPeriod);
+    
+    long getApprovalExpirationPeriod();
+    
+    void setApprovalExpirationPeriod(long approvalExpirationPeriod);
 
 
     /**

@@ -62,14 +62,17 @@
 	
 	<h:form id="approvalProfilesForm" >
 		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">	
+			
 			<h:panelGroup>
 				&nbsp;
 			</h:panelGroup>
 			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.adminWebPath}/approval/editapprovalprofiles.jsf">
 				<h:outputText value="#{web.text.BACKTOAPPROVALPROFILES}"/>
 			</h:outputLink>
+			
 			<h:outputLabel for="approvalProfileId" value="#{web.text.APPROVALPROFILEID}"/>
 			<h:outputText id="approvalProfileId" value="#{approvalProfileMBean.selectedApprovalProfileId}"/>
+			
 			<h:outputLabel for="approvalProfileType" value="#{web.text.APPROVALPROFILETYPE}"/>
 			<h:panelGroup id="approvalProfileType">
 				<h:selectOneMenu id="selectOneMenuApprovalType" value="#{approvalProfileMBean.currentApprovalProfileTypeName}"
@@ -79,8 +82,28 @@
 				<h:commandButton id="selectProfileType" action="#{approvalProfileMBean.selectUpdate}" value="#{web.text.APPROVALPROFILETYPE_UPDATE}"
                     rendered="#{!approvalProfilesMBean.viewOnly}"/>
 				<script>document.getElementById('approvalProfilesForm:selectProfileType').style.display = 'none';</script>
-			</h:panelGroup>		
+			</h:panelGroup>	
+		
+			<h:outputLabel for="reqExpPeriod" value="Request Expiration Period #{web.text.FORMAT_TIME_YMDHMIN}"/>
+			<h:panelGroup>
+				<h:inputText id="reqExpPeriod" disabled="#{approvalProfilesMBean.viewOnly}" value="#{approvalProfileMBean.requestExpirationPeriod}" />
+				<br/>
+				<h:panelGroup styleClass="help">
+					<h:outputText value="#{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}"/>
+				</h:panelGroup>
+			</h:panelGroup>
+			
+			<h:outputLabel for="approvalExpPeriod" value="Approval Expiration Period #{web.text.FORMAT_TIME_YMDHMIN}"/>
+			<h:panelGroup>
+				<h:inputText id="approvalExpPeriod" disabled="#{approvalProfilesMBean.viewOnly}" value="#{approvalProfileMBean.approvalExpirationPeriod}" />
+				<br/>
+				<h:panelGroup styleClass="help">
+					<h:outputText value="#{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}"/>
+				</h:panelGroup>
+			</h:panelGroup>
+				
 		</h:panelGrid>
+		
 		<h3><h:outputText value="#{web.text.APPROVAL_PROFILE_STEPS}"/>	</h3>
 		<%--Retrieve GUI layout from the currently chosen approval profile archetype --%>
 		<h:dataTable value="#{approvalProfileMBean.steps}" var="step" style="width: 100%"  rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"

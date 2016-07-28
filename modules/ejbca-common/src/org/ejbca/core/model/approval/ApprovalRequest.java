@@ -204,7 +204,7 @@ public abstract class ApprovalRequest implements Externalizable {
      * Default if will return the value defined in the ejbca.properties
      */
     public long getRequestValidity() {
-        return EjbcaConfiguration.getApprovalDefaultRequestValidity();
+        return getApprovalProfile().getRequestExpirationPeriod();
     }
 
     /**
@@ -213,7 +213,7 @@ public abstract class ApprovalRequest implements Externalizable {
      * Default if will return the value defined in the ejbca.properties
      */
     public long getApprovalValidity() {
-        return EjbcaConfiguration.getApprovalDefaultApprovalValidity();
+        return getApprovalProfile().getApprovalExpirationPeriod();
     }
 
     /**
