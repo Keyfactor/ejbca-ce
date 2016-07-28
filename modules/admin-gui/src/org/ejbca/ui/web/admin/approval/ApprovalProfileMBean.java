@@ -73,12 +73,15 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         TEXT(intres.getLocalizedMessage("approval.profile.metadata.field.freetext"));
 
        private static List<SelectItem> selectItems;
+       private static Map<String, FieldType> nameLookupMap;
        private final String label;
        
        static {
            selectItems = new ArrayList<>();
+           nameLookupMap = new HashMap<>();
            for(FieldType action : FieldType.values()) {
                selectItems.add(new SelectItem(action, action.getLabel()));
+               nameLookupMap.put(action.name(), action);
            }
        }
        
@@ -93,6 +96,10 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
        
        public static List<SelectItem> asSelectItems() {
            return selectItems;
+       }
+       
+       public static FieldType getFromName(String name) {
+           return nameLookupMap.get(name);
        }
         
     }
@@ -116,7 +123,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     /**
      * The type of metadata field to add to a partition, if any. 
      */
-    private FieldType fieldToAdd = null;
+    private Map<Integer, String> fieldToAdd = new HashMap<>();
     private Map<Integer, String> fieldLabel = new HashMap<>();
 
    public ApprovalProfilesMBean getApprovalProfilesMBean() {
@@ -210,7 +217,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         ApprovalProfile updatedApprovalProfile = getApprovalProfile();
         DynamicUiProperty<? extends Serializable> property;
         String fieldLabel = this.fieldLabel.get(partitionId);
-        switch (fieldToAdd) {
+        FieldType fieldType = FieldType.getFromName(fieldToAdd.get(partitionId));
+        switch (fieldType) {
         case TEXT:
             property = new DynamicUiProperty<>(fieldLabel, new MultiLineString(""));
             break;
@@ -238,7 +246,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             updatedApprovalProfile.addPropertyToPartition(steps.getRowData().getIdentifier(), partitionId, property);
             steps = createStepListFromProfile(updatedApprovalProfile);
             this.fieldLabel = new HashMap<>();
-            fieldToAdd = null;
+            fieldToAdd = new HashMap<>();
             return "";
         }
     }
@@ -469,13 +477,10 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         return FieldType.asSelectItems();
     }
 
-    public FieldType getFieldToAdd() {
+    public Map<Integer, String> getFieldToAdd() {
         return fieldToAdd;
     }
     
-    public void setFieldToAdd(final FieldType fieldToAdd) {
-        this.fieldToAdd = fieldToAdd;
-    }
 
     public Map<Integer, String> getFieldLabel() {
         return fieldLabel;
