@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import javax.faces.model.SelectItem;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -72,6 +74,20 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
         public int getStepId() {
             return stepId;
+        }
+        
+        /** @return the current multi-valued property's possible values as JSF friendly SelectItems. */
+        public List<SelectItem/*<String,String>*/> getPropertyPossibleValues( final DynamicUiProperty<? extends Serializable> property) {
+            final List<SelectItem> propertyPossibleValues = new ArrayList<SelectItem>();
+            if (profilePropertyList != null) {
+                if (property != null && property.getPossibleValues() != null) {
+                    for (final Serializable possibleValue : property.getPossibleValues()) {
+                        propertyPossibleValues
+                                .add(new SelectItem(property.getAsEncodedValue(property.getType().cast(possibleValue)), possibleValue.toString()));
+                    }
+                }
+            }
+            return propertyPossibleValues;
         }
         
     }
