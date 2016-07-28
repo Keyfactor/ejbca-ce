@@ -135,7 +135,7 @@
 								<f:facet name="footer">
 									<h:panelGroup rendered="#{!approvalProfileMBean.arePartitionsFixed() && !approvalProfilesMBean.viewOnly}">
 										<h:inputText value="#{approvalProfileMBean.fieldLabel[partition.partitionId]}"/>
-										<h:selectOneMenu id="selectAction" value="#{approvalProfileMBean.fieldToAdd}">
+										<h:selectOneMenu id="selectAction" value="#{approvalProfileMBean.fieldToAdd[partition.partitionId]}">
 											<f:selectItems value="#{approvalProfileMBean.fieldsAvailable}"/>
 										</h:selectOneMenu>	
 										<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_ADD}" action="#{approvalProfileMBean.addField(partition.partitionId)}"/>	
