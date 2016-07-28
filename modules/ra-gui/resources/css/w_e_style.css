@@ -115,8 +115,7 @@ img.menu_logo {
 
 .content-body {
   /*placerar brödtext*/
-  padding: 1em 0 1em;
-  overflow-x: auto; }
+  padding: 1em 0 1em; }
 
 #content-body {
   /* välkomstexten liten*/
@@ -148,18 +147,6 @@ img.menu_logo {
   display: block;
   margin: 2% auto 0 auto; }
 
-/*#detailsForm > span.pure-u-1:nth-last-of-type(2) {
-
-    > { display: block; }
-
-    > label {
-        margin-left:0;
-    }
-
-    > .pure-u-lg-2-3:nth-of-type(13) > input { //knappen revoke inne i search > certificate details
-            margin: 0 0 0 2%;
-    }
-}*/
 #detailsForm > span.pure-u-1:nth-of-type(1) > .pure-u-1-3 {
   margin-top: 2%;
   width: 100%; }
@@ -310,7 +297,7 @@ textarea#keyPairForm\:certificateRequest {
   border-bottom: 0.3ex solid #e9af13;
   width: 100%; }
   .tabButtonBar > input {
-    font-size: 95%; }
+    font-size: 80%; }
 
 /*drop downs i search*/
 #contentForm\:parentGenericSearchString {
@@ -329,8 +316,6 @@ textarea#keyPairForm\:certificateRequest {
 #contentForm\:parentCriteriaStatus {
   margin: 1% 1% 2% 0; }
 
-/*Kod för show more options-knapp som förmodligen inte behövs*/
-/*SLUT: Kod för show more options-knapp som förmodligen inte behövs*/
 /*NY search for certificates >  show more-knapp */
 #detailsForm\:certDetails\:showMoreLessDetailsButton {
   background: #e9af13;
@@ -369,12 +354,6 @@ textarea#keyPairForm\:certificateRequest {
 select#detailsForm\:certDetails\:newRevocationReason ~ input {
   margin: 0 0 0 2%; }
 
-/*
-#detailsForm\:certDetails\:showMoreLessDetailsButton { //Ev. dublett av datailsForm:certDetails:showMoreLessDetailsButton ovan
-  display:block;
-  margin: 2% 0 0 0;
-}
-*/
 #contentForm > #contentForm:more > span.pure-g > div:nth-of-type(1).pure-u-1 {
   width: 16%; }
 
@@ -389,7 +368,7 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 
 #makeRequestButton, #requestStatusButton, #searchCertsButton {
   height: 40px;
-  padding-top: 13px; }
+  padding-top: 15px; }
 
 #requestInfoForm\:confirmRequestButton,
 #searchCertsButton,
@@ -465,8 +444,6 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
   width: 31%;
   height: 40px; }
 
-/*kanpp kod som förmodligen inte behövs*/
-/*SLUT: kanpp kod som förmodligen inte behövs*/
 .keygeneration-button-group {
   color: #fff;
   margin: 2% 0 0 0; }
@@ -495,9 +472,6 @@ a {
   #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) > .pure-control-group #contentForm\:modifiedAfter {
     width: 100%; }
 
-#contentForm\:endEntititesMoreInputs {
-  width: 100%; }
-
 /* resterande text för inputs samt inputs i show more options i search for certificates */
 #contentForm\:issuedAfterLabel,
 #contentForm\:issuedBeforeLabel,
@@ -523,20 +497,14 @@ a {
 .bodyText {
   color: #fff; }
 
-/*
-#contentForm\:showMoreButton { //showmore-knapp search for certificates
-  background: #e9af13;
-  color: #fff;
-  width: 75%;
-}
-*/
 #contentForm\:showMoreButton,
 #contentForm\:showLessButton {
   /*showelss-knapp search for certificates*/
   background: #e9af13;
   color: #fff;
   width: 150px;
-  margin: 3% 0 0 0; }
+  margin: 3% 0 0 0;
+  height: 40px; }
 
 /*SLUT: knappar kod som förmodligen inte beövs*/
 #enrollMakeNewRequestForm\:requestPreview > fieldset > .pure-u-lg-2-3 {
@@ -546,9 +514,6 @@ a {
   margin: 1% 0 0 2%;
   color: #fff;
   font-style: italic; }
-
-#viewRequestTable {
-  margin: 1% 0 4% 2%; }
 
 #contentForm\:requestApproveMessage {
   margin: 1% 0 0 2.5%; }
@@ -581,7 +546,7 @@ a {
   margin: 0 0 1% 1.5%;
   padding: 1% 2.5% 1% 2.5%;
   height: 40px;
-  width: 30%; }
+  width: 110px; }
 
 #expandRequestDetails,
 #expandStatusDetails,
@@ -614,6 +579,11 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 #contentForm\:viewRequestDataTable {
   margin: 1% 0 1% 2.5%; }
 
+/*
+#viewRequestTable {
+    margin: 1% 0 4% 2%;
+}
+*/
 #requestInfoForm\:useRequestIdLink:hover {
   text-decoration: underline; }
 
@@ -651,10 +621,10 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   padding: 1%;
   list-style: none;
   margin: 70px 0 0 0;
-  width: 40%; }
+  width: 90%;
+  position: fixed; }
 
 #contentForm > #contentForm\:more {
-  /*margin-top: 20px;*/
   width: 100%; }
 
 #contentForm\:issuedAfter,
@@ -671,7 +641,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   width: 100%;
   font-size: 95%; }
 
-#enrollWithRequestIdForm\:requestId {
+#enrollWithRequestIdForm\:requestId, #contentForm\:endEntititesMoreInputs {
   width: 100%; }
 
 .footer {
@@ -679,12 +649,11 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   display: flex;
   align-items: flex-end;
   justify-content: center; }
-
-.footer > .align-center > p {
-  /*footer-texten*/
-  margin: 0 0 5.5% 10px;
-  display: inline-block;
-  font-size: 90%; }
+  .footer > .align-center > p {
+    /*footer-texten*/
+    margin: 0 0 5.5% 10px;
+    display: inline-block;
+    font-size: 90%; }
 
 .footerLogo {
   height: 1.5em;
@@ -762,41 +731,41 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
           padding-right: 1em;
           font-weight: bold;
           color: #444d57; }
-  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(8) > span {
+  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(8) > span {
     display: inline-block;
     width: 54%;
     word-break: break-all; }
-  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(1):before {
+  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(1):before {
     content: "CA"; }
-  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(2):before {
+  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(2):before {
     content: "Profile"; }
-  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(3):before {
+  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(3):before {
     content: "Serial number"; }
-  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(4):before {
+  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(4):before {
     content: "Subject"; }
-  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(5):before {
+  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(5):before {
     content: "Issued"; }
-  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(6):before {
+  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(6):before {
     content: "Expires"; }
-  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(7):before {
+  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(7):before {
     content: "Status"; }
-  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(8):before {
+  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(8):before {
     content: "End entity"; }
-  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(4) > span {
+  div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(4) > span {
     display: inline-block;
     width: 54%;
     word-break: break-all; }
-  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(1):before {
+  div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(1):before {
     content: "CA"; }
-  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(2):before {
+  div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(2):before {
     content: "Profile"; }
-  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(3):before {
+  div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(3):before {
     content: "End Entity"; }
-  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(4):before {
+  div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(4):before {
     content: "Subject"; }
-  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(5):before {
+  div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(5):before {
     content: "Last modified"; }
-  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(6):before {
+  div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(6):before {
     content: "Status"; }
   div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(1):before {
     content: "Certificate Authority"; }
@@ -806,18 +775,20 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     content: "Certificate chain¹"; }
   div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(4):before {
     content: "Browser import"; }
-  div.content-body #manageRequestTable > tbody > tr > td:nth-of-type(1):before {
+  div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(1):before {
     content: "Request Date"; }
-  div.content-body #manageRequestTable > tbody > tr > td:nth-of-type(2):before {
+  div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(2):before {
     content: "CA"; }
-  div.content-body #manageRequestTable > tbody > tr > td:nth-of-type(3):before {
+  div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(3):before {
     content: "Type"; }
-  div.content-body #manageRequestTable > tbody > tr > td:nth-of-type(4):before {
+  div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(4):before {
     content: "Name"; }
-  div.content-body #manageRequestTable > tbody > tr > td:nth-of-type(5):before {
+  div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(5):before {
     content: "Requested By"; }
-  div.content-body #manageRequestTable > tbody > tr > td:nth-of-type(6):before {
-    content: "Request Status"; } }
+  div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(6):before {
+    content: "Request Status"; }
+  div.content-body #contentForm\:manageRequestTable > tbody > tr > td > span {
+    word-break: normal; } }
 @media (max-width: 64.0525em) {
   div#div_menu_logo {
     z-index: 1; }
@@ -1010,7 +981,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 
   .errorMessage {
     /* gör att 'generella' felmeddelanden visas var man än står på sidan */
-    width: 60%;
+    width: 92%;
     margin: 12% 0 0 0; }
 
   #enrollWithRequestIdForm\:requestId {
@@ -1053,8 +1024,6 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     font-size: 83%; }
   table.pure-table > tbody > tr.pure-table-odd td {
     font-size: 83%; }
-  table.pure-table > tbody a {
-    margin-left: 16px; }
 
   .footer > .align-center > p {
     /*footer-texten*/
@@ -1156,7 +1125,8 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   #contentForm\:showMoreButton,
   #contentForm\:showLessButton {
     /*showelss-knapp search for certificates*/
-    width: 75%; }
+    width: 75%;
+    height: auto; }
 
   #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > label, #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset span {
     display: inline-block; }
@@ -1223,7 +1193,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     margin: 0 0 0 0;
     width: 40%; }
 
-  #requestInfoForm\:confirmRequestButton, #requestInfoForm\:generateKeyStorePem, #requestInfoForm\:generateP12, #requestInfoForm\:generateJks, #requestInfoForm\:resetButton {
+  #requestInfoForm\:confirmRequestButton, #requestInfoForm\:generateKeyStorePem, #requestInfoForm\:generateP12, #requestInfoForm\:generateJks, #requestInfoForm\:resetButton, #keyPairForm\:uploadCsrButton {
     /*confirm request-knappen*/
     height: auto; }
 
