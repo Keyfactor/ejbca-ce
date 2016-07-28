@@ -14,8 +14,7 @@ package org.ejbca.core.model.approval;
 
 import javax.xml.ws.WebFault;
 
-import org.cesecore.ErrorCode;
-import org.ejbca.core.EjbcaException;
+import org.cesecore.NonSensitiveException;
 
 /**
  * Exception thrown from actions that stop to wait for approvals
@@ -23,20 +22,11 @@ import org.ejbca.core.EjbcaException;
  * @version $Id$
  */
 @WebFault
-public class WaitingForApprovalException extends EjbcaException {
+@NonSensitiveException
+public class WaitingForApprovalException extends Exception {
 
 	private static final long serialVersionUID = 6808192333114783496L;
     private int approvalId = 0;
-
-    /**
-     * Constructor used to create exception with an errorCode. Calls the same default constructor
-     * in the base class <code>EjbcaException</code>.
-     *
-     * @param errorCode defines the cause of the exception.
-     */
-    public WaitingForApprovalException(ErrorCode errorCode) {
-        super(errorCode);
-    }
 
     public WaitingForApprovalException(String message, Throwable cause) {
 		super(message, cause);
@@ -58,12 +48,4 @@ public class WaitingForApprovalException extends EjbcaException {
 	public void setApprovalId(int approvalId){
 		this.approvalId = approvalId;
 	}
-	
-	@Override
-    public final Object getNonSensitiveClone() {
-	    WaitingForApprovalException nonSensitiveClone = (WaitingForApprovalException)super.getNonSensitiveClone();
-	    nonSensitiveClone.setApprovalId(getApprovalId());
-	    return nonSensitiveClone;
-	}
-
 }

@@ -13,14 +13,10 @@
  
 package org.ejbca.core;
 
-import java.lang.reflect.InvocationTargetException;
-
 import javax.xml.ws.WebFault;
 
-import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
-import org.cesecore.NonSensitiveCloneable;
 
 
 /**
@@ -31,11 +27,11 @@ import org.cesecore.NonSensitiveCloneable;
  * @version $Id$
  */
 @WebFault
-public class EjbcaException extends Exception implements NonSensitiveCloneable {
+public class EjbcaException extends Exception {
 
     private static final long serialVersionUID = -3754146611270578813L;
     
-    private static final Logger log = Logger.getLogger(EjbcaException.class);
+    //private static final Logger log = Logger.getLogger(EjbcaException.class);
 
     /** The error code describes the cause of the exception. */
     ErrorCode errorCode = null;
@@ -138,26 +134,6 @@ public class EjbcaException extends Exception implements NonSensitiveCloneable {
      */
     public void setErrorCode(ErrorCode errorCode) {
         this.errorCode = errorCode;
-    }
-    
-    /**
-     * Get non sensitive clone of the exception. All other data except error code will be purged from the clone.
-     */
-    @Override
-    public Object getNonSensitiveClone() {
-        try {
-            try {
-                return this.getClass().getConstructor(ErrorCode.class).newInstance(getErrorCode()); 
-            } catch (NoSuchMethodException nsme) { 
-                EjbcaException e = (EjbcaException)this.getClass().getConstructor().newInstance(); 
-                e.setErrorCode(getErrorCode()); 
-                return e; 
-            } 
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
-                | SecurityException e) {
-            log.error("getNonSensitiveClone: ", e);
-            return null;
-        }
     }
     
     /** Get EJBCA ErrorCode from any exception that is, extends or just wraps EjbcaException

@@ -33,6 +33,7 @@ import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
  * API of available methods on the CA that can be invoked by the RA.
@@ -130,10 +131,11 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
      * @throws WaitingForApprovalException if approval is required to finalize the adding of the end entity
+     * @throws UserDoesntFullfillEndEntityProfile endEntity doesn't fullfill profile
      * @return true if used has been added, false otherwise
      */
     boolean addUser(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException,
-    EjbcaException, WaitingForApprovalException;
+    EjbcaException, WaitingForApprovalException, UserDoesntFullfillEndEntityProfile;
 
     /**
      * Deletes (end entity) user. Does not propagate the exceptions but logs them.
@@ -157,7 +159,8 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException
      * @throws KeyStoreException if something went wrong with keystore creation
      */
-    byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation) throws AuthorizationDeniedException, EjbcaException;
+    byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
+            throws AuthorizationDeniedException, EjbcaException, Exception;
 
     /**
      * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.

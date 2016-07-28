@@ -82,6 +82,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.Tuple;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page
@@ -608,20 +609,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
             log.info("Waiting for approval request with request ID " + requestId + " has been received");
             return null;
         } catch(EjbcaException e){
-            ErrorCode errorCode = EjbcaException.getErrorCode(e);
-            if(errorCode != null){
-                if(errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)){
-                    raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
-                    log.info("The username " + endEntityInformation.getUsername() + " already exists");
-                }else{
-                    raLocaleBean.addMessageError(errorCode);
-                    log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
-                }
+            ErrorCode errorCode = e.getErrorCode();
+            if(errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)){
+                raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
+                log.info("The username " + endEntityInformation.getUsername() + " already exists");
             }else{
-                raLocaleBean.addMessageError("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage());
-                log.info("End entity with username " + endEntityInformation.getUsername() + " could not be added. Contact your administrator or check the logs.", e);
+                raLocaleBean.addMessageError(errorCode);
+                log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
             }
             return null;
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+            raLocaleBean.addMessageError("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage());
+            log.info("End entity with username " + endEntityInformation.getUsername() + " could not be added. Contact your administrator or check the logs.", e);
         }
         
         //The end-entity has been added now! Make sure clean-up is done in this "try-finally" block if something goes wrong
@@ -649,7 +648,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
                         log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
                     }
-                    return null;
+                } catch(Exception e){
+                    raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
+                    log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
                 }
             } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())) {
                 try {
