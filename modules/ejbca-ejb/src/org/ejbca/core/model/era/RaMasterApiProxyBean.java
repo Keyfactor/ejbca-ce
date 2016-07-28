@@ -49,6 +49,7 @@ import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
  * Proxy implementation of the the RaMasterApi that will will get the result of the most preferred API implementation
@@ -408,7 +409,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public boolean addUser(AuthenticationToken admin, EndEntityInformation endEntity, boolean clearpwd)
-            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
+            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException, UserDoesntFullfillEndEntityProfile {
         AuthorizationDeniedException authorizationDeniedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             try {
@@ -471,7 +472,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity)
-            throws AuthorizationDeniedException, EjbcaException {
+            throws AuthorizationDeniedException, EjbcaException, Exception {
         AuthorizationDeniedException authorizationDeniedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {

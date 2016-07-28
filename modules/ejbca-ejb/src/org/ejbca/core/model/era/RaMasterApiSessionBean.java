@@ -44,7 +44,6 @@ import javax.persistence.QueryTimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
-import org.cesecore.NonHandledCesecoreException;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -95,6 +94,7 @@ import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -1067,15 +1067,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public boolean addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd) throws AuthorizationDeniedException,
-    EjbcaException, WaitingForApprovalException{
+    EjbcaException, WaitingForApprovalException, UserDoesntFullfillEndEntityProfile{
         try {
             endEntityManagementSessionLocal.addUser(admin, endEntity, clearpwd);
-        } catch (UserDoesntFullfillEndEntityProfile e) {
-            throw new NonHandledCesecoreException(e);
         } catch (CesecoreException e) {
-            throw new EjbcaException(e.getErrorCode(), e);
-        } 
-        
+            // Wrapping ONLY CesecoreException base exceptions. In this case EndEntityExists and CADoesntExistsException
+            throw new EjbcaException(e);
+        }
         return endEntityAccessSession.findUser(endEntity.getUsername()) != null;
     }
     
@@ -1094,23 +1092,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public byte[] generateKeystore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException{
+    public byte[] generateKeystore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException, Exception{
         GenerateToken tgen = new GenerateToken(endEntityAuthenticationSessionLocal, endEntityAccessSession, endEntityManagementSessionLocal, caSession, keyRecoverySessionLocal, signSessionLocal);
-        try {
-            KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), endEntity.getExtendedinformation().getKeyStoreAlgorithmSubType(), endEntity.getExtendedinformation().getKeyStoreAlgorithmType(), endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
-            if(endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM){
-                try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
-                    outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
-                    return outputStream.toByteArray();
-                }
-            }else{
-                try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
-                    keyStore.store(outputStream, endEntity.getPassword().toCharArray());
-                    return outputStream.toByteArray();
-                }
+        KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), endEntity.getExtendedinformation().getKeyStoreAlgorithmSubType(), endEntity.getExtendedinformation().getKeyStoreAlgorithmType(), endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
+        if(endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM){
+            try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
+                outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
+                return outputStream.toByteArray();
             }
-        } catch (Exception e) {
-            throw new NonHandledCesecoreException(e);
+        }else{
+            try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
+                keyStore.store(outputStream, endEntity.getPassword().toCharArray());
+                return outputStream.toByteArray();
+            }
         }
     }
     
