@@ -65,7 +65,7 @@
                 <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
                     <h:outputText rendered="#{empty raManageRequestsBean.filteredResults}" value="#{msg.manage_requests_page_info_noresult}"/>
                     <h:outputText styleClass="fineprint" rendered="#{raManageRequestsBean.moreResultsAvailable}" value="#{msg.manage_requests_page_info_moreresults}"/>
-                    <h:dataTable id="requestTable" rendered="#{not empty raManageRequestsBean.filteredResults}" value="#{raManageRequestsBean.filteredResults}" var="raRequest"
+                    <h:dataTable id="manageRequestTable" rendered="#{not empty raManageRequestsBean.filteredResults}" value="#{raManageRequestsBean.filteredResults}" var="raRequest"
                         styleClass="pure-table" rowClasses=",pure-table-odd">
                         <h:column>
                             <f:facet name="header">

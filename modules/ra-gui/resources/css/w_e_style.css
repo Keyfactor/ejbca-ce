@@ -85,7 +85,9 @@ h1, h2, h3, h4, p, span {
   font-size: .75em; }
 
 img.menu_logo {
-  height: 1.5em; }
+  height: 1.5em;
+  z-index: 9999;
+  position: absolute; }
 
 .content {
   width: 95%;
@@ -732,13 +734,15 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
       display: none; }
     div.content-body table.pure-table > tbody > tr {
       display: block;
-      margin-bottom: 1em; }
+      margin-bottom: 1em;
+      font-size: 81%; }
       div.content-body table.pure-table > tbody > tr td:nth-child(even) {
         background: #e0e0e0; }
       div.content-body table.pure-table > tbody > tr td:nth-child(odd) {
         background: #f2f2f2; }
       div.content-body table.pure-table > tbody > tr > td {
-        display: block; }
+        display: block;
+        word-break: break-all; }
         div.content-body table.pure-table > tbody > tr > td > table.nopadding.noborder {
           display: inline-block;
           width: 54%;
@@ -758,63 +762,62 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
           padding-right: 1em;
           font-weight: bold;
           color: #444d57; }
-        div.content-body table.pure-table > tbody > tr > td:nth-of-type(1):before {
-          content: "Certificate Authority"; }
-        div.content-body table.pure-table > tbody > tr > td:nth-of-type(2):before {
-          content: "Certificate"; }
-        div.content-body table.pure-table > tbody > tr > td:nth-of-type(3):before {
-          content: "Certificate chain¹"; }
-        div.content-body table.pure-table > tbody > tr > td:nth-of-type(4):before {
-          content: "Browser import"; }
-  div.content-body #contentForm\:filteredResults table.pure-table {
-    display: block;
-    border: none; }
-    div.content-body #contentForm\:filteredResults table.pure-table > thead {
-      display: none; }
-    div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr {
-      display: block;
-      margin-bottom: 1em; }
-      div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr td:nth-child(even) {
-        background: #e0e0e0; }
-      div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr td:nth-child(odd) {
-        background: #f2f2f2; }
-      div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td {
-        display: block; }
-        div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td > table.nopadding.noborder {
-          display: inline-block;
-          width: 54%;
-          word-break: break-all; }
-          div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td > table.nopadding.noborder a {
-            white-space: nowrap; }
-        div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td > table > tbody > tr {
-          background: none; }
-          div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td > table > tbody > tr td:nth-child(even) {
-            background: none; }
-          div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td > table > tbody > tr td:nth-child(odd) {
-            background: none; }
-        div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td:before {
-          display: inline-block;
-          vertical-align: top;
-          width: 40%;
-          padding-right: 1em;
-          font-weight: bold;
-          color: #444d57; }
-        div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td:nth-of-type(1):before {
-          content: "CA"; }
-        div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td:nth-of-type(2):before {
-          content: "Profile"; }
-        div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td:nth-of-type(3):before {
-          content: "Serial number"; }
-        div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td:nth-of-type(4):before {
-          content: "Subject"; }
-        div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td:nth-of-type(5):before {
-          content: "Issued"; }
-        div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td:nth-of-type(6):before {
-          content: "Expires"; }
-        div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td:nth-of-type(7):before {
-          content: "Status"; }
-        div.content-body #contentForm\:filteredResults table.pure-table > tbody > tr > td:nth-of-type(8):before {
-          content: "End entity"; } }
+  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(8) > span {
+    display: inline-block;
+    width: 54%;
+    word-break: break-all; }
+  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(1):before {
+    content: "CA"; }
+  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(2):before {
+    content: "Profile"; }
+  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(3):before {
+    content: "Serial number"; }
+  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(4):before {
+    content: "Subject"; }
+  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(5):before {
+    content: "Issued"; }
+  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(6):before {
+    content: "Expires"; }
+  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(7):before {
+    content: "Status"; }
+  div.content-body #searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(8):before {
+    content: "End entity"; }
+  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(4) > span {
+    display: inline-block;
+    width: 54%;
+    word-break: break-all; }
+  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(1):before {
+    content: "CA"; }
+  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(2):before {
+    content: "Profile"; }
+  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(3):before {
+    content: "End Entity"; }
+  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(4):before {
+    content: "Subject"; }
+  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(5):before {
+    content: "Last modified"; }
+  div.content-body #searchEntityTable > tbody > tr > td:nth-of-type(6):before {
+    content: "Status"; }
+  div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(1):before {
+    content: "Certificate Authority"; }
+  div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(2):before {
+    content: "Certificate"; }
+  div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(3):before {
+    content: "Certificate chain¹"; }
+  div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(4):before {
+    content: "Browser import"; }
+  div.content-body #manageRequestTable > tbody > tr > td:nth-of-type(1):before {
+    content: "Request Date"; }
+  div.content-body #manageRequestTable > tbody > tr > td:nth-of-type(2):before {
+    content: "CA"; }
+  div.content-body #manageRequestTable > tbody > tr > td:nth-of-type(3):before {
+    content: "Type"; }
+  div.content-body #manageRequestTable > tbody > tr > td:nth-of-type(4):before {
+    content: "Name"; }
+  div.content-body #manageRequestTable > tbody > tr > td:nth-of-type(5):before {
+    content: "Requested By"; }
+  div.content-body #manageRequestTable > tbody > tr > td:nth-of-type(6):before {
+    content: "Request Status"; } }
 @media (max-width: 64.0525em) {
   div#div_menu_logo {
     z-index: 1; }

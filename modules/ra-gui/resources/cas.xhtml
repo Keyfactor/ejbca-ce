@@ -33,7 +33,7 @@
 			</h:panelGroup>	       
         	<h:panelGroup layout="block" class="content-body" id="content-body">	 
 	            <h:outputText rendered="#{!raAccessBean.authorizedToCas or empty raCasPageBean.casAndCrlItems}" value="#{msg.cas_page_info_nocas}"/>
-	            <h:dataTable rendered="#{raAccessBean.authorizedToCas and not empty raCasPageBean.casAndCrlItems}" value="#{raCasPageBean.casAndCrlItems}" var="caAndCrls" styleClass="pure-table"
+	            <h:dataTable id="caCertificateTable" rendered="#{raAccessBean.authorizedToCas and not empty raCasPageBean.casAndCrlItems}" value="#{raCasPageBean.casAndCrlItems}" var="caAndCrls" styleClass="pure-table"
 	                rowClasses=",pure-table-odd">
 	                <h:column>
 	                    <f:facet name="header"><h:outputText value="#{msg.cas_page_colhead_cas}"/></f:facet>
