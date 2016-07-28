@@ -204,7 +204,7 @@
 	                    <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.resultsNone}" value="#{msg.search_certs_page_info_noresult}"/>
 	                    <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.resultsMoreAvailable}" value="#{msg.search_certs_page_info_moreresults}"/>
                         <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.resultsTimeout}" value="#{msg.search_certs_page_info_timeout}"/>
-	                    <h:dataTable rendered="#{not empty raSearchCertsBean.filteredResults}" value="#{raSearchCertsBean.filteredResults}" var="raSearchCertificate"
+	                    <h:dataTable id="searchCertTable" rendered="#{not empty raSearchCertsBean.filteredResults}" value="#{raSearchCertsBean.filteredResults}" var="raSearchCertificate"
 	                       styleClass="pure-table" rowClasses=",pure-table-odd" >
 	                        <h:column>
 	                            <f:facet name="header">
