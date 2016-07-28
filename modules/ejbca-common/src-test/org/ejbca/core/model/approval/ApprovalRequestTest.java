@@ -188,7 +188,25 @@ public class ApprovalRequestTest {
         assertTrue(ar.isEditedByMe(token2));
         assertFalse(ar.isEditedByMe(token3));
     }
-
+    
+    /** Tests editing (but not actually saving to the database, since this is handled in the ApprovalSessionBean class) */
+    @Test
+    public void testRequestExpirationPeriod() throws Exception {
+        X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
+        AuthenticationToken token = new X509CertificateAuthenticationToken(testcert);
+        
+        long expPeriod = 2 * 60 * 60 * 1000L; // 2 hours
+        
+        AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile("AccumulativeApprovalProfile");
+        approvalProfile.initialize();
+        approvalProfile.setNumberOfApprovalsRequired(2);
+        approvalProfile.setRequestExpirationPeriod(expPeriod);
+        DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false, approvalProfile);
+        
+        assertEquals(expPeriod, ar.getRequestValidity());
+    }
+    
+    
     @BeforeClass
 	public static void beforeClass() throws Exception {		
 		CryptoProviderTools.installBCProviderIfNotAvailable();
