@@ -10,20 +10,25 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore;
+ 
+package org.ejbca.core.model.ra;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.cesecore.NonSensitiveException;
 
 /**
- * 
- * @version $Id$
+ * Wraps the original UserDoesntFullfillEndEntityProfile. Unlike original it doesn't
+ * extends Exception and it's not marked with @WebFault.
  *
+ * @version $Id$
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NonSensitiveException {
+@NonSensitiveException
+public class UserDoesntFullfillEndEntityProfileRaException extends EjbcaException {
+    private static final long serialVersionUID = 777317800935352658L;
 
+    
+    public UserDoesntFullfillEndEntityProfileRaException(UserDoesntFullfillEndEntityProfile exception){
+        super(exception);
+    }
 }

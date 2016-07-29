@@ -13,9 +13,14 @@
 package org.ejbca.core.model.era;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -94,7 +99,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -114,8 +118,10 @@ import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalReque
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
+import org.ejbca.core.model.ra.UserDoesntFullfillEndEntityProfileRaException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.GenerateToken;
@@ -1067,12 +1073,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public boolean addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd) throws AuthorizationDeniedException,
-    EjbcaException, WaitingForApprovalException, UserDoesntFullfillEndEntityProfile{
+    EjbcaException, WaitingForApprovalException{
         try {
             endEntityManagementSessionLocal.addUser(admin, endEntity, clearpwd);
         } catch (CesecoreException e) {
-            // Wrapping ONLY CesecoreException base exceptions. In this case EndEntityExists and CADoesntExistsException
             throw new EjbcaException(e);
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+            //Wraps @WebFault Exception based with @NonSensitive EjbcaException based
+            throw new UserDoesntFullfillEndEntityProfileRaException(e); 
         }
         return endEntityAccessSession.findUser(endEntity.getUsername()) != null;
     }
@@ -1092,20 +1100,30 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public byte[] generateKeystore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException, Exception{
+    public byte[] generateKeystore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException{
         GenerateToken tgen = new GenerateToken(endEntityAuthenticationSessionLocal, endEntityAccessSession, endEntityManagementSessionLocal, caSession, keyRecoverySessionLocal, signSessionLocal);
-        KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), endEntity.getExtendedinformation().getKeyStoreAlgorithmSubType(), endEntity.getExtendedinformation().getKeyStoreAlgorithmType(), endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
+        KeyStore keyStore;
+        try {
+            keyStore = tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), endEntity.getExtendedinformation().getKeyStoreAlgorithmSubType(), endEntity.getExtendedinformation().getKeyStoreAlgorithmType(), endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
+        } catch (Exception e1) {
+            throw new KeyStoreGeneralRaException(e1);
+        }
         if(endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM){
             try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
                 outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
                 return outputStream.toByteArray();
+            } catch (IOException | CertificateEncodingException | UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
+                log.error(e); //should never happen if keyStore is valid object
             }
         }else{
             try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
                 keyStore.store(outputStream, endEntity.getPassword().toCharArray());
                 return outputStream.toByteArray();
+            } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+                log.error(e); //should never happen if keyStore is valid object
             }
         }
+        return null;
     }
     
     @Override

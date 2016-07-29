@@ -409,7 +409,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public boolean addUser(AuthenticationToken admin, EndEntityInformation endEntity, boolean clearpwd)
-            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException, UserDoesntFullfillEndEntityProfile {
+            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
         AuthorizationDeniedException authorizationDeniedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             try {
@@ -472,7 +472,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity)
-            throws AuthorizationDeniedException, EjbcaException, Exception {
+            throws AuthorizationDeniedException, EjbcaException {
         AuthorizationDeniedException authorizationDeniedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
