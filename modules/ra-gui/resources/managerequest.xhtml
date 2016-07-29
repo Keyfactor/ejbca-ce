@@ -88,7 +88,7 @@
             
                 <ui:repeat value="#{raManageRequestBean.request.previousSteps}" var="prevStep">
                     <h:panelGroup layout="block" styleClass="approvalStep">
-                        <h3><h:outputText value="#{prevStep.headingText}"/></h3>
+                        <h3 id="h3ApprovedSteps"><h:outputText value="#{prevStep.headingText}"/></h3>
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
