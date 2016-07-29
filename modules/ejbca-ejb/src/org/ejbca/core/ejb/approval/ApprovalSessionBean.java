@@ -135,7 +135,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         approvalSession = sessionContext.getBusinessObject(ApprovalSessionLocal.class);
     }
     
-    @SuppressWarnings("deprecation")
     @Override
     public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException {
     	if (log.isTraceEnabled()) {
@@ -153,9 +152,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             try {
                 final Integer freeId = findFreeApprovalId();
                 final ApprovalData approvalData = new ApprovalData(freeId);
-                final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
                 updateApprovalData(approvalData, approvalRequest);
                 entityManager.persist(approvalData);
+                final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
                 sendApprovalNotifications(admin, approvalRequest, approvalProfile, approvalData.getApprovals(), false);
                 String msg = intres.getLocalizedMessage("approval.addedwaiting", approvalId);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
