@@ -145,14 +145,9 @@ public class RaManageRequestBean implements Serializable {
     public boolean isViewDataVisible() { return !editing; }
     public boolean isEditDataVisible() { return editing; }
     public boolean isStatusVisible() { return !editing; }
-    public boolean isPreviousStepsVisible() { return !editing && !requestInfo.getPreviousSteps().isEmpty(); }
+    public boolean isPreviousStepsVisible() { return !editing && !getRequest().getPreviousSteps().isEmpty(); }
     public boolean isApprovalVisible() {
-        return !editing; 
-    }
-    
-    public boolean isHasNextStep() {
-        initializeRequestInfo();
-        return requestInfo != null && requestInfo.getNextStep() != null;
+        return !editing && getRequest().request.getNextApprovalStep() != null; 
     }
     
     public List<DynamicUiProperty<? extends Serializable>> getPartitionProperties(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
@@ -269,23 +264,23 @@ public class RaManageRequestBean implements Serializable {
     public String getStepInfoText() {
         final List<String> roles = new ArrayList<>(requestData.getNextStepAllowedRoles());
         Collections.sort(roles);
-        return raLocaleBean.getMessage("view_request_page_step_of", requestInfo.getCurrentStepOrdinal(), requestInfo.getStepCount(), StringUtils.join(roles, ", "));
+        return raLocaleBean.getMessage("view_request_page_step_of", getRequest().getCurrentStepOrdinal(), getRequest().getStepCount(), StringUtils.join(roles, ", "));
     }
     
     public String getCantApproveReason() {
-        if (requestInfo.isExpired()) {
+        if (getRequest().isExpired()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_expired");
-        } else if (requestInfo.isPendingExecution()) {
+        } else if (getRequest().isPendingExecution()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_pending_execution");
-        } else if (requestInfo.isExecuted()) {
+        } else if (getRequest().isExecuted()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_already_executed");
-        } else if (requestInfo.isExecutionFailed()) {
+        } else if (getRequest().isExecutionFailed()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_already_executed_failed");
-        } else if (!requestInfo.isWaitingForApproval()) {
+        } else if (!getRequest().isWaitingForApproval()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_not_waiting");
-        } else if (requestInfo.isPending()) {
+        } else if (getRequest().isPending()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_pending");
-        } else if (requestInfo.isEditedByMe()) {
+        } else if (getRequest().isEditedByMe()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_edited_by_me");
         } else {
             return raLocaleBean.getMessage("view_request_page_cannot_approve");
