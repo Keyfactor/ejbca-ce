@@ -131,11 +131,10 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
      * @throws WaitingForApprovalException if approval is required to finalize the adding of the end entity
-     * @throws UserDoesntFullfillEndEntityProfile endEntity doesn't fullfill profile
      * @return true if used has been added, false otherwise
      */
     boolean addUser(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException,
-    EjbcaException, WaitingForApprovalException, UserDoesntFullfillEndEntityProfile;
+    EjbcaException, WaitingForApprovalException;
 
     /**
      * Deletes (end entity) user. Does not propagate the exceptions but logs them.
@@ -160,7 +159,7 @@ public interface RaMasterApi {
      * @throws KeyStoreException if something went wrong with keystore creation
      */
     byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
-            throws AuthorizationDeniedException, EjbcaException, Exception;
+            throws AuthorizationDeniedException, EjbcaException;
 
     /**
      * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.
