@@ -59,6 +59,9 @@ form#contentForm.pure-form > div.tabButtonBar > input {
 h1, h2, h3, h4, p, span {
   font-family: Helvetica; }
 
+#h3ApprovedSteps {
+  margin-left: 2% !important; }
+
 .content-body h3 {
   color: #fff;
   font-weight: lighter;
@@ -297,7 +300,7 @@ textarea#keyPairForm\:certificateRequest {
 .tabButtonBar {
   border-bottom: 0.3ex solid #e9af13;
   width: 100%; }
-  .tabButtonBar > input {
+  .tabButtonBar > a {
     font-size: 80%; }
 
 /*drop downs i search*/
@@ -369,7 +372,7 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 
 #makeRequestButton, #requestStatusButton, #searchCertsButton {
   height: 40px;
-  padding-top: 15px; }
+  padding-top: 13px; }
 
 #requestInfoForm\:confirmRequestButton,
 #searchCertsButton,
@@ -517,7 +520,7 @@ a {
   font-style: italic; }
 
 #contentForm\:requestApproveMessage {
-  margin: 1% 0 0 2.5%; }
+  margin: 1% 0 0 2%; }
 
 .statusFailed {
   color: #ed6a5f; }
@@ -698,35 +701,35 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
       overflow: hidden; } }
 
 @media (max-width: 47.99em) {
-  div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table {
+  div.content-body table#caCertificateTable.pure-table, div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table {
     display: block;
     border: none; }
-    div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > thead {
+    div.content-body table#caCertificateTable.pure-table > thead, div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > thead {
       display: none; }
-    div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr {
+    div.content-body table#caCertificateTable.pure-table > tbody > tr, div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr {
       display: block;
       margin-bottom: 1em;
       font-size: 81%; }
-      div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr td:nth-child(even) {
+      div.content-body table#caCertificateTable.pure-table > tbody > tr td:nth-child(even), div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr td:nth-child(even) {
         background: #e0e0e0; }
-      div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr td:nth-child(odd) {
+      div.content-body table#caCertificateTable.pure-table > tbody > tr td:nth-child(odd), div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr td:nth-child(odd) {
         background: #f2f2f2; }
-      div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td {
+      div.content-body table#caCertificateTable.pure-table > tbody > tr > td, div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td {
         display: block;
         word-break: break-all; }
-        div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table.nopadding.noborder {
+        div.content-body table#caCertificateTable.pure-table > tbody > tr > td > table.nopadding.noborder, div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table.nopadding.noborder {
           display: inline-block;
           width: 54%;
           word-break: break-all; }
-          div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table.nopadding.noborder a {
+          div.content-body table#caCertificateTable.pure-table > tbody > tr > td > table.nopadding.noborder a, div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table.nopadding.noborder a {
             white-space: nowrap; }
-        div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table > tbody > tr {
+        div.content-body table#caCertificateTable.pure-table > tbody > tr > td > table > tbody > tr, div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table > tbody > tr {
           background: none; }
-          div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table > tbody > tr td:nth-child(even) {
+          div.content-body table#caCertificateTable.pure-table > tbody > tr > td > table > tbody > tr td:nth-child(even), div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table > tbody > tr td:nth-child(even) {
             background: none; }
-          div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table > tbody > tr td:nth-child(odd) {
+          div.content-body table#caCertificateTable.pure-table > tbody > tr > td > table > tbody > tr td:nth-child(odd), div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table > tbody > tr td:nth-child(odd) {
             background: none; }
-        div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td:before {
+        div.content-body table#caCertificateTable.pure-table > tbody > tr > td:before, div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td:before {
           display: inline-block;
           vertical-align: top;
           width: 40%;
@@ -781,22 +784,24 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     content: "Certificate chain¹"; }
   div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(4):before {
     content: "Browser import"; }
-  div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(1):before {
-    content: "Request Date"; }
-  div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(2):before {
-    content: "CA"; }
-  div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(3):before {
-    content: "Type"; }
-  div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(4):before {
-    content: "Name"; }
-  div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(5):before {
-    content: "Requested By"; }
-  div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(6):before {
-    content: "Request Status"; }
-  div.content-body #contentForm\:manageRequestTable > tbody > tr > td > span {
-    word-break: normal; }
-  div.content-body #contentForm\:manageRequestTable > tbody > tr > td > a {
-    padding-top: 16%; } }
+  div.content-body #contentForm\:manageRequestTable > tbody {
+    display: block; }
+    div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(1):before {
+      content: "Request Date"; }
+    div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(2):before {
+      content: "CA"; }
+    div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(3):before {
+      content: "Type"; }
+    div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(4):before {
+      content: "Name"; }
+    div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(5):before {
+      content: "Requested By"; }
+    div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(6):before {
+      content: "Request Status"; }
+    div.content-body #contentForm\:manageRequestTable > tbody > tr > td > span {
+      word-break: normal; }
+    div.content-body #contentForm\:manageRequestTable > tbody > tr > td > a {
+      padding-top: 7%; } }
 @media (max-width: 64.0525em) {
   div#div_menu_logo {
     z-index: 1; }
@@ -933,9 +938,9 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   .content-body h2 {
     margin: 0.2em 0 0 2%; }
 
-  #contentForm\:filteredResults > .pure-table {
+  #contentForm\:filteredResults > table:not(#contentForm\:viewRequestDataTable) table.pure-table {
     line-height: normal; }
-    #contentForm\:filteredResults > .pure-table > tbody td {
+    #contentForm\:filteredResults > table:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody td {
       word-break: break-word;
       max-width: 180px; }
 
