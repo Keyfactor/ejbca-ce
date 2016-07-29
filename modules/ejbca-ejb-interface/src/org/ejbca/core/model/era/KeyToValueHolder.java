@@ -15,11 +15,11 @@ package org.ejbca.core.model.era;
 import java.io.Serializable;
 
 /**
- * Serializable Tuple implementation.
+ * Generic implementation which will hold any serializable object, as well as its ID and name.
  * 
  * @version $Id$
  */
-public class Tuple<T extends Serializable> implements Serializable {
+public class KeyToValueHolder<T extends Serializable> implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -27,7 +27,7 @@ public class Tuple<T extends Serializable> implements Serializable {
 	private final String name;
 	private final T value;
 
-	public Tuple(Integer id, String name, T value) {
+	public KeyToValueHolder(Integer id, String name, T value) {
 		this.id = id;
 		this.name = name;
 		this.value = value;

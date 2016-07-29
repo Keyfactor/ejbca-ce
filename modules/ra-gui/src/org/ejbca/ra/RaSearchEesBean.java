@@ -44,7 +44,7 @@ import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaEndEntitySearchRequest;
 import org.ejbca.core.model.era.RaEndEntitySearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.era.Tuple;
+import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
@@ -106,7 +106,7 @@ public class RaSearchEesBean implements Serializable {
 
         @Override
         public EndEntityProfile getEndEntityProfile(int eepId) {
-            final Tuple<EndEntityProfile> tuple = getEndEntityProfileMap().get(eepId);
+            final KeyToValueHolder<EndEntityProfile> tuple = getEndEntityProfileMap().get(eepId);
             return tuple==null ? null : tuple.getValue();
         }
     };

@@ -30,7 +30,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.era.Tuple;
+import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
@@ -72,7 +72,7 @@ public class RaEndEntityBean implements Serializable {
         @Override
         public EndEntityProfile getEndEntityProfile(int eepId) {
             IdNameHashMap<EndEntityProfile> map = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken());
-            Tuple<EndEntityProfile> tuple = map.get(eepId);
+            KeyToValueHolder<EndEntityProfile> tuple = map.get(eepId);
             return tuple==null ? null : tuple.getValue();
         }
     };
