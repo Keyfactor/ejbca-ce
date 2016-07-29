@@ -195,7 +195,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             String msg = intres.getLocalizedMessage("approval.edited", id);
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
+            auditSession.log(EjbcaEventTypes.APPROVAL_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("approval.errorediting", id);
@@ -203,7 +203,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("Error", e.getMessage());
-            auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
+            auditSession.log(EjbcaEventTypes.APPROVAL_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
         }
         if (log.isTraceEnabled()) {

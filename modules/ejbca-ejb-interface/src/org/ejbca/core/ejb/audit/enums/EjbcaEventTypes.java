@@ -31,6 +31,8 @@ public enum EjbcaEventTypes implements EventType {
     APPROVAL_ADD,
     /** Action that requires approval was approved by one of the required administrator(s). */
     APPROVAL_APPROVE,
+    /** Approval request was edited. */
+    APPROVAL_EDIT,
     /** Action that requires approval was rejected by one of the required administrator(s). */
     APPROVAL_REJECT,
     /** <i>Event type is currently only used by EJBCA development tests.</i> */
