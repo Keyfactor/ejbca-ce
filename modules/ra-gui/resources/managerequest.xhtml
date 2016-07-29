@@ -95,8 +95,8 @@
                 </ui:repeat>
             </h:panelGroup>
             
-            <h:panelGroup layout="block" rendered="#{raManageRequestBean.approvalVisible}">
-                <h2><h:outputText value="#{msg.view_request_page_approval_header}"/></h2>
+            <h2><h:outputText value="#{msg.view_request_page_approval_header}"/></h2>
+            <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.canApprove}">
                 
                 <ui:repeat value="#{raManageRequestBean.partitions}" var="partition">     
                 
@@ -162,15 +162,14 @@
 					</h:dataTable>                	
                 </ui:repeat>
                 
-                
-                <h:panelGroup id="approvalButtonsPanel" layout="block" rendered="#{raManageRequestBean.request.canApprove}">
+                <h:panelGroup id="approvalButtonsPanel" layout="block">
                     <h:commandButton id="commandApprove" action="#{raManageRequestBean.approve}" value="#{msg.view_request_page_approve_command}" />
                     <h:commandButton id="commandReject" action="#{raManageRequestBean.reject}" value="#{msg.view_request_page_reject_command}" />
                 </h:panelGroup>
-                
-                <h:panelGroup id="requestApproveMessage" styleClass="bodyText" layout="block" rendered="#{not raManageRequestBean.request.canApprove}">
-                    <h:outputText value="#{raManageRequestBean.cantApproveReason}"/>
-                </h:panelGroup>
+            </h:panelGroup>
+            
+            <h:panelGroup id="requestApproveMessage" styleClass="bodyText" layout="block" rendered="#{not raManageRequestBean.request.canApprove}">
+                <h:outputText value="#{raManageRequestBean.cantApproveReason}"/>
             </h:panelGroup>
         </h:form>
     </h:panelGroup>
