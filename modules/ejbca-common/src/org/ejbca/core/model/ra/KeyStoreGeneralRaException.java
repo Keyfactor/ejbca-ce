@@ -10,20 +10,23 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore;
+ 
+package org.ejbca.core.model.ra;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.cesecore.NonSensitiveException;
+import org.ejbca.core.EjbcaException;
 
 /**
- * 
- * @version $Id$
+ * Wraps the original Exception thrown with GenerateToken.generateOrKeyRecoverToken.
  *
+ * @version $Id$
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NonSensitiveException {
+@NonSensitiveException
+public class KeyStoreGeneralRaException extends EjbcaException {
+    
+    private static final long serialVersionUID = 1L;
 
+    public KeyStoreGeneralRaException(Exception exception){
+        super(exception);
+    }
 }

@@ -609,18 +609,20 @@ public class EnrollMakeNewRequestBean implements Serializable {
             log.info("Waiting for approval request with request ID " + requestId + " has been received");
             return null;
         } catch(EjbcaException e){
-            ErrorCode errorCode = e.getErrorCode();
-            if(errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)){
-                raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
-                log.info("The username " + endEntityInformation.getUsername() + " already exists");
+            ErrorCode errorCode = EjbcaException.getErrorCode(e);
+            if(errorCode != null){
+                if(errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)){
+                    raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
+                    log.info("The username " + endEntityInformation.getUsername() + " already exists");
+                }else{
+                    raLocaleBean.addMessageError(errorCode);
+                    log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
+                }
             }else{
-                raLocaleBean.addMessageError(errorCode);
-                log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
+                raLocaleBean.addMessageError("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage());
+                log.info("End entity with username " + endEntityInformation.getUsername() + " could not be added. Contact your administrator or check the logs.", e);
             }
             return null;
-        } catch (UserDoesntFullfillEndEntityProfile e) {
-            raLocaleBean.addMessageError("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage());
-            log.info("End entity with username " + endEntityInformation.getUsername() + " could not be added. Contact your administrator or check the logs.", e);
         }
         
         //The end-entity has been added now! Make sure clean-up is done in this "try-finally" block if something goes wrong
