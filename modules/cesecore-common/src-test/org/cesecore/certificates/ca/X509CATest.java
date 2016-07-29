@@ -922,8 +922,69 @@ public class X509CATest {
         assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
     }
     
+    
     /**
-     * Testing that CSR algorithm is inforced from end entity information if there is one.
+     * Testing generating certificate with public key from providedRequestMessage (providedPublicKey and endEntityInformation.extendedInformation.certificateRequest must be null).
+     */
+    @Test
+    public void testGeneratingCertificateWithPublicKeyFromProvidedRequestMessage() throws Exception {
+        final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
+
+        // Create a pkcs10 certificate request (this algorithm will be used)        
+        KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+        X500Name x509dn = CertTools.stringToBcX500Name("CN=RequestMessageCn,O=PrimeKey,C=SE");
+        PKCS10CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
+        PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
+        assertEquals("CN=RequestMessageCn,O=PrimeKey,C=SE", requestMessage.getRequestDN());
+        EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        
+        //Create CP and generate certificate
+        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
+        cp.setUseCertificatePolicies(true);
+        Certificate usercert = x509ca.generateCertificate(cryptoToken, endEntityInformation, requestMessage, /*providedPublicKey=*/null, 0, null, null, cp, null, "00000", cceConfig);
+        assertNotNull(usercert);
+        
+        assertEquals("2048", AlgorithmTools.getKeySpecification(usercert.getPublicKey()));
+        assertEquals(AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(usercert.getPublicKey()));
+    }
+    
+    /**
+     * Testing that CSR algorithm is enforced from end entity information if there is one.
+     */
+    @Test
+    public void testProvidedPublicKeyAlgorithmEnforcedOverOneFromProvidedRequestMessage() throws Exception {
+        final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
+
+        // Create a pkcs10 certificate request (the algorithm will be overriden)        
+        KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        X500Name x509dn = CertTools.stringToBcX500Name("CN=RequestMessageCn,O=PrimeKey,C=SE");
+        PKCS10CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
+        PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
+        assertEquals("CN=RequestMessageCn,O=PrimeKey,C=SE", requestMessage.getRequestDN());
+        EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+
+        // Create separate key pair that is going to be enforced over one from request message        
+        KeyPair keyPairEnforcedAlg = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+        
+        //Create CP and generate certificate
+        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
+        cp.setUseCertificatePolicies(true);
+        Certificate usercert = x509ca.generateCertificate(cryptoToken, endEntityInformation, requestMessage, keyPairEnforcedAlg.getPublic(), 0, null, null, cp, null, "00000", cceConfig);
+        assertNotNull(usercert);
+        
+        //RSA_1024 from requestMessage will be overriden with RSA_2048 from separately provided publicKey
+        assertEquals("2048", AlgorithmTools.getKeySpecification(usercert.getPublicKey()));
+        assertEquals(AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(usercert.getPublicKey()));
+    }
+    
+    /**
+     * Testing that CSR algorithm is enforced from end entity information if there is one.
      */
     @Test
     public void testEndEntityInformationCsrAlgorithmEnforced() throws Exception {

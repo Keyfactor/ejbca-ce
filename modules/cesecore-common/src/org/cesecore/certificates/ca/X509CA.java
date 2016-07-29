@@ -114,6 +114,7 @@ import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -754,7 +755,7 @@ public class X509CA extends CA implements Serializable {
             final PublicKey publicKey, final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile,
             final Extensions extensions, final String sequence, CertificateGenerationParams certGenParams, final AvailableCustomCertificateExtensionsConfiguration cceConfig)
             throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
-            IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException {
+            IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException {
         // Before we start, check if the CA is off-line, we don't have to waste time
         // one the stuff below of we are off-line. The line below will throw CryptoTokenOfflineException of CA is offline
         final CAToken catoken = getCAToken();
@@ -769,6 +770,7 @@ public class X509CA extends CA implements Serializable {
     /**
      * Sequence is ignored by X509CA. The ctParams argument will NOT be kept after the function call returns,
      * and is allowed to contain references to session beans.
+     * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over endEntityInformation.extendedInformation.certificateRequest
      * @param subject end entity information. If it contains CSR under extended information, it will be used instead of providedRequestMessage and providedPublicKey. 
      * Otherwise, providedRequestMessage will be used.
      * 
@@ -780,13 +782,14 @@ public class X509CA extends CA implements Serializable {
      * @throws OperatorCreationException if CA's private key contained an unknown algorithm or provider
      * @throws CertificateCreateException if an error occurred when trying to create a certificate. 
      * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
+     * @throws IllegalKeyException 
      */
     private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey providedPublicKey,
             final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
             final String sequence, final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider, 
             CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean linkCertificate, boolean caNameChange)
             throws CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException, CertificateExtensionException,
-             OperatorCreationException, CertificateCreateException, SignatureException {
+             OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException {
 
         // We must only allow signing to take place if the CA itself is on line, even if the token is on-line.
         // We have to allow expired as well though, so we can renew expired CAs
@@ -799,21 +802,41 @@ public class X509CA extends CA implements Serializable {
         }
         
         RequestMessage request = providedRequestMessage; //The request message was provided outside of endEntityInformation
-        PublicKey publicKey = providedPublicKey;
+        PublicKey publicKey = null;
+        String debugPublicKeySource = null;
+        String debugRequestMessageSource = null;
+        if(providedRequestMessage != null){
+            try {
+                publicKey = providedRequestMessage.getRequestPublicKey();
+                debugPublicKeySource = "from providedRequestMessage";
+                debugRequestMessageSource = "from providedRequestMessage";
+            } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e1) {
+                //Fine since public key can be provided with providedPublicKey or endEntityInformation.extendedInformation.certificateRequest
+            }
+        }
+        //ProvidedPublicKey has priority over providedRequestMessage.requestPublicKey
+        if(providedPublicKey != null){
+            publicKey = providedPublicKey;
+            debugPublicKeySource = "separately";
+        }
         //Request inside endEntityInformation has priority since its algorithm is approved
         if(subject.getExtendedinformation() != null && subject.getExtendedinformation().getCertificateRequest() != null){
             request = RequestMessageUtils.genPKCS10RequestMessage(subject.getExtendedinformation().getCertificateRequest());
             try {
                 publicKey = request.getRequestPublicKey();
+                debugPublicKeySource = "from endEntity.extendedInformaion.certificateRequest";
+                debugRequestMessageSource = "from endEntity.extendedInformaion.certificateRequest";
             } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Error occured with extracting public key from endEntityInformation.extendedInformation. Proceeding with one providede separately", e);
+                    log.debug("Error occured with extracting public key from endEntityInformation.extendedInformation. Proceeding with one provided separately", e);
                 }
             }
-            if (log.isDebugEnabled()) {
-                log.debug("CSR request found inside the endEntityInformation. Using this one instead of one provided separately.");
-            }
         }
+        if (log.isDebugEnabled()) {
+            log.debug("Public key is provided " + debugPublicKeySource);
+            log.debug("Request is provided " + debugRequestMessageSource);
+        }
+        certProfile.verifyKey(publicKey);
 
         final String sigAlg;
         if (certProfile.getSignatureAlgorithm() == null) {

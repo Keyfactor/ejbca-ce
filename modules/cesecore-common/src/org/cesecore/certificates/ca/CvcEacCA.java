@@ -36,6 +36,7 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
@@ -264,22 +265,50 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 	}
 	
     @Override
-    public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage providedRequestMessage, PublicKey publicKey,
+    public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage providedRequestMessage, PublicKey providedPublicKey,
             int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence, 
             CertificateGenerationParams certGenParams, final AvailableCustomCertificateExtensionsConfiguration cceConfig)
-            throws IllegalValidityException, CryptoTokenOfflineException, CertificateCreateException, SignatureException {
+            throws IllegalValidityException, CryptoTokenOfflineException, CertificateCreateException, SignatureException, IllegalKeyException {
         if (log.isTraceEnabled()) {
 			log.trace(">generateCertificate("+notBefore+", "+notAfter+")");
 		}
         
         RequestMessage request = providedRequestMessage; //The request message was provided outside of endEntityInformation
+        PublicKey publicKey = null;
+        String debugPublicKeySource = null;
+        String debugRequestMessageSource = null;
+        if(providedRequestMessage != null){
+            try {
+                publicKey = providedRequestMessage.getRequestPublicKey();
+                debugPublicKeySource = "from providedRequestMessage";
+                debugRequestMessageSource = "from providedRequestMessage";
+            } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e1) {
+                //Fine since public key can be provided with providedPublicKey or endEntityInformation.extendedInformation.certificateRequest
+            }
+        }
+        //ProvidedPublicKey has priority over providedRequestMessage.requestPublicKey
+        if(providedPublicKey != null){
+            publicKey = providedPublicKey;
+            debugPublicKeySource = "separately";
+        }
         //Request inside endEntityInformation has priority since its algorithm is approved
         if(subject.getExtendedinformation() != null && subject.getExtendedinformation().getCertificateRequest() != null){
             request = RequestMessageUtils.genPKCS10RequestMessage(subject.getExtendedinformation().getCertificateRequest());
-            if (log.isDebugEnabled()) {
-                log.debug("CSR request found inside the endEntityInformation. Using this one instead of one provided separately.");
+            try {
+                publicKey = request.getRequestPublicKey();
+                debugPublicKeySource = "from endEntity.extendedInformaion.certificateRequest";
+                debugRequestMessageSource = "from endEntity.extendedInformaion.certificateRequest";
+            } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Error occured with extracting public key from endEntityInformation.extendedInformation. Proceeding with one provided separately", e);
+                }
             }
         }
+        if (log.isDebugEnabled()) {
+            log.debug("Public key is provided " + debugPublicKeySource);
+            log.debug("Request is provided " + debugRequestMessageSource);
+        }
+        certProfile.verifyKey(publicKey);
         
 		// Get the fields for the Holder Reference fields
 		// country is taken from C in a DN string, mnemonic from CN in a DN string and seq from the sequence passed as parameter
