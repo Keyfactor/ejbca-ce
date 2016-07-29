@@ -79,7 +79,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.era.Tuple;
+import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -804,7 +804,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public EndEntityProfile getEndEntityProfile() {
         if (getSelectedEndEntityProfile() != null) {
-            final Tuple<EndEntityProfile> temp = authorizedEndEntityProfiles.get(Integer.parseInt(getSelectedEndEntityProfile()));
+            final KeyToValueHolder<EndEntityProfile> temp = authorizedEndEntityProfiles.get(Integer.parseInt(getSelectedEndEntityProfile()));
             if (temp != null) {
                 return temp.getValue();
             }
@@ -814,7 +814,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private CertificateProfile getCertificateProfile() {
         if (getSelectedCertificateProfile() != null) {
-            Tuple<CertificateProfile> temp = authorizedCertificateProfiles.get(Integer.parseInt(getSelectedCertificateProfile()));
+            KeyToValueHolder<CertificateProfile> temp = authorizedCertificateProfiles.get(Integer.parseInt(getSelectedCertificateProfile()));
             if (temp != null) {
                 return temp.getValue();
             }
@@ -824,7 +824,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private CAInfo getCAInfo() {
         if (getSelectedCertificateAuthority() != null) {
-            Tuple<CAInfo> temp = authorizedCAInfos.get(Integer.parseInt(getSelectedCertificateAuthority()));
+            KeyToValueHolder<CAInfo> temp = authorizedCAInfos.get(Integer.parseInt(getSelectedCertificateAuthority()));
             if (temp != null) {
                 return temp.getValue();
             }
@@ -998,7 +998,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (certificateProfile != null) {
                 final List<Integer> availableCAsFromCP = certificateProfile.getAvailableCAs();
                 final boolean anyCAAvailableFromCP = availableCAsFromCP.size() == 1 && availableCAsFromCP.iterator().next() == CertificateProfile.ANYCA;
-                for (final Tuple<CAInfo> tuple : authorizedCAInfos.values()) {
+                for (final KeyToValueHolder<CAInfo> tuple : authorizedCAInfos.values()) {
                     if ((anyCAAvailableFromEEP || Arrays.asList(availableCAsFromEEPArray).contains(String.valueOf(tuple.getId())))
                             && (anyCAAvailableFromCP || availableCAsFromCP.contains(tuple.getId()))) {
                         ret.add(tuple.getId());

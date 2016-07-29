@@ -27,32 +27,32 @@ public class IdNameHashMap<T extends Serializable> implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 
-    private Map<String, Tuple<T>> nameMap = new HashMap<>();
-	private Map<Integer, Tuple<T>> idMap = new HashMap<>();
+    private Map<String, KeyToValueHolder<T>> nameMap = new HashMap<>();
+	private Map<Integer, KeyToValueHolder<T>> idMap = new HashMap<>();
  
-	public Map<String, Tuple<T>> getNameMap() {
+	public Map<String, KeyToValueHolder<T>> getNameMap() {
         return nameMap;
     }
 
-    public Map<Integer, Tuple<T>> getIdMap() {
+    public Map<Integer, KeyToValueHolder<T>> getIdMap() {
         return idMap;
     }
 
-    public Tuple<T> put(int id, String name, T value){
+    public KeyToValueHolder<T> put(int id, String name, T value){
         if(nameMap.containsKey(name) || idMap.containsKey(id)){
             return null;
         }
-        Tuple<T> newValue = new Tuple<T>(id, name, value);
+        KeyToValueHolder<T> newValue = new KeyToValueHolder<T>(id, name, value);
 		nameMap.put(name, newValue);
 		idMap.put(id, newValue);
 		return newValue;
 	}
 	
-	public Tuple<T> get(int id){
+	public KeyToValueHolder<T> get(int id){
 		return idMap.get(id);
 	}
 	
-	public Tuple<T> get(String name){
+	public KeyToValueHolder<T> get(String name){
 		return nameMap.get(name);
 	}
 	
@@ -77,7 +77,7 @@ public class IdNameHashMap<T extends Serializable> implements Serializable{
 	    return nameMap.containsKey(key);
 	}
 	
-	public Collection<Tuple<T>> values(){
+	public Collection<KeyToValueHolder<T>> values(){
 	    return idMap.values();
 	}
 	
