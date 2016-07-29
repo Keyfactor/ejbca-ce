@@ -16,7 +16,6 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,7 +77,7 @@ public class RaApprovalRequestInfo implements Serializable {
     private Collection<String> nextStepAllowedRoles;
     
     // Previous approval steps that are visible to the admin
-    private final List<ApprovalStep> previousApprovalSteps;
+    private final List<RaApprovalStepInfo> previousApprovalSteps;
     
     private final Map<Integer,Integer> stepToOrdinalMap;
     
@@ -124,15 +123,17 @@ public class RaApprovalRequestInfo implements Serializable {
         requestedByMe = requestAdmin != null && requestAdmin.equals(authenticationToken);
         lastEditedByMe = approval.getApprovalRequest().isEditedByMe(authenticationToken);
         editedByAdmins = approval.getApprovalRequest().getEditedByAdmins();
-        // TODO show the Subject DN (or common name) of the admins who have edited the request (ECA-) 
         
-        // Check if approved by self
+        // Check which partitions have been approved, and if approved by self
         approvedByMe = false;
+        final Set<StepPartitionId> approvedSet = new HashSet<>();
         final Set<StepPartitionId> approvedByMeSet = new HashSet<>();
         for (final Approval prevApproval : approval.getApprovals()) {
+            final StepPartitionId spId = new StepPartitionId(prevApproval.getStepId(), prevApproval.getPartitionId());
+            approvedSet.add(spId);
             if (authenticationToken.equals(prevApproval.getAdmin())) {
                 approvedByMe = true;
-                approvedByMeSet.add(new StepPartitionId(prevApproval.getStepId(), prevApproval.getPartitionId()));
+                approvedByMeSet.add(spId);
             }
         }
         
@@ -182,29 +183,38 @@ public class RaApprovalRequestInfo implements Serializable {
             }
         }
         
-        // Previous steps
-        final List<Integer> allStepIds = new ArrayList<>(approvalProfile.getSteps().keySet());
-        Collections.sort(allStepIds);
-        previousApprovalSteps = new ArrayList<>();
+        // Build a list of all approval steps that we are allowed to see (used in the RA GUI to display the previous steps/partitions)
         stepToOrdinalMap = new HashMap<>();
-        int stepOrdinal = 0;
-        for (final int stepId : allStepIds) {
-            stepToOrdinalMap.put(stepId, ++stepOrdinal);
-            if (nextStep != null && stepId <= nextStep.getStepIdentifier()) {
-                final ApprovalStep step = approvalProfile.getSteps().get(stepId);
-                final Map<Integer, ApprovalPartition> partitions = nextStep.getPartitions();
-                for (ApprovalPartition partition : partitions.values()) {
-                    try {
-                        final StepPartitionId spId = new StepPartitionId(step.getStepIdentifier(), partition.getPartitionIdentifier());
-                        if (approvedByMeSet.contains(spId) || approvalProfile.canViewPartition(authenticationToken, partition)) {
-                            previousApprovalSteps.add(step);
-                            break;
-                        }
-                    } catch (AuthenticationFailedException e) {
-                        // If this admin cannot approve this partition, check the next partition
+        previousApprovalSteps = new ArrayList<>();
+        ApprovalStep step = approvalProfile.getFirstStep();
+        int stepOrdinal = 1;
+        while (step != null) {
+            final int stepId = step.getStepIdentifier();
+            stepToOrdinalMap.put(stepId, stepOrdinal);
+            
+            final List<ApprovalPartition> partitions = new ArrayList<>();
+            for (final ApprovalPartition partition : step.getPartitions().values()) {
+                try {
+                    final StepPartitionId spId = new StepPartitionId(step.getStepIdentifier(), partition.getPartitionIdentifier());
+                    if (approvedByMeSet.contains(spId) || (approvalProfile.canViewPartition(authenticationToken, partition) && approvedSet.contains(spId))) {
+                        partitions.add(partition);
                     }
+                } catch (AuthenticationFailedException e) {
+                    // Just ignore
                 }
             }
+            if (!partitions.isEmpty()) {
+                previousApprovalSteps.add(new RaApprovalStepInfo(stepId, partitions));
+            }
+            
+            // Get next step
+            if (stepId == nextStep.getStepIdentifier()) {
+                break;
+            }
+            final Integer nextStepId = step.getNextStep();
+            if (nextStepId == null) { break; }
+            step = approvalProfile.getStep(nextStepId);
+            stepOrdinal++;
         }
     }
 
@@ -256,7 +266,7 @@ public class RaApprovalRequestInfo implements Serializable {
         return nextApprovalStepPartition;
     }
     
-    public List<ApprovalStep> getPreviousApprovalSteps() {
+    public List<RaApprovalStepInfo> getPreviousApprovalSteps() {
         return previousApprovalSteps;
     }
     
