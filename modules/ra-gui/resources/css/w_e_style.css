@@ -32,7 +32,8 @@ body.rtlDirection .contentForm\:more > .pure-g {
   height: 55px;
   min-height: 55px;
   font-weight: bold;
-  background: #fff; }
+  background: #fff;
+  z-index: 1; }
 
 #menu > .pure-g > .pure-u-1:nth-of-type(2) > .pure-menu > .pure-menu-list {
   /*Gör att huvudmenyns dropdown-menyval får marginaler*/ }
@@ -577,13 +578,14 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 
 /*SLUT Kod för att lägga radioknappar, som ligger inom första ramen i make request, under varandra */
 #contentForm\:viewRequestDataTable {
-  margin: 1% 0 1% 2.5%; }
+  margin: 1% 0 1% 2.5%;
+  word-break: break-word;
+  font-size: 80%; }
 
-/*
-#viewRequestTable {
-    margin: 1% 0 4% 2%;
-}
-*/
+@-moz-document url-prefix() {
+  /*För Firefox*/
+  #contentForm\:viewRequestDataTable {
+    word-break: break-all; } }
 #requestInfoForm\:useRequestIdLink:hover {
   text-decoration: underline; }
 
@@ -620,7 +622,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   border-color: #000;
   padding: 1%;
   list-style: none;
-  margin: 70px 0 0 0;
+  margin: 41px 0 0 0;
   width: 90%;
   position: fixed; }
 
@@ -696,61 +698,65 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
       overflow: hidden; } }
 
 @media (max-width: 47.99em) {
-  div.content-body table.pure-table {
+  div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table {
     display: block;
     border: none; }
-    div.content-body table.pure-table > thead {
+    div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > thead {
       display: none; }
-    div.content-body table.pure-table > tbody > tr {
+    div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr {
       display: block;
       margin-bottom: 1em;
       font-size: 81%; }
-      div.content-body table.pure-table > tbody > tr td:nth-child(even) {
+      div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr td:nth-child(even) {
         background: #e0e0e0; }
-      div.content-body table.pure-table > tbody > tr td:nth-child(odd) {
+      div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr td:nth-child(odd) {
         background: #f2f2f2; }
-      div.content-body table.pure-table > tbody > tr > td {
+      div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td {
         display: block;
         word-break: break-all; }
-        div.content-body table.pure-table > tbody > tr > td > table.nopadding.noborder {
+        div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table.nopadding.noborder {
           display: inline-block;
           width: 54%;
           word-break: break-all; }
-          div.content-body table.pure-table > tbody > tr > td > table.nopadding.noborder a {
+          div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table.nopadding.noborder a {
             white-space: nowrap; }
-        div.content-body table.pure-table > tbody > tr > td > table > tbody > tr {
+        div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table > tbody > tr {
           background: none; }
-          div.content-body table.pure-table > tbody > tr > td > table > tbody > tr td:nth-child(even) {
+          div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table > tbody > tr td:nth-child(even) {
             background: none; }
-          div.content-body table.pure-table > tbody > tr > td > table > tbody > tr td:nth-child(odd) {
+          div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table > tbody > tr td:nth-child(odd) {
             background: none; }
-        div.content-body table.pure-table > tbody > tr > td:before {
+        div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td:before {
           display: inline-block;
           vertical-align: top;
           width: 40%;
           padding-right: 1em;
           font-weight: bold;
           color: #444d57; }
-  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(8) > span {
+  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(8) > span {
     display: inline-block;
     width: 54%;
     word-break: break-all; }
-  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(1):before {
+  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(1):before {
     content: "CA"; }
-  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(2):before {
+  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(2):before {
     content: "Profile"; }
-  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(3):before {
+  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(3):before {
     content: "Serial number"; }
-  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(4):before {
+  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(4):before {
     content: "Subject"; }
-  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(5):before {
+  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(5):before {
     content: "Issued"; }
-  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(6):before {
+  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(6):before {
     content: "Expires"; }
-  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(7):before {
+  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(7):before {
     content: "Status"; }
-  div.content-body #contentForm\:searchCertTable > table.pure-table > tbody > tr > td:nth-of-type(8):before {
+  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(8):before {
     content: "End entity"; }
+  div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(3) > span {
+    display: inline-block;
+    width: 54%;
+    word-break: break-all; }
   div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(4) > span {
     display: inline-block;
     width: 54%;
@@ -788,7 +794,9 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(6):before {
     content: "Request Status"; }
   div.content-body #contentForm\:manageRequestTable > tbody > tr > td > span {
-    word-break: normal; } }
+    word-break: normal; }
+  div.content-body #contentForm\:manageRequestTable > tbody > tr > td > a {
+    padding-top: 16%; } }
 @media (max-width: 64.0525em) {
   div#div_menu_logo {
     z-index: 1; }
@@ -982,7 +990,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   .errorMessage {
     /* gör att 'generella' felmeddelanden visas var man än står på sidan */
     width: 92%;
-    margin: 12% 0 0 0; }
+    margin: 5% 0 0 0; }
 
   #enrollWithRequestIdForm\:requestId {
     width: auto; }
@@ -1021,9 +1029,12 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
       font-size: 100%; }
 
   table.pure-table > tbody > tr:not(.pure-table-odd) td {
-    font-size: 83%; }
+    font-size: 81%; }
   table.pure-table > tbody > tr.pure-table-odd td {
-    font-size: 83%; }
+    font-size: 81%; }
+
+  #contentForm\:viewRequestDataTable {
+    font-size: 100%; }
 
   .footer > .align-center > p {
     /*footer-texten*/
@@ -1126,7 +1137,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   #contentForm\:showLessButton {
     /*showelss-knapp search for certificates*/
     width: 75%;
-    height: auto; }
+    height: 35px; }
 
   #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > label, #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset span {
     display: inline-block; }
@@ -1264,6 +1275,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 
   #detailsForm > span.pure-u-1:nth-of-type(2) {
     /*ska bryta alla långa rader inne i search > view > details*/
-    word-break: break-all; } }
+    word-break: break-all; }
 
-/*# sourceMappingURL=w_e_style.css.map */
+  #contentForm\:viewRequestDataTable {
+    word-break: break-all; } }
