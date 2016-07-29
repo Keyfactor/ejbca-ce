@@ -69,8 +69,7 @@
             <h:panelGroup id="editRequestDataTable" layout="block" rendered="#{raManageRequestBean.editDataVisible}">
                 <ui:remove>
                 <!-- TODO: edit view could be improved to show subject dn as separate text boxes, and could be refactored to not use switch statements -->
-                </ui:remove>  
-                <h2><h:outputText value="#{msg.view_request_page_request_data_header}"/></h2>
+                </ui:remove>
                 <h:dataTable value="#{raManageRequestBean.request.requestData}" var="row" styleClass="pure-table" rowClasses=",pure-table-odd">
                     <h:column>
                         <h:outputText value="#{row.header}"/>
@@ -89,6 +88,9 @@
                 <ui:repeat value="#{raManageRequestBean.request.previousSteps}" var="prevStep">
                     <h:panelGroup layout="block" styleClass="approvalStep">
                         <h3 id="h3ApprovedSteps"><h:outputText value="#{prevStep.headingText}"/></h3>
+                        <ui:repeat value="#{prevStep.partitions}" var="partition">
+                            <h:outputText value="TODO show the partition instruction + data here. perhaps create a component out of the partition editing code below? [debug: id=#{partition.partitionIdentifier}]"/> 
+                        </ui:repeat>
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>

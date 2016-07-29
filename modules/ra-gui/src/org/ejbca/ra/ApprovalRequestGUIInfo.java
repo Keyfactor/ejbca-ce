@@ -28,8 +28,10 @@ import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.TimeAndAdmin;
+import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
+import org.ejbca.core.model.era.RaApprovalStepInfo;
 import org.ejbca.core.model.era.RaEditableRequestData;
 
 /**
@@ -114,17 +116,20 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
     }
     
+    /** Represents a step that has been approved */
     public static final class Step implements Serializable {
         private static final long serialVersionUID = 1L;
         private final int stepId;
         private final Integer stepOrdinal;
         private final String headingText;
+        private final List<ApprovalPartition> partitions;
         
-        public Step(final ApprovalStep approvalStep, final RaApprovalRequestInfo request, final RaLocaleBean raLocaleBean) {
-            stepId = approvalStep.getStepIdentifier();
+        public Step(final RaApprovalStepInfo stepInfo, final RaApprovalRequestInfo request, final RaLocaleBean raLocaleBean) {
+            stepId = stepInfo.getStepId();
             final Map<Integer,Integer> stepToOrdinal = request.getStepIdToOrdinalMap();
-            stepOrdinal = stepToOrdinal.get(approvalStep.getStepIdentifier());
+            stepOrdinal = stepToOrdinal.get(stepId);
             headingText = raLocaleBean.getMessage("view_request_page_step", stepOrdinal, stepToOrdinal.size());
+            partitions = stepInfo.getPartitions();
         }
         
         public int getStepId() {
@@ -132,7 +137,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
         
         public int getStepOrdinal() {
-            if(stepOrdinal==null) {
+            if (stepOrdinal==null) {
                 return 0;
             }
             return stepOrdinal;
@@ -140,6 +145,10 @@ public class ApprovalRequestGUIInfo implements Serializable {
         
         public String getHeadingText() {
             return headingText;
+        }
+        
+        public List<ApprovalPartition> getPartitions() {
+            return partitions;
         }
     }
     
@@ -204,7 +213,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     private final List<RequestDataRow> requestData;
     
-    private final Step nextStep;
     private final List<Step> previousSteps;
 
     private final List<String> editLogEntries;
@@ -312,17 +320,15 @@ public class ApprovalRequestGUIInfo implements Serializable {
         // Steps
         final ApprovalStep nextApprovalStep = request.getNextApprovalStep();
         if (nextApprovalStep != null && !request.isEditedByMe() && !request.isApprovedByMe() && !request.isRequestedByMe()) {
-            nextStep = new Step(nextApprovalStep, request, raLocaleBean);
             canApprove = true;
         } else {
-            nextStep = null;
             canApprove = false; // TODO can it be true in "number of approvals" mode?
         }
         canEdit = request.isEditable();
         
         previousSteps = new ArrayList<>();
-        for (final ApprovalStep prevApprovalStep : request.getPreviousApprovalSteps()) {
-            previousSteps.add(new Step(prevApprovalStep, request, raLocaleBean));
+        for (final RaApprovalStepInfo stepInfo : request.getPreviousApprovalSteps()) {
+            previousSteps.add(new Step(stepInfo, request, raLocaleBean));
         }
         
     }
@@ -362,8 +368,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
 
     public List<String> getEditLogEntries() { return editLogEntries; }
     
-    public boolean isHasNextStep() { return nextStep != null && canApprove; }
-    public Step getNextStep() { return nextStep; }
     public List<Step> getPreviousSteps() { return previousSteps; }
     public int getStepCount() { return request.getStepCount(); }
     public int getCurrentStepOrdinal() { return request.getCurrentStepOrdinal(); }
