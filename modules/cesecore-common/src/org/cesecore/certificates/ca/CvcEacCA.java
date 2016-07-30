@@ -264,6 +264,13 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 	    updateLatestLinkCertificate(ret);
 	}
 	
+    /**
+     * @param providedRequestMessage provided request message containing optional information, and will be set with the signing key and provider. 
+     * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Its public key is going to be used if 
+     * providedPublicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
+     * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
+     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
+     */
     @Override
     public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage providedRequestMessage, PublicKey providedPublicKey,
             int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence, 

@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -58,7 +57,6 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -845,8 +843,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     /**
      * 
-     * @param subject
-     * @param publicKey
+     * @param providedRequestMessage provided request message containing optional information, and will be set with the signing key and provider. 
+     * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Its public key is going to be used if 
+     * providedPublicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
+     * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
+     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
      * @param notBefore null or a custom date to use as notBefore date
      * @param keyusage BouncyCastle key usage {@link X509KeyUsage}, e.g. X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment
      * @param validity requested validity in days if less than Integer.MAX_VALUE, otherwise it's milliseconds since epoc.
@@ -875,9 +876,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /**
      * 
      * @param cryptoToken 
-     * @param subject
-     * @param request certificate request message containing optional information, and will be set with the signing key and provider. If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Can be null.
-     * @param publicKey
+     * @param providedRequestMessage provided request message containing optional information, and will be set with the signing key and provider. 
+     * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Its public key is going to be used if 
+     * providedPublicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
+     * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
+     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
      * @param keyusage BouncyCastle key usage {@link X509KeyUsage}, e.g. X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment
      * @param notBefore
      * @param notAfter
@@ -899,7 +902,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @throws InvalidAlgorithmException  if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid. 
      * @throws CAOfflineException if the CA wasn't active
      * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
-     * @throws IllegalKeyException 
+     * @throws IllegalKeyException if the using public key is not allowed to be used by specified certProfile
      */
     public abstract Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request,
             PublicKey publicKey, int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence,
@@ -907,6 +910,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, CertificateExtensionException,
             SignatureException, IllegalKeyException;
 
+    /**
+     * 
+     * @param providedRequestMessage provided request message containing optional information, and will be set with the signing key and provider. 
+     * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Can be null. Its public key is going to be used if 
+     * providedPublicKey == null && subject.extendedInformation.certificateRequest == null
+     * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
+     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
+     */
     public final Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,
             final PublicKey publicKey, final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile,
             final Extensions extensions, final String sequence, final AvailableCustomCertificateExtensionsConfiguration cceConfig) 

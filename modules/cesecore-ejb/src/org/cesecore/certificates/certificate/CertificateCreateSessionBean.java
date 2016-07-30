@@ -74,7 +74,6 @@ import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNu
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
@@ -353,8 +352,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final int certProfileId = endEntityInformation.getCertificateProfileId();
             final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
             assertSubjectEnforcements(ca, caSubjectDN, endEntityInformation, pk);
-            // Check that the request public key fulfills policy
-            certProfile.verifyKey(pk);
+    
+            //certProfile.verifyKey(pk); Verifying the public key against certificate profile is going to be executed in *CA.generateCertificate
 
             // Below we have a small loop if it would happen that we generate the same serial number twice
             // If using only 4 byte serial numbers this do happen once in a while
