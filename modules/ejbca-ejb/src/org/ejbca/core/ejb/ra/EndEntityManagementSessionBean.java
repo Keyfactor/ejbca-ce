@@ -219,8 +219,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
     }
 
-    private boolean authorizedToEndEntityProfile(final AuthenticationToken admin, final int profileid, final String rights) {
-        return  authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
+    @Override
+    public boolean isAuthorizedToEndEntityProfile(final AuthenticationToken admin, final int profileid, final String rights) {
+        return authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
     }
 
     /** Checks EEP authorization and logs an official error if not and throws and AuthorizationDeniedException. 
@@ -228,7 +229,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      */
     private void assertAuthorizedToEndEntityProfile(final AuthenticationToken admin, final int endEntityProfileId, final String accessRule,
             final int caId) throws AuthorizationDeniedException {
-        if (!authorizedToEndEntityProfile(admin, endEntityProfileId, accessRule)) {
+        if (!isAuthorizedToEndEntityProfile(admin, endEntityProfileId, accessRule)) {
             final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(endEntityProfileId), admin.toString());
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
