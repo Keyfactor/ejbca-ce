@@ -750,6 +750,14 @@ public class X509CA extends CA implements Serializable {
         createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certProfile, cceConfig, /*caNameChange*/false);
     }
     
+    
+    /**
+     * @param providedRequestMessage provided request message containing optional information, and will be set with the signing key and provider. 
+     * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Its public key is going to be used if 
+     * providedPublicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
+     * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
+     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
+     */
     @Override
     public Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,
             final PublicKey publicKey, final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile,
@@ -770,8 +778,11 @@ public class X509CA extends CA implements Serializable {
     /**
      * Sequence is ignored by X509CA. The ctParams argument will NOT be kept after the function call returns,
      * and is allowed to contain references to session beans.
-     * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over endEntityInformation.extendedInformation.certificateRequest
-     * @param subject end entity information. If it contains CSR under extended information, it will be used instead of providedRequestMessage and providedPublicKey. 
+     * @param providedRequestMessage provided request message containing optional information, and will be set with the signing key and provider. 
+     * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Its public key is going to be used if 
+     * providedPublicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
+     * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
+     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
      * Otherwise, providedRequestMessage will be used.
      * 
      * @throws CAOfflineException if the CA wasn't active
@@ -782,7 +793,7 @@ public class X509CA extends CA implements Serializable {
      * @throws OperatorCreationException if CA's private key contained an unknown algorithm or provider
      * @throws CertificateCreateException if an error occurred when trying to create a certificate. 
      * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
-     * @throws IllegalKeyException 
+     * @throws IllegalKeyException if selected public key (check providedRequestMessage, providedPublicKey, subject) is not allowed with certProfile
      */
     private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey providedPublicKey,
             final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
@@ -819,7 +830,7 @@ public class X509CA extends CA implements Serializable {
             publicKey = providedPublicKey;
             debugPublicKeySource = "separately";
         }
-        //Request inside endEntityInformation has priority since its algorithm is approved
+        //Request inside endEntityInformation has priority over providedPublicKey and providedRequestMessage
         if(subject.getExtendedinformation() != null && subject.getExtendedinformation().getCertificateRequest() != null){
             request = RequestMessageUtils.genPKCS10RequestMessage(subject.getExtendedinformation().getCertificateRequest());
             try {
