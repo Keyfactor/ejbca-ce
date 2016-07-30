@@ -29,6 +29,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
@@ -42,6 +43,16 @@ import org.ejbca.util.query.Query;
  */
 public interface EndEntityManagementSession {
 
+    /**
+     * Check if user is authorized for specified an EE access rule for specified EEP.
+     * @param admin authenticationToken to be check for authorization
+     * @param profileid id of EEP for which operation authorization needs to be checked
+     * @param rights EE access rule to be checked (etc. AccessRulesConstants.DELETE_END_ENTITY...)
+     * @return true if user is authorized for specified EE access rules for specified EEP, false otherwise
+     */
+    boolean isAuthorizedToEndEntityProfile(final AuthenticationToken admin, final int profileid, final String rights);
+    
+    
     /**
      * Important: this method is old and shouldn't be used, use
      * addUser(..EndEntityInformation...) instead.
