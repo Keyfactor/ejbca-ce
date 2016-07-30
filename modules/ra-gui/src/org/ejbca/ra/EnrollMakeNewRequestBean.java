@@ -78,11 +78,10 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.IdNameHashMap;
-import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.KeyToValueHolder;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page
@@ -252,7 +251,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
     
     private boolean isApprovalRequired(){
-        return raMasterApiProxyBean.getApprovalProfileForAction(1, getCAInfo(), getCertificateProfile()) != null;
+        try {
+            return raMasterApiProxyBean.getApprovalProfileForAction(raAuthenticationBean.getAuthenticationToken(), 1, getCAInfo().getCAId(), getAuthorizedCertificateProfiles().get(Integer.parseInt(getSelectedCertificateProfile())).getId()) != null;
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e);
+        }
     }
     
     public boolean isUpdateRequestPreviewButtonRendered() {

@@ -1189,8 +1189,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public ApprovalProfile getApprovalProfileForAction(final int action, final CAInfo cainfo, final CertificateProfile certProfile){
-        return approvalProfileSession.getApprovalProfileForAction(action, cainfo, certProfile);
+    public ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final int action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException{
+        KeyToValueHolder<CAInfo> caInfoHolder = getAuthorizedCAInfos(authenticationToken).get(caId);
+        KeyToValueHolder<CertificateProfile> certificateProfileHolder = getAuthorizedCertificateProfiles(authenticationToken).get(certificateProfileId);
+        if(caInfoHolder == null){
+            throw new AuthorizationDeniedException("Could not get approval profile because auth. token doesn't have access to CA with id = " + caId);
+        }
+        if(certificateProfileHolder == null){
+            throw new AuthorizationDeniedException("Could not get approval profile because auth. token doesn't have access to certificate profile with id = " + certificateProfileId);
+        }
+        return approvalProfileSession.getApprovalProfileForAction(action, caInfoHolder.getValue(), certificateProfileHolder.getValue());
     }
 
 }
