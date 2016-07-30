@@ -152,7 +152,7 @@ public class Query implements Serializable {
     }
 
     /**
-     * Adds a match ot type UserMatch or LogMatch ant a connector to the query.
+     * Adds a match ot type UserMatch or LogMatch and a connector to the query.
      *
      * @param matchwith should be one of the the UserMatch.MATCH_WITH or LogMatch.MATCH_WITH
      *        connstants depending on query type.
