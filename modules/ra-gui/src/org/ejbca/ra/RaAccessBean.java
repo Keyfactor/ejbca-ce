@@ -107,6 +107,10 @@ public class RaAccessBean implements Serializable {
     
     public boolean isAuthorizedToEnrollMakeRequest() {
         // Authorized to make request if user have access to at least one end entity profile
+        if (log.isDebugEnabled() && (this.authorizedEndEntityProfiles.size()==0)) {
+            log.debug(">isAuthorizedToEnrollMakeRequest: Not authorized to any End Entity Profiles.");
+        }
+
         return this.authorizedEndEntityProfiles.size()>0;
     }
     
@@ -125,7 +129,7 @@ public class RaAccessBean implements Serializable {
     public boolean isAuthorizedToCas() {
         final boolean auth = isAuthorized(StandardRules.CAVIEW.resource());
         if (!auth && log.isDebugEnabled()) {
-            log.debug("Not authorized to "+StandardRules.CAVIEW.resource());
+            log.debug(">isAuthorizedToCas: Not authorized to "+StandardRules.CAVIEW.resource());
         }
         return auth;
     }
@@ -133,7 +137,7 @@ public class RaAccessBean implements Serializable {
     public boolean isAuthorizedToManageRequests() {
         final boolean auth = isAuthorized(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
         if (!auth && log.isDebugEnabled()) {
-            log.debug("Not authorized to "+AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+            log.debug(">isAuthorizedToManageRequests: Not authorized to "+AccessRulesConstants.REGULAR_APPROVEENDENTITY);
         }
         return auth;
     }
