@@ -436,10 +436,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
         final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
         if (!request.isSearchingHistorical()) {
-            // Search for everything that's not expired
-            Date newDate = new Date();
-            Date startDate = new Date(newDate.getTime() - ApprovalProfile.DEFAULT_APPROVAL_EXPIRATION_PERIOD);
-            query.add(startDate, new Date());
+            // Search for everything that's not expired and not yet executed
+            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL));
+            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
+            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_APPROVED));
         } else {
             // Everything except waiting and "approved" (note that the latter means approved but not excecuted yet)
             query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXECUTED));
