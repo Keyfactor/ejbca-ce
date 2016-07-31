@@ -87,6 +87,17 @@ public class RaManageRequestsBean implements Serializable {
         return viewTab;
     }
     
+    public String getCurrentTabName() {
+        switch (getViewedTab()) {
+        case NEEDS_APPROVAL: return "needsApproval";
+        case PENDING_APPROVAL: return "pending";
+        case PROCESSED: return "processed";
+        case CUSTOM_SEARCH: return "custom";
+        default:
+            throw new IllegalStateException("Internal error: Invalid tab");
+        }
+    }
+    
     public boolean isViewingNeedsApproval() {
         return getViewedTab() == ViewTab.NEEDS_APPROVAL;
     }
