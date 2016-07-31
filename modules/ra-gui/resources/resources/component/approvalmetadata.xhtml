@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:composite="http://java.sun.com/jsf/composite" 
+    xmlns:component="http://java.sun.com/jsf/composite/component"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+    <ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     version: $Id$
+     -->
+    </ui:remove>
+    <f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
+    <h:head dir="#{raLocaleBean.direction}"/>
+    <h:body>
+        <composite:interface>
+            <composite:attribute name="partition" required="true"/>
+        </composite:interface>
+
+        <composite:implementation>
+            <h:dataTable value="#{raManageRequestBean.getPartitionProperties(partition)}" var="property"
+                 style="width: 100%" rendered="#{not empty raManageRequestBean.getPartitionProperties(partition)}" styleClass="subTable">   
+                <h:column>
+                    <h:panelGroup layout="block" styleClass="stepInstruction">
+                        <h:outputText 
+                            value="#{property.name}"/>
+                    </h:panelGroup>    
+                </h:column>   
+                <h:column>
+                    <h:panelGroup layout="block" styleClass="approvalControl">
+                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'String' and !property.multiValued and raManageRequestBean.isPropertyReadOnly(property.name)}" >
+                            <h:outputText value="#{property.value}" >
+                                    <f:converter converterId="stringConverter"/>
+                            </h:outputText>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'String' and !property.multiValued and !raManageRequestBean.isPropertyReadOnly(property.name)}" >
+                            <h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
+                                || !raManageRequestBean.canApproveParition(partition)
+                                || raManageRequestBean.isPropertyReadOnly(property.name)}" 
+                                value="#{property.value}" >
+                                    <f:converter converterId="stringConverter"/>
+                            </h:inputText>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'MultiLineString' and !property.multiValued}">
+                            <h:inputTextarea disabled="#{raManageRequestBean.isPartitionHandled(partition) 
+                                || !raManageRequestBean.canApproveParition(partition)
+                                || raManageRequestBean.isPropertyReadOnly(property.name)}" 
+                                value="#{property.value}">
+                                <f:converter converterId="stringConverter"/>
+                            </h:inputTextarea>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Long' and !property.multiValued}">
+                            <h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
+                                || !raManageRequestBean.canApproveParition(partition)
+                                || raManageRequestBean.isPropertyReadOnly(property.name)}" 
+                                value="#{property.value}" style="text-align: right;" >
+                               <f:converter converterId="javax.faces.Long"/>
+                            </h:inputText>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Integer' and !property.multiValued}">
+                            <h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
+                                || !raManageRequestBean.canApproveParition(partition)
+                                || raManageRequestBean.isPropertyReadOnly(property.name)}" 
+                                value="#{property.value}" style="text-align: right;" size="6">
+                               <f:converter converterId="javax.faces.Integer"/>
+                            </h:inputText>
+                        </h:panelGroup>             
+                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'RadioButton' and property.multiValued  and !property.hasMultipleValues}">
+                            <h:selectOneRadio disabled="#{raManageRequestBean.isPartitionHandled(partition) 
+                                                            || !raManageRequestBean.canApproveParition(partition)
+                                                            || raManageRequestBean.isPropertyReadOnly(property.name)}"
+                                value="#{property.encodedValue}" layout="pageDirection">
+                                <f:selectItems value="#{partition.getPropertyPossibleValues(property)}" var="radioButton" itemLabel="#{radioButton.label}" />
+                                <f:converter converterId="radioButtonConverter"/>
+                            </h:selectOneRadio>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Boolean' and !property.multiValued}">
+                            <h:selectBooleanCheckbox disabled="#{raManageRequestBean.isPartitionHandled(partition) 
+                                || !raManageRequestBean.canApproveParition(partition)
+                                || raManageRequestBean.isPropertyReadOnly(property.name)}"  
+                            value="#{property.value}"/>
+                        </h:panelGroup>                    
+                    </h:panelGroup>
+                </h:column>
+            </h:dataTable>
+        </composite:implementation>
+    </h:body>
+    </f:view>
+</html>
