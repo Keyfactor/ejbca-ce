@@ -96,6 +96,7 @@ public class RaManageRequestBean implements Serializable {
     private Map<Integer, List<DynamicUiProperty<? extends Serializable>> > currentPartitionsProperties = null;
     List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
     Set<Integer> partitionsAuthorizedToApprove = null;
+    private String fromTab = null;
     
     private void loadRequest(final int id) {
         requestData = raMasterApiProxyBean.getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), id);
@@ -123,6 +124,7 @@ public class RaManageRequestBean implements Serializable {
                 final int approvalId = Integer.parseInt(aidHttpParam);
                 loadRequestByApprovalId(approvalId);
             }
+            fromTab = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("fromTab");
         }
     }
     
@@ -142,13 +144,15 @@ public class RaManageRequestBean implements Serializable {
         return raLocaleBean.getMessage("view_request_page_title", getRequest().getDisplayName());
     }
     
+    public String getFromTab() {
+        return fromTab;
+    }
+    
     public boolean isViewDataVisible() { return !editing; }
     public boolean isEditDataVisible() { return editing; }
     public boolean isStatusVisible() { return !editing; }
     public boolean isPreviousStepsVisible() { return !editing && !getRequest().getPreviousSteps().isEmpty(); }
-    public boolean isApprovalVisible() {
-        return !editing && getRequest().request.getNextApprovalStep() != null; 
-    }
+    public boolean isApprovalVisible() { return !editing; } // even if approval is not possible, we still show a message explaining why it's not.
     
     public List<DynamicUiProperty<? extends Serializable>> getPartitionProperties(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
         if (guiPartition == null) {
@@ -451,6 +455,16 @@ public class RaManageRequestBean implements Serializable {
         // TODO error handling
         final RaApprovalEditRequest editReq = new RaApprovalEditRequest(requestData.getId(), editData);
         requestData = raMasterApiProxyBean.editApprovalRequest(raAuthenticationBean.getAuthenticationToken(), editReq);
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean);
+        editing = false;
+    }
+    
+    public void cancelEdit() {
+        if (!editing) {
+            throw new IllegalStateException();
+        }
+        // Restore everything
+        requestData = raMasterApiProxyBean.getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), requestData.getId());
         requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean);
         editing = false;
     }

@@ -36,21 +36,25 @@
             <h:form id="contentForm" class="pure-form">
                 
                 <h:panelGroup layout="block" styleClass="tabButtonBar">
-                    <h:outputLink value="managerequests.xhtml?tab=needsApproval" styleClass="tabButton #{raManageRequestsBean.viewingNeedsApproval ? 'active' : ''}">
+                    <h:outputLink value="managerequests.xhtml" styleClass="tabButton #{raManageRequestsBean.viewingNeedsApproval ? 'active' : ''}">
+                        <f:param name="tab" value="needsApproval"/>
                         <h:outputText value="#{msg.manage_requests_page_view_needs_approval}"/>
                     </h:outputLink>
                     
-                    <h:outputLink value="managerequests.xhtml?tab=pending" styleClass="tabButton #{raManageRequestsBean.viewingPendingApproval ? 'active' : ''}">
+                    <h:outputLink value="managerequests.xhtml" styleClass="tabButton #{raManageRequestsBean.viewingPendingApproval ? 'active' : ''}">
+                        <f:param name="tab" value="pending"/>
                         <h:outputText value="#{msg.manage_requests_page_view_pending_approval}"/>
                     </h:outputLink>
                     
-                    <h:outputLink value="managerequests.xhtml?tab=processed" styleClass="tabButton #{raManageRequestsBean.viewingProcessed ? 'active' : ''}">
+                    <h:outputLink value="managerequests.xhtml" styleClass="tabButton #{raManageRequestsBean.viewingProcessed ? 'active' : ''}">
+                        <f:param name="tab" value="processed"/>
                         <h:outputText value="#{msg.manage_requests_page_view_processed}"/>
                     </h:outputLink>
                     
                     <ui:remove>
                     <!--
-                    <h:outputLink value="managerequests.xhtml?tab=custom" styleClass="tabButton #{raManageRequestsBean.viewingCustom ? 'active' : ''}">
+                    <h:outputLink value="managerequests.xhtml" styleClass="tabButton #{raManageRequestsBean.viewingCustom ? 'active' : ''}">
+                        <f:param name="tab" value="custom"/>
                         <h:outputText value="#{msg.manage_requests_page_view_processed}"/>
                     </h:outputLink>
                     -->
@@ -136,6 +140,7 @@
                         <h:column>
                             <h:outputLink id="viewMoreButton" styleClass="pure-button ra-button" value="managerequest.xhtml">
                                 <f:param name="id" value="#{raRequest.id}"/>
+                                <f:param name="fromTab" value="#{raManageRequestsBean.currentTabName}"/>
                                 <h:outputText value="#{msg.manage_requests_page_view_more_command}"/>
                             </h:outputLink>
                         </h:column>
