@@ -267,7 +267,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final AddEndEntityApprovalRequest req = (AddEndEntityApprovalRequest)approvalRequest;
             userdata = req.getEndEntityInformation();
         }
-        // TODO handle more types or approval requests?
+        // TODO handle more types or approval requests? (ECA-5290)
         
         if (userdata != null) {
             editableData.setUsername(userdata.getUsername());
@@ -329,8 +329,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // Editable data
         final RaEditableRequestData editableData = getRequestEditableData(authenticationToken, advo);
         
-        // TODO perform ee profile and approval profile authorization checks also
-        
         return new RaApprovalRequestInfo(authenticationToken, caName, advo, requestData, editableData);
         
     }
@@ -372,7 +370,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final ExtendedInformation ei = userdata.getExtendedinformation();
             ei.setSubjectDirectoryAttributes(editData.getSubjectDirAttrs());
         } else {
-            // TODO implement more types of requests
+            // TODO implement more types of requests? (ECA-5290)
             throw new IllegalStateException("Editing of this type of request is not implemented: " + approvalRequest.getClass().getName());
         }
         
@@ -454,10 +452,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
             query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED));
         }
-        
-        // TODO use a more efficient method that doesn't use a starting index?
-        //      perhaps modify the query method?
-        //      or create a query manually? (in this case we need to construct either the ApprovalDataVO, or the RaApprovalRequestInfo directly)
         
         final List<ApprovalDataVO> approvals;
         try {
