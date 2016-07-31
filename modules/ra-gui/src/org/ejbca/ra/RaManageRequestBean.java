@@ -261,6 +261,21 @@ public class RaManageRequestBean implements Serializable {
         return currentPartitionsProperties.get(approvalPartition.getPartitionIdentifier());
     }
     
+    /** Creates a list of partitions that can be used with the approvalmetadata component */
+    public List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> partitionsToGuiPartitions(final ApprovalRequestGUIInfo.Step step, final Iterable<ApprovalPartition> partitions) {
+        if (partitions == null) {
+            // JBoss EAP 6.4 seems to make calls EL method calls one time extra, with a null parameter, once per page rendering
+            log.debug("Ignored call to partitionsToGuiPartitions with null parameter");
+            return new ArrayList<>();
+        }
+        final List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> ret = new ArrayList<>();
+        for (final ApprovalPartition partition : partitions) {
+            ret.add(new ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject(step.getStepId(),
+                    partition.getPartitionIdentifier(), getPartitionProperties(requestData.getApprovalProfile(), partition)));
+        }
+        return ret;
+    }
+    
     public String getStepInfoText() {
         final List<String> roles = new ArrayList<>(requestData.getNextStepAllowedRoles());
         Collections.sort(roles);
