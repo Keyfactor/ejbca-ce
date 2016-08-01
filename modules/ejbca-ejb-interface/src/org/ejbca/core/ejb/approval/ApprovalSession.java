@@ -136,6 +136,15 @@ public interface ApprovalSession {
      * @return and list of ApprovalDataVO, empty if no approvals exists.
      */
     List<ApprovalDataVO> findApprovalDataVO(AuthenticationToken admin, int approvalId);
+    
+    /**
+     * Method that takes an approvalId and returns the request's Id (the value in the "Id" column in the "ApprovalData" table in the database)
+     * 
+     * @param admin
+     * @param approvalId
+     * @return the Id of the approval request
+     */
+    int getIdFromApprovalId(AuthenticationToken admin, int approvalId);
 
     /**
      * Method returning a list of approvals from the give query

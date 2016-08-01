@@ -109,7 +109,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     public void checkRequestId() {
         if (Integer.parseInt(requestId) != 0) {
             RaApprovalRequestInfo raApprovalRequestInfo = raMasterApiProxyBean
-                    .getApprovalRequestByRequestHash(raAuthenticationBean.getAuthenticationToken(), Integer.parseInt(requestId));
+                    .getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), Integer.parseInt(requestId));
             if (raApprovalRequestInfo == null) {
                 raLocaleBean.addMessageError("enrollwithrequestid_could_not_find_request_with_request_id", Integer.parseInt(requestId));
                 return;
