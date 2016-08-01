@@ -1083,8 +1083,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     EjbcaException, WaitingForApprovalException{
         if (!endEntityManagementSessionLocal.isAuthorizedToEndEntityProfile(admin, endEntity.getEndEntityProfileId(),
                 AccessRulesConstants.DELETE_END_ENTITY)) {
-            log.warn("Missing *" + AccessRulesConstants.DELETE_END_ENTITY
-                    + " rights for adding an end-entity (Delete is only needed for clean-up if something goes wrong after an end-entity has been added)");
+            log.warn("Missing *" + AccessRulesConstants.DELETE_END_ENTITY + " rights for user " + admin
+                    + " to be able to add an end entity (Delete is only needed for clean-up if something goes wrong after an end-entity has been added)");
             return false;
         }
         try {
