@@ -26,7 +26,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -323,13 +322,25 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         
+        final ApprovalRequest approvalRequest = advo.getApprovalRequest();
+        final String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(advo.getEndEntityProfileiId());
+        final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(advo.getEndEntityProfileiId());
+        final String certificateProfileName;
+        if (approvalRequest instanceof AddEndEntityApprovalRequest) {
+            certificateProfileName = certificateProfileSession.getCertificateProfileName(((AddEndEntityApprovalRequest)approvalRequest).getEndEntityInformation().getCertificateProfileId());
+        } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
+            certificateProfileName = certificateProfileSession.getCertificateProfileName(((EditEndEntityApprovalRequest)approvalRequest).getNewEndEntityInformation().getCertificateProfileId());
+        } else {
+            certificateProfileName = null;
+        }
+        
         // Get request data as text
         final List<ApprovalDataText> requestData = getRequestDataAsText(authenticationToken, advo);
         
         // Editable data
         final RaEditableRequestData editableData = getRequestEditableData(authenticationToken, advo);
         
-        return new RaApprovalRequestInfo(authenticationToken, caName, advo, requestData, editableData);
+        return new RaApprovalRequestInfo(authenticationToken, caName, endEntityProfileName, endEntityProfile, certificateProfileName, advo, requestData, editableData);
         
     }
 
@@ -475,7 +486,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         for (final ApprovalDataVO advo : approvals) {
             final List<ApprovalDataText> requestDataLite = advo.getApprovalRequest().getNewRequestDataAsText(authenticationToken); // this method isn't guaranteed to return the full information
             final RaEditableRequestData editableData = getRequestEditableData(authenticationToken, advo);
-            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, caIdToNameMap.get(advo.getCAId()), advo, requestDataLite, editableData);
+            // We don't pass the end entity profile or certificate profile details for each approval request, when searching.
+            // That information is only needed when viewing the details or editing a request.
+            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, caIdToNameMap.get(advo.getCAId()), null, null, null, advo, requestDataLite, editableData);
             
             if ((request.isSearchingWaitingForMe() && ari.isWaitingForMe()) ||
                     (request.isSearchingPending() && ari.isPending()) ||

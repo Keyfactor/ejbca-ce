@@ -22,17 +22,22 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.TimeAndAdmin;
+import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalStepInfo;
 import org.ejbca.core.model.era.RaEditableRequestData;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
  * Keeps localized information about an approval request.
@@ -202,6 +207,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     // This field is package-internal so RaManageRequest(s)Bean can use it internally. This class is specific to these beans.
     final RaApprovalRequestInfo request;
+    private final ApprovalDataVO approvalData;
     
     private final String requestDate;
     private final String caName;
@@ -211,6 +217,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private final String detail;
     private final String status;
     
+    private final RaEndEntityDetails endEntityDetails;
     private final List<RequestDataRow> requestData;
     
     private final List<Step> previousSteps;
@@ -223,8 +230,13 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     public ApprovalRequestGUIInfo(final RaApprovalRequestInfo request, final RaLocaleBean raLocaleBean) {
         this.request = request;
-        if (request.getRequestData() != null) {
-            requestData = new ArrayList<>();
+        approvalData = request.getApprovalData();
+        
+        // Determine what parts of the approval request are editable
+        final EndEntityInformation endEntityInformation = getEndEntityInformation(); // editable
+        boolean hasEditableData = (endEntityInformation != null);
+        requestData = new ArrayList<>();
+        if (request.getRequestData() != null && endEntityInformation == null) {
             final RaEditableRequestData editData  = request.getEditableData();
             for (final ApprovalDataText dataText : request.getRequestData()) {
                 boolean editingSupported = true;
@@ -237,6 +249,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
                     editValue = editData.getSubjectAltName();
                     break;
                 case "SUBJECTDIRATTRIBUTES":
+                    if ("NOVALUE".equals(dataText.getData())) continue;
                     editValue = editData.getSubjectDirAttrs();
                     break;
                 case "EMAIL":
@@ -252,20 +265,35 @@ public class ApprovalRequestGUIInfo implements Serializable {
                     editingSupported = false;
                     editValue = null;
                 }
+                if (editingSupported) {
+                    hasEditableData = true;
+                }
                 requestData.add(new RequestDataRow(raLocaleBean, dataText, editingSupported, editValue));
             }
-        } else {
-            requestData = null;
         }
         
-        requestDate = ValidityDate.formatAsISO8601ServerTZ(request.getRequestDate().getTime(), TimeZone.getDefault());
+        requestDate = ValidityDate.formatAsISO8601ServerTZ(approvalData.getRequestDate().getTime(), TimeZone.getDefault());
+        requestData.add(new RequestDataRow(raLocaleBean, new ApprovalDataText("REQUESTDATE", getRequestDate(), true, false), false, null));
         
-        if (request.getCaId() == ApprovalDataVO.ANY_CA) {
+        if (approvalData.getCAId() == ApprovalDataVO.ANY_CA) {
             caName = raLocaleBean.getMessage("manage_requests_no_ca");
         } else if (request.getCaName() == null) {
-            caName = "Missing CA id " + request.getCaId();
+            caName = "Missing CA id " + approvalData.getCAId();
         } else {
             caName = request.getCaName();
+        }
+        
+        if (endEntityInformation != null) {
+            final EndEntityProfile endEntityProfile = request.getEndEntityProfile();
+            final RaEndEntityDetails.Callbacks callbacks = new RaEndEntityDetails.Callbacks() {
+                @Override
+                public RaLocaleBean getRaLocaleBean() { return raLocaleBean; }
+                @Override
+                public EndEntityProfile getEndEntityProfile(int eepId) { return endEntityProfile; }
+            };
+            endEntityDetails = new RaEndEntityDetails(getEndEntityInformation(), callbacks, request.getCertificateProfileName(), request.getEndEntityProfileName(), caName);
+        } else {
+            endEntityDetails = null;
         }
         
         final String reqSubjDN = request.getRequesterSubjectDN();
@@ -275,12 +303,12 @@ public class ApprovalRequestGUIInfo implements Serializable {
             requesterName = "";
         }
         
-        switch (request.getType()) {
+        switch (approvalData.getApprovalType()) {
         case ApprovalDataVO.APPROVALTYPE_ADDENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_add_end_entity"); break;
         case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE: type = raLocaleBean.getMessage("manage_requests_type_revoke_certificate"); break;
         case ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_revoke_end_entity"); break;
         default:
-            log.info("Invalid/unsupported type of approval request: " + request.getType());
+            log.info("Invalid/unsupported type of approval request: " + approvalData.getApprovalType());
             type = "???";
         }
         
@@ -324,7 +352,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         } else {
             canApprove = false; // TODO can it be true in "number of approvals" mode?
         }
-        canEdit = request.isEditable();
+        canEdit = request.isEditable() && hasEditableData;
         
         previousSteps = new ArrayList<>();
         for (final RaApprovalStepInfo stepInfo : request.getPreviousApprovalSteps()) {
@@ -346,13 +374,24 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     public String getId() { return String.valueOf(request.getId()); }
     public String getRequestDate() { return requestDate; }
-    public boolean isHasCa() { return request.getCaId() != ApprovalDataVO.ANY_CA; }
     public String getCa() { return caName; }
     public String getType() { return type; }
     public String getRequesterName() { return requesterName; }
     public String getDisplayName() { return displayName; }
     public String getDetail() { return detail; }
     public String getStatus() { return status; }
+    
+    public EndEntityInformation getEndEntityInformation() {
+        final ApprovalRequest approvalRequest = request.getApprovalRequest();
+        if (approvalRequest instanceof AddEndEntityApprovalRequest) {
+            return ((AddEndEntityApprovalRequest)approvalRequest).getEndEntityInformation();
+        } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
+            return ((EditEndEntityApprovalRequest)approvalRequest).getNewEndEntityInformation();
+        } else {
+            return null;
+        }
+    }
+    public RaEndEntityDetails getEndEntityDetails() { return endEntityDetails; }
     
     public List<RequestDataRow> getRequestData() { return requestData; }
     private String getRequestData(final String key) {
