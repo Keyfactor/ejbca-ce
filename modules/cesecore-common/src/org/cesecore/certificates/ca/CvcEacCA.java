@@ -300,7 +300,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
         }
         //Request inside endEntityInformation has priority since its algorithm is approved
         if(subject.getExtendedinformation() != null && subject.getExtendedinformation().getCertificateRequest() != null){
-            request = RequestMessageUtils.genPKCS10RequestMessage(subject.getExtendedinformation().getCertificateRequest());
+            request = RequestMessageUtils.genCVCRequestMessage(subject.getExtendedinformation().getCertificateRequest());
             try {
                 publicKey = request.getRequestPublicKey();
                 debugPublicKeySource = "from endEntity.extendedInformaion.certificateRequest";
