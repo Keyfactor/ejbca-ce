@@ -71,6 +71,13 @@ public class RaEndEntityDetails {
 
     public RaEndEntityDetails(final EndEntityInformation endEntity, final Callbacks callbacks,
             final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<Integer,String> caIdToNameMap) {
+        this(endEntity, callbacks, cpIdToNameMap.get(Integer.valueOf(endEntity.getCertificateProfileId())),
+                String.valueOf(eepIdToNameMap.get(Integer.valueOf(endEntity.getEndEntityProfileId()))),
+                String.valueOf(caIdToNameMap.get(Integer.valueOf(endEntity.getCAId()))));
+    }
+    
+    public RaEndEntityDetails(final EndEntityInformation endEntity, final Callbacks callbacks,
+            final String certProfName, final String eeProfName, final String caName) {
         this.endEntityInformation = endEntity;
         final ExtendedInformation extendedInformation = endEntity.getExtendedinformation();
         this.extendedInformation = extendedInformation==null ? new ExtendedInformation() : extendedInformation;
@@ -80,10 +87,10 @@ public class RaEndEntityDetails {
         this.subjectAn = endEntity.getSubjectAltName();
         this.subjectDa = this.extendedInformation.getSubjectDirectoryAttributes();
         this.cpId = endEntity.getCertificateProfileId();
-        this.cpName = cpIdToNameMap.get(Integer.valueOf(cpId));
+        this.cpName = certProfName;
         this.eepId = endEntity.getEndEntityProfileId();
-        this.eepName = String.valueOf(eepIdToNameMap.get(Integer.valueOf(eepId)));
-        this.caName = String.valueOf(caIdToNameMap.get(Integer.valueOf(endEntity.getCAId())));
+        this.eepName = eeProfName;
+        this.caName = caName;
         this.created = ValidityDate.formatAsISO8601ServerTZ(endEntity.getTimeCreated().getTime(), TimeZone.getDefault());
         this.modified = ValidityDate.formatAsISO8601ServerTZ(endEntity.getTimeModified().getTime(), TimeZone.getDefault());
         this.status = endEntity.getStatus();

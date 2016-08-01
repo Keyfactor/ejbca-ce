@@ -170,7 +170,7 @@ public class RaManageRequestsBean implements Serializable {
                 case REQUEST_DATE:
                 default:
                     // We compare the date objects (o1.request.getRequestDate()) and not the strings (o1.getRequestDate())
-                    return o1.request.getRequestDate().compareTo(o2.request.getRequestDate()) * sortDir;
+                    return o1.request.getApprovalData().getRequestDate().compareTo(o2.request.getApprovalData().getRequestDate()) * sortDir;
                 }
             }
         });
