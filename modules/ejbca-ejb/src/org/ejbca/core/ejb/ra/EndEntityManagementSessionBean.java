@@ -349,7 +349,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         endEntityProfileId, approvalProfile);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ADDUSER)) {
                     approvalSession.addApprovalRequest(admin, ar);
-                    throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalad"), ar.generateApprovalId());
+                    throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalad"), approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId()));
                 }
             }
         }
@@ -718,7 +718,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                      caid, endEntityProfileId, approvalProfile);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)) {
                 approvalSession.addApprovalRequest(admin, ar);
-                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"), ar.generateApprovalId());
+                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"), approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId()));
             }
         }
         // Check if the subjectDN serialnumber already exists.
@@ -1180,7 +1180,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)) {
                 approvalSession.addApprovalRequest(admin, ar);
                 String msg = intres.getLocalizedMessage("ra.approvaledit");
-                throw new WaitingForApprovalException(msg, ar.generateApprovalId());
+                throw new WaitingForApprovalException(msg, approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId()));
             }
         }
         if (data1.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY
@@ -1402,7 +1402,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                             data.getEndEntityProfileId(), approvalProfile);
                     if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER)) {
                         approvalSession.addApprovalRequest(admin, ar);
-                        throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), ar.generateApprovalId());
+                        throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId()));
                     }
                 }
                 try {
@@ -1464,7 +1464,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     approvalProfile);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEUSER)) {
                 approvalSession.addApprovalRequest(admin, ar);
-                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), ar.generateApprovalId());
+                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId()));
             }
         }
         // Revoke all non-expired and not revoked certs, one at the time
@@ -1632,7 +1632,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         endEntityProfileId, approvalProfile);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
                     approvalSession.addApprovalRequest(admin, ar);
-                    throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), ar.generateApprovalId());
+                    throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId()));
                 }
             }
         }
