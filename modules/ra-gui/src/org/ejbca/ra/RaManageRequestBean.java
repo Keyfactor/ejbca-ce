@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleInformation;
@@ -57,9 +56,6 @@ import org.ejbca.core.model.era.RaApprovalResponseRequest.Action;
 import org.ejbca.core.model.era.RaEditableRequestData;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ra.ApprovalRequestGUIInfo.RequestDataRow;
-import org.ejbca.util.query.ApprovalMatch;
-import org.ejbca.util.query.BasicMatch;
-import org.ejbca.util.query.IllegalQueryException;
 
 /**
  * Backing bean for Manage Request page (for individual requests).
@@ -76,6 +72,7 @@ public class RaManageRequestBean implements Serializable {
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
+    // FIXME calls to this session bean will not work if the CA and RA are on different machines. so this variable should be removed.
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
@@ -306,27 +303,6 @@ public class RaManageRequestBean implements Serializable {
         }
     }
     
-    private ApprovalDataVO getApprovalData(AuthenticationToken authenticationToken, final int id) {
-        final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
-        query.add(ApprovalMatch.MATCH_WITH_UNIQUEID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(id));
-        
-        final List<ApprovalDataVO> approvals;
-        try {
-            approvals = approvalSession.query(authenticationToken, query, 0, 100, "", ""); // authorization checks are performed afterwards
-        } catch (AuthorizationDeniedException e) {
-            // Not currently ever thrown by query()
-            throw new IllegalStateException(e);
-        } catch (IllegalQueryException e) {
-            throw new IllegalStateException("Query for approval request failed: " + e.getMessage(), e);
-        }
-        
-        if (approvals.isEmpty()) {
-            return null;
-        }
-        
-        return approvals.iterator().next();
-    }
-    
     
     private RaApprovalResponseRequest buildApprovalResponseRequest(final Action action, ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiParition, 
                 ApprovalProfile storedApprovalProfile, ApprovalDataVO advo) {
@@ -338,6 +314,7 @@ public class RaManageRequestBean implements Serializable {
         
         ApprovalRequest request = advo.getApprovalRequest();
         request.setApprovalProfile(storedApprovalProfile);
+        // FIXME this call does not work if the CA and RA are on different machines
         approvalSession.updateApprovalRequest(advo.getId(), request);
 
         final int id = getRequest().request.getId();
@@ -348,13 +325,12 @@ public class RaManageRequestBean implements Serializable {
     }
     
     public void approve() throws AuthorizationDeniedException, AuthenticationFailedException {
+        final ApprovalDataVO advo = getRequest().request.getApprovalData();
+        final ApprovalProfile approvalProfile = advo.getApprovalRequest().getApprovalProfile();
         
-        final ApprovalDataVO advo = getApprovalData(raAuthenticationBean.getAuthenticationToken(), getRequest().request.getId());
-        ApprovalProfile storedApprovalProfile = advo.getApprovalRequest().getApprovalProfile();
-        
-        for(ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiParition : partitionsAuthorizedToView) {
-            if(partitionsAuthorizedToApprove.contains(guiParition.getPartitionId())) {
-                final RaApprovalResponseRequest responseReq = buildApprovalResponseRequest(Action.APPROVE, guiParition, storedApprovalProfile, advo);
+        for (ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition : partitionsAuthorizedToView) {
+            if (partitionsAuthorizedToApprove.contains(guiPartition.getPartitionId())) {
+                final RaApprovalResponseRequest responseReq = buildApprovalResponseRequest(Action.APPROVE, guiPartition, approvalProfile, advo);
                 try {
                     if (raMasterApiProxyBean.addRequestResponse(raAuthenticationBean.getAuthenticationToken(), responseReq)) {
                         raLocaleBean.addMessageInfo("view_request_page_success_approve");
@@ -384,14 +360,12 @@ public class RaManageRequestBean implements Serializable {
     }
     
     public void reject() throws AuthorizationDeniedException, AuthenticationFailedException {
+        final ApprovalDataVO advo = getRequest().request.getApprovalData();
+        final ApprovalProfile approvalProfile = advo.getApprovalRequest().getApprovalProfile();
         
-        final ApprovalDataVO advo = getApprovalData(raAuthenticationBean.getAuthenticationToken(), getRequest().request.getId());
-        ApprovalProfile storedApprovalProfile = advo.getApprovalRequest().getApprovalProfile();
-        
-        for(ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiParition : partitionsAuthorizedToView) {
-            if(partitionsAuthorizedToApprove.contains(guiParition.getPartitionId())) {
-
-                final RaApprovalResponseRequest responseReq = buildApprovalResponseRequest(Action.REJECT, guiParition, storedApprovalProfile, advo);
+        for (ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition : partitionsAuthorizedToView) {
+            if (partitionsAuthorizedToApprove.contains(guiPartition.getPartitionId())) {
+                final RaApprovalResponseRequest responseReq = buildApprovalResponseRequest(Action.REJECT, guiPartition, approvalProfile, advo);
                 try {
                     if (raMasterApiProxyBean.addRequestResponse(raAuthenticationBean.getAuthenticationToken(), responseReq)) {
                         raLocaleBean.addMessageInfo("view_request_page_success_reject");
