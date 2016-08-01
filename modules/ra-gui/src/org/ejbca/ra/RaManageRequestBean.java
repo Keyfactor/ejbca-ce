@@ -201,7 +201,7 @@ public class RaManageRequestBean implements Serializable {
      * @return true if there already exists an approval for this partition 
      */
     public boolean isPartitionHandled(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partition) {
-        final ApprovalDataVO advo = getApprovalData(raAuthenticationBean.getAuthenticationToken(), getRequest().request.getId());
+        final ApprovalDataVO advo = getRequest().request.getApprovalData();
         Collection<Approval> approvals = advo.getApprovals();
         for(Approval approval : approvals) {
             if((approval.getStepId()==partition.getStepId()) && (approval.getPartitionId()==partition.getPartitionId())) {
@@ -430,27 +430,44 @@ public class RaManageRequestBean implements Serializable {
         }
         
         final RaEditableRequestData editData = requestData.getEditableData();
-        for (final RequestDataRow dataRow : requestInfo.getRequestData()) {
-            switch (dataRow.getKey()) {
-            case "SUBJECTDN":
-                editData.setSubjectDN(getDN(dataRow));
-                break;
-            case "SUBJECTALTNAME":
-                editData.setSubjectAltName(getDN(dataRow));
-                break;
-            case "SUBJECTDIRATTRIBUTES":
-                editData.setSubjectDirAttrs(getDN(dataRow));
-                break;
-            case "EMAIL":
-                String email = (String) dataRow.getEditValue();
-                // TODO validation (ECA-5235)
-                editData.setEmail(email);
-                break;
+        final RaEndEntityDetails endEntityDetails = requestInfo.getEndEntityDetails();
+        if (endEntityDetails != null) {
+            final SubjectDn sdn = endEntityDetails.getSubjectDistinguishedName();
+            sdn.update();
+            editData.setSubjectDN(sdn.getValue());
+            
+            final SubjectAlternativeName san = endEntityDetails.getSubjectAlternativeName();
+            san.update();
+            editData.setSubjectAltName(san.getValue());
+            
+            final SubjectDirectoryAttributes sda = endEntityDetails.getSubjectDirectoryAttributes();
+            sda.update();
+            editData.setSubjectDirAttrs(sda.getValue());
+            
+            editData.setEmail(endEntityDetails.getEmail());
+        } else {
+            for (final RequestDataRow dataRow : requestInfo.getRequestData()) {
+                switch (dataRow.getKey()) {
+                case "SUBJECTDN":
+                    editData.setSubjectDN(getDN(dataRow));
+                    break;
+                case "SUBJECTALTNAME":
+                    editData.setSubjectAltName(getDN(dataRow));
+                    break;
+                case "SUBJECTDIRATTRIBUTES":
+                    editData.setSubjectDirAttrs(getDN(dataRow));
+                    break;
+                case "EMAIL":
+                    String email = (String) dataRow.getEditValue();
+                    // TODO validation (ECA-5235)
+                    editData.setEmail(email);
+                    break;
+                }
             }
+            
+            // Check that the end entity profile is fulfilled
+            // TODO: ECA-5235
         }
-        
-        // Check that the end entity profile is fulfilled
-        // TODO: ECA-5235
         
         // TODO error handling
         final RaApprovalEditRequest editReq = new RaApprovalEditRequest(requestData.getId(), editData);

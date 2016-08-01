@@ -16,7 +16,6 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,10 +29,12 @@ import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.TimeAndAdmin;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
  * Information for an approval request, as seen by an admin.
@@ -47,17 +48,14 @@ public class RaApprovalRequestInfo implements Serializable {
     
     // Request information from ApprovalDataVO
     private final int id;
-    private final int approvalCalculatedUniqueId; // to detect identical requests
-    private final int approvalType;
-    private final int caId;
-    private final String caName; // to avoid unnecessary lookups. not present in ApprovalDataVO
-    private final int endEntityProfileId;
-    private final Date expireDate;
-    private final int remainingApprovals;
+    private final String caName; // to avoid unnecessary lookups. only the id is present in ApprovalDataVO
     private final String requesterSubjectDN;
-    private final Date requestDate;
     private final int status;
+    private final ApprovalDataVO approvalData;
     private final ApprovalProfile approvalProfile;
+    private final String endEntityProfileName;
+    private final EndEntityProfile endEntityProfile;
+    private final String certificateProfileName;
     
     /** Request data, as text. Not editable */
     private final List<ApprovalDataText> requestData;
@@ -102,21 +100,19 @@ public class RaApprovalRequestInfo implements Serializable {
         }
     }
     
-    public RaApprovalRequestInfo(final AuthenticationToken authenticationToken, final String caName, final ApprovalDataVO approval,
-            final List<ApprovalDataText> requestData, final RaEditableRequestData editableData) {
+    public RaApprovalRequestInfo(final AuthenticationToken authenticationToken, final String caName,
+            final String endEntityProfileName, final EndEntityProfile endEntityProfile, final String certificateProfileName,
+            final ApprovalDataVO approval, final List<ApprovalDataText> requestData, final RaEditableRequestData editableData) {
         id = approval.getId();
-        approvalCalculatedUniqueId = approval.getApprovalId();
-        approvalType = approval.getApprovalType();
-        caId = approval.getCAId();
         this.caName = caName;
-        endEntityProfileId = approval.getEndEntityProfileiId();
-        expireDate = approval.getExpireDate();
-        remainingApprovals = approval.getRemainingApprovals();
         final Certificate requesterCert = approval.getApprovalRequest().getRequestAdminCert();
         requesterSubjectDN = requesterCert != null ? CertTools.getSubjectDN(requesterCert) : null;
-        requestDate = approval.getRequestDate();
         status = approval.getStatus();
+        this.approvalData = approval;
         this.requestData = requestData;
+        this.endEntityProfile = endEntityProfile;
+        this.endEntityProfileName = endEntityProfileName;
+        this.certificateProfileName = certificateProfileName;
         this.editableData = editableData;
         
         final AuthenticationToken requestAdmin = approval.getApprovalRequest().getRequestAdmin();
@@ -222,14 +218,6 @@ public class RaApprovalRequestInfo implements Serializable {
         return id;
     }
     
-    public Date getRequestDate() {
-        return requestDate;
-    }
-    
-    public int getCaId() {
-        return caId;
-    }
-    
     public String getCaName() {
         return caName;
     }
@@ -238,12 +226,28 @@ public class RaApprovalRequestInfo implements Serializable {
         return status;
     }
     
-    public int getType() {
-        return approvalType;
-    }
-    
     public String getRequesterSubjectDN() {
         return requesterSubjectDN;
+    }
+    
+    public ApprovalDataVO getApprovalData() {
+        return approvalData;
+    }
+    
+    public ApprovalRequest getApprovalRequest() {
+        return approvalData.getApprovalRequest();
+    }
+    
+    public EndEntityProfile getEndEntityProfile() {
+        return endEntityProfile;
+    }
+    
+    public String getEndEntityProfileName() {
+        return endEntityProfileName;
+    }
+    
+    public String getCertificateProfileName() {
+        return certificateProfileName;
     }
     
     public List<ApprovalDataText> getRequestData() {
