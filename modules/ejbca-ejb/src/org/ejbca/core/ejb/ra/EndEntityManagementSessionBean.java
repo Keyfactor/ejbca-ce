@@ -1389,7 +1389,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     // If CA does not exist, the user is a bit "weird", but things can happen in reality and CAs can disappear
                     // So the CA not existing should not prevent us from revoking the user.
                     // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation
-                    log.info("Trying to revokeAndDelete an End Entity connected to a CA, with id "+caid+", that does not exist.");
+                    log.info("Trying to revokeAndDelete an End Entity connected to a CA, with ID "+caid+", that does not exist.");
                     if (log.isDebugEnabled()) {
                         log.debug("CADoesntExistsException for caid "+caid+": ", e);
                     }
@@ -1452,7 +1452,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             // If CA does not exist, the user is a bit "weird", but things can happen in reality and CAs can disappear
             // So the CA not existing should not prevent us from revoking the user.
             // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation 
-            log.info("Trying to revoke an End Entity connected to a CA, with id "+caid+", that does not exist.");
+            log.info("Trying to revoke an End Entity connected to a CA, with ID "+caid+", that does not exist.");
             if (log.isDebugEnabled()) {
                 log.debug("CADoesntExistsException for caid "+caid+": ", e1);
             }
@@ -1570,7 +1570,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 endEntityProfileId = endEntityInformation.getEndEntityProfileId();
                 // Republish with the same user DN that is currently used as a fallback, if we can find it
                 certificateSubjectDN = endEntityInformation.getCertificateDN();
-                // If for some reason the certificate profile id was not set in the certificate data, try to get it from current userdata
+                // If for some reason the certificate profile ID was not set in the certificate data, try to get it from current userdata
                 if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
                     certificateProfileId = endEntityInformation.getCertificateProfileId();
                 }
@@ -1580,7 +1580,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             endEntityProfileId = certReqHistory.getEndEntityInformation().getEndEntityProfileId();
             // Republish with the same user DN that was used in the original publication, if we can find it
             certificateSubjectDN = certReqHistory.getEndEntityInformation().getCertificateDN();
-            // If for some reason the certificate profile id was not set in the certificate data, try to get it from the certreq history
+            // If for some reason the certificate profile ID was not set in the certificate data, try to get it from the certreq history
             if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
                 certificateProfileId = certReqHistory.getEndEntityInformation().getCertificateProfileId();
             }
@@ -1619,7 +1619,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // If CA does not exist, the certificate is a bit "weird", but things can happen in reality and CAs can disappear
                 // So the CA not existing should not prevent us from revoking the certificate.
                 // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation 
-                log.info("Trying to revoke a certificate issued by a CA, with id "+caid+", that does not exist. IssuerDN='"+certificateData.getIssuerDN()+"'.");
+                log.info("Trying to revoke a certificate issued by a CA, with ID "+caid+", that does not exist. IssuerDN='"+certificateData.getIssuerDN()+"'.");
                 if (log.isDebugEnabled()) {
                     log.debug("CADoesntExistsException for caid "+caid+": ", e);
                 }
@@ -2172,7 +2172,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("Can not fetch entity profile with id " + endEntityProfileId);
+                log.debug("Can not fetch entity profile with ID " + endEntityProfileId);
             }
         }
         final String counter = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
