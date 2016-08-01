@@ -1806,11 +1806,13 @@ public class EjbcaWS implements IEjbcaWS {
 					} else if (status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED || status == ApprovalDataVO.STATUS_EXPIRED) {
 						throw new ApprovalException("The approval for id " + ar.generateApprovalId() + " has expired.");
 					} else {
-						throw new WaitingForApprovalException("The approval for id " + ar.generateApprovalId() + " have not yet been approved", ar.generateApprovalId());
+					    final int requestId = approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId());
+						throw new WaitingForApprovalException("The approval for id " + requestId + " have not yet been approved", requestId);
 					}
 				}catch(ApprovalException e){
 					approvalSession.addApprovalRequest(admin, ar);
-					throw new WaitingForApprovalException("Approval request with id " + ar.generateApprovalId() + " have been added for approval.",ar.generateApprovalId());
+					final int requestId = approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId());
+					throw new WaitingForApprovalException("Approval request with id " + requestId + " have been added for approval.", requestId);
 				}
 			}else{
 				throw new AuthorizationDeniedException();
@@ -1822,7 +1824,8 @@ public class EjbcaWS implements IEjbcaWS {
 		}
 
 		if (ar != null && !approvalSuccessfullStep1) {
-		    throw new WaitingForApprovalException("The approval for id " + ar.generateApprovalId() + " has not yet been approved", ar.generateApprovalId());
+		    final int requestId = approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId());
+		    throw new WaitingForApprovalException("The approval for id " + requestId + " has not yet been approved", requestId);
 		}
         if (log.isDebugEnabled() && ar != null && approvalSuccessfullStep1) {
             log.debug("The approval for id " + ar.generateApprovalId() + " has been approved");
@@ -2194,7 +2197,8 @@ public class EjbcaWS implements IEjbcaWS {
                             //  Add approval Request
                             try{
                                 approvalSession.addApprovalRequest(admin, ar);
-                                throw new WaitingForApprovalException("Adding approval to view hard token data with id " + ar.generateApprovalId(), ar.generateApprovalId());
+                                final int requestId = approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId());
+                                throw new WaitingForApprovalException("Adding approval to view hard token data with id " + requestId, requestId);
                             }catch(ApprovalException e4){
                                 throw EjbcaWSHelper.getEjbcaException(e4, logger, ErrorCode.APPROVAL_ALREADY_EXISTS, null);
                             }
@@ -2213,7 +2217,8 @@ public class EjbcaWS implements IEjbcaWS {
             }
 
             if(ar != null && ! isApprovedStep0){
-                throw new WaitingForApprovalException("The approval for id " + ar.generateApprovalId() + " have not yet been approved", ar.generateApprovalId());
+                final int requestId = approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId());
+                throw new WaitingForApprovalException("The approval for id " + requestId + " have not yet been approved", requestId);
             }
 
             Collection<java.security.cert.Certificate> certs = hardTokenSession.findCertificatesInHardToken(hardTokenSN);

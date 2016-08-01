@@ -680,4 +680,13 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         }
         return ret;
     }
+
+    @Override
+    public int getIdFromApprovalId(AuthenticationToken admin, int approvalId) {
+        List<ApprovalDataVO> advos = findApprovalDataVO(admin, approvalId);
+        if(advos.size() != 1) {
+            log.warn("There is more than one approval request with approval ID " + approvalId);
+        }
+        return advos.get(0).getId();
+    }
 }
