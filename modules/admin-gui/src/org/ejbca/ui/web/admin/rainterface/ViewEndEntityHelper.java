@@ -67,9 +67,10 @@ public class ViewEndEntityHelper implements Serializable{
 	public static final String CHECKBOX_VALUE             = "true";
 
 	public static final   int[] statusids = {EndEntityConstants.STATUS_NEW ,EndEntityConstants.STATUS_FAILED, EndEntityConstants.STATUS_INITIALIZED, EndEntityConstants.STATUS_INPROCESS
-        , EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_REVOKED , EndEntityConstants.STATUS_HISTORICAL, EndEntityConstants.STATUS_KEYRECOVERY};
+        , EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_REVOKED , EndEntityConstants.STATUS_HISTORICAL, EndEntityConstants.STATUS_KEYRECOVERY, EndEntityConstants.STATUS_WAITINGFORAPPROVAL};
 	
-	public static final   String[] statustexts         = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED", "STATUSREVOKED", "STATUSHISTORICAL", "STATUSKEYRECOVERY"};
+	public static final   String[] statustexts         = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED", "STATUSREVOKED", "STATUSHISTORICAL", "STATUSKEYRECOVERY", 
+	    "STATUSWAITINGFORAPPROVAL"};
 	
 	public static final int columnwidth = 330;
 	

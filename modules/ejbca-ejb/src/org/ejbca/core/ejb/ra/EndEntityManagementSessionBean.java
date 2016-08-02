@@ -349,7 +349,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         endEntityProfileId, approvalProfile);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ADDUSER)) {
                     approvalSession.addApprovalRequest(admin, ar);
-                    throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalad"), approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId()));
+                    final int requestId = approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId());
+                    sendNotification(admin, endEntity, EndEntityConstants.STATUS_WAITINGFORAPPROVAL, requestId, null);
+                    throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalad"), requestId);
                 }
             }
         }
@@ -413,7 +415,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // this point it is safe to set the password
                 endEntity.setPassword(newpassword);
                 // Send notifications, if they should be sent
-                sendNotification(admin, endEntity, EndEntityConstants.STATUS_NEW, null);
+                sendNotification(admin, endEntity, EndEntityConstants.STATUS_NEW, 0, null);
                 if (type.contains(EndEntityTypes.PRINT)) {
                     if (profile == null) {
                         profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
@@ -718,7 +720,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                      caid, endEntityProfileId, approvalProfile);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)) {
                 approvalSession.addApprovalRequest(admin, ar);
-                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"), approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId()));
+                final int requestId = approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId());
+                sendNotification(admin, userData.toEndEntityInformation(), EndEntityConstants.STATUS_WAITINGFORAPPROVAL, requestId, null);
+                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"), requestId);
             }
         }
         // Check if the subjectDN serialnumber already exists.
@@ -808,7 +812,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 notificationEndEntityInformation.setPassword(newpassword);
             }
             // Send notification if it should be sent.
-            sendNotification(admin, notificationEndEntityInformation, newstatus, null);
+            sendNotification(admin, notificationEndEntityInformation, newstatus, 0, null);
             if (newstatus != oldstatus) {
                 // Only print stuff on a printer on the same conditions as for
                 // notifications, we also only print if the status changes, not for
@@ -1180,7 +1184,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)) {
                 approvalSession.addApprovalRequest(admin, ar);
                 String msg = intres.getLocalizedMessage("ra.approvaledit");
-                throw new WaitingForApprovalException(msg, approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId()));
+                
+                final int requestId = approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId());
+                sendNotification(admin, data1.toEndEntityInformation(), EndEntityConstants.STATUS_WAITINGFORAPPROVAL, requestId, null);
+                throw new WaitingForApprovalException(msg, requestId);
             }
         }
         if (data1.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY
@@ -1214,7 +1221,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Send notifications when transitioning user through work-flow, if they
         // should be sent
         final EndEntityInformation userdata = data1.toEndEntityInformation();
-        sendNotification(admin, userdata, status, null);
+        sendNotification(admin, userdata, status, 0, null);
         if (log.isTraceEnabled()) {
             log.trace("<setUserStatus(" + username + ", " + status + ")");
         }
@@ -1632,7 +1639,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         endEntityProfileId, approvalProfile);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
                     approvalSession.addApprovalRequest(admin, ar);
-                    throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId()));
+                    final int requestId = approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId());
+                    if (endEntityProfileId != -1 && endEntityInformationParam==null) {
+                        sendNotification(admin, endEntityInformation, EndEntityConstants.STATUS_WAITINGFORAPPROVAL, requestId, cdw);
+                    }
+                    
+                    throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), requestId);
                 }
             }
         }
@@ -1664,7 +1676,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // In the case where this is an individual certificate revocation request, we still send a STATUS_REVOKED notification (since user state wont change)
         if (endEntityProfileId != -1 && endEntityInformationParam==null) {
-            sendNotification(admin, endEntityInformation, EndEntityConstants.STATUS_REVOKED, cdw);
+            sendNotification(admin, endEntityInformation, EndEntityConstants.STATUS_REVOKED, 0, cdw);
         }
         if (log.isTraceEnabled()) {
             log.trace("<revokeCert()");
@@ -2004,7 +2016,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
     }
 
-    private void sendNotification(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final int newstatus, CertificateDataWrapper revokedCertificate) {
+    private void sendNotification(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final int newstatus, 
+            final int approvalRequestId, CertificateDataWrapper revokedCertificate) {
         if (endEntityInformation == null) {
             if (log.isDebugEnabled()) {
                 log.debug("No UserData, no notification sent.");
@@ -2083,7 +2096,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         }
                         // TODO: approvalAdmin below should be the requestingAdmin, how to get that from the request?
                         // TODO: approvalAdminDN below should be the approving admin, how to get that from the request?
-                        final UserNotificationParamGen paramGen = new UserNotificationParamGen(endEntityInformation, approvalAdminDN, approvalAdmin, revokedCertificate);
+                        final UserNotificationParamGen paramGen = new UserNotificationParamGen(endEntityInformation, approvalAdminDN, approvalAdmin, approvalRequestId, revokedCertificate);
                         // substitute any $ fields in the recipient and from fields
                         recipientEmail = paramGen.interpolate(recipientEmail);
                         final String fromemail = paramGen.interpolate(userNotification.getNotificationSender());
