@@ -544,6 +544,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         profile.addField(DnComponents.IPADDRESS);
         profile.addField(DnComponents.UPN);
         profile.addField(DnComponents.UPN);
+        profile.addField(DnComponents.REGISTEREDID);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName, profile);
         try {
