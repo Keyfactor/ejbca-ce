@@ -754,6 +754,21 @@ Improvement
 New Feature
 	[ECA-4006] - Add test for legacy subject encoding with override enabled via CMP
 
+EJBCA 6.2.6.6, 2016-08-01
+---
+New Feature
+    [ECA-5279] - Support RegisteredID in subject alternative name
+
+EJBCA 6.2.6.5, 2016-03-22
+---
+Improvement
+    [ECA-4947] - Resetting an end entity password after key recovery should not require 'Edit End Entities'-rights
+
+EJBCA 6.2.6.4, 2016-03-10
+---
+Bug
+    [ECA-4885] - Key recovery requires 'Edit End Entities'-rights
+
 EJBCA 6.2.6, 2014-12-03
 ---
 Bug

@@ -407,6 +407,18 @@ For upgrade instructions, please see UPGRADE.
 	*   Importing an externally produced certificate with empty DN fields fails https://jira.primekey.se/browse/ECA-4018
 	*   CA Certificates using brainpool curves can't be imported from the ClI. GUI works though. https://jira.primekey.se/browse/ECA-4022 
 
+EJBCA 6.2.6.6
+-----------
+EJBCA 6.2.6.6 is a patch release for ECA-5279, Adding support for RegisteredID subject alternative name.
+
+EJBCA 6.2.6.5
+-----------
+EJBCA 6.2.6.5 is a patch release for ECA-4947
+
+EJBCA 6.2.6.4
+-----------
+EJBCA 6.2.6.4 is a patch release for ECA-4885
+
 EJBCA 6.2.6
 -----------
 EJBCA 6.2.6 is a maintenance release, primarily fixing two major issues and quite a few smaller ones.
