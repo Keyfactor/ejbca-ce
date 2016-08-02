@@ -48,7 +48,33 @@ public final class EjbcaConfiguration {
     public static String getCaCmsKeyStorePass() {
         return EjbcaConfigurationHolder.getExpandedString("ca.cmskeystorepass");
     }
-    
+
+    /**
+     * How long an request should stay valid
+     */
+    public static long getApprovalDefaultRequestValidity() {
+        long value = 28800L;
+        try {
+            value = Long.parseLong(EjbcaConfigurationHolder.getString("approval.defaultrequestvalidity"));
+        } catch (NumberFormatException e) {
+            log.warn("\"approval.defaultrequestvalidity\" is not a decimal number. Using default value: " + value);
+        }
+        return value * 1000L;
+    }
+
+    /**
+     * How long an approved request should stay valid
+     */
+    public static long getApprovalDefaultApprovalValidity() {
+        long value = 28800L;
+        try {
+            value = Long.parseLong(EjbcaConfigurationHolder.getString("approval.defaultapprovalvalidity"));
+        } catch (NumberFormatException e) {
+            log.warn("\"approval.defaultapprovalvalidity\" is not a decimal number. Using default value: " + value);
+        }
+        return value * 1000L;
+    }
+
     /**
      * Excluded classes from approval.
      */
