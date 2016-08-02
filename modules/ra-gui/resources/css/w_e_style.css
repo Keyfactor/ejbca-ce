@@ -90,8 +90,7 @@ h1, h2, h3, h4, p, span {
 
 img.menu_logo {
   height: 1.5em;
-  z-index: 9999;
-  position: absolute; }
+  z-index: 9999; }
 
 .content {
   width: 95%;
@@ -310,6 +309,9 @@ textarea#keyPairForm\:certificateRequest {
 
 #contentForm\:parentGenericSearchButton {
   width: 17%; }
+  #contentForm\:parentGenericSearchButton > input.pure-button {
+    background: #ededed;
+    color: #000; }
 
 #contentForm\:filteredResults {
   color: #fff; }
@@ -372,7 +374,7 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 
 #makeRequestButton, #requestStatusButton, #searchCertsButton {
   height: 40px;
-  padding-top: 13px; }
+  padding-top: 15px; }
 
 #requestInfoForm\:confirmRequestButton,
 #searchCertsButton,
@@ -467,7 +469,7 @@ a {
   /* första wrappern för boxen för "max results"-texten i search for certificates */
   width: 100%; }
 
-.contentForm\:criteriaMaxResults {
+.contentForm\:criteriaMaxResults, #contentForm\:criteriaMaxResults {
   width: 100%; }
 
 #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) {
@@ -486,13 +488,13 @@ a {
   text-align: left; }
 
 /*SLUT resterande inputs för max-result-texten*/
-.contentForm\:filteredResults > table.pure-table > thead {
+.contentForm\:filteredResults > table.pure-table > thead, #contentForm\:filteredResults > table.pure-table > thead {
   line-height: 110%;
   background: #a9a9a9; }
-.contentForm\:filteredResults > table.pure-table > tbody > tr {
+.contentForm\:filteredResults > table.pure-table > tbody > tr, #contentForm\:filteredResults > table.pure-table > tbody > tr {
   line-height: 79%;
   word-break: break-all; }
-  .contentForm\:filteredResults > table.pure-table > tbody > tr > td > input {
+  .contentForm\:filteredResults > table.pure-table > tbody > tr > td > input, #contentForm\:filteredResults > table.pure-table > tbody > tr > td > input {
     color: #e9af13; }
 
 .radio-button-table {
@@ -688,6 +690,11 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
       left: 7.25px; }
 
 /*SLUT CSS för scroll to top-funktion*/
+#detailsForm\:certDetails\:newRevocationReason {
+  width: 160px;
+  display: block;
+  margin: 1% 0 1% 2%; }
+
 #detailsForm\:certDetails\:username {
   word-break: break-word; }
 
@@ -801,8 +808,11 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     div.content-body #contentForm\:manageRequestTable > tbody > tr > td > span {
       word-break: normal; }
     div.content-body #contentForm\:manageRequestTable > tbody > tr > td > a {
-      padding-top: 7%; } }
+      padding-top: 2%; } }
 @media (max-width: 64.0525em) {
+  img.menu_logo {
+    position: absolute; }
+
   div#div_menu_logo {
     z-index: 1; }
 
@@ -938,9 +948,9 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   .content-body h2 {
     margin: 0.2em 0 0 2%; }
 
-  #contentForm\:filteredResults > table:not(#contentForm\:viewRequestDataTable) table.pure-table {
+  #contentForm\:filteredResults > table:not(#contentForm\:manageRequestTable) table.pure-table {
     line-height: normal; }
-    #contentForm\:filteredResults > table:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody td {
+    #contentForm\:filteredResults > table:not(#contentForm\:manageRequestTable) table.pure-table > tbody td {
       word-break: break-word;
       max-width: 180px; }
 
@@ -1030,7 +1040,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 
   .tabButtonBar {
     width: 73%; }
-    .tabButtonBar > input {
+    .tabButtonBar > a {
       font-size: 100%; }
 
   table.pure-table > tbody > tr:not(.pure-table-odd) td {
@@ -1040,6 +1050,13 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 
   #contentForm\:viewRequestDataTable {
     font-size: 100%; }
+
+  #contentForm\:manageRequestTable > tbody > a {
+    padding-top: 16%; }
+
+  #detailsForm\:certDetails\:newRevocationReason {
+    display: inline-block;
+    margin: 0; }
 
   .footer > .align-center > p {
     /*footer-texten*/
@@ -1283,4 +1300,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     word-break: break-all; }
 
   #contentForm\:viewRequestDataTable {
+    word-break: break-all; }
+
+  #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage {
     word-break: break-all; } }
