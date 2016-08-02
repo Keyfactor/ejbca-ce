@@ -486,6 +486,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         return fieldLabel;
     }
 
+    
+    // Notifications
 
     public boolean isNotificationEnabled(final int partitionIdentifier) {
         final ApprovalProfile approvalProfile = getApprovalProfile();
@@ -506,7 +508,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 "Approval Request to ${approvalRequest.TYPE} is now in state ${approvalRequest.WORKFLOWSTATE}";
         final String defaultBody = "Approval Request to ${approvalRequest.TYPE} from ${approvalRequest.REQUESTOR} is now in state ${approvalRequest.WORKFLOWSTATE}.\n" +
                 "\n" +
-                "Direct link to the request: " + baseUrl + "ra/managerequest.xhtml?aid=${approvalRequest.ID}";
+                "Direct link to the request: " + baseUrl + "ra/managerequest.xhtml?id=${approvalRequest.ID}";
         approvalProfile.addNotificationProperties(approvalPartition, "approval-admin-group@example.org supervisor@example.org", "no-reply@"+hostnameFromRequest, defaultSubject, defaultBody);
         steps = null;
     }
@@ -516,6 +518,40 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
         approvalProfile.removeNotificationProperties(approvalPartition);
+        steps = null;
+    }
+    
+    // User Notification
+    
+    public boolean isUserNotificationEnabled(final int partitionIdentifier) {
+        final ApprovalProfile approvalProfile = getApprovalProfile();
+        final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
+        final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
+        return approvalProfile.isUserNotificationEnabled(approvalPartition);
+    }
+
+    public void addUserNotification(final int partitionIdentifier) {
+        final ApprovalProfile approvalProfile = getApprovalProfile();
+        final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
+        final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
+        // Configure some nice defaults
+        final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        final String hostnameFromRequest = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getServerName();
+        final String baseUrl = globalConfiguration.getBaseUrl(hostnameFromRequest);
+        final String defaultSubject = "[AR-${approvalRequest.ID}-${approvalRequest.STEP_ID}-${approvalRequest.PARTITION_ID}] " +
+                "Approval Request to ${approvalRequest.TYPE} is now in state ${approvalRequest.WORKFLOWSTATE}";
+        final String defaultBody = "Approval Request to ${approvalRequest.TYPE} from ${approvalRequest.REQUESTOR} is now in state ${approvalRequest.WORKFLOWSTATE}.\n" +
+                "\n" +
+                "Direct link to the request: " + baseUrl + "ra/managerequest.xhtml?id=${approvalRequest.ID}";
+        approvalProfile.addUserNotificationProperties(approvalPartition, "approval-admin-group@example.org supervisor@example.org", "no-reply@"+hostnameFromRequest, defaultSubject, defaultBody);
+        steps = null;
+    }
+
+    public void removeUserNotification(final int partitionIdentifier) {
+        final ApprovalProfile approvalProfile = getApprovalProfile();
+        final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
+        final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
+        approvalProfile.removeUserNotificationProperties(approvalPartition);
         steps = null;
     }
 }
