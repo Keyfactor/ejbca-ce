@@ -154,7 +154,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
 			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_KEYRECOVERY)){
 				approvalSession.addApprovalRequest(admin, ar);
 	            String msg = intres.getLocalizedMessage("keyrecovery.addedforapproval");            	
-				throw new WaitingForApprovalException(msg, approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId()));
+				throw new WaitingForApprovalException(msg, approvalSession.getIdFromApprovalId(ar.generateApprovalId()));
 			}
         } 
     }

@@ -57,18 +57,18 @@ public class UserNotificationParamGenTest {
         certificateData.setStatus(CertificateConstants.CERT_REVOKED);
         certificateData.setRevocationReason(RevocationReasons.CERTIFICATEHOLD.getDatabaseValue());
 		final CertificateDataWrapper cdw = new CertificateDataWrapper(certificateData, null);
-        final UserNotificationParamGen paramGen = new UserNotificationParamGen(userdata, approvalAdminDN, admindata, cdw);
+        final UserNotificationParamGen paramGen = new UserNotificationParamGen(userdata, approvalAdminDN, admindata, 123, cdw);
         assertNotNull("paramGen is null", paramGen);
         
         String msg = paramGen.interpolate("${USERNAME} ${user.USERNAME} ${PASSWORD} ${user.PASSWORD} ${CN} ${user.CN} ${C}" +
         						" ${approvalAdmin.CN} ${approvalAdmin.C} ${approvalAdmin.O}" +
         						" ${user.EE.EMAIL} ${user.SAN.EMAIL} ${requestAdmin.EE.EMAIL} ${requestAdmin.CN} ${requestAdmin.SAN.EMAIL}" +
         						" ${revokedCertificate.CERTSERIAL} ${revokedCertificate.EXPIREDATE} ${revokedCertificate.CERTSUBJECTDN} " +
-        						" ${revokedCertificate.CERTISSUERDN} ${revokedCertificate.REVOCATIONSTATUS} ${revokedCertificate.REVOCATIONREASON}");
+        						" ${revokedCertificate.CERTISSUERDN} ${revokedCertificate.REVOCATIONSTATUS} ${revokedCertificate.REVOCATIONREASON} ${approvalRequestId}");
         assertFalse("Interpolating message failed", (msg==null || msg.length()==0));
         assertEquals("foo foo foo123 foo123 foo foo SE approvaluser SE Org fooee@foo.se fooalt@foo.se adminee@foo.se Test Admin adminalt@foo.se" +
                 " " + new BigInteger(certificateSerialNumber).toString(16).toUpperCase() +" " + ValidityDate.formatAsISO8601(now, ValidityDate.TIMEZONE_SERVER) + " CN=foo,O=Org,C=SE " +
-                " CN=The CA,O=Org,C=NO Revoked certificateHold", msg);
+                " CN=The CA,O=Org,C=NO Revoked certificateHold 123", msg);
 		
 	}
 	

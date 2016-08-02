@@ -179,11 +179,28 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         approvalPartition.addProperty(new DynamicUiProperty<MultiLineString>(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY, new MultiLineString(body)));
         return approvalPartition;
     }
+    
+    @Override
+    public boolean isUserNotificationEnabled(final ApprovalPartition approvalPartition) {
+        return approvalPartition!=null && approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT) != null;
+    }
+
+    @Override
+    public ApprovalPartition addUserNotificationProperties(final ApprovalPartition approvalPartition, String recipient, String sender, String subject, String body) {
+        // TODO: It would be nice with the email-address type
+        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_USER_NOTIFICATION_EMAIL_SENDER, sender));
+        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, subject));
+        approvalPartition.addProperty(new DynamicUiProperty<MultiLineString>(PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY, new MultiLineString(body)));
+        return approvalPartition;
+    }
 
     @Override
     public final Set<String> getHiddenProperties() {
         Set<String> result = new HashSet<>(Arrays.asList(PROPERTY_NOTIFICATION_EMAIL_RECIPIENT, PROPERTY_NOTIFICATION_EMAIL_SENDER,
-                PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY));
+                PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY, 
+                PROPERTY_USER_NOTIFICATION_EMAIL_SENDER,
+                PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY
+                ));
         result.addAll(Arrays.asList(getImplementationHiddenProperties()));
         return result;
     }
@@ -203,7 +220,15 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         approvalPartition.removeProperty(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY);
         return approvalPartition;
     }
-
+    
+    @Override
+    public ApprovalPartition removeUserNotificationProperties(final ApprovalPartition approvalPartition) {
+        approvalPartition.removeProperty(PROPERTY_USER_NOTIFICATION_EMAIL_SENDER);
+        approvalPartition.removeProperty(PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT);
+        approvalPartition.removeProperty(PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY);
+        return approvalPartition;
+    }
+    
     @Override
     public void addPropertyToPartition(int stepId, int partitionId, DynamicUiProperty<? extends Serializable> property) throws NoSuchApprovalStepException {
         ApprovalStep step = getSteps().get(stepId);
@@ -471,7 +496,10 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     @Override
     public boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, String propertyName) {
         return Arrays.asList( PROPERTY_NOTIFICATION_EMAIL_RECIPIENT, PROPERTY_NOTIFICATION_EMAIL_SENDER,
-                PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY).contains(propertyName);
+                PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY, 
+                PROPERTY_USER_NOTIFICATION_EMAIL_SENDER,
+                PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY
+                ).contains(propertyName);
     }
     
     @Override

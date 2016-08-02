@@ -515,28 +515,70 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     /** Send approval notification to the partition owner if it has notifications enabled. */
     private void sendApprovalNotification(final ApprovalRequest approvalRequest, final ApprovalProfile approvalProfile, final int approvalStepId, final ApprovalPartition approvalPartition,
             final ApprovalPartitionWorkflowState approvalPartitionWorkflowState) {
-        if (!approvalProfile.isNotificationEnabled(approvalPartition)) {
+        
+        if(!approvalProfile.isNotificationEnabled(approvalPartition) && !approvalProfile.isUserNotificationEnabled(approvalPartition)) {
             if (log.isDebugEnabled()) {
-                log.debug("Notifications not enabled for approvalProfile: "+approvalProfile.getProfileName());
+                log.debug("Neither notifications nor user notifications are enabled for approvalProfile: "+approvalProfile.getProfileName());
             }
             return;
         }
-        final int approvalId = approvalRequest.generateApprovalId();
+        
+        final int requestId = getIdFromApprovalId(approvalRequest.generateApprovalId());
         final int partitionId = approvalPartition.getPartitionIdentifier();
         final String approvalType = intres.getLocalizedMessage(ApprovalDataVO.APPROVALTYPENAMES[approvalRequest.getApprovalType()]);
         final String workflowState = intres.getLocalizedMessage("APPROVAL_WFSTATE_" + approvalPartitionWorkflowState.name());
         final String requestor = approvalRequest.getRequestAdmin().toString();
-        final String recipient = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_RECIPIENT).getValue();
-        final String sender = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_SENDER).getValue();
-        final String subject = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT).getValue();
-        final String body = ((MultiLineString)approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY).getValue()).getValue();
-        final ApprovalNotificationParameterGenerator parameters = new ApprovalNotificationParameterGenerator(approvalId, approvalStepId, partitionId, approvalType, workflowState, requestor);
-        try {
-            MailSender.sendMailOrThrow(sender, Arrays.asList(recipient.split(" ")), MailSender.NO_CC, parameters.interpolate(subject), parameters.interpolate(body), MailSender.NO_ATTACHMENTS);
-            log.info(intres.getLocalizedMessage("approval.sentnotification", approvalId));
-        } catch (Exception e) {
-            log.info(intres.getLocalizedMessage("approval.errornotification", approvalId), e);
+        
+        if(approvalProfile.isNotificationEnabled(approvalPartition)) {
+            final String recipient = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_RECIPIENT).getValue();
+            final String sender = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_SENDER).getValue();
+            final String subject = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT).getValue();
+            final String body = ((MultiLineString)approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY).getValue()).getValue();
+            final ApprovalNotificationParameterGenerator parameters = new ApprovalNotificationParameterGenerator(requestId, approvalStepId, partitionId, approvalType, workflowState, requestor);
+            try {
+                MailSender.sendMailOrThrow(sender, Arrays.asList(recipient.split(" ")), MailSender.NO_CC, parameters.interpolate(subject), parameters.interpolate(body), MailSender.NO_ATTACHMENTS);
+                log.info(intres.getLocalizedMessage("approval.sentnotification", requestId));
+            } catch (Exception e) {
+                log.info(intres.getLocalizedMessage("approval.errornotification", requestId), e);
+            }
         }
+        
+        final EndEntityInformation userdata = getEndEntity(approvalRequest);
+        if ((userdata != null) && approvalProfile.isUserNotificationEnabled(approvalPartition)) {
+            final String userRecipient = userdata.getEmail();
+            final String userSender = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_SENDER).getValue();
+            final String userSubject = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT).getValue();
+            final String userBody = ((MultiLineString)approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY).getValue()).getValue();
+
+            final ApprovalNotificationParameterGenerator userParameters = new ApprovalNotificationParameterGenerator(requestId, approvalStepId, partitionId, approvalType, workflowState, requestor);
+            try {
+                MailSender.sendMailOrThrow(userSender, Arrays.asList(userRecipient.split(" ")), MailSender.NO_CC, userParameters.interpolate(userSubject), userParameters.interpolate(userBody), MailSender.NO_ATTACHMENTS);
+                log.info(intres.getLocalizedMessage("approval.sentnotification", requestId));
+            } catch (Exception e) {
+                log.info(intres.getLocalizedMessage("approval.errornotification", requestId), e);
+            }
+        }
+    }
+    
+    private EndEntityInformation getEndEntity(final ApprovalRequest approvalRequest) {
+        if(approvalRequest instanceof AddEndEntityApprovalRequest) {
+            return ((AddEndEntityApprovalRequest) approvalRequest).getEndEntityInformation();
+        } else if(approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
+            //See legacy instantiation in EndEntityManagementSessionBean
+            EndEntityInformation endEntityInformation = endEntityAccessSession
+                    .findUser(((ChangeStatusEndEntityApprovalRequest) approvalRequest).getUsername());
+            return endEntityInformation;
+        } else if(approvalRequest instanceof EditEndEntityApprovalRequest) {
+            //See legacy instantiation in EndEntityManagementSessionBean
+            return ((EditEndEntityApprovalRequest) approvalRequest).getNewEndEntityInformation();
+        } else if(approvalRequest instanceof RevocationApprovalRequest) {
+            //See legacy instantiation in RevocationSessionBean
+            EndEntityInformation endEntityInformation = endEntityAccessSession
+                    .findUser(((RevocationApprovalRequest) approvalRequest).getUsername());
+            return endEntityInformation;
+        }
+        
+        return null;
     }
 
     private Integer findFreeApprovalId() {
@@ -682,11 +724,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public int getIdFromApprovalId(AuthenticationToken admin, int approvalId) {
-        List<ApprovalDataVO> advos = findApprovalDataVO(admin, approvalId);
-        if(advos.size() != 1) {
+    public int getIdFromApprovalId(int approvalId) {
+        List<ApprovalData> ads = findByApprovalId(approvalId);
+        if(ads.size() != 1) {
             log.warn("There is more than one approval request with approval ID " + approvalId);
         }
-        return advos.get(0).getId();
+        return ads.get(0).getId();
     }
 }
