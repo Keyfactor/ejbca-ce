@@ -2586,6 +2586,9 @@ Variables used with approvals:
 <li>
  ${approvalAdmin.E}               = The last approving administrator's email address from Subject DN
 </li>
+<li>
+ ${approvalRequestId}             = The ID of the approval request that was created
+</li>
 </ul>
 </p><p>
 Variables used with  expiring certificates:
