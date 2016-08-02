@@ -30,6 +30,7 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.profiles.ProfileBase;
 
@@ -71,8 +72,8 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
 
     public ApprovalProfileBase(final String name) {
         super(name);
-        data.put(REQUEST_EXPIRATION_PERIOD_PROPERTY, DEFAULT_REQUEST_EXPIRATION_PERIOD);
-        data.put(APPROVAL_EXPIRATION_PERIOD_PROPERTY, DEFAULT_APPROVAL_EXPIRATION_PERIOD);
+        data.put(REQUEST_EXPIRATION_PERIOD_PROPERTY, EjbcaConfiguration.getApprovalDefaultRequestValidity());
+        data.put(APPROVAL_EXPIRATION_PERIOD_PROPERTY, EjbcaConfiguration.getApprovalDefaultApprovalValidity());
 
     }
 
@@ -85,7 +86,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     public long getRequestExpirationPeriod() {
         final Object value = data.get(REQUEST_EXPIRATION_PERIOD_PROPERTY);
         if(value == null) {
-            return DEFAULT_REQUEST_EXPIRATION_PERIOD;
+            return EjbcaConfiguration.getApprovalDefaultRequestValidity();
         }
         return (long) value;
     }
@@ -99,7 +100,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     public long getApprovalExpirationPeriod() {
         final Object value = data.get(APPROVAL_EXPIRATION_PERIOD_PROPERTY);
         if(value == null) {
-            return DEFAULT_APPROVAL_EXPIRATION_PERIOD;
+            return EjbcaConfiguration.getApprovalDefaultApprovalValidity();
         }
         return (long) value;
     }
