@@ -57,6 +57,7 @@ import org.ejbca.util.NotificationParamGen;
  * ${approvalAdmin.O}                 = The approving administrator's organization
  * ${approvalAdmin.OU}                = The approving administrator's organization unit
  * ${approvalAdmin.C}                 = The approving administrator's country
+ * ${approvalRequestId}               = The id of the approval request
  * 
  * @version $Id$
  */
@@ -75,17 +76,20 @@ public class UserNotificationParamGen extends NotificationParamGen {
 	 * 
 	 * @param userData The end entity that is being operated on. Populates USERNAME, CN etc variables
 	 * @param approvalAdminDN The DN of the administrator that approved the request, if approvals were used. Populates approvalAdmin variables.
-	 * @param requestAdmin The end entity that requested the event from the beginning, either the admin that adds an end entity if no approvals are used, of if approvals were used the admin requesting (creating the approval request) to add an end entity. Populates requestAdmin variables
+	 * @param requestAdmin The end entity that requested the event from the beginning, either the admin that adds an end entity if no approvals 
+	 *         are used, of if approvals were used the admin requesting (creating the approval request) to add an end entity. Populates requestAdmin variables
+	 * @param approvalRequestId
 	 * @param revokedCertificate the certificate that is revoked, in case of a revocation event. Populates revokedCertificate variables
 	 */
-	public UserNotificationParamGen(EndEntityInformation userData, String approvalAdminDN, EndEntityInformation requestAdmin, CertificateDataWrapper revokedCertificate) {
+	public UserNotificationParamGen(EndEntityInformation userData, String approvalAdminDN, EndEntityInformation requestAdmin, int approvalRequestId, 
+	        CertificateDataWrapper revokedCertificate) {
 		populateWithUserData(userData);
-		populateWithApprovalAdminDN(approvalAdminDN);
+		populateWithApprovalData(approvalAdminDN, approvalRequestId);
 		populateWithEmailAddresses(userData, requestAdmin);
 		populateWithRevokedCertificate(revokedCertificate);
 	}
 
-	private void populateWithApprovalAdminDN(String approvalAdminDN) {
+	private void populateWithApprovalData(String approvalAdminDN, final int approvalRequestId) {
 	    if (approvalAdminDN == null) {
 	        approvalAdminDN = "";
 	    }
@@ -96,6 +100,8 @@ public class UserNotificationParamGen extends NotificationParamGen {
 	    paramPut("approvalAdmin.OU", dnfields.getField(DNFieldExtractor.OU, 0));
 	    paramPut("approvalAdmin.C", dnfields.getField(DNFieldExtractor.C, 0));
 	    paramPut("approvalAdmin.E", dnfields.getField(DNFieldExtractor.E, 0));
+	    
+	    paramPut("approvalRequestId", approvalRequestId);
 	}
 
 	protected void populateWithRevokedCertificate(final CertificateDataWrapper revokedCertificate) {
