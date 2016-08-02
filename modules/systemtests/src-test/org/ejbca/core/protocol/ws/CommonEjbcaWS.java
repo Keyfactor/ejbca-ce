@@ -1733,80 +1733,83 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
         globalConfigurationSession.saveConfiguration(intAdmin, gc);
-        if (certificateProfileSession.getCertificateProfileId(WSTESTPROFILE) != 0) {
-            certificateProfileSession.removeCertificateProfile(intAdmin, WSTESTPROFILE);
-        }
-        {
-            final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-            profile.setAllowValidityOverride(true);
-            certificateProfileSession.addCertificateProfile(intAdmin, WSTESTPROFILE, profile);
-        }
-        // first a simple test
-        UserDataVOWS tokenUser1 = new UserDataVOWS();
-        tokenUser1.setUsername("WSTESTTOKENUSER1");
-        tokenUser1.setPassword(PASSWORD);
-        tokenUser1.setClearPwd(true);
-        tokenUser1.setSubjectDN("CN=WSTESTTOKENUSER1");
-        tokenUser1.setCaName(getAdminCAName());
-        tokenUser1.setEmail(null);
-        tokenUser1.setSubjectAltName(null);
-        tokenUser1.setStatus(UserDataVOWS.STATUS_NEW);
-        tokenUser1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-        tokenUser1.setEndEntityProfileName("EMPTY");
-        tokenUser1.setCertificateProfileName("ENDUSER");
-
-        KeyPair basickeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
-                basickeys.getPublic(), new DERSet(), basickeys.getPrivate(), null);
-
-        ArrayList<TokenCertificateRequestWS> requests = new ArrayList<TokenCertificateRequestWS>();
-        TokenCertificateRequestWS tokenCertReqWS = new TokenCertificateRequestWS();
-        tokenCertReqWS.setCAName(getAdminCAName());
-        tokenCertReqWS.setCertificateProfileName(WSTESTPROFILE);
-        tokenCertReqWS.setValidityIdDays("1");
-        tokenCertReqWS.setPkcs10Data(basicpkcs10.getEncoded());
-        tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST);
-        requests.add(tokenCertReqWS);
-        tokenCertReqWS = new TokenCertificateRequestWS();
-        tokenCertReqWS.setCAName(getAdminCAName());
-        tokenCertReqWS.setCertificateProfileName("ENDUSER");
-        tokenCertReqWS.setKeyalg("RSA");
-        tokenCertReqWS.setKeyspec("1024");
-        tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_KEYSTORE_REQUEST);
-        requests.add(tokenCertReqWS);
-
-        HardTokenDataWS hardTokenDataWS = setupHardTokenDataWS("12345678");
-
-        List<TokenCertificateResponseWS> responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, true, false);
-        assertTrue(responses.size() == 2);
-
-        Iterator<TokenCertificateResponseWS> iter = responses.iterator();
-        TokenCertificateResponseWS next = iter.next();
-        assertTrue(next.getType() == HardTokenConstants.RESPONSETYPE_CERTIFICATE_RESPONSE);
-        Certificate cert = next.getCertificate();
-        X509Certificate realcert = (X509Certificate) CertificateHelper.getCertificate(cert.getCertificateData());
-        assertNotNull(realcert);
-        assertTrue(realcert.getNotAfter().toString(), realcert.getNotAfter().before(new Date(System.currentTimeMillis() + 2 * 24 * 3600 * 1000)));
-        next = iter.next();
-        assertTrue(next.getType() == HardTokenConstants.RESPONSETYPE_KEYSTORE_RESPONSE);
-        KeyStore keyStore = next.getKeyStore();
-        java.security.KeyStore realKeyStore = KeyStoreHelper.getKeyStore(keyStore.getKeystoreData(), HardTokenConstants.TOKENTYPE_PKCS12, PASSWORD);
-        assertTrue(realKeyStore.containsAlias("WSTESTTOKENUSER1"));
-        assertTrue(((X509Certificate) realKeyStore.getCertificate("WSTESTTOKENUSER1")).getNotAfter().after(
-                new Date(System.currentTimeMillis() + 48 * 24 * 3600 * 1000)));
-
-        if (!onlyOnce) {
-            try {
-                responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, false, false);
-                assertTrue(false);
-            } catch (HardTokenExistsException_Exception e) {
-
+        try {
+            if (certificateProfileSession.getCertificateProfileId(WSTESTPROFILE) != 0) {
+                certificateProfileSession.removeCertificateProfile(intAdmin, WSTESTPROFILE);
             }
-        }
+            {
+                final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+                profile.setAllowValidityOverride(true);
+                certificateProfileSession.addCertificateProfile(intAdmin, WSTESTPROFILE, profile);
+            }
+            // first a simple test
+            UserDataVOWS tokenUser1 = new UserDataVOWS();
+            tokenUser1.setUsername("WSTESTTOKENUSER1");
+            tokenUser1.setPassword(PASSWORD);
+            tokenUser1.setClearPwd(true);
+            tokenUser1.setSubjectDN("CN=WSTESTTOKENUSER1");
+            tokenUser1.setCaName(getAdminCAName());
+            tokenUser1.setEmail(null);
+            tokenUser1.setSubjectAltName(null);
+            tokenUser1.setStatus(UserDataVOWS.STATUS_NEW);
+            tokenUser1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+            tokenUser1.setEndEntityProfileName("EMPTY");
+            tokenUser1.setCertificateProfileName("ENDUSER");
 
-        certificateProfileSession.removeCertificateProfile(intAdmin, WSTESTPROFILE);
-        gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
-        globalConfigurationSession.saveConfiguration(intAdmin, gc);
+            KeyPair basickeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
+                    basickeys.getPublic(), new DERSet(), basickeys.getPrivate(), null);
+
+            ArrayList<TokenCertificateRequestWS> requests = new ArrayList<TokenCertificateRequestWS>();
+            TokenCertificateRequestWS tokenCertReqWS = new TokenCertificateRequestWS();
+            tokenCertReqWS.setCAName(getAdminCAName());
+            tokenCertReqWS.setCertificateProfileName(WSTESTPROFILE);
+            tokenCertReqWS.setValidityIdDays("1");
+            tokenCertReqWS.setPkcs10Data(basicpkcs10.getEncoded());
+            tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST);
+            requests.add(tokenCertReqWS);
+            tokenCertReqWS = new TokenCertificateRequestWS();
+            tokenCertReqWS.setCAName(getAdminCAName());
+            tokenCertReqWS.setCertificateProfileName("ENDUSER");
+            tokenCertReqWS.setKeyalg("RSA");
+            tokenCertReqWS.setKeyspec("1024");
+            tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_KEYSTORE_REQUEST);
+            requests.add(tokenCertReqWS);
+
+            HardTokenDataWS hardTokenDataWS = setupHardTokenDataWS("12345678");
+
+            List<TokenCertificateResponseWS> responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, true, false);
+            assertTrue(responses.size() == 2);
+
+            Iterator<TokenCertificateResponseWS> iter = responses.iterator();
+            TokenCertificateResponseWS next = iter.next();
+            assertTrue(next.getType() == HardTokenConstants.RESPONSETYPE_CERTIFICATE_RESPONSE);
+            Certificate cert = next.getCertificate();
+            X509Certificate realcert = (X509Certificate) CertificateHelper.getCertificate(cert.getCertificateData());
+            assertNotNull(realcert);
+            assertTrue(realcert.getNotAfter().toString(), realcert.getNotAfter().before(new Date(System.currentTimeMillis() + 2 * 24 * 3600 * 1000)));
+            next = iter.next();
+            assertTrue(next.getType() == HardTokenConstants.RESPONSETYPE_KEYSTORE_RESPONSE);
+            KeyStore keyStore = next.getKeyStore();
+            java.security.KeyStore realKeyStore = KeyStoreHelper.getKeyStore(keyStore.getKeystoreData(), HardTokenConstants.TOKENTYPE_PKCS12, PASSWORD);
+            assertTrue(realKeyStore.containsAlias("WSTESTTOKENUSER1"));
+            assertTrue(((X509Certificate) realKeyStore.getCertificate("WSTESTTOKENUSER1")).getNotAfter().after(
+                    new Date(System.currentTimeMillis() + 48 * 24 * 3600 * 1000)));
+
+            if (!onlyOnce) {
+                try {
+                    responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, false, false);
+                    assertTrue(false);
+                } catch (HardTokenExistsException_Exception e) {
+
+                }
+            }
+
+        } finally {
+            certificateProfileSession.removeCertificateProfile(intAdmin, WSTESTPROFILE);
+            gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
+            globalConfigurationSession.saveConfiguration(intAdmin, gc);
+        }
 
     }
 
