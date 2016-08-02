@@ -349,7 +349,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         endEntityProfileId, approvalProfile);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ADDUSER)) {
                     approvalSession.addApprovalRequest(admin, ar);
-                    final int requestId = approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId());
+                    final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
                     sendNotification(admin, endEntity, EndEntityConstants.STATUS_WAITINGFORAPPROVAL, requestId, null);
                     throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalad"), requestId);
                 }
@@ -720,7 +720,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                      caid, endEntityProfileId, approvalProfile);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)) {
                 approvalSession.addApprovalRequest(admin, ar);
-                final int requestId = approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId());
+                final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
                 sendNotification(admin, userData.toEndEntityInformation(), EndEntityConstants.STATUS_WAITINGFORAPPROVAL, requestId, null);
                 throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"), requestId);
             }
@@ -1185,7 +1185,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 approvalSession.addApprovalRequest(admin, ar);
                 String msg = intres.getLocalizedMessage("ra.approvaledit");
                 
-                final int requestId = approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId());
+                final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
                 sendNotification(admin, data1.toEndEntityInformation(), EndEntityConstants.STATUS_WAITINGFORAPPROVAL, requestId, null);
                 throw new WaitingForApprovalException(msg, requestId);
             }
@@ -1409,7 +1409,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                             data.getEndEntityProfileId(), approvalProfile);
                     if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER)) {
                         approvalSession.addApprovalRequest(admin, ar);
-                        throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId()));
+                        final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
+                        sendNotification(admin, data.toEndEntityInformation(), EndEntityConstants.STATUS_WAITINGFORAPPROVAL, requestId, null);
+                        throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), requestId);
                     }
                 }
                 try {
@@ -1471,7 +1473,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     approvalProfile);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEUSER)) {
                 approvalSession.addApprovalRequest(admin, ar);
-                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId()));
+                final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
+                sendNotification(admin, userData.toEndEntityInformation(), EndEntityConstants.STATUS_WAITINGFORAPPROVAL, requestId, null);
+                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), requestId);
             }
         }
         // Revoke all non-expired and not revoked certs, one at the time
@@ -1639,11 +1643,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         endEntityProfileId, approvalProfile);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
                     approvalSession.addApprovalRequest(admin, ar);
-                    final int requestId = approvalSession.getIdFromApprovalId(admin, ar.generateApprovalId());
+                    final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
                     if (endEntityProfileId != -1 && endEntityInformationParam==null) {
                         sendNotification(admin, endEntityInformation, EndEntityConstants.STATUS_WAITINGFORAPPROVAL, requestId, cdw);
                     }
-                    
                     throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), requestId);
                 }
             }

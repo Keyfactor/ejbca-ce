@@ -38,6 +38,11 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     final String PROPERTY_NOTIFICATION_EMAIL_SENDER = "notification_email_sender";
     final String PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT = "notification_email_msg_subject";
     final String PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY = "notification_email_msg_body";
+    
+    final String PROPERTY_USER_NOTIFICATION_EMAIL_SENDER = "user_notification_email_sender";
+    final String PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT = "user_notification_email_msg_subject";
+    final String PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY = "user_notification_email_msg_body";
+    
     /** Key for the data value marking the number of approvals required. */
     final String PROPERTY_NUMBER_OF_REQUIRED_APPROVALS = "number_of_required_approvals";
     
@@ -292,6 +297,15 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     /** Remove notification properties */
     ApprovalPartition removeNotificationProperties(ApprovalPartition approvalPartition);
 
+    /** @return true if notifications to the end user is configured in the specified partition */
+    boolean isUserNotificationEnabled(ApprovalPartition approvalPartition);
+
+    /** Add user notification properties */
+    ApprovalPartition addUserNotificationProperties(ApprovalPartition approvalPartition, String recipient, String sender, String subject, String body);
+
+    /** Remove user notification properties */
+    ApprovalPartition removeUserNotificationProperties(ApprovalPartition approvalPartition);
+    
     /**
      * Allows for querying a partition of a certain property was defined procedurally.
      * 

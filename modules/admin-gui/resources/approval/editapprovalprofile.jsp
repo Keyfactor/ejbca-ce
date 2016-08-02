@@ -215,7 +215,13 @@
                                             action="#{approvalProfileMBean.addNotification(partition.partitionId)}"/>  
                                         <h:commandButton value="#{web.text.APPROVAL_PROFILE_PARTITION_NOTIFICATION_REMOVE}"
                                             rendered="#{!approvalProfilesMBean.viewOnly && approvalProfileMBean.isNotificationEnabled(partition.partitionId)}"
-                                            action="#{approvalProfileMBean.removeNotification(partition.partitionId)}"/>  
+                                            action="#{approvalProfileMBean.removeNotification(partition.partitionId)}"/>
+                                        <h:commandButton value="#{web.text.APPROVAL_PROFILE_PARTITION_USER_NOTIFICATION_ADD}"
+                                            rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.isUserNotificationEnabled(partition.partitionId)}"
+                                            action="#{approvalProfileMBean.addUserNotification(partition.partitionId)}"/>  
+                                        <h:commandButton value="#{web.text.APPROVAL_PROFILE_PARTITION_USER_NOTIFICATION_REMOVE}"
+                                            rendered="#{!approvalProfilesMBean.viewOnly && approvalProfileMBean.isUserNotificationEnabled(partition.partitionId)}"
+                                            action="#{approvalProfileMBean.removeUserNotification(partition.partitionId)}"/>
                                     </h:panelGroup>
 				    			</f:facet>			
 				    			<h:panelGroup layout="block" style="text-align: left;">	

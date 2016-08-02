@@ -50,6 +50,14 @@ public interface ApprovalSessionLocal extends ApprovalSession {
 	void setApprovals(ApprovalData approvalData, Collection<Approval> approvals);
 	
 	ApprovalData findNonExpiredApprovalDataLocal(int approvalId);
+	
+    /**
+     * Method that takes an approvalId and returns the request's Id (the value in the "Id" column in the "ApprovalData" table in the database)
+     * 
+     * @param approvalId
+     * @return the Id of the approval request
+     */
+    int getIdFromApprovalId(int approvalId);
 
 	 /**
       * Updates the approval request field for an approval
