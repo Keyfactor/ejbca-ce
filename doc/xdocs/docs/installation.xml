@@ -1273,7 +1273,28 @@ of $APPSRV_HOME/[directory].
 
 </section>
 
-<section name="Transaction timouts">
+<section name="JBoss 7 and EAP 6 debug logging">
+<p>
+Debug logging for EJBCA can be configured dynamically using the jboss-cli. One of the benefits of using the jboss-cli to configure logging
+is that debug logging can be enable and disabled dynamically while running. If you have not configured logging in standalone.xml manually, 
+and not configured custom logging, you can easily enable debug logging for EJBCA with the following commands:
+</p>
+<source>
+/system-property=org.jboss.as.logging.per-deployment:add(value=false)
+/subsystem=logging/logger=org.ejbca:add
+/subsystem=logging/logger=org.ejbca:write-attribute(name=level, value=DEBUG)
+/subsystem=logging/logger=org.cesecore:add
+/subsystem=logging/logger=org.cesecore:write-attribute(name=level, value=DEBUG)
+</source>
+<p>Once this is done you can easily switch between INFO and DEBUG logging by setting the appropriate level:
+</p>
+<source>
+/subsystem=logging/logger=org.ejbca:write-attribute(name=level, value=INFO)
+/subsystem=logging/logger=org.cesecore:write-attribute(name=level, value=INFO)
+</source>
+</section>
+
+<section name="Transaction timeouts">
 <p>In some cases, either if you have a slow machine or very large data sets, some common operations can take a long time to complete. The default transaction timout of 
 the application servers may then not be enough.</p>
 <p>Normally CRL generation and other known long running operation already have larger transaction timout from configuration in</p>
