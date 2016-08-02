@@ -142,14 +142,14 @@ public class ApprovalSessionTest extends CaTestCase {
     private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = EjbRemoteHelper.INSTANCE
             .getRemoteSession(ApprovalExecutionSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private final ConfigurationSessionRemote configurationProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityManagementSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(
             SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            ApprovalProfileSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     private static List<File> fileHandles = new ArrayList<File>();
 
@@ -315,9 +315,10 @@ public class ApprovalSessionTest extends CaTestCase {
     @Test
     public void testAddApprovalRequest() throws Exception {
 
-        String originalValidity = configurationProxySession.getProperty("approval.defaultrequestvalidity");
-        configurationProxySession.updateProperty("approval.defaultrequestvalidity", "1");
- 
+        final long originalValidity = approvalProfile.getRequestExpirationPeriod();
+        approvalProfile.setRequestExpirationPeriod(500);
+        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+        
         DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, 
                 SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
         Certificate cert = nonExecutableRequest.getRequestAdminCert();
@@ -390,18 +391,21 @@ public class ApprovalSessionTest extends CaTestCase {
             for (Integer next : cleanUpList) {
                 approvalSessionRemote.removeApprovalRequest(admin1, next);
             }
-            configurationProxySession.updateProperty("approval.defaultrequestvalidity", originalValidity);
             approvalProfile.setNumberOfApprovalsRequired(2);
+            approvalProfile.setRequestExpirationPeriod(originalValidity);
+            approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         }
     }
 
     @Test
     public void testApprove() throws Exception {
-        String originalRequestValidity = configurationProxySession.getProperty("approval.defaultrequestvalidity");
-        String originalApprovalValidity = configurationProxySession.getProperty("approval.defaultapprovalvalidity");
+        final long originalRequestValidity = approvalProfile.getRequestExpirationPeriod();
+        final long originalApprovalValidity = approvalProfile.getApprovalExpirationPeriod();
 
-        configurationProxySession.updateProperty("approval.defaultrequestvalidity", "1");
-        configurationProxySession.updateProperty("approval.defaultapprovalvalidity", "1");
+        approvalProfile.setApprovalExpirationPeriod(500);
+        approvalProfile.setRequestExpirationPeriod(500);
+        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+        
         try {
             DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false,
                     approvalProfile);
@@ -484,9 +488,9 @@ public class ApprovalSessionTest extends CaTestCase {
             next = (ApprovalDataVO) result.iterator().next();
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
         } finally {
-            configurationProxySession.updateProperty("approval.defaultrequestvalidity", originalRequestValidity);
-            configurationProxySession.updateProperty("approval.defaultapprovalvalidity", originalApprovalValidity);
-
+            approvalProfile.setApprovalExpirationPeriod(originalApprovalValidity);
+            approvalProfile.setRequestExpirationPeriod(originalRequestValidity);
+            approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         }
     }
 
@@ -542,8 +546,10 @@ public class ApprovalSessionTest extends CaTestCase {
     @Test
     public void testReject() throws Exception {
         log.trace(">testReject()");
-        String originalApprovalValidity = configurationProxySession.getProperty("approval.defaultapprovalvalidity");
-        configurationProxySession.updateProperty("approval.defaultapprovalvalidity", "1");
+        final long originalApprovalValidity = approvalProfile.getApprovalExpirationPeriod();
+        approvalProfile.setApprovalExpirationPeriod(500);
+        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+
         try {
             DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, 
                     false, approvalProfile);
@@ -602,15 +608,18 @@ public class ApprovalSessionTest extends CaTestCase {
 
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
         } finally {
-            configurationProxySession.updateProperty("approval.defaultapprovalvalidity", originalApprovalValidity);
+            approvalProfile.setApprovalExpirationPeriod(originalApprovalValidity);
+            approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         }
         log.trace("<testReject()");
     }
 
     @Test
     public void testIsApproved() throws Exception {
-        String originalApprovalValidity = configurationProxySession.getProperty("approval.defaultapprovalvalidity");
-        configurationProxySession.updateProperty("approval.defaultapprovalvalidity", "1");
+        final long originalApprovalValidity = approvalProfile.getApprovalExpirationPeriod();
+        approvalProfile.setApprovalExpirationPeriod(500);
+        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+
         try {
             DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
             removeApprovalId = nonExecutableRequest.generateApprovalId();
@@ -648,15 +657,17 @@ public class ApprovalSessionTest extends CaTestCase {
 
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
         } finally {
-            configurationProxySession.updateProperty("approval.defaultapprovalvalidity", originalApprovalValidity);
+            approvalProfile.setApprovalExpirationPeriod(originalApprovalValidity);
+            approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
 
         }
     }
 
     @Test
     public void testFindNonExpiredApprovalRequest() throws Exception {
-        String originalValidity = configurationProxySession.getProperty("approval.defaultrequestvalidity");
-        configurationProxySession.updateProperty("approval.defaultrequestvalidity", "1");
+        final long originalValidity = approvalProfile.getRequestExpirationPeriod();
+        approvalProfile.setRequestExpirationPeriod(500);
+        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         try {
             DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
             removeApprovalId = nonExecutableRequest.generateApprovalId();
@@ -675,7 +686,8 @@ public class ApprovalSessionTest extends CaTestCase {
                 approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
             }
         } finally {
-            configurationProxySession.updateProperty("approval.defaultrequestvalidity", originalValidity);
+            approvalProfile.setRequestExpirationPeriod(originalValidity);
+            approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         }
 
     }
@@ -728,8 +740,10 @@ public class ApprovalSessionTest extends CaTestCase {
 
     //@Test
     public void testExpiredQuery() throws Exception {
-        String originalValidity = configurationProxySession.getProperty("approval.defaultrequestvalidity");
-        configurationProxySession.updateProperty("approval.defaultrequestvalidity", "0");
+        final long originalValidity = approvalProfile.getRequestExpirationPeriod();
+        approvalProfile.setRequestExpirationPeriod(0);
+        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+        
         // Add a few requests
         DummyApprovalRequest expiredRequest = new DummyApprovalRequest(admin3, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
         approvalSessionRemote.addApprovalRequest(admin1, expiredRequest);
@@ -744,7 +758,8 @@ public class ApprovalSessionTest extends CaTestCase {
             int expiredRequestId = ((ApprovalDataVO) approvalSessionRemote.findApprovalDataVO(admin1, expiredRequest.generateApprovalId()).iterator()
                     .next()).getId();
             approvalSessionRemote.removeApprovalRequest(admin1, expiredRequestId);
-            configurationProxySession.updateProperty("approval.defaultrequestvalidity", originalValidity);
+            approvalProfile.setRequestExpirationPeriod(originalValidity);
+            approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         }
     }
     
