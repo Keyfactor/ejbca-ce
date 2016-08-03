@@ -915,7 +915,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             assertEquals("JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,CN=EVTLSEJBCAWSTEST", CertTools.getSubjectDN(cert));
         } finally {
             // Clean up immediately
-            endEntityManagementSession.deleteUser(admin, "EVTLSEJBCAWSTEST");
+            if (endEntityManagementSession.existsUser("EVTLSEJBCAWSTEST")) {
+                endEntityManagementSession.deleteUser(admin, "EVTLSEJBCAWSTEST");
+            }
             internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert));
         }
     }
