@@ -2131,23 +2131,16 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             // Disable delta CRLs
             caInfo.setDeltaCRLPeriod(0);
             caSession.editCA(intAdmin, caInfo);
+            // Create a new full CRL, to have well defined starting order
+            ejbcaraws.createCRL(caname);
             // This will throw exception if it fails
             int crlNumberBefore = getLatestCRLNumber(caname, false);
-            log.info("crlNumberBefore: " + crlNumberBefore);
-            if (originalDeltaCRLPeriod!=0) {
-                int deltaCrlNumberBefore = getLatestCRLNumber(caname, true);
-                crlNumberBefore = Math.max(deltaCrlNumberBefore, crlNumberBefore);
-            }
             log.info("crlNumberBefore: " + crlNumberBefore);
             // Generate a new full CRL
             ejbcaraws.createCRL(caname);
             // After generation the CRL number should have increased by one
             final int fullCrlNumberAfter1 = getLatestCRLNumber(caname, false);
             log.info("fullCrlNumberAfter1: " + fullCrlNumberAfter1);
-            if (originalDeltaCRLPeriod!=0) {
-                final int deltaCrlNumberAfter1 = getLatestCRLNumber(caname, false);
-                log.info("deltaCrlNumberAfter1: " + deltaCrlNumberAfter1);
-            }
             assertEquals("CRL number of newly generated CRL should be exactly one more than for the previous CRL.", crlNumberBefore+1, fullCrlNumberAfter1);
             // Enable delta CRLs
             caInfo.setDeltaCRLPeriod(30L);
