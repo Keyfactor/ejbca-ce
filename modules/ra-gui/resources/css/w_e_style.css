@@ -94,7 +94,7 @@ img.menu_logo {
 
 .content {
   width: 95%;
-  margin: 10px auto 30px auto;
+  margin: 10px auto 20px auto;
   background: #637b98;
   flex: 1; }
 
@@ -185,7 +185,7 @@ label {
 
 .internal-frame > fieldset > .pure-control-group > input {
   font-size: 90%;
-  width: 100%; }
+  width: 90%; }
 .internal-frame > fieldset > .pure-control-group > label {
   text-align: left; }
 
@@ -236,7 +236,7 @@ label.showNonModifiable {
 
 .pure-button {
   /*återställknappen*/
-  font-size: 76%;
+  font-size: 68%;
   font-weight: bold;
   padding: 1.3% 2.5% 1% 2.5%;
   height: 35px; }
@@ -590,6 +590,17 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 @-moz-document url-prefix() {
   /*För Firefox*/
   #contentForm\:viewRequestDataTable {
+    word-break: break-all; }
+
+  #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage {
+    display: none;
+    margin: 1% 0 2% 0;
+    color: #fff;
+    border-style: solid;
+    background: black;
+    border-color: black;
+    padding: 1%;
+    width: 90%;
     word-break: break-all; } }
 #requestInfoForm\:useRequestIdLink:hover {
   text-decoration: underline; }
@@ -605,7 +616,9 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   border-style: solid;
   background: black;
   border-color: black;
-  padding: 1%; }
+  padding: 1%;
+  width: 90%;
+  word-break: break-word; }
 
 #keyPairForm\:certificateRequestMessage {
   display: none;
@@ -658,7 +671,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   justify-content: center; }
   .footer > .align-center > p {
     /*footer-texten*/
-    margin: 0 0 5.5% 10px;
+    margin: 0 auto 5.5% auto;
     display: inline-block;
     font-size: 90%; }
 
@@ -723,7 +736,8 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
         background: #f2f2f2; }
       div.content-body table#caCertificateTable.pure-table > tbody > tr > td, div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td {
         display: block;
-        word-break: break-all; }
+        word-break: break-all;
+        line-height: 1.6em; }
         div.content-body table#caCertificateTable.pure-table > tbody > tr > td > table.nopadding.noborder, div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr > td > table.nopadding.noborder {
           display: inline-block;
           width: 54%;
@@ -747,6 +761,13 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     display: inline-block;
     width: 54%;
     word-break: break-all; }
+  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(2) {
+    padding-bottom: 9%; }
+    div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(2) > span {
+      display: inline-block;
+      width: 55.5%;
+      word-break: break-all;
+      float: right; }
   div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(1):before {
     content: "CA"; }
   div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(2):before {
@@ -924,6 +945,9 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 
   div#content.content {
     margin-top: 65.3125px; } }
+.green {
+  color: green !important; }
+
 /*
 @media (max-width: $min-width-desktop - $breakpoint-diff) {
     @import "smartphone_tablet_menu";
@@ -1000,7 +1024,8 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     margin: 8% 0 0 0; }
 
   #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage {
-    margin: 1% 0 2% 19%; }
+    margin: 1% 0 2% 19%;
+    width: auto; }
 
   .errorMessage {
     /* gör att 'generella' felmeddelanden visas var man än står på sidan */
@@ -1057,6 +1082,9 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   #detailsForm\:certDetails\:newRevocationReason {
     display: inline-block;
     margin: 0; }
+
+  .pure-button {
+    font-size: 76%; }
 
   .footer > .align-center > p {
     /*footer-texten*/
