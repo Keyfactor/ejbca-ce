@@ -48,7 +48,7 @@ import org.ejbca.core.model.log.Admin;
 @SuppressWarnings("deprecation") 
 public class Approval implements Comparable<Approval>, Externalizable { 
 	
-	private static final long serialVersionUID = -2L;
+	private static final long serialVersionUID = -1L;
 	
 	/*
 	 * Version 4: Introduced approval profiles in 6.6.0. With this, approvals became specific for a certain sequence and partition. 
