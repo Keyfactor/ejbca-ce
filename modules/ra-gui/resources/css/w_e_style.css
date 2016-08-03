@@ -254,10 +254,10 @@ table.pure-table > thead > tr > th {
   color: #444d57; }
 table.pure-table > tbody > tr:not(.pure-table-odd) td {
   background-color: #f2f2f2;
-  font-size: 90%; }
+  font-size: 88%; }
 table.pure-table > tbody > tr.pure-table-odd td {
   background-color: #e0e0e0;
-  font-size: 90%; }
+  font-size: 88%; }
 table.pure-table > tbody > tr {
   color: #444d57; }
 table.pure-table > tbody a {
@@ -300,7 +300,7 @@ textarea#keyPairForm\:certificateRequest {
   border-bottom: 0.3ex solid #e9af13;
   width: 100%; }
   .tabButtonBar > a {
-    font-size: 80%; }
+    font-size: 78%; }
 
 /*drop downs i search*/
 #contentForm\:parentGenericSearchString {
@@ -829,7 +829,9 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     div.content-body #contentForm\:manageRequestTable > tbody > tr > td > span {
       word-break: normal; }
     div.content-body #contentForm\:manageRequestTable > tbody > tr > td > a {
-      padding-top: 2%; } }
+      padding: 0 0 0 0;
+      height: auto;
+      font-size: 85%; } }
 @media (max-width: 64.0525em) {
   img.menu_logo {
     position: absolute; }
