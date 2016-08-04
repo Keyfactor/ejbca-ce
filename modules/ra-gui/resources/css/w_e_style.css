@@ -175,7 +175,7 @@ img.menu_logo {
 .pure-control-group {
   margin: 2% 0 2% 0; }
 
-label {
+div:not(#contentForm\:searchCertTable) > label {
   color: #fff; }
 
 .pure-form select {
@@ -251,7 +251,8 @@ label.showNonModifiable {
   float: left; }
 
 table.pure-table > thead > tr > th {
-  color: #444d57; }
+  color: #444d57;
+  padding: 10px; }
 table.pure-table > tbody > tr:not(.pure-table-odd) td {
   background-color: #f2f2f2;
   font-size: 88%; }
@@ -374,7 +375,7 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 
 #makeRequestButton, #requestStatusButton, #searchCertsButton {
   height: 40px;
-  padding-top: 15px; }
+  padding-top: 10px; }
 
 #requestInfoForm\:confirmRequestButton,
 #searchCertsButton,
@@ -488,13 +489,15 @@ a {
   text-align: left; }
 
 /*SLUT resterande inputs för max-result-texten*/
-.contentForm\:filteredResults > table.pure-table > thead, #contentForm\:filteredResults > table.pure-table > thead {
-  line-height: 110%;
-  background: #a9a9a9; }
-.contentForm\:filteredResults > table.pure-table > table:not(#contentForm\:manageRequestTable) tbody > tr, #contentForm\:filteredResults > table.pure-table > table:not(#contentForm\:manageRequestTable) tbody > tr {
+/*.contentForm\:filteredResults,*/
+#contentForm\:filteredResults > table.pure-table > thead {
+  line-height: 110%; }
+
+/*.contentForm\:filteredResults,*/
+#contentForm\:filteredResults > table.pure-table:not(#contentForm\:manageRequestTable) > tbody > tr {
   line-height: 79%;
   word-break: break-all; }
-  .contentForm\:filteredResults > table.pure-table > table:not(#contentForm\:manageRequestTable) tbody > tr > td > input, #contentForm\:filteredResults > table.pure-table > table:not(#contentForm\:manageRequestTable) tbody > tr > td > input {
+  #contentForm\:filteredResults > table.pure-table:not(#contentForm\:manageRequestTable) > tbody > tr > td > input {
     color: #e9af13; }
 
 .radio-button-table {
