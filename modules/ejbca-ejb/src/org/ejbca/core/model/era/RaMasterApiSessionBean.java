@@ -48,6 +48,7 @@ import javax.persistence.QueryTimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
+import org.cesecore.ErrorCode;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -1079,14 +1080,38 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
+    public void checkSubjectDn(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException{
+        KeyToValueHolder<CAInfo> caInfoEntry = getAuthorizedCAInfos(admin).get(endEntity.getCAId());
+        if(caInfoEntry == null){
+            return;
+        }
+        boolean enforceUniqueDistinguishedName = false;
+        if (caInfoEntry.getValue().isDoEnforceUniqueDistinguishedName()) {
+            if (caInfoEntry.getValue().isUseCertificateStorage()) {
+                enforceUniqueDistinguishedName = true;
+            } else {
+                log.warn("CA configured to enforce unique SubjectDN, but not to store issued certificates. Check will be ignored. Please verify your configuration.");
+            }
+        }
+        if (enforceUniqueDistinguishedName) {
+            final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(caInfoEntry.getValue().getSubjectDN(), endEntity.getCertificateDN());
+            if (users.size() > 0 && !users.contains(endEntity.getUsername())) {
+                throw new EjbcaException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, "");
+            }
+        }
+    }
+    
+    @Override
     public boolean addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd) throws AuthorizationDeniedException,
     EjbcaException, WaitingForApprovalException{
+        //Authorization
         if (!endEntityManagementSessionLocal.isAuthorizedToEndEntityProfile(admin, endEntity.getEndEntityProfileId(),
                 AccessRulesConstants.DELETE_END_ENTITY)) {
             log.warn("Missing *" + AccessRulesConstants.DELETE_END_ENTITY + " rights for user '" + admin
                     + "' to be able to add an end entity (Delete is only needed for clean-up if something goes wrong after an end-entity has been added)");
             return false;
         }
+        
         try {
             endEntityManagementSessionLocal.addUser(admin, endEntity, clearpwd);
         } catch (CesecoreException e) {

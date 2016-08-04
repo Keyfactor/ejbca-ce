@@ -212,20 +212,21 @@
 											rendered="#{!instance.selectable}" disabled="#{!instance.modifiable}">
 											<f:validator validatorId="extendedRegexValidator" />
 											<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}"/>
-											<f:ajax event="change" execute="@this"
-                                                render=":requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
+											<f:ajax event="change" execute="@this" listener="#{enrollMakeNewRequestBean.checkSubjectDn}"
+                                                render=":requestInfoForm:subjectDnMessage :requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
                                             <f:ajax event="keyup" execute="@this"
                                                 render=":requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
 										</h:inputText>
 										<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
 											<f:selectItems value="#{instance.selectableValues}" />
-											<f:ajax event="change" execute="@this"
-                                                render=":requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
+											<f:ajax event="change" execute="@this" listener="#{enrollMakeNewRequestBean.checkSubjectDn}"
+                                                render=":requestInfoForm:subjectDnMessage :requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
 										</h:selectOneMenu>
 										<h:message for="subjectDnField" id="subjectDnFieldMessage" styleClass="showErrorMessage"/>
 									</h:panelGroup>
 								</ui:repeat>
 							</fieldset>
+							<h:messages id="subjectDnMessage" styleClass="showErrorMessage"/>
 						</h:panelGroup>
 						<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.subjectAlternativeNameRendered}">
 							<h3>
@@ -254,7 +255,7 @@
 									<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
 										<f:selectItems value="#{instance.selectableValues}" />
 										<f:ajax event="change" execute="@this"
-                                            render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage"/>
+                                            render=":requestInfoForm:subjectDnMessage :requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage"/>
 									</h:selectOneMenu>
 									<h:message for="subjectAltNameField" id="subjectAltNameFieldMessage" styleClass="showErrorMessage"/>
 								</h:panelGroup>
@@ -300,12 +301,13 @@
     							rendered="#{enrollMakeNewRequestBean.updateRequestPreviewButtonRendered}"
     							styleClass="pure-button ra-button jsHide">
     						</h:commandButton>
-                            <h:commandButton action="#{enrollMakeNewRequestBean.renderNonModifiableFieldsToggle}"
+                            <h:commandButton id="renderNonModifiableFieldsToggle" action="#{enrollMakeNewRequestBean.renderNonModifiableFieldsToggle}"
                                 rendered="#{enrollMakeNewRequestBean.renderNonModifiableFieldsRendered}"
                                 value="#{enrollMakeNewRequestBean.renderNonModifiableFields ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
                                 styleClass="toggleMoreButton pure-button ra-button" immediate="true">
-                                <f:ajax execute="@this" render="@form"/>
-                            </h:commandButton>
+								<f:ajax execute="@this" listener="#{enrollMakeNewRequestBean.checkSubjectDn}"
+									render="@form" />
+							</h:commandButton>
                         </fieldset>
 						<script>ejbca.ra.touchUpDocument(); ejbca.ra.handleAutoFocus();</script>
 					</h:panelGroup>
