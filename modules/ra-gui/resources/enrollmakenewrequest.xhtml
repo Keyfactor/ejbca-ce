@@ -113,7 +113,7 @@
                             <h:commandButton action="#{enrollMakeNewRequestBean.renderNonModifiableTemplatesToggle}"
                                 rendered="#{enrollMakeNewRequestBean.renderNonModifiableTemplatesRendered}"
                                 value="#{enrollMakeNewRequestBean.renderNonModifiableTemplates ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
-                                styleClass="toggleMoreButton" immediate="true">
+                                styleClass="toggleMoreButton pure-button ra-button" immediate="true">
                                 <f:ajax execute="@this" render="@form"/>
                             </h:commandButton>
                         </fieldset>
@@ -303,7 +303,7 @@
                             <h:commandButton action="#{enrollMakeNewRequestBean.renderNonModifiableFieldsToggle}"
                                 rendered="#{enrollMakeNewRequestBean.renderNonModifiableFieldsRendered}"
                                 value="#{enrollMakeNewRequestBean.renderNonModifiableFields ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
-                                styleClass="toggleMoreButton" immediate="true">
+                                styleClass="toggleMoreButton pure-button ra-button" immediate="true">
                                 <f:ajax execute="@this" render="@form"/>
                             </h:commandButton>
                         </fieldset>
