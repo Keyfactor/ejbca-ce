@@ -594,15 +594,15 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             if (DnComponents.enterpriseMappingsExist()) {
                 endEntityManagementSession.deleteUser(admin, username);
                 // A real use case. Add EV SSL items as default values and merge those into the End Entity
-                profile.addField("JURISDICTIONCOUNTRY");
-                profile.setUse("JURISDICTIONCOUNTRY", 0, true);
-                profile.setValue("JURISDICTIONCOUNTRY", 0, "NO");
-                profile.addField("JURISDICTIONSTATE");
-                profile.setUse("JURISDICTIONSTATE", 0, true);
-                profile.setValue("JURISDICTIONSTATE", 0, "California");
-                profile.addField("JURISDICTIONLOCALITY");
-                profile.setUse("JURISDICTIONLOCALITY", 0, true);
-                profile.setValue("JURISDICTIONLOCALITY", 0, "Stockholm");
+                profile.addField(DnComponents.JURISDICTIONCOUNTRY);
+                profile.setUse(DnComponents.JURISDICTIONCOUNTRY, 0, true);
+                profile.setValue(DnComponents.JURISDICTIONCOUNTRY, 0, "NO");
+                profile.addField(DnComponents.JURISDICTIONSTATE);
+                profile.setUse(DnComponents.JURISDICTIONSTATE, 0, true);
+                profile.setValue(DnComponents.JURISDICTIONSTATE, 0, "California");
+                profile.addField(DnComponents.JURISDICTIONLOCALITY);
+                profile.setUse(DnComponents.JURISDICTIONLOCALITY, 0, true);
+                profile.setValue(DnComponents.JURISDICTIONLOCALITY, 0, "Stockholm");
                 endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
                 final String subjectDN = "CN=foo subject,O=Bar";
                 addUser = new EndEntityInformation(username, subjectDN, caid, "dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", null,
