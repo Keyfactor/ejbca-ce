@@ -127,6 +127,9 @@ public class DnComponents {
     public static final String PSEUDONYM = "PSEUDONYM";
     public static final String STREETADDRESS = "STREETADDRESS";
     public static final String NAME = "NAME";
+    public static final String JURISDICTIONLOCALITY = "JURISDICTIONLOCALITY";
+    public static final String JURISDICTIONSTATE = "JURISDICTIONSTATE";
+    public static final String JURISDICTIONCOUNTRY = "JURISDICTIONCOUNTRY";
 
     // AltNames
     public static final String RFC822NAME = "RFC822NAME";
