@@ -119,28 +119,27 @@ public class EnrollWithRequestIdBean implements Serializable {
             switch (requestStatus) {
             case ApprovalDataVO.STATUS_WAITINGFORAPPROVAL:
                 raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_is_still_waiting_for_approval", Integer.parseInt(requestId));
-                return;
+                break;
             case ApprovalDataVO.STATUS_REJECTED:
             case ApprovalDataVO.STATUS_EXECUTIONDENIED:
                 raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_has_been_rejected", Integer.parseInt(requestId));
-                return;
+                break;
             case ApprovalDataVO.STATUS_APPROVED:
             case ApprovalDataVO.STATUS_EXECUTED:
-                raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_has_been_approved", Integer.parseInt(requestId));
+                String username = raApprovalRequestInfo.getEditableData().getUsername();
+                endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);
+                if (endEntityInformation == null) {
+                    log.error("Could not find endEntity for the username='" + username + "'");
+                }else if(endEntityInformation.getStatus() == EndEntityConstants.STATUS_GENERATED){
+                    raLocaleBean.addMessageInfo("enrollwithrequestid_enrollment_with_request_id_has_already_been_finalized", Integer.parseInt(requestId));
+                }else{
+                    raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_has_been_approved", Integer.parseInt(requestId));
+                }
                 break;
             default:
                 raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_is_still_waiting_for_approval", Integer.parseInt(requestId));
-                return;
+                break;
             }
-
-            //Get username and set the password to be the same as username
-            String username = raApprovalRequestInfo.getEditableData().getUsername();
-            endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);
-            if (endEntityInformation == null) {
-                log.error("Could not find endEntity for the username='" + username + "'");
-                return;
-            }
-
         }
     }
 
