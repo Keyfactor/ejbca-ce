@@ -66,7 +66,7 @@
                 </ui:repeat>
                 
                 <h:panelGroup layout="block" styleClass="editButtons">
-                    <h:commandButton id="commandEditData" action="#{raManageRequestBean.editRequestData}" value="#{msg.view_request_page_edit_data_command}" rendered="#{raManageRequestBean.request.canEdit}"/>
+                    <h:commandButton id="commandEditData" styleClass="pure-button ra-button" action="#{raManageRequestBean.editRequestData}" value="#{msg.view_request_page_edit_data_command}" rendered="#{raManageRequestBean.request.canEdit}"/>
                 </h:panelGroup>
             </h:panelGroup>
             <ui:repeat value="#{raManageRequestBean.request.editLogEntries}" var="entryText" rendered="#{raManageRequestBean.viewDataVisible}">

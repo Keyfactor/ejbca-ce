@@ -175,7 +175,8 @@ img.menu_logo {
 .pure-control-group {
   margin: 2% 0 2% 0; }
 
-div:not(#contentForm\:searchCertTable) > label {
+.pure-u-1 label, #contentForm\:viewRequestDataTable > label, .pure-control-group > label, .internal-frame label {
+  /* labels på details-sidorna + search options*/
   color: #fff; }
 
 .pure-form select {
@@ -375,7 +376,7 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 
 #makeRequestButton, #requestStatusButton, #searchCertsButton {
   height: 40px;
-  padding-top: 10px; }
+  padding-top: 12px; }
 
 #requestInfoForm\:confirmRequestButton,
 #searchCertsButton,
