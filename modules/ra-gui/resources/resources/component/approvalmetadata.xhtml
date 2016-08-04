@@ -36,7 +36,7 @@
 
         <composite:implementation>
             <h:dataTable id="approvalMetaDataTable" value="#{raManageRequestBean.getPartitionProperties(partition)}" var="property"
-                 style="width: 100%" rendered="#{not empty raManageRequestBean.getPartitionProperties(partition)}" styleClass="subTable">   
+                 rendered="#{not empty raManageRequestBean.getPartitionProperties(partition)}" styleClass="pure-table" rowClasses=",pure-table-odd">   
                 <h:column>
                     <h:panelGroup layout="block" styleClass="stepInstruction">
                         <h:outputText 
