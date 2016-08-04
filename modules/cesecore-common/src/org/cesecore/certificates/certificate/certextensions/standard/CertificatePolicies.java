@@ -13,8 +13,8 @@
 package org.cesecore.certificates.certificate.certextensions.standard;
 
 import java.security.PublicKey;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,7 +68,7 @@ public class CertificatePolicies extends StandardCertificateExtension {
     	}
     	// Iterate through policies and add oids and policy qualifiers if they exist
     	final List<CertificatePolicy> policies = certProfile.getCertificatePolicies();
-    	final Map<ASN1ObjectIdentifier, ASN1EncodableVector> policiesMap = new HashMap<ASN1ObjectIdentifier, ASN1EncodableVector>();
+    	final Map<ASN1ObjectIdentifier, ASN1EncodableVector> policiesMap = new LinkedHashMap<ASN1ObjectIdentifier, ASN1EncodableVector>();
     	// Each Policy OID can be entered several times, with different qualifiers, 
     	// because of this we make a map of oid and qualifiers, and we can add a new qualifier
     	// in each round of this for loop
