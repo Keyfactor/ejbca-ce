@@ -18,6 +18,9 @@ import java.util.List;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 
 /**
+ * Contains a list of partitions in a step that are visible to a given admin.
+ * Could be removed as part of ECA-5294, since the filtering would be done on the RA side.
+ * 
  * @version $Id$
  */
 public final class RaApprovalStepInfo implements Serializable {
