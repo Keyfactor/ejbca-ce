@@ -49,9 +49,6 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
 
     private static final int NO_SEQUENCES = -1;
 
-    private static final String REQUEST_EXPIRATION_PERIOD_PROPERTY = "requestExpirationPeriod";
-    private static final String APPROVAL_EXPIRATION_PERIOD_PROPERTY = "approvalExpirationPeriod";
-
     private static final String STEPS_KEY = "steps";
     private static final String FIRST_STEP_KEY = "firstStep";
 
@@ -72,8 +69,8 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
 
     public ApprovalProfileBase(final String name) {
         super(name);
-        data.put(REQUEST_EXPIRATION_PERIOD_PROPERTY, EjbcaConfiguration.getApprovalDefaultRequestValidity());
-        data.put(APPROVAL_EXPIRATION_PERIOD_PROPERTY, EjbcaConfiguration.getApprovalDefaultApprovalValidity());
+        data.put(PROPERTY_REQUEST_EXPIRATION_PERIOD, EjbcaConfiguration.getApprovalDefaultRequestValidity());
+        data.put(PROPERTY_APPROVAL_EXPIRATION_PERIOD, EjbcaConfiguration.getApprovalDefaultApprovalValidity());
 
     }
 
@@ -84,7 +81,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
 
     @Override
     public long getRequestExpirationPeriod() {
-        final Object value = data.get(REQUEST_EXPIRATION_PERIOD_PROPERTY);
+        final Object value = data.get(PROPERTY_REQUEST_EXPIRATION_PERIOD);
         if(value == null) {
             return EjbcaConfiguration.getApprovalDefaultRequestValidity();
         }
@@ -93,12 +90,12 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
 
     @Override
     public void setRequestExpirationPeriod(final long expirationPeriod) {
-        data.put(REQUEST_EXPIRATION_PERIOD_PROPERTY, expirationPeriod);
+        data.put(PROPERTY_REQUEST_EXPIRATION_PERIOD, expirationPeriod);
     }
 
     @Override
     public long getApprovalExpirationPeriod() {
-        final Object value = data.get(APPROVAL_EXPIRATION_PERIOD_PROPERTY);
+        final Object value = data.get(PROPERTY_APPROVAL_EXPIRATION_PERIOD);
         if(value == null) {
             return EjbcaConfiguration.getApprovalDefaultApprovalValidity();
         }
@@ -107,7 +104,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
 
     @Override
     public void setApprovalExpirationPeriod(final long expirationPeriod) {
-        data.put(APPROVAL_EXPIRATION_PERIOD_PROPERTY, expirationPeriod);
+        data.put(PROPERTY_APPROVAL_EXPIRATION_PERIOD, expirationPeriod);
     }
 
     @Override
