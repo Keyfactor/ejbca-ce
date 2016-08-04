@@ -14,6 +14,7 @@ package org.ejbca.ra;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -91,8 +92,19 @@ public class RaEndEntityDetails {
         this.eepId = endEntity.getEndEntityProfileId();
         this.eepName = eeProfName;
         this.caName = caName;
-        this.created = ValidityDate.formatAsISO8601ServerTZ(endEntity.getTimeCreated().getTime(), TimeZone.getDefault());
-        this.modified = ValidityDate.formatAsISO8601ServerTZ(endEntity.getTimeModified().getTime(), TimeZone.getDefault());
+        final Date timeCreated = endEntity.getTimeCreated();
+        if(timeCreated != null) {
+            this.created = ValidityDate.formatAsISO8601ServerTZ(timeCreated.getTime(), TimeZone.getDefault());
+        } else {
+            this.created = "";
+        }
+        final Date timeModified = endEntity.getTimeModified();
+        if(timeModified != null) {
+            this.modified = ValidityDate.formatAsISO8601ServerTZ(timeModified.getTime(), TimeZone.getDefault());    
+        } else {
+            this.modified = "";
+        }
+        
         this.status = endEntity.getStatus();
     }
     public EndEntityInformation getEndEntityInformation() { return endEntityInformation; } 
