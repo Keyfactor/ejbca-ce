@@ -44,7 +44,7 @@
 			                </h:outputLink>
                             <h:commandButton onclick="ejbca.ra.toggleDetails(this, messageshowmore, messagehidemore);" id="expandRequest"
                                 value="#{msg.enroll_render_non_modifiable_button_hide}"
-                                styleClass="toggleMoreButton"/>
+                                styleClass="toggleMoreButton pure-button ra-button"/>
 					</h:panelGroup>
 					<h:panelGroup id="expandRequestDetails" layout="block" style="display: block" styleClass="pure-control-group">
 				        <h:outputText value="If you need to request a new certificate you use the function to make a new request. The types of certificates you can request depends on your privileges."/>
@@ -63,7 +63,7 @@
 			                </h:outputLink>
                             <h:commandButton onclick="ejbca.ra.toggleDetails(this, messageshowmore, messagehidemore);" id="expandStatus"
                                 value="#{msg.enroll_render_non_modifiable_button_hide}"
-                                styleClass="toggleMoreButton"/>
+                                styleClass="toggleMoreButton pure-button ra-button"/>
 					</h:panelGroup>
 					<h:panelGroup id="expandStatusDetails" layout="block" style="display: block" styleClass="pure-control-group">
 				        <h:outputText value="When you want to see the status of a request you have submitted. You can enter your requestID. If the request is not yet approved you will be provided with a status message."/>
@@ -81,7 +81,7 @@
 			                </h:outputLink>
                             <h:commandButton onclick="ejbca.ra.toggleDetails(this, messageshowmore, messagehidemore);" id="expandSearch"
                                 value="#{msg.enroll_render_non_modifiable_button_hide}"
-                                styleClass="toggleMoreButton"/>
+                                styleClass="toggleMoreButton pure-button ra-button"/>
 					</h:panelGroup>
 					<h:panelGroup id="expandSearchDetails" layout="block" style="display: block" styleClass="pure-control-group">
 				        <h:outputText value="In order to revoke a certificate you first find the certificate you want to revoke using the Search function."/>
