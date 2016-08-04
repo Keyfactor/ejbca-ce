@@ -132,7 +132,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private boolean renderNonModifiableTemplates = false;
     private boolean renderNonModifiableFields = false;
-    //1. Select Request Template
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
     private IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<CAInfo>();
@@ -146,31 +145,24 @@ public class EnrollMakeNewRequestBean implements Serializable {
         PROVIDED_BY_USER;
     }
     private KeyPairGeneration selectedKeyPairGeneration;
-
-    //2. Select Key Algorithm / Upload CSR
     /** Heavy to calculate and needs to be cached. */
     private List<SelectItem> availableAlgorithmSelectItems = null;
     
     private String selectedAlgorithm; //GENERATED ON SERVER
     private String algorithmFromCsr; //PROVIDED BY USER
     private String certificateRequest;
-
-    //3. Request Info
     private SubjectDn subjectDn;
     private SubjectAlternativeName subjectAlternativeName;
     private SubjectDirectoryAttributes subjectDirectoryAttributes;
-
-    //4. Provide request metadata
     private EndEntityInformation endEntityInformation;
     private String confirmPassword;
-    
-    //8. Request data
     private int requestId;
     private boolean requestPreviewMoreDetails;
-    
-    //9. Certificate preview
+    private UIComponent subjectDnMessagesComponent;
+    private UIComponent userCredentialsMessagesComponent;
+  
 
-    
+
 
     @PostConstruct
     private void postContruct() {
@@ -735,6 +727,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
     //-----------------------------------------------------------------------------------------------
     //Validators
     
+    public final void checkUserCredentials(AjaxBehaviorEvent event) {
+        if (endEntityInformation != null && endEntityInformation.getUsername() != null && !endEntityInformation.getUsername().isEmpty()
+                && raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername()) != null) {
+            FacesContext.getCurrentInstance().addMessage(userCredentialsMessagesComponent.getClientId(), new FacesMessage(FacesMessage.SEVERITY_WARN,
+                    raLocaleBean.getMessage("enroll_username_already_exists", endEntityInformation.getUsername()), null));
+        }
+    }
+    
     public final void checkSubjectDn(AjaxBehaviorEvent event) {
         try {
             if (endEntityInformation != null) {
@@ -746,10 +746,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
             log.error(e);
         } catch (EjbcaException e) {
             if (e.getErrorCode().equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
-                FacesContext.getCurrentInstance().addMessage("subjectDnMessage", new FacesMessage(FacesMessage.SEVERITY_WARN,
+                FacesContext.getCurrentInstance().addMessage(subjectDnMessagesComponent.getClientId(), new FacesMessage(FacesMessage.SEVERITY_WARN,
                         raLocaleBean.getMessage("enroll_certificate_with_subject_dn_already_exists", subjectDn.getValue()), null));
             } else {
-                FacesContext.getCurrentInstance().addMessage("subjectDnMessage",
+                FacesContext.getCurrentInstance().addMessage(subjectDnMessagesComponent.getClientId(),
                         new FacesMessage(FacesMessage.SEVERITY_WARN, raLocaleBean.getErrorCodeMessage(e.getErrorCode()), null));
             }
         }
@@ -1371,4 +1371,23 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public final String getParamRequestId(){
         return PARAM_REQUESTID;
     }
+    
+    
+    public UIComponent getUserCredentialsMessagesComponent() {
+        return userCredentialsMessagesComponent;
+    }
+
+    public void setUserCredentialsMessagesComponent(UIComponent userCredentialsMessagesComponent) {
+        this.userCredentialsMessagesComponent = userCredentialsMessagesComponent;
+    }
+
+    public UIComponent getSubjectDnMessagesComponent() {
+        return subjectDnMessagesComponent;
+    }
+
+    public void setSubjectDnMessagesComponent(UIComponent subjectDnMessagesComponent) {
+        this.subjectDnMessagesComponent = subjectDnMessagesComponent;
+    }
+    
+    
 }
