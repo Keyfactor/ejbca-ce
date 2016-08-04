@@ -123,7 +123,7 @@ public class QcStatement extends StandardCertificateExtension {
             final ASN1EncodableVector vec = new ASN1EncodableVector();
             vec.add(new ASN1ObjectIdentifier(certProfile.getQCEtsiType()));
             ASN1Sequence seq = new DERSequence(vec);
-            qc = new QCStatement(new ASN1ObjectIdentifier("0.4.0.1862.1.6"), seq); // ETSIQCObjectIdentifiers.id_etsi_qcs_QcType
+            qc = new QCStatement(new ASN1ObjectIdentifier("0.4.0.1862.1.6"), seq); // ETSIQCObjectIdentifiers.id_etsi_qcs_QcType in BC > 1.54
             qcs.add(qc);
         }
         if (StringUtils.isNotEmpty(certProfile.getQCEtsiPdsUrl())) {
@@ -135,7 +135,7 @@ public class QcStatement extends StandardCertificateExtension {
             location.add(new DERIA5String(certProfile.getQCEtsiPdsUrl()));
             location.add(new DERPrintableString(certProfile.getQCEtsiPdsLang()));
             locations.add(new DERSequence(location));
-            qc = new QCStatement(new ASN1ObjectIdentifier("0.4.0.1862.1.5"), new DERSequence(locations)); // ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds
+            qc = new QCStatement(new ASN1ObjectIdentifier("0.4.0.1862.1.5"), new DERSequence(locations)); // ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds in BC > 1.54
             qcs.add(qc);
         }
 		// Custom UTF8String QC-statement:
