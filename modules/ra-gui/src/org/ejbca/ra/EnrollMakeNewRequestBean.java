@@ -45,6 +45,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
@@ -521,12 +522,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_PEM, "PEM", null);
         downloadToken(token, "application/octet-stream", ".pem");
     }
-    
-    public void updateRequestDataToPreview(){
-        getSubjectDn().update();
-        getSubjectAlternativeName().update();
-        getSubjectDirectoryAttributes().update();
-    }
 
     /**
      * Adds end entity and creates its token that will be downloaded. This method is responsible for deleting the end entity if something goes wrong with token creation.
@@ -740,7 +735,27 @@ public class EnrollMakeNewRequestBean implements Serializable {
     //-----------------------------------------------------------------------------------------------
     //Validators
     
-    public void validatePassword(ComponentSystemEvent event) {
+    public final void checkSubjectDn(AjaxBehaviorEvent event) {
+        try {
+            if (endEntityInformation != null) {
+                endEntityInformation.setCAId(getCAInfo().getCAId());
+                endEntityInformation.setDN(subjectDn.getUpdatedValue());
+                raMasterApiProxyBean.checkSubjectDn(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+            }
+        } catch (AuthorizationDeniedException e) {
+            log.error(e);
+        } catch (EjbcaException e) {
+            if (e.getErrorCode().equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
+                FacesContext.getCurrentInstance().addMessage("subjectDnMessage", new FacesMessage(FacesMessage.SEVERITY_WARN,
+                        raLocaleBean.getMessage("enroll_certificate_with_subject_dn_already_exists", subjectDn.getValue()), null));
+            } else {
+                FacesContext.getCurrentInstance().addMessage("subjectDnMessage",
+                        new FacesMessage(FacesMessage.SEVERITY_WARN, raLocaleBean.getErrorCodeMessage(e.getErrorCode()), null));
+            }
+        }
+    }
+    
+    public final void validatePassword(ComponentSystemEvent event) {
         if(isPasswordRendered()){
             FacesContext fc = FacesContext.getCurrentInstance();
             UIComponent components = event.getComponent();
@@ -755,7 +770,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
     
-    public void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+    public final void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         algorithmFromCsr = null;
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(value.toString());
         if (pkcs10CertificateRequest == null) {

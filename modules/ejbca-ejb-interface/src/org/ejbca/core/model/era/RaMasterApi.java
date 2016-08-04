@@ -208,4 +208,13 @@ public interface RaMasterApi {
      */
     public ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final int action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException;
 
+    /**
+     * Performs all "deep" checks of user data (EndEntityInformation) intended to be added. Checks like uniqueness of SubjectDN or username should be part of this test.
+     * @param authenticationToken auth. token
+     * @param endEntity user data as EndEntityInformation object
+     * @throws AuthorizationDeniedException if authentication token is not authorized to perform checks on user data
+     * @throws EjbcaException exception with errorCode if check fails
+     */
+    void checkSubjectDn(AuthenticationToken admin, EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException;
+
 }
