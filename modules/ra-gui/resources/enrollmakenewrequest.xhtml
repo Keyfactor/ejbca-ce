@@ -220,13 +220,14 @@
 										<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
 											<f:selectItems value="#{instance.selectableValues}" />
 											<f:ajax event="change" execute="@this" listener="#{enrollMakeNewRequestBean.checkSubjectDn}"
-                                                render=":requestInfoForm:subjectDnMessage :requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
+                                                render="inputHiddensubjectDnMessage :requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
 										</h:selectOneMenu>
 										<h:message for="subjectDnField" id="subjectDnFieldMessage" styleClass="showErrorMessage"/>
 									</h:panelGroup>
 								</ui:repeat>
 							</fieldset>
-							<h:messages id="subjectDnMessage" styleClass="showErrorMessage"/>
+							<h:inputHidden id="subjectDnMessageInput" binding="#{enrollMakeNewRequestBean.subjectDnMessagesComponent}"/>
+							<h:message for="subjectDnMessageInput" id="subjectDnMessage" />
 						</h:panelGroup>
 						<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.subjectAlternativeNameRendered}">
 							<h3>
@@ -319,11 +320,17 @@
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<fieldset>
-							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.usernameRendered}">
-								<h:outputLabel for="usernameField" value="#{msg.enroll_username}" />
+							<h:panelGroup layout="block" styleClass="pure-control-group"
+								rendered="#{enrollMakeNewRequestBean.usernameRendered}">
+								<h:outputLabel for="usernameField"
+									value="#{msg.enroll_username}" />
 								<h:inputText id="usernameField"
 									styleClass="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).required ? 'required-input' : ''}"
-									value="#{enrollMakeNewRequestBean.endEntityInformation.username}" />
+									value="#{enrollMakeNewRequestBean.endEntityInformation.username}">
+									<f:ajax event="change" execute="@this"
+										listener="#{enrollMakeNewRequestBean.checkUserCredentials}"
+										render=":requestInfoForm:userCredentialsMessage" />
+								</h:inputText>
 							</h:panelGroup>
 							<f:event type="postValidate" listener="#{enrollMakeNewRequestBean.validatePassword}"/>
 							<h:panelGroup layout="block" styleClass="pure-control-group"
@@ -348,6 +355,8 @@
 								<h:message for="emailField" id="emailFieldMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
 						</fieldset>
+						<h:inputHidden id="userCredentialsMessageInput" binding="#{enrollMakeNewRequestBean.userCredentialsMessagesComponent}"/>
+						<h:message for="userCredentialsMessageInput" id="userCredentialsMessage"/>
 					</h:panelGroup>
 				</h:panelGroup>
 
@@ -363,7 +372,8 @@
 							value="#{enrollMakeNewRequestBean.requestPreviewMoreDetails ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
 							styleClass="#{htmlElementFocusBean.requestPreviewMoreDetails?'jsAutoFocusJsf':''} toggleMoreButton pure-button ra-button" immediate="true">
 							<f:actionListener binding="#{htmlElementFocusBean.setRequestPreviewMoreDetails(true)}"/>
-							<f:ajax execute="@this" render="@form" />
+							<f:ajax execute="@this" listener="#{enrollMakeNewRequestBean.checkUserCredentials}"
+									render="@form" />
 						</h:commandButton>
 
 
