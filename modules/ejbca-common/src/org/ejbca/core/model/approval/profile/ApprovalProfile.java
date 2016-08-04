@@ -46,6 +46,9 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     /** Key for the data value marking the number of approvals required. */
     final String PROPERTY_NUMBER_OF_REQUIRED_APPROVALS = "number_of_required_approvals";
     
+    final String PROPERTY_REQUEST_EXPIRATION_PERIOD = "request_expiration_period";
+    final String PROPERTY_APPROVAL_EXPIRATION_PERIOD = "approval_expiration_period";
+    
     /**
      * @return the type as a human readable name.
      */
