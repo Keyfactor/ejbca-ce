@@ -753,6 +753,57 @@
 				<f:validateLongRange minimum="0" maximum="999"/>
 			</h:inputText>
 		</h:panelGroup>
+		
+		<h:outputLabel for="qcetsitypegroup" value="#{web.text.EXT_ETSI_QCS_TYPE}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
+		<h:panelGroup id="qcetsitypegroup" rendered="#{certProfileBean.certificateProfile.useQCStatement}">
+			<h:selectOneMenu id="qcetsitype" value="#{certProfileBean.certificateProfile.QCEtsiType}"
+				disabled="#{certProfilesBean.viewOnly}">
+				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_unused}" itemValue="#{null}"/>
+				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_esign}" itemValue="0.4.0.1862.1.6.1"/>
+				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_eseal}" itemValue="0.4.0.1862.1.6.2"/>
+				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_web}" itemValue="0.4.0.1862.1.6.3"/>
+			</h:selectOneMenu>
+		</h:panelGroup>
+			
+		<h:outputLabel for="qcetsipdsgroup" value="#{web.text.EXT_ETSI_QCS_PDS}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
+		<h:panelGroup id="qcetsipdsgroup" rendered="#{certProfileBean.certificateProfile.useQCStatement}">
+			<h:inputText id="textfieldqcetsipdsurl" value="#{certProfileBean.certificateProfile.QCEtsiPdsUrl}" size="36" maxlength="256" title="#{web.text.FORMAT_URL}"
+				disabled="#{certProfilesBean.viewOnly}" validatorMessage="#{web.text.EXT_ETSI_QCS_PDS_error_message}">
+				<f:converter converterId="stringConverter"/>
+				<f:validateLength minimum="0" maximum="256"/>
+				<f:validateRegex pattern="^(?i)(https://)[a-zA-Z0-9/?#\\[\\]@!$&'()*+,;:=-_.~]+"/>
+			</h:inputText>
+			<h:outputLabel for="textfieldqcetsipdsurl" value=" / "/>
+			<h:selectOneMenu id="qcetsipdslang" value="#{certProfileBean.certificateProfile.QCEtsiPdsLang}"
+				disabled="#{certProfilesBean.viewOnly}">
+				<f:selectItem itemLabel="English" itemValue="en"/>
+				<f:selectItem itemLabel="Bulgarian" itemValue="bg"/>
+				<f:selectItem itemLabel="Croatian" itemValue="hr"/>
+				<f:selectItem itemLabel="Czech" itemValue="cs"/>
+				<f:selectItem itemLabel="Danish" itemValue="da"/>
+				<f:selectItem itemLabel="Estonian" itemValue="et"/>
+				<f:selectItem itemLabel="Finnish" itemValue="fi"/>
+				<f:selectItem itemLabel="French" itemValue="fr"/>
+				<f:selectItem itemLabel="German" itemValue="de"/>
+				<f:selectItem itemLabel="Greek" itemValue="el"/>
+				<f:selectItem itemLabel="Hungarian" itemValue="hu"/>
+				<f:selectItem itemLabel="Irish" itemValue="ga"/>
+				<f:selectItem itemLabel="Italian" itemValue="it"/>
+				<f:selectItem itemLabel="Latvian" itemValue="lv"/>
+				<f:selectItem itemLabel="Lithuana" itemValue="lt"/>
+				<f:selectItem itemLabel="Luxembourg" itemValue="lb"/>
+				<f:selectItem itemLabel="Maltese" itemValue="mt"/>
+				<f:selectItem itemLabel="Dutch" itemValue="nl"/>
+				<f:selectItem itemLabel="Polish" itemValue="pl"/>
+				<f:selectItem itemLabel="Portuguese" itemValue="pt"/>
+				<f:selectItem itemLabel="Romanian" itemValue="ro"/>
+				<f:selectItem itemLabel="Slovak" itemValue="sk"/>
+				<f:selectItem itemLabel="Slovene" itemValue="sl"/>
+				<f:selectItem itemLabel="Spanish" itemValue="es"/>
+				<f:selectItem itemLabel="Swedish" itemValue="sv"/>
+				<f:selectItem itemLabel="Welsh" itemValue="cy"/>
+			</h:selectOneMenu>
+		</h:panelGroup>
 
 		<h:outputLabel for="checkqccustomstringgroup" value="#{web.text.EXT_PKIX_QCS_CUSTOMSTRING}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
 		<h:panelGroup id="checkqccustomstringgroup" rendered="#{certProfileBean.certificateProfile.useQCStatement}">
