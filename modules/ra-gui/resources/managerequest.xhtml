@@ -92,25 +92,25 @@
                 </h:panelGroup>
             </h:panelGroup>
             
-            <h:panelGroup layout="block" rendered="#{raManageRequestBean.previousStepsVisible}">
+            <h:panelGroup id="previousSteps" layout="block" rendered="#{raManageRequestBean.previousStepsVisible}">
                 <h2><h:outputText value="#{msg.view_request_page_previous_steps_header}"/></h2>
             
                 <ui:repeat value="#{raManageRequestBean.request.previousSteps}" var="prevStep">
                     <h:panelGroup layout="block" styleClass="approvalStep">
                         <h3 id="h3ApprovedSteps"><h:outputText value="#{prevStep.headingText}"/></h3>
                         <ui:repeat value="#{raManageRequestBean.partitionsToGuiPartitions(prevStep, prevStep.partitions)}" var="partition">
-                            <component:approvalmetadata partition="#{partition}"/>
+                            <component:approvalmetadata id="previousMetaData" partition="#{partition}"/>
                         </ui:repeat>
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
             
-            <h:panelGroup layout="block" rendered="#{raManageRequestBean.approvalVisible}">
+            <h:panelGroup id="currentStep" layout="block" rendered="#{raManageRequestBean.approvalVisible}">
                 <h2><h:outputText value="#{msg.view_request_page_approval_header}"/></h2>
                 <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.canApprove}">
                     
                     <ui:repeat value="#{raManageRequestBean.partitions}" var="partition">     
-                        <component:approvalmetadata partition="#{partition}"/>
+                        <component:approvalmetadata id="currentMetaData" partition="#{partition}"/>
                     </ui:repeat>
                     
                     <h:panelGroup id="approvalButtonsPanel" layout="block">
