@@ -603,6 +603,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             profile.addField(DnComponents.ORGANIZATION);
             profile.addField(DnComponents.COUNTRY);
             profile.addField(DnComponents.COMMONNAME);
+            profile.addField(DnComponents.JURISDICTIONLOCALITY);
+            profile.addField(DnComponents.JURISDICTIONSTATE);
+            profile.addField(DnComponents.JURISDICTIONCOUNTRY);
             profile.addField(DnComponents.DATEOFBIRTH);
             profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
             profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
