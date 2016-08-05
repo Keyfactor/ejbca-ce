@@ -542,8 +542,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 "Approval Request to ${approvalRequest.TYPE} is now in state ${approvalRequest.WORKFLOWSTATE}";
         final String defaultBody = "Approval Request to ${approvalRequest.TYPE} from ${approvalRequest.REQUESTOR} is now in state ${approvalRequest.WORKFLOWSTATE}.\n" +
                 "\n" +
-                "Direct link to the request: " + baseUrl + "ra/managerequest.xhtml?id=${approvalRequest.ID}";
-        approvalProfile.addUserNotificationProperties(approvalPartition, "approval-admin-group@example.org supervisor@example.org", "no-reply@"+hostnameFromRequest, defaultSubject, defaultBody);
+                "Direct link to view request status: " + baseUrl + "ra/enrollwithrequestid.xhtml?requestId=${approvalRequest.ID}";
+        approvalProfile.addUserNotificationProperties(approvalPartition, "no-reply@"+hostnameFromRequest, defaultSubject, defaultBody);
         steps = null;
     }
 
