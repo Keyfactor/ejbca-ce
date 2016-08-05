@@ -204,7 +204,7 @@ public class RaApprovalRequestInfo implements Serializable {
             }
             
             // Get next step
-            if (stepId == nextStep.getStepIdentifier()) {
+            if(nextStep == null) {
                 break;
             }
             final Integer nextStepId = step.getNextStep();
