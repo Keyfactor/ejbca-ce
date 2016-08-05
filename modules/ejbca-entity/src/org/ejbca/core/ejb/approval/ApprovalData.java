@@ -37,7 +37,7 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
 
 /**
- * Representation of approval data used to control request and their approvals.
+ * Representation of approval request data used to control request and their approvals.
  * 
  * @version $Id$
  */
@@ -56,7 +56,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	private String reqAdminCertIssuerDn;
 	private String reqAdminCertSn;
 	private int status;
-	private String approvalData;
+	private String approvalData; // list of approvals 
 	private String requestData;
 	private long requestDate;
 	private long expireDate;
