@@ -541,21 +541,33 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             } catch (Exception e) {
                 log.info(intres.getLocalizedMessage("approval.errornotification", requestId), e);
             }
+        } else {
+            if(log.isDebugEnabled()) {
+                log.debug("Notifications are not enabled for approvalProfile: "+approvalProfile.getProfileName());
+            }
         }
         
-        final EndEntityInformation userdata = getEndEntity(approvalRequest);
-        if ((userdata != null) && approvalProfile.isUserNotificationEnabled(approvalPartition)) {
-            final String userRecipient = userdata.getEmail();
-            final String userSender = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_SENDER).getValue();
-            final String userSubject = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT).getValue();
-            final String userBody = ((MultiLineString)approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY).getValue()).getValue();
+        if(approvalProfile.isUserNotificationEnabled(approvalPartition)) {
+            final EndEntityInformation userdata = getEndEntity(approvalRequest);
+            if ((userdata != null)) {
+                final String userRecipient = userdata.getEmail();
+                final String userSender = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_SENDER).getValue();
+                final String userSubject = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT).getValue();
+                final String userBody = ((MultiLineString)approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY).getValue()).getValue();
 
-            final ApprovalNotificationParameterGenerator userParameters = new ApprovalNotificationParameterGenerator(requestId, approvalStepId, partitionId, approvalType, workflowState, requestor);
-            try {
-                MailSender.sendMailOrThrow(userSender, Arrays.asList(userRecipient.split(" ")), MailSender.NO_CC, userParameters.interpolate(userSubject), userParameters.interpolate(userBody), MailSender.NO_ATTACHMENTS);
-                log.info(intres.getLocalizedMessage("approval.sentnotification", requestId));
-            } catch (Exception e) {
-                log.info(intres.getLocalizedMessage("approval.errornotification", requestId), e);
+                final ApprovalNotificationParameterGenerator userParameters = new ApprovalNotificationParameterGenerator(requestId, approvalStepId, partitionId, approvalType, workflowState, requestor);
+                try {
+                    MailSender.sendMailOrThrow(userSender, Arrays.asList(userRecipient.split(" ")), MailSender.NO_CC, userParameters.interpolate(userSubject), userParameters.interpolate(userBody), MailSender.NO_ATTACHMENTS);
+                    log.info(intres.getLocalizedMessage("approval.sentnotification", requestId));
+                } catch (Exception e) {
+                    log.info(intres.getLocalizedMessage("approval.errornotification", requestId), e);
+                }
+            } else {
+                log.info(intres.getLocalizedMessage("approval.errornotification", requestId) + " No email was found in the end entity");
+            }
+        } else {
+            if(log.isDebugEnabled()) {
+                log.debug("User notifications are not enabled for approvalProfile: "+approvalProfile.getProfileName());
             }
         }
     }
