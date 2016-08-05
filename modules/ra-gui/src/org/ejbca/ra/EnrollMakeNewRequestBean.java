@@ -45,7 +45,6 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
@@ -389,6 +388,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void applyRequestTemplate(){
         // NOOP here. Validators and setters do the real work.
     }
+    
+    public void applyAlgorithm(){
+        // NOOP here. Validators and setters do the real work.
+    }
 
     public void renderNonModifiableTemplatesToggle() {
         renderNonModifiableTemplates = !renderNonModifiableTemplates;
@@ -478,6 +481,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }else{
             addEndEntityAndGenerateCertificateDer();
         }
+    }
+
+    public void updateRequestPreview() {
+        getSubjectDn().update();
+        getSubjectAlternativeName().update();
+        getSubjectDirectoryAttributes().update();
     }
 
     public void addEndEntityAndGenerateCertificateDer() {
@@ -727,7 +736,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
     //-----------------------------------------------------------------------------------------------
     //Validators
     
-    public final void checkUserCredentials(AjaxBehaviorEvent event) {
+    public final void checkRequestPreview(){
+        checkUserCredentials();
+        checkSubjectDn();
+    }
+    
+    public final void checkUserCredentials() {
         if (endEntityInformation != null && endEntityInformation.getUsername() != null && !endEntityInformation.getUsername().isEmpty()
                 && raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername()) != null) {
             FacesContext.getCurrentInstance().addMessage(userCredentialsMessagesComponent.getClientId(), new FacesMessage(FacesMessage.SEVERITY_WARN,
@@ -735,7 +749,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
     
-    public final void checkSubjectDn(AjaxBehaviorEvent event) {
+    public final void checkSubjectDn() {
         try {
             if (endEntityInformation != null) {
                 endEntityInformation.setCAId(getCAInfo().getCAId());
@@ -763,6 +777,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
             String password = uiInputPassword.getLocalValue() == null ? "" : uiInputPassword.getLocalValue().toString();
             UIInput uiInputConfirmPassword = (UIInput) components.findComponent("passwordConfirmField");
             String confirmPassword = uiInputConfirmPassword.getLocalValue() == null ? "" : uiInputConfirmPassword.getLocalValue().toString();
+            if(password.isEmpty()){
+                FacesContext.getCurrentInstance().addMessage("passwordFieldMessage", raLocaleBean.getFacesMessage("enroll_passwords_are_not_equal"));
+                fc.renderResponse();
+            }
             if (!password.equals(confirmPassword)) {
                 FacesContext.getCurrentInstance().addMessage("passwordFieldMessage", raLocaleBean.getFacesMessage("enroll_passwords_are_not_equal"));
                 fc.renderResponse();
