@@ -300,7 +300,7 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     boolean isUserNotificationEnabled(ApprovalPartition approvalPartition);
 
     /** Add user notification properties */
-    ApprovalPartition addUserNotificationProperties(ApprovalPartition approvalPartition, String recipient, String sender, String subject, String body);
+    ApprovalPartition addUserNotificationProperties(ApprovalPartition approvalPartition, String sender, String subject, String body);
 
     /** Remove user notification properties */
     ApprovalPartition removeUserNotificationProperties(ApprovalPartition approvalPartition);

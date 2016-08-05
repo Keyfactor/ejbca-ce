@@ -184,7 +184,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     }
 
     @Override
-    public ApprovalPartition addUserNotificationProperties(final ApprovalPartition approvalPartition, String recipient, String sender, String subject, String body) {
+    public ApprovalPartition addUserNotificationProperties(final ApprovalPartition approvalPartition, String sender, String subject, String body) {
         // TODO: It would be nice with the email-address type
         approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_USER_NOTIFICATION_EMAIL_SENDER, sender));
         approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, subject));
