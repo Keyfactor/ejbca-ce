@@ -173,15 +173,22 @@
 						<h:outputText value="#{msg.enroll_select_key_algorithm}" />
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
-					<h:panelGroup layout="block" styleClass="pure-control-group">
-						<h:outputLabel for="selectAlgorithmOneMenu" value="#{msg.enroll_key_algorithm}" />
-						<h:selectOneMenu id="selectAlgorithmOneMenu" styleClass="jsAutoFocusLast"
-                            value="#{enrollMakeNewRequestBean.selectedAlgorithm}"
-                            disabled="#{enrollMakeNewRequestBean.availableAlgorithmSelectItems.size()==1}">
-							<f:selectItems value="#{enrollMakeNewRequestBean.availableAlgorithmSelectItems}" />
-							<f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm:requestPreviewOuterPanel @form"/>
-						</h:selectOneMenu>
-					</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:outputLabel for="selectAlgorithmOneMenu" value="#{msg.enroll_key_algorithm}" />
+							<h:selectOneMenu id="selectAlgorithmOneMenu" styleClass="jsAutoFocusLast"
+	                            value="#{enrollMakeNewRequestBean.selectedAlgorithm}"
+	                            disabled="#{enrollMakeNewRequestBean.availableAlgorithmSelectItems.size()==1}">
+								<f:selectItems value="#{enrollMakeNewRequestBean.availableAlgorithmSelectItems}" />
+								<f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm:requestPreviewOuterPanel @form"/>
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<fieldset>
+							<h:commandButton id="applyAlgorithmButton"
+                                value="#{msg.enroll_update_algorithm}"
+                                styleClass="pure-button ra-button jsHide"
+                                action="#{enrollMakeNewRequestBean.applyAlgorithm}">
+                            </h:commandButton>
+						</fieldset>
 					</h:panelGroup>
 				</h:panelGroup>
 
@@ -209,7 +216,7 @@
 											value="#{msg['subject_dn_'.concat(instance.name)]} *"
 											rendered="#{instance.required}" />
 										<h:inputText id="subjectDnField" value="#{instance.value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
-											rendered="#{!instance.selectable}" disabled="#{!instance.modifiable}">
+											rendered="#{!instance.selectable}" required="#{instance.required}" disabled="#{!instance.modifiable}">
 											<f:validator validatorId="extendedRegexValidator" />
 											<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}"/>
 											<f:ajax event="change" execute="@this" listener="#{enrollMakeNewRequestBean.checkSubjectDn}"
@@ -245,7 +252,7 @@
 										value="#{msg['subject_alternative_name_'.concat(instance.name)]} *"
 										rendered="#{instance.required}" />
 									<h:inputText id="subjectAltNameField" value="#{instance.value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
-                                        rendered="#{!instance.selectable}" disabled="#{!instance.modifiable}">
+                                        rendered="#{!instance.selectable}" required="#{instance.required}" disabled="#{!instance.modifiable}">
 										<f:validator validatorId="extendedRegexValidator"/>
 										<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}"/>
 										<f:ajax event="change" execute="@this"
@@ -278,7 +285,7 @@
 										value="#{msg['subject_directory_attributes_'.concat(instance.name)]} *"
 										rendered="#{instance.required}" />
 									<h:inputText id="subjectDirectoryField" value="#{instance.value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
-										rendered="#{!instance.selectable}" disabled="#{!instance.modifiable}">
+										rendered="#{!instance.selectable}" required="#{instance.required}" disabled="#{!instance.modifiable}">
 										<f:validator validatorId="extendedRegexValidator"/>
 										<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}" />
 										<f:ajax event="change" execute="@this"
@@ -298,15 +305,16 @@
                         <fieldset>
     						<h:commandButton id="updateRequestPreview"
     							value="#{msg.enroll_update_request_preview}"
-    							action="#{enrollMakeNewRequestBean.updateRequestDataToPreview}"
+    							action="#{enrollMakeNewRequestBean.updateRequestPreview}"
+    							actionListener="#{enrollMakeNewRequestBean.checkRequestPreview}"
     							rendered="#{enrollMakeNewRequestBean.updateRequestPreviewButtonRendered}"
     							styleClass="pure-button ra-button jsHide">
     						</h:commandButton>
                             <h:commandButton id="renderNonModifiableFieldsToggle" action="#{enrollMakeNewRequestBean.renderNonModifiableFieldsToggle}"
-                                rendered="#{enrollMakeNewRequestBean.renderNonModifiableFieldsRendered}"
+                                rendered="#{enrollMakeNewRequestBean.renderNonModifiableFieldsRendered}" actionListener="#{enrollMakeNewRequestBean.checkSubjectDn}"
                                 value="#{enrollMakeNewRequestBean.renderNonModifiableFields ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
                                 styleClass="toggleMoreButton pure-button ra-button" immediate="true">
-								<f:ajax execute="@this" listener="#{enrollMakeNewRequestBean.checkSubjectDn}"
+								<f:ajax execute="@this"
 									render="@form" />
 							</h:commandButton>
                         </fieldset>
@@ -369,11 +377,11 @@
 							raRequestPreview="#{enrollMakeNewRequestBean.requestPreview}"/>
 						<h:commandButton id="requestPreviewMoreDetails"
 							action="#{enrollMakeNewRequestBean.renderRequestPreviewMoreToggle}"
+							actionListener="#{enrollMakeNewRequestBean.checkUserCredentials}"
 							value="#{enrollMakeNewRequestBean.requestPreviewMoreDetails ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
 							styleClass="#{htmlElementFocusBean.requestPreviewMoreDetails?'jsAutoFocusJsf':''} toggleMoreButton pure-button ra-button" immediate="true">
 							<f:actionListener binding="#{htmlElementFocusBean.setRequestPreviewMoreDetails(true)}"/>
-							<f:ajax execute="@this" listener="#{enrollMakeNewRequestBean.checkUserCredentials}"
-									render="@form" />
+							<f:ajax execute="@this" render="@form" />
 						</h:commandButton>
 
 

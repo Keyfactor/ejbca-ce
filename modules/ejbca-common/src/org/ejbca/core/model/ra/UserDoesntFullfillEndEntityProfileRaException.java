@@ -15,6 +15,7 @@ package org.ejbca.core.model.ra;
 
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.cesecore.ErrorCode;
 import org.cesecore.NonSensitiveException;
 
 /**
@@ -27,8 +28,8 @@ import org.cesecore.NonSensitiveException;
 public class UserDoesntFullfillEndEntityProfileRaException extends EjbcaException {
     private static final long serialVersionUID = 777317800935352658L;
 
-    
     public UserDoesntFullfillEndEntityProfileRaException(UserDoesntFullfillEndEntityProfile exception){
         super(exception);
+        setErrorCode(ErrorCode.USER_DOESNT_FULLFILL_END_ENTITY_PROFILE);
     }
 }
