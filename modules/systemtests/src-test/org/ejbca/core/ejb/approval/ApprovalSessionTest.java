@@ -73,7 +73,6 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -399,11 +398,8 @@ public class ApprovalSessionTest extends CaTestCase {
 
     @Test
     public void testApprove() throws Exception {
-        final long originalRequestValidity = approvalProfile.getRequestExpirationPeriod();
         final long originalApprovalValidity = approvalProfile.getApprovalExpirationPeriod();
-
         approvalProfile.setApprovalExpirationPeriod(500);
-        approvalProfile.setRequestExpirationPeriod(500);
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         
         try {
@@ -416,7 +412,7 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
 
             Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-            assertEquals("Wrong number of approvals was returned.", 1, result.size());
+            assertEquals("Wrong number of approval requests was returned.", 1, result.size());
 
             ApprovalDataVO next = result.iterator().next();
             assertEquals("Status was not set to 'Waiting for Approval'", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, next.getStatus());
@@ -489,7 +485,6 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
         } finally {
             approvalProfile.setApprovalExpirationPeriod(originalApprovalValidity);
-            approvalProfile.setRequestExpirationPeriod(originalRequestValidity);
             approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         }
     }
