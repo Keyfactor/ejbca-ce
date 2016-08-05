@@ -189,7 +189,6 @@ public class ApprovalRequestTest {
         assertFalse(ar.isEditedByMe(token3));
     }
     
-    /** Tests editing (but not actually saving to the database, since this is handled in the ApprovalSessionBean class) */
     @Test
     public void testRequestExpirationPeriod() throws Exception {
         X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
