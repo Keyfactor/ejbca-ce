@@ -280,7 +280,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         }
         // Check that the admin wasn't the last one who edited the request
         if (approvalInformation.getApprovalRequest().isEditedByMe(admin)) {
-            throw new SelfApprovalException("Can't approve a request that was last edited by oneself");
+            throw new SelfApprovalException("Can not approve a request that was last edited by oneself");
         }
        
 
