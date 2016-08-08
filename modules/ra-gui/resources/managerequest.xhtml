@@ -99,7 +99,7 @@
                     <h:panelGroup layout="block" styleClass="approvalStep">
                         <h3 id="h3ApprovedSteps"><h:outputText value="#{prevStep.headingText}"/></h3>
                         <ui:repeat value="#{raManageRequestBean.partitionsToGuiPartitions(prevStep, prevStep.partitions)}" var="partition">
-                            <component:approvalmetadata id="previousMetaData" partition="#{partition}"/>
+                            <component:previousapprovals id="previousMetaData" partition="#{partition}"/>
                         </ui:repeat>
                     </h:panelGroup>
                 </ui:repeat>
