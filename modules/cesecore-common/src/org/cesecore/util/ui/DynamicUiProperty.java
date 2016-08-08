@@ -139,6 +139,33 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         }
         return null;
     }
+    
+    public String getValueAsString() {
+        Serializable value = getValue();
+        String ret = "";
+        if (value instanceof MultiLineString) {
+            ret = ((MultiLineString) value).getValue();
+        } else if (value instanceof String) {
+            ret = (String) value;
+        } else if (value instanceof Integer) {
+            try {
+                ret = ((Integer)value).toString();
+            } catch (NumberFormatException e) {}
+        } else if (value instanceof Long) {
+            try {
+                ret = ((Long)value).toString();
+            } catch (NumberFormatException e) {}
+        } else if (value instanceof Boolean) {
+            ret = ((Boolean) value).toString();
+        } else if (value instanceof Float) {
+            try {
+                ret = ((Float)value).toString();
+            } catch (NumberFormatException e) { }
+        } else if (value instanceof RadioButton) {
+            ret = ((RadioButton)value).getLabel();
+        }
+        return ret;
+    }
 
     public String getName() {
         return name;

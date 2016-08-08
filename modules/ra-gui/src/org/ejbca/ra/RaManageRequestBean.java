@@ -152,16 +152,15 @@ public class RaManageRequestBean implements Serializable {
     public boolean isPreviousStepsVisible() { return !editing && !getRequest().getPreviousSteps().isEmpty(); }
     public boolean isApprovalVisible() { return !editing; } // even if approval is not possible, we still show a message explaining why it's not.
     
-    public List<KeyValuePair> getPreviousPartitionsApprovedBy(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
-        ArrayList<KeyValuePair> approvedByData = new ArrayList<KeyValuePair>();
-        if(guiPartition.getApproval() != null) {
-            ApprovalRequestGUIInfo.ApprovalGuiObject approvalView = new ApprovalRequestGUIInfo.ApprovalGuiObject(guiPartition.getApproval());
-            approvedByData.add(new KeyValuePair("Action", approvalView.getAdminAction()));
-            approvedByData.add(new KeyValuePair("Date", approvalView.getApprovalDate()));
-            approvedByData.add(new KeyValuePair("Administrator", approvalView.getApprovalAdmin()));
-            approvedByData.add(new KeyValuePair("Comment", approvalView.getComment()));
-        }
-        return approvedByData;
+    public String getPartitionName(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
+        if (guiPartition == null) {
+            // JBoss EAP 6.4 seems to make calls EL method calls one time extra, with a null parameter, once per page rendering
+            log.debug("Ignored call to getPartitionProperties with null parameter");
+            return "";
+        }        final ApprovalProfile approvalProfile = getRequest().request.getApprovalProfile();
+        final ApprovalStep step = approvalProfile.getStep(guiPartition.getStepId());
+        final ApprovalPartition partition = step.getPartition(guiPartition.getPartitionId());
+        return (String) partition.getProperty("name").getValue();
     }
     
     public List<DynamicUiProperty<? extends Serializable>> getPartitionProperties(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
@@ -295,6 +294,32 @@ public class RaManageRequestBean implements Serializable {
         }
         return ret;
     }
+    
+    public List<KeyValuePair> getHandledPartitionData(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
+        if (guiPartition == null) {
+            // JBoss EAP 6.4 seems to make calls EL method calls one time extra, with a null parameter, once per page rendering
+            log.debug("Ignored call to partitionsToGuiPartitions with null parameter");
+            return new ArrayList<>();
+        }
+        
+        ArrayList<KeyValuePair> kvp = new ArrayList<KeyValuePair>();
+        
+        List<DynamicUiProperty<? extends Serializable>> properties = getPartitionProperties(guiPartition);
+        for(DynamicUiProperty<? extends Serializable> property : properties) {
+            if(!property.getName().equals("name")) {
+                kvp.add(new KeyValuePair(property.getName(), property.getValueAsString()));
+            }
+        }
+        Approval approval = getPartitionApproval(guiPartition.getPartitionId(), guiPartition.getStepId());
+        if(approval != null) {
+            ApprovalRequestGUIInfo.ApprovalGuiObject approvalView = new ApprovalRequestGUIInfo.ApprovalGuiObject(approval);
+            kvp.add(new KeyValuePair("Approval action", approvalView.getAdminAction()));
+            kvp.add(new KeyValuePair("Approval date", approvalView.getApprovalDate()));
+            kvp.add(new KeyValuePair("Approval administrator", approvalView.getApprovalAdmin()));
+            kvp.add(new KeyValuePair("Approval comment", approvalView.getComment()));
+        }
+        return kvp;
+    }   
     
     public String getStepInfoText() {
         final List<String> roles = new ArrayList<>(requestData.getNextStepAllowedRoles());
