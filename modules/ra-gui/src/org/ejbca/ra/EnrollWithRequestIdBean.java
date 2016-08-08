@@ -278,33 +278,39 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
     
     public boolean isRenderGenerateKeyStoreJks(){
+        if(endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN){
+            return false;
+        }
         EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId()).getValue();
         if (endEntityProfile == null) {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_JKS))
-                && endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS;
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_JKS));
     }
     
     public boolean isRenderGenerateKeyStorePkcs12(){
+        if(endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN){
+            return false;
+        }
         EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId()).getValue();
         if (endEntityProfile == null) {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_P12))
-                && endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12;
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_P12));
     }
     
     public boolean isRenderGenerateKeyStorePem(){
+        if(endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN){
+            return false;
+        }
         EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId()).getValue();
         if (endEntityProfile == null) {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_PEM))
-                && endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM;
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_PEM));
     }
 
     private final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
