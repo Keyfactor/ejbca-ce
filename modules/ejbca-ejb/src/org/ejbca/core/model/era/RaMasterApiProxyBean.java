@@ -493,13 +493,13 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntity)
+    public byte[] generateKeyStore(AuthenticationToken authenticationToken, EndEntityInformation endEntity)
             throws AuthorizationDeniedException, EjbcaException {
         AuthorizationDeniedException authorizationDeniedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    return raMasterApi.generateKeystore(authenticationToken, endEntity);
+                    return raMasterApi.generateKeyStore(authenticationToken, endEntity);
                 } catch (AuthorizationDeniedException e) {
                     if (authorizationDeniedException == null) {
                         authorizationDeniedException = e;

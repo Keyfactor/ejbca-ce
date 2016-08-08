@@ -247,7 +247,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     
     private final void generateKeyStore(){
         try {
-            byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeystore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+            byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
             log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
                     endEntityInformation.getUsername());
             try(ByteArrayOutputStream buffer = new ByteArrayOutputStream()){
