@@ -157,7 +157,7 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException
      * @throws KeyStoreException if something went wrong with keystore creation
      */
-    byte[] generateKeystore(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
+    byte[] generateKeyStore(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, EjbcaException;
 
     /**
