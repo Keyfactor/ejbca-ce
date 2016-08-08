@@ -56,6 +56,7 @@ import org.ejbca.core.model.era.RaApprovalResponseRequest.Action;
 import org.ejbca.core.model.era.RaEditableRequestData;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ra.ApprovalRequestGUIInfo.RequestDataRow;
+import org.ejbca.util.KeyValuePair;
 
 /**
  * Backing bean for Manage Request page (for individual requests).
@@ -151,6 +152,18 @@ public class RaManageRequestBean implements Serializable {
     public boolean isPreviousStepsVisible() { return !editing && !getRequest().getPreviousSteps().isEmpty(); }
     public boolean isApprovalVisible() { return !editing; } // even if approval is not possible, we still show a message explaining why it's not.
     
+    public List<KeyValuePair> getPreviousPartitionsApprovedBy(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
+        ArrayList<KeyValuePair> approvedByData = new ArrayList<KeyValuePair>();
+        if(guiPartition.getApproval() != null) {
+            ApprovalRequestGUIInfo.ApprovalGuiObject approvalView = new ApprovalRequestGUIInfo.ApprovalGuiObject(guiPartition.getApproval());
+            approvedByData.add(new KeyValuePair("Action", approvalView.getAdminAction()));
+            approvedByData.add(new KeyValuePair("Date", approvalView.getApprovalDate()));
+            approvedByData.add(new KeyValuePair("Administrator", approvalView.getApprovalAdmin()));
+            approvedByData.add(new KeyValuePair("Comment", approvalView.getComment()));
+        }
+        return approvedByData;
+    }
+    
     public List<DynamicUiProperty<? extends Serializable>> getPartitionProperties(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
         if (guiPartition == null) {
             // JBoss EAP 6.4 seems to make calls EL method calls one time extra, with a null parameter, once per page rendering
@@ -175,7 +188,8 @@ public class RaManageRequestBean implements Serializable {
                         if (approvalProfile.canViewPartition(raAuthenticationBean.getAuthenticationToken(), approvalPartition)) {
                             ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partitionGuiObject = 
                                     new ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject(step.getStepIdentifier(),
-                                    approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalProfile, approvalPartition));
+                                    approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalProfile, approvalPartition), 
+                                    getPartitionApproval(approvalPartition.getPartitionIdentifier(), step.getStepIdentifier()));
                             authorizedPartitions.add(partitionGuiObject);
                         }
                         if (approvalProfile.canApprovePartition(raAuthenticationBean.getAuthenticationToken(), approvalPartition)) {
@@ -194,18 +208,22 @@ public class RaManageRequestBean implements Serializable {
         
     }
 
+    private Approval getPartitionApproval(final int partitionId, final int stepId) {
+        final ApprovalDataVO advo = getRequest().request.getApprovalData();
+        Collection<Approval> approvals = advo.getApprovals();
+        for(Approval approval : approvals) {
+            if((approval.getStepId()==stepId) && (approval.getPartitionId()==partitionId)) {
+                return approval;
+            }
+        }
+        return null;
+    }
+     
     /** 
      * @return true if there already exists an approval for this partition 
      */
     public boolean isPartitionHandled(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partition) {
-        final ApprovalDataVO advo = getRequest().request.getApprovalData();
-        Collection<Approval> approvals = advo.getApprovals();
-        for(Approval approval : approvals) {
-            if((approval.getStepId()==partition.getStepId()) && (approval.getPartitionId()==partition.getPartitionId())) {
-                return true;
-            }
-        }
-        return false;
+        return getPartitionApproval(partition.getPartitionId(), partition.getStepId()) != null;
     }
     public boolean canApproveParition(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partition) {
         if(partitionsAuthorizedToApprove == null) {
@@ -272,7 +290,8 @@ public class RaManageRequestBean implements Serializable {
         final List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> ret = new ArrayList<>();
         for (final ApprovalPartition partition : partitions) {
             ret.add(new ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject(step.getStepId(),
-                    partition.getPartitionIdentifier(), getPartitionProperties(requestData.getApprovalProfile(), partition)));
+                    partition.getPartitionIdentifier(), getPartitionProperties(requestData.getApprovalProfile(), partition), 
+                    getPartitionApproval(partition.getPartitionIdentifier(), step.getStepId())));
         }
         return ret;
     }

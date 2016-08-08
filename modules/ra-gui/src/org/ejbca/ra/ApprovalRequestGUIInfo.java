@@ -26,6 +26,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiProperty;
+import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
@@ -49,6 +50,31 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ApprovalRequestGUIInfo.class);
     
+    public static final class ApprovalGuiObject {
+        private Approval approval;
+        
+        public ApprovalGuiObject(Approval approval) {
+           this.approval = approval;
+        }
+        
+        public String getApprovalDate(){
+            return ValidityDate.formatAsISO8601(approval.getApprovalDate(), ValidityDate.TIMEZONE_SERVER);
+        }
+        public String getApprovalAdmin(){
+            return approval.getAdmin().toString();
+        }
+        
+        public String getAdminAction(){
+            if(approval.isApproved()){
+                return "APPROVED";
+            }
+            return "REJECTED";
+        }
+        public String getComment(){
+            return approval.getComment();
+        }
+    }
+    
     /**
      * A display POJO for approval partitions.
      */
@@ -59,13 +85,15 @@ public class ApprovalRequestGUIInfo implements Serializable {
 
         private final int partitionId;
         private final int stepId;
+        private final Approval approval;
 
         public ApprovalPartitionProfileGuiObject(final int stepId, final int partitionId,
-                List<DynamicUiProperty<? extends Serializable>> propertyValues) {
+                List<DynamicUiProperty<? extends Serializable>> propertyValues, Approval approval) {
             //Pass property values as a parameter because it may need some outside poking
             setProfilePropertyList(propertyValues);
             this.stepId = stepId;
             this.partitionId = partitionId;
+            this.approval = approval;
         }
 
         public List<DynamicUiProperty<? extends Serializable>> getProfilePropertyList() {
@@ -95,6 +123,10 @@ public class ApprovalRequestGUIInfo implements Serializable {
                 }
             }
             return propertyPossibleValues;
+        }
+        
+        public Approval getApproval() {
+            return this.approval;
         }
         
     }
