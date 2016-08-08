@@ -99,7 +99,22 @@
                     <h:panelGroup layout="block" styleClass="approvalStep">
                         <h3 id="h3ApprovedSteps"><h:outputText value="#{prevStep.headingText}"/></h3>
                         <ui:repeat value="#{raManageRequestBean.partitionsToGuiPartitions(prevStep, prevStep.partitions)}" var="partition">
-                            <component:previousapprovals id="previousMetaData" partition="#{partition}"/>
+                            <h:panelGroup styleClass="approvalStep">
+        	     				<h:outputText value="Partition: #{raManageRequestBean.getPartitionName(partition)}"/>
+             				</h:panelGroup>
+            				<h:dataTable id="approvedByDataTable" value="#{raManageRequestBean.getHandledPartitionData(partition)}" var="kvp"
+                 						rendered="#{not empty raManageRequestBean.getHandledPartitionData(partition)}" styleClass="pure-table" rowClasses=",pure-table-odd">   
+                				<h:column>
+                    				<h:panelGroup layout="block" styleClass="stepInstruction">
+                        				<h:outputText value="#{kvp.key}"/>
+                    				</h:panelGroup>
+                				</h:column>
+                				<h:column>
+                    				<h:panelGroup layout="block" styleClass="stepInstruction">
+                        				<h:outputText value="#{kvp.value}"/>
+                    				</h:panelGroup>
+                				</h:column>  
+            				</h:dataTable>
                         </ui:repeat>
                     </h:panelGroup>
                 </ui:repeat>
