@@ -113,7 +113,7 @@
                             <h:commandButton action="#{enrollMakeNewRequestBean.renderNonModifiableTemplatesToggle}"
                                 rendered="#{enrollMakeNewRequestBean.renderNonModifiableTemplatesRendered}"
                                 value="#{enrollMakeNewRequestBean.renderNonModifiableTemplates ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
-                                styleClass="toggleMoreButton pure-button ra-button" immediate="true">
+                                styleClass="toggleMoreButton" immediate="true">
                                 <f:ajax execute="@this" render="@form"/>
                             </h:commandButton>
                         </fieldset>
@@ -313,7 +313,7 @@
                             <h:commandButton id="renderNonModifiableFieldsToggle" action="#{enrollMakeNewRequestBean.renderNonModifiableFieldsToggle}"
                                 rendered="#{enrollMakeNewRequestBean.renderNonModifiableFieldsRendered}" actionListener="#{enrollMakeNewRequestBean.checkSubjectDn}"
                                 value="#{enrollMakeNewRequestBean.renderNonModifiableFields ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
-                                styleClass="toggleMoreButton pure-button ra-button" immediate="true">
+                                styleClass="toggleMoreButton" immediate="true">
 								<f:ajax execute="@this"
 									render="@form" />
 							</h:commandButton>
@@ -379,7 +379,7 @@
 							action="#{enrollMakeNewRequestBean.renderRequestPreviewMoreToggle}"
 							actionListener="#{enrollMakeNewRequestBean.checkUserCredentials}"
 							value="#{enrollMakeNewRequestBean.requestPreviewMoreDetails ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
-							styleClass="#{htmlElementFocusBean.requestPreviewMoreDetails?'jsAutoFocusJsf':''} toggleMoreButton pure-button ra-button" immediate="true">
+							styleClass="#{htmlElementFocusBean.requestPreviewMoreDetails?'jsAutoFocusJsf':''} toggleMoreButton" immediate="true">
 							<f:actionListener binding="#{htmlElementFocusBean.setRequestPreviewMoreDetails(true)}"/>
 							<f:ajax execute="@this" render="@form" />
 						</h:commandButton>
