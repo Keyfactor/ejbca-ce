@@ -65,10 +65,6 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
         Collection<String> cas = new ArrayList<String>();
         Collection<Integer> caIds = getCAIdsToCheck(false);
         Collection<Integer> certificateProfileIds = getCertificateProfileIdsToCheck();
-        long thresHold = getTimeBeforeExpire();
-        if (log.isDebugEnabled()) {
-            log.debug("Looking for expiring certificates for CAs '"+caIds+"' and certificate profiles '"+certificateProfileIds+"', with expire treshold: "+thresHold);
-        }
         if (!caIds.isEmpty()) {
             //if caIds contains SecConst.ALLCAS, reassign caIds to contain just that.
             if(caIds.contains(SecConst.ALLCAS)) {
@@ -130,6 +126,11 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
             long now = new Date().getTime();
             if (!cas.isEmpty()) {
+                long thresHold = getTimeBeforeExpire();
+                if (log.isDebugEnabled()) {
+                    log.debug("Looking for expiring certificates for CAs '"+caIds+"' and certificate profiles '"+certificateProfileIds+"', with expire treshold: "+thresHold+
+                            ". activeNotifiedExpireDateMin: "+now+", activeNotifiedExpireDateMax: "+(nextRunTimeStamp + thresHold)+", activeExpireDateMin: "+(runTimeStamp + thresHold));
+                }
                 try {
                     List<Object[]> fingerprintUsernameList = certificateStoreSession.findExpirationInfo(cas, certificateProfileIds, now, (nextRunTimeStamp + thresHold),
                             (runTimeStamp + thresHold));
