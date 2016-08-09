@@ -16,6 +16,8 @@ package org.ejbca.core.ejb.approval;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Map;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -80,4 +82,33 @@ public class ApprovalProfileSessionTest {
             approvalProfileSession.removeApprovalProfile(alwaysAllowToken, profileId);
         }
     }
+    
+    /**
+     * Test the renameApprovalProfile method in ApprovalProfileSession
+     * @throws ApprovalProfileDoesNotExistException 
+     */
+    @Test
+    public void testRenameApprovalProfile() throws ApprovalProfileExistsException, AuthorizationDeniedException, ApprovalProfileDoesNotExistException {
+        String profileName = "testRenameApprovalProfile";
+        AccumulativeApprovalProfile accumulativeApprovalProfile = new AccumulativeApprovalProfile(profileName);
+        int profileId = approvalProfileSession.addApprovalProfile(alwaysAllowToken, accumulativeApprovalProfile);
+        try {
+            String newName = "testRenameApprovalProfileNew";
+            AccumulativeApprovalProfile originalProfile = (AccumulativeApprovalProfile) approvalProfileSession.getApprovalProfile(profileId);
+            Map<Integer, String> originalMap = approvalProfileSession.getApprovalProfileIdToNameMap();
+            // This checks that the name in the database column was changed
+            assertEquals("Profile name form id mapping is not what it should be", profileName, originalMap.get(profileId));
+            // This checks if the name in the actual profile XML was changed
+            assertEquals("Profile name is not what it should be", profileName, originalProfile.getProfileName());
+            approvalProfileSession.renameApprovalProfile(alwaysAllowToken, originalProfile, newName);
+            AccumulativeApprovalProfile newProfile = (AccumulativeApprovalProfile) approvalProfileSession.getApprovalProfile(profileId);
+            Map<Integer, String> newMap = approvalProfileSession.getApprovalProfileIdToNameMap();
+            assertEquals("Profile name form id mapping is not what it should be", newName, newMap.get(profileId));
+            assertEquals("Profile name is not what it should be", newName, newProfile.getProfileName());
+            
+        } finally {
+            approvalProfileSession.removeApprovalProfile(alwaysAllowToken, profileId);
+        }
+    }
+
 }
