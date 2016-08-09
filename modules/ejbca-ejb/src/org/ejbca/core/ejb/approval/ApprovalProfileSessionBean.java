@@ -47,6 +47,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.profiles.ProfileData;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfileBase;
+import org.ejbca.core.model.profiles.Profile;
 
 /**
  * Keeps track of the approval profiles
@@ -191,7 +192,12 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             } else {
                 authorizedToEditProfile(admin, profileData.getId());
                 String oldName = approvalProfile.getProfileName();
+                // This changes the name in the database column
                 profileData.setProfileName(newName);
+                // This changes the name in the profile XML data
+                Profile original = profileData.getProfile();
+                original.setProfileName(newName);
+                profileData.setProfile(original);
                 approvalProfileCache.forceCacheExpiration();
                 final String msg = INTRES.getLocalizedMessage("approval.profile.store.rename", oldName, newName);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
