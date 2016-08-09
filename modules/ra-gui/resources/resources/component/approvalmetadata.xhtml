@@ -35,6 +35,10 @@
         </composite:interface>
 
         <composite:implementation>
+            <h:panelGroup styleClass="approvalStep">
+        		<h:outputText value="Partition: #{raManageRequestBean.getPartitionName(partition)}"/>
+            </h:panelGroup>
+        
             <h:dataTable id="approvalMetaDataTable" value="#{raManageRequestBean.getPartitionProperties(partition)}" var="property"
                  rendered="#{not empty raManageRequestBean.getPartitionProperties(partition)}" styleClass="pure-table" rowClasses=",pure-table-odd">   
                 <h:column>
