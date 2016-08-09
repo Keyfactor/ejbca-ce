@@ -48,8 +48,8 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(ApprovalData.class);
 
-	private int id;
-	private int approvalId;
+	private int id; // the unique id stored in the database
+	private int approvalId; // a hash of the request
 	private int approvalType;
 	private int endEntityProfileId;
 	private int cAId;
