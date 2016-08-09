@@ -614,6 +614,18 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     padding: 1%;
     width: 90%;
     word-break: break-all; } }
+.subjectErrorMessage {
+  display: none;
+  margin: 1% 0px 2%;
+  color: white;
+  border-style: solid;
+  background: black none repeat scroll 0% 0%;
+  border-color: black;
+  padding: 1%;
+  width: 79%;
+  word-break: break-all;
+  float: none; }
+
 #requestInfoForm\:useRequestIdLink:hover {
   text-decoration: underline; }
 
@@ -1121,6 +1133,9 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 
   #contentForm\:commandEditData {
     width: auto; }
+
+  #commonNameError {
+    float: right; }
 
   .footer > .align-center > p {
     /*footer-texten*/
