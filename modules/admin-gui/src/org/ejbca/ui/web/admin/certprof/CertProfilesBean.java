@@ -609,8 +609,9 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             try {
                 data = decoder.readObject();
             } catch (IOException e) {
+                log.info("Error parsing certificate profile data: " + e.getMessage());
                 if (log.isDebugEnabled()) {
-                    log.debug("Error parsing certificate profile data: " + e.getMessage());
+                    log.debug("Full stack trace: ", e);
                 }
                 return null;
             } finally {
@@ -636,7 +637,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 cas.remove(toRemove);
             }
             if (cas.size() == 0) {
-                log.error("Error: No CAs left in certificate profile '" + profilename + "' and no CA specified on command line. Using ANYCA.");
+                log.warn("Error: No CAs left in certificate profile '" + profilename + "' and no CA specified on command line. Using ANYCA.");
                 cas.add(Integer.valueOf(CertificateProfile.ANYCA));
 
             }
@@ -651,7 +652,9 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 } catch (Exception e) {
                     log.warn("Warning: There was an error loading publisher with id " + publisher + ". Use debug logging to see stack trace: "
                             + e.getMessage());
-                    log.debug("Full stack trace: ", e);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Full stack trace: ", e);
+                    }
                 }
                 if (pub == null) {
                     allToRemove.add(publisher);
@@ -674,24 +677,22 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         return cprofile;
     }
 
+    /** @return trueif the file shall be ignored from a Certificate Profile import, false if it should be imported */
     private boolean ignoreFile(String filename) {
         if (filename.lastIndexOf(".xml") != (filename.length() - 4)) {
-            if (log.isDebugEnabled()) {
-                log.debug(filename + " is not an XML file. IGNORED");
-            }
+            log.info(filename + " is not an XML file. IGNORED");
             return true;
         }
 
         if (filename.indexOf("_") < 0 || filename.lastIndexOf("-") < 0 || (filename.indexOf("certprofile_") < 0)) {
-            if (log.isDebugEnabled()) {
-                log.debug(filename + " is not in the expected format. "
-                        + "The file name should look like: certprofile_<profile name>-<profile id>.xml. IGNORED");
-            }
+            log.info(filename + " is not in the expected format. "
+                    + "The file name should look like: certprofile_<profile name>-<profile id>.xml. IGNORED");
             return true;
         }
         return false;
     }
 
+    /** @return true if the profile should be ignored from a Certificate Profile import because it already exists, false if it should be imported */
     private boolean ignoreProfile(String filename, String profilename, int profileid) {
         // We don't add the fixed profiles, EJBCA handles those automagically
         if (CertificateProfileConstants.isFixedCertificateProfile(profileid)) {
