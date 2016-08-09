@@ -2921,7 +2921,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 ApprovalDataVO.ANY_ENDENTITYPROFILE, approvalProfile, cainfo.getCertificateProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {
             approvalSession.addApprovalRequest(admin, ar);
-            throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalcaactivation"));
+            throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalcaactivation"), approvalSession.getIdFromApprovalId(ar.generateApprovalId()));
         }
         if (cainfo.getStatus() == CAConstants.CA_OFFLINE) {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.activated", caid);

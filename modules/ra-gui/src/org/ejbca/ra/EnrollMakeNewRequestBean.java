@@ -604,7 +604,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             log.info("You are not authorized to execute this operation", e);
             return null;
         } catch (WaitingForApprovalException e) {
-            requestId = e.getApprovalId();
+            requestId = e.getRequestId();
             log.info("Waiting for approval request with request ID " + requestId + " has been received");
             return null;
         } catch(EjbcaException e){

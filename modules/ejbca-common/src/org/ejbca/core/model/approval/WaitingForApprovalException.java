@@ -27,25 +27,14 @@ public class WaitingForApprovalException extends Exception {
 
 	private static final long serialVersionUID = 6808192333114783496L;
     private int requestId = 0;
-
-    public WaitingForApprovalException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public WaitingForApprovalException(String message) {
+	
+	public WaitingForApprovalException(String message, int requestId) {
 		super(message);
+		this.requestId = requestId;
 	}
 	
-	public WaitingForApprovalException(String message, int approvalId) {
-		super(message);
-		this.requestId = approvalId;
-	}
-	
-	public int getApprovalId(){
+	public int getRequestId(){
 		return requestId;
 	}
-	
-	public void setApprovalId(int approvalId){
-		this.requestId = approvalId;
-	}
+
 }
