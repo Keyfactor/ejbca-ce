@@ -73,6 +73,17 @@
                         styleClass="pure-table" rowClasses=",pure-table-odd">
                         <h:column>
                             <f:facet name="header">
+                                <h:outputLabel for="sortID" value="#{msg.manage_requests_page_colhead_id} #{raManageRequestsBean.sortedByID}"/>
+                                <h:commandButton id="sortID" action="#{raManageRequestsBean.sortByID}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText value="#{raRequest.id}" style="white-space: nowrap"/>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
                                 <h:outputLabel for="sortRequestDate" value="#{msg.manage_requests_page_colhead_request_date} #{raManageRequestsBean.sortedByRequestDate}"/>
                                 <h:commandButton id="sortRequestDate" action="#{raManageRequestsBean.sortByRequestDate}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
                                     <f:ajax execute="@this" render=":contentForm:filteredResults"
