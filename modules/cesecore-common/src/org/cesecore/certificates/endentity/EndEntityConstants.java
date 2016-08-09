@@ -35,7 +35,7 @@ public final class EndEntityConstants {
     public static final int STATUS_REVOKED = 50;  // The user has been revoked and should not have any more certificates issued
     public static final int STATUS_HISTORICAL = 60; // The user is old and archived
     public static final int STATUS_KEYRECOVERY  = 70; // The user is should use key recovery functions in next certificate generation.
-    public static final int STATUS_WAITINGFORAPPROVAL = 80; // the operation is waiting to be approved before execution. This status 
+    public static final int STATUS_WAITINGFORADDAPPROVAL = 80; // the operation is waiting to be approved before execution. This status 
                                                             // is never stored in the database, but is used transiently when a request 
                                                             // is not stored because it's waiting for approval. This status is primarily 
                                                             // used to send the right notification note when a request is waiting for approval.
@@ -68,7 +68,7 @@ public final class EndEntityConstants {
         STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_REVOKED),"STATUSREVOKED");
         STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_HISTORICAL),"STATUSHISTORICAL");
         STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_KEYRECOVERY),"STATUSKEYRECOVERY");
-        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_WAITINGFORAPPROVAL),"STATUSWAITINGFORAPPROVAL");
+        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_WAITINGFORADDAPPROVAL),"STATUSWAITINGFORADDAPPROVAL");
     }
 
     public static String getTranslatableStatusText(int status) {
