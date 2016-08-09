@@ -229,7 +229,7 @@
 											<f:ajax event="change" execute="@this" listener="#{enrollMakeNewRequestBean.checkSubjectDn}"
                                                 render="inputHiddensubjectDnMessage :requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
 										</h:selectOneMenu>
-										<h:message for="subjectDnField" id="subjectDnFieldMessage" styleClass=subjectErrorMessage/>
+										<h:message for="subjectDnField" id="subjectDnFieldMessage" styleClass="subjectErrorMessage" errorClass="subjectErrorMessage showErrorMessage"/>
 									</h:panelGroup>
 								</ui:repeat>
 							</fieldset>
