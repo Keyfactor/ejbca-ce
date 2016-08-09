@@ -89,6 +89,9 @@ public class SecureXMLDecoderTest {
         decodeCompare("<?xml version=\"1.0\" encoding=\"UTF-8\"?><java version=\"1.6.0.0\" class=\"java.beans.XMLDecoder\">\n<object class=\"java.util.LinkedHashMap\">\n" +
                 "<void method=\"put\">\n<int>-1</int>\n<string>A</string>\n</void>\n" +
                 "<void method=\"put\">\n<int>10</int>\n<string>B</string>\n</void>\n" +
+                "</object>\n<object class=\"java.util.LinkedHashSet\">\n" +
+                "<void method=\"add\">\n<int>-1</int>\n</void>\n" +
+                "<void method=\"add\">\n<int>3</int>\n</void>\n" +
                 "</object>\n</java>");
         log.trace("<testBasicCollections");
     }
