@@ -256,7 +256,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
     @Override
     protected String[] getImplementationHiddenProperties() {
-        return new String[]{PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, PROPERTY_ROLES_WITH_VIEW_RIGHTS};
+        return new String[]{PROPERTY_NAME, PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, PROPERTY_ROLES_WITH_VIEW_RIGHTS};
     }
     
 

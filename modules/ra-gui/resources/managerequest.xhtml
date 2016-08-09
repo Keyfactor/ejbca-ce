@@ -99,7 +99,7 @@
                     <h:panelGroup layout="block" styleClass="approvalStep">
                         <h3 id="h3ApprovedSteps"><h:outputText value="#{prevStep.headingText}"/></h3>
                         <ui:repeat value="#{raManageRequestBean.partitionsToGuiPartitions(prevStep, prevStep.partitions)}" var="partition">
-                            <h:panelGroup styleClass="approvalStep">
+                            <h:panelGroup styleClass="approvalStep" rendered="#{not empty raManageRequestBean.getPartitionName(partition)}">
         	     				<h:outputText value="Partition: #{raManageRequestBean.getPartitionName(partition)}"/>
              				</h:panelGroup>
             				<h:dataTable id="approvedByDataTable" value="#{raManageRequestBean.getHandledPartitionData(partition)}" var="kvp"
@@ -125,7 +125,7 @@
                 <h:panelGroup layout="block" rendered="#{raManageRequestBean.request.canApprove}">
                     
                     <ui:repeat value="#{raManageRequestBean.partitions}" var="partition">     
-                        <component:approvalmetadata id="currentMetaData" partition="#{partition}"/>
+                        <component:approvalmetadata id="currentMetaData" partition="#{partition}" rendered="#{not empty raManageRequestBean.getPartitionName(partition)}"/>
                     </ui:repeat>
                     
                     <h:panelGroup id="approvalButtonsPanel" layout="block">
