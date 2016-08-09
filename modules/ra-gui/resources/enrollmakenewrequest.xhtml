@@ -234,7 +234,7 @@
 								</ui:repeat>
 							</fieldset>
 							<h:inputHidden id="subjectDnMessageInput" binding="#{enrollMakeNewRequestBean.subjectDnMessagesComponent}"/>
-							<h:message for="subjectDnMessageInput" id="subjectDnMessage" />
+							<h:message for="subjectDnMessageInput" id="subjectDnMessage" styleClass="subjectErrorMessage" errorClass="subjectErrorMessage showErrorMessage"/>
 						</h:panelGroup>
 						<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.subjectAlternativeNameRendered}">
 							<h3>
