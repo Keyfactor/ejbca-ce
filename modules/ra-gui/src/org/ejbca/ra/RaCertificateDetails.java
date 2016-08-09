@@ -397,7 +397,7 @@ public class RaCertificateDetails {
         } catch (ApprovalException e) {
             callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_approvalrequest");
         } catch (WaitingForApprovalException e) {
-            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_info_revocation_approvalrequest", e.getApprovalId());
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_info_revocation_approvalrequest", e.getRequestId());
         }
         styleRowCallCounter = 0;    // Reset
     }
@@ -411,7 +411,7 @@ public class RaCertificateDetails {
         } catch (ApprovalException e) {
             callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_reactivation_approvalrequest");
         } catch (WaitingForApprovalException e) {
-            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_info_reactivation_approvalrequest", e.getApprovalId());
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_info_reactivation_approvalrequest", e.getRequestId());
         }
         styleRowCallCounter = 0;    // Reset
     }
