@@ -165,7 +165,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
             stepId = stepInfo.getStepId();
             final Map<Integer,Integer> stepToOrdinal = request.getStepIdToOrdinalMap();
             stepOrdinal = stepToOrdinal.get(stepId);
-            headingText = raLocaleBean.getMessage("view_request_page_step", stepOrdinal, stepToOrdinal.size());
+            headingText = raLocaleBean.getMessage("view_request_page_step", stepOrdinal);
             partitions = stepInfo.getPartitions();
         }
         
