@@ -203,10 +203,6 @@ public class RaApprovalRequestInfo implements Serializable {
                 previousApprovalSteps.add(new RaApprovalStepInfo(stepId, partitions));
             }
             
-            // Get next step
-            if(nextStep == null) {
-                break;
-            }
             final Integer nextStepId = step.getNextStep();
             if (nextStepId == null) { break; }
             step = approvalProfile.getStep(nextStepId);
