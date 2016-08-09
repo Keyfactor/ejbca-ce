@@ -49,6 +49,7 @@ import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
+import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 import org.ejbca.core.model.era.RaApprovalEditRequest;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalResponseRequest;
@@ -160,7 +161,11 @@ public class RaManageRequestBean implements Serializable {
         }        final ApprovalProfile approvalProfile = getRequest().request.getApprovalProfile();
         final ApprovalStep step = approvalProfile.getStep(guiPartition.getStepId());
         final ApprovalPartition partition = step.getPartition(guiPartition.getPartitionId());
-        return (String) partition.getProperty("name").getValue();
+        DynamicUiProperty<? extends Serializable> property = partition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
+        if(property != null) {
+            return (String) property.getValue();
+        }
+        return "";
     }
     
     public List<DynamicUiProperty<? extends Serializable>> getPartitionProperties(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
@@ -175,6 +180,7 @@ public class RaManageRequestBean implements Serializable {
         return getPartitionProperties(approvalProfile, partition);
     }
     
+    //Returns partitions in the current step
     public List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> getPartitions() {
         if (partitionsAuthorizedToView == null) {
             List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> authorizedPartitions = new ArrayList<>();
@@ -207,22 +213,23 @@ public class RaManageRequestBean implements Serializable {
         
     }
 
-    private Approval getPartitionApproval(final int partitionId, final int stepId) {
+    private List<Approval> getPartitionApproval(final int partitionId, final int stepId) {
         final ApprovalDataVO advo = getRequest().request.getApprovalData();
         Collection<Approval> approvals = advo.getApprovals();
+        List<Approval> partitionApprovals = new ArrayList<Approval>();
         for(Approval approval : approvals) {
             if((approval.getStepId()==stepId) && (approval.getPartitionId()==partitionId)) {
-                return approval;
+                partitionApprovals.add(approval);
             }
         }
-        return null;
+        return partitionApprovals;
     }
      
     /** 
      * @return true if there already exists an approval for this partition 
      */
     public boolean isPartitionHandled(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partition) {
-        return getPartitionApproval(partition.getPartitionId(), partition.getStepId()) != null;
+        return getPartitionApproval(partition.getPartitionId(), partition.getStepId()).size() > 0;
     }
     public boolean canApproveParition(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partition) {
         if(partitionsAuthorizedToApprove == null) {
@@ -306,12 +313,10 @@ public class RaManageRequestBean implements Serializable {
         
         List<DynamicUiProperty<? extends Serializable>> properties = getPartitionProperties(guiPartition);
         for(DynamicUiProperty<? extends Serializable> property : properties) {
-            if(!property.getName().equals("name")) {
-                kvp.add(new KeyValuePair(property.getName(), property.getValueAsString()));
-            }
+            kvp.add(new KeyValuePair(property.getName(), property.getValueAsString()));
         }
-        Approval approval = getPartitionApproval(guiPartition.getPartitionId(), guiPartition.getStepId());
-        if(approval != null) {
+        List<Approval> approvals = getPartitionApproval(guiPartition.getPartitionId(), guiPartition.getStepId());
+        for(Approval approval : approvals) {
             ApprovalRequestGUIInfo.ApprovalGuiObject approvalView = new ApprovalRequestGUIInfo.ApprovalGuiObject(approval);
             kvp.add(new KeyValuePair("Approval action", approvalView.getAdminAction()));
             kvp.add(new KeyValuePair("Approval date", approvalView.getApprovalDate()));

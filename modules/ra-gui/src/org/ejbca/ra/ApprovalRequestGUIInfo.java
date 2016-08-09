@@ -85,15 +85,15 @@ public class ApprovalRequestGUIInfo implements Serializable {
 
         private final int partitionId;
         private final int stepId;
-        private final Approval approval;
+        private final List<Approval> approvals;
 
         public ApprovalPartitionProfileGuiObject(final int stepId, final int partitionId,
-                List<DynamicUiProperty<? extends Serializable>> propertyValues, Approval approval) {
+                List<DynamicUiProperty<? extends Serializable>> propertyValues, List<Approval> approvals) {
             //Pass property values as a parameter because it may need some outside poking
             setProfilePropertyList(propertyValues);
             this.stepId = stepId;
             this.partitionId = partitionId;
-            this.approval = approval;
+            this.approvals = approvals;
         }
 
         public List<DynamicUiProperty<? extends Serializable>> getProfilePropertyList() {
@@ -125,8 +125,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
             return propertyPossibleValues;
         }
         
-        public Approval getApproval() {
-            return this.approval;
+        public List<Approval> getApprovals() {
+            return this.approvals;
         }
         
     }
