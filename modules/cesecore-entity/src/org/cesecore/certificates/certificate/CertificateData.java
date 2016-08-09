@@ -1363,6 +1363,8 @@ public class CertificateData extends ProtectedData implements Serializable {
         query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
         query.setParameter("activeExpireDateMin", activeExpireDateMin);
         query.setParameter("status3", CertificateConstants.CERT_ACTIVE);
+        // How to debug log the SQL query:
+        // log.debug("findExpirationInfo: "+query.unwrap(org.hibernate.Query.class).getQueryString());
         return query.getResultList();
     }
 
