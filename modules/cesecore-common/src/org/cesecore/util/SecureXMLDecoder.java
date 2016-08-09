@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -222,6 +223,9 @@ public class SecureXMLDecoder implements AutoCloseable {
                 break;
             case "java.util.HashSet":
                 value = parseCollection(new HashSet<>());
+                break;
+            case "java.util.LinkedHashSet":
+                value = parseCollection(new LinkedHashSet<>());
                 break;
             case "java.util.TreeSet":
                 value = parseCollection(new TreeSet<>());
