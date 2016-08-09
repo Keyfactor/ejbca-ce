@@ -56,6 +56,9 @@
             
             <h2><h:outputText value="#{msg.view_request_page_request_data_header}"/></h2>
             <h:panelGroup id="viewRequestDataTable" layout="block" rendered="#{raManageRequestBean.viewDataVisible}">
+                <h:outputLabel value="#{msg.enroll_request_id}" styleClass="pure-u-lg-1-3"/>
+                <h:outputText value="#{raManageRequestBean.request.id}" styleClass="pure-u-lg-2-3 ra-outputText"/>
+                 
                 <component:eedetails raEndEntityDetails="#{raManageRequestBean.request.endEntityDetails}" editMode="false" approvalRequestMode="true" rendered="#{raManageRequestBean.request.endEntityDetails != null}"/>
                 
                 <h:outputText styleClass="pure-u-lg-1 pre" value=" "/>
