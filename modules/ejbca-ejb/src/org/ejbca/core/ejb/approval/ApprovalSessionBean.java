@@ -738,7 +738,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @Override
     public int getIdFromApprovalId(int approvalId) {
         List<ApprovalData> ads = findByApprovalId(approvalId);
-        if(ads.size() != 1) {
+        if (ads.isEmpty()) {
+            log.warn("There is no approval request with approval ID " + approvalId);
+            return 0;
+        }
+        if (ads.size() > 1) {
             log.warn("There is more than one approval request with approval ID " + approvalId);
         }
         return ads.get(0).getId();
