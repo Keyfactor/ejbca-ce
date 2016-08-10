@@ -24,7 +24,6 @@
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.xmlpull.classpath"/>
 		<path refid="lib.ldap.classpath"/>
-		<path refid="lib.jsf.classpath"/>
 	</path>
 
 	<!-- The buildservicemanifest needs additional classes in order to run. 
