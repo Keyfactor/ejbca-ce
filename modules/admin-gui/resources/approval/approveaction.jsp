@@ -179,11 +179,11 @@ function viewcert(link){
 					<h:column>										
 			   			<h:panelGroup rendered="#{!property.multiValued}">
 				   			<h:inputText disabled="true" rendered="#{property.type.simpleName eq 'String'}" value="#{property.value}">
-				   				<f:converter binding="#{approvalActionManagedBean.stringConverter}" />
+				   				<f:converter converterId="stringConverter"/>
 				   			</h:inputText>
 				   			<h:inputTextarea disabled="true" rendered="#{property.type.simpleName eq 'MultiLineString'}" 
                                 value="#{property.value.value}">
-                            	<f:converter binding="#{approvalActionManagedBean.stringConverter}" />
+                            	<f:converter converterId="stringConverter"/>
                             </h:inputTextarea>
 				   			<h:inputText disabled="true" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" style="text-align: right;" >
 			                   <f:converter converterId="javax.faces.Long"/>
@@ -205,7 +205,7 @@ function viewcert(link){
 								rendered="#{property.type.simpleName eq 'RadioButton' && property.multiValued  && !property.hasMultipleValues}" 
 								value="#{property.encodedValue}" layout="pageDirection">
 								<f:selectItems value="#{partition.propertyPossibleValues}" var="radioButton" itemLabel="#{radioButton.label}" />
-								<f:converter binding="#{approvalActionManagedBean.radioButtonConverter}" />
+								<f:converter converterId="radioButtonConverter"/>
 							</h:selectOneRadio>
 					</h:column>
 				</h:dataTable>
@@ -232,13 +232,13 @@ function viewcert(link){
 					   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)
 					   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
 					   				rendered="#{property.type.simpleName eq 'String'}" value="#{property.value}">
-					   				<f:converter binding="#{approvalActionManagedBean.stringConverter}" />
+					   				<f:converter converterId="stringConverter"/>
 					   			</h:inputText>
 					   			<h:inputTextarea disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)
 					   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
 					   				rendered="#{property.type.simpleName eq 'MultiLineString'}" 
 	                                value="#{property.value.value}">
-	                            	<f:converter binding="#{approvalActionManagedBean.stringConverter}" />
+	                            	<f:converter converterId="stringConverter"/>
 	                            </h:inputTextarea>
 					   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)
 					   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
@@ -271,7 +271,7 @@ function viewcert(link){
 								rendered="#{property.type.simpleName eq 'RadioButton' && property.multiValued  && !property.hasMultipleValues}" 
 								value="#{property.encodedValue}" layout="pageDirection">
 								<f:selectItems value="#{partition.propertyPossibleValues}" var="radioButton" itemLabel="#{radioButton.label}" />
-								<f:converter binding="#{approvalActionManagedBean.radioButtonConverter}" />
+								<f:converter converterId="radioButtonConverter"/>
 							</h:selectOneRadio>
 						</h:column>
 					</h:dataTable>

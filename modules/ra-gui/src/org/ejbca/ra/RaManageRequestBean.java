@@ -37,8 +37,6 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.ui.DynamicUiProperty;
-import org.cesecore.util.ui.RadioButtonConverter;
-import org.cesecore.util.ui.StringConverter;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -147,13 +145,6 @@ public class RaManageRequestBean implements Serializable {
     
     public String getFromTab() {
         return fromTab;
-    }
-    
-    public StringConverter getStringConverter() {
-        return new StringConverter();
-    }
-    public RadioButtonConverter getRadioButtonConverter() {
-        return new RadioButtonConverter();
     }
     
     public boolean isViewDataVisible() { return !editing; }
