@@ -101,7 +101,10 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
      * Approval Id is generated for this approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
 	@Override
-	public int generateApprovalId() {		
+	public int generateApprovalId() {
+		if (log.isTraceEnabled()) {
+		    log.debug(">generateApprovalId '"+getApprovalType() + ";" + userdata.getUsername() + ";" + getApprovalProfile().getProfileName()+"'");
+		}
 		return new String(getApprovalType() + ";" + userdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
 	}
 
