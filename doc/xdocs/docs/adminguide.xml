@@ -2684,7 +2684,7 @@ the http session since the list is cached for performance reasons.
 
 <section name="Approving Actions">
 <p>
-It is possible to have other administrators (1-5) to approve an action in order to make sure the correct data is entered.
+It is possible to have other administrators to approve an action in order to make sure the correct data is entered.
 </p>
 <p>
 Currently are the following actions are enabled for approvals :
@@ -2698,20 +2698,36 @@ Currently are the following actions are enabled for approvals :
 <li>Reactivate Certificate On Hold</li>
 </ul>
 </p><p>
-In the main menu there is a new option 'Approve Actions' that lets the 
-administrator to search for waiting requests and review its data and finally 
+In the main menu there is a option 'Approve Actions' that lets the 
+administrator search for waiting requests and review their data and finally 
 gives his approval or reject the action.
 </p>
 <subsection name="Configuring Approvals">
 <p>
 Approvals are configured for each CA, in the 'Certificate Authorities' page and for each certificate profile in 
 the 'Certificate Profiles' page. 
-Just select the actions that needs approval and the number of approvers required and save. The actions 'Add End Entity', 
+Just select the actions that needs approval and the approval profile (see bellow) to use and save. The actions 'Add End Entity', 
 'Change End Entity' and 'Change User Status' are all covered by the setting 'Add/Edit End Entity'. 'Revoke End Entity',
 'Revoke Certificate', 'Revoke Token' and 'Reactivate Certificate' are covered by setting 'Revocation'. 
-Approvals will be required if the CA or the certificate profile enforces it and in case the number of approvers differs 
-between the CA and the certificate profile the largest number of approvers will be used.
+Approvals will be required if the CA or the certificate profile enforces it. In case of both the CA and the certificate profile 
+specify different approval profiles for the same actions, both approval profiles will apply in sequence; first the approval profile 
+set in the CA, then the approval profile set in the certificate profile.
 </p>
+<p>It is also worth noting that no administrator is allowed to take action regarding the same approval request more than once.</p>
+</subsection>
+<subsection name="Approval Profiles">
+<p> There are two types of approval profiles: Accumulative Approval Profile and Partitioned Approval Profile.</p>
+<subsubsection name="Accumulative Approval Profile">
+<p>In this profile, only the number of required approvals is set. No requirements are specified for the approving adminitrators 
+other than that no adminstrator is allowed to approve the same request more than once.</p>
+</subsubsection>
+<subsubsection name="Partitioned Approval Profile">
+<p>In this slightly more complicated approval profile, several options can be set to specify which administrators can approve 
+or reject a request. It is also possible to specify additional data that has to be aquired when a request is approved.</p>
+</subsubsection>
+<p>Both types of approval profiles allow for configuring a notification to be send to the end user and/or to the administrator 
+expected to approve the request (See 'Approval Notification' section bellow). Both profile types allow also to set expiration 
+period for the approval and for the request (See 'Explenation of approval status' section bellow).</p>
 </subsection>
 <subsection name="Authorizing Approving Administrators">
 <p>
@@ -2746,7 +2762,7 @@ In the system there are basically two different classes of requests. One is requ
 end entity, and that is executed directly after the last required administrator has approved the action. This type is 
 called 'Executable Action Request'. The other type are requests to get hold of some information, like hard token 
 PUK codes or archived keys. This kind of request is approved when the last administrator gives his consent and is valid 
-for a defined period of time (in conf/ejbca.properties). In this case the requesting administrator is supposed to poll the 
+for a defined period of time (set in the approval profile). In this case the requesting administrator is supposed to poll the 
 approval request if it has been approved or not. These requests are called 'Non-Executable Action Requests'. 
 </p>
 </subsection>
@@ -2755,12 +2771,12 @@ approval request if it has been approved or not. These requests are called 'Non-
 Here follows an explanation of what the different approval requests statuses.
 <ul>
 <li><i>Waiting</i>: Means that the action request is waiting to be processed by authorized administrators, request are 
-valid for the time specified by approval.defaultrequestvalidity in conf/ejbca.properties before it is set to status Expired.</li>
-<li><i>Approved</i>: Means that the action request is approved and is valid for the amount of time specified by 
-approval.defaultapprovalvalidity in conf/ejbca.properties. After this it is set to Expired. Used by action requests that are 
+valid for the time specified in the approval profile (Request Expiration Period) before it is set to status Expired.</li>
+<li><i>Approved</i>: Means that the action request is approved and is valid for the amount of time specified in the 
+approval profile (Approval Expiration Period). After this, it is set to Expired. Used by action requests that are 
 not executable.</li>
 <li><i>Rejected</i>: Means that the action request is rejected and won't be allowed. The rejection lasts the amount of time 
-specified by approval.defaultapprovalvalidity in conf/ejbca.properties. After this it is set to Expired and a new request can 
+specified in the approval profile (Approval Expiration Period). After this it is set to Expired and a new request can 
 be done. Used by action requests that are not executable.</li>
 <li><i>Expired</i>: Means that the action request isn't valid any more and cannot be processed. The requesting administrator 
 has to make a new request in order to approve it.</li>
@@ -2777,7 +2793,8 @@ administrator can apply again directly after the rejection.</li>
 </subsection>
 <subsection name="Approval Notification">
 <p>
-EJBCA approval functionality have been enhanced to send e-mail notifications about to administrators affected by the approval workflow.
+EJBCA approval functionality have been enhanced to send e-mail notifications to administrators affected by the approval workflow and/or 
+the end user.
 </p><p>
 Notifications are configured per approval partition.
 An approval notification is sent for a partition when the partition:
