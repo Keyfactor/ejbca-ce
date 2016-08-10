@@ -51,7 +51,7 @@
                     <h:panelGroup layout="block" styleClass="approvalControl">
                         <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'String' and !property.multiValued and raManageRequestBean.isPropertyReadOnly(property.name)}" >
                             <h:outputText value="#{property.value}" >
-                                    <f:converter converterId="stringConverter"/>
+                                    <f:converter binding="#{raManageRequestBean.stringConverter}" />
                             </h:outputText>
                         </h:panelGroup>
                         <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'String' and !property.multiValued and !raManageRequestBean.isPropertyReadOnly(property.name)}" >
@@ -59,7 +59,7 @@
                                 || !raManageRequestBean.canApproveParition(partition)
                                 || raManageRequestBean.isPropertyReadOnly(property.name)}" 
                                 value="#{property.value}" >
-                                    <f:converter converterId="stringConverter"/>
+                                    <f:converter binding="#{raManageRequestBean.stringConverter}" />
                             </h:inputText>
                         </h:panelGroup>
                         <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'MultiLineString' and !property.multiValued}">
@@ -67,7 +67,7 @@
                                 || !raManageRequestBean.canApproveParition(partition)
                                 || raManageRequestBean.isPropertyReadOnly(property.name)}" 
                                 value="#{property.value}">
-                                <f:converter converterId="stringConverter"/>
+                                <f:converter binding="#{raManageRequestBean.stringConverter}" />
                             </h:inputTextarea>
                         </h:panelGroup>
                         <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Long' and !property.multiValued}">
@@ -92,7 +92,7 @@
                                                             || raManageRequestBean.isPropertyReadOnly(property.name)}"
                                 value="#{property.encodedValue}" layout="pageDirection">
                                 <f:selectItems value="#{partition.getPropertyPossibleValues(property)}" var="radioButton" itemLabel="#{radioButton.label}" />
-                                <f:converter converterId="radioButtonConverter"/>
+                                <f:converter binding="#{raManageRequestBean.radioButtonConverter}"/>
                             </h:selectOneRadio>
                         </h:panelGroup>
                         <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Boolean' and !property.multiValued}">
