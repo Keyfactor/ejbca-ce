@@ -7,23 +7,26 @@
     <body>
        <menusection name="Home" index="0"         href="/index.html">
 
-            <menu name="EJBCA PKI Docs">
+            <menu name="Overview">
                 <item name="Doc home"         href="/index.html"/>
                 <item name="Architecture"	  href="/architecture.html"/>
                 <item name="Concepts"	  	  href="/concepts.html"/>
+                <item name="Security"         href="/security.html"/>
+            </menu>
+            
+            <menu name="EJBCA PKI">
                 <item name="Installation"	  href="/installation.html"/>
                 <item name="Admin Guide"	  href="/adminguide.html"/>
                 <item name="User Guide"		  href="/userguide.html"/>
-                <item name="Security"         href="/security.html"/>
             </menu>
 
             <menu name="Validation Authority (VA)">
-                <item name="VA Services"		  href="/services-va.html"/>
+                <item name="VA Services Overview"		  href="/services-va.html"/>
                 <item name="Standalone VA Installation"	  href="/installation-va.html"/>
             </menu>
 
-            <menu name="EJBCA OCSP Docs">
-                <item name="OCSP Architecture"	  href="/architecture-ocsp.html"/>
+            <menu name="EJBCA OCSP">
+                <item name="OCSP Overview"	  href="/architecture-ocsp.html"/>
                 <item name="OCSP Installation"	  href="/installation-ocsp.html"/>
                 <item name="OCSP User Guide"	  href="/userguide-ocsp.html"/>
             </menu>

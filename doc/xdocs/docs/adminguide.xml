@@ -1795,7 +1795,7 @@ period of the OCSP response.
 </subsection>
 
 </section>
-<section name="EJBCA Web Service Interface">
+<section name="Web Service Interface">
 <p>
 The JAX-WS 2.0 Web Service Interface is used to access the basic functions remotely over client
 authenticated HTTPS. The functionality currently available through the Web Service Interface are documented in the
@@ -1807,21 +1807,21 @@ Note: All web service calls are not available through the CLI.
 
 <subsection name="Web Services authentication">
 <p>
-The Web Services interface requries client certificate authentication from administrators, in the same way as the admin GUI does.
+The Web Services interface requires client certificate authentication from administrators, in the same way as the admin GUI does.
 If you have a client certificate that works on the admin GUI you should also be able to use it for the web service interface. 
 </p>
 </subsection>
 
 <subsection name="Configuring Web Services behavior">
 <p>
-The sample property file conf/jaxws.properties.sample contains more information on how to configure the behaviour of
+The sample property file conf/jaxws.properties.sample contains more information on how to configure the behavior of
 the EJBCA WS. Copy this to conf/jaxws.properties, edit and redeploy.
 </p><p>
     If the end entity profile informations must be used to define default values when you create a user, the flag "Allow 
     merge DN Webservices" must be checked in the end entity profile.
 </p>
 <p>
-    If multiple instances of a component exist, the merge is done from end to begining, and the remaining values of this component type will be placed at the end. 
+    If multiple instances of a component exist, the merge is done from end to beginning, and the remaining values of this component type will be placed at the end. 
     For example, if you want to merge:
 </p>
     <source>dn=cn=foo,..., dc=dc1, ..., dc=dc2, ...</source>
@@ -1855,7 +1855,7 @@ bin/ejbca.sh roles addadmin "Temporary Super Administrator Group" AdminCA WITHCO
 Included in the <a href="userguide.html#EJBCA client toolbox">EJBCA Client Tool Box</a> is a Web Service CLI tool. 
 </p><p>
 To use the client do the following, copy the directory with all included files to
-the computer you want to remote administrate from. Then create a JKS or P12 file with
+the computer you want to remotely administer from. Then create a JKS or P12 file with
 the appropriate access rights (See the Using API section for details) and 
 finally configure the file ejbcawsracli.properties. In this file you should specify
 the hostname of the CA server, the name of the keystore and the password to unlock it. 
