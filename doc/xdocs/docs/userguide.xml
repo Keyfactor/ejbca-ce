@@ -724,6 +724,51 @@ There is also a service, <em>Rollover Service</em>, that can be configured to ac
 </subsection>
 </section>
 
+<section name="Approval profiles">
+<p>As of EJBCA 6.6.0, there are two types of approval profiles: Accumulative approval profile and Partitioned Approval Profile.</p>
+<subsection name="Approval Profile Fields">
+<subsubsection name="Accumulative approval profile">
+<ul>
+<li>Number of Required Approvals: How many administrators need to approve the request</li>
+</ul>
+</subsubsection>
+<subsubsection name="Partitioned Approval Profile">
+<p>This profile can contain several steps that have to be approved in sequence. Each step, however, contains one or more 
+partitions that can be approved simultaniously. It is also possible to set fields to store data when a partition is approved.</p>
+<ul>
+<li>Name: The name of the partition</li>
+<li>Roles which may approve this partition: What administrator roles that are allowed to approve or reject this partition</li>
+<li>Roles which may view this partition: What administrator roles that are allowed to view this partition</li>
+<li>Data fields: data that should be collected when approving this partition. Different types of data are supported and 
+as many fields as needed can be added.
+<ul>
+<li>Check Box: to mark something as 'yes' or 'no'</li>
+<li>Number (Short): a number of no more than 6 digits is expected to be entered</li>
+<li>Number (Long): a longer number is expected to be entered</li>
+<li>Radio Button: several options are set and only one of them has to be chosen when approving the request</li>
+<li>Text Field: longer text can be entered</li>
+</ul>
+</li> 
+<li>Add notification: configure a note that will be sent to the administrators who can approve or reject this partition. 
+See <a href="adminguide.html#Approval%20Notification">Approval Notification</a> about what parameters are possible to use.</li>
+<li>Add user notification: configure a note that will be sent to the end user when the status of this partition is changed. The 
+notification will be sent to the email specified in the end entity. See 
+<a href="adminguide.html#Approval%20Notification">Approval Notification</a> about what parameters are possible to use.</li>
+</ul>
+</subsubsection>
+<subsubsection name="Common fields for both profile types">
+<ul>
+<li>Request Expiration Period: How long the request is valid from the time it was created. When a request has expired, it is 
+no longer possible to process and a new request has to be created.</li>
+<li>Approval Expiration Period: used for Non-Executable Action Requests and specifies the period from the time the last 
+administrator approved the request untill it is no longer possible to execute the request's action. See 
+<a href="adminguide.html#Two%20Different%20Approval%20Requests">Two Different Approval Requests</a> for more detailes about Executable and Non-Executable 
+Action Requests.</li>
+</ul>
+</subsubsection>
+</subsection>
+</section>
+
 <section name="Certificate profiles">
 <p>
 CertificateProfiles define different types of certificates, with 
