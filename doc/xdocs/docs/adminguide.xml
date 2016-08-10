@@ -2949,7 +2949,7 @@ isn't specified by the worker.
 </subsubsection>
 </subsection>
 
-<subsection name="Implementation details">
+<subsection name="Multiple services and clustering">
 <p>
 A service worker should never run simultaneously on two nodes, or simultaneously on one node.
 To avoid running more than one instance on a single node there is a semaphore that inhibits more than one 
@@ -2960,7 +2960,14 @@ To avoid running any two services on two nodes simultaneously, the service have 
 schedules the next run before the actual work is started. This time stamp makes it possible for another node to determine of 
 the service is already running on another node and not start running.
 </p><p>
-In practice what this leads to is that a service will always run on a single node, the same node every time.  
+In practice what this leads to is that a service will always run on a single node, the same node every time, but the running node may switch at times.  
+</p>
+<p>For most cases you don't have to pin a service to a specific node. Some reasons to pin nodes are:
+<ul>
+<li>HSM Keepalive services: This service should have one service running on each node, since it should keep the local PKCS#11 session alive.</li>
+<li>External RA service: If having multiple RAs and running very often there may be a race condition with services competing to run. 
+Pinning services to run on different cluster nodes towards different External RAs can increase performance and enhance simplicity.</li>
+</ul>
 </p>
 </subsection>
 
