@@ -72,6 +72,13 @@
                     <h:dataTable id="manageRequestTable" rendered="#{not empty raManageRequestsBean.filteredResults}" value="#{raManageRequestsBean.filteredResults}" var="raRequest"
                         styleClass="pure-table" rowClasses=",pure-table-odd">
                         <h:column>
+		                    <ui:remove>
+		                    <!--
+		                    For mobile this table is formatted to be responsive using CSS magic. Since it's a table it's not responsive by default.
+		                    The headings of the table is set in the the CSS in an @media query. Look for the table id, manageRequestTable, in the CSS
+		                    to find the div conversions. This needs to change if columns are added/removed below.
+		                    -->
+		                    </ui:remove>
                             <f:facet name="header">
                                 <h:outputLabel for="sortID" value="#{msg.manage_requests_page_colhead_id} #{raManageRequestsBean.sortedByID}"/>
                                 <h:commandButton id="sortID" action="#{raManageRequestsBean.sortByID}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
