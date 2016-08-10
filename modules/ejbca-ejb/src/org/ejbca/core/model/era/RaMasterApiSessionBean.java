@@ -237,7 +237,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return approvals.iterator().next();
     }
     
-    /** @param approvalId Calculated hash of the request (this somewhat confusing name is re-used from the ApprovalRequest class) */
+    /** @param approvalId Calculated hash of the request (this somewhat confusing name is re-used from the ApprovalRequest class) 
+     * @return ApprovalDataVO or null if not found
+     */
     private ApprovalDataVO getApprovalDataByRequestHash(final AuthenticationToken authenticationToken, final int approvalId) {
         final List<ApprovalDataVO> approvalDataVOs = approvalSession.findApprovalDataVO(authenticationToken, approvalId);
         return approvalDataVOs.isEmpty() ? null : approvalDataVOs.get(0);
