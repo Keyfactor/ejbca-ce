@@ -45,8 +45,6 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.ui.DynamicUiProperty;
-import org.cesecore.util.ui.RadioButtonConverter;
-import org.cesecore.util.ui.StringConverter;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
@@ -175,15 +173,8 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 		}
 		return "600";	
 	}
-	
-	public StringConverter getStringConverter() {
-	    return new StringConverter();
-	}
-	public RadioButtonConverter getRadioButtonConverter() {
-	    return new RadioButtonConverter();
-	}
+
     public List<ApprovalView> getApprovalViews() {
-        
         List<ApprovalView> approvalViews = new ArrayList<ApprovalView>();
         if (approvalDataVOView != null && approvalDataVOView.getApproveActionDataVO().getApprovals() != null) {
             for(Approval approval : approvalDataVOView.getApproveActionDataVO().getApprovals()) {

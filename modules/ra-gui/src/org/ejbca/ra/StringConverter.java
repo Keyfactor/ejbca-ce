@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.util.ui;
+package org.ejbca.ra;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
