@@ -140,6 +140,10 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         return null;
     }
     
+    /**
+     * 
+     * @return string representation of the value (for example the string '1' for the Int value 1. Value is retrieved inside as getValue().
+     */
     public String getValueAsString() {
         Serializable value = getValue();
         String ret = "";
