@@ -31,7 +31,7 @@ select max(CRLNumber) from CRLData where issuerDN='CN=ManagementCA,O=EJBCA Sampl
 select count(*) from CRLData where issuerDN='CN=ManagementCA,O=EJBCA Sample,C=SE';
 -- Should be a large number if you have issued many CRLs.
 delete from CRLData where issuerDN='CN=ManagementCA,O=EJBCA Sample,C=SE' and crlNumber < 17;
--- Where 17 is the 'max(CRMnumber).
+-- Where 17 is the 'max(CRLnumber).
 select count(*) from CRLData where issuerDN='CN=ManagementCA,O=EJBCA Sample,C=SE';
 -- Should be 1
 -- 
