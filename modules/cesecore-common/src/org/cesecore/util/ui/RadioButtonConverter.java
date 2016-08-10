@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.util;
+package org.cesecore.util.ui;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -18,17 +18,16 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.ConverterException;
 import javax.faces.convert.FacesConverter;
 
-import org.cesecore.util.ui.MultiLineString;
-
 /**
- * When using dynamic properties, JSF can't handle String conversions for some strange reason. This converter takes care of that. 
+ * Handles conversions of radio buttons from the UI. Radio buttons will generally be handled in the UI as encoded strings, so this converter simply 
+ * treats them as such. 
  * 
- * @version $Id$
+ * @version $Id: RadioButtonConverter.java 23995 2016-07-25 12:40:08Z mikekushner $
  *
  */
-@FacesConverter("stringConverter")
-public class StringConverter implements Converter{
-
+@FacesConverter("radioButtonConverter")
+public class RadioButtonConverter implements Converter{
+    
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
         if (value == null || value.isEmpty()) {
@@ -40,10 +39,7 @@ public class StringConverter implements Converter{
     @Override
     public String getAsString(FacesContext context, UIComponent component, Object value) throws ConverterException {
         if (value == null) {
-            return "";
-        }
-        if(value instanceof MultiLineString) {
-            return ((MultiLineString) value).getValue();
+            return null;
         }
         return (String) value;
     }
