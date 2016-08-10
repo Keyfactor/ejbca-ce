@@ -55,7 +55,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
      * Method that takes an approvalId and returns the request's Id (the value in the "Id" column in the "ApprovalData" table in the database)
      * 
      * @param approvalId
-     * @return the Id of the approval request
+     * @return the Id of the approval request or 0 if it does not exist
      */
     int getIdFromApprovalId(int approvalId);
 
