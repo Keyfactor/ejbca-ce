@@ -66,6 +66,7 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -154,6 +155,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CertificateCreateSessionLocal certificateCreateSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
@@ -1087,19 +1090,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if(caInfoEntry == null){
             return;
         }
-        boolean enforceUniqueDistinguishedName = false;
-        if (caInfoEntry.getValue().isDoEnforceUniqueDistinguishedName()) {
-            if (caInfoEntry.getValue().isUseCertificateStorage()) {
-                enforceUniqueDistinguishedName = true;
-            } else {
-                log.warn("CA configured to enforce unique SubjectDN, but not to store issued certificates. Check will be ignored. Please verify your configuration.");
-            }
-        }
-        if (enforceUniqueDistinguishedName) {
-            final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(caInfoEntry.getValue().getSubjectDN(), endEntity.getCertificateDN());
-            if (users.size() > 0 && !users.contains(endEntity.getUsername())) {
-                throw new EjbcaException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, "");
-            }
+        try {
+            certificateCreateSession.assertSubjectEnforcements(caInfoEntry.getValue(), endEntity);
+        } catch (CertificateCreateException e) {
+            //Wrapping the CesecoreException.errorCode
+            throw new EjbcaException(e);
         }
     }
     
@@ -1117,6 +1112,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         try {
             endEntityManagementSessionLocal.addUser(admin, endEntity, clearpwd);
         } catch (CesecoreException e) {
+            //Wrapping the CesecoreException.errorCode
             throw new EjbcaException(e);
         } catch (UserDoesntFullfillEndEntityProfile e) {
             //Wraps @WebFault Exception based with @NonSensitive EjbcaException based

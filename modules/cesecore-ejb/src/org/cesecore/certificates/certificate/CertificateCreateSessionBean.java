@@ -351,7 +351,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             // Retrieve the certificate profile this user should have, checking for authorization to the profile
             final int certProfileId = endEntityInformation.getCertificateProfileId();
             final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
-            assertSubjectEnforcements(ca, caSubjectDN, endEntityInformation, pk);
+            assertSubjectEnforcements(ca.getCAInfo(), endEntityInformation);
+            assertSubjectKeyIdEnforcements(ca.getCAInfo(), endEntityInformation, pk);
     
             //certProfile.verifyKey(pk); Verifying the public key against certificate profile is going to be executed in *CA.generateCertificate
 
@@ -569,17 +570,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         }
     }
 
-    /**
-     * Happy path optimization that performs enforcement checks as a single database round trip.
-     * However, if any of the checks fail we will end up with additional queries to find out what went wrong.
-     * 
-     * @param ca
-     * @param issuerDN
-     * @param endEntityInformation
-     * @param publicKey
-     * @throws CertificateCreateException if the certificate couldn't be created. 
-     */
-    private void assertSubjectEnforcements(final CA ca, final String issuerDN, final EndEntityInformation endEntityInformation, final PublicKey publicKey) throws CertificateCreateException {
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void assertSubjectEnforcements(final CAInfo ca, final EndEntityInformation endEntityInformation) throws CertificateCreateException {
         boolean enforceUniqueDistinguishedName = false;
         if (ca.isDoEnforceUniqueDistinguishedName()) {
             if (ca.isUseCertificateStorage()) {
@@ -588,24 +581,12 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 log.warn("CA configured to enforce unique SubjectDN, but not to store issued certificates. Check will be ignored. Please verify your configuration.");
             }
         }
-        boolean enforceUniquePublicKeys = false;
-        if (ca.isDoEnforceUniquePublicKeys()) {
-            if (ca.isUseCertificateStorage()) {
-                enforceUniquePublicKeys = true;
-            } else {
-                log.warn("CA configured to enforce unique entity keys, but not to store issued certificates. Check will be ignored. Please verify your configuration.");
-            }
-        }
         final String username = endEntityInformation.getUsername();
         String subjectDN = null;
         if (enforceUniqueDistinguishedName) {
             subjectDN = endEntityInformation.getCertificateDN();
         }
-        byte[] subjectKeyId = null;
-        if (enforceUniquePublicKeys) {
-            subjectKeyId = KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier();
-        }
-        boolean multipleCheckOk = false;
+        //boolean multipleCheckOk = false;
         
         // The below combined query is commented out because there is a bug in MySQL 5.5 that causes it to 
         // select bad indexes making the query slow. In MariaDB 5.5 and MySQL 5.6 it works well, so it is MySQL 5.5 specific.
@@ -615,16 +596,43 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 //        }
         
         // If one of the checks failed, we need to investigate further what went wrong
-        if (!multipleCheckOk && enforceUniqueDistinguishedName) {
-            final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(issuerDN, subjectDN);
+        if (/*!multipleCheckOk && */enforceUniqueDistinguishedName) {
+            final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(ca.getSubjectDN(), subjectDN);
             if (users.size() > 0 && !users.contains(username)) {
                 final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", username,
                         listUsers(users));
                 throw new CertificateCreateException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, msg);
             }
         }
-        if (!multipleCheckOk && enforceUniquePublicKeys) {
-            final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectKeyId(issuerDN, subjectKeyId);
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void assertSubjectKeyIdEnforcements(final CAInfo ca, final EndEntityInformation endEntityInformation, final PublicKey publicKey) throws CertificateCreateException {
+        boolean enforceUniquePublicKeys = false;
+        if (ca.isDoEnforceUniquePublicKeys()) {
+            if (ca.isUseCertificateStorage()) {
+                enforceUniquePublicKeys = true;
+            } else {
+                log.warn("CA configured to enforce unique entity keys, but not to store issued certificates. Check will be ignored. Please verify your configuration.");
+            }
+        }
+        final String username = endEntityInformation.getUsername();
+        byte[] subjectKeyId = null;
+        if (enforceUniquePublicKeys) {
+            subjectKeyId = KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier();
+        }
+        //boolean multipleCheckOk = false;
+       
+        // The below combined query is commented out because there is a bug in MySQL 5.5 that causes it to 
+        // select bad indexes making the query slow. In MariaDB 5.5 and MySQL 5.6 it works well, so it is MySQL 5.5 specific.
+        // See ECA-3309
+//        if (enforceUniqueDistinguishedName && enforceUniquePublicKeys) {
+//            multipleCheckOk = certificateStoreSession.isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(issuerDN, subjectKeyId, subjectDN, username);
+//        }
+        
+        if (/*!multipleCheckOk && */enforceUniquePublicKeys) {
+            final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectKeyId(ca.getSubjectDN(), subjectKeyId);
             if (users.size() > 0 && !users.contains(username)) {
                 final String msg = intres.getLocalizedMessage("createcert.key_exists_for_another_user", username);
                 log.info(msg+listUsers(users));
