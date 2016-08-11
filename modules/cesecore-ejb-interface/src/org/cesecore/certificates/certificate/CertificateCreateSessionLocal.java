@@ -22,6 +22,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.ca.IllegalNameException;
@@ -179,5 +180,23 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
             throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
             CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException;
+
+    /**
+     * Performs SubjectDN checks
+     * @param CA non-sensitive information
+     * @param endEntityInformation user data
+     * @throws CertificateCreateException if the certificate couldn't be created. 
+     */
+    void assertSubjectEnforcements(CAInfo caInfo, EndEntityInformation endEntityInformation)
+            throws CertificateCreateException;
+
+    /**
+     * Performs SubjectKeyId checks
+     * @param caInfo CA non-sensitive information
+     * @param endEntityInformation user data
+     * @param publicKey public key used for generating SubjectKeyId
+     * @throws CertificateCreateException
+     */
+    void assertSubjectKeyIdEnforcements(CAInfo caInfo, EndEntityInformation endEntityInformation, PublicKey publicKey) throws CertificateCreateException;
 
 }
