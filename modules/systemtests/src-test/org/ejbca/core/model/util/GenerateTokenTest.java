@@ -137,7 +137,7 @@ public class GenerateTokenTest extends CaTestCase {
 
             final GenerateToken tgen1 = new GenerateToken(endEntityAuthSession, eeAccessSession, endEntityManagementSession, caSession,
                     keyRecoverySession, signSession);
-            //Providing separately algorithm RSA_1024 that is going to be overriden with ECDSA_secp236r1
+            //Providing separately algorithm RSA_1024 that is going to be overriden with ECDSA_secp256r1
             final KeyStore keyStore = tgen1.generateOrKeyRecoverToken(internalAdmin, GENERATETOKENTEST_USERNAME, "foo123", caId, "1024",
                     AlgorithmConstants.KEYALGORITHM_RSA, false, false, true, false, eeProfileId);
             
