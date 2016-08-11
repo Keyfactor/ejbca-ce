@@ -216,9 +216,11 @@
 											value="#{msg['subject_dn_'.concat(instance.name)]} *"
 											rendered="#{instance.required}" />
 										<h:inputText id="subjectDnField" value="#{instance.value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
-											rendered="#{!instance.selectable}" required="#{instance.required}" disabled="#{!instance.modifiable}">
+											rendered="#{!instance.selectable}" disabled="#{!instance.modifiable}">
 											<f:validator validatorId="extendedRegexValidator" />
 											<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}"/>
+											<f:validator validatorId="extendedRequiredValidator"/>
+											<f:attribute name="_required" value="#{instance.required}"/>
 											<f:ajax event="change" execute="@this" listener="#{enrollMakeNewRequestBean.checkSubjectDn}"
                                                 render=":requestInfoForm:subjectDnMessage :requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
                                             <f:ajax event="keyup" execute="@this"
@@ -227,14 +229,15 @@
 										<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
 											<f:selectItems value="#{instance.selectableValues}" />
 											<f:ajax event="change" execute="@this" listener="#{enrollMakeNewRequestBean.checkSubjectDn}"
-                                                render="inputHiddensubjectDnMessage :requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
+                                                render=":requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage">
+                                            </f:ajax>
 										</h:selectOneMenu>
 										<h:message for="subjectDnField" id="subjectDnFieldMessage" styleClass="subjectErrorMessage" errorClass="subjectErrorMessage showErrorMessage"/>
 									</h:panelGroup>
 								</ui:repeat>
 							</fieldset>
 							<h:inputHidden id="subjectDnMessageInput" binding="#{enrollMakeNewRequestBean.subjectDnMessagesComponent}"/>
-							<h:message for="subjectDnMessageInput" id="subjectDnMessage" styleClass="subjectErrorMessage" errorClass="subjectErrorMessage showErrorMessage"/>
+							<h:message for="subjectDnMessageInput" id="subjectDnMessage" errorClass="subjectErrorMessage showErrorMessage"/>
 						</h:panelGroup>
 						<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.subjectAlternativeNameRendered}">
 							<h3>
@@ -252,9 +255,11 @@
 										value="#{msg['subject_alternative_name_'.concat(instance.name)]} *"
 										rendered="#{instance.required}" />
 									<h:inputText id="subjectAltNameField" value="#{instance.value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
-                                        rendered="#{!instance.selectable}" required="#{instance.required}" disabled="#{!instance.modifiable}">
-										<f:validator validatorId="extendedRegexValidator"/>
+                                        rendered="#{!instance.selectable}" disabled="#{!instance.modifiable}">
+										<f:validator validatorId="extendedRegexValidator" />
 										<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}"/>
+										<f:validator validatorId="extendedRequiredValidator"/>
+										<f:attribute name="_required" value="#{instance.required}"/>
 										<f:ajax event="change" execute="@this"
                                             render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage"/>
 										<f:ajax event="keyup" execute="@this"
@@ -286,8 +291,10 @@
 										rendered="#{instance.required}" />
 									<h:inputText id="subjectDirectoryField" value="#{instance.value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
 										rendered="#{!instance.selectable}" required="#{instance.required}" disabled="#{!instance.modifiable}">
-										<f:validator validatorId="extendedRegexValidator"/>
-										<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}" />
+										<f:validator validatorId="extendedRegexValidator" />
+										<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}"/>
+										<f:validator validatorId="extendedRequiredValidator"/>
+										<f:attribute name="_required" value="#{instance.required}"/>
 										<f:ajax event="change" execute="@this"
 											render=":requestInfoForm:requestPreviewOuterPanel subjectDirectoryAttributesMessage"/>
 										<f:ajax event="keyup" execute="@this"
@@ -345,14 +352,16 @@
 								rendered="#{enrollMakeNewRequestBean.passwordRendered}">
 								<h:outputLabel for="passwordField" value="#{msg.enroll_password}" />
 								<h:inputSecret id="passwordField" value="#{enrollMakeNewRequestBean.endEntityInformation.password}" styleClass="#{component.valid?'':'jsAutoFocusError'}">
-									<f:validateRequired/>
+									<f:validator validatorId="extendedRequiredValidator"/>
+									<f:attribute name="_required" value="true"/>
 								</h:inputSecret>
 								<h:message for="passwordField" id="passwordFieldMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.passwordRendered}">
 								<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password}" />
 								<h:inputSecret id="passwordConfirmField" value="#{enrollMakeNewRequestBean.confirmPassword}" styleClass="#{component.valid?'':'jsAutoFocusError'}">
-									<f:validateRequired/>
+									<f:validator validatorId="extendedRequiredValidator"/>
+									<f:attribute name="_required" value="true"/>
 								</h:inputSecret>
 								<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
@@ -364,7 +373,7 @@
 							</h:panelGroup>
 						</fieldset>
 						<h:inputHidden id="userCredentialsMessageInput" binding="#{enrollMakeNewRequestBean.userCredentialsMessagesComponent}"/>
-						<h:message for="userCredentialsMessageInput" id="userCredentialsMessage"/>
+						<h:message for="userCredentialsMessageInput" id="userCredentialsMessage" errorClass="showErrorMessage"/>
 					</h:panelGroup>
 				</h:panelGroup>
 
@@ -392,47 +401,55 @@
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateJks}"
 								rendered="#{enrollMakeNewRequestBean.generateJksButtonRendered}"
 								styleClass="pure-button ra-button">
+								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
 							<h:commandButton id="generateP12"
 								value="#{msg.enroll_generate_p12}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateP12}"
 								rendered="#{enrollMakeNewRequestBean.generateP12ButtonRendered}"
 								styleClass="pure-button ra-button">
+								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
 							<h:commandButton id="generateKeyStorePem"
 								value="#{msg.enroll_generate_pem}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGeneratePem}"
 								rendered="#{enrollMakeNewRequestBean.generatePemButtonRendered}"
 								styleClass="pure-button ra-button">
+								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
 							<h:commandButton id="generatePem"
 								value="#{msg.enroll_generate_pem}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificatePem}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
 								styleClass="pure-button ra-button">
+								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
 							<h:commandButton id="generatePemFullChain"
 								value="#{msg.enroll_generate_pem_full_chain}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificatePemFullChain}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
 								styleClass="pure-button ra-button">
+								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
 							<h:commandButton id="generatePkcs7"
 								value="#{msg.enroll_generate_pkcs7}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificatePksc7}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
 								styleClass="pure-button ra-button">
+								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
 							<h:commandButton id="generateDer"
 								value="#{msg.enroll_generate_der}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificateDer}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
 								styleClass="pure-button ra-button">
+								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
 							<h:commandButton id="confirmRequestButton" value="#{msg.enroll_confirm_request}"
 								action="#{enrollMakeNewRequestBean.confirmRequest}"
 								rendered="#{enrollMakeNewRequestBean.confirmRequestButtonRendered}"
 								styleClass="pure-button ra-button">
+								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
 						</h:panelGroup>
 					</h:panelGroup>
