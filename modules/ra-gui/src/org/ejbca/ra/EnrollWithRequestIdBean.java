@@ -136,8 +136,15 @@ public class EnrollWithRequestIdBean implements Serializable {
                     raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_has_been_approved", Integer.parseInt(requestId));
                 }
                 break;
+            case ApprovalDataVO.STATUS_EXPIRED:
+            case ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED:
+                raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_has_been_expired", Integer.parseInt(requestId));
+                break;
+            case ApprovalDataVO.STATUS_EXECUTIONFAILED:
+                raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_could_not_be_executed", Integer.parseInt(requestId));
+                break;
             default:
-                raLocaleBean.addMessageError("enrollwithrequestid_status_of_request_id_is_unknown", Integer.parseInt(requestId));
+                raLocaleBean.addMessageError("enrollwithrequestid_status_of_request_id_is_unknown", requestStatus, Integer.parseInt(requestId));
                 break;
             }
         }
