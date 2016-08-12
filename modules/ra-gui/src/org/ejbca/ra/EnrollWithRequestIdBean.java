@@ -137,7 +137,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                 }
                 break;
             default:
-                raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_is_still_waiting_for_approval", Integer.parseInt(requestId));
+                raLocaleBean.addMessageError("enrollwithrequestid_status_of_request_id_is_unknown", Integer.parseInt(requestId));
                 break;
             }
         }
