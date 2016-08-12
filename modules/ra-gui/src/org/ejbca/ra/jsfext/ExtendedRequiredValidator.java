@@ -55,7 +55,11 @@ public class ExtendedRequiredValidator extends RequiredValidator {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        Boolean required = (Boolean) component.getAttributes().get("_required");
+        Object _required = component.getAttributes().get("_required");
+        boolean required = false;
+        if(_required != null){
+            required = Boolean.parseBoolean(_required.toString()); //_required can be of String or Boolean type
+        }
         Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
         String validationRequiredFromRequest = params.get("validationRequiredFromRequest");
         if (log.isTraceEnabled()) {
