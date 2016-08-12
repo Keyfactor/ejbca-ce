@@ -57,7 +57,7 @@ form#contentForm.pure-form > div.tabButtonBar > input {
     background: #cea01a; }
 
 h1, h2, h3, h4, p, span {
-  font-family: Helvetica; }
+  font-family: Helvetica, Arial, sans-serif; }
 
 #h3ApprovedSteps {
   margin-left: 2% !important; }
@@ -65,8 +65,10 @@ h1, h2, h3, h4, p, span {
 .content-body h3 {
   color: #fff;
   font-weight: lighter;
-  margin: 2% 0 2% 1.5%;
   width: 90%; }
+
+.content-body h3 {
+  margin: 2% 0 2% 1.5%; }
 
 .pure-menu-heading {
   /*placering av header-logga*/
@@ -113,7 +115,7 @@ img.menu_logo {
 
 .content-body h2 {
   color: #fff;
-  margin: 0.2em 0 0 2%;
+  margin: 0.2em 0 0 0;
   font-weight: 600; }
 
 .content-body {
@@ -175,15 +177,26 @@ img.menu_logo {
 .pure-control-group {
   margin: 2% 0 2% 0; }
 
-.pure-u-1 label, #contentForm\:viewRequestDataTable > label, .pure-control-group > label, .internal-frame label {
+.pure-u-1 label, #contentForm\:viewRequestDataTable > label, .pure-control-group > label, .internal-frame label, #contentForm\:editRequestDataTable label {
   /* labels på details-sidorna + search options*/
   color: #fff; }
+
+#contentForm\:editRequestDataTable {
+  word-break: break-all; }
+  #contentForm\:editRequestDataTable label {
+    display: block; }
+  #contentForm\:editRequestDataTable input {
+    width: 100%; }
 
 .pure-form select {
   font-size: 90%;
   min-width: 15%;
   width: 100%; }
 
+@-moz-document url-prefix() {
+  /*För Firefox*/
+  .pure-form select {
+    height: 100%; } }
 .internal-frame > fieldset > .pure-control-group > input {
   font-size: 90%;
   width: 90%; }
@@ -252,7 +265,7 @@ label.showNonModifiable {
   float: left; }
 
 #contentForm\:commandEditData {
-  width: 70px;
+  width: 80px;
   height: 40px; }
 
 table.pure-table > thead > tr > th {
@@ -381,9 +394,12 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 
 #makeRequestButton, #requestStatusButton, #searchCertsButton {
   height: 40px;
-  padding-top: 12px;
+  padding-top: 12.5px;
   width: 150px; }
 
+@-moz-document url-prefix() {
+  #makeRequestButton, #requestStatusButton, #searchCertsButton {
+    padding-top: 15px !important; } }
 #requestInfoForm\:confirmRequestButton,
 #searchCertsButton,
 #requestStatusButton,
@@ -527,12 +543,12 @@ a {
   color: #fff; }
 
 .bigStatus, .smallStatus, .editLogEntry {
-  margin: 1% 0 0 2%;
+  margin: 1% 0 0 0;
   color: #fff;
   font-style: italic; }
 
 #contentForm\:requestApproveMessage {
-  margin: 1% 0 0 2%; }
+  margin: 1% 0 0 0; }
 
 .statusFailed {
   color: #ed6a5f; }
@@ -593,9 +609,8 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 
 /*SLUT Kod för att lägga radioknappar, som ligger inom första ramen i make request, under varandra */
 #contentForm\:viewRequestDataTable {
-  margin: 1% 0 1% 2.5%;
-  word-break: break-word;
-  font-size: 80%; }
+  margin: 1% 0 1% 0.5%;
+  word-break: break-word; }
   #contentForm\:viewRequestDataTable > span {
     display: block; }
 
@@ -792,37 +807,39 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
           padding-right: 1em;
           font-weight: bold;
           color: #444d57; }
-  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(8) > span {
-    display: inline-block;
-    width: 54%;
-    word-break: break-all; }
-  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(2) {
-    padding-bottom: 9%; }
-    div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(2) > span {
-      display: inline-block;
-      width: 55.5%;
-      word-break: break-all;
-      float: right; }
-  div.content-body #contentForm\:searchCertTable > tbody > tr > td > input {
-    padding: 0 0 0 0;
-    height: auto;
-    font-size: 85%; }
-  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(1):before {
-    content: "CA"; }
-  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(2):before {
-    content: "Profile"; }
-  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(3):before {
-    content: "Serial number"; }
-  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(4):before {
-    content: "Subject"; }
-  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(5):before {
-    content: "Issued"; }
-  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(6):before {
-    content: "Expires"; }
-  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(7):before {
-    content: "Status"; }
-  div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(8):before {
-    content: "End entity"; }
+  div.content-body #contentForm\:searchCertTable > tbody {
+    display: block; }
+    div.content-body #contentForm\:searchCertTable > tbody > tr > td {
+      /*&:nth-of-type(2) > span { //Behövs förmodligen inte då denna cell verkar klara sig utan denna kod (11/8-16)
+          //display: inline-block;
+          //width: 55.5%;
+          //word-break: break-all;
+          //float:right;
+      }*/ }
+      div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(8) > span {
+        display: inline-block;
+        width: 54%;
+        word-break: break-all; }
+      div.content-body #contentForm\:searchCertTable > tbody > tr > td > input {
+        padding: 0 0 0 0;
+        height: auto;
+        font-size: 85%; }
+      div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(1):before {
+        content: "CA"; }
+      div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(2):before {
+        content: "Profile"; }
+      div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(3):before {
+        content: "Serial number"; }
+      div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(4):before {
+        content: "Subject"; }
+      div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(5):before {
+        content: "Issued"; }
+      div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(6):before {
+        content: "Expires"; }
+      div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(7):before {
+        content: "Status"; }
+      div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(8):before {
+        content: "End entity"; }
   div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(3) > span {
     display: inline-block;
     width: 54%;
@@ -847,16 +864,20 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     content: "Last modified"; }
   div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(6):before {
     content: "Status"; }
-  div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(1):before {
-    content: "Certificate Authority"; }
-  div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(2):before {
-    content: "Certificate"; }
-  div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(3):before {
-    content: "Certificate chain¹"; }
-  div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(4):before {
-    content: "Browser import"; }
+  div.content-body #caCertificateTable > tbody {
+    display: block; }
+    div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(1):before {
+      content: "Certificate Authority"; }
+    div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(2):before {
+      content: "Certificate"; }
+    div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(3):before {
+      content: "Certificate chain¹"; }
+    div.content-body #caCertificateTable > tbody > tr > td:nth-of-type(4):before {
+      content: "Browser import"; }
   div.content-body #contentForm\:manageRequestTable > tbody {
     display: block; }
+    div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(1):before {
+      content: "ID"; }
     div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(1):before {
       content: "Request Date"; }
     div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(2):before {
@@ -1017,17 +1038,17 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   .content-body h2 {
     margin: 0.2em 0 0 2%; }
 
-  #contentForm\:filteredResults > table:not(#contentForm\:manageRequestTable) table.pure-table {
+  #contentForm\:filteredResults > table.pure-table:not(#contentForm\:manageRequestTable) table.pure-table {
     line-height: normal; }
-    #contentForm\:filteredResults > table:not(#contentForm\:manageRequestTable) table.pure-table > tbody td {
+    #contentForm\:filteredResults > table.pure-table:not(#contentForm\:manageRequestTable) table.pure-table > tbody td {
       word-break: break-word;
       max-width: 180px; }
 
   @-moz-document url-prefix() {
     /*För Firefox*/
-    #contentForm\:filteredResults > .pure-table {
+    table.pure-table:not(#contentForm\:manageRequestTable) .pure-table {
       line-height: normal; }
-      #contentForm\:filteredResults > .pure-table > tbody td {
+      table.pure-table:not(#contentForm\:manageRequestTable) .pure-table > tbody td {
         word-break: break-all;
         max-width: 180px; } }
   div#menu.ejbca-menu ul.pure-menu-list {
@@ -1119,7 +1140,8 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     font-size: 81%; }
 
   #contentForm\:viewRequestDataTable {
-    font-size: 100%; }
+    font-size: 100%;
+    margin: 1% 0 1% 2.5%; }
 
   #contentForm\:manageRequestTable > tbody > a {
     padding-top: 16%; }
@@ -1134,15 +1156,31 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   #contentForm\:commandEditData {
     width: auto; }
 
-  #commonNameError {
+  .subjectErrorMessage {
     float: right; }
+
+  #makeRequestButton, #requestStatusButton, #searchCertsButton {
+    width: 180px; }
+
+  #caCertificateTable {
+    width: 100%; }
+
+  #contentForm\:editRequestDataTable {
+    margin: 0 0 0 2%; }
+    #contentForm\:editRequestDataTable input {
+      width: 100%; }
+
+  #contentForm\:editRequestDataTable {
+    word-break: break-all; }
+    #contentForm\:editRequestDataTable input {
+      width: auto; }
+
+  .bigStatus, .smallStatus, .editLogEntry, #contentForm\:requestApproveMessage {
+    margin: 1% 0 0 2%; }
 
   .footer > .align-center > p {
     /*footer-texten*/
-    font-size: 100%; }
-
-  #makeRequestButton, #requestStatusButton, #searchCertsButton {
-    width: 180px; } }
+    font-size: 100%; } }
 @media (min-width: 64.0625em) {
   div#div_menu_logo {
     width: 13.5%; }
@@ -1345,7 +1383,14 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     display: inline-block; }
 
   #contentForm\:commandEditData {
-    height: auto; } }
+    height: auto; }
+
+  @-moz-document url-prefix() {
+    /*För Firefox*/
+    .pure-form select {
+      height: 90%; } }
+  #contentForm\:editRequestDataTable input {
+    width: 100%; } }
 /*
 "gamla"
     "base"  // smartphone
