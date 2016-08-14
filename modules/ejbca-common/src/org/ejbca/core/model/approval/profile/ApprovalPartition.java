@@ -46,6 +46,7 @@ public class ApprovalPartition implements Serializable {
         this.partitionIdentifier = original.getPartitionIdentifier();
     }
     
+    // In a PartionedApprovalProfile the partition has a name with property PartitionedApprovalProfile.PROPERTY_NAME
     public DynamicUiProperty<? extends Serializable> getProperty(final String name) {
         return properties.get(name);
     }
