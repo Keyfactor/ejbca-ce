@@ -178,7 +178,7 @@
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}"
                 value=" "/>
             <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}">
-                <h3><h:outputText value="#{msg.component_eedetails_header_subjectdn}"/></h3>
+                <h3 class="h3Margin"><h:outputText value="#{msg.component_eedetails_header_subjectdn}"/></h3>
                 <ui:repeat id="subjectDistinguishedName" value="#{cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}" var="instance">
                     <h:panelGroup styleClass="#{cc.attrs.raEndEntityDetails.evenTwice ? cc.attrs.styleEven : cc.attrs.styleOdd}">
                         <h:outputLabel for="subjectDistinguishedNameFieldGroup" value="#{msg['subject_dn_'.concat(instance.name)]}" styleClass="#{cc.attrs.styleLabel}"/>
@@ -201,7 +201,7 @@
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances}"
                 value=" "/>
             <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances}">
-                <h3><h:outputText value="#{msg.component_eedetails_header_subjectan}"/></h3>
+                <h3 class="h3Margin"><h:outputText value="#{msg.component_eedetails_header_subjectan}"/></h3>
                 <ui:repeat id="subjectAlternativeName" value="#{cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances}" var="instance">
                     <h:panelGroup styleClass="#{cc.attrs.raEndEntityDetails.evenTwice ? cc.attrs.styleEven : cc.attrs.styleOdd}">
                         <h:outputLabel for="subjectAlternativeNameFieldGroup" value="#{msg['subject_alternative_name_'.concat(instance.name)]}" styleClass="#{cc.attrs.styleLabel}"/>
@@ -224,7 +224,7 @@
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}"
                 value=" "/>
             <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}">
-                <h3><h:outputText value="#{msg.component_eedetails_header_subjectda}"/></h3>
+                <h3 class="h3Margin"><h:outputText value="#{msg.component_eedetails_header_subjectda}"/></h3>
                 <ui:repeat id="subjectDirectoryAttributes" value="#{cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}" var="instance">
                     <h:panelGroup styleClass="#{cc.attrs.raEndEntityDetails.evenTwice ? cc.attrs.styleEven : cc.attrs.styleOdd}">
                         <h:outputLabel for="subjectDirectoryAttributesFieldGroup" value="#{msg['subject_directory_attributes_'.concat(instance.name)]}" styleClass="#{cc.attrs.styleLabel}"/>
