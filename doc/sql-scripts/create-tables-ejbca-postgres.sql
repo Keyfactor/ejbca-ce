@@ -84,6 +84,14 @@ CREATE TABLE AuthorizationTreeUpdateData (
     PRIMARY KEY (pK)
 );
 
+CREATE TABLE Base64CertData (
+    fingerprint TEXT NOT NULL,
+    base64Cert TEXT,
+    rowProtection TEXT,
+    rowVersion INT4 NOT NULL,
+    PRIMARY KEY (fingerprint)
+);
+
 CREATE TABLE CAData (
     cAId INT4 NOT NULL,
     data TEXT NOT NULL,
@@ -129,30 +137,22 @@ CREATE TABLE CertificateData (
     cAFingerprint TEXT,
     certificateProfileId INT4 NOT NULL,
     endEntityProfileId INT4,
-    notBefore INT8,
     expireDate INT8 NOT NULL,
     issuerDN TEXT NOT NULL,
+    notBefore INT8,
     revocationDate INT8 NOT NULL,
     revocationReason INT4 NOT NULL,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
     serialNumber TEXT NOT NULL,
     status INT4 NOT NULL,
-    subjectDN TEXT NOT NULL,
     subjectAltName TEXT,
+    subjectDN TEXT NOT NULL,
     subjectKeyId TEXT,
     tag TEXT,
     type INT4 NOT NULL,
     updateTime INT8 NOT NULL,
     username TEXT,
-    PRIMARY KEY (fingerprint)
-);
-
-CREATE TABLE Base64CertData (
-    fingerprint TEXT NOT NULL,
-    base64Cert TEXT,
-    rowProtection TEXT,
-    rowVersion INT4 NOT NULL,
     PRIMARY KEY (fingerprint)
 );
 
@@ -181,21 +181,6 @@ CREATE TABLE EndEntityProfileData (
     id INT4 NOT NULL,
     data BYTEA NOT NULL,
     profileName TEXT NOT NULL,
-    rowProtection TEXT,
-    rowVersion INT4 NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE InternalKeyBindingData (
-    id INT4 NOT NULL,
-    name TEXT NOT NULL,
-    status TEXT NOT NULL,
-    keyBindingType TEXT NOT NULL,
-    certificateId TEXT,
-    cryptoTokenId INT4 NOT NULL,
-    keyPairAlias TEXT NOT NULL,
-    rawData TEXT,
-    lastUpdate INT8 NOT NULL,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
     PRIMARY KEY (id)
@@ -260,27 +245,52 @@ CREATE TABLE HardTokenPropertyData (
     property)
 );
 
+CREATE TABLE InternalKeyBindingData (
+    id INT4 NOT NULL,
+    certificateId TEXT,
+    cryptoTokenId INT4 NOT NULL,
+    keyBindingType TEXT NOT NULL,
+    keyPairAlias TEXT NOT NULL,
+    lastUpdate INT8 NOT NULL,
+    name TEXT NOT NULL,
+    rawData TEXT,
+    rowProtection TEXT,
+    rowVersion INT4 NOT NULL,
+    status TEXT NOT NULL,
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE KeyRecoveryData (
     certSN TEXT NOT NULL,
     issuerDN TEXT NOT NULL,
+    cryptoTokenId INT4 NOT NULL,
+    keyAlias TEXT,
     keyData TEXT NOT NULL,
     markedAsRecoverable BOOLEAN NOT NULL,
+    publicKeyId TEXT,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
     username TEXT,
-    cryptoTokenId INT4 NOT NULL,
-    keyAlias TEXT,
-    publicKeyId TEXT,
     PRIMARY KEY (certSN,
     issuerDN)
 );
 
 CREATE TABLE PeerData (
     id INT4 NOT NULL,
-    name TEXT NOT NULL,
     connectorState INT4 NOT NULL,
-    url TEXT NOT NULL,
     data TEXT,
+    name TEXT NOT NULL,
+    rowProtection TEXT,
+    rowVersion INT4 NOT NULL,
+    url TEXT NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE ProfileData (
+    id INT4 NOT NULL,
+    profileName TEXT NOT NULL,
+    profileType TEXT NOT NULL,
+    rawData TEXT,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
     PRIMARY KEY (id)

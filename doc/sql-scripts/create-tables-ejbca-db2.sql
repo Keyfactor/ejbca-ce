@@ -84,6 +84,14 @@ CREATE TABLE AuthorizationTreeUpdateData (
     PRIMARY KEY (pK)
 );
 
+CREATE TABLE Base64CertData (
+    fingerprint VARCHAR(254) NOT NULL,
+    base64Cert CLOB,
+    rowProtection CLOB(10K),
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (fingerprint)
+);
+
 CREATE TABLE CAData (
     cAId INTEGER NOT NULL,
     data CLOB NOT NULL,
@@ -129,30 +137,22 @@ CREATE TABLE CertificateData (
     cAFingerprint VARCHAR(254),
     certificateProfileId INTEGER NOT NULL,
     endEntityProfileId INTEGER,
-    notBefore BIGINT,
     expireDate BIGINT NOT NULL,
     issuerDN VARCHAR(254) NOT NULL,
+    notBefore BIGINT,
     revocationDate BIGINT NOT NULL,
     revocationReason INTEGER NOT NULL,
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
     serialNumber VARCHAR(254) NOT NULL,
     status INTEGER NOT NULL,
-    subjectDN VARCHAR(400) NOT NULL,
     subjectAltName VARCHAR(2000),
+    subjectDN VARCHAR(400) NOT NULL,
     subjectKeyId VARCHAR(254),
     tag VARCHAR(254),
     type INTEGER NOT NULL,
     updateTime BIGINT NOT NULL,
     username VARCHAR(254),
-    PRIMARY KEY (fingerprint)
-);
-
-CREATE TABLE Base64CertData (
-    fingerprint VARCHAR(254) NOT NULL,
-    base64Cert CLOB,
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
     PRIMARY KEY (fingerprint)
 );
 
@@ -171,9 +171,9 @@ CREATE TABLE CryptoTokenData (
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
     tokenData CLOB,
-    tokenName VARCHAR(254),
+    tokenName VARCHAR(254) NOT NULL,
     tokenProps CLOB(10K),
-    tokenType VARCHAR(254),
+    tokenType VARCHAR(254) NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -181,21 +181,6 @@ CREATE TABLE EndEntityProfileData (
     id INTEGER NOT NULL,
     data BLOB(1M) NOT NULL,
     profileName VARCHAR(254) NOT NULL,
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE InternalKeyBindingData (
-    id INTEGER NOT NULL,
-    name VARCHAR(254) NOT NULL,
-    status VARCHAR(254) NOT NULL,
-    keyBindingType VARCHAR(254) NOT NULL,
-    certificateId VARCHAR(254),
-    cryptoTokenId INTEGER NOT NULL,
-    keyPairAlias VARCHAR(254) NOT NULL,
-    rawData CLOB,
-    lastUpdate BIGINT NOT NULL,
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
@@ -260,27 +245,52 @@ CREATE TABLE HardTokenPropertyData (
     property)
 );
 
+CREATE TABLE InternalKeyBindingData (
+    id INTEGER NOT NULL,
+    certificateId VARCHAR(254),
+    cryptoTokenId INTEGER NOT NULL,
+    keyBindingType VARCHAR(254) NOT NULL,
+    keyPairAlias VARCHAR(254) NOT NULL,
+    lastUpdate BIGINT NOT NULL,
+    name VARCHAR(254) NOT NULL,
+    rawData CLOB,
+    rowProtection CLOB(10K),
+    rowVersion INTEGER NOT NULL,
+    status VARCHAR(254) NOT NULL,
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE KeyRecoveryData (
     certSN VARCHAR(254) NOT NULL,
     issuerDN VARCHAR(254) NOT NULL,
+    cryptoTokenId INTEGER NOT NULL,
+    keyAlias VARCHAR(254),
     keyData CLOB NOT NULL,
     markedAsRecoverable SMALLINT NOT NULL,
+    publicKeyId VARCHAR(254),
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
     username VARCHAR(254),
-    cryptoTokenId INTEGER NOT NULL,
-    keyAlias VARCHAR(254),
-    publicKeyId VARCHAR(254),
     PRIMARY KEY (certSN,
     issuerDN)
 );
 
 CREATE TABLE PeerData (
     id INTEGER NOT NULL,
-    name VARCHAR(254) NOT NULL,
     connectorState INTEGER NOT NULL,
+    data CLOB(10K),
+    name VARCHAR(254) NOT NULL,
+    rowProtection CLOB(10K),
+    rowVersion INTEGER NOT NULL,
     url VARCHAR(254) NOT NULL,
-    data CLOB,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE ProfileData (
+    id INTEGER NOT NULL,
+    profileName VARCHAR(254) NOT NULL,
+    profileType VARCHAR(254) NOT NULL,
+    rawData CLOB(10K),
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
