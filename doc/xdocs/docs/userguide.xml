@@ -1129,10 +1129,9 @@ The default URL for the internal OCSP responder in EJBCA is http://hostname:8080
 
 <subsubsection name="CA Issuer URI">
 <p>
-This value is used for the Authority Information Access CRL Extension as specified in <a href="http://tools.ietf.org/rfc/rfc4325.txt">RFC4325</a>.
+This value is used for the Authority Information Access CRL Extension as specified in <a href="http://tools.ietf.org/rfc/rfc5280.txt">RFC5280</a> (section 5.2.7).
 The URI specified in this field must point to a certificate containing file containing either a single certificate (.cer) or a collection of 
 certificates (.p7c).
-
 </p>
 </subsubsection>
 
