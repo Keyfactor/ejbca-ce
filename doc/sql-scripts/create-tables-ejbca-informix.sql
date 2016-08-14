@@ -84,6 +84,14 @@ CREATE TABLE AuthorizationTreeUpdateData (
     PRIMARY KEY (pK)
 );
 
+CREATE TABLE Base64CertData (
+    fingerprint VARCHAR(255,0) NOT NULL,
+    base64Cert TEXT,
+    rowProtection TEXT,
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (fingerprint)
+);
+
 CREATE TABLE CAData (
     cAId INTEGER NOT NULL,
     data TEXT NOT NULL,
@@ -92,7 +100,7 @@ CREATE TABLE CAData (
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     status INTEGER NOT NULL,
-    subjectDN VARCHAR(400,0),
+    subjectDN VARCHAR(255,0),
     updateTime DECIMAL(18,0) NOT NULL,
     PRIMARY KEY (cAId)
 );
@@ -129,30 +137,22 @@ CREATE TABLE CertificateData (
     cAFingerprint VARCHAR(255,0),
     certificateProfileId INTEGER NOT NULL,
     endEntityProfileId INTEGER,
-    notBefore DECIMAL(18,0),
     expireDate DECIMAL(18,0) NOT NULL,
     issuerDN VARCHAR(255,0) NOT NULL,
+    notBefore DECIMAL(18,0),
     revocationDate DECIMAL(18,0) NOT NULL,
     revocationReason INTEGER NOT NULL,
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     serialNumber VARCHAR(255,0) NOT NULL,
     status INTEGER NOT NULL,
-    subjectDN VARCHAR(400,0) NOT NULL,
     subjectAltName LVARCHAR(2000),
+    subjectDN VARCHAR(400,0) NOT NULL,
     subjectKeyId VARCHAR(255,0),
     tag VARCHAR(255,0),
     type INTEGER NOT NULL,
     updateTime DECIMAL(18,0) NOT NULL,
     username VARCHAR(255,0),
-    PRIMARY KEY (fingerprint)
-);
-
-CREATE TABLE Base64CertData (
-    fingerprint VARCHAR(255,0) NOT NULL,
-    base64Cert TEXT,
-    rowProtection TEXT,
-    rowVersion INTEGER NOT NULL,
     PRIMARY KEY (fingerprint)
 );
 
@@ -181,21 +181,6 @@ CREATE TABLE EndEntityProfileData (
     id INTEGER NOT NULL,
     data BLOB NOT NULL,
     profileName VARCHAR(255,0) NOT NULL,
-    rowProtection TEXT,
-    rowVersion INTEGER NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE InternalKeyBindingData (
-    id INTEGER NOT NULL,
-    name VARCHAR(255,0) NOT NULL,
-    status VARCHAR(255,0) NOT NULL,
-    keyBindingType VARCHAR(255,0) NOT NULL,
-    certificateId VARCHAR(255,0),
-    cryptoTokenId INTEGER NOT NULL,
-    keyPairAlias VARCHAR(255,0) NOT NULL,
-    rawData TEXT,
-    lastUpdate DECIMAL(18,0) NOT NULL,
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
@@ -260,27 +245,52 @@ CREATE TABLE HardTokenPropertyData (
     property)
 );
 
+CREATE TABLE InternalKeyBindingData (
+    id INTEGER NOT NULL,
+    certificateId VARCHAR(255,0),
+    cryptoTokenId INTEGER NOT NULL,
+    keyBindingType VARCHAR(255,0) NOT NULL,
+    keyPairAlias VARCHAR(255,0) NOT NULL,
+    lastUpdate DECIMAL(18,0) NOT NULL,
+    name VARCHAR(255,0) NOT NULL,
+    rawData TEXT,
+    rowProtection TEXT,
+    rowVersion INTEGER NOT NULL,
+    status VARCHAR(255,0) NOT NULL,
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE KeyRecoveryData (
     certSN VARCHAR(255,0) NOT NULL,
     issuerDN VARCHAR(255,0) NOT NULL,
+    cryptoTokenId INTEGER NOT NULL,
+    keyAlias VARCHAR(255,0),
     keyData TEXT NOT NULL,
     markedAsRecoverable BOOLEAN NOT NULL,
+    publicKeyId VARCHAR(255,0),
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     username VARCHAR(255,0),
-    cryptoTokenId INTEGER NOT NULL,
-    keyAlias VARCHAR(255,0),
-    publicKeyId VARCHAR(255,0),
     PRIMARY KEY (certSN,
     issuerDN)
 );
 
 CREATE TABLE PeerData (
     id INTEGER NOT NULL,
-    name VARCHAR(255,0) NOT NULL,
     connectorState INTEGER NOT NULL,
-    url VARCHAR(255,0) NOT NULL,
     data TEXT,
+    name VARCHAR(255,0) NOT NULL,
+    rowProtection TEXT,
+    rowVersion INTEGER NOT NULL,
+    url VARCHAR(255,0) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE ProfileData (
+    id INTEGER NOT NULL,
+    profileName VARCHAR(255,0) NOT NULL,
+    profileType VARCHAR(255,0) NOT NULL,
+    rawData TEXT,
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
@@ -337,7 +347,7 @@ CREATE TABLE UserData (
     rowVersion INTEGER NOT NULL,
     status INTEGER NOT NULL,
     subjectAltName VARCHAR(2000,0),
-    subjectDN VARCHAR(255,0),
+    subjectDN VARCHAR(400,0),
     subjectEmail VARCHAR(255,0),
     timeCreated DECIMAL(18,0) NOT NULL,
     timeModified DECIMAL(18,0) NOT NULL,

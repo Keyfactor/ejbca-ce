@@ -84,6 +84,14 @@ CREATE TABLE AuthorizationTreeUpdateData (
     PRIMARY KEY (pK)
 );
 
+CREATE TABLE Base64CertData (
+    fingerprint VARCHAR(256) NOT NULL,
+    base64Cert LONG VARCHAR with null,
+    rowProtection LONG VARCHAR with null,
+    rowVersion INT4 NOT NULL,
+    PRIMARY KEY (fingerprint)
+);
+
 CREATE TABLE CAData (
     cAId INT4 NOT NULL,
     data LONG VARCHAR NOT NULL,
@@ -128,31 +136,23 @@ CREATE TABLE CertificateData (
     base64Cert LONG VARCHAR with null,
     cAFingerprint VARCHAR(256) with null,
     certificateProfileId INT4 NOT NULL,
-    endEntityProfileId INT4,
-    notBefore INT8,
+    endEntityProfileId INT4 with null,
     expireDate INT8 NOT NULL,
     issuerDN VARCHAR(256) NOT NULL,
+    notBefore INT8 with null,
     revocationDate INT8 NOT NULL,
     revocationReason INT4 NOT NULL,
     rowProtection LONG VARCHAR with null,
     rowVersion INT4 NOT NULL,
     serialNumber VARCHAR(256) NOT NULL,
     status INT4 NOT NULL,
+    subjectAltName VARCHAR(2000) with null,
     subjectDN VARCHAR(400) NOT NULL,
-    subjectAltName VARCHAR(2000),
     subjectKeyId VARCHAR(256) with null,
     tag VARCHAR(256) with null,
     type INT4 NOT NULL,
     updateTime INT8 NOT NULL,
     username VARCHAR(256) with null,
-    PRIMARY KEY (fingerprint)
-);
-
-CREATE TABLE Base64CertData (
-    fingerprint VARCHAR(256) NOT NULL,
-    base64Cert LONG VARCHAR with null,
-    rowProtection LONG VARCHAR with null,
-    rowVersion INT4 NOT NULL,
     PRIMARY KEY (fingerprint)
 );
 
@@ -167,7 +167,7 @@ CREATE TABLE CertificateProfileData (
 
 CREATE TABLE CryptoTokenData (
     id INT4 NOT NULL,
-    lastUpdate INT8 NOT NULL,
+    lastUpdate BIGINT NOT NULL,
     rowProtection LONG VARCHAR with null,
     rowVersion INT4 NOT NULL,
     tokenData LONG VARCHAR with null,
@@ -182,21 +182,6 @@ CREATE TABLE EndEntityProfileData (
     data LONG BYTE NOT NULL,
     profileName VARCHAR(256) NOT NULL,
     rowProtection LONG VARCHAR with null,
-    rowVersion INT4 NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE InternalKeyBindingData (
-    id INT4 NOT NULL,
-    name VARCHAR(256) NOT NULL,
-    status VARCHAR(256) NOT NULL,
-    keyBindingType VARCHAR(256) NOT NULL,
-    certificateId VARCHAR(256),
-    cryptoTokenId INT4 NOT NULL,
-    keyPairAlias VARCHAR(256) NOT NULL,
-    rawData LONG VARCHAR,
-    lastUpdate INT8 NOT NULL,
-    rowProtection LONG VARCHAR,
     rowVersion INT4 NOT NULL,
     PRIMARY KEY (id)
 );
@@ -260,27 +245,52 @@ CREATE TABLE HardTokenPropertyData (
     property)
 );
 
+CREATE TABLE InternalKeyBindingData (
+    id INT4 NOT NULL,
+    certificateId VARCHAR(256) with null,
+    cryptoTokenId INT4 NOT NULL,
+    keyBindingType VARCHAR(256) NOT NULL,
+    keyPairAlias VARCHAR(256) NOT NULL,
+    lastUpdate INT8 NOT NULL,
+    name VARCHAR(256) NOT NULL,
+    rawData LONG VARCHAR with null,
+    rowProtection LONG VARCHAR with null,
+    rowVersion INT4 NOT NULL,
+    status VARCHAR(256) NOT NULL,
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE KeyRecoveryData (
     certSN VARCHAR(256) NOT NULL,
     issuerDN VARCHAR(256) NOT NULL,
+    cryptoTokenId INT4 NOT NULL,
+    keyAlias VARCHAR(256) with null,
     keyData LONG VARCHAR NOT NULL,
     markedAsRecoverable INT4 NOT NULL,
+    publicKeyId VARCHAR(256) with null,
     rowProtection LONG VARCHAR with null,
     rowVersion INT4 NOT NULL,
     username VARCHAR(256) with null,
-    cryptoTokenId INT4 NOT NULL,
-    keyAlias VARCHAR(256) with null,
-    publicKeyId VARCHAR(256) with null,
     PRIMARY KEY (certSN,
     issuerDN)
 );
 
 CREATE TABLE PeerData (
     id INT4 NOT NULL,
-    name VARCHAR(256) NOT NULL,
     connectorState INT4 NOT NULL,
-    url VARCHAR(256) NOT NULL,
     data LONG VARCHAR with null,
+    name VARCHAR(256) NOT NULL,
+    rowProtection LONG VARCHAR with null,
+    rowVersion INT4 NOT NULL,
+    url VARCHAR(256) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE ProfileData (
+    id INT4 NOT NULL,
+    profileName VARCHAR(256) NOT NULL,
+    profileType VARCHAR(256) NOT NULL,
+    rawData LONG VARCHAR with null,
     rowProtection LONG VARCHAR with null,
     rowVersion INT4 NOT NULL,
     PRIMARY KEY (id)
