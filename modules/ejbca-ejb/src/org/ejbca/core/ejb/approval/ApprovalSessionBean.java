@@ -83,6 +83,7 @@ import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalPartitionWorkflowState;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
+import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -453,7 +454,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             final ApprovalStep approvalStep = approvalProfile.getStepBeingEvaluated(approvalsPerformed);
             if (approval!=null && (!approval.isApproved() || expired)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Creating rejected or expired notification for approvalProfile: "+approvalProfile.getProfileName());
+                    log.debug("Creating rejected or expired notification for approval profile: "+approvalProfile.getProfileName());
                 }
                 if (approvalStep==null || approvalStep.getStepIdentifier()==approval.getStepId()) {
                     // If the approval has been rejected or expired, we should notify all partition owners in the current step that still has not approved it
@@ -479,13 +480,13 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                     }
                 } else {
                     if (log.isDebugEnabled()) {
-                        log.debug("All steps have been satisfied, so no approvals sent for approvalProfile: "+approvalProfile.getProfileName());
+                        log.debug("All steps have been satisfied, so no approvals sent for approval profile: "+approvalProfile.getProfileName());
                     }
                 }
             } else {
                 if (approval!=null) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Request approved, notify every partition owner who's work flow is affected by the made approval for approvalProfile: "+approvalProfile.getProfileName());
+                        log.debug("Request approved, notify every partition owner who's work flow is affected by the made approval for approval profile: "+approvalProfile.getProfileName());
                     }
                     // Notify every partition owner who's work flow is affected by the made approval
                     final int currentStepId = approval.getStepId();
@@ -500,7 +501,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 // If this is a new approval request or the current approval has completed a step, we should notify all partition owners in the next step
                 if (approval==null || (approvalStep!=null && approvalStep.getStepIdentifier()!=approval.getStepId())) {
                     if (log.isDebugEnabled()) {
-                        log.debug("this is a new approval request or the current approval has completed a step, we should notify all partition owners in the next step for approvalProfile: "+approvalProfile.getProfileName());
+                        log.debug("This is a new approval request or the current approval has completed a step, we should notify all partition owners in the next step for approval profile: "+approvalProfile.getProfileName());
                     }
                     for (final ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
                         sendApprovalNotification(approvalRequest, approvalProfile, approvalStep.getStepIdentifier(), approvalPartition, ApprovalPartitionWorkflowState.REQUIRES_ACTION);
@@ -518,7 +519,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         
         if(!approvalProfile.isNotificationEnabled(approvalPartition) && !approvalProfile.isUserNotificationEnabled(approvalPartition)) {
             if (log.isDebugEnabled()) {
-                log.debug("Neither notifications nor user notifications are enabled for approvalProfile: "+approvalProfile.getProfileName());
+                log.debug("Neither notifications nor user notifications are enabled for partition '"+approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString()+"' in approval profile: "+approvalProfile.getProfileName());
             }
             return;
         }
@@ -543,7 +544,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             }
         } else {
             if(log.isDebugEnabled()) {
-                log.debug("Notifications are not enabled for approvalProfile: "+approvalProfile.getProfileName());
+                log.debug("Notifications are not enabled for approval profile: "+approvalProfile.getProfileName());
             }
         }
         
@@ -567,7 +568,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             }
         } else {
             if(log.isDebugEnabled()) {
-                log.debug("User notifications are not enabled for approvalProfile: "+approvalProfile.getProfileName());
+                log.debug("User notifications are not enabled for approval profile: "+approvalProfile.getProfileName());
             }
         }
     }
