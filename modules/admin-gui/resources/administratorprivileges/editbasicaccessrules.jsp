@@ -117,7 +117,7 @@ function roleupdated() {
 			'<%=BasicAccessRuleSet.ENDENTITY_CREATE %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_EDIT %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_DELETE %>',
-			'<%=BasicAccessRuleSet.ENDENTITY_REVOKE %>,
+			'<%=BasicAccessRuleSet.ENDENTITY_REVOKE %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_KEYRECOVER %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_APPROVE %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEWPUK %>'
