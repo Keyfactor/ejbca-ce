@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,6 +74,9 @@ public class UsernameGenerator {
 	}
 	
 	public String generateUsername(String name) {
+	    if (log.isDebugEnabled()) {
+	        log.debug(">generateUsername: "+name);
+	    }
 		String str = name;
 		switch (params.getMode()) {
 		case UsernameGeneratorParams.MODE_RANDOM:
@@ -107,7 +111,7 @@ public class UsernameGenerator {
 		}
 		String ret = addPrePostFix(str);
 		if (log.isDebugEnabled()) {
-			log.debug("Generated username: "+ret);
+			log.debug("<generateUsername, generated username: "+ret);
 		}
 		return ret;
 	}
