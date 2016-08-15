@@ -144,7 +144,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                 raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_could_not_be_executed", Integer.parseInt(requestId));
                 break;
             default:
-                raLocaleBean.addMessageError("enrollwithrequestid_status_of_request_id_is_unknown", requestStatus, Integer.parseInt(requestId));
+                raLocaleBean.addMessageError("enrollwithrequestid_status_of_request_id_is_unknown", Integer.parseInt(requestId));
                 break;
             }
         }
