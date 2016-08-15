@@ -187,6 +187,8 @@ img.menu_logo {
     display: block; }
   #contentForm\:editRequestDataTable input {
     width: 100%; }
+  #contentForm\:editRequestDataTable input.ra-button {
+    width: inherit; }
 
 .pure-form select {
   font-size: 90%;
