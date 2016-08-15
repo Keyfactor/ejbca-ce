@@ -191,7 +191,7 @@ public class RaApprovalRequestInfo implements Serializable {
             final List<ApprovalPartition> partitions = new ArrayList<>();
             for (final ApprovalPartition partition : step.getPartitions().values()) {
                 try {
-                    final StepPartitionId spId = new StepPartitionId(step.getStepIdentifier(), partition.getPartitionIdentifier());
+                    final StepPartitionId spId = new StepPartitionId(stepId, partition.getPartitionIdentifier());
                     if (approvedByMeSet.contains(spId) || (approvalProfile.canViewPartition(authenticationToken, partition) && approvedSet.contains(spId))) {
                         partitions.add(partition);
                     }
