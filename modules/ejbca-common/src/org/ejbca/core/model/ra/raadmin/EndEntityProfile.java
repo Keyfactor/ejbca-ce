@@ -1726,7 +1726,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         if (field.equals(DnComponents.OTHERNAME) 
         		|| field.equals(DnComponents.X400ADDRESS) 
         		|| field.equals(DnComponents.EDIPARTYNAME)) {
-    		log.info("isFieldImplemented got call for non-implemented field: "+field);
+            if (log.isDebugEnabled()) {
+                log.debug("isFieldImplemented got call for non-implemented/ignored subjectAltName field (custom extension is required): "+field);
+            }
         	ret = false;
         }
         return ret;
