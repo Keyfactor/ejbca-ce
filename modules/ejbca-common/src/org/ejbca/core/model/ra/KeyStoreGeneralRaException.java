@@ -17,7 +17,7 @@ import org.cesecore.NonSensitiveException;
 import org.ejbca.core.EjbcaException;
 
 /**
- * Wraps the original Exception thrown with GenerateToken.generateOrKeyRecoverToken.
+ * Wraps the original java.lang.Exception thrown with {@link #GenerateToken.generateOrKeyRecoverToken}.
  *
  * @version $Id$
  */
