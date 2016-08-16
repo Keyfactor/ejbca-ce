@@ -362,9 +362,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
     }
 
-    /** Add a field with value="", required=false, use=true, modifyable=true */
+    /** Add a field with value="", required=false, use=true, modifyable=true, if the parameter exists, ignored otherwise */
     public void addField(final String parameter){
-    	addField(getParameterNumber(parameter), parameter);
+        final int num = getParameterNumber(parameter);
+        if (num > 0) {
+            addField(num, parameter);
+        } else {
+            log.debug("Parameter does not exist (0 returned as parameter number; "+parameter);
+        }
     }
     
     /**
@@ -470,12 +475,22 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     /**
-     * Function that returns the number of one kind of field in the profile.
-     *
+     * @param parameter the name of a field from profilemappings.properties, see DnComponents
+     * @return the number of one kind of field in the profile, or 0 if it does not exist.
+     * @see DnComponents
      */
     public int getNumberOfField(final String parameter){
-    	return getNumberOfField(getParameterNumber(parameter));
+        final int num = getParameterNumber(parameter);
+        if (num != -1) {
+            return getNumberOfField(num);
+        } else {
+            return 0;
+        }
     }
+    /**
+     * @param parameter the number of a field from profilemappings.properties
+     * @return the number of one kind of field in the profile.
+     */
     public int getNumberOfField(final int parameter){
     	final ArrayList<Integer> arr = checkAndUpgradeWithNewFields(parameter);
     	return arr.get(parameter).intValue();
@@ -2066,7 +2081,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
     }
 
-	/** methods for mapping the DN, AltName, DirAttr constants from string->number */
+	/** methods for mapping the DN, AltName, DirAttr constants from string->number 
+	 * @return number from profilemappings.properties, or -1 if the parameter does not exist
+	 */
 	private static int getParameterNumber(final String parameter) {
 		final Integer number = dataConstants.get(parameter);
 		if (number != null) {

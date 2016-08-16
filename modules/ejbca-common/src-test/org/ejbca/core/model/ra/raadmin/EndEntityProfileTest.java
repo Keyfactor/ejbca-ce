@@ -19,7 +19,9 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.DnComponents;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.junit.Test;
 
@@ -63,6 +65,23 @@ public class EndEntityProfileTest {
         } catch (EndEntityFieldValidatorException e) {
             // NOPMD should throw
         }
+    }
+    
+    @Test
+    public void testProfileValuesEE() {
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.ORGANIZATION);
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.COMMONNAME);
+        profile.addField(DnComponents.JURISDICTIONLOCALITY);
+        profile.addField(DnComponents.JURISDICTIONSTATE);
+        profile.addField(DnComponents.JURISDICTIONCOUNTRY);
+        profile.addField(DnComponents.DATEOFBIRTH);
+        profile.addField(DnComponents.ORGANIZATIONIDENTIFIER);
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
+        profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
+        profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
     }
     
     private static Map<String,Serializable> makeRegexValidator(final String regex) {
