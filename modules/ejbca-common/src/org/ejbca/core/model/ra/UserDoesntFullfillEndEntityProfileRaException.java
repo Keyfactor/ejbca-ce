@@ -23,6 +23,7 @@ import org.cesecore.NonSensitiveException;
  * extends Exception and it's not marked with @WebFault.
  *
  * @version $Id$
+ * @see UserDoesntFullfillEndEntityProfile
  */
 @NonSensitiveException
 public class UserDoesntFullfillEndEntityProfileRaException extends EjbcaException {
