@@ -715,21 +715,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
         ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
         ec.setResponseContentType(responseContentType);
         ec.setResponseContentLength(token.length);
-        String fileName = "certificatetoken";
-        Map<Integer, FieldInstance> commonName = getSubjectDn().getFieldInstancesMap().get(DnComponents.COMMONNAME);
-        if(commonName != null && !StringUtils.isEmpty(commonName.get(0).getValue())){
-            fileName = commonName.get(0).getValue();
+        String fileName = CertTools.getPartFromDN(endEntityInformation.getDN(), "CN");
+        if(fileName == null){
+            fileName = "certificatetoken"; 
         }
-        final String filename = StringTools.stripFilename(fileName + fileExtension);
         ec.setResponseHeader("Content-Disposition",
-                "attachment; filename=\"" + filename + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
-        try (final OutputStream output = ec.getResponseOutputStream();) {
+                "attachment; filename=\"" + fileName + fileExtension +  "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+        try (final OutputStream output = ec.getResponseOutputStream()) {
             output.write(token);
             output.flush();
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
-            raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_token_could_not_be_downloaded", filename), e);
-            log.info("Token " + filename + " could not be downloaded", e);
+            raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_token_could_not_be_downloaded", fileName), e);
+            log.info("Token " + fileName + " could not be downloaded", e);
         }
     }
    
