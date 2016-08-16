@@ -13,6 +13,8 @@
 
 package org.ejbca.config;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Configuration from jaxws.properties
  * 
@@ -23,10 +25,20 @@ public class WebServiceConfiguration {
 	/**
      * Indicating if a call to genTokenCertificates and/or viewHardToken for non-authorized users should result in an
      * approval request instead of an authorized denied exception.
-     * @return the id of the approval profile (not the name as that can be changed)
+     * @return the id of the approval profile (not the name as that can be changed), or -1 if approvals shall not be used (setting is empty)
+     * @throws IllegalArgumentException if the value in jaxws.approvalprofileid is set, but not an integer
      */
-    public static String getApprovalProfileId() {
-      return EjbcaConfigurationHolder.getExpandedString("jaxws.approvalprofileid");
+    public static int getApprovalProfileId() {
+        int id = -1;
+        final String idString = EjbcaConfigurationHolder.getString("jaxws.approvalprofileid");
+        if (!StringUtils.isEmpty(idString)) {
+            try {
+                id = Integer.valueOf(idString);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid value in jaxws.approvalprofileid, must be a integer.", e);
+            }
+        }
+        return id;
     }
 
 	/**
