@@ -80,12 +80,15 @@ public enum EndEntityProfileCache {
      */
     public void updateProfileCache(final EntityManager entityManager, final boolean force) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace(">updateProfileCache");
+            LOG.trace(">updateProfileCache: "+force);
         }
         final long cacheEndEntityProfileTime = EjbcaConfiguration.getCacheEndEntityProfileTime();
         final long now = System.currentTimeMillis();
         // Check before acquiring lock
         if (!force && cacheEndEntityProfileTime!=0 && lastUpdate+cacheEndEntityProfileTime > now) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("<updateProfileCache returning, cache time not expired: "+cacheEndEntityProfileTime);
+            }
             return; // We don't need to update cache
         }
         try {
@@ -116,7 +119,8 @@ public enum EndEntityProfileCache {
         nameIdMapCache = nameIdCache;
         profileCache = profCache;
         if (LOG.isTraceEnabled()) {
-            LOG.trace("<updateProfileCache");
+            final long end = System.currentTimeMillis();
+            LOG.trace("<updateProfileCache took: "+(end-now)+"ms");
         }
 	}
 
