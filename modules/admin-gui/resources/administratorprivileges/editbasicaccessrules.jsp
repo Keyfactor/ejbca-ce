@@ -49,11 +49,13 @@
  * @param the new boolean state of selectElement.disabled
  * @param the new boolean option.selected state for each contained option
  */
-function selectAll(selectElement, selectDisabled, selectedValue) {
+function selectAll(selectElement, selectDisabled, selectedValue, makeSelections) {
     var length = selectElement.length;
     for (var i=0; i<length; i++) {
-    	selectElement.options[i].disabled = false;
-    	selectElement.options[i].selected = selectedValue;
+        selectElement.options[i].disabled = false;
+        if (makeSelections) {
+            selectElement.options[i].selected = selectedValue;
+        }
     }
     selectElement.disabled = selectDisabled;
 }
@@ -64,7 +66,7 @@ function selectAll(selectElement, selectDisabled, selectedValue) {
  * @param optionValues an array of (String) option values that should be enabled and selected.
  * @param the new boolean option.disabled state for unselected option
  */
-function selectSome(selectElement, optionValues, disableUnselected) {
+function selectSome(selectElement, optionValues, disableUnselected, makeSelections) {
 	selectElement.disabled = false;
     var selectLength = selectElement.length;
     for (var i=0; i<selectLength; i++) {
@@ -76,18 +78,22 @@ function selectSome(selectElement, optionValues, disableUnselected) {
         	}
         }
         if (found) {
-        	selectElement.options[i].selected = true;
-        	selectElement.options[i].disabled = false;
+            if (makeSelections) {
+                selectElement.options[i].selected = true;
+            }
+            selectElement.options[i].disabled = false;
         } else {
-        	selectElement.options[i].selected = false;
-        	selectElement.options[i].disabled = disableUnselected;
+            if (makeSelections) {
+                selectElement.options[i].selected = false;
+            }
+            selectElement.options[i].disabled = disableUnselected;
         }
     }
 }
 /**
  * Modify selectable fields according to the currently selected role.
  */
-function roleupdated() {
+function roleupdated(makeSelections) {
 	var selectcas = document.getElementById('basicRules:selectcas');
 	var selectrole = document.getElementById('basicRules:selectrole');
 	var selectendentityrules = document.getElementById('basicRules:selectendentityrules');
@@ -97,17 +103,17 @@ function roleupdated() {
 	
 	var currentrole = selectrole.options[selectrole.options.selectedIndex].value;
 	if (currentrole === '<%=DefaultRoles.CUSTOM.getName() %>' || currentrole === '<%=DefaultRoles.SUPERADMINISTRATOR.getName() %>' ) {
-		selectAll(selectcas, true, false);
-		selectAll(selectendentityrules, true, false);
-		selectAll(selectendentityprofiles, true, false);
-		selectAll(selectinternalkeybindingrules, true, false);
-		selectAll(selectother, true, false);
+		selectAll(selectcas, true, false, makeSelections);
+		selectAll(selectendentityrules, true, false, makeSelections);
+		selectAll(selectendentityprofiles, true, false, makeSelections);
+		selectAll(selectinternalkeybindingrules, true, false, makeSelections);
+		selectAll(selectother, true, false, makeSelections);
 	} else if (currentrole === '<%= DefaultRoles.CAADMINISTRATOR.getName()%>') {
 		selectcas.disabled = false;
-		selectAll(selectendentityrules, true, false);
-		selectAll(selectendentityprofiles, true, false);
-		selectAll(selectinternalkeybindingrules, false, true);
-		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
+		selectAll(selectendentityrules, true, false, makeSelections);
+		selectAll(selectendentityprofiles, true, false, makeSelections);
+		selectAll(selectinternalkeybindingrules, false, true, makeSelections);
+		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true, makeSelections);
 	} else if (currentrole === '<%= DefaultRoles.RAADMINISTRATOR.getName()%>') {
 		selectcas.disabled = false;
 		selectendentityprofiles.disabled = false;
@@ -121,9 +127,9 @@ function roleupdated() {
 			'<%=BasicAccessRuleSet.ENDENTITY_KEYRECOVER %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_APPROVE %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEWPUK %>'
-		], true);
-		selectAll(selectinternalkeybindingrules, true, false);
-		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
+		], true, makeSelections);
+		selectAll(selectinternalkeybindingrules, true, false, makeSelections);
+		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true, makeSelections);
 	} else if(currentrole === '<%= DefaultRoles.SUPERVISOR.getName()%>') {
 		selectcas.disabled = false;
 		selectendentityprofiles.disabled = false;
@@ -131,21 +137,21 @@ function roleupdated() {
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEW %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS %>'
-		], true);
-		selectAll(selectinternalkeybindingrules, true, false);
-		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
+		], true, makeSelections);
+		selectAll(selectinternalkeybindingrules, true, false, makeSelections);
+		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true, makeSelections);
 	} else if(currentrole === '<%= DefaultRoles.AUDITOR.getName()%>') {
 		selectcas.disabled = false;
 		selectendentityprofiles.disabled = false;
-		selectAll(selectendentityrules, true, false);
+		selectAll(selectendentityrules, true, false, makeSelections);
 		selectSome(selectendentityrules, [
 		                      			'<%=BasicAccessRuleSet.ENDENTITY_VIEW %>',
 		                      			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>',
-		                      		], true);
+		                      		], true, makeSelections);
 		selectSome(selectinternalkeybindingrules, [
 		    '<%= InternalKeyBindingRules.VIEW.resource() %>'
-			], true);
-		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
+			], true, makeSelections);
+		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true, makeSelections);
 	}
 }
 
@@ -163,7 +169,7 @@ function checkallfields() {
 </head>
 
 
-<body onload='roleupdated()'>
+<body onload='roleupdated(false)'>
 
 <div align="center">
 
@@ -217,7 +223,7 @@ function checkallfields() {
 		</h:panelGroup>
 
 		<h:outputText value="#{web.text.ROLETEMPLATE}"/>
-		<h:selectOneMenu id="selectrole" value="#{rolesManagedBean.currentRoleTemplate}" onchange='roleupdated()' rendered="#{rolesManagedBean.authorizedToEdit}">
+		<h:selectOneMenu id="selectrole" value="#{rolesManagedBean.currentRoleTemplate}" onchange='roleupdated(true)' rendered="#{rolesManagedBean.authorizedToEdit}">
 			<f:selectItems value="#{rolesManagedBean.availableRoles}"/>
 		</h:selectOneMenu> 
 		<h:outputText value="#{rolesManagedBean.currentRoleTemplate}" rendered="#{!rolesManagedBean.authorizedToEdit}"/>
