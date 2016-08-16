@@ -1294,6 +1294,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * EJBCA 6.6.0:
      * 
      * 1.   Adds new access rules for approval profiles
+     * 2.   If CA or certificate profiles require Approvals, create a new Approval Profile matching those settings and convert to using that
      * 
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
@@ -1401,6 +1402,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException("AlwaysAllowToken was denied access", e);
         }
+        log.error("(This is not an error) Completed upgrade procedure to 6.6.0");
     }
 
     /** Add the previously global configuration configured approval notification */
