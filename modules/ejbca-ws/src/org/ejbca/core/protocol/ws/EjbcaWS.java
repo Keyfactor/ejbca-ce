@@ -1780,18 +1780,20 @@ public class EjbcaWS implements IEjbcaWS {
                 throw new AuthorizationDeniedException(msg);
             }
 		} else {
-		    final String approvalProfileIdString = WebServiceConfiguration.getApprovalProfileId();   
+		    final int approvalProfileID = WebServiceConfiguration.getApprovalProfileId();   
             if (log.isDebugEnabled()) {
-                log.debug("approvalProfileIdString: "+approvalProfileIdString);
+                log.debug("approvalProfileID: "+approvalProfileID);
             }
             ApprovalProfile approvalProfile = null;
-            if(StringUtils.isNotEmpty(approvalProfileIdString) && NumberUtils.isNumber(approvalProfileIdString)) {
-                Integer approvalProfileId = Integer.valueOf(approvalProfileIdString);
-                approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
+            if(approvalProfileID != -1) {
+                approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileID);
             }
 		    if (approvalProfile!=null) {
-                    ar = new GenerateTokenApprovalRequest(userDataWS.getUsername(), userDataWS.getSubjectDN(), hardTokenDataWS.getLabel(), admin,
-                            null, significantcAInfo.getCAId(), endEntityProfileId, approvalProfile);
+		        if (log.isDebugEnabled()) {
+		            log.debug("Using ApprovalProfile: "+approvalProfile.getProfileName());
+		        }
+		        ar = new GenerateTokenApprovalRequest(userDataWS.getUsername(), userDataWS.getSubjectDN(), hardTokenDataWS.getLabel(), admin,
+		                null, significantcAInfo.getCAId(), endEntityProfileId, approvalProfile);
 				int status = ApprovalDataVO.STATUS_REJECTED; 					
 				try{
 					status = approvalSession.isApproved(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_1_GENERATETOKEN);
@@ -1815,7 +1817,11 @@ public class EjbcaWS implements IEjbcaWS {
 					throw new WaitingForApprovalException("Approval request with id " + requestId + " have been added for approval.", requestId);
 				}
 			}else{
-				throw new AuthorizationDeniedException();
+			    final String msg = "Can not find an ApprovalProfile with ID: "+approvalProfileID;
+			    if (log.isDebugEnabled()) {
+			        log.debug(msg);
+			    }
+				throw new AuthorizationDeniedException(msg);
 			}
 		}
 		
@@ -2130,16 +2136,18 @@ public class EjbcaWS implements IEjbcaWS {
             }catch(AuthorizationDeniedException e){
                 boolean genNewRequest = false;
                 
-                final String approvalProfileIdString = WebServiceConfiguration.getApprovalProfileId();
+                final int approvalProfileID = WebServiceConfiguration.getApprovalProfileId();
                 if (log.isDebugEnabled()) {
-                    log.debug("approvalProfileIdString: "+approvalProfileIdString);
+                    log.debug("approvalProfileID: "+approvalProfileID);
                 }
                 ApprovalProfile approvalProfile = null;
-                if(StringUtils.isNotEmpty(approvalProfileIdString) && NumberUtils.isNumber(approvalProfileIdString)) {
-                    Integer approvalProfileId = Integer.valueOf(approvalProfileIdString);
-                    approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
+                if(approvalProfileID != -1) {
+                    approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileID);
                 }
                 if(approvalProfile != null){
+                    if (log.isDebugEnabled()) {
+                        log.debug("Using Approval Profile with name: "+approvalProfile.getProfileName());
+                    }
                     // Check if an approval request for GenTokenCertificates exists, in that case we can not view the hard token data
                     if (log.isDebugEnabled()) {
                         log.debug("Checking for existing Generate approvals for getHardTokenData("+hardTokenSN+")");
@@ -2206,7 +2214,7 @@ public class EjbcaWS implements IEjbcaWS {
                     }       
                 } else {
                     if (log.isDebugEnabled()) {
-                        log.debug("No approval profile found, not generating any approval request for: "+hardTokenSN);
+                        log.debug("Can not find an ApprovalProfile with ID: "+approvalProfileID+", not generating any approval request for: "+hardTokenSN);
                     }
                     throw e;
                 }
