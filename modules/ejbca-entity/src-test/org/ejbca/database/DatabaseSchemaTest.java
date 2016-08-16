@@ -71,6 +71,8 @@ import org.junit.runners.MethodSorters;
  * 
  * We also validate that all fields can hold the values that we assume they can.
  * 
+ * Must have 'max_allowed_packet' size set to a large value, >2MB
+ * 
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
