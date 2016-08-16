@@ -112,21 +112,19 @@
                             <h:panelGroup styleClass="approvalStep" rendered="#{not empty raManageRequestBean.getPartitionName(partition)}">
         	     				<h:outputText value="Partition: #{raManageRequestBean.getPartitionName(partition)}"/>
              				</h:panelGroup>
-            				<h:dataTable id="approvedByDataTable" value="#{raManageRequestBean.getHandledPartitionData(partition)}" var="kvp"
-                 						rendered="#{not empty raManageRequestBean.getHandledPartitionData(partition)}" styleClass="pure-table" rowClasses=",pure-table-odd">   
-                				<h:column>
-                    				<h:panelGroup layout="block" styleClass="stepInstruction">
-                        				<h:outputText value="#{kvp.key}"/>
+                    		<h:panelGroup layout="block" id="approvedByDataTable" rendered="#{not empty raManageRequestBean.getHandledPartitionData(partition)}">
+                    			<ui:repeat value="#{raManageRequestBean.getHandledPartitionData(partition)}" var="kvp"> 
+                    				<h:panelGroup layout="block" styleClass="approvalControl">    
+                            			<h:outputLabel value="#{kvp.key}" styleClass="pure-u-lg-1-3"/>
+                    					<h:panelGroup layout="block">
+                        					<h:outputText value="#{kvp.value}" rendered="#{not empty kvp.value}"/>
+                        					<h:outputText value="&nbsp;" rendered="#{empty kvp.value}"/>
+                    					</h:panelGroup>
                     				</h:panelGroup>
-                				</h:column>
-                				<h:column>
-                    				<h:panelGroup layout="block" styleClass="stepInstruction">
-                        				<h:outputText value="#{kvp.value}"/>
-                    				</h:panelGroup>
-                				</h:column>  
-            				</h:dataTable>
-                        </ui:repeat>
-                    </h:panelGroup>
+                    			</ui:repeat>
+                    		</h:panelGroup>
+                		</ui:repeat>
+            		</h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
             
