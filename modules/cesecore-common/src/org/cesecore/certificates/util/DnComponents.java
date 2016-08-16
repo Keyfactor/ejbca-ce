@@ -130,7 +130,8 @@ public class DnComponents {
     public static final String JURISDICTIONLOCALITY = "JURISDICTIONLOCALITY";
     public static final String JURISDICTIONSTATE = "JURISDICTIONSTATE";
     public static final String JURISDICTIONCOUNTRY = "JURISDICTIONCOUNTRY";
-
+    public static final String ORGANIZATIONIDENTIFIER = "ORGANIZATIONIDENTIFIER";
+    
     // AltNames
     public static final String RFC822NAME = "RFC822NAME";
     public static final String DNSNAME = "DNSNAME";
