@@ -15,14 +15,12 @@
 #ejbcaws.enabled=true
 
 #------------------- JAXWS settings -------------
-# Settings indicating if a call to gentokencertificates or viewhardtoken for non-authorized users
-# should result in an approval request instead of an authorized denied exception.
-
-# Setting indicating the id of the approval profile applied to allow an action for
-# a non-authorized administrator. If not set, actions for non-authorized administrators 
-# are not allowed and are rejected right away. Please note that in the approval profile, 
-# it is possible to allow some actions for non-authorized administrators and reject other 
-# actions. 
+# Setting indicating if a call to genTokenCertificates and/or viewHardToken for non-authorized users 
+# should result in an approval request instead of an authorized denied exception (i.e. rejected 
+# right away).
+# This setting is only applicable to the calls named above. 
+# (Approvals for other methods like editUser are triggered the normal way for approvals, 
+# i.e. by selecting an approval profile in the CA or Certificate Profile configuration.)       
 # The id is used instead of the name, since the name can be changed while the id remain the same.
 # Default : empty
 #jaxws.approvalprofileid=
