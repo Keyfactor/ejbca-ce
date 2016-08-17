@@ -85,7 +85,7 @@
                 </h:panelGroup>
             </ui:repeat>
             
-            <h:panelGroup id="editRequestDataTable" layout="block" rendered="#{raManageRequestBean.editDataVisible}">
+            <h:panelGroup id="editRequestDataTable" layout="block" styleClass="internal-frame" rendered="#{raManageRequestBean.editDataVisible}">
                 <component:eedetails raEndEntityDetails="#{raManageRequestBean.request.endEntityDetails}" editMode="true" approvalRequestMode="true" rendered="#{raManageRequestBean.request.endEntityDetails != null}"/>
                 
                 <h:outputText styleClass="pure-u-lg-1 pre" value=" "/>
@@ -117,8 +117,8 @@
                     				<h:panelGroup layout="block" styleClass="approvalControl">    
                             			<h:outputLabel value="#{kvp.key}" styleClass="pure-u-lg-1-3"/>
                     					<h:panelGroup layout="block">
-                        					<h:outputText value="#{kvp.value}" rendered="#{not empty kvp.value}"/>
-                        					<h:outputText value="&nbsp;" rendered="#{empty kvp.value}"/>
+                        					<h:outputText value="#{kvp.value}" rendered="#{not empty kvp.value}" styleClass="pure-u-lg-2-3 ra-outputText"/>
+                        					<h:outputText value="&nbsp;" rendered="#{empty kvp.value}" styleClass="pure-u-lg-2-3 ra-outputText"/>
                     					</h:panelGroup>
                     				</h:panelGroup>
                     			</ui:repeat>
