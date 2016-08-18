@@ -60,7 +60,7 @@ h1, h2, h3, h4, p, span {
   font-family: Helvetica, Arial, sans-serif; }
 
 #h3ApprovedSteps {
-  margin-left: 2% !important; }
+  margin-left: 1.5% !important; }
 
 .h3Margin {
   margin: 2% 0 2% 0 !important; }
@@ -200,14 +200,13 @@ span .approvalStep,
   padding: 1% 0 1% 2%; }
 
 #contentForm\:editRequestDataTable {
-  word-break: break-all;
-  margin-left: 2%; }
+  word-break: break-all; }
   #contentForm\:editRequestDataTable label {
     display: block; }
-  #contentForm\:editRequestDataTable input {
+  #contentForm\:editRequestDataTable input:not([type="submit"]) {
     width: 100%; }
-  #contentForm\:editRequestDataTable input.ra-button {
-    width: inherit; }
+  #contentForm\:editRequestDataTable span {
+    word-break: break-all; }
 
 .pure-form select {
   font-size: 90%;
@@ -220,7 +219,7 @@ span .approvalStep,
     height: 100%; } }
 .internal-frame > fieldset > .pure-control-group > input {
   font-size: 90%;
-  width: 90%; }
+  width: 98%; }
 .internal-frame > fieldset > .pure-control-group > label {
   text-align: left; }
 
@@ -549,7 +548,7 @@ a {
   color: #fff; }
 
 .bigStatus, .smallStatus, .editLogEntry {
-  margin: 1% 0 0 2%;
+  margin: 1% 0 0 1%;
   color: #fff;
   font-style: italic; }
 
@@ -613,40 +612,8 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   padding: 1% 0 1% 2%;
   word-break: break-word; }
   #contentForm\:viewRequestDataTable > span {
-    display: block; }
-
-@-moz-document url-prefix() {
-  /*För Firefox*/
-  #contentForm\:viewRequestDataTable {
-    word-break: break-all; }
-
-  #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage {
-    display: none;
-    margin: 1% 0 2% 0;
-    color: #fff;
-    border-style: solid;
-    background: black;
-    border-color: black;
-    padding: 1%;
-    width: 90%;
-    word-break: break-all; } }
-.subjectErrorMessage {
-  display: none;
-  margin: 1% 0px 2%;
-  color: white;
-  border-style: solid;
-  background: black none repeat scroll 0% 0%;
-  border-color: black;
-  padding: 1%;
-  width: 79%;
-  word-break: break-all;
-  float: none; }
-
-#requestInfoForm\:useRequestIdLink:hover {
-  text-decoration: underline; }
-
-.tabBbutton > input {
-  border-radius: 0; }
+    display: block;
+    max-width: 98%; }
 
 /* Styling av felmeddelanden som dyker upp när man inte fyllt i lösenord i make request*/
 #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage {
@@ -657,8 +624,44 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   background: black;
   border-color: black;
   padding: 1%;
-  width: 90%;
+  width: 95%;
   word-break: break-word; }
+
+@-moz-document url-prefix() {
+  /*För Firefox*/
+  #contentForm\:viewRequestDataTable {
+    word-break: break-all; }
+
+  #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage {
+    word-break: break-all; } }
+.subjectErrorMessage {
+  display: none;
+  margin: 1% 0px 2%;
+  color: white;
+  border-style: solid;
+  background: black none repeat scroll 0% 0%;
+  border-color: black;
+  padding: 1%;
+  width: 95%;
+  word-break: break-all;
+  float: none; }
+
+#requestTemplateForm\:selectEEPOneMenuMessage, #requestTemplateForm\:selectCAOneMenuMessage, #requestTemplateForm\:selectKeyPairGenerationMessage {
+  display: none;
+  margin: 1% 0 2% 0;
+  color: #fff;
+  border-style: solid;
+  background: black;
+  border-color: black;
+  padding: 1%;
+  width: 95%;
+  word-break: break-word; }
+
+#requestInfoForm\:useRequestIdLink:hover {
+  text-decoration: underline; }
+
+.tabBbutton > input {
+  border-radius: 0; }
 
 #keyPairForm\:certificateRequestMessage {
   display: none;
@@ -731,18 +734,27 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   float: none; }
 .approvalControl > textarea {
   margin-bottom: 5%; }
+.approvalControl input:not([type="checkbox"]) {
+  width: 98%; }
 
 span.approvalStep {
-  margin-left: 2%; }
+  margin-left: 1.5%; }
 
-.approvalStep > div > div.approvalControl > label {
-  margin-left: 2%; }
+.approvalStep > div {
+  padding-left: 1.5%; }
+  .approvalStep > div > .approvalControl > span {
+    display: block; }
 
-#contentForm\:commandApprove, #contentForm\:commandReject, #contentForm\:commandEditData {
+#contentForm\:commandApprove, #contentForm\:commandReject, #contentForm\:commandEditData, #contentForm\:commandSaveData, #contentForm\:commandCancelEdit {
   width: 80px; }
 
 #contentForm\:requestApproveMessage {
   margin: 1% 0 0 2%; }
+
+.searchButton {
+  width: 50px;
+  height: 35px;
+  margin-left: 5%; }
 
 .footer {
   height: 100px;
@@ -1183,7 +1195,8 @@ span.approvalStep {
     margin: 1% 0 2% 0; }
 
   .subjectErrorMessage {
-    float: right; }
+    float: right;
+    width: 79%; }
 
   #makeRequestButton, #requestStatusButton, #searchCertsButton {
     width: 180px; }
@@ -1197,7 +1210,6 @@ span.approvalStep {
       margin: 0.5em 0 0.2em; }
 
   #contentForm\:editRequestDataTable {
-    margin: 0 0 0 2%;
     word-break: break-all; }
     #contentForm\:editRequestDataTable label {
       display: block; }
@@ -1206,15 +1218,22 @@ span.approvalStep {
     #contentForm\:editRequestDataTable span {
       margin: 0.5em 0 0.2em; }
 
-  .approvalControl > label {
-    float: left; }
   .approvalControl > textarea {
     margin-bottom: 1%; }
   .approvalControl > input {
     margin-bottom: 1%; }
+  .approvalControl > input:not([type="checkbox"]) {
+    width: auto; }
 
   #contentForm\:currentStep div > textarea {
     width: auto; }
+
+  .searchButton {
+    width: 80px; }
+
+  #requestTemplateForm\:selectEEPOneMenuMessage, #requestTemplateForm\:selectCAOneMenuMessage, #requestTemplateForm\:selectKeyPairGenerationMessage {
+    float: right;
+    width: 90%; }
 
   .footer > .align-center > p {
     /*footer-texten*/
@@ -1441,8 +1460,13 @@ span.approvalStep {
   .pure-button {
     height: auto; }
 
-  #contentForm\:editRequestDataTable label {
-    display: inline-block; } }
+  #contentForm\:editRequestDataTable {
+    padding-left: 2%; }
+    #contentForm\:editRequestDataTable label {
+      display: inline-block; }
+
+  .searchButton {
+    margin-left: 2%; } }
 /*
 "gamla"
     "base"  // smartphone
