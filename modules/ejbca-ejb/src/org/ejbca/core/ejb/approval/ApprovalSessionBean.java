@@ -16,6 +16,7 @@ package org.ejbca.core.ejb.approval;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,6 +60,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.ValueExtractor;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -519,7 +521,13 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         
         if(!approvalProfile.isNotificationEnabled(approvalPartition) && !approvalProfile.isUserNotificationEnabled(approvalPartition)) {
             if (log.isDebugEnabled()) {
-                log.debug("Neither notifications nor user notifications are enabled for partition '"+approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString()+"' in approval profile: "+approvalProfile.getProfileName());
+                String partitionString = "";
+                if(approvalProfile instanceof PartitionedApprovalProfile) {
+                    final DynamicUiProperty<? extends Serializable> partitionNameproperty = approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
+                    final String partitionName = partitionNameproperty.getValueAsString();
+                    partitionString = " for partition '"+partitionName + "'";
+                }
+                log.debug("Neither notifications nor user notifications are enabled"+ partitionString + " in approval profile: "+approvalProfile.getProfileName());
             }
             return;
         }
