@@ -125,6 +125,7 @@
 	<classpathentry kind="lib" path="lib/ext/easymock/cglib-nodep-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/easymock/objenesis-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.4.5.jar" sourcepath="/cert-cvc-trunk"/>
+	<classpathentry kind="lib" path="lib/simplecaptcha/simplecaptcha-1.2.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="var" path="JBOSS7_HOME"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>

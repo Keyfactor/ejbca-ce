@@ -371,6 +371,21 @@
 								</h:inputText>
 								<h:message for="emailField" id="emailFieldMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="pure-control-group">
+								<h:outputLabel for="txtCaptchaId" value="#{msg.enroll_enter_text_shown_in_the_image}" />
+								<h:inputText id="txtCaptchaId" required="true"
+									value="#{enrollMakeNewRequestBean.captchaText}" label="Enter Captcha"
+									autocomplete="false">
+									<f:validator validatorId="captchaValidator" />
+									<f:attribute name="raLocaleBean" value="#{enrollMakeNewRequestBean.raLocaleBean}"/>
+								</h:inputText>
+								<h:message for="txtCaptchaId" id="captchaMessage" errorClass="showErrorMessage"/>
+								<h:graphicImage id="imgCaptchaId" value="captcha.jpg" />
+								<h:commandLink
+									onclick="document.getElementById('requestInfoForm:imgCaptchaId').src = 'captcha.jpg?' + Math.random();  return false">
+									<h:graphicImage library="images" value="img/refresh.png" />
+								</h:commandLink>
+							</h:panelGroup>
 						</fieldset>
 						<h:inputHidden id="userCredentialsMessageInput" binding="#{enrollMakeNewRequestBean.userCredentialsMessagesComponent}"/>
 						<h:message for="userCredentialsMessageInput" id="userCredentialsMessage" errorClass="showErrorMessage"/>

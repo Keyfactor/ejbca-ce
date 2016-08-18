@@ -105,7 +105,16 @@
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>*.xhtml</url-pattern>
     </servlet-mapping>
-
+     
+    <servlet>
+		<servlet-name>CaptchaServlet</servlet-name>
+		<servlet-class>org.ejbca.ra.jsfext.CaptchaServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>CaptchaServlet</servlet-name>
+		<url-pattern>/captcha.jpg</url-pattern>
+	</servlet-mapping>
+ 
     <session-config>
         <!-- This timeout of 30 minutes will be used for non-JavaScript users that can't do background polling. -->
         <session-timeout>30</session-timeout>
