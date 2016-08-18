@@ -11,13 +11,14 @@ fi
 # Check that JAVA_HOME is set
 if [ "x${JAVA_HOME}" = "x" ]; then
 	javaCmd="java"
-	JAVA_HOME=$(dirname $(dirname $(readlink -f $(which ${javaCmd}))))
 else
-    javaCmd=${JAVA_HOME}/bin/java
+	javaCmd=${JAVA_HOME}/bin/java
 fi
 
+jreHome=$(dirname $(dirname $(readlink -f $(which ${javaCmd}))))
+
 if [ "x${JAVA_EXT}" = "x" ] ; then
-	JAVA_EXT="${JAVA_HOME}/lib/ext:/usr/java/packages/lib/ext:${TOOLBOX_HOME}/ext"
+	JAVA_EXT="${jreHome}/lib/ext:/usr/java/packages/lib/ext:${TOOLBOX_HOME}/ext"
 fi
 
 JAVA_OPT="${JAVA_OPT} -Djava.ext.dirs=${JAVA_EXT}"
