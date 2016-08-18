@@ -336,6 +336,7 @@
         </fileset>
     </path>
 
+	<path id="lib.simplecaptcha.classpath"><fileset dir="${ejbca.home}/lib/simplecaptcha" includes="simplecaptcha-*.jar"/></path>
     <!-- Now when everything is set up, we can load the old property defaults -->
     <condition property="jndi.properties.file" value="${ejbca.home}/conf/jndi.properties.${appserver.subtype}">
         <available file="${ejbca.home}/conf/jndi.properties.${appserver.subtype}"/>
