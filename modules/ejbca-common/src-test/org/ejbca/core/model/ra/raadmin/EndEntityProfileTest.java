@@ -13,6 +13,7 @@
 package org.ejbca.core.model.ra.raadmin;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.Serializable;
@@ -78,10 +79,15 @@ public class EndEntityProfileTest {
         profile.addField(DnComponents.JURISDICTIONCOUNTRY);
         profile.addField(DnComponents.DATEOFBIRTH);
         profile.addField(DnComponents.ORGANIZATIONIDENTIFIER);
+        profile.addField("Foo");
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
         profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
         profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+        
+        assertTrue(profile.getUse(DnComponents.ORGANIZATION, 0));
+        assertFalse(profile.getUse("Foo", 0));
+
     }
     
     private static Map<String,Serializable> makeRegexValidator(final String regex) {
