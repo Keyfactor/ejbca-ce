@@ -149,7 +149,9 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
 
     /** Checks for present certificate serial number unique index in a new transaction in order to avoid rollback, since we can expect SQL exceptions here. 
      * Should not be used externally.
-     * NOTE: does not log if test certificate was stored to the database */
+     * NOTE: does not add an even to the security audit log, that test certificates were added to the database, and removed.
+     * All normal operations that stores certificates in the database creates audit log events.
+     */
     void checkForUniqueCertificateSerialNumberIndexInTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
             int certificateProfileId, int endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
 

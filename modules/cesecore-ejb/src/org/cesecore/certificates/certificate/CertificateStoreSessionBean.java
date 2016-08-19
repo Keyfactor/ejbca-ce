@@ -174,9 +174,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
     /** same as storeCertificateNoAuth but with a flag to not audit log certificate storage. 
      * The only reason to not audit log is when called from checkForUniqueCertificateSerialNumberIndexInTransaction
+     * @param doAuditLog determines if a security audit log even shall be written or now with, EventTypes.CERT_STORED, ModuleTypes.CERTIFICATE, 
+     * must only be used when storing special internal certificates, such as the test certificates for checking unique database index. 
      */
     private CertificateDataWrapper storeCertificateNoAuthInternal(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type,
-            int certificateProfileId, final int endEntityProfileId, String tag, long updateTime, boolean doLog) {
+            int certificateProfileId, final int endEntityProfileId, String tag, long updateTime, boolean doAuditLog) {
         final PublicKey pubk = enrichEcPublicKey(incert.getPublicKey(), cafp);
         // Create the certificate in one go with all parameters at once. This used to be important in EJB2.1 so the persistence layer only creates
         // *one* single
@@ -195,7 +197,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final CertificateData certificateData = new CertificateData(incert, pubk, username, cafp, status, type, certificateProfileId, endEntityProfileId, tag, updateTime,
                 !useBase64CertTable && storeCertificateData, storeSubjectAlternativeName);
         entityManager.persist(certificateData);
-        if (doLog) {
+        if (doAuditLog) {
             final String serialNo = CertTools.getSerialNumberAsString(incert);
             final String msg = INTRES.getLocalizedMessage("store.storecert", username, certificateData.getFingerprint(), certificateData.getSubjectDN(), certificateData.getIssuerDN(), serialNo);
             final String caId = String.valueOf(CertTools.getIssuerDN(incert).hashCode());
