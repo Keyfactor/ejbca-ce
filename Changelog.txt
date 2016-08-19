@@ -498,6 +498,23 @@ New Feature
 	[ECA-4233] - Add Certificate Profiles setting to limit certificate storage
 	[ECA-4242] - Certificate Profile Setting for restricting certificate data being written to the CertificateData/Base64CertData tables
 
+EJBCA 6.3.1.1, 2015-06-01
+---
+Bug
+	[ECA-4208] - OcspKeyBindings are not listed as available default responders
+	[ECA-4209] - Regression: Ad hoc upgrade of OCSP might be broken by the CachingCryptoToken
+
+Improvement
+	[ECA-4038] - Have EJBCA DB CLI fail nicely when built in Community Edition
+	[ECA-4245] - GUI: CA creation page usability
+	[ECA-4260] - Add flowchart of SCEP enrollment/renewal to admin docs
+
+Task
+	[ECA-4119] - Enterprise feature
+	[ECA-4120] - Enterprise feature
+	[ECA-4196] - Replace EJBCA logotypes in documentation
+	[ECA-4227] - Update EJBCA logo and favicon
+
 EJBCA 6.3.1, 2015-03-26
 ---
 Bug
