@@ -8,16 +8,25 @@ if [ -z ${TOOLBOX_HOME} ] ; then
 	TOOLBOX_HOME=`echo $(dirname ${0})`
 fi
 
-# Check that JAVA_HOME is set
-if [ "x${JAVA_HOME}" = "x" ]; then
+if [ -z ${JAVA_HOME} ]; then
 	javaCmd="java"
 else
 	javaCmd=${JAVA_HOME}/bin/java
 fi
 
-jreHome=$(dirname $(dirname $(readlink -f $(which ${javaCmd}))))
 
-if [ "x${JAVA_EXT}" = "x" ] ; then
+if [ -z ${JAVA_EXT} ] ; then
+	jreHome=$(dirname $(dirname $(readlink -f $(which ${javaCmd}))))
+
+	if [ ! -d ${jreHome}/lib/ext ] ; then
+		jreHome=${jreHome}/jre
+	fi
+
+	if [ ! -d ${jreHome}/lib/ext ] ; then
+		echo "Can not find the ext directory"
+		exit
+	fi
+
 	JAVA_EXT="${jreHome}/lib/ext:/usr/java/packages/lib/ext:${TOOLBOX_HOME}/ext"
 fi
 
