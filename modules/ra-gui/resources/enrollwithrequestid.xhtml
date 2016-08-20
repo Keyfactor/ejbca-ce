@@ -84,7 +84,9 @@
 									<f:validateRequired/>
 								</h:inputSecret>
 								<h:message for="passwordField" id="passwordFieldMessage" styleClass="showErrorMessage"/>
-							</h:panelGroup>
+							</h:panelGroup>							
+							<ui:remove>
+							<!-- Captcha removed until working correctly and configurable -->
 							<h:panelGroup layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="txtCaptchaId" value="#{msg.enroll_enter_text_shown_in_the_image}" />
 								<h:inputText id="txtCaptchaId" required="true"
@@ -100,6 +102,7 @@
 									<h:graphicImage library="images" value="img/refresh.png" />
 								</h:commandLink>
 							</h:panelGroup>
+							</ui:remove>
 							<h:panelGroup layout="block">
 								<h:commandButton id="generatePem"
 									value="#{msg.enroll_generate_pem}"
