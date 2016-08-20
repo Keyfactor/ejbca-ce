@@ -97,14 +97,15 @@ public class RaAccessBean implements Serializable {
         return isAuthorized(StandardRules.ROLE_ROOT.resource());
     }
     
-    /* These methods correspond to menu items in menu.xhtml */
+    /** correspond to menu items in menu.xhtml
+     * This method shows and hides the whole enrollment menu */
     public boolean isAuthorizedToEnroll() {
         return isAuthorizedToEnrollMakeRequest() ||
-                isAuthorizedToEnrollWithRequestId() ||
-                isAuthorizedToEnrollSeeRequestStatus() ||
-                isAuthorizedToEnrollRenewBrowserCert();
+                isAuthorizedToEnrollWithRequestId();
     }
     
+    /** correspond to menu items in menu.xhtml
+     * This method shows and hides the make request sub menu item */
     public boolean isAuthorizedToEnrollMakeRequest() {
         // Authorized to make request if user have access to at least one end entity profile
         if (log.isDebugEnabled() && (this.authorizedEndEntityProfiles.size()==0)) {
@@ -114,16 +115,14 @@ public class RaAccessBean implements Serializable {
         return this.authorizedEndEntityProfiles.size()>0;
     }
     
+    /** correspond to menu items in menu.xhtml
+     * This method shows and hides the use request id sub menu item */
     public boolean isAuthorizedToEnrollWithRequestId() {
-        return true; // TODO
-    }
-    
-    public boolean isAuthorizedToEnrollSeeRequestStatus() {
-        return true; // TODO
-    }
-    
-    public boolean isAuthorizedToEnrollRenewBrowserCert() {
-        return true; // TODO
+        // There are no access rules available for "finalizing" requests, i.e. retrieving the certificate for your request
+        // For starters we will assume that the same person who made the request is finalizing it with request ID, therefore
+        // The same access rules aply as when making a request. 
+        // This is a safe default until we can add access rules to allow "public" users to enroll
+        return isAuthorizedToEnrollMakeRequest();
     }
     
     public boolean isAuthorizedToCas() {
