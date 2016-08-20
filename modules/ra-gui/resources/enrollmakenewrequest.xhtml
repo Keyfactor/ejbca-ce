@@ -371,6 +371,8 @@
 								</h:inputText>
 								<h:message for="emailField" id="emailFieldMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
+							<ui:remove>
+							<!-- Captcha removed until working correctly and configurable -->
 							<h:panelGroup layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="txtCaptchaId" value="#{msg.enroll_enter_text_shown_in_the_image}" />
 								<h:inputText id="txtCaptchaId" required="true"
@@ -386,6 +388,7 @@
 									<h:graphicImage library="images" value="img/refresh.png" />
 								</h:commandLink>
 							</h:panelGroup>
+							</ui:remove>
 						</fieldset>
 						<h:inputHidden id="userCredentialsMessageInput" binding="#{enrollMakeNewRequestBean.userCredentialsMessagesComponent}"/>
 						<h:message for="userCredentialsMessageInput" id="userCredentialsMessage" errorClass="showErrorMessage"/>
