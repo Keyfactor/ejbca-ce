@@ -558,7 +558,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         
         if(approvalProfile.isUserNotificationEnabled(approvalPartition)) {
             final EndEntityInformation userdata = getEndEntity(approvalRequest);
-            if ((userdata != null)) {
+            if ((userdata != null) && (userdata.getEmail() != null)) {
                 final String userRecipient = userdata.getEmail();
                 final String userSender = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_SENDER).getValue();
                 final String userSubject = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT).getValue();
