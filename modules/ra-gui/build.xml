@@ -26,7 +26,6 @@
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.ldap.classpath"/>
-		<path refid="lib.simplecaptcha.classpath"/>
 	</path>
 	
     <target name="clean" description="Clean up this module">
@@ -38,7 +37,6 @@
     	<copy file="${resources.dir}/WEB-INF/web.xml" tofile="${build.dir}/WEB-INF/web.xml"/>
         <war destfile="${mod.ra-gui.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml">
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.14.jar"/>
-        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/simplecaptcha" includes="simplecaptcha-*.jar"/>
         	<fileset dir="${resources.dir}"/>
         </war>
     </target>

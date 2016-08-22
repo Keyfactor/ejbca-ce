@@ -69,17 +69,16 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     @ManagedProperty(value = "#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
+
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) {
         this.raAuthenticationBean = raAuthenticationBean;
     }
 
     @ManagedProperty(value = "#{raLocaleBean}")
     private RaLocaleBean raLocaleBean;
+
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {
         this.raLocaleBean = raLocaleBean;
-    }
-    public RaLocaleBean getRaLocaleBean(){
-        return raLocaleBean;
     }
 
     private String requestId;
@@ -89,7 +88,6 @@ public class EnrollWithRequestIdBean implements Serializable {
     private String password;
     private IdNameHashMap<CAInfo> authorizedCAInfos;
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();
-    private String captchaText;
 
     @PostConstruct
     private void postConstruct() {
@@ -419,18 +417,6 @@ public class EnrollWithRequestIdBean implements Serializable {
      */
     public void setPassword(String password) {
         this.password = password;
-    }
-    /**
-     * @return the captchaText
-     */
-    public String getCaptchaText() {
-        return captchaText;
-    }
-    /**
-     * @param captchaText the captchaText to set
-     */
-    public void setCaptchaText(String captchaText) {
-        this.captchaText = captchaText;
     }
     
     
