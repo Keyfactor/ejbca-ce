@@ -174,7 +174,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
     /** same as storeCertificateNoAuth but with a flag to not audit log certificate storage. 
      * The only reason to not audit log is when called from checkForUniqueCertificateSerialNumberIndexInTransaction
-     * @param doAuditLog determines if a security audit log even shall be written or now with, EventTypes.CERT_STORED, ModuleTypes.CERTIFICATE, 
+     * @param doAuditLog determines if a security audit log event shall be written or not with, EventTypes.CERT_STORED, ModuleTypes.CERTIFICATE, 
      * must only be used when storing special internal certificates, such as the test certificates for checking unique database index. 
      */
     private CertificateDataWrapper storeCertificateNoAuthInternal(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type,
