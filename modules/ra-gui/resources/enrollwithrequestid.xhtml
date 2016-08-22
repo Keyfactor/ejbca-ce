@@ -84,74 +84,49 @@
 									<f:validateRequired/>
 								</h:inputSecret>
 								<h:message for="passwordField" id="passwordFieldMessage" styleClass="showErrorMessage"/>
-							</h:panelGroup>							
-							<ui:remove>
-							<!-- Captcha removed until working correctly and configurable -->
-							<h:panelGroup layout="block" styleClass="pure-control-group">
-								<h:outputLabel for="txtCaptchaId" value="#{msg.enroll_enter_text_shown_in_the_image}" />
-								<h:inputText id="txtCaptchaId" required="true"
-									value="#{enrollWithRequestIdBean.captchaText}" label="Enter Captcha"
-									autocomplete="false">
-									<f:validator validatorId="captchaValidator" />
-									<f:attribute name="raLocaleBean" value="#{enrollWithRequestIdBean.raLocaleBean}"/>
-								</h:inputText>
-								<h:message for="txtCaptchaId" id="captchaMessage" errorClass="showErrorMessage"/>
-								<h:graphicImage id="imgCaptchaId" value="captcha.jpg" />
-								<h:commandLink
-									onclick="document.getElementById('enrollWithRequestIdForm:imgCaptchaId').src = 'captcha.jpg?' + Math.random();  return false">
-									<h:graphicImage library="images" value="img/refresh.png" />
-								</h:commandLink>
 							</h:panelGroup>
-							</ui:remove>
 							<h:panelGroup layout="block">
 								<h:commandButton id="generatePem"
 									value="#{msg.enroll_generate_pem}"
 									action="#{enrollWithRequestIdBean.generateCertificatePem}"
 									rendered="#{enrollWithRequestIdBean.renderGenerateCertificate}"
 									styleClass="pure-button ra-button">
-									<f:param name="validationRequiredFromRequest" value="true" />
 								</h:commandButton>
 								<h:commandButton id="generatePemFullChain"
 									value="#{msg.enroll_generate_pem_full_chain}"
 									action="#{enrollWithRequestIdBean.generateCertificatePemFullChain}"
 									rendered="#{enrollWithRequestIdBean.renderGenerateCertificate}"
 									styleClass="pure-button ra-button">
-									<f:param name="validationRequiredFromRequest" value="true" />
 								</h:commandButton>
 								<h:commandButton id="generatePkcs7"
 									value="#{msg.enroll_generate_pkcs7}"
 									action="#{enrollWithRequestIdBean.generateCertificatePkcs7}"
 									rendered="#{enrollWithRequestIdBean.renderGenerateCertificate}"
 									styleClass="pure-button ra-button">
-									<f:param name="validationRequiredFromRequest" value="true" />
 								</h:commandButton>
 								<h:commandButton id="generateDer"
 									value="#{msg.enroll_generate_der}"
 									action="#{enrollWithRequestIdBean.generateCertificateDer}"
 									rendered="#{enrollWithRequestIdBean.renderGenerateCertificate}"
 									styleClass="pure-button ra-button">
-									<f:param name="validationRequiredFromRequest" value="true" />
 								</h:commandButton>
 								<h:commandButton id="generateJks"
 									value="#{msg.enroll_generate_jks}"
 									action="#{enrollWithRequestIdBean.generateKeyStoreJks}"
 									rendered="#{enrollWithRequestIdBean.renderGenerateKeyStoreJks}"
 									styleClass="pure-button ra-button">
-									<f:param name="validationRequiredFromRequest" value="true" />
 								</h:commandButton>
 								<h:commandButton id="generatePkcs12"
 									value="#{msg.enroll_generate_p12}"
 									action="#{enrollWithRequestIdBean.generateKeyStorePkcs12}"
 									rendered="#{enrollWithRequestIdBean.renderGenerateKeyStorePkcs12}"
 									styleClass="pure-button ra-button">
-									<f:param name="validationRequiredFromRequest" value="true" />
 								</h:commandButton>
 								<h:commandButton id="generateKeyStorePem"
 									value="#{msg.enroll_generate_pem}"
 									action="#{enrollWithRequestIdBean.generateKeyStorePem}"
 									rendered="#{enrollWithRequestIdBean.renderGenerateKeyStorePem}"
 									styleClass="pure-button ra-button">
-									<f:param name="validationRequiredFromRequest" value="true" />
 								</h:commandButton>
 							</h:panelGroup>
 						</fieldset>
