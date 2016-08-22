@@ -1,1 +1,0 @@
-lib/simplecaptcha-1.2.1 is licensed under the BSD license

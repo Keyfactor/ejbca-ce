@@ -109,11 +109,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     @ManagedProperty(value = "#{raLocaleBean}")
     private RaLocaleBean raLocaleBean;
+
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {
         this.raLocaleBean = raLocaleBean;
-    }
-    public RaLocaleBean getRaLocaleBean(){
-        return raLocaleBean;
     }
 
     public enum TokenDownloadType {
@@ -161,7 +159,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private boolean requestPreviewMoreDetails;
     private UIComponent subjectDnMessagesComponent;
     private UIComponent userCredentialsMessagesComponent;
-    private String captchaText;
+  
+
+
 
     @PostConstruct
     private void postContruct() {
@@ -1404,20 +1404,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public void setSubjectDnMessagesComponent(UIComponent subjectDnMessagesComponent) {
         this.subjectDnMessagesComponent = subjectDnMessagesComponent;
-    }
-
-    /**
-     * @return the captchaText
-     */
-    public String getCaptchaText() {
-        return captchaText;
-    }
-
-    /**
-     * @param captchaText the captchaText to set
-     */
-    public void setCaptchaText(String captchaText) {
-        this.captchaText = captchaText;
     }
     
     
