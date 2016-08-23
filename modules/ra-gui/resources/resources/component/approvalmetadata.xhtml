@@ -88,7 +88,7 @@
                             <h:selectOneRadio disabled="#{raManageRequestBean.isPartitionHandled(partition) 
                                                             || !raManageRequestBean.canApproveParition(partition)
                                                             || raManageRequestBean.isPropertyReadOnly(property.name)}"
-                                value="#{property.encodedValue}" layout="pageDirection">
+                                value="#{property.encodedValue}" layout="lineDirection">
                                 <f:selectItems value="#{partition.getPropertyPossibleValues(property)}" var="radioButton" itemLabel="#{radioButton.label}" />
                                 <f:converter converterId="radioButtonConverter"/>
                             </h:selectOneRadio>
@@ -103,76 +103,6 @@
                 </ui:repeat>
             </h:panelGroup>
 	</h:panelGroup>
-
-<ui:remove>
-<!-- Temporary 2016-08-14: Old table style, which we try to replace with new div style above -->   
-            <h:dataTable id="approvalMetaDataTable" value="#{raManageRequestBean.getPartitionProperties(partition)}" var="property"
-                 rendered="#{not empty raManageRequestBean.getPartitionProperties(partition)}" styleClass="pure-table" rowClasses=",pure-table-odd">   
-                <h:column>
-                    <h:panelGroup layout="block" styleClass="stepInstruction">
-                        <h:outputText 
-                            value="#{property.name}"/>
-                    </h:panelGroup>    
-                </h:column>   
-                <h:column>
-                    <h:panelGroup layout="block" styleClass="approvalControl">
-                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'String' and !property.multiValued and raManageRequestBean.isPropertyReadOnly(property.name)}" >
-                            <h:outputText value="#{property.value}" >
-                                    <f:converter converterId="stringConverter"/>
-                            </h:outputText>
-                        </h:panelGroup>
-                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'String' and !property.multiValued and !raManageRequestBean.isPropertyReadOnly(property.name)}" >
-                            <h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
-                                || !raManageRequestBean.canApproveParition(partition)
-                                || raManageRequestBean.isPropertyReadOnly(property.name)}" 
-                                value="#{property.value}" >
-                                    <f:converter converterId="stringConverter"/>
-                            </h:inputText>
-                        </h:panelGroup>
-                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'MultiLineString' and !property.multiValued}">
-                            <h:inputTextarea disabled="#{raManageRequestBean.isPartitionHandled(partition) 
-                                || !raManageRequestBean.canApproveParition(partition)
-                                || raManageRequestBean.isPropertyReadOnly(property.name)}" 
-                                value="#{property.value}">
-                                <f:converter converterId="stringConverter"/>
-                            </h:inputTextarea>
-                        </h:panelGroup>
-                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Long' and !property.multiValued}">
-                            <h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
-                                || !raManageRequestBean.canApproveParition(partition)
-                                || raManageRequestBean.isPropertyReadOnly(property.name)}" 
-                                value="#{property.value}" style="text-align: right;" >
-                               <f:converter converterId="javax.faces.Long"/>
-                            </h:inputText>
-                        </h:panelGroup>
-                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Integer' and !property.multiValued}">
-                            <h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
-                                || !raManageRequestBean.canApproveParition(partition)
-                                || raManageRequestBean.isPropertyReadOnly(property.name)}" 
-                                value="#{property.value}" style="text-align: right;" size="6">
-                               <f:converter converterId="javax.faces.Integer"/>
-                            </h:inputText>
-                        </h:panelGroup>             
-                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'RadioButton' and property.multiValued  and !property.hasMultipleValues}">
-                            <h:selectOneRadio disabled="#{raManageRequestBean.isPartitionHandled(partition) 
-                                                            || !raManageRequestBean.canApproveParition(partition)
-                                                            || raManageRequestBean.isPropertyReadOnly(property.name)}"
-                                value="#{property.encodedValue}" layout="pageDirection">
-                                <f:selectItems value="#{partition.getPropertyPossibleValues(property)}" var="radioButton" itemLabel="#{radioButton.label}" />
-                                <f:converter converterId="radioButtonConverter"/>
-                            </h:selectOneRadio>
-                        </h:panelGroup>
-                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'Boolean' and !property.multiValued}">
-                            <h:selectBooleanCheckbox disabled="#{raManageRequestBean.isPartitionHandled(partition) 
-                                || !raManageRequestBean.canApproveParition(partition)
-                                || raManageRequestBean.isPropertyReadOnly(property.name)}"  
-                            value="#{property.value}"/>
-                        </h:panelGroup>                    
-                    </h:panelGroup>
-                </h:column>
-            </h:dataTable>
-</ui:remove>            
-
         </composite:implementation>
     </h:body>
     </f:view>
