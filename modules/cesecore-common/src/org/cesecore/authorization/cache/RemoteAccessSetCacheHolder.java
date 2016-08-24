@@ -113,4 +113,9 @@ public final class RemoteAccessSetCacheHolder {
         log.trace("<finishCacheReload");
     }
     
+    /** Empties the cache. Please try to only use this method with the local cache */
+    public static void forceEmptyCache() {
+        cache.clear();
+    }
+    
 }

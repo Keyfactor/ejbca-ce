@@ -34,6 +34,7 @@ import org.cesecore.authentication.tokens.NestableAuthenticationToken;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.cache.AccessTreeCache;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
+import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
@@ -186,6 +187,7 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
         if (accessTreeCache != null) {
             accessTreeCache.forceCacheExpire();
         }
+        RemoteAccessSetCacheHolder.forceEmptyCache();
     }
     
     @Override
