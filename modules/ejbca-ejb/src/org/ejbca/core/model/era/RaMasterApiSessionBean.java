@@ -48,7 +48,6 @@ import javax.persistence.QueryTimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -448,27 +447,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!request.isSearchingWaitingForMe() && !request.isSearchingPending() && !request.isSearchingHistorical()) {
             return response; // not searching for anything. return empty response
         }
-
-        final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
-        if (!request.isSearchingHistorical()) {
-            // Search for everything that's not expired and not yet executed
-            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL));
-            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
-            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_APPROVED));
-        } else {
-            // Everything except waiting and "approved" (note that the latter means approved but not excecuted yet)
-            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXECUTED));
-            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
-            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXECUTIONDENIED));
-            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
-            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXECUTIONFAILED));
-            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
-            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_REJECTED));
-            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
-            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXPIRED));
-            query.add(org.ejbca.util.query.Query.CONNECTOR_OR);
-            query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED));
-        }
         
         final List<ApprovalDataVO> approvals;
         try {
@@ -476,13 +454,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             RAAuthorization raAuthorization = new RAAuthorization(authenticationToken, globalConfigurationSession,
                     accessControlSession, null, caSession, endEntityProfileSession,  
                     approvalProfileSession);
-            approvals = approvalSession.query(authenticationToken, query, 0, 100, 
-                    raAuthorization.getCAAuthorizationString(), endEntityProfileAuthorizationString);
+            approvals = approvalSession.queryByStatus(authenticationToken, request.isSearchingWaitingForMe() || request.isSearchingPending(), request.isSearchingHistorical(),
+                    0, 100, raAuthorization.getCAAuthorizationString(), endEntityProfileAuthorizationString);
         } catch (AuthorizationDeniedException e) {
             // Not currently ever thrown by query()
             throw new IllegalStateException(e);
-        } catch (IllegalQueryException e) {
-            throw new IllegalStateException("Query for approval requests failed: " + e.getMessage(), e);
         }
         
         if (approvals.size() >= 100) {
@@ -546,7 +522,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     // We should find a way to use ComplexAccessControlSession here instead
     private String getEndEntityProfileAuthorizationString(AuthenticationToken authenticationToken, boolean includeparanteses, String endentityAccessRule){
         String authendentityprofilestring=null;
-          Collection<Integer> profileIds = new ArrayList<Integer>(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
+          Collection<Integer> profileIds = new ArrayList<>(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
           Collection<Integer> result = getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY, profileIds);        
           result.retainAll(this.endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, endentityAccessRule));
           Iterator<Integer> iter = result.iterator();
@@ -569,7 +545,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     // TODO this method is copied from ComplexAccessControlSession. We should find a way to use ComplexAccessControlSession here instead
     private Collection<Integer> getAuthorizedEndEntityProfileIds(AuthenticationToken authenticationToken, String rapriviledge,
             Collection<Integer> availableEndEntityProfileId) {
-        ArrayList<Integer> returnval = new ArrayList<Integer>();
+        ArrayList<Integer> returnval = new ArrayList<>();
         Iterator<Integer> iter = availableEndEntityProfileId.iterator();
         while (iter.hasNext()) {
             Integer profileid = iter.next();
