@@ -1332,6 +1332,12 @@ is in the format entityprofile_PROFILENAME-PROFILEID.xml. Any file with a name t
 </subsection>
 
 <subsection name="End Entity Profile fields">
+<subsubsection name="Username Field">
+<p>
+Username value represents an unique identifier for an user (end entity). Usernames can be manually set 
+or automatically generated during the operation of adding an end entity. The auto-generation ensures unique values.
+</p>
+</subsubsection>
 <subsubsection name="Password Fields">
 <p>
 Passwords are used when a user (end entity) is requesting a certificate and/or when generating a keystore. Usually this is required
