@@ -348,35 +348,71 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         return retval;
     }
 
-    @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<ApprovalDataVO> query(AuthenticationToken admin, Query query, int index, int numberofrows, String caAuthorizationString,
             String endEntityProfileAuthorizationString) throws AuthorizationDeniedException, IllegalQueryException {
         log.trace(">query()");
-        String customQuery = "";
         // Check if query is legal.
         if (query != null && !query.isLegalQuery()) {
             throw new IllegalQueryException();
         }
-        if (query != null) {
-            customQuery += query.getQueryString();
+        final String queryString = (query != null ? query.getQueryString() : "1 = 1");
+        final List<ApprovalDataVO> ret = query(admin, queryString, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString);
+        log.trace("<query()");
+        return ret;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<ApprovalDataVO> queryByStatus(final AuthenticationToken admin, final boolean includeUnfinished, final boolean includeProcessed, int index, int numberofrows, String caAuthorizationString,
+            String endEntityProfileAuthorizationString) throws AuthorizationDeniedException {
+        log.trace(">query()");
+        
+        if (!includeUnfinished && !includeProcessed) {
+            throw new IllegalArgumentException("At least one of includeUnfinished or includeProcessed must be true");
         }
-        if (!caAuthorizationString.equals("") && query != null) {
+        
+        final StringBuilder sb = new StringBuilder();
+        
+        // Never include expired requests
+        sb.append("expireDate >= ");
+        sb.append(new Date().getTime());
+        sb.append(" AND (");
+        
+        boolean first = true;
+        if (includeUnfinished) {
+            // "STATUS_APPROVED" means that the request is still waiting to be executed by the requester
+            sb.append("status IN (" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL + ", " + ApprovalDataVO.STATUS_APPROVED + ")");
+            first = false;
+        }
+        if (includeProcessed) {
+            if (!first) { sb.append(" OR "); }
+            sb.append("status IN (" + ApprovalDataVO.STATUS_EXECUTED + ", " + ApprovalDataVO.STATUS_EXECUTIONDENIED + ", " +
+                    ApprovalDataVO.STATUS_EXECUTIONFAILED + ", " + ApprovalDataVO.STATUS_REJECTED + ")");
+            first = false;
+        }
+        sb.append(')');
+        
+        final List<ApprovalDataVO> ret = query(admin, sb.toString(), index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString);
+        log.trace("<query()");
+        return ret;
+    }
+    
+    @SuppressWarnings("deprecation")
+    private List<ApprovalDataVO> query(AuthenticationToken admin, final String query, int index, int numberofrows, String caAuthorizationString,
+            String endEntityProfileAuthorizationString) {
+        log.trace(">query()");
+        String customQuery = "(" + query + ")";
+        if (StringUtils.isNotEmpty(caAuthorizationString)) {
             customQuery += " AND " + caAuthorizationString;
-        } else {
-            customQuery += caAuthorizationString;
         }
         if (StringUtils.isNotEmpty(endEntityProfileAuthorizationString)) {
-            if (caAuthorizationString.equals("") && query == null) {
-                customQuery += endEntityProfileAuthorizationString;
-            } else {
-                customQuery += " AND " + endEntityProfileAuthorizationString;
-            }
+            customQuery += " AND " + endEntityProfileAuthorizationString;
         }
         
         final List<ApprovalData> approvalDataList = findByCustomQuery(index, numberofrows, customQuery);
-        final List<ApprovalDataVO> returnData = new ArrayList<ApprovalDataVO>(approvalDataList.size());
+        final List<ApprovalDataVO> returnData = new ArrayList<>(approvalDataList.size());
         for (ApprovalData approvalData : approvalDataList) {
             final ApprovalDataVO approvalInformation = approvalData.getApprovalDataVO();
             //Perform a lazy upgrade of incoming approval requests produced prior to 6.5.0, which will lack a reference to an approval profile. The 
