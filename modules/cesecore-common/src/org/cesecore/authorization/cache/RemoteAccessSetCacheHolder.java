@@ -67,6 +67,7 @@ public final class RemoteAccessSetCacheHolder {
                 }
                 lastUpdate = updateNumber;
                 regularUpdateInProgress = true;
+                log.debug("Started cache reload");
             } else if (regularUpdateInProgress) {
                 log.trace("<startCacheReload (regular update was in progress)");
                 return null;
@@ -86,7 +87,7 @@ public final class RemoteAccessSetCacheHolder {
                 return;
             }
         } else if (regularUpdateInProgress) {
-            log.trace("<finishCacheReload");
+            log.trace("<finishCacheReload (not updating because regularUpdateInProgress)");
             return;
         }
         
@@ -106,8 +107,8 @@ public final class RemoteAccessSetCacheHolder {
                 log.trace("<finishCacheReload (regular update was in progress)");
                 return;
             }
-            log.debug("Replacing access set cache");
             cache = newCache;
+            log.debug("Replaced access set cache");
         }
         log.trace("<finishCacheReload");
     }
