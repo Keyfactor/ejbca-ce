@@ -345,6 +345,7 @@
 									<f:ajax event="change" execute="@this"
 										listener="#{enrollMakeNewRequestBean.checkUserCredentials}"
 										render=":requestInfoForm:userCredentialsMessage" />
+									<f:validator validatorId="extendedRequiredValidator"/>
 								</h:inputText>
 							</h:panelGroup>
 							<f:event type="postValidate" listener="#{enrollMakeNewRequestBean.validatePassword}"/>

@@ -180,8 +180,9 @@ public class RAInterfaceBean implements Serializable {
      * @throws UserDoesntFullfillEndEntityProfile 
      * @throws AuthorizationDeniedException 
      * @throws CADoesntExistsException 
-     * @throws EndEntityExistsException */
-    public void addUser(UserView userdata) throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException,
+     * @throws EndEntityExistsException 
+     * @return added user as EndEntityInformation*/
+    public EndEntityInformation addUser(UserView userdata) throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
         log.trace(">addUser()");
         if (userdata.getEndEntityProfileId() != 0) {
@@ -198,10 +199,12 @@ public class RAInterfaceBean implements Serializable {
             uservo.setCardNumber(userdata.getCardNumber());
             endEntityManagementSession.addUser(administrator, uservo, userdata.getClearTextPassword());
             addedusermemory.addUser(userdata);
+            return uservo;
         } else {
             log.debug("=addUser(): profile id not set, user not created");
         }
         log.trace("<addUser()");
+        return null;
     }
     
     /** Removes a number of users from the database.
