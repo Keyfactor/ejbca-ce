@@ -756,6 +756,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         try {
             if (endEntityInformation != null) {
                 endEntityInformation.setCAId(getCAInfo().getCAId());
+                if (log.isDebugEnabled()) {
+                    log.debug("checkSubjectDn: '"+subjectDn.getUpdatedValue()+"'");
+                }
                 endEntityInformation.setDN(subjectDn.getUpdatedValue());
                 raMasterApiProxyBean.checkSubjectDn(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
             }
