@@ -707,6 +707,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException(e);
             }
+            endEntityInformation.setUsername("");
         }
     }
     
