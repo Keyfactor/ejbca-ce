@@ -1,4 +1,5 @@
--- These columns are added by the JPA provider if there are sufficient privileges
+-- New columns in CertificateData are added by the JPA provider if there are sufficient privileges
+-- if not added automatically the following SQL statements can be run to add the new columns 
 -- ALTER TABLE CertificateData ADD notBefore INT8;
 -- ALTER TABLE CertificateData ADD endEntityProfileId INT4;
 -- ALTER TABLE CertificateData ADD subjectAltName TEXT;
