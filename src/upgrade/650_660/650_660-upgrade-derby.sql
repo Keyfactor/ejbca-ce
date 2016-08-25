@@ -1,5 +1,6 @@
+-- New columns in CertificateData are added by the JPA provider if there are sufficient privileges
+-- if not added automatically the following SQL statements can be run to add the new columns 
 -- If you are using an older version of Derby, such as 10.2, you need to drop and re-create this table. See doc/howto/create-tables-ejbca-derby.sql for drop/create statements.
--- These columns are added by the JPA provider if there are sufficient privileges
 -- ALTER TABLE CertificateData ADD notBefore BIGINT;
 -- ALTER TABLE CertificateData ADD endEntityProfileId INTEGER;
 -- ALTER TABLE CertificateData ADD subjectAltName VARCHAR(2000);
