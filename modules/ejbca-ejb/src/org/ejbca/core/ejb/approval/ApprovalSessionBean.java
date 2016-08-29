@@ -305,6 +305,14 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         }
         log.trace("<markAsStepDone.");
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<ApprovalData> findWaitingForApprovalApprovalDataLocal() {
+        final javax.persistence.Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.status="+ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
+        List<ApprovalData> result = query.getResultList();
+        return result;
+    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
