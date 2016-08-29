@@ -88,7 +88,7 @@
                             <h:selectOneRadio disabled="#{raManageRequestBean.isPartitionHandled(partition) 
                                                             || !raManageRequestBean.canApproveParition(partition)
                                                             || raManageRequestBean.isPropertyReadOnly(property.name)}"
-                                value="#{property.encodedValue}" layout="lineDirection">
+                                value="#{property.encodedValue}" layout="pageDirection">
                                 <f:selectItems value="#{partition.getPropertyPossibleValues(property)}" var="radioButton" itemLabel="#{radioButton.label}" />
                                 <f:converter converterId="radioButtonConverter"/>
                             </h:selectOneRadio>
