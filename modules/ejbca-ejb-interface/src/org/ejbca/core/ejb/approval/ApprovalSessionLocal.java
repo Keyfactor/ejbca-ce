@@ -51,6 +51,11 @@ public interface ApprovalSessionLocal extends ApprovalSession {
 	
 	ApprovalData findNonExpiredApprovalDataLocal(int approvalId);
 	
+	/**
+	 * @return A list of all approval requests whose status is WAITING_FOR_APPROVAL
+	 */
+	List<ApprovalData> findWaitingForApprovalApprovalDataLocal();
+	
     /**
      * Method that takes an approvalId and returns the request's Id (the value in the "Id" column in the "ApprovalData" table in the database)
      * 

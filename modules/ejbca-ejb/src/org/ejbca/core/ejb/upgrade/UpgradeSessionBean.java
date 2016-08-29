@@ -99,8 +99,10 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
@@ -109,6 +111,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.authorization.AccessRuleTemplate;
@@ -155,6 +158,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
     @EJB
     private ApprovalProfileSessionLocal approvalProfileSession;
+    @EJB
+    private ApprovalSessionLocal approvalSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -1336,6 +1341,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         // Create AccumulativeApprovalProfile for all CA's and Certificate Profiles running approvals
         //Sort cache by the number of approvals
         Map<Integer, Integer> approvalProfileCache = new HashMap<>();
+        Map<Integer, Integer> approvalPartitionCache = new HashMap<>();
         //Add approval profiles to all CAs with approvals 
         try {
             for (int caId : caSession.getAllCaIds()) {
@@ -1358,6 +1364,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                             try {
                                 int newProfileId = approvalProfileSession.addApprovalProfile(authenticationToken, newProfile);
                                 approvalProfileCache.put(numberOfRequiredApprovals, newProfileId);
+                                approvalPartitionCache.put(numberOfRequiredApprovals, newProfile.getFirstStep().getPartitions().values().iterator().next().getPartitionIdentifier());
                                 ca.setApprovalProfile(newProfileId);
                                 caSession.editCA(authenticationToken, ca, true);
                             } catch (ApprovalProfileExistsException e) {
@@ -1391,6 +1398,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         try {
                             int newProfileId = approvalProfileSession.addApprovalProfile(authenticationToken, newProfile);
                             approvalProfileCache.put(numberOfRequiredApprovals, newProfileId);
+                            approvalPartitionCache.put(numberOfRequiredApprovals, newProfile.getFirstStep().getPartitions().values().iterator().next().getPartitionIdentifier());
                             certificateProfile.setApprovalProfileID(newProfileId);
                             certProfileSession.changeCertificateProfile(authenticationToken, certificateProfileName, certificateProfile);
                         } catch (ApprovalProfileExistsException e) {
@@ -1399,6 +1407,24 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     }
                 }
             }
+            
+            // An approval now is specific to a partition in a step. Connect previously performed approvals 
+            // to the newly created partition so that the new code will recognize it. Note that an AccumulativeApprovalProfile 
+            // only has one step and one partition. The step ID is '0', which is the default step ID in an approval, which 
+            // is why the step ID in an approval does not need updating the same way as the partition ID needs updating.
+            List<ApprovalData> approvalRequests = approvalSession.findWaitingForApprovalApprovalDataLocal();
+            for(ApprovalData request : approvalRequests) {
+                Collection<Approval> approvals = request.getApprovals();
+                if(approvals.size() > 0) {
+                    int nrOfRequiredApprovals = request.getRemainingapprovals() + approvals.size();
+                    int partitionId = approvalPartitionCache.get(Integer.valueOf(nrOfRequiredApprovals));
+                    for(Approval approval : approvals) {
+                        approval.setPartitionId(partitionId);
+                    }
+                    approvalSession.setApprovals(request, approvals);
+                }
+            }
+            
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException("AlwaysAllowToken was denied access", e);
         }

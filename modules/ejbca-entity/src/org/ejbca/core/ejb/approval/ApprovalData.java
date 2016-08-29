@@ -217,7 +217,10 @@ s	 */
 	 */
 	//@Column
 	@Deprecated
-	public int getRemainingapprovals() { return remainingApprovals; }
+	public int getRemainingapprovals() {
+	    // TODO remove this method when support for Ejbca 6.5.x is dropped
+	    return remainingApprovals; 
+	}
 	/**
 	 * Indicates the number of approvals that remains in order to execute the action  
 	 */
