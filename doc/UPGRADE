@@ -31,6 +31,16 @@ database upgrades code is available in "src/upgrade/<oldversion>_<newversion>/<o
 From EJBCA 6.5.x to EJBCA 6.6.0
 -------------------------------
 
+Upgrading to 6.6.0 will require replacing the approval settings in CAs and certificate profiles with approval profiles. If approvals are used 
+in any capacity, you need to run the following command after deploying the new version of EJBCA:
+
+$ ant upgrade
+
+and restart JBoss. If approvals are currently not in use, this step is not needed.
+
+
+Upgrading to 6.6.0 involves the following changes:
+
 	1. Changes to CertificateData
 	2. Changes to ApprovalData
 	3. Changes to WebService Approvals
