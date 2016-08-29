@@ -229,44 +229,44 @@ function viewcert(link){
 						</h:column>
 						<h:column>										
 				   			<h:panelGroup rendered="#{!property.multiValued}">
-					   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)
+					   			<h:inputText disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 					   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
 					   				rendered="#{property.type.simpleName eq 'String'}" value="#{property.value}">
 					   				<f:converter converterId="stringConverter"/>
 					   			</h:inputText>
-					   			<h:inputTextarea disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)
+					   			<h:inputTextarea disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 					   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
 					   				rendered="#{property.type.simpleName eq 'MultiLineString'}" 
 	                                value="#{property.value.value}">
 	                            	<f:converter converterId="stringConverter"/>
 	                            </h:inputTextarea>
-					   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)
+					   			<h:inputText disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 					   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
 					   				rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" style="text-align: right;" >
 				                   <f:converter converterId="javax.faces.Long"/>
 					   			</h:inputText>
-					   			<h:inputText disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)
+					   			<h:inputText disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 					   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
 					   				rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" style="text-align: right;" size="6">
 				                   <f:converter converterId="javax.faces.Integer"/>
 					   			</h:inputText>
-				   				<h:selectBooleanCheckbox disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)
+				   				<h:selectBooleanCheckbox disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 				   					|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
 				   					rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
 				   			</h:panelGroup>
-							<h:selectOneMenu disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)
+							<h:selectOneMenu disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 								|| approvalActionManagedBean.isPropertyReadOnly(property.name)}"
 							    rendered="#{property.multiValued && !property.hasMultipleValues && property.type.simpleName != 'RadioButton'}" 
 								value="#{property.encodedValue}">
 								<f:selectItems value="#{partition.propertyPossibleValues}"/>
 							</h:selectOneMenu>
-							<h:selectManyListbox disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)
+							<h:selectManyListbox disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 								|| approvalActionManagedBean.isPropertyReadOnly(property.name)}"
 								 rendered="#{property.multiValued && property.hasMultipleValues && property.type.simpleName != 'RadioButton'}" 
 								value="#{property.encodedValues}" >
 								<f:selectItems value="#{partition.propertyPossibleValues}"/>
 							</h:selectManyListbox>
-							<h:selectOneRadio disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)
+							<h:selectOneRadio disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 								|| approvalActionManagedBean.isPropertyReadOnly(property.name)}"
 								rendered="#{property.type.simpleName eq 'RadioButton' && property.multiValued  && !property.hasMultipleValues}" 
 								value="#{property.encodedValue}" layout="pageDirection">
@@ -278,7 +278,7 @@ function viewcert(link){
 					
 					<h:panelGroup layout="block" style="padding: 5px 10px" rendered="#{approvalActionManagedBean.approvable}">
 						<h:selectOneMenu id="selectAction" value="#{approvalActionManagedBean.actionForPartition}" 
-							disabled="#{approvalActionManagedBean.partitionApproved || !approvalActionManagedBean.canApprovePartition(partition)}">
+							disabled="#{!approvalActionManagedBean.canApprovePartition(partition)}">
 							<f:selectItems value="#{approvalActionManagedBean.actionsAvailable}"/>
 						</h:selectOneMenu>  					
 					</h:panelGroup>

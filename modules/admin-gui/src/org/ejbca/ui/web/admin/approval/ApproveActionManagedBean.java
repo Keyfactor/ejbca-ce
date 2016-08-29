@@ -221,13 +221,6 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         return partitionActions;
     }
     
-    /** 
-     * @return true if there already exists an approval for this partition 
-     */
-    public boolean isPartitionApproved() {
-        return getPartitionActions().get(partitionsAuthorizedToView.getRowData().getPartitionId()) != null;
-    }
-
     public void setActionForPartition(final Action action) {
         getPartitionActions().put(partitionsAuthorizedToView.getRowData().getPartitionId(), action);
     }
@@ -441,7 +434,27 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         if(partitionsAuthorizedToApprove == null) {
             getActionForPartition();
         }
-        return partitionsAuthorizedToApprove.contains(partition.getPartitionId());
+        if(!partitionsAuthorizedToApprove.contains(partition.getPartitionId())) {
+            return false;
+        }
+        
+        ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(getAdmin(), approvalDataVOView.getApprovalId());
+        if(approvalDataVO.getApprovalRequest().isEditedByMe(getAdmin())) {
+            return false;
+        }
+        
+        if(approvalDataVO.getApprovalRequest().getRequestAdmin().equals(getAdmin())) {
+            return false;
+        }
+        
+        Collection<Approval> approvals = approvalDataVO.getApprovals();
+        for(Approval approval : approvals) {
+            if(approval.getAdmin().equals(getAdmin())) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     /**
