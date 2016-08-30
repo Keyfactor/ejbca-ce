@@ -404,7 +404,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     
     private ListDataModel<ApprovalStepGuiObject> createStepListFromProfile(final ApprovalProfile approvalProfile) {
         List<ApprovalStepGuiObject> steps = new ArrayList<>();
-        int ordinal = 0;
+        int ordinal = 1;
         //Use the internal ordering for sequences, if one is predefined
         ApprovalStep step = approvalProfile.getFirstStep();
         Map<Integer, List<DynamicUiProperty<? extends Serializable>>> partitionProperties = getPartitionProperties(step);
