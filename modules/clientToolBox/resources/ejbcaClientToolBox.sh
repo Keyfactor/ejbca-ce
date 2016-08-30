@@ -16,9 +16,11 @@ fi
 
 
 if [ -z ${JAVA_EXT} ] ; then
+	#assume that the java executable (not symlink) is in the $JAVA_HOME/jre/bin directory.
 	jreHome=$(dirname $(dirname $(readlink -f $(which ${javaCmd}))))
 
 	if [ ! -d ${jreHome}/lib/ext ] ; then
+		#wrong in previous assumption. New assumption $JAVA_HOME/bin
 		jreHome=${jreHome}/jre
 	fi
 
