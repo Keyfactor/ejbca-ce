@@ -206,7 +206,7 @@ public class RaManageRequestBean implements Serializable {
                     }
                 }
             }
-            partitionsAuthorizedToView = new ArrayList<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject>(authorizedPartitions);
+            partitionsAuthorizedToView = new ArrayList<>(authorizedPartitions);
 
         }
         return partitionsAuthorizedToView;
@@ -216,7 +216,7 @@ public class RaManageRequestBean implements Serializable {
     private List<Approval> getPartitionApproval(final int partitionId, final int stepId) {
         final ApprovalDataVO advo = getRequest().request.getApprovalData();
         Collection<Approval> approvals = advo.getApprovals();
-        List<Approval> partitionApprovals = new ArrayList<Approval>();
+        List<Approval> partitionApprovals = new ArrayList<>();
         for(Approval approval : approvals) {
             if((approval.getStepId()==stepId) && (approval.getPartitionId()==partitionId)) {
                 partitionApprovals.add(approval);
@@ -279,7 +279,7 @@ public class RaManageRequestBean implements Serializable {
             }
             
             if(currentPartitionsProperties == null) {
-                currentPartitionsProperties = new HashMap<Integer, List<DynamicUiProperty<? extends Serializable>> >();
+                currentPartitionsProperties = new HashMap<>();
             }
             currentPartitionsProperties.put(approvalPartition.getPartitionIdentifier(), propertyList);
         }
@@ -309,7 +309,7 @@ public class RaManageRequestBean implements Serializable {
             return new ArrayList<>();
         }
         
-        ArrayList<KeyValuePair> kvp = new ArrayList<KeyValuePair>();
+        ArrayList<KeyValuePair> kvp = new ArrayList<>();
         
         List<DynamicUiProperty<? extends Serializable>> properties = getPartitionProperties(guiPartition);
         for(DynamicUiProperty<? extends Serializable> property : properties) {
