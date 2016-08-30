@@ -33,9 +33,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.roles.RoleData;
-import org.cesecore.roles.RoleInformation;
-import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -76,9 +73,8 @@ public class RaManageRequestBean implements Serializable {
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
     // FIXME calls to this session bean will not work if the CA and RA are on different machines. so this variable should be removed.
     @EJB
+    @Deprecated
     private ApprovalSessionLocal approvalSession;
-    @EJB
-    private RoleAccessSessionLocal roleAccessSession;
 
     @ManagedProperty(value="#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
@@ -254,26 +250,6 @@ public class RaManageRequestBean implements Serializable {
                 if (!hiddenPropertyNames.contains(propertyName)) {
                     DynamicUiProperty<? extends Serializable> propertyClone = new DynamicUiProperty<>(
                             approvalPartition.getPropertyList().get(propertyName));
-                    switch (propertyClone.getPropertyCallback()) {
-                    case ROLES:
-                        List<RoleData> allAuthorizedRoles = roleAccessSession.getAllAuthorizedRoles(raAuthenticationBean.getAuthenticationToken());
-                        List<RoleInformation> roleRepresentations = new ArrayList<>();
-                        for (RoleData role : allAuthorizedRoles) {
-                            RoleInformation identifierNamePair = new RoleInformation(role.getPrimaryKey(), role.getRoleName(),
-                                    new ArrayList<>(role.getAccessUsers().values()));
-                            roleRepresentations.add(identifierNamePair);
-                        }
-                        if (!roleRepresentations.contains(propertyClone.getDefaultValue())) {
-                            //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else. 
-                            roleRepresentations.add(0, (RoleInformation) propertyClone.getDefaultValue());
-                        }
-                        propertyClone.setPossibleValues(roleRepresentations);
-                        break;
-                    case NONE:
-                        break;
-                    default:
-                        break;
-                    }
                     propertyList.add(propertyClone);
                 }
             }
