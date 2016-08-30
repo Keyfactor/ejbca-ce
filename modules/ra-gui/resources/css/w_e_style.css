@@ -646,7 +646,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   word-break: break-all;
   float: none; }
 
-#requestTemplateForm\:selectEEPOneMenuMessage, #requestTemplateForm\:selectCAOneMenuMessage, #requestTemplateForm\:selectKeyPairGenerationMessage {
+#requestTemplateForm\:selectEEPOneMenuMessage, #requestTemplateForm\:selectCAOneMenuMessage, #requestTemplateForm\:selectKeyPairGenerationMessage, #requestTemplateForm\:selectCPOneMenuMessage {
   display: none;
   margin: 1% 0 2% 0;
   color: #fff;
@@ -683,7 +683,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   padding: 1%;
   list-style: none;
   margin: 41px 0 0 0;
-  width: 90%;
+  width: auto;
   position: fixed; }
 
 .warnMessage {
@@ -734,8 +734,6 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   float: none; }
 .approvalControl > textarea {
   margin-bottom: 5%; }
-.approvalControl input:not([type="checkbox"]) {
-  width: 98%; }
 
 span.approvalStep {
   margin-left: 1.5%; }
@@ -753,7 +751,8 @@ span.approvalStep {
 
 .searchButton {
   width: 50px;
-  height: 35px;
+  padding-top: 7%;
+  padding-bottom: 6%;
   margin-left: 5%; }
 
 .footer {
@@ -1134,7 +1133,6 @@ span.approvalStep {
 
   .errorMessage, .infoMessage {
     /* gör att 'generella' felmeddelanden visas var man än står på sidan */
-    width: 92%;
     margin: 5% 0 0 0; }
 
   #enrollWithRequestIdForm\:requestId, #contentForm\:commandEditData {
@@ -1213,7 +1211,7 @@ span.approvalStep {
     word-break: break-all; }
     #contentForm\:editRequestDataTable label {
       display: block; }
-    #contentForm\:editRequestDataTable input {
+    #contentForm\:editRequestDataTable input, #contentForm\:editRequestDataTable input:not([type="submit"]) {
       width: auto; }
     #contentForm\:editRequestDataTable span {
       margin: 0.5em 0 0.2em; }
@@ -1222,8 +1220,8 @@ span.approvalStep {
     margin-bottom: 1%; }
   .approvalControl > input {
     margin-bottom: 1%; }
-  .approvalControl > input:not([type="checkbox"]) {
-    width: auto; }
+  .approvalControl > table {
+    display: inline-block; }
 
   #contentForm\:currentStep div > textarea {
     width: auto; }
@@ -1231,7 +1229,7 @@ span.approvalStep {
   .searchButton {
     width: 80px; }
 
-  #requestTemplateForm\:selectEEPOneMenuMessage, #requestTemplateForm\:selectCAOneMenuMessage, #requestTemplateForm\:selectKeyPairGenerationMessage {
+  #requestTemplateForm\:selectEEPOneMenuMessage, #requestTemplateForm\:selectCAOneMenuMessage, #requestTemplateForm\:selectKeyPairGenerationMessage, #requestTemplateForm\:selectCPOneMenuMessage {
     float: right;
     width: 90%; }
 
@@ -1401,8 +1399,7 @@ span.approvalStep {
 
   .errorMessage, .infoMessage {
     /* gör att 'generella' felmeddelanden visas var man än står på sidan */
-    margin: 0 0 0 0;
-    width: 40%; }
+    margin: 0 0 0 0; }
 
   .warnMessage {
     margin-top: 0; }
