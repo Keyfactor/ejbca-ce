@@ -413,6 +413,9 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 @-moz-document url-prefix() {
   #makeRequestButton, #requestStatusButton, #searchCertsButton {
     padding-top: 15px !important; } }
+#enrollWithRequestIdForm\:generateKeyStorePem,
+#enrollWithRequestIdForm\:generatePkcs12,
+#enrollWithRequestIdForm\:generateJks,
 #requestInfoForm\:confirmRequestButton,
 #searchCertsButton,
 #requestStatusButton,
@@ -431,6 +434,12 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
   background: #e9af13;
   color: #fff; }
 
+#enrollWithRequestIdForm\:generateKeyStorePem:hover,
+#enrollWithRequestIdForm\:generateKeyStorePem:focus,
+#enrollWithRequestIdForm\:generatePkcs12:hover,
+#enrollWithRequestIdForm\:generatePkcs12:focus,
+#enrollWithRequestIdForm\:generateJks:hover,
+#enrollWithRequestIdForm\:generateJks:focus,
 #detailsForm\:certDetails\:showMoreLessDetailsButton:hover,
 #detailsForm\:certDetails\:showMoreLessDetailsButton:focus,
 #searchCertsButton:hover,
@@ -555,11 +564,14 @@ a {
 .statusFailed {
   color: #ed6a5f; }
 
-#contentForm\:filteredResults .pure-button.ra-button {
+.viewMoreLink {
   /*view-knappen i search for certificates*/
   color: #e9af13;
-  background: none; }
-  #contentForm\:filteredResults .pure-button.ra-button:hover {
+  background: none;
+  font-weight: bold;
+  font-size: 76%;
+  white-space: nowrap; }
+  .viewMoreLink:hover {
     text-decoration: underline; }
 
 #detailsForm\:certDetails\:downloadFormatLinks {
@@ -734,6 +746,8 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   float: none; }
 .approvalControl > textarea {
   margin-bottom: 5%; }
+.approvalControl span {
+  padding-top: 1%; }
 
 span.approvalStep {
   margin-left: 1.5%; }
@@ -793,6 +807,9 @@ span.approvalStep {
       left: 7.25px; }
 
 /*SLUT CSS för scroll to top-funktion*/
+#requestIdButtons {
+  margin: 1% auto 0 auto; }
+
 #detailsForm\:certDetails\:newRevocationReason {
   width: 160px;
   display: block;
@@ -1219,9 +1236,11 @@ span.approvalStep {
   .approvalControl > textarea {
     margin-bottom: 1%; }
   .approvalControl > input {
-    margin-bottom: 1%; }
+    margin-bottom: 1%;
+    margin: 0.5em 0 0.2em; }
   .approvalControl > table {
-    display: inline-block; }
+    display: inline-block;
+    margin: 0.5em 0 0.2em; }
 
   #contentForm\:currentStep div > textarea {
     width: auto; }
@@ -1347,6 +1366,11 @@ span.approvalStep {
   #contentForm\:filteredResults > .pure-table > tbody > tr > td {
     max-width: initial; }
 
+  .viewMoreLink {
+    /*view-knappen i search for certificates*/
+    padding: 1.3% 2.5% 1% 2.5%;
+    white-space: nowrap; }
+
   #contentForm\:more > .pure-g > .pure-u-1:nth-of-type(3) {
     margin: 0 0 0 3%; }
   #contentForm\:more > .pure-g > .pure-u-1:nth-of-type(4) {
@@ -1463,7 +1487,10 @@ span.approvalStep {
       display: inline-block; }
 
   .searchButton {
-    margin-left: 2%; } }
+    margin-left: 2%; }
+
+  .approvalControl > label {
+    float: left; } }
 /*
 "gamla"
     "base"  // smartphone
