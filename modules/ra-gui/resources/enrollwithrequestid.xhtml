@@ -85,7 +85,7 @@
 								</h:inputSecret>
 								<h:message for="passwordField" id="passwordFieldMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
-							<h:panelGroup layout="block">
+							<h:panelGroup id="requestIdButtons" layout="block">
 								<h:commandButton id="generatePem"
 									value="#{msg.enroll_generate_pem}"
 									action="#{enrollWithRequestIdBean.generateCertificatePem}"
