@@ -578,6 +578,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         
         final int requestId = getIdFromApprovalId(approvalRequest.generateApprovalId());
         final int partitionId = approvalPartition.getPartitionIdentifier();
+        final String partitionName = approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString();
         final String approvalType = intres.getLocalizedMessage(ApprovalDataVO.APPROVALTYPENAMES[approvalRequest.getApprovalType()]);
         final String workflowState = intres.getLocalizedMessage("APPROVAL_WFSTATE_" + approvalPartitionWorkflowState.name());
         final String requestor = approvalRequest.getRequestAdmin().toString();
@@ -587,7 +588,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             final String sender = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_SENDER).getValue();
             final String subject = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT).getValue();
             final String body = ((MultiLineString)approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY).getValue()).getValue();
-            final ApprovalNotificationParameterGenerator parameters = new ApprovalNotificationParameterGenerator(requestId, approvalStepId, partitionId, approvalType, workflowState, requestor);
+            final ApprovalNotificationParameterGenerator parameters = new ApprovalNotificationParameterGenerator(requestId, approvalStepId, partitionId, partitionName, approvalType, workflowState, requestor);
             try {
                 MailSender.sendMailOrThrow(sender, Arrays.asList(recipient.split(" ")), MailSender.NO_CC, parameters.interpolate(subject), parameters.interpolate(body), MailSender.NO_ATTACHMENTS);
                 log.info(intres.getLocalizedMessage("approval.sentnotification", requestId));
@@ -596,7 +597,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             }
         } else {
             if(log.isDebugEnabled()) {
-                log.debug("Notifications are not enabled for approval profile: "+approvalProfile.getProfileName());
+                log.debug("Admin notifications are not enabled for approval profile: "+approvalProfile.getProfileName());
             }
         }
         
@@ -607,8 +608,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 final String userSender = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_SENDER).getValue();
                 final String userSubject = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT).getValue();
                 final String userBody = ((MultiLineString)approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY).getValue()).getValue();
-
-                final ApprovalNotificationParameterGenerator userParameters = new ApprovalNotificationParameterGenerator(requestId, approvalStepId, partitionId, approvalType, workflowState, requestor);
+                final ApprovalNotificationParameterGenerator userParameters = new ApprovalNotificationParameterGenerator(requestId, approvalStepId, partitionId, partitionName, approvalType, workflowState, requestor);
                 try {
                     MailSender.sendMailOrThrow(userSender, Arrays.asList(userRecipient.split(" ")), MailSender.NO_CC, userParameters.interpolate(userSubject), userParameters.interpolate(userBody), MailSender.NO_ATTACHMENTS);
                     log.info(intres.getLocalizedMessage("approval.sentnotification", requestId));

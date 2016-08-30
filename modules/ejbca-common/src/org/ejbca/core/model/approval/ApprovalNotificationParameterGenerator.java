@@ -22,6 +22,7 @@ import org.ejbca.util.NotificationParamGen;
  * ${approvalRequest.ID}            The approval request identifier.
  * ${approvalRequest.STEP_ID}       The approval step that this notification concerns.
  * ${approvalRequest.PARTITION_ID}  The approval partition in the step that this notification concerns.
+ * ${approvalRequest.PARTITION_NAME} The approval partition in the step that this notification concerns.
  * ${approvalRequest.TYPE}          The type of approval request.
  * ${approvalRequest.WORKFLOWSTATE} The work flow state from the perspective of the one(s) responsible for handling the partition.
  * ${approvalRequest.REQUESTOR}     The human readable version of the authentication token that was used to create the request.
@@ -32,10 +33,11 @@ import org.ejbca.util.NotificationParamGen;
 public class ApprovalNotificationParameterGenerator extends NotificationParamGen {
 
     public ApprovalNotificationParameterGenerator(final int approvalRequestId, final int approvalStepId, final int approvalPartitionId,
-            final String approvalType, final String workflowState, final String requestor) {
+            final String approvalPartitionName, final String approvalType, final String workflowState, final String requestor) {
         paramPut("approvalRequest.ID", approvalRequestId);
         paramPut("approvalRequest.STEP_ID", approvalStepId);
         paramPut("approvalRequest.PARTITION_ID", approvalPartitionId);
+        paramPut("approvalRequest.PARTITION_NAME", approvalPartitionName);
         paramPut("approvalRequest.TYPE", approvalType);
         paramPut("approvalRequest.WORKFLOWSTATE", workflowState);
         paramPut("approvalRequest.REQUESTOR", requestor);

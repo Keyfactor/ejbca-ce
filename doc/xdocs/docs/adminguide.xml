@@ -2817,12 +2817,13 @@ Remember to configure mail-server settings in the mail.properties file.
 <p>
 Variables used with approval notifications:
 <ul>
- <li>${approvalRequest.ID}            The approval request identifier.</li>
- <li>${approvalRequest.STEP_ID}       The approval step that this notification concerns.</li>
- <li>${approvalRequest.PARTITION_ID}  The approval partition in the step that this notification concerns.</li>
- <li>${approvalRequest.TYPE}          The type of approval request.</li>
- <li>${approvalRequest.WORKFLOWSTATE} The work flow state from the perspective of the one(s) responsible for handling the partition.</li>
- <li>${approvalRequest.REQUESTOR}     The human readable version of the authentication token that was used to create the request.</li>
+ <li>${approvalRequest.ID}             The approval request identifier.</li>
+ <li>${approvalRequest.STEP_ID}        The approval step that this notification concerns.</li>
+ <li>${approvalRequest.PARTITION_ID}   The ID of the approval partition in the step that this notification concerns.</li>
+ <li>${approvalRequest.PARTITION_NAME} The name of the approval partition in the step that this notification concerns.</li>
+ <li>${approvalRequest.TYPE}           The type of approval request.</li>
+ <li>${approvalRequest.WORKFLOWSTATE}  The work flow state from the perspective of the one(s) responsible for handling the partition.</li>
+ <li>${approvalRequest.REQUESTOR}      The human readable version of the authentication token that was used to create the request.</li>
 </ul>
 The work flow states are:
 <ul>
