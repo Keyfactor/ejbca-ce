@@ -9,7 +9,7 @@
 
 	<target name="check:bootstrapdone">
         <available file="${ejbca.home}/dist/ejbca.ear" property="bootstrap.done"/>
-        <fail unless="bootstrap.done" message="Missing EJBCA_HOME/dist/ejbca.ear. You must do 'ant bootstrap' to build the ejbca.ear file." />
+        <fail unless="bootstrap.done" message="Missing EJBCA_HOME/dist/ejbca.ear. You must do 'ant build' to build the ejbca.ear file." />
 	</target>
 	
     <!-- ======================================================================= -->
