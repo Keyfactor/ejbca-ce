@@ -261,15 +261,12 @@ ul.pure-menu-children {
   text-align: left; }
 
 label.showNonModifiable {
-  /* texten till radioknappen 'show non modifiable'*/
   margin-left: 2%; }
 
 .navigation-button-group {
-  /*återställknappens wrapper*/
   margin: 2% 0 0 0; }
 
 .pure-button {
-  /*återställknappen*/
   font-size: 68%;
   font-weight: bold;
   padding: 1.3% 2.5% 1% 2.5%;
@@ -306,10 +303,8 @@ table.pure-table > tbody a {
     text-decoration: underline; }
 
 #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset {
-  /*make a request > confirm request-fältet*/
   margin-top: 1%; }
   #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > label {
-    /* listan i confirm request*/
     margin-left: 2%;
     width: 100%;
     display: block; }
@@ -318,13 +313,11 @@ table.pure-table > tbody a {
     display: block; }
 
 textarea#keyPairForm\:certificateRequest {
-  /* make request > Upload CSR > formuläret */
   width: 98%;
   margin: 0 auto 2% auto;
   display: block; }
 
 #newFileInput {
-  /* make request > Upload CSR > knappen+texten */
   margin-left: 5%;
   color: #fff;
   width: 95%; }
@@ -413,7 +406,6 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 @-moz-document url-prefix() {
   #makeRequestButton, #requestStatusButton, #searchCertsButton {
     padding-top: 15px !important; } }
-#enrollWithRequestIdForm\:generateKeyStorePem,
 #enrollWithRequestIdForm\:generatePkcs12,
 #enrollWithRequestIdForm\:generateJks,
 #requestInfoForm\:confirmRequestButton,
@@ -472,12 +464,10 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #contentForm\:showMoreButton:focus,
 #contentForm\:showLessButton:hover,
 #contentForm\:showLessButton:focus,
-#requestInfoForm\:generateKeyStorePem,
-#requestInfoForm\:generateKeyStorePem,
-#requestInfoForm\:generateP12,
-#requestInfoForm\:generateP12,
-#requestInfoForm\:generateJks,
-#requestInfoForm\:generateJks {
+#requestInfoForm\:generateP12:hover,
+#requestInfoForm\:generateP12:focus,
+#requestInfoForm\:generateJks:hover,
+#requestInfoForm\:generateJks:focus {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), color-stop(40%, rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
   background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
@@ -546,7 +536,6 @@ a {
 
 #contentForm\:showMoreButton,
 #contentForm\:showLessButton {
-  /*showelss-knapp search for certificates*/
   background: #e9af13;
   color: #fff;
   width: 150px;
@@ -658,7 +647,10 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   word-break: break-all;
   float: none; }
 
-#requestTemplateForm\:selectEEPOneMenuMessage, #requestTemplateForm\:selectCAOneMenuMessage, #requestTemplateForm\:selectKeyPairGenerationMessage, #requestTemplateForm\:selectCPOneMenuMessage {
+#requestTemplateForm\:selectEEPOneMenuMessage,
+#requestTemplateForm\:selectCAOneMenuMessage,
+#requestTemplateForm\:selectKeyPairGenerationMessage,
+#requestTemplateForm\:selectCPOneMenuMessage {
   display: none;
   margin: 1% 0 2% 0;
   color: #fff;
@@ -736,7 +728,8 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   width: 100%;
   font-size: 95%; }
 
-#enrollWithRequestIdForm\:requestId, #contentForm\:endEntititesMoreInputs {
+#enrollWithRequestIdForm\:requestId,
+#contentForm\:endEntititesMoreInputs {
   width: 100%; }
 
 .h2ManageRequst {
@@ -756,8 +749,14 @@ span.approvalStep {
   padding-left: 1.5%; }
   .approvalStep > div > .approvalControl > span {
     display: block; }
+  .approvalStep > div > .approvalControl {
+    margin-bottom: 0; }
 
-#contentForm\:commandApprove, #contentForm\:commandReject, #contentForm\:commandEditData, #contentForm\:commandSaveData, #contentForm\:commandCancelEdit {
+#contentForm\:commandApprove,
+#contentForm\:commandReject,
+#contentForm\:commandEditData,
+#contentForm\:commandSaveData,
+#contentForm\:commandCancelEdit {
   width: 80px; }
 
 #contentForm\:requestApproveMessage {
@@ -1248,7 +1247,10 @@ span.approvalStep {
   .searchButton {
     width: 80px; }
 
-  #requestTemplateForm\:selectEEPOneMenuMessage, #requestTemplateForm\:selectCAOneMenuMessage, #requestTemplateForm\:selectKeyPairGenerationMessage, #requestTemplateForm\:selectCPOneMenuMessage {
+  #requestTemplateForm\:selectEEPOneMenuMessage,
+  #requestTemplateForm\:selectCAOneMenuMessage,
+  #requestTemplateForm\:selectKeyPairGenerationMessage,
+  #requestTemplateForm\:selectCPOneMenuMessage {
     float: right;
     width: 90%; }
 
@@ -1287,24 +1289,6 @@ span.approvalStep {
     /*för Firefox */
     .pure-menu-link {
       height: 25.5px; } }
-  /*För Retinaskärm*/
-  /*
-  @media (-webkit-min-device-pixel-ratio: 2),
-    (min-resolution: 192dpi) {
-  
-    @-moz-document url-prefix() { //för Firefox
-      .pure-menu-link {
-        //  padding-bottom: 18px;
-      }
-    }
-  }
-  */
-  /*SLUT för retinaskärm*/
-  /*
-  a#enrollment:not(:hover) ~ ul.pure-menu-children {
-      border: 4px solid black;
-  }
-  */
   .cas-menu-link:hover, .cas-menu-link:focus,
   .enroll-menu-link:hover, .enroll-menu-link:focus,
   .pure-menu-link:hover, .pure-menu-link:focus,
@@ -1351,7 +1335,6 @@ span.approvalStep {
 
   #contentForm\:showMoreButton,
   #contentForm\:showLessButton {
-    /*showelss-knapp search for certificates*/
     width: 75%;
     height: 35px; }
 
@@ -1360,6 +1343,7 @@ span.approvalStep {
   #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > span {
     margin-left: 0; }
 
+  /*sökfältet i vyn 'search'*/
   #contentForm\:parentGenericSearchString {
     margin: 0; }
 
@@ -1367,7 +1351,6 @@ span.approvalStep {
     max-width: initial; }
 
   .viewMoreLink {
-    /*view-knappen i search for certificates*/
     padding: 1.3% 2.5% 1% 2.5%;
     white-space: nowrap; }
 
@@ -1428,8 +1411,12 @@ span.approvalStep {
   .warnMessage {
     margin-top: 0; }
 
-  #requestInfoForm\:confirmRequestButton, #requestInfoForm\:generateKeyStorePem, #requestInfoForm\:generateP12, #requestInfoForm\:generateJks, #requestInfoForm\:resetButton, #keyPairForm\:uploadCsrButton {
-    /*confirm request-knappen*/
+  #requestInfoForm\:confirmRequestButton,
+  #requestInfoForm\:generateKeyStorePem,
+  #requestInfoForm\:generateP12,
+  #requestInfoForm\:generateJks,
+  #requestInfoForm\:resetButton,
+  #keyPairForm\:uploadCsrButton {
     height: auto; }
 
   #enrollWithRequestIdForm\:checkButton {
@@ -1457,7 +1444,9 @@ span.approvalStep {
     #detailsForm > span.pure-u-1 > .pure-u-2-3 > input:nth-of-type(3) {
       height: auto; }
 
-  #makeRequestButton, #requestStatusButton, #searchCertsButton {
+  #makeRequestButton,
+  #requestStatusButton,
+  #searchCertsButton {
     padding-top: 1.3%; }
 
   #contentForm\:viewRequestDataTable > span {
