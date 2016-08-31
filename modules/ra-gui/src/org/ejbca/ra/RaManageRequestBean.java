@@ -339,13 +339,11 @@ public class RaManageRequestBean implements Serializable {
         
         ApprovalRequest request = advo.getApprovalRequest();
         request.setApprovalProfile(storedApprovalProfile);
-        // FIXME this call does not work if the CA and RA are on different machines
-        approvalSession.updateApprovalRequest(advo.getId(), request);
 
         final int id = getRequest().request.getId();
         final int stepId = step.getStepIdentifier();
         final int partitionId = partition.getPartitionIdentifier();
-        final RaApprovalResponseRequest approval = new RaApprovalResponseRequest(id, stepId, partitionId,  "", action); // TODO comment field. should it be here for partitioned approvals also?
+        final RaApprovalResponseRequest approval = new RaApprovalResponseRequest(id, stepId, partitionId, request, "", action); // TODO comment field. should it be here for partitioned approvals also?
         return approval;
     }
     
