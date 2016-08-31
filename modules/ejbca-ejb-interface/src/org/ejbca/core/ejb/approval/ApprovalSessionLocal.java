@@ -34,7 +34,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
     /**
      * Send all work-flow related approval notifications given the last added Approval to the approvalsPerformed.
      * 
-     * @param authenticationToken the current administrator that triggered the appoval action
+     * @param authenticationToken the current administrator that triggered the approval action
      * @param approvalRequest the approval request
      * @param approvalProfile the profile determining the approval work flow
      * @param approvalsPerformed a list of completed approvals so far with the current approval last
@@ -57,17 +57,17 @@ public interface ApprovalSessionLocal extends ApprovalSession {
 	List<ApprovalData> findWaitingForApprovalApprovalDataLocal();
 	
     /**
-     * Method that takes an approvalId and returns the request's Id (the value in the "Id" column in the "ApprovalData" table in the database)
+     * Method that takes an approvalId (hash) and returns the request's ID (the value in the "Id" column in the "ApprovalData" table in the database)
      * 
-     * @param approvalId
-     * @return the Id of the approval request or 0 if it does not exist
+     * @param approvalId the request hash (approvalId in the database)
+     * @return the ID of the approval request or 0 if it does not exist
      */
     int getIdFromApprovalId(int approvalId);
 
 	 /**
       * Updates the approval request field for an approval
       * 
-      * @param approvalDataId the ID of an approvalData object (not the approval ID)
+      * @param approvalDataId the ID of an approvalData object (not the approvalID hash)
       * @param approvalRequest the updated approval request
       */
      void updateApprovalRequest(final int approvalDataId, final ApprovalRequest approvalRequest);

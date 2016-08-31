@@ -68,6 +68,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.Approval;
+import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalNotificationParameterGenerator;
@@ -141,10 +142,10 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @Override
     public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException {
     	if (log.isTraceEnabled()) {
-    		log.trace(">addApprovalRequest: "+approvalRequest.generateApprovalId());
+    		log.trace(">addApprovalRequest: hash="+approvalRequest.generateApprovalId());
     	}
         int approvalId = approvalRequest.generateApprovalId();
-
+        Integer id = 0;
         ApprovalDataVO data = findNonExpiredApprovalRequest(admin, approvalId);
         if (data != null) {
             String msg = intres.getLocalizedMessage("approval.alreadyexists", approvalId);
@@ -153,19 +154,23 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         } else {
             // There exists no approval request with status waiting. Add a new one
             try {
-                final Integer freeId = findFreeApprovalId();
-                final ApprovalData approvalData = new ApprovalData(freeId);
+                id = findFreeApprovalId();
+                final ApprovalData approvalData = new ApprovalData(id);
                 updateApprovalData(approvalData, approvalRequest);
                 entityManager.persist(approvalData);
                 final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
                 sendApprovalNotifications(admin, approvalRequest, approvalProfile, approvalData.getApprovals(), false);
-                String msg = intres.getLocalizedMessage("approval.addedwaiting", approvalId);
+                String msg = intres.getLocalizedMessage("approval.addedwaiting", id);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
+                List<ApprovalDataText> texts = approvalRequest.getNewRequestDataAsText(admin);
+                for (ApprovalDataText text : texts) {
+                    details.put(text.getHeader(), text.getData());                    
+                }
                 auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                         admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
             } catch (Exception e1) {
-                String msg = intres.getLocalizedMessage("approval.erroradding", approvalId);
+                String msg = intres.getLocalizedMessage("approval.erroradding", id);
                 log.error(msg, e1);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -175,7 +180,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             }
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<addApprovalRequest: "+approvalRequest.generateApprovalId());
+        	log.trace("<addApprovalRequest: hash="+approvalRequest.generateApprovalId()+", id="+id);
         }
     }
     
@@ -197,6 +202,10 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             String msg = intres.getLocalizedMessage("approval.edited", id);
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
+            List<ApprovalDataText> texts = approvalRequest.getNewRequestDataAsText(admin);
+            for (ApprovalDataText text : texts) {
+                details.put(text.getHeader(), text.getData());                    
+            }
             auditSession.log(EjbcaEventTypes.APPROVAL_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
         } catch (Exception e) {
@@ -232,7 +241,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     @Override
     public void removeApprovalRequest(AuthenticationToken admin, int id) {
-        log.trace(">removeApprovalRequest");
+        if (log.isTraceEnabled()) {
+            log.trace(">removeApprovalRequest: id="+id);
+        }
         try {
             ApprovalData ad = findById(Integer.valueOf(id));
             if (ad != null) {
@@ -254,7 +265,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                     admin.toString(), null, null, null, details);
             log.error("Error removing approval request", e);
         }
-        log.trace("<removeApprovalRequest");
+        if (log.isTraceEnabled()) {
+            log.trace("<removeApprovalRequest: id="+id);
+        }
     }
 
     @Override
@@ -303,7 +316,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         for(ApprovalData adl : result) {
             markStepAsDone(adl, step);
         }
-        log.trace("<markAsStepDone.");
+        if (log.isTraceEnabled()) {
+            log.trace("<markAsStepDone, approvalId: " + approvalId + ", step " + step);
+        }
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -346,7 +361,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<ApprovalDataVO> findApprovalDataVO(AuthenticationToken admin, int approvalId) {
-        log.trace(">findApprovalDataVO");
+        if (log.isTraceEnabled()) {
+            log.trace(">findApprovalDataVO: hash="+approvalId);
+        }
         ArrayList<ApprovalDataVO> retval = new ArrayList<ApprovalDataVO>();
         Collection<ApprovalData> result = findByApprovalId(approvalId);
         for (ApprovalData adl : result) {

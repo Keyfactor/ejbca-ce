@@ -162,8 +162,11 @@ public abstract class ApprovalRequest implements Externalizable {
     public abstract void execute() throws ApprovalRequestExecutionException;
 
     /**
-     * Method that should generate an approval id for this type of approval, the same request i.e the same admin want's to do the same thing twice
-     * should result in the same approvalId. This is the ID that will be stored in ApprovalData.approvalId
+     * Generate an approval hash (called ID which is confusing since there is a unique requestID as well) for this type of approval, the same request i.e the same admin want's to do the same thing twice
+     * should result in the same approval hash. This is the value that will be stored in the ApprovalData.approvalId column.
+     * This hash is not used to identify a specific request, but is used to be able to compare to requests if they are for the same thing. As an example trying to add the exact same user twice will
+     * result in the same approval hash so it is possible to find an already existing request for adding this user. 
+     * @return a hash code for the action the request is for, should be the same code every time the same action is performed.
      */
     public abstract int generateApprovalId();
 
