@@ -603,7 +603,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 log.info("End entity with username " + endEntityInformation.getUsername() + " has been successfully added" );
             } else {
                 raLocaleBean.addMessageInfo("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername());
-                log.info("Certificate could not be generated for end entity with usernamne " +  endEntityInformation.getUsername());
+                log.info("Certificate could not be generated for end entity with username " +  endEntityInformation.getUsername());
                 return null;
             }
         } catch (AuthorizationDeniedException e) {
@@ -667,7 +667,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                             endEntityInformation);
                     if(certificateDataToDownload == null){
                         raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername());
-                        log.info("Certificate could not be generated for end entity with usernamne " + endEntityInformation.getUsername());
+                        log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername());
                     } else if (tokenDownloadType == TokenDownloadType.PEM_FULL_CHAIN) {
                         X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
                         LinkedList<Certificate> chain = new LinkedList<Certificate>(getCAInfo().getCertificateChain());
