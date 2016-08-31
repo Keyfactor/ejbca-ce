@@ -14,6 +14,8 @@ package org.ejbca.core.model.era;
 
 import java.io.Serializable;
 
+import org.ejbca.core.model.approval.ApprovalRequest;
+
 /**
  * Used for approving requests from RaManageRequestBean
  * @version $Id$
@@ -31,13 +33,15 @@ public class RaApprovalResponseRequest implements Serializable {
     private final int id;
     private final int stepIdentifier;
     private final int partitionIdentifier;
+    private final ApprovalRequest approvalRequest;
     private final String comment;
     private final Action action;
     
-    public RaApprovalResponseRequest(final int id, final int stepIdentifier, final int partitionIdentifier, final String comment, final Action action) {
+    public RaApprovalResponseRequest(final int id, final int stepIdentifier, final int partitionIdentifier, final ApprovalRequest approvalRequest, final String comment, final Action action) {
         this.id = id;
         this.stepIdentifier = stepIdentifier;
         this.partitionIdentifier = partitionIdentifier;
+        this.approvalRequest = approvalRequest;
         this.comment = comment;
         this.action = action;
     }
@@ -47,6 +51,10 @@ public class RaApprovalResponseRequest implements Serializable {
     }
     public int getStepIdentifier() {
         return stepIdentifier;
+    }
+    
+    public ApprovalRequest getApprovalRequest() {
+        return approvalRequest;
     }
 
     public String getComment() {

@@ -415,8 +415,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // Return false so the next master api backend can see if it can handle the approval
             return false;
         }
-        // Convert RA request steps into approval steps
         
+        // Save the update request (needed if there are properties, e.g. checkboxes etc. in the partitions)
+        approvalSession.updateApprovalRequest(advo.getId(), requestResponse.getApprovalRequest());
+        
+        // Add the approval
         final Approval approval = new Approval(requestResponse.getComment(), requestResponse.getStepIdentifier(), requestResponse.getPartitionIdentifier());
         switch (requestResponse.getAction()) {
         case APPROVE:
@@ -426,7 +429,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             approvalExecutionSession.reject(authenticationToken, advo.getApprovalId(), approval);
             return true;
         case SAVE:
-            throw new UnsupportedOperationException("Saving without approving or rejecting is not yet implemented");
+            // All work is already done above
+            return true;
         default:
             throw new IllegalStateException("Invalid action");
         }
