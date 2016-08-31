@@ -97,7 +97,7 @@
                             <h:selectBooleanCheckbox disabled="#{raManageRequestBean.isPartitionHandled(partition) 
                                 || !raManageRequestBean.canApproveParition(partition)
                                 || raManageRequestBean.isPropertyReadOnly(property.name)}"  
-                            value="#{property.value}"/>
+                            value="#{property.encodedValue}"/>
                         </h:panelGroup>                    
                     </h:panelGroup>
                 </ui:repeat>
