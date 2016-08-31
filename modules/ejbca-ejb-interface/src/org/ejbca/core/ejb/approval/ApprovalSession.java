@@ -55,7 +55,7 @@ public interface ApprovalSession {
      * administrator to poll to see if it have been approved and only have one
      * step, otherwise use the method with the step parameter.
      * 
-     * @return the number of approvals left if still waiting for approval, 0 (ApprovalDataVO.STATUS_APROVED) 
+     * @return the number of approvals left if still waiting for approval, 0 (ApprovalDataVO.STATUS_APPROVED) 
      * if approved otherwise the ApprovalDataVO.STATUS constants returned indicating the status.
      * @throws ApprovalException
      *             if approvalId does not exist
@@ -64,6 +64,7 @@ public interface ApprovalSession {
      *             expired, once notified it wont throw it anymore. But If the
      *             request is multiple steps and user have already performed
      *             that step, the Exception will always be thrown.
+     * @see ApprovalDataVO
      */
      int isApproved(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
 
