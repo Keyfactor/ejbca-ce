@@ -1794,28 +1794,28 @@ public class EjbcaWS implements IEjbcaWS {
 		        ar = new GenerateTokenApprovalRequest(userDataWS.getUsername(), userDataWS.getSubjectDN(), hardTokenDataWS.getLabel(), admin,
 		                null, significantcAInfo.getCAId(), endEntityProfileId, approvalProfile);
 				int status = ApprovalDataVO.STATUS_REJECTED; 					
+                final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
 				try{
 					status = approvalSession.isApproved(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_1_GENERATETOKEN);
-                    approvalSuccessfullStep1 = (status == ApprovalDataVO.STATUS_APPROVED);
-                    isRejectedStep1 = (status == ApprovalDataVO.STATUS_REJECTED);
-					if(status == ApprovalDataVO.STATUS_APPROVED){
-						ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(intAdmin, ar.generateApprovalId());
-						String originalDN = ((GenerateTokenApprovalRequest) approvalDataVO.getApprovalRequest()).getDN();
-						userDataWS.setSubjectDN(originalDN); // replace requested DN with original DN to make sure nothing have changed.
-					} else if (status == ApprovalDataVO.STATUS_REJECTED) {
-						throw new ApprovalRequestExecutionException("The approval for ID " + ar.generateApprovalId() + " has been rejected.");												
-					} else if (status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED || status == ApprovalDataVO.STATUS_EXPIRED) {
-						throw new ApprovalException("The approval for ID " + ar.generateApprovalId() + " has expired.");
-					} else {
-					    final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
-						throw new WaitingForApprovalException("The approval for ID " + requestId + " have not yet been approved", requestId);
-					}
-				}catch(ApprovalException e){
-					approvalSession.addApprovalRequest(admin, ar);
-					final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
-					throw new WaitingForApprovalException("Approval request with ID " + requestId + " have been added for approval.", requestId);
+                } catch (ApprovalException e) {
+                	// Request didn't exist
+                    approvalSession.addApprovalRequest(admin, ar);
+                    throw new WaitingForApprovalException("Approval request with approvalID (hash) " + ar.generateApprovalId() + " and ID " + requestId + " has been added for approval.", requestId);
+                }
+				approvalSuccessfullStep1 = (status == ApprovalDataVO.STATUS_APPROVED);
+				isRejectedStep1 = (status == ApprovalDataVO.STATUS_REJECTED);
+				if(status == ApprovalDataVO.STATUS_APPROVED){
+				    ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(intAdmin, ar.generateApprovalId());
+				    String originalDN = ((GenerateTokenApprovalRequest) approvalDataVO.getApprovalRequest()).getDN();
+				    userDataWS.setSubjectDN(originalDN); // replace requested DN with original DN to make sure nothing have changed.
+				} else if (status == ApprovalDataVO.STATUS_REJECTED) {
+				    throw new ApprovalRequestExecutionException("The approval with approvalID (hash) " + ar.generateApprovalId() + " and ID " + requestId + " has been rejected.");
+				} else if (status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED || status == ApprovalDataVO.STATUS_EXPIRED) {
+				    throw new ApprovalException("The approval with approvalID (hash) " + ar.generateApprovalId() + " and ID " + requestId + " has expired.");
+				} else {
+				    throw new WaitingForApprovalException("The approval with approvalID (hash) " + ar.generateApprovalId() + " and ID " + requestId + " has not yet been approved", requestId);
 				}
-			}else{
+			} else {
 			    final String msg = "Can not find an ApprovalProfile with ID: "+approvalProfileID;
 			    if (log.isDebugEnabled()) {
 			        log.debug(msg);
@@ -1825,7 +1825,7 @@ public class EjbcaWS implements IEjbcaWS {
 		}
 		
 		if (ar != null && isRejectedStep1) {
-		    throw new ApprovalRequestExecutionException("The approval for ID " + ar.generateApprovalId() + " has been rejected.");
+		    throw new ApprovalRequestExecutionException("The approval for approvalID (hash) " + ar.generateApprovalId() + " has been rejected.");
 		}
 
 		if (ar != null && !approvalSuccessfullStep1) {
@@ -1833,7 +1833,7 @@ public class EjbcaWS implements IEjbcaWS {
 		    throw new WaitingForApprovalException("The approval for ID " + requestId + " has not yet been approved", requestId);
 		}
         if (log.isDebugEnabled() && ar != null && approvalSuccessfullStep1) {
-            log.debug("The approval for ID " + ar.generateApprovalId() + " has been approved");
+            log.debug("The approval for approvalID (hash) " + ar.generateApprovalId() + " has been approved");
         }
 
 		if (ar != null) {
@@ -2205,7 +2205,7 @@ public class EjbcaWS implements IEjbcaWS {
                             try{
                                 approvalSession.addApprovalRequest(admin, ar);
                                 final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
-                                throw new WaitingForApprovalException("Adding approval to view hard token data with id " + requestId, requestId);
+                                throw new WaitingForApprovalException("Adding approval request to view hard token data with ID " + requestId, requestId);
                             }catch(ApprovalException e4){
                                 throw EjbcaWSHelper.getEjbcaException(e4, logger, ErrorCode.APPROVAL_ALREADY_EXISTS, null);
                             }
@@ -2220,7 +2220,7 @@ public class EjbcaWS implements IEjbcaWS {
             }
 
             if(ar != null && isRejectedStep0){
-                throw new ApprovalRequestExecutionException("The approval for ID " + ar.generateApprovalId() + " have been rejected.");
+                throw new ApprovalRequestExecutionException("The approval for approvalID (hash) " + ar.generateApprovalId() + " have been rejected.");
             }
 
             if(ar != null && ! isApprovedStep0){

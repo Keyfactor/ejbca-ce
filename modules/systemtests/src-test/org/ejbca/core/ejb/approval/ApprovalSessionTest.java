@@ -380,7 +380,7 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalProfile.setNumberOfApprovalsRequired(1);
             ViewHardTokenDataApprovalRequest ar = new ViewHardTokenDataApprovalRequest("APPROVALREQTESTTOKENUSER1", 
                     "CN=APPROVALREQTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0, approvalProfile);
-            log.debug("Adding approval with approvalId: " + ar.generateApprovalId());
+            log.debug("Adding approval with approvalID (hash): " + ar.generateApprovalId());
             approvalSessionRemote.addApprovalRequest(admin1, ar);
             result = approvalSessionRemote.findApprovalDataVO(admin1, ar.generateApprovalId());
             assertTrue(result.size() == 1);

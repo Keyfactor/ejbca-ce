@@ -397,10 +397,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new IllegalStateException(e);
         }
         
-        final int newCalculatedId = approvalRequest.generateApprovalId();
-        final Collection<ApprovalDataVO> advosNew = approvalSession.findApprovalDataVO(authenticationToken, newCalculatedId);
+        final int newCalculatedHash = approvalRequest.generateApprovalId();
+        final Collection<ApprovalDataVO> advosNew = approvalSession.findApprovalDataVO(authenticationToken, newCalculatedHash);
         if (advosNew.isEmpty()) {
-            throw new IllegalStateException("Approval with calculated ID (approvalId) " + newCalculatedId + " could not be found");
+            throw new IllegalStateException("Approval with calculated hash (approvalId) " + newCalculatedHash + " could not be found");
         }
         final ApprovalDataVO advoNew = advosNew.iterator().next();
         return getApprovalRequest(authenticationToken, advoNew);
