@@ -816,7 +816,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " \u2192 " + fingerprints.size() + " results. queryTimeout=" + queryTimeout + "ms");
             }
         } catch (QueryTimeoutException e) {
-            log.info("Requested search query by " + authenticationToken +  " took too long. Query was " + e.getQuery().toString() + ". " + e.getMessage());
+            // Query.toString() does not return the SQL query executed just a java object hash. If Hibernate is being used we can get it using:
+            // query.unwrap(org.hibernate.Query.class).getQueryString()
+            String queryString = e.getQuery().toString();
+            try {
+                queryString = e.getQuery().unwrap(org.hibernate.Query.class).getQueryString();
+            } catch (PersistenceException pe) {
+                log.debug("Query.unwrap(org.hibernate.Query.class) is not supported by JPA provider");
+            }
+            log.info("Requested search query by " + authenticationToken +  " took too long. Query was '" + queryString + "'. " + e.getMessage());
             response.setMightHaveMoreResults(true);
         } catch (PersistenceException e) {
             log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " + e.getMessage());
