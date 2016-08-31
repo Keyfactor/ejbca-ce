@@ -464,7 +464,7 @@ On JBoss 7.2 or EAP 6.1/6.2:
 <pre>
 mkdir -p modules/system/layers/base/com/mysql/main/
 </pre>
-Or for MariaDB, mariadb-java-client-1.1.5.jar:
+Or for MariaDB, mariadb-java-client-1.2.0.jar:
 <pre>
 mkdir -p modules/org/mariadb/main/
 </pre>
@@ -499,12 +499,12 @@ mkdir -p modules/system/layers/base/org/mariadb/main/
 </module>
 -->
 </pre>
-Or for MariaDB, mariadb-java-client-1.2.2.jar:
+Or for MariaDB, mariadb-java-client-1.2.0.jar:
 <pre>
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;module xmlns=&quot;urn:jboss:module:1.0&quot; name=&quot;org.mariadb&quot;&gt;
   &lt;resources&gt;
-    &lt;resource-root path=&quot;mariadb-java-client-1.2.2.jar&quot;/&gt;
+    &lt;resource-root path=&quot;mariadb-java-client-1.2.0.jar&quot;/&gt;
   &lt;/resources&gt;
   &lt;dependencies&gt;
     &lt;module name=&quot;javax.api&quot;/&gt;
@@ -517,10 +517,10 @@ Or for MariaDB, mariadb-java-client-1.2.2.jar:
 </li>
 <li>Register the driver by running the following two commands in the JBoss 7 CLI administration tool:
 <pre>
-/subsystem=datasources/jdbc-driver=com.mysql.jdbc.Driver:add(driver-name=com.mysql.jdbc.Driver,driver-class-name=com.mysql.jdbc.Driver,driver-module-name=com.mysql,driver-xa-datasource-class-name=com.mysql.jdbc.jdbc.jdbc2.optional.MysqlXADataSource)
+/subsystem=datasources/jdbc-driver=com.mysql.jdbc.Driver:add(driver-name=com.mysql.jdbc.Driver,driver-class-name=com.mysql.jdbc.Driver,driver-module-name=com.mysql,driver-xa-datasource-class-name=com.mysql.jdbc.jdbc2.optional.MysqlXADataSource)
 :reload
 </pre>
-Or for MariaDB, mariadb-java-client-1.1.5.jar:
+Or for MariaDB, mariadb-java-client-1.2.0.jar:
 <pre>
 /subsystem=datasources/jdbc-driver=org.mariadb.jdbc.Driver:add(driver-name=org.mariadb.jdbc.Driver,driver-module-name=org.mariadb,driver-xa-datasource-class-name=org.mariadb.jdbc.MySQLDataSource)
 :reload
