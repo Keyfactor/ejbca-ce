@@ -76,8 +76,9 @@ deploying the new code.
 
 ***		3. Changes to WebService Approvals
     
-If you have been using Approvals with the WebService API you have configured approval settings in jaxws.properties. This configuration setting has changed
-as part of the new approval profile concept. Look at jaxws.properties and configure a new approval profile for the WebService Approvals.  
+If you have been using Approvals with the WebService API you have configured approval settings in jaxws.properties (only related to calls to genTokenCertificates and/or viewHardToken). 
+This configuration setting has changed as part of the new approval profile concept. 
+Look at jaxws.properties and configure a new approval profile for the WebService Approvals.  
 
 ***		4. Removal of the access rule /ca_functionality/store_certificate	
 
@@ -89,10 +90,10 @@ existing roles due to being harmless (and invasive to remove).
 		5.a Approval Profiles
 		
 Approval profiles (of the Accumulative Approval Profile type) will during startup of the first upgraded node be automatically created and set for 
-CAs and Certificate Profiles using approvals. During the upgrade, approval requests may roll in from unupgraded nodes, and these will automatically
-be reparsed when they are read from the upgraded ones, in other words set to use the same profile as if they'd been created on an upgraded node. For
-the sake of 100% uptime, this means that all actions (enrollment, revocation, ca activation, etc) may continue during the upgrade, and they may be 
-processed from the upgraded nodes. On the other hand, unupgraded nodes will not be able to approve actions created by or read by the upgraded nodes
+CAs and Certificate Profiles using approvals. During the upgrade, approval requests may roll in from un-upgraded nodes, and these will automatically
+be re-parsed when they are read from the upgraded ones, in other words set to use the same profile as if they'd been created on an upgraded node. For
+the sake of 100% uptime, this means that all actions (enrollment, revocation, CA activation, etc) may continue during the upgrade, and they may be 
+processed from the upgraded nodes. On the other hand, un-upgraded nodes will not be able to approve actions created by or read by the upgraded nodes
 until the upgrade process is complete. 
 
 From EJBCA 6.5.1 to EJBCA 6.5.3
