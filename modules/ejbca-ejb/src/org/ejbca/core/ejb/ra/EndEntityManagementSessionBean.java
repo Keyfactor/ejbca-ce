@@ -814,6 +814,18 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     // If status is not new, we will only remove the counter if the profile does not use it
                     resetRequestCounter(admin, true, ei, username, endEntityProfileId);
                 }
+                
+                List<Integer> editApprovalReqIds = userData.getExtendedInformation().getEditEndEntityApprovalRequestIds();
+                if(!editApprovalReqIds.isEmpty()) {
+                    for(Integer id : editApprovalReqIds) {
+                        ei.addEditEndEntityApprovalRequestId(id);
+                    }
+                }
+                
+                Integer addApprovalReqId = userData.getExtendedInformation().getAddEndEntityApprovalRequestId();
+                if(addApprovalReqId != null) {
+                    ei.setAddEndEntityApprovalRequestId(addApprovalReqId);
+                }
             }
             userData.setExtendedInformation(ei);
             userData.setStatus(newstatus);

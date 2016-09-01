@@ -29,6 +29,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
@@ -74,8 +75,16 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		throw new IllegalStateException("This execution requires additional bean references.");
 	}
 	
-	public void execute(EndEntityManagementSession endEntityManagementSession) throws ApprovalRequestExecutionException {
+	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestId) throws ApprovalRequestExecutionException {
 		log.debug("Executing AddEndEntity for user:" + userdata.getUsername());
+		
+        ExtendedInformation ext = userdata.getExtendedinformation();
+        if(ext == null) {
+            ext = new ExtendedInformation();
+        }
+        ext.setAddEndEntityApprovalRequestId(approvalRequestId);
+        userdata.setExtendedinformation(ext);
+		
 		try{
 			endEntityManagementSession.addUser(getRequestAdmin(), userdata, clearpwd);
 		} catch (EndEntityExistsException e) {

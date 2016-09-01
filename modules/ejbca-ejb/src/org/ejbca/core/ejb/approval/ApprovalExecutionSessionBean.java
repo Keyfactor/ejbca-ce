@@ -39,6 +39,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -84,6 +85,8 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     private CAAdminSessionLocal caAdminSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
@@ -137,11 +140,14 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                         if (approvalRequest instanceof ActivateCATokenApprovalRequest) {
                             ((ActivateCATokenApprovalRequest) approvalRequest).execute(caAdminSession);
                         } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-                            ((AddEndEntityApprovalRequest) approvalRequest).execute(endEntityManagementSession);
+                            ((AddEndEntityApprovalRequest) approvalRequest).execute(endEntityManagementSession, 
+                                    approvalSession.getIdFromApprovalId(approvalId));
                         } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
-                            ((ChangeStatusEndEntityApprovalRequest) approvalRequest).execute(endEntityManagementSession);
+                            ((ChangeStatusEndEntityApprovalRequest) approvalRequest).execute(endEntityManagementSession, 
+                                    endEntityAccessSession, approvalSession.getIdFromApprovalId(approvalId));
                         } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-                            ((EditEndEntityApprovalRequest) approvalRequest).execute(endEntityManagementSession);
+                            ((EditEndEntityApprovalRequest) approvalRequest).execute(endEntityManagementSession, 
+                                    approvalSession.getIdFromApprovalId(approvalId));
                         } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
                             ((KeyRecoveryApprovalRequest) approvalRequest).execute(endEntityManagementSession);
                         } else if (approvalRequest instanceof RevocationApprovalRequest) {
