@@ -106,6 +106,9 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static String KEYSTORE_ALGORITHM_SUBTYPE = "KEYSTORE_ALGORITHM_SUBTYPE";
     private static String KEYSTORE_ALGORITHM_TYPE = "KEYSTORE_ALGORITHM_TYPE";
     
+    private static String ADD_EE_APPROVAL_REQUEST_ID = "ADD_EE_APPROVAL_REQUEST_ID";
+    private static String EDIT_EE_APPROVAL_REQUEST_IDS = "EDIT_EE_APPROVAL_REQUEST_IDS";
+    
     /** Certificate request used for enrolling end entity user with public key provided by user (KickAssRA). */
     private static String CERTIFICATE_REQUEST = "CERTIFICATE_REQUEST";
 
@@ -470,4 +473,33 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private void setType(int type) {
         data.put(TYPE, type);
     }
+
+    
+    public Integer getAddEndEntityApprovalRequestId() {
+        Object id = data.get(ADD_EE_APPROVAL_REQUEST_ID);
+        if(id != null) {
+            return (Integer) id;
+        }
+        return null;
+    }
+    
+    public void setAddEndEntityApprovalRequestId(Integer requestId) {
+        data.put(ADD_EE_APPROVAL_REQUEST_ID, requestId);
+    }
+    
+    public List<Integer> getEditEndEntityApprovalRequestIds() {
+        Object ids = data.get(EDIT_EE_APPROVAL_REQUEST_IDS);
+        if(ids != null) {
+            return (ArrayList<Integer>) ids;
+        }
+        return new ArrayList<Integer>();
+    }
+    
+    public void addEditEndEntityApprovalRequestId(Integer requestId) {
+        Object obj = data.get(EDIT_EE_APPROVAL_REQUEST_IDS);
+        ArrayList<Integer> ids = obj==null? new ArrayList<Integer>() : (ArrayList<Integer>) obj;
+        ids.add(requestId);
+        data.put(EDIT_EE_APPROVAL_REQUEST_IDS, ids);
+    }
+    
 }

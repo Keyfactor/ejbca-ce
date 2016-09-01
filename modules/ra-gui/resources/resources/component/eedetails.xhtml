@@ -238,6 +238,23 @@
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
+            
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+            
+            <h:outputLabel for="addEEApprovalReq" value="Add End Entity Approval Request ID"
+                rendered="#{cc.attrs.raEndEntityDetails.addEndEntityApprovalRequestId != ''}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="addEEApprovalReq" value="#{cc.attrs.raEndEntityDetails.addEndEntityApprovalRequestId}"
+                rendered="#{cc.attrs.raEndEntityDetails.addEndEntityApprovalRequestId != ''}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                
+           	<h:outputLabel for="editEEApprovalReq" value="Edit End Entity Approval Request ID"
+                rendered="#{cc.attrs.raEndEntityDetails.editEndEntityApprovalRequestId != ''}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="editEEApprovalReq" value="#{cc.attrs.raEndEntityDetails.editEndEntityApprovalRequestId}"
+                rendered="#{cc.attrs.raEndEntityDetails.editEndEntityApprovalRequestId != ''}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            
 
         </composite:implementation>
     </h:body>
