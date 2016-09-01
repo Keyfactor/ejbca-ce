@@ -211,11 +211,13 @@ span .approvalStep,
 #manageRequestForm\:editRequestDataTable {
   word-break: break-all; }
   #manageRequestForm\:editRequestDataTable label {
-    display: block; }
+    display: block;
+    margin-left: 1.5%; }
   #manageRequestForm\:editRequestDataTable input:not([type="submit"]) {
     width: 100%; }
   #manageRequestForm\:editRequestDataTable span {
-    word-break: break-all; }
+    word-break: break-all;
+    margin-left: 1.5%; }
 
 .pure-form select {
   font-size: 90%;
@@ -279,7 +281,8 @@ label.showNonModifiable {
   font-size: 68%;
   font-weight: bold;
   padding: 1.3% 2.5% 1% 2.5%;
-  height: 40px; }
+  height: 40px;
+  min-width: 65px; }
 
 .navigation-button-group > #enrollMakeNewRequestForm\:resetButton {
   float: left;
@@ -394,8 +397,7 @@ textarea#keyPairForm\:certificateRequest {
   #detailsForm > span.pure-u-1:nth-of-type(2) {
     word-break: break-all; } }
 select#detailsForm\:certDetails\:newRevocationReason ~ input {
-  margin: 0 0 0 2%;
-  width: 80px; }
+  margin: 1% 0 0 2%; }
 
 #contentForm > #contentForm:more > span.pure-g > div:nth-of-type(1).pure-u-1 {
   width: 16%; }
@@ -415,6 +417,10 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 @-moz-document url-prefix() {
   #makeRequestButton, #requestStatusButton, #searchCertsButton {
     padding-top: 15px !important; } }
+#enrollWithRequestIdForm\:generateDer,
+#enrollWithRequestIdForm\:generatePkcs7,
+#enrollWithRequestIdForm\:generatePemFullChain,
+#enrollWithRequestIdForm\:generatePem,
 #manageRequestForm\:commandSaveData,
 #manageRequestForm\:commandReject,
 #manageRequestForm\:commandApprove,
@@ -439,6 +445,14 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
   background: #e9af13;
   color: #fff; }
 
+#enrollWithRequestIdForm\:generateDer:hover,
+#enrollWithRequestIdForm\:generateDer:focus,
+#enrollWithRequestIdForm\:generatePkcs7:hover,
+#enrollWithRequestIdForm\:generatePkcs7:focus,
+#enrollWithRequestIdForm\:generatePemFullChain:hover,
+#enrollWithRequestIdForm\:generatePemFullChain:focus,
+#enrollWithRequestIdForm\:generatePem:hover,
+#enrollWithRequestIdForm\:generatePem:focus,
 #manageRequestForm\:commandSaveData:hover,
 #manageRequestForm\:commandSaveData:focus,
 #manageRequestForm\:commandReject:hover,
@@ -637,6 +651,9 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     display: block;
     max-width: 98%; }
 
+@-moz-document url-prefix() {
+  #contentForm\:viewRequestDataTable, #manageRequestForm\:viewRequestDataTable {
+    word-break: break-all; } }
 #manageRequestForm\:currentStep > .internal-frame > div > label {
   margin-left: 1.5%; }
 #manageRequestForm\:currentStep > .internal-frame > div > div > label {
@@ -648,7 +665,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   display: block; }
 
 /* Styling av felmeddelanden som dyker upp när man inte fyllt i lösenord i make request*/
-#requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage {
+#requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage, #enrollWithRequestIdForm\:passwordFieldMessage {
   display: none;
   margin: 1% 0 2% 0;
   color: #fff;
@@ -801,6 +818,9 @@ span.approvalStep {
   padding-top: 7%;
   padding-bottom: 6%;
   margin-left: 5%; }
+
+.pure-control-group > label[for="enrollWithRequestIdForm\:passwordField"] {
+  width: auto; }
 
 .footer {
   height: 100px;
@@ -1186,6 +1206,9 @@ table#contentForm\:searchCertTable > tbody > tr > td > input {
     margin: 1% 0 2% 19%;
     width: auto; }
 
+  #enrollWithRequestIdForm\:passwordFieldMessage {
+    width: 65%; }
+
   .errorMessage, .infoMessage {
     /* gör att 'generella' felmeddelanden visas var man än står på sidan */
     margin: 5% 0 0 0; }
@@ -1237,12 +1260,11 @@ table#contentForm\:searchCertTable > tbody > tr > td > input {
   #contentForm\:manageRequestTable > tbody > a {
     padding-top: 16%; }
 
-  #detailsForm\:certDetails\:newRevocationReason {
-    display: inline-block;
-    margin: 0; }
-
   .pure-button {
     font-size: 76%; }
+
+  select#detailsForm\:certDetails\:newRevocationReason ~ input {
+    margin: 0 0 0 2%; }
 
   #contentForm\:commandEditData {
     margin: 1% 0 2% 0; }
@@ -1276,7 +1298,8 @@ table#contentForm\:searchCertTable > tbody > tr > td > input {
     #manageRequestForm\:editRequestDataTable label {
       display: block; }
     #manageRequestForm\:editRequestDataTable span {
-      margin: 0.5em 0 0.2em; }
+      margin-top: 0.5em;
+      margin-left: 1.5%; }
 
   .approvalControl > textarea {
     margin-bottom: 1%; }
@@ -1519,7 +1542,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input {
   #contentForm\:currentStep div > div > table > tbody > tr > td > label {
     display: inline; }
 
-  .pure-button {
+  .pure-button:not(input[valute="revoke"]) {
     height: auto; }
 
   #contentForm\:editRequestDataTable {
@@ -1527,12 +1550,19 @@ table#contentForm\:searchCertTable > tbody > tr > td > input {
     #contentForm\:editRequestDataTable label {
       display: inline-block; }
 
+  #detailsForm\:certDetails\:newRevocationReason {
+    display: inline-block;
+    margin: 0; }
+
   #manageRequestForm\:editRequestDataTable {
     padding-left: 2%; }
     #manageRequestForm\:editRequestDataTable label {
-      display: inline-block; }
+      display: inline-block;
+      margin-left: 0; }
     #manageRequestForm\:editRequestDataTable input, #manageRequestForm\:editRequestDataTable input:not([type="submit"]) {
       width: auto; }
+    #manageRequestForm\:editRequestDataTable span {
+      margin-left: 0; }
 
   .searchButton {
     margin-left: 2%; }
