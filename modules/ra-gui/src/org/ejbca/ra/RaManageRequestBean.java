@@ -34,7 +34,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.util.ui.DynamicUiProperty;
-import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -71,10 +70,6 @@ public class RaManageRequestBean implements Serializable {
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
-    // FIXME calls to this session bean will not work if the CA and RA are on different machines. so this variable should be removed.
-    @EJB
-    @Deprecated
-    private ApprovalSessionLocal approvalSession;
 
     @ManagedProperty(value="#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
