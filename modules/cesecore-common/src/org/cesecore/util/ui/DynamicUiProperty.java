@@ -405,4 +405,15 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public void setHasMultipleValues(boolean hasMultipleValues) {
         this.hasMultipleValues = hasMultipleValues;
     }
+    
+    /** Workaround for JSF bug with ui:repeat and rendered. See ECA-5342 */
+    @SuppressWarnings("unchecked")
+    public T getJsfBooleanValue() {
+        if (hasMultipleValues || type != Boolean.class) {
+            // In this case, JSF made a spurious call and will throw away the return value, but it must be of expected type (boolean)
+            return (T)Boolean.FALSE;
+        } else {
+            return getValue();
+        }
+    }
 }
