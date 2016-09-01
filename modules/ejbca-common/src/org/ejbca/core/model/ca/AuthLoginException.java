@@ -13,6 +13,7 @@
  
 package org.ejbca.core.model.ca;
 
+import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
 
 
@@ -35,4 +36,12 @@ public class AuthLoginException extends EjbcaException {
     public AuthLoginException(String message) {
         super(message);
     }
+    
+    /** Constructor taking an ErrorCode and the message. Use ErrorCode.LOGIN_ERROR
+     * @see ErrorCode
+     */
+    public AuthLoginException(ErrorCode errorCode, String msg) {
+        super(errorCode, msg);
+     }
+
 }
