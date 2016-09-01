@@ -697,7 +697,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                             raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
                             log.info("Subject DN " + subjectDn.getValue() + " already exists for another user" , e);
                         } else if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
-                            raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), errorCode);
+                            raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), errorCode);
                             log.info("Certificate could not be generated for user " + endEntityInformation.getUsername()+": "+e.getMessage()+", "+errorCode);
                         } else {
                             raLocaleBean.addMessageError(errorCode);
