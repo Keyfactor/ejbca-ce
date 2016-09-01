@@ -84,7 +84,7 @@
                                <f:converter converterId="javax.faces.Integer"/>
                             </h:inputText>
                         </h:panelGroup>             
-                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'RadioButton' and property.multiValued  and !property.hasMultipleValues}">
+                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'RadioButton' and property.multiValued and !property.hasMultipleValues}">
                             <h:selectOneRadio disabled="#{raManageRequestBean.isPartitionHandled(partition) 
                                                             || !raManageRequestBean.canApproveParition(partition)
                                                             || raManageRequestBean.isPropertyReadOnly(property.name)}"
