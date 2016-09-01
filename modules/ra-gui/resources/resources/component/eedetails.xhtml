@@ -241,14 +241,14 @@
             
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
             
-            <h:outputLabel for="addEEApprovalReq" value="Add End Entity Approval Request ID"
+            <h:outputLabel for="addEEApprovalReq" value="#{msg.component_eedetails_field_addendentity_approvalrequestid}"
                 rendered="#{cc.attrs.raEndEntityDetails.addEndEntityApprovalRequestId != ''}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="addEEApprovalReq" value="#{cc.attrs.raEndEntityDetails.addEndEntityApprovalRequestId}"
                 rendered="#{cc.attrs.raEndEntityDetails.addEndEntityApprovalRequestId != ''}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                 
-           	<h:outputLabel for="editEEApprovalReq" value="Edit End Entity Approval Request ID"
+           	<h:outputLabel for="editEEApprovalReq" value="#{msg.component_eedetails_field_editendentity_approvalrequestid}"
                 rendered="#{cc.attrs.raEndEntityDetails.editEndEntityApprovalRequestId != ''}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="editEEApprovalReq" value="#{cc.attrs.raEndEntityDetails.editEndEntityApprovalRequestId}"
