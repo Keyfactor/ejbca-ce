@@ -643,7 +643,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   margin-left: 1.5%; }
 #manageRequestForm\:currentStep > .internal-frame > div > div > table > tbody > tr > td > label {
   display: inline; }
-#manageRequestForm\:currentStep > .internal-frame > div span, #manageRequestForm\:currentStep > .internal-frame input[type="checkbox"] {
+#manageRequestForm\:currentStep > .internal-frame > div span, #manageRequestForm\:currentStep > .internal-frame input[type="checkbox"], #manageRequestForm\:currentStep > .internal-frame table {
   margin-left: 1.5%;
   display: block; }
 
@@ -1275,8 +1275,6 @@ table#contentForm\:searchCertTable > tbody > tr > td > input {
     word-break: break-all; }
     #manageRequestForm\:editRequestDataTable label {
       display: block; }
-    #manageRequestForm\:editRequestDataTable input, #manageRequestForm\:editRequestDataTable input:not([type="submit"]) {
-      width: auto; }
     #manageRequestForm\:editRequestDataTable span {
       margin: 0.5em 0 0.2em; }
 
@@ -1399,6 +1397,8 @@ table#contentForm\:searchCertTable > tbody > tr > td > input {
     padding: 1.3% 2.5% 1% 2.5%;
     white-space: nowrap; }
 
+  #contentForm\:more > .pure-g > .pure-u-1:nth-of-type(2) {
+    margin: 0 0 0 1.5%; }
   #contentForm\:more > .pure-g > .pure-u-1:nth-of-type(3) {
     margin: 0 0 0 3%; }
   #contentForm\:more > .pure-g > .pure-u-1:nth-of-type(4) {
@@ -1531,6 +1531,8 @@ table#contentForm\:searchCertTable > tbody > tr > td > input {
     padding-left: 2%; }
     #manageRequestForm\:editRequestDataTable label {
       display: inline-block; }
+    #manageRequestForm\:editRequestDataTable input, #manageRequestForm\:editRequestDataTable input:not([type="submit"]) {
+      width: auto; }
 
   .searchButton {
     margin-left: 2%; }
