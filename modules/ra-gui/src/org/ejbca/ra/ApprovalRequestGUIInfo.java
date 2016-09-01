@@ -344,9 +344,13 @@ public class ApprovalRequestGUIInfo implements Serializable {
             type = "???";
         }
         
-        // These are currently unavailable in the listing page for performance reasons
-        final String username = getRequestData("USERNAME");
-        final String subjectDN = getRequestData("SUBJECTDN");
+        // Get username and subject DN if the request has this information
+        String username = null;
+        String subjectDN = null;
+        if (endEntityInformation != null) {
+            username = endEntityInformation.getUsername();
+            subjectDN = endEntityInformation.getDN();
+        }
         displayName = getCNOrFallback(subjectDN, username);
         detail = subjectDN;
         
@@ -426,16 +430,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public RaEndEntityDetails getEndEntityDetails() { return endEntityDetails; }
     
     public List<RequestDataRow> getRequestData() { return requestData; }
-    private String getRequestData(final String key) {
-        if (requestData != null) {
-            for (final RequestDataRow row : requestData) {
-                if (row.getKey().equals(key)) {
-                    return row.getData();
-                }
-            }
-        }
-        return null;
-    }
 
     public List<String> getEditLogEntries() { return editLogEntries; }
     
