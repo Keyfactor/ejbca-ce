@@ -208,6 +208,15 @@ span .approvalStep,
   #contentForm\:editRequestDataTable span {
     word-break: break-all; }
 
+#manageRequestForm\:editRequestDataTable {
+  word-break: break-all; }
+  #manageRequestForm\:editRequestDataTable label {
+    display: block; }
+  #manageRequestForm\:editRequestDataTable input:not([type="submit"]) {
+    width: 100%; }
+  #manageRequestForm\:editRequestDataTable span {
+    word-break: break-all; }
+
 .pure-form select {
   font-size: 90%;
   min-width: 15%;
@@ -406,6 +415,10 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 @-moz-document url-prefix() {
   #makeRequestButton, #requestStatusButton, #searchCertsButton {
     padding-top: 15px !important; } }
+#manageRequestForm\:commandSaveData,
+#manageRequestForm\:commandReject,
+#manageRequestForm\:commandApprove,
+#enrollWithRequestIdForm\:generateKeyStorePem,
 #enrollWithRequestIdForm\:generatePkcs12,
 #enrollWithRequestIdForm\:generateJks,
 #requestInfoForm\:confirmRequestButton,
@@ -426,6 +439,14 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
   background: #e9af13;
   color: #fff; }
 
+#manageRequestForm\:commandSaveData:hover,
+#manageRequestForm\:commandSaveData:focus,
+#manageRequestForm\:commandReject:hover,
+#manageRequestForm\:commandReject:focus,
+#manageRequestForm\:commandApprove:hover,
+#manageRequestForm\:commandApprove:focus,
+#requestInfoForm\:generateKeyStorePem:hover,
+#requestInfoForm\:generateKeyStorePem:focus,
 #enrollWithRequestIdForm\:generateKeyStorePem:hover,
 #enrollWithRequestIdForm\:generateKeyStorePem:focus,
 #enrollWithRequestIdForm\:generatePkcs12:hover,
@@ -609,12 +630,22 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
         width: auto; }
 
 /* SLUT Kod för att lägga radioknappar, som ligger inom första ramen i make request, under varandra */
-#contentForm\:viewRequestDataTable {
+#contentForm\:viewRequestDataTable, #manageRequestForm\:viewRequestDataTable {
   padding: 1% 0 1% 2%;
   word-break: break-word; }
-  #contentForm\:viewRequestDataTable > span {
+  #contentForm\:viewRequestDataTable > span, #manageRequestForm\:viewRequestDataTable > span {
     display: block;
     max-width: 98%; }
+
+#manageRequestForm\:currentStep > .internal-frame > div > label {
+  margin-left: 1.5%; }
+#manageRequestForm\:currentStep > .internal-frame > div > div > label {
+  margin-left: 1.5%; }
+#manageRequestForm\:currentStep > .internal-frame > div > div > table > tbody > tr > td > label {
+  display: inline; }
+#manageRequestForm\:currentStep > .internal-frame > div span, #manageRequestForm\:currentStep > .internal-frame input[type="checkbox"] {
+  margin-left: 1.5%;
+  display: block; }
 
 /* Styling av felmeddelanden som dyker upp när man inte fyllt i lösenord i make request*/
 #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage {
@@ -762,6 +793,9 @@ span.approvalStep {
 #contentForm\:requestApproveMessage {
   margin: 1% 0 0 2%; }
 
+#manageRequestForm\:requestApproveMessage {
+  margin: 1% 0 0 2%; }
+
 .searchButton {
   width: 50px;
   padding-top: 7%;
@@ -806,8 +840,9 @@ span.approvalStep {
       left: 7.25px; }
 
 /*SLUT CSS för scroll to top-funktion*/
-#requestIdButtons {
-  margin: 1% auto 0 auto; }
+#enrollWithRequestIdForm\:requestIdButtons {
+  text-align: center;
+  margin: 3% 0 0 0; }
 
 #detailsForm\:certDetails\:newRevocationReason {
   width: 160px;
@@ -879,8 +914,7 @@ span.approvalStep {
         word-break: break-all; }
       div.content-body #contentForm\:searchCertTable > tbody > tr > td > input {
         padding: 0 0 0 0;
-        height: auto;
-        font-size: 85%; }
+        height: auto; }
       div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(1):before {
         content: "CA"; }
       div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(2):before {
@@ -907,8 +941,7 @@ span.approvalStep {
     word-break: break-all; }
   div.content-body #contentForm\:searchEntityTable > tbody > tr > td > input {
     padding: 0 0 0 0;
-    height: auto;
-    font-size: 85%; }
+    height: auto; }
   div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(1):before {
     content: "CA"; }
   div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(2):before {
@@ -953,6 +986,12 @@ span.approvalStep {
       padding: 0 0 0 0;
       height: auto;
       font-size: 85%; } }
+table#contentForm\:searchCertTable > tbody > tr > td > input {
+  background: none;
+  font-size: 85%; }
+  table#contentForm\:searchCertTable > tbody > tr > td > input:hover {
+    text-decoration: underline; }
+
 @media (max-width: 64.0525em) {
   img.menu_logo {
     position: absolute; }
@@ -1232,13 +1271,19 @@ span.approvalStep {
     #contentForm\:editRequestDataTable span {
       margin: 0.5em 0 0.2em; }
 
+  #manageRequestForm\:editRequestDataTable {
+    word-break: break-all; }
+    #manageRequestForm\:editRequestDataTable label {
+      display: block; }
+    #manageRequestForm\:editRequestDataTable input, #manageRequestForm\:editRequestDataTable input:not([type="submit"]) {
+      width: auto; }
+    #manageRequestForm\:editRequestDataTable span {
+      margin: 0.5em 0 0.2em; }
+
   .approvalControl > textarea {
     margin-bottom: 1%; }
   .approvalControl > input {
     margin-bottom: 1%;
-    margin: 0.5em 0 0.2em; }
-  .approvalControl > table {
-    display: inline-block;
     margin: 0.5em 0 0.2em; }
 
   #contentForm\:currentStep div > textarea {
@@ -1452,6 +1497,13 @@ span.approvalStep {
   #contentForm\:viewRequestDataTable > span {
     display: inline-block; }
 
+  #manageRequestForm\:viewRequestDataTable > span {
+    display: inline-block; }
+
+  #manageRequestForm\:currentStep > .internal-frame > div span, #manageRequestForm\:currentStep > .internal-frame input[type="checkbox"] {
+    display: inline;
+    margin-left: 0; }
+
   #contentForm\:commandEditData {
     height: auto; }
 
@@ -1475,11 +1527,19 @@ span.approvalStep {
     #contentForm\:editRequestDataTable label {
       display: inline-block; }
 
+  #manageRequestForm\:editRequestDataTable {
+    padding-left: 2%; }
+    #manageRequestForm\:editRequestDataTable label {
+      display: inline-block; }
+
   .searchButton {
     margin-left: 2%; }
 
   .approvalControl > label {
-    float: left; } }
+    float: left; }
+
+  table#contentForm\:searchCertTable > tbody > tr > td > input {
+    font-size: 76%; } }
 /*
 "gamla"
     "base"  // smartphone
