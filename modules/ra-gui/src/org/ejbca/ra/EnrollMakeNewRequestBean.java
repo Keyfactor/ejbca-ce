@@ -642,23 +642,26 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 } catch (AuthorizationDeniedException e) {
                     raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
                     log.info("You are not authorized to execute this operation", e);
-                }catch(EjbcaException e){
+                } catch(EjbcaException e) {
                     ErrorCode errorCode = EjbcaException.getErrorCode(e);
-                    if(errorCode != null){
-                        if(errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)){
+                    if (errorCode != null) {
+                        if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
                             raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
                             log.info("Subject DN " + subjectDn.getValue() + " already exists for another user" , e);
-                        }else{
+                        } else if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
+                            raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), errorCode);
+                            log.info("Keystore could not be generated for user " + endEntityInformation.getUsername()+": "+e.getMessage()+", "+errorCode);
+                        } else {
                             raLocaleBean.addMessageError(errorCode);
-                            log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
+                            log.info("Exception creating keystore. Error Code: " + errorCode, e);
                         }
-                    }else{
+                    } else {
                         raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-                        log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
+                        log.info("Keystore could not be generated for user " + endEntityInformation.getUsername()+": "+e.getMessage());
                     }
-                } catch(Exception e){
+                } catch(Exception e) {
                     raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-                    log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
+                    log.info("Keystore could not be generated for user " + endEntityInformation.getUsername()+": "+e.getMessage());
                 }
             } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())) {
                 try {
@@ -666,8 +669,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     final byte[] certificateDataToDownload = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(),
                             endEntityInformation);
                     if(certificateDataToDownload == null){
-                        raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername());
-                        log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername());
+                        raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), "null");
+                        log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername()+": null");
                     } else if (tokenDownloadType == TokenDownloadType.PEM_FULL_CHAIN) {
                         X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
                         LinkedList<Certificate> chain = new LinkedList<Certificate>(getCAInfo().getCertificateChain());
@@ -690,8 +693,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 } catch (EjbcaException | CertificateEncodingException | CertificateParsingException | ClassCastException | CMSException | IOException e) {
                     ErrorCode errorCode = EjbcaException.getErrorCode(e);
                     if (errorCode != null) {
-                        raLocaleBean.addMessageError(errorCode);
-                        log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
+                        if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
+                            raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
+                            log.info("Subject DN " + subjectDn.getValue() + " already exists for another user" , e);
+                        } else if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
+                            raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), errorCode);
+                            log.info("Certificate could not be generated for user " + endEntityInformation.getUsername()+": "+e.getMessage()+", "+errorCode);
+                        } else {
+                            raLocaleBean.addMessageError(errorCode);
+                            log.info("Exception creating certificate. Error Code: " + errorCode, e);
+                        }
                     } else {
                         raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
                         log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername(), e);
