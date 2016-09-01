@@ -219,8 +219,13 @@ public class EnrollWithRequestIdBean implements Serializable {
         } catch (EjbcaException e) {
             ErrorCode errorCode = EjbcaException.getErrorCode(e);
             if (errorCode != null) {
-                raLocaleBean.addMessageError(errorCode);
-                log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
+                if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
+                    raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), errorCode);
+                    log.info("Keystore could not be generated for user " + endEntityInformation.getUsername()+": "+e.getMessage()+", "+errorCode);
+                } else {
+                    raLocaleBean.addMessageError(errorCode);
+                    log.info("Exception generating certificate. Error Code: " + errorCode, e);
+                }
             } else {
                 raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
                 log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername(), e);
@@ -264,8 +269,13 @@ public class EnrollWithRequestIdBean implements Serializable {
         } catch (EjbcaException | IOException e) {
             ErrorCode errorCode = EjbcaException.getErrorCode(e);
             if (errorCode != null) {
-                raLocaleBean.addMessageError(errorCode);
-                log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
+                if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
+                    raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), errorCode);
+                    log.info("Keystore could not be generated for user " + endEntityInformation.getUsername()+": "+e.getMessage()+", "+errorCode);
+                } else {
+                    raLocaleBean.addMessageError(errorCode);
+                    log.info("Exception generating keystore. Error Code: " + errorCode, e);
+                }
             } else {
                 raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
                 log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());

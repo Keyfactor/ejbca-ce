@@ -27,6 +27,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
@@ -91,7 +92,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                     final Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
                     auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.FAILURE, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), null, username, details);
-                	throw new AuthLoginException(msg);
+                	throw new AuthLoginException(ErrorCode.LOGIN_ERROR, msg);
                 }
                 // Resets the remaining login attempts as this was a successful login
                 endEntityManagementSession.resetRemainingLoginAttempts(username);
