@@ -74,8 +74,8 @@
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<fieldset>
 							<h:panelGroup layout="block" styleClass="pure-control-group">
-								<h:outputText value="#{msg.enroll_request_id} " />
-								<h:outputText value="#{enrollWithRequestIdBean.requestId}" />
+								<h:outputText for="enteredRequestId" value="#{msg.enroll_request_id} " />
+								<h:outputText id="enteredRequestId" value="#{enrollWithRequestIdBean.requestId}" />
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group"
 								rendered="#{enrollWithRequestIdBean.renderPassword}">
