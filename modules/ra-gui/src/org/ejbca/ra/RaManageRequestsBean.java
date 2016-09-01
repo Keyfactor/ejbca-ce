@@ -64,7 +64,7 @@ public class RaManageRequestsBean implements Serializable {
     
     private enum SortBy { ID, REQUEST_DATE, CA, TYPE, DISPLAY_NAME, REQUESTER_NAME, STATUS };
     private SortBy sortBy = SortBy.REQUEST_DATE;
-    private boolean sortAscending = true;
+    private boolean sortAscending;
     
     /** Returns the currently viewed tab, and initializes and shows the "Needs Approval" tab if no tab has been clicked */ 
     private ViewTab getViewedTab() {
@@ -82,9 +82,23 @@ public class RaManageRequestsBean implements Serializable {
             } else {
                 viewTab = ViewTab.NEEDS_APPROVAL;
             }
+            sortAscending = getDefaultRequestDateSortOrder(); // based on the selected tab
             searchAndFilter();
         }
         return viewTab;
+    }
+    
+    private boolean getDefaultRequestDateSortOrder() {
+        switch (getViewedTab()) {
+        case NEEDS_APPROVAL:
+        case PENDING_APPROVAL:
+            return true; // ascending (oldest first)
+        case PROCESSED:
+        case CUSTOM_SEARCH:
+            return false; // descending (most recent first)
+        default:
+            throw new IllegalStateException("Internal error: Invalid tab");
+        }
     }
     
     public String getCurrentTabName() {
@@ -159,7 +173,7 @@ public class RaManageRequestsBean implements Serializable {
         Collections.sort(resultsFiltered, new Comparator<ApprovalRequestGUIInfo>() {
             @Override
             public int compare(ApprovalRequestGUIInfo o1, ApprovalRequestGUIInfo o2) {
-                int sortDir = (sortAscending ? 1 : -1);
+                int sortDir = (isSortAscending() ? 1 : -1);
                 switch (sortBy) {
                 // TODO locale-aware sorting
                 case ID: return o1.getId().compareTo(o2.getId()) * sortDir;
@@ -178,7 +192,7 @@ public class RaManageRequestsBean implements Serializable {
     }
     
     public String getSortedByRequestDate() { return getSortedBy(SortBy.REQUEST_DATE); }
-    public void sortByRequestDate() { sortBy(SortBy.REQUEST_DATE, false); }
+    public void sortByRequestDate() { sortBy(SortBy.REQUEST_DATE, getDefaultRequestDateSortOrder()); }
     public String getSortedByID() { return getSortedBy(SortBy.ID); }
     public void sortByID() { sortBy(SortBy.ID, false); }
     public String getSortedByCA() { return getSortedBy(SortBy.CA); }
@@ -194,7 +208,7 @@ public class RaManageRequestsBean implements Serializable {
 	
     private String getSortedBy(final SortBy sortBy) {
         if (this.sortBy.equals(sortBy)) {
-            return sortAscending ? "\u25bc" : "\u25b2";
+            return isSortAscending() ? "\u25bc" : "\u25b2";
         }
         return "";
     }
@@ -202,7 +216,7 @@ public class RaManageRequestsBean implements Serializable {
     /** Set current sort column. Flip the order if the column was already selected. */
     private void sortBy(final SortBy sortBy, final boolean defaultAscending) {
         if (this.sortBy.equals(sortBy)) {
-            sortAscending = !sortAscending;
+            sortAscending = !isSortAscending();
         } else {
             sortAscending = defaultAscending;
         }
@@ -210,5 +224,12 @@ public class RaManageRequestsBean implements Serializable {
         sort();
     }
     
+    private boolean isSortAscending() {
+        if (viewTab == null) {
+            // Initialize defaults based on the current tab
+            sortAscending = getDefaultRequestDateSortOrder();
+        }
+        return sortAscending;
+    }
     
 }

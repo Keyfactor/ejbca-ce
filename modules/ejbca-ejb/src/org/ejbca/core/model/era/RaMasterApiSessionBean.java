@@ -218,7 +218,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
     }
     
-    private ApprovalDataVO getApprovalData(AuthenticationToken authenticationToken, final int id) {
+    private ApprovalDataVO getApprovalDataNoAuth(AuthenticationToken authenticationToken, final int id) {
         final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
         query.add(ApprovalMatch.MATCH_WITH_UNIQUEID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(id));
         
@@ -289,7 +289,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final int id) {
-        final ApprovalDataVO advo = getApprovalData(authenticationToken, id);
+        final ApprovalDataVO advo = getApprovalDataNoAuth(authenticationToken, id);
         if (advo == null) {
             return null;
         }
@@ -352,11 +352,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public RaApprovalRequestInfo editApprovalRequest(final AuthenticationToken authenticationToken, final RaApprovalEditRequest edit) throws AuthorizationDeniedException {
         final int id = edit.getId();
-        final ApprovalDataVO advo = getApprovalData(authenticationToken, id);
+        final ApprovalDataVO advo = getApprovalDataNoAuth(authenticationToken, id);
         if (advo == null) {
             log.debug("Approval not found in editApprovalRequest");
             throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
         }
+        
+        // Perform auth check for CA
+        getApprovalRequest(authenticationToken, advo);
+        
         if (advo.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
             throw new IllegalStateException("Was not in waiting for approval state");
         }
@@ -410,11 +414,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException,
             AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException {
-        final ApprovalDataVO advo = getApprovalData(authenticationToken, requestResponse.getId());
+        final ApprovalDataVO advo = getApprovalDataNoAuth(authenticationToken, requestResponse.getId());
         if (advo == null) {
             // Return false so the next master api backend can see if it can handle the approval
             return false;
         }
+        
+        // Perform auth check for CA
+        getApprovalRequest(authenticationToken, advo);
         
         // Save the update request (needed if there are properties, e.g. checkboxes etc. in the partitions)
         approvalSession.updateApprovalRequest(advo.getId(), requestResponse.getApprovalRequest());
@@ -465,6 +472,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new IllegalStateException(e);
         }
         
+        if (log.isDebugEnabled()) {
+            log.debug("Got " + approvals.size() + " approvals from Master API");
+        }
+        
         if (approvals.size() >= 100) {
             response.setMightHaveMoreResults(true);
         }
@@ -484,7 +495,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("Returning "  +response.getApprovalRequests().size() + " approvals from search");
+            log.debug("Returning " + response.getApprovalRequests().size() + " approvals from search");
         }
         return response;
     }

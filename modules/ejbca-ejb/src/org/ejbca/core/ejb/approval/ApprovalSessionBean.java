@@ -383,7 +383,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             throw new IllegalQueryException();
         }
         final String queryString = (query != null ? query.getQueryString() : "1 = 1");
-        final List<ApprovalDataVO> ret = queryInternal(admin, queryString, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString);
+        final List<ApprovalDataVO> ret = queryInternal(admin, queryString, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString, null);
         log.trace("<query()");
         return ret;
     }
@@ -400,33 +400,38 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         
         final StringBuilder sb = new StringBuilder();
         
-        // Never include expired requests
-        sb.append("expireDate >= ");
-        sb.append(new Date().getTime());
-        sb.append(" AND (");
-        
+        String orderByString = null;
+        sb.append('(');
         boolean first = true;
         if (includeUnfinished) {
+            // Do not include expired requests
+            sb.append("(expireDate >= ");
+            sb.append(new Date().getTime());
+            sb.append(" AND ");
             // "STATUS_APPROVED" means that the request is still waiting to be executed by the requester
-            sb.append("status IN (" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL + ", " + ApprovalDataVO.STATUS_APPROVED + ")");
+            sb.append("status IN (" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL + ", " + ApprovalDataVO.STATUS_APPROVED + "))");
+            orderByString = "ORDER BY requestDate ASC"; // oldest first
             first = false;
         }
         if (includeProcessed) {
             if (!first) { sb.append(" OR "); }
             sb.append("status IN (" + ApprovalDataVO.STATUS_EXECUTED + ", " + ApprovalDataVO.STATUS_EXECUTIONDENIED + ", " +
                     ApprovalDataVO.STATUS_EXECUTIONFAILED + ", " + ApprovalDataVO.STATUS_REJECTED + ")");
+            orderByString = "ORDER BY requestDate DESC"; // most recently created first
             first = false;
         }
         sb.append(')');
         
-        final List<ApprovalDataVO> ret = queryInternal(admin, sb.toString(), index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString);
+        final List<ApprovalDataVO> ret = queryInternal(admin, sb.toString(), index, numberofrows,
+                caAuthorizationString, endEntityProfileAuthorizationString,
+                orderByString);
         log.trace("<queryByStatus()");
         return ret;
     }
     
     @SuppressWarnings("deprecation")
     private List<ApprovalDataVO> queryInternal(AuthenticationToken admin, final String query, int index, int numberofrows, String caAuthorizationString,
-            String endEntityProfileAuthorizationString) {
+            String endEntityProfileAuthorizationString, final String orderByString) {
         log.trace(">queryInternal()");
         String customQuery = "(" + query + ")";
         if (StringUtils.isNotEmpty(caAuthorizationString)) {
@@ -434,6 +439,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         }
         if (StringUtils.isNotEmpty(endEntityProfileAuthorizationString)) {
             customQuery += " AND " + endEntityProfileAuthorizationString;
+        }
+        if (StringUtils.isNotEmpty(orderByString)) {
+            customQuery += orderByString;
         }
         
         final List<ApprovalData> approvalDataList = findByCustomQuery(index, numberofrows, customQuery);
