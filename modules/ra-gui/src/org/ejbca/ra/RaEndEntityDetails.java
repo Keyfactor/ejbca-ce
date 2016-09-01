@@ -299,6 +299,30 @@ public class RaEndEntityDetails {
         return endEntityProfile;
     }
     
+    public String getAddEndEntityApprovalRequestId() {
+        final ExtendedInformation ext = endEntityInformation.getExtendedinformation();
+        final Integer reqid = ext.getAddEndEntityApprovalRequestId();
+        if(reqid == null) {
+            return "";
+        }
+        return reqid.toString();
+    }
+    
+    public String getEditEndEntityApprovalRequestId() {
+        final ExtendedInformation ext = endEntityInformation.getExtendedinformation();
+        final List<Integer> ids = ext.getEditEndEntityApprovalRequestIds();
+        if(ids.isEmpty()) {
+            return "";
+        }
+        
+        StringBuilder ret = new StringBuilder("");
+        for(Integer id : ids) {
+            ret = ret.append("; ").append(id);
+        }
+        ret.delete(0, 2);
+        return ret.toString();
+    } 
+    
     /** @return true every twice starting with every forth call */
     public boolean isEven() {
         styleRowCallCounter++;
