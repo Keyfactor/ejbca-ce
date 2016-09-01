@@ -156,27 +156,35 @@ public class EnrollWithRequestIdBean implements Serializable {
     
     public void generateCertificatePem() {
         generateCertificate();
-        try {
-            X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);        
-            byte[] pemToDownload = CertTools.getPemFromCertificateChain(Arrays.asList((Certificate) certificate));
-            downloadToken(pemToDownload, "application/octet-stream", ".pem");
-        } catch (CertificateParsingException | CertificateEncodingException e) {
-            log.info(e);
+        if (generatedToken != null) {
+            try {
+                X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);        
+                byte[] pemToDownload = CertTools.getPemFromCertificateChain(Arrays.asList((Certificate) certificate));
+                downloadToken(pemToDownload, "application/octet-stream", ".pem");
+            } catch (CertificateParsingException | CertificateEncodingException e) {
+                log.info(e);
+            }            
+        } else {
+            log.debug("No token was generated an error meesage should have been logged");
         }
         reset();
     }
     
     public void generateCertificatePemFullChain() {
         generateCertificate();
-        try {
-            X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);
-            CAInfo caInfo = authorizedCAInfos.get(endEntityInformation.getCAId()).getValue();
-            LinkedList<Certificate> chain = new LinkedList<Certificate>(caInfo.getCertificateChain());
-            chain.addFirst(certificate);
-            byte[] pemToDownload = CertTools.getPemFromCertificateChain(chain);
-            downloadToken(pemToDownload, "application/octet-stream", ".pem");
-        } catch (CertificateParsingException | CertificateEncodingException e) {
-            log.info(e);
+        if (generatedToken != null) {
+            try {
+                X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);
+                CAInfo caInfo = authorizedCAInfos.get(endEntityInformation.getCAId()).getValue();
+                LinkedList<Certificate> chain = new LinkedList<Certificate>(caInfo.getCertificateChain());
+                chain.addFirst(certificate);
+                byte[] pemToDownload = CertTools.getPemFromCertificateChain(chain);
+                downloadToken(pemToDownload, "application/octet-stream", ".pem");
+            } catch (CertificateParsingException | CertificateEncodingException e) {
+                log.info(e);
+            }
+        } else {
+            log.debug("No token was generated an error meesage should have been logged");
         }
         reset();
     }
@@ -189,15 +197,19 @@ public class EnrollWithRequestIdBean implements Serializable {
     
     public void generateCertificatePkcs7() {
         generateCertificate();
-        try {
-            X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);
-            CAInfo caInfo = authorizedCAInfos.get(endEntityInformation.getCAId()).getValue();
-            LinkedList<Certificate> chain = new LinkedList<Certificate>(caInfo.getCertificateChain());
-            chain.addFirst(certificate);
-            byte[] pkcs7ToDownload = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain)));
-            downloadToken(pkcs7ToDownload, "application/octet-stream", ".p7b");
-        } catch (CertificateParsingException | CertificateEncodingException | ClassCastException | CMSException e) {
-            log.info(e);
+        if (generatedToken != null) {
+            try {
+                X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);
+                CAInfo caInfo = authorizedCAInfos.get(endEntityInformation.getCAId()).getValue();
+                LinkedList<Certificate> chain = new LinkedList<Certificate>(caInfo.getCertificateChain());
+                chain.addFirst(certificate);
+                byte[] pkcs7ToDownload = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain)));
+                downloadToken(pkcs7ToDownload, "application/octet-stream", ".p7b");
+            } catch (CertificateParsingException | CertificateEncodingException | ClassCastException | CMSException e) {
+                log.info(e);
+            }
+        } else {
+            log.debug("No token was generated an error meesage should have been logged");
         }
         reset();
     }
