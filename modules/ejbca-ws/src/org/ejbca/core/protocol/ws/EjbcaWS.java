@@ -2225,7 +2225,7 @@ public class EjbcaWS implements IEjbcaWS {
 
             if(ar != null && ! isApprovedStep0){
                 final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
-                throw new WaitingForApprovalException("The approval for ID " + requestId + " have not yet been approved", requestId);
+                throw new WaitingForApprovalException("The approval for ID " + requestId + " has not yet been approved", requestId);
             }
 
             Collection<java.security.cert.Certificate> certs = hardTokenSession.findCertificatesInHardToken(hardTokenSN);

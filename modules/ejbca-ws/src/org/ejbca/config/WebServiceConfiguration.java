@@ -35,7 +35,7 @@ public class WebServiceConfiguration {
             try {
                 id = Integer.valueOf(idString);
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Invalid value in jaxws.approvalprofileid, must be a integer.", e);
+                throw new IllegalArgumentException("Invalid value in jaxws.approvalprofileid, must be an integer.", e);
             }
         }
         return id;
