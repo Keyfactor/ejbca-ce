@@ -245,7 +245,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             // Ok.. so it's not in the cache.. look for it the hard way..
             for (final Integer currentId : internalKeyBindingDataSession.getIds(null)) {
                 // Don't lookup CryptoTokens we already have in the id to name cache
-                if (!cachedNameToIdMap.keySet().contains(currentId)) {
+                if (!cachedNameToIdMap.keySet().contains(currentId.toString())) {
                     final InternalKeyBinding current = internalKeyBindingDataSession.getInternalKeyBinding(currentId.intValue());
                     final String currentName = current == null ? null : current.getName();
                     if (internalKeyBindingName.equals(currentName)) {
