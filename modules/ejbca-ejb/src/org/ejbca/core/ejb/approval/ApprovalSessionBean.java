@@ -603,7 +603,14 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         
         final int requestId = getIdFromApprovalId(approvalRequest.generateApprovalId());
         final int partitionId = approvalPartition.getPartitionIdentifier();
-        final String partitionName = approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString();
+        // There may be no partition name if it is not a partitioned approval
+        final String partitionName;
+        DynamicUiProperty<? extends Serializable> partNameProperty = approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
+        if (partNameProperty != null) {
+            partitionName = partNameProperty.getValueAsString();
+        } else {
+            partitionName = null;
+        }
         final String approvalType = intres.getLocalizedMessage(ApprovalDataVO.APPROVALTYPENAMES[approvalRequest.getApprovalType()]);
         final String workflowState = intres.getLocalizedMessage("APPROVAL_WFSTATE_" + approvalPartitionWorkflowState.name());
         final String requestor = approvalRequest.getRequestAdmin().toString();
