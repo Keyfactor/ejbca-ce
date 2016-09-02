@@ -1793,28 +1793,28 @@ public class EjbcaWS implements IEjbcaWS {
 		        }
 		        ar = new GenerateTokenApprovalRequest(userDataWS.getUsername(), userDataWS.getSubjectDN(), hardTokenDataWS.getLabel(), admin,
 		                null, significantcAInfo.getCAId(), endEntityProfileId, approvalProfile);
-				int status = ApprovalDataVO.STATUS_REJECTED; 					
-                final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
-				try{
-					status = approvalSession.isApproved(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_1_GENERATETOKEN);
-                } catch (ApprovalException e) {
-                	// Request didn't exist
-                    approvalSession.addApprovalRequest(admin, ar);
-                    throw new WaitingForApprovalException("Approval request with approvalID (hash) " + ar.generateApprovalId() + " and ID " + requestId + " has been added for approval.", requestId);
-                }
-				approvalSuccessfullStep1 = (status == ApprovalDataVO.STATUS_APPROVED);
-				isRejectedStep1 = (status == ApprovalDataVO.STATUS_REJECTED);
-				if(status == ApprovalDataVO.STATUS_APPROVED){
-				    ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(intAdmin, ar.generateApprovalId());
-				    String originalDN = ((GenerateTokenApprovalRequest) approvalDataVO.getApprovalRequest()).getDN();
-				    userDataWS.setSubjectDN(originalDN); // replace requested DN with original DN to make sure nothing have changed.
-				} else if (status == ApprovalDataVO.STATUS_REJECTED) {
-				    throw new ApprovalRequestExecutionException("The approval with approvalID (hash) " + ar.generateApprovalId() + " and ID " + requestId + " has been rejected.");
-				} else if (status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED || status == ApprovalDataVO.STATUS_EXPIRED) {
-				    throw new ApprovalException("The approval with approvalID (hash) " + ar.generateApprovalId() + " and ID " + requestId + " has expired.");
-				} else {
-				    throw new WaitingForApprovalException("The approval with approvalID (hash) " + ar.generateApprovalId() + " and ID " + requestId + " has not yet been approved", requestId);
-				}
+		        int status = ApprovalDataVO.STATUS_REJECTED;
+		        final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
+		        try{
+		            status = approvalSession.isApproved(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_1_GENERATETOKEN);
+		            approvalSuccessfullStep1 = (status == ApprovalDataVO.STATUS_APPROVED);
+		            isRejectedStep1 = (status == ApprovalDataVO.STATUS_REJECTED);
+		            if(status == ApprovalDataVO.STATUS_APPROVED){
+		                ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(intAdmin, ar.generateApprovalId());
+		                String originalDN = ((GenerateTokenApprovalRequest) approvalDataVO.getApprovalRequest()).getDN();
+		                userDataWS.setSubjectDN(originalDN); // replace requested DN with original DN to make sure nothing have changed.
+		            } else if (status == ApprovalDataVO.STATUS_REJECTED) {
+		                throw new ApprovalRequestExecutionException("The approval with approvalID (hash) " + ar.generateApprovalId() + " and ID " + requestId + " has been rejected.");
+		            } else if (status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED || status == ApprovalDataVO.STATUS_EXPIRED) {
+		                throw new ApprovalException("The approval with approvalID (hash) " + ar.generateApprovalId() + " and ID " + requestId + " has expired.");
+		            } else {
+		                throw new WaitingForApprovalException("The approval with approvalID (hash) " + ar.generateApprovalId() + " and ID " + requestId + " has not yet been approved", requestId);
+		            }
+		        } catch (ApprovalException e) {
+		            // Request didn't exist
+		            approvalSession.addApprovalRequest(admin, ar);
+		            throw new WaitingForApprovalException("Approval request with approvalID (hash) " + ar.generateApprovalId() + " and ID " + requestId + " has been added for approval.", requestId);
+		        }
 			} else {
 			    final String msg = "Can not find an ApprovalProfile with ID: "+approvalProfileID;
 			    if (log.isDebugEnabled()) {
