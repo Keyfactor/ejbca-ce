@@ -213,14 +213,14 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         try {
             generatePkcs10();
-            fail("should not have been allowed to generate pkcs10");
+            fail("should not have been allowed to generate PKCS#10");
         } catch (AuthorizationDeniedException_Exception e) {
             // NOPMD: this is what we want
         }
 
         try {
             generatePkcs12();
-            fail("should not have been allowed to generate pkcs12");
+            fail("should not have been allowed to generate PKCS#12");
         } catch (AuthorizationDeniedException_Exception e) {
             // NOPMD: this is what we want
         }
