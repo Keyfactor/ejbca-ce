@@ -2724,7 +2724,7 @@ other than that no adminstrator is allowed to approve the same request more than
 <subsubsection name="Partitioned Approval Profile">
 <p>In this slightly more complicated approval profile, several options can be set to specify which administrators can approve 
 or reject a request. It is also possible to specify additional data that has to be aquired when a request is approved.</p>
-<p>A partitioned approval consist of two concepts, Steps and Partitions:</p>
+<p>A partitioned approval consists of two concepts, Steps and Partitions:</p>
 <ul>
 <li>Approval Steps need to be performed sequentially, i.e. step 1 must be approved before step 2 can be acted upon.</li>
 <li>Approval Partitions are non sequential parts that can be approved independently of each other, within a step. I.e. when step 1 has to be approved, 
