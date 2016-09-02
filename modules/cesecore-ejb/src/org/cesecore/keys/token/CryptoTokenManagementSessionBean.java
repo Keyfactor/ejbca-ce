@@ -511,7 +511,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             // Ok.. so it's not in the cache.. look for it the hard way..
             for (final Integer currentCryptoTokenId : cryptoTokenSession.getCryptoTokenIds()) {
                 // Don't lookup CryptoTokens we already have in the id to name cache
-                if (!cachedNameToIdMap.keySet().contains(currentCryptoTokenId)) {
+                if (!cachedNameToIdMap.keySet().contains(currentCryptoTokenId.toString())) {
                     final CryptoToken currentCryptoToken = cryptoTokenSession.getCryptoToken(currentCryptoTokenId.intValue());
                     final String currentCryptoTokenName = currentCryptoToken == null ? null : currentCryptoToken.getTokenName();
                     if (cryptoTokenName.equals(currentCryptoTokenName)) {
