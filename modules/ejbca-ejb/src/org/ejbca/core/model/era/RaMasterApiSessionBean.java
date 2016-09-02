@@ -352,14 +352,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public RaApprovalRequestInfo editApprovalRequest(final AuthenticationToken authenticationToken, final RaApprovalEditRequest edit) throws AuthorizationDeniedException {
         final int id = edit.getId();
+        if (log.isDebugEnabled()) {
+            log.debug("Editing approval request " + id);
+        }
         final ApprovalDataVO advo = getApprovalDataNoAuth(authenticationToken, id);
         if (advo == null) {
             log.debug("Approval not found in editApprovalRequest");
-            throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
+            throw new IllegalStateException("Request with ID  " + id + " does not exist");
+        } else if (getApprovalRequest(authenticationToken, advo) == null) { // Authorization check
+            log.debug("Authorization denied to the given approval request");
+            throw new AuthorizationDeniedException("You are not authorized to the Request with ID " + id + " at this point");
         }
-        
-        // Perform auth check for CA
-        getApprovalRequest(authenticationToken, advo);
         
         if (advo.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
             throw new IllegalStateException("Was not in waiting for approval state");
@@ -418,10 +421,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (advo == null) {
             // Return false so the next master api backend can see if it can handle the approval
             return false;
+        } else if (getApprovalRequest(authenticationToken, advo) == null) { // Authorization check
+            log.debug("Authorization denied to the given approval request");
+            throw new AuthorizationDeniedException("You are not authorized to the Request with ID " + requestResponse.getId() + " at this point");
         }
-        
-        // Perform auth check for CA
-        getApprovalRequest(authenticationToken, advo);
         
         // Save the update request (needed if there are properties, e.g. checkboxes etc. in the partitions)
         approvalSession.updateApprovalRequest(advo.getId(), requestResponse.getApprovalRequest());
