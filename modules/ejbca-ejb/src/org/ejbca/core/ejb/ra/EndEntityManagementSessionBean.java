@@ -815,16 +815,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     resetRequestCounter(admin, true, ei, username, endEntityProfileId);
                 }
                 
-                List<Integer> editApprovalReqIds = userData.getExtendedInformation().getEditEndEntityApprovalRequestIds();
-                if(!editApprovalReqIds.isEmpty()) {
+                final ExtendedInformation oldExtendedInfo = userData.getExtendedInformation();
+                if(oldExtendedInfo != null) {
+                    List<Integer> editApprovalReqIds = oldExtendedInfo.getEditEndEntityApprovalRequestIds();
                     for(Integer id : editApprovalReqIds) {
                         ei.addEditEndEntityApprovalRequestId(id);
                     }
-                }
                 
-                Integer addApprovalReqId = userData.getExtendedInformation().getAddEndEntityApprovalRequestId();
-                if(addApprovalReqId != null) {
-                    ei.setAddEndEntityApprovalRequestId(addApprovalReqId);
+                    Integer addApprovalReqId = oldExtendedInfo.getAddEndEntityApprovalRequestId();
+                    if(addApprovalReqId != null) {
+                        ei.setAddEndEntityApprovalRequestId(addApprovalReqId);
+                    }
                 }
             }
             userData.setExtendedInformation(ei);
