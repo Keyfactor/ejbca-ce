@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
@@ -48,6 +49,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
@@ -66,6 +68,10 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.GeneralSubtree;
 import org.bouncycastle.asn1.x509.NameConstraints;
+import org.bouncycastle.asn1.x509.PolicyInformation;
+import org.bouncycastle.asn1.x509.PolicyQualifierId;
+import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
+import org.bouncycastle.asn1.x509.UserNotice;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -219,9 +225,38 @@ public class CertToolsTest {
                     + "iHP9biEmqcqELWQcUL5Ylf+/JYxg1kBnk2ZtALgt0adi0ZiZPbM2F5Oq9ZxxB2nY"
                     + "Alat0RwZIY8wAR0DRNXiEs4TMu5LqzvD1U6+vaHYraePBLExo2oxG9TI7gQjj2X+"
                     + "KSxEzOf3+npWo/G7ooDvKpN+w3J//kF4vdM3SQtHQaBkIuCU05Jy16AhvIkLQzq5"
-                    + "+a1UI5lIKun3C6NWCSZrE5fFuoax7D+Ofw1Bdxkhvk7DUlHVPdmxb/0hpx8aO64D" + "J626d8c1b25g9hSYslbo2geP2ohV40WW/R1ZjwX6Pd/ip5KuSSzv")
+                    + "+a1UI5lIKun3C6NWCSZrE5fFuoax7D+Ofw1Bdxkhvk7DUlHVPdmxb/0hpx8aO64D" 
+                    + "J626d8c1b25g9hSYslbo2geP2ohV40WW/R1ZjwX6Pd/ip5KuSSzv")
                     .getBytes());
-    
+
+    private static byte[] certPoliciesCert = Base64
+            .decode(("MIIEvTCCA6WgAwIBAgIIL0ff1huXgEkwDQYJKoZIhvcNAQELBQAwNTEWMBQGA1UE"
+                    + "AwwNTWFuYWdlbWVudCBDQTEOMAwGA1UECgwFUEstRE0xCzAJBgNVBAYTAkFFMB4X"
+                    + "DTE2MDkwMzEyMTMwMFoXDTE2MDkwNTEyMTMwMFowMjEQMA4GA1UEAwwHcG9saWN5"
+                    + "MTERMA8GA1UECgwIUHJpbWVLZXkxCzAJBgNVBAYTAkFFMIIBIjANBgkqhkiG9w0B"
+                    + "AQEFAAOCAQ8AMIIBCgKCAQEA1JrKfYKf6srX68i26ib4SJ+YL3LZOm8kNThIesZI"
+                    + "CjLVWInqSEtlT4fW691kHQlXmbPENecaq9N8JXhaYt4YP5gxSCijOjOBHGn0dHA4"
+                    + "1/LotgqcdH81qeVbfeEygfU2zYnXIxKzJSwglyC4PRhA119ddFtKvelCvTtqmfel"
+                    + "ZKvotT2nykl8oiioM8XG4p1o5NGEwQq3v5/vjulkM3N7oiyZkB4m0EqQh3+p+8lb"
+                    + "NRZw887xWj91ZSwNKpi48ONfyR3thV3BcRXMcvKMlgThE02VhKvpVaioFLcoLI0B"
+                    + "BWJnEWoRHA4wJOCXytyelPRwKv+q/3y/vEpSngf4bTJaJQIDAQABo4IB0jCCAc4w"
+                    + "DAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBS7aJ9wWNYqtLjBOGb6w8+PwZhq2jCC"
+                    + "AQMGA1UdIASB+zCB+DAoBgMpAQIwITAfBggrBgEFBQcCARYTaHR0cHM6Ly9lamJj"
+                    + "YS5vcmcvMjAoBgMpAQMwITAfBggrBgEFBQcCARYTaHR0cHM6Ly9lamJjYS5vcmcv"
+                    + "MzAFBgMpAQEwPQYDKQEEMDYwNAYIKwYBBQUHAgIwKB4mAE0AeQAgAFUAcwBlAHIA"
+                    + "IABOAG8AdABpAGMAZQAgAFQAZQB4AHQwXAYDKQEFMFUwMAYIKwYBBQUHAgIwJB4i"
+                    + "AEUASgBCAEMAQQAgAFUAcwBlAHIAIABOAG8AdABpAGMAZTAhBggrBgEFBQcCARYV"
+                    + "aHR0cHM6Ly9lamJjYS5vcmcvQ1BTMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEF"
+                    + "BQcDBDBIBggrBgEFBQcBAwQ8MDowEwYGBACORgEGMAkGBwQAjkYBBgMwIwYGBACO"
+                    + "RgEFMBkwFxYRaHR0cHM6Ly9lamJjYS5vcmcTAmVuMB0GA1UdDgQWBBSMdaliHI83"
+                    + "KXEkFC4I3rvvQabY8jAOBgNVHQ8BAf8EBAMCBeAwDQYJKoZIhvcNAQELBQADggEB"
+                    + "AI7D2w7h+O4mbhaQZqshJdRhG48Ho5lpQjpnG1NalnwOFoKmWmSeie/ym+FPuA1d"
+                    + "SQjcJal4CK3f0/T5EW+zU9sdRwKPg/zH88LUmkkZCosXZozscjMHNVkWhVtId2Nf"
+                    + "212XQBujg3Bg7FI1YUBVLrANquE5nVuk3DvagArflkzIr+PO6u5yQa9LMkHr/9jL"
+                    + "dIf17U2vh0X7iyRcFa5iz/J1aQIwdOg17SwBTuNXkpYPfKfy6V92eXiJPRT1jdqK"
+                    + "tBXe5/Oz8tPpphzbGKRqu/iwKafgpK/zB3eYuCuJPlnT7oN0x8NVbC/nfVcuQqR3"
+                    + "O+1Z36NfmAcO5PMgsY4CXT8=").getBytes());
+
     /**
      * Certificate with two subject alternative names:
      * <pre>
@@ -2071,6 +2106,108 @@ public class CertToolsTest {
         log.trace("<testPreventingHeapOverflowDuringgetCertsFromByteArray()");
     }
 
+    /** Test CertTools methods for reading CertificatePolicy information from a certificate
+     * @throws CertificateParsingException 
+     * @throws IOException 
+     */
+    @Test
+    public void testCertificatePolicies() throws CertificateParsingException, IOException {
+        // The altname test certificate does not have any policy oids
+        Certificate certwithnone = CertTools.getCertfromByteArray(altNameCert, Certificate.class);
+        List<ASN1ObjectIdentifier> oids = CertTools.getCertificatePolicyIds(certwithnone);
+        assertEquals("Should be no Cert Policy OIDs", 0, oids.size());
+        // This policy test cert have 4 oids with different contents
+        //X509v3 Certificate Policies: 
+        //    Policy: 1.1.1.2
+        //      CPS: https://ejbca.org/2
+        //    Policy: 1.1.1.3
+        //      CPS: https://ejbca.org/3
+        //    Policy: 1.1.1.1
+        //    Policy: 1.1.1.4
+        //      User Notice (UTF-8):
+        //        Explicit Text: My User Notice Text
+        Certificate cert = CertTools.getCertfromByteArray(certPoliciesCert, Certificate.class);
+        oids = CertTools.getCertificatePolicyIds(cert);
+        assertEquals("Should be 5 Cert Policy OIDs", 5, oids.size());
+        assertEquals("1.1.1.2", oids.get(0).getId());
+        assertEquals("1.1.1.3", oids.get(1).getId());
+        assertEquals("1.1.1.1", oids.get(2).getId());
+        assertEquals("1.1.1.4", oids.get(3).getId());
+        assertEquals("1.1.1.5", oids.get(4).getId());
+        // Get the full policy objects
+        List<PolicyInformation> pi = CertTools.getCertificatePolicies(cert);
+        assertEquals("Should be 5 Cert Policies", 5, pi.size());
+        assertEquals("1.1.1.2", pi.get(0).getPolicyIdentifier().getId());
+        assertEquals("1.1.1.3", pi.get(1).getPolicyIdentifier().getId());
+        assertEquals("1.1.1.1", pi.get(2).getPolicyIdentifier().getId());
+        assertEquals("1.1.1.4", pi.get(3).getPolicyIdentifier().getId());
+        assertEquals("1.1.1.5", pi.get(4).getPolicyIdentifier().getId());
+        // Now it's getting hairier, get the policy qualifiers, which can be anything, as defined in the qualifier
+        // PolicyInformation ::= SEQUENCE {
+        //    policyIdentifier   CertPolicyId,
+        //    policyQualifiers   SEQUENCE SIZE (1..MAX) OF
+        //                            PolicyQualifierInfo OPTIONAL }
+        // PolicyQualifierInfo ::= SEQUENCE {
+        //    policyQualifierId  PolicyQualifierId,
+        //    qualifier          ANY DEFINED BY policyQualifierId }
+        // -- policyQualifierIds for Internet policy qualifiers
+        // id-qt          OBJECT IDENTIFIER ::=  { id-pkix 2 }
+        // id-qt-cps      OBJECT IDENTIFIER ::=  { id-qt 1 }
+        // id-qt-unotice  OBJECT IDENTIFIER ::=  { id-qt 2 }
+        
+        // The first Policy object has a CPS URI
+        ASN1Encodable qualifier = pi.get(0).getPolicyQualifiers().getObjectAt(0);
+        //System.out.println(ASN1Dump.dumpAsString(qualifier));
+        PolicyQualifierInfo pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
+        assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
+        DERIA5String str = DERIA5String.getInstance(pqi.getQualifier());
+        assertEquals("https://ejbca.org/2", str.getString());
+        
+        // The second Policy object has a CPS URI
+        qualifier = pi.get(1).getPolicyQualifiers().getObjectAt(0);
+        //System.out.println(ASN1Dump.dumpAsString(qualifier));
+        pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
+        assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
+        str = DERIA5String.getInstance(pqi.getQualifier());
+        assertEquals("https://ejbca.org/3", str.getString());
+        
+        // The third Policy object has only an OID
+        qualifier = pi.get(2).getPolicyQualifiers();
+        assertNull(qualifier);
+        
+        // The fourth Policy object has a User Notice
+        qualifier = pi.get(3).getPolicyQualifiers().getObjectAt(0);
+        //System.out.println(ASN1Dump.dumpAsString(qualifier));
+        pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_unotice = 1.3.6.1.5.5.7.2.2
+        assertEquals(PolicyQualifierId.id_qt_unotice.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_unutice, we know this is a UserNotice
+        UserNotice un = UserNotice.getInstance(pqi.getQualifier());
+        assertEquals("My User Notice Text", un.getExplicitText().getString());
+        
+        // The fifth Policy object has both a CPS URI and a User Notice
+        qualifier = pi.get(4).getPolicyQualifiers().getObjectAt(0);
+        //System.out.println(ASN1Dump.dumpAsString(qualifier));
+        pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_unotice = 1.3.6.1.5.5.7.2.2
+        assertEquals(PolicyQualifierId.id_qt_unotice.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_unutice, we know this is a UserNotice
+        un = UserNotice.getInstance(pqi.getQualifier());
+        assertEquals("EJBCA User Notice", un.getExplicitText().getString());
+        qualifier = pi.get(4).getPolicyQualifiers().getObjectAt(1);
+        //System.out.println(ASN1Dump.dumpAsString(qualifier));
+        pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
+        assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
+        str = DERIA5String.getInstance(pqi.getQualifier());
+        assertEquals("https://ejbca.org/CPS", str.getString());
+    }
+    
     private void checkNCException(X509Certificate cacert, X500Name subjectDNName, GeneralName subjectAltName, String message) {
         try {
             CertTools.checkNameConstraints(cacert, subjectDNName, new GeneralNames(subjectAltName));
