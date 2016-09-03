@@ -54,8 +54,8 @@ public class CertificatePolicy implements Serializable, Cloneable {
     /**
      * 
      * @param policyID
-     * @param notice user notice text, can be null
-     * @param uri cps uri, can be null
+     * @param qualifierId PolicyQualifierId.id_qt_cps, PolicyQualifierId.id_qt_unotice or null
+     * @param qualifier cps URI or user notice text depending on qualifierId, or null if qualifierId is null
      */
     public CertificatePolicy(final String policyID, final String qualifierId, final String qualifier) {
         this.policyID = policyID;

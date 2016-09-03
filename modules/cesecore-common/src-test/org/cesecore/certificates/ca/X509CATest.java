@@ -75,6 +75,10 @@ import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.PolicyInformation;
+import org.bouncycastle.asn1.x509.PolicyQualifierId;
+import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
+import org.bouncycastle.asn1.x509.UserNotice;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -810,6 +814,91 @@ public class X509CATest {
         assertEquals("aabbccddeeff00", Hex.toHexString(bytes));
     }
 
+    /** Tests encoding of Certificate Policy extensions
+     */
+    @Test
+    public void testCertificatePolicyExtension() throws Exception {
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final String caDN = "CN=Text CertificatePolicy Extension";
+        final X509CA testCa = createTestCA(cryptoToken, caDN);
+        
+        // Generate cert by calling generateCertificate directly
+        Certificate cacert = testCa.getCACertificate(); // yeah, we just need to get a public key really fast
+        final String subjectDN = "CN=cert policy extension test";
+        final EndEntityInformation subject = new EndEntityInformation("cert policy extension test", subjectDN, testCa.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        CertificatePolicy cp1 = new CertificatePolicy("1.1.1.2", PolicyQualifierId.id_qt_cps.getId(), "https://ejbca.org/2");
+        CertificatePolicy cp2 = new CertificatePolicy("1.1.1.3", PolicyQualifierId.id_qt_cps.getId(), "https://ejbca.org/3");
+        CertificatePolicy cp3 = new CertificatePolicy("1.1.1.1", null, null);
+        CertificatePolicy cp4 = new CertificatePolicy("1.1.1.4", PolicyQualifierId.id_qt_unotice.getId(), "My User Notice Text");
+        CertificatePolicy cp5 = new CertificatePolicy("1.1.1.5", PolicyQualifierId.id_qt_unotice.getId(), "EJBCA User Notice");
+        CertificatePolicy cp6 = new CertificatePolicy("1.1.1.5", PolicyQualifierId.id_qt_cps.getId(), "https://ejbca.org/CPS");
+        certProfile.addCertificatePolicy(cp1);
+        certProfile.addCertificatePolicy(cp2);
+        certProfile.addCertificatePolicy(cp3);
+        certProfile.addCertificatePolicy(cp4);
+        certProfile.addCertificatePolicy(cp5);
+        certProfile.addCertificatePolicy(cp6);
+        certProfile.setUseCertificatePolicies(true);
+        Certificate cert = testCa.generateCertificate(cryptoToken, subject, cacert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, 30, certProfile, null, cceConfig);
+        // Get the full policy objects
+        List<PolicyInformation> pi = CertTools.getCertificatePolicies(cert);
+        assertEquals("Should be 5 Cert Policies", 5, pi.size());
+        assertEquals("1.1.1.2", pi.get(0).getPolicyIdentifier().getId());
+        assertEquals("1.1.1.3", pi.get(1).getPolicyIdentifier().getId());
+        assertEquals("1.1.1.1", pi.get(2).getPolicyIdentifier().getId());
+        assertEquals("1.1.1.4", pi.get(3).getPolicyIdentifier().getId());
+        assertEquals("1.1.1.5", pi.get(4).getPolicyIdentifier().getId());
+
+        // The first Policy object has a CPS URI
+        ASN1Encodable qualifier = pi.get(0).getPolicyQualifiers().getObjectAt(0);
+        PolicyQualifierInfo pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
+        assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
+        DERIA5String str = DERIA5String.getInstance(pqi.getQualifier());
+        assertEquals("https://ejbca.org/2", str.getString());
+        
+        // The second Policy object has a CPS URI
+        qualifier = pi.get(1).getPolicyQualifiers().getObjectAt(0);
+        pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
+        assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
+        str = DERIA5String.getInstance(pqi.getQualifier());
+        assertEquals("https://ejbca.org/3", str.getString());
+        
+        // The third Policy object has only an OID
+        qualifier = pi.get(2).getPolicyQualifiers();
+        assertNull(qualifier);
+        
+        // The fourth Policy object has a User Notice
+        qualifier = pi.get(3).getPolicyQualifiers().getObjectAt(0);
+        pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_unotice = 1.3.6.1.5.5.7.2.2
+        assertEquals(PolicyQualifierId.id_qt_unotice.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_unutice, we know this is a UserNotice
+        UserNotice un = UserNotice.getInstance(pqi.getQualifier());
+        assertEquals("My User Notice Text", un.getExplicitText().getString());
+        
+        // The fifth Policy object has both a CPS URI and a User Notice
+        qualifier = pi.get(4).getPolicyQualifiers().getObjectAt(0);
+        pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_unotice = 1.3.6.1.5.5.7.2.2
+        assertEquals(PolicyQualifierId.id_qt_unotice.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_unutice, we know this is a UserNotice
+        un = UserNotice.getInstance(pqi.getQualifier());
+        assertEquals("EJBCA User Notice", un.getExplicitText().getString());
+        qualifier = pi.get(4).getPolicyQualifiers().getObjectAt(1);
+        pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
+        assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
+        str = DERIA5String.getInstance(pqi.getQualifier());
+        assertEquals("https://ejbca.org/CPS", str.getString());
+
+    }
+    
     /**
      * Tests default value of "use printable string" option (should be disabled by default)
      * and tests that the option works.

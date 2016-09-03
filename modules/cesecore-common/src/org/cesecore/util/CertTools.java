@@ -1946,6 +1946,48 @@ public abstract class CertTools {
     }
 
     /**
+     * Get a list of certificate policy IDs from a certificate policies extension
+     * 
+     * @param certificate certificate containing the extension
+     * @return List of ObjectIdentifiers, or empty list if no policies exist
+     * @throws IOException if extension can not be parsed
+     */
+    public static List<ASN1ObjectIdentifier> getCertificatePolicyIds(Certificate certificate) throws IOException {
+        List<ASN1ObjectIdentifier> ret = new ArrayList<ASN1ObjectIdentifier>();
+        if (certificate != null && certificate instanceof X509Certificate) {
+            final ASN1Sequence asn1Sequence = (ASN1Sequence) getExtensionValue((X509Certificate) certificate, Extension.certificatePolicies.getId());
+            if (asn1Sequence != null) {
+                for (ASN1Encodable asn1Encodable : asn1Sequence) {
+                    PolicyInformation pi = PolicyInformation.getInstance(asn1Encodable);
+                    ret.add(pi.getPolicyIdentifier());
+                }
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * Get a list of certificate policy information from a certificate policies extension
+     * 
+     * @param certificate certificate containing the extension
+     * @return List of PolicyInformation, or empty list if no policies exist
+     * @throws IOException if extension can not be parsed
+     */
+    public static List<PolicyInformation> getCertificatePolicies(Certificate certificate) throws IOException {
+        List<PolicyInformation> ret = new ArrayList<PolicyInformation>();
+        if (certificate != null && certificate instanceof X509Certificate) {
+            final ASN1Sequence asn1Sequence = (ASN1Sequence) getExtensionValue((X509Certificate) certificate, Extension.certificatePolicies.getId());
+            if (asn1Sequence != null) {
+                for (ASN1Encodable asn1Encodable : asn1Sequence) {
+                    PolicyInformation pi = PolicyInformation.getInstance(asn1Encodable);
+                    ret.add(pi);
+                }
+            }
+        }
+        return ret;
+    }
+
+    /**
      * Gets the Microsoft specific UPN altName (altName, OtherName).
      * 
      * UPN is an OtherName Subject Alternative Name:
@@ -3046,7 +3088,7 @@ public abstract class CertTools {
      * 
      * @param cert An X509Certificate
      * @param oid An OID for an extension 
-     * @return an Extension ASN1Primitive from a certificate
+     * @return an Extension ASN1Primitive from a certificate, or null
      */
     protected static ASN1Primitive getExtensionValue(X509Certificate cert, String oid) {
         if (cert == null) {
