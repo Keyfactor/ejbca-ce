@@ -110,7 +110,7 @@
                         <h3 class="h3Margin" id="h3ApprovedSteps"><h:outputText value="#{prevStep.headingText}"/></h3>
                         <ui:repeat value="#{raManageRequestBean.partitionsToGuiPartitions(prevStep, prevStep.partitions)}" var="partition">
                             <h:panelGroup styleClass="approvalStep" rendered="#{not empty raManageRequestBean.getPartitionName(partition)}">
-        	     				<h:outputText value="Partition: #{raManageRequestBean.getPartitionName(partition)}"/>
+        	     				<h:outputText value="#{msg.view_request_page_partition}: #{raManageRequestBean.getPartitionName(partition)}"/>
              				</h:panelGroup>
                     		<h:panelGroup layout="block" id="approvedByDataTable" rendered="#{not empty raManageRequestBean.getHandledPartitionData(partition)}">
                     			<ui:repeat value="#{raManageRequestBean.getHandledPartitionData(partition)}" var="kvp"> 
