@@ -591,6 +591,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // The below combined query is commented out because there is a bug in MySQL 5.5 that causes it to 
         // select bad indexes making the query slow. In MariaDB 5.5 and MySQL 5.6 it works well, so it is MySQL 5.5 specific.
         // See ECA-3309
+        //
+        // Some time in the future, when we want to use multiple checks on the database, a separate method should be added to execute this commented out code.
 //        if (enforceUniqueDistinguishedName && enforceUniquePublicKeys) {
 //            multipleCheckOk = certificateStoreSession.isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(issuerDN, subjectKeyId, subjectDN, username);
 //        }
