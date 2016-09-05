@@ -383,28 +383,6 @@ public abstract class CAInfo implements Serializable {
     }
     
     /**
-     * Returns the number of different administrators that needs to approve
-     * an action, default 1.
-     * @deprecated since 6.6.0, use the appropriate approval profile instead
-     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
-     */
-    @Deprecated
-    public int getNumOfReqApprovals() {
-        return numOfReqApprovals;
-    }
-
-    /**
-     * The number of different administrators that needs to approve
-     * 
-     * @deprecated since 6.6.0, use the appropriate approval profile instead
-     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
-     */
-    @Deprecated
-    public void setNumOfReqApprovals(int numOfReqApprovals) {
-        this.numOfReqApprovals = numOfReqApprovals;
-    }
-
-    /**
      * @return true if the UserData used to issue a certificate should be kept in the database.
      */
     public boolean isUseCertReqHistory() {
