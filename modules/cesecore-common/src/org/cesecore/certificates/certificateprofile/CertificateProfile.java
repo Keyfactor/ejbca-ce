@@ -167,6 +167,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String APPROVALSETTINGS = "approvalsettings";
     /**
      * @deprecated since 6.6.0, use the appropriate approval profile instead
+     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
      */
     @Deprecated
     public static final String NUMOFREQAPPROVALS = "numofreqapprovals";
@@ -1985,6 +1986,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Returns the number of different administrators that needs to approve an action, default 1.
      * 
      * @deprecated since 6.6.0, use the appropriate approval profile instead
+     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
      */
     @Deprecated
     public int getNumOfReqApprovals() {
@@ -2000,6 +2002,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * The number of different administrators that needs to approve
      * 
      * @deprecated since 6.6.0, use the appropriate approval profile instead
+     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
      */
     @Deprecated
     public void setNumOfReqApprovals(int numOfReqApprovals) {
