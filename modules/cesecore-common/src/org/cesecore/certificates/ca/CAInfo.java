@@ -110,6 +110,13 @@ public abstract class CAInfo implements Serializable {
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
     protected Collection<Integer> approvalSettings;
     protected int approvalProfile;
+    
+    /**
+     * @deprecated since 6.6.0, use the appropriate approval profile instead
+     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
+     */
+    @Deprecated
+    protected int numOfReqApprovals;
 
     protected boolean includeInHealthCheck;
     protected boolean doEnforceUniquePublicKeys;
@@ -373,6 +380,28 @@ public abstract class CAInfo implements Serializable {
      */
     public boolean isApprovalRequired(int action) {
         return approvalSettings.contains(Integer.valueOf(action));
+    }
+    
+    /**
+     * Returns the number of different administrators that needs to approve
+     * an action, default 1.
+     * @deprecated since 6.6.0, use the appropriate approval profile instead
+     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
+     */
+    @Deprecated
+    public int getNumOfReqApprovals() {
+        return numOfReqApprovals;
+    }
+
+    /**
+     * The number of different administrators that needs to approve
+     * 
+     * @deprecated since 6.6.0, use the appropriate approval profile instead
+     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
+     */
+    @Deprecated
+    public void setNumOfReqApprovals(int numOfReqApprovals) {
+        this.numOfReqApprovals = numOfReqApprovals;
     }
 
     /**
