@@ -95,6 +95,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
         if (initAuth && StringUtils.isEmpty(superAdminCN)) {
             log.error("Error: " + INIT_AUTH_KEY + " flag was used, but super administrator Common Name was not defined with the " + SUPERADMIN_CN_KEY
                     + " switch.");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
         try {
             CryptoProviderTools.installBCProviderIfNotAvailable();
