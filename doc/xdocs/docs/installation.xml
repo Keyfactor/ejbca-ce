@@ -290,7 +290,7 @@ configure before starting your applications and running everything in a producti
 </p><p>
 In a production environment you should use something like the following structure:
 <ol>
-<li>Go through the install process creating an AdminCA. Use a simple DN. 
+<li>Go through the install process creating an ManagementCA. Use a simple DN. 
 This CA should only used to issue the administrator certificates. Not published in LDAP. 
 If you want to use an HSM for this CA, see the documentation in the configuration file conf/ejbca.properties.sample.</li>
 <li>Once installed, create all your REAL CAs using the admin-GUI. Now you can use the certificate 

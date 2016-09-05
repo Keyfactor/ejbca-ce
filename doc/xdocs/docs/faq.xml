@@ -327,7 +327,7 @@ mysql> alter table UserData modify subjectAltName varchar(2048);
 ant javatruststore
 </source>
 <p>
-You can also import another CA than the initial AdminCA (My CA in the example) with the command:
+You can also import another CA than the initial ManagementCA (My CA in the example) with the command:
 </p>
 <source>
 ant -Dca.name="My CA" javatruststore
