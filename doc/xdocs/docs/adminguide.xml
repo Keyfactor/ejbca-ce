@@ -2734,6 +2734,7 @@ Partition 1 and Partition 2 within this step can be approved in any order, indep
 <p>Both types of approval profiles allow for configuring a notification to be send to the end user and/or to the administrator 
 expected to approve the request (See 'Approval Notification' section bellow). Both profile types allow also to set expiration 
 period for the approval and for the request (See 'Explenation of approval status' section bellow).</p>
+<p>Also see the <a href="userguide.html#Approval%20profiles">User Guide</a> for detailed information about Approval Profile fields.</p>
 </subsection>
 <subsection name="Authorizing Approving Administrators">
 <p>
