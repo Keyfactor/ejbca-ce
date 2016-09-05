@@ -1818,7 +1818,7 @@ You can even install an EJBCA instance from scratch, with a certificate from an 
 Start with deploying EJBCA as usual with 'ant deploy', but instead of running 'ant install' you run:
 </p>
 <source>
-bin/ejbca.sh ca importcacert AdminCA adminca.pem -initauthorization
+bin/ejbca.sh ca importcacert ManagementCA ManagementCA.pem -initauthorization
 </source>
 <p>
 This command imports the certificate of the external Administration CA and initializes the authorization system of EJBCA. 
