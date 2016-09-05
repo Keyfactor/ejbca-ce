@@ -110,6 +110,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String EXTENDEDCASERVICES = "extendedcaservices";
     protected static final String EXTENDEDCASERVICE = "extendedcaservice";
     protected static final String APPROVALSETTINGS = "approvalsettings";
+    /**
+     * @deprecated since 6.6.0, use the appropriate approval profile instead
+     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
+     */
+    @Deprecated
     protected static final String NUMBEROFREQAPPROVALS = "numberofreqapprovals";
     protected static final String APPROVALPROFILE = "approvalprofile";
     protected static final String INCLUDEINHEALTHCHECK = "includeinhealthcheck";
@@ -727,6 +732,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /**
      * Returns the number of different administrators that needs to approve an action, default 1.
      * @deprecated since 6.6.0, use the appropriate approval profile instead. 
+     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
      */
     @Deprecated
     public int getNumOfRequiredApprovals() {
@@ -739,6 +745,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /**
      * The number of different administrators that needs to approve
      * @deprecated since 6.6.0, use the appropriate approval profile instead. 
+     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
      */
     @Deprecated
     public void setNumOfRequiredApprovals(int numOfReqApprovals) {
