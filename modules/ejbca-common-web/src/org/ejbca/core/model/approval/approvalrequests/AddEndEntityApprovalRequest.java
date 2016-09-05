@@ -78,6 +78,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestId) throws ApprovalRequestExecutionException {
 		log.debug("Executing AddEndEntity for user:" + userdata.getUsername());
 		
+		// Add the ID of the approval request to the end entity as extended information.
         ExtendedInformation ext = userdata.getExtendedinformation();
         if(ext == null) {
             ext = new ExtendedInformation();

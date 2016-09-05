@@ -106,7 +106,9 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static String KEYSTORE_ALGORITHM_SUBTYPE = "KEYSTORE_ALGORITHM_SUBTYPE";
     private static String KEYSTORE_ALGORITHM_TYPE = "KEYSTORE_ALGORITHM_TYPE";
     
+    /** The ID of the approval request that was submitted to create the end entity */
     private static String ADD_EE_APPROVAL_REQUEST_ID = "ADD_EE_APPROVAL_REQUEST_ID";
+    /** The IDs of the approval requests that were submitted to edit the end entity */
     private static String EDIT_EE_APPROVAL_REQUEST_IDS = "EDIT_EE_APPROVAL_REQUEST_IDS";
     
     /** Certificate request used for enrolling end entity user with public key provided by user (KickAssRA). */

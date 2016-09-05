@@ -815,6 +815,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     resetRequestCounter(admin, true, ei, username, endEntityProfileId);
                 }
                 
+                // Make sure that information about related approval requests are carried over to the edited end entity. 
+                // This is done to make it possible to  trace/find an approval request from the actually added/edited end entity
                 final ExtendedInformation oldExtendedInfo = userData.getExtendedInformation();
                 if(oldExtendedInfo != null) {
                     List<Integer> editApprovalReqIds = oldExtendedInfo.getEditEndEntityApprovalRequestIds();

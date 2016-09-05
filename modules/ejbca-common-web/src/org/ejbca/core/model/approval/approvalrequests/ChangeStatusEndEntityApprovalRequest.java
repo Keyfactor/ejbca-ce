@@ -161,6 +161,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 		
 		try{
 		    
+	        // Add the ID of the approval request to the end entity as extended information.
 		    EndEntityInformation userdata = endEntityAccessSession.findUser(getRequestAdmin(), username);
 		    ExtendedInformation ext = userdata.getExtendedinformation();
 		    if(ext == null) {

@@ -82,15 +82,14 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
     public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestId) throws ApprovalRequestExecutionException {
         log.debug("Executing ChangeEndEntity for user:" + newuserdata.getUsername());
         
+        // Add the ID of the approval request to the end entity as extended information.
         ExtendedInformation ext = newuserdata.getExtendedinformation();
         if(ext == null) {
             ext = orguserdata.getExtendedinformation();
         }
-        
         if(ext == null) {
             ext = new ExtendedInformation();
         }
-        
         ext.addEditEndEntityApprovalRequestId(approvalRequestId);
         newuserdata.setExtendedinformation(ext);
         
