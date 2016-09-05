@@ -299,27 +299,38 @@ public class RaEndEntityDetails {
         return endEntityProfile;
     }
     
+    /**
+     * Returns the approval request ID stored in the extended information
+     * @return the ID of the approval request that was submitted to create the end entity
+     */
     public String getAddEndEntityApprovalRequestId() {
+        String ret = "";
         final ExtendedInformation ext = endEntityInformation.getExtendedinformation();
-        final Integer reqid = ext.getAddEndEntityApprovalRequestId();
-        if(reqid == null) {
-            return "";
+        if(ext != null) {
+            final Integer reqid = ext.getAddEndEntityApprovalRequestId();
+            if(reqid != null) {
+                ret = reqid.toString();
+            }
         }
-        return reqid.toString();
+        return ret;
     }
     
-    public String getEditEndEntityApprovalRequestId() {
-        final ExtendedInformation ext = endEntityInformation.getExtendedinformation();
-        final List<Integer> ids = ext.getEditEndEntityApprovalRequestIds();
-        if(ids.isEmpty()) {
-            return "";
-        }
-        
+    /**
+     * Returns the approval request IDs stored in the extended information as one String separated by ';'     
+     * @return the IDs of the approval request that were submitted to edit the end entity 
+     */
+    public String getEditEndEntityApprovalRequestIds() {
         StringBuilder ret = new StringBuilder("");
-        for(Integer id : ids) {
-            ret = ret.append("; ").append(id);
+        final ExtendedInformation ext = endEntityInformation.getExtendedinformation();
+        if(ext != null) {
+            final List<Integer> ids = ext.getEditEndEntityApprovalRequestIds();
+            if(!ids.isEmpty()) {
+                for(Integer id : ids) {
+                    ret = ret.append("; ").append(id);
+                }
+                ret.delete(0, 2);
+            }
         }
-        ret.delete(0, 2);
         return ret.toString();
     } 
     

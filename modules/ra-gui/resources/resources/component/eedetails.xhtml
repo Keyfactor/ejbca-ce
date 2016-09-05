@@ -249,10 +249,10 @@
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                 
            	<h:outputLabel for="editEEApprovalReq" value="#{msg.component_eedetails_field_editendentity_approvalrequestid}"
-                rendered="#{cc.attrs.raEndEntityDetails.editEndEntityApprovalRequestId != ''}"
+                rendered="#{cc.attrs.raEndEntityDetails.editEndEntityApprovalRequestIds != ''}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="editEEApprovalReq" value="#{cc.attrs.raEndEntityDetails.editEndEntityApprovalRequestId}"
-                rendered="#{cc.attrs.raEndEntityDetails.editEndEntityApprovalRequestId != ''}"
+            <h:outputText id="editEEApprovalReq" value="#{cc.attrs.raEndEntityDetails.editEndEntityApprovalRequestIds}"
+                rendered="#{cc.attrs.raEndEntityDetails.editEndEntityApprovalRequestIds != ''}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             
 
