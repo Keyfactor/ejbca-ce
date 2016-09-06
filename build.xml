@@ -897,7 +897,7 @@ SHA-256 checksum: ${cesecoresrcSHA256}
         <mkdir dir="${statedump.src.release.dir}"/>
         <copy todir="${statedump.src.release.dir}">
             <fileset dir="${basedir}/modules/">
-                <include name="statedump/src-*/**.java" />
+                <include name="statedump/src-*/**/*.java" />
                 <include name="statedump/*.txt" />
                 <include name="statedump/*.xml" />
                 <include name="statedump/resources/**" />
