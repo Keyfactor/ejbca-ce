@@ -98,9 +98,7 @@
 		<antcall target="externalra-scepclean"/>
 		<antcall target="peerconnectorclean"/>
 		<antcall target="msautoenroll-war-clean"/>
-		<delete failonerror="false">
-			<fileset dir="${modules.basedir}/dist" includes="*" />
-		</delete>
+		<delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
 	<target name="externalraclean" if="${mod.externalra.exists}">
