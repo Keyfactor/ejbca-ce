@@ -262,7 +262,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                         LOG.debug("Setting the end entity status to 'NEW'. Username: " + userdata.getUsername());
                     }
 
-                    endEntityManagementSession.setUserStatus(admin, userdata.getUsername(), EndEntityConstants.STATUS_NEW);
+                    endEntityManagementSession.setUserStatus(admin, userdata.getUsername(), EndEntityConstants.STATUS_NEW, 0);
                 }
                 
                 // Set the appropriate parameters in the request

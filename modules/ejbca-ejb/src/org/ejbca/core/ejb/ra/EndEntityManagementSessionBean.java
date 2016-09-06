@@ -1112,7 +1112,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         if (counter <= 0) {
             AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Local admin call from EndEntityManagementSession.decRequestCounter"));
-            setUserStatus(admin, data1, EndEntityConstants.STATUS_GENERATED);
+            setUserStatus(admin, data1, EndEntityConstants.STATUS_GENERATED, 0);
         }
         if (log.isTraceEnabled()) {
             log.trace("<decRequestCounter(" + username + "): " + counter);
@@ -1184,7 +1184,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
     
     @Override
-    public void setUserStatus(final AuthenticationToken admin, final String username, final int status) throws AuthorizationDeniedException,
+    public void setUserStatus(final AuthenticationToken admin, final String username, final int status, final int approvalRequestID) throws AuthorizationDeniedException,
             FinderException, ApprovalException, WaitingForApprovalException {
         if (log.isTraceEnabled()) {
             log.trace(">setUserStatus(" + username + ", " + status + ")");
@@ -1204,10 +1204,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
             assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, caid);
         }
-        setUserStatus(admin, data, status);
+        setUserStatus(admin, data, status, approvalRequestID);
     }
     
-    private void setUserStatus(final AuthenticationToken admin, final UserData data1, final int status)
+    private void setUserStatus(final AuthenticationToken admin, final UserData data1, final int status, final int approvalRequestID)
             throws ApprovalException, WaitingForApprovalException {
         final int caid = data1.getCaId();
         CAInfo cainfo = null;
@@ -1252,6 +1252,16 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 log.debug("Status not changing from something else to new, not resetting requestCounter.");
             }
         }
+        
+        if(approvalRequestID != 0) {
+            ExtendedInformation ei = data1.getExtendedInformation();
+            if(ei == null) {
+                ei = new ExtendedInformation();
+            }
+            ei.addEditEndEntityApprovalRequestId(Integer.valueOf(approvalRequestID));
+            data1.setExtendedInformation(ei);
+        } 
+        
         final Date timeModified = new Date();
         data1.setStatus(status);
         data1.setTimeModified(timeModified.getTime());
@@ -1549,7 +1559,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Finally set revoke status on the user as well
         try {
-            setUserStatus(admin, userData, EndEntityConstants.STATUS_REVOKED);
+            setUserStatus(admin, userData, EndEntityConstants.STATUS_REVOKED, 0);
         } catch (ApprovalException e) {
             throw new EJBException("This should never happen", e);
         } catch (WaitingForApprovalException e) {
@@ -2194,7 +2204,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 throw new FinderException(msg);
             }
             assertAuthorizedToCA(admin, data.getCaId());
-            setUserStatus(admin, data, EndEntityConstants.STATUS_KEYRECOVERY);            
+            setUserStatus(admin, data, EndEntityConstants.STATUS_KEYRECOVERY, 0);            
         } catch (FinderException e) {
             ret = false;
             log.info("prepareForKeyRecovery: No such user: " + username);

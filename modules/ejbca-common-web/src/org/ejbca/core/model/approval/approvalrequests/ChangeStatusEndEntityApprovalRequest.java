@@ -160,17 +160,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 		log.debug("Executing Change Status  for user:" + username);
 		
 		try{
-		    
-	        // Add the ID of the approval request to the end entity as extended information.
-		    EndEntityInformation userdata = endEntityAccessSession.findUser(getRequestAdmin(), username);
-		    ExtendedInformation ext = userdata.getExtendedinformation();
-		    if(ext == null) {
-		        ext = new ExtendedInformation();
-		    }
-		    ext.addEditEndEntityApprovalRequestId(approvalRequestID);
-		    userdata.setExtendedinformation(ext);
-		    
-			endEntityManagementSession.setUserStatus(getRequestAdmin(), username, newstatus);
+			endEntityManagementSession.setUserStatus(getRequestAdmin(), username, newstatus, approvalRequestID);
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
 		} catch (FinderException e) {
