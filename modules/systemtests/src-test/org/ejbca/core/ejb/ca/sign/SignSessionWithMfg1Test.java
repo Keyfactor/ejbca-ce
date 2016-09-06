@@ -87,7 +87,7 @@ public class SignSessionWithMfg1Test extends SignSessionCommon {
             log.debug("created user: foorsamgf1ca, foo123, C=SE, O=AnaTom, CN=foorsamgf1ca");
         } else {
             log.info("User foorsamgf1ca already exists, resetting status.");
-            endEntityManagementSession.setUserStatus(internalAdmin, "foorsamgf1ca", EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.setUserStatus(internalAdmin, "foorsamgf1ca", EndEntityConstants.STATUS_NEW, 0);
             log.debug("Reset status to NEW");
         }
     }
@@ -103,7 +103,7 @@ public class SignSessionWithMfg1Test extends SignSessionCommon {
     @Test
     public void testSignSessionRSAMGF1WithRSASha256WithMGF1CA() throws Exception {
         log.trace(">test18SignSessionRSAWithRSASha256WithMGF1CA()");
-        endEntityManagementSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, EndEntityConstants.STATUS_NEW, 0);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsakeys.getPrivate(), rsakeys.getPublic(),
@@ -152,7 +152,7 @@ public class SignSessionWithMfg1Test extends SignSessionCommon {
     @Test
     public void testBCPKCS10RSAWithRSASha256WithMGF1CA() throws Exception {
         log.trace(">test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
-        endEntityManagementSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, EndEntityConstants.STATUS_NEW, 0);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,

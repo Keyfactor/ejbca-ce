@@ -242,7 +242,7 @@ public class RAInterfaceBean implements Serializable {
     	} catch(Exception e) {}
     	for (int i=0; i < usernames.length; i++) {
     		try {
-    			endEntityManagementSession.setUserStatus(administrator, usernames[i],intstatus);
+    			endEntityManagementSession.setUserStatus(administrator, usernames[i],intstatus, 0);
     		} catch(AuthorizationDeniedException e) {
     			success = false;
     		}

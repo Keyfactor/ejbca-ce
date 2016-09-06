@@ -99,7 +99,7 @@ public class SignSessionWithDsaTest extends SignSessionCommon {
     @Test
     public void testSignSessionDSAWithDSACA() throws Exception {
         log.trace(">test25SignSessionDSAWithDSACA()");
-        endEntityManagementSession.setUserStatus(internalAdmin, DSA_USERNAME, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setUserStatus(internalAdmin, DSA_USERNAME, EndEntityConstants.STATUS_NEW, 0);
         log.debug("Reset status of '"+DSA_USERNAME+"' to NEW");
         // user that we know exists...
         KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
@@ -134,7 +134,7 @@ public class SignSessionWithDsaTest extends SignSessionCommon {
     @Test
     public void testBCPKCS10DSAWithDSACA() throws Exception {
         log.trace(">test26TestBCPKCS10DSAWithDSACA()");
-        endEntityManagementSession.setUserStatus(internalAdmin, DSA_USERNAME, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setUserStatus(internalAdmin, DSA_USERNAME, EndEntityConstants.STATUS_NEW, 0);
         log.debug("Reset status of 'foodsa' to NEW");
         KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
         // Create certificate request

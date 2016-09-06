@@ -2021,7 +2021,7 @@ public class EjbcaWS implements IEjbcaWS {
         } catch(Exception e){
             throw EjbcaWSHelper.getInternalException(e, logger);
         } finally{
-            endEntityManagementSession.setUserStatus(admin, userDataWS.getUsername(), EndEntityConstants.STATUS_GENERATED);
+            endEntityManagementSession.setUserStatus(admin, userDataWS.getUsername(), EndEntityConstants.STATUS_GENERATED, 0);
 		}
 
 		// Add hard token data

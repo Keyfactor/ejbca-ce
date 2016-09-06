@@ -147,13 +147,13 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             // Create some valid certs
             for (int j = 0; j < CERTS_OF_EACH_KIND; j++) {
                 endEntityManagementSession.setClearTextPassword(administrator, username, password);
-                endEntityManagementSession.setUserStatus(administrator, username, EndEntityConstants.STATUS_NEW);
+                endEntityManagementSession.setUserStatus(administrator, username, EndEntityConstants.STATUS_NEW, 0);
                 signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(keys.getPublic()));
             }
             // Create some revoked certs
             for (int j = 0; j < CERTS_OF_EACH_KIND; j++) {
                 endEntityManagementSession.setClearTextPassword(administrator, username, password);
-                endEntityManagementSession.setUserStatus(administrator, username, EndEntityConstants.STATUS_NEW);
+                endEntityManagementSession.setUserStatus(administrator, username, EndEntityConstants.STATUS_NEW, 0);
                 Certificate certificate = signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(keys.getPublic()));
                 endEntityManagementSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
                         RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
@@ -179,7 +179,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             // Create some soon-to-be-expired certs
             for (int j = 0; j < CERTS_OF_EACH_KIND; j++) {
                 endEntityManagementSession.setClearTextPassword(administrator, username, password);
-                endEntityManagementSession.setUserStatus(administrator, username, EndEntityConstants.STATUS_NEW);
+                endEntityManagementSession.setUserStatus(administrator, username, EndEntityConstants.STATUS_NEW, 0);
                 Certificate certificate = signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(keys.getPublic()));
                 endEntityManagementSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
                         RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
@@ -187,7 +187,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             // Create some expired and archived
             for (int j = 0; j < CERTS_OF_EACH_KIND; j++) {
                 endEntityManagementSession.setClearTextPassword(administrator, username, password);
-                endEntityManagementSession.setUserStatus(administrator, username, EndEntityConstants.STATUS_NEW);
+                endEntityManagementSession.setUserStatus(administrator, username, EndEntityConstants.STATUS_NEW, 0);
                 Certificate certificate = signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(keys.getPublic()));
                 endEntityManagementSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
                         RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);

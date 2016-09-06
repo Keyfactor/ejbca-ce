@@ -181,7 +181,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                                     userdataNew, false);
                             log.info("User '" + missing_user_name + "' has been added.");
                             EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(),
-                                    missing_user_name, EndEntityConstants.STATUS_REVOKED);
+                                    missing_user_name, EndEntityConstants.STATUS_REVOKED, 0);
                             log.info("User '" + missing_user_name + "' has been updated.");
                         }
                         EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificateRemote(getAuthenticationToken(),
