@@ -32,9 +32,9 @@ import org.ejbca.util.NotificationParamGen;
  */
 public class ApprovalNotificationParameterGenerator extends NotificationParamGen {
 
-    public ApprovalNotificationParameterGenerator(final int approvalRequestId, final int approvalStepId, final int approvalPartitionId,
+    public ApprovalNotificationParameterGenerator(final int approvalRequestID, final int approvalStepId, final int approvalPartitionId,
             final String approvalPartitionName, final String approvalType, final String workflowState, final String requestor) {
-        paramPut("approvalRequest.ID", approvalRequestId);
+        paramPut("approvalRequest.ID", approvalRequestID);
         paramPut("approvalRequest.STEP_ID", approvalStepId);
         paramPut("approvalRequest.PARTITION_ID", approvalPartitionId);
         paramPut("approvalRequest.PARTITION_NAME", approvalPartitionName);

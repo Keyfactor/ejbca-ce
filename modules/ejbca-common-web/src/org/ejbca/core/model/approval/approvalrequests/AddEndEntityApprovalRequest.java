@@ -75,7 +75,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		throw new IllegalStateException("This execution requires additional bean references.");
 	}
 	
-	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestId) throws ApprovalRequestExecutionException {
+	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID) throws ApprovalRequestExecutionException {
 		log.debug("Executing AddEndEntity for user:" + userdata.getUsername());
 		
 		// Add the ID of the approval request to the end entity as extended information.
@@ -83,7 +83,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
         if(ext == null) {
             ext = new ExtendedInformation();
         }
-        ext.setAddEndEntityApprovalRequestId(approvalRequestId);
+        ext.setAddEndEntityApprovalRequestId(approvalRequestID);
         userdata.setExtendedinformation(ext);
 		
 		try{

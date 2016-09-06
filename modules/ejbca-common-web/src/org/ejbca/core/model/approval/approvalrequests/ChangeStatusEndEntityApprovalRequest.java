@@ -156,7 +156,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	}
 	
 	public void execute(EndEntityManagementSession endEntityManagementSession, EndEntityAccessSession endEntityAccessSession, 
-	        final int approvalRequestId) throws ApprovalRequestExecutionException {
+	        final int approvalRequestID) throws ApprovalRequestExecutionException {
 		log.debug("Executing Change Status  for user:" + username);
 		
 		try{
@@ -167,7 +167,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 		    if(ext == null) {
 		        ext = new ExtendedInformation();
 		    }
-		    ext.addEditEndEntityApprovalRequestId(approvalRequestId);
+		    ext.addEditEndEntityApprovalRequestId(approvalRequestID);
 		    userdata.setExtendedinformation(ext);
 		    
 			endEntityManagementSession.setUserStatus(getRequestAdmin(), username, newstatus);
