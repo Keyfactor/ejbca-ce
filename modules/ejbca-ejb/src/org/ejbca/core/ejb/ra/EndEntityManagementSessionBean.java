@@ -2052,7 +2052,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     private void sendNotification(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final int newstatus, 
-            final int approvalRequestId, CertificateDataWrapper revokedCertificate) {
+            final int approvalRequestID, CertificateDataWrapper revokedCertificate) {
         if (endEntityInformation == null) {
             if (log.isDebugEnabled()) {
                 log.debug("No UserData, no notification sent.");
@@ -2131,7 +2131,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         }
                         // TODO: approvalAdmin below should be the requestingAdmin, how to get that from the request?
                         // TODO: approvalAdminDN below should be the approving admin, how to get that from the request?
-                        final UserNotificationParamGen paramGen = new UserNotificationParamGen(endEntityInformation, approvalAdminDN, approvalAdmin, approvalRequestId, revokedCertificate);
+                        final UserNotificationParamGen paramGen = new UserNotificationParamGen(endEntityInformation, approvalAdminDN, approvalAdmin, approvalRequestID, revokedCertificate);
                         // substitute any $ fields in the recipient and from fields
                         recipientEmail = paramGen.interpolate(recipientEmail);
                         final String fromemail = paramGen.interpolate(userNotification.getNotificationSender());

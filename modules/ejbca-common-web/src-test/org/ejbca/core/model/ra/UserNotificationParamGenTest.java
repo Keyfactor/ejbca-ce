@@ -64,7 +64,7 @@ public class UserNotificationParamGenTest {
         						" ${approvalAdmin.CN} ${approvalAdmin.C} ${approvalAdmin.O}" +
         						" ${user.EE.EMAIL} ${user.SAN.EMAIL} ${requestAdmin.EE.EMAIL} ${requestAdmin.CN} ${requestAdmin.SAN.EMAIL}" +
         						" ${revokedCertificate.CERTSERIAL} ${revokedCertificate.EXPIREDATE} ${revokedCertificate.CERTSUBJECTDN} " +
-        						" ${revokedCertificate.CERTISSUERDN} ${revokedCertificate.REVOCATIONSTATUS} ${revokedCertificate.REVOCATIONREASON} ${approvalRequestId}");
+        						" ${revokedCertificate.CERTISSUERDN} ${revokedCertificate.REVOCATIONSTATUS} ${revokedCertificate.REVOCATIONREASON} ${approvalRequestID}");
         assertFalse("Interpolating message failed", (msg==null || msg.length()==0));
         assertEquals("foo foo foo123 foo123 foo foo SE approvaluser SE Org fooee@foo.se fooalt@foo.se adminee@foo.se Test Admin adminalt@foo.se" +
                 " " + new BigInteger(certificateSerialNumber).toString(16).toUpperCase() +" " + ValidityDate.formatAsISO8601(now, ValidityDate.TIMEZONE_SERVER) + " CN=foo,O=Org,C=SE " +
