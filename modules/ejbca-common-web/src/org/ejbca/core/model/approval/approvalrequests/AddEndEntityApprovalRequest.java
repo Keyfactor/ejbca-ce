@@ -113,7 +113,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 	@Override
 	public int generateApprovalId() {
 		if (log.isTraceEnabled()) {
-		    log.debug(">generateApprovalId '"+getApprovalType() + ";" + userdata.getUsername() + ";" + getApprovalProfile().getProfileName()+"'");
+		    log.trace(">generateApprovalId '"+getApprovalType() + ";" + userdata.getUsername() + ";" + getApprovalProfile().getProfileName()+"'");
 		}
 		return new String(getApprovalType() + ";" + userdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
 	}
