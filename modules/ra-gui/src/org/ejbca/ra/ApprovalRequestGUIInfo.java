@@ -440,6 +440,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean isCanApprove() { return canApprove; }
     public boolean isCanEdit() { return canEdit; }
     public boolean isEditedByMe() { return request.isEditedByMe(); }
+    public boolean isRequestedByMe() { return request.isRequestedByMe(); }
+    public boolean isApprovedByMe() { return request.isApprovedByMe(); }
     public boolean isPending() { return request.isPending(); }
     public boolean isPendingExecution() { return request.getStatus() == ApprovalDataVO.STATUS_APPROVED; /* = approved but not executed */ }
     public boolean isExecuted() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTED; }
@@ -449,5 +451,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean isWaitingForMe() { return request.isWaitingForMe(); }
     public boolean isWaitingForApproval() { return request.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL; }
     public boolean isExpired() { return request.getStatus() == ApprovalDataVO.STATUS_EXPIRED || request.getStatus() == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED; }
+    public boolean hasNextApprovalStep() { return request.getNextApprovalStep() != null; }
     
 }
