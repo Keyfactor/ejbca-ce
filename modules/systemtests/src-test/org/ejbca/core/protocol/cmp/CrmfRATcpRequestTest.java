@@ -339,7 +339,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 
         if (userExists) {
             log.debug("User " + username + " already exists.");
-            this.endEntityManagementSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW);
+            this.endEntityManagementSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW, 0);
             log.debug("Reset status to NEW");
         }
     }

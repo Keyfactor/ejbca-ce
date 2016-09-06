@@ -560,11 +560,11 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
                             final String newStatusString;
                             if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
                                 EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(
-                                        getAuthenticationToken(), data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
+                                        getAuthenticationToken(), data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY, 0);
                                 newStatusString = "KEYRECOVERY";
                             } else {
                                 EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(
-                                        getAuthenticationToken(), data.getUsername(), EndEntityConstants.STATUS_FAILED);
+                                        getAuthenticationToken(), data.getUsername(), EndEntityConstants.STATUS_FAILED, 0);
                                 newStatusString = "FAILED";
                             }
                             if (e instanceof IllegalKeyException) {
@@ -631,11 +631,11 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
                     final String newStatusString;
                     if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
                         EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(),
-                                data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
+                                data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY, 0);
                         newStatusString = "KEYRECOVERY";
                     } else {
                         EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(),
-                                data.getUsername(), EndEntityConstants.STATUS_FAILED);
+                                data.getUsername(), EndEntityConstants.STATUS_FAILED, 0);
                         newStatusString = "FAILED";
                     }
                     if (e instanceof IllegalKeyException) {
