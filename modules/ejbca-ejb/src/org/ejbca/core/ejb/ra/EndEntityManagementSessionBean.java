@@ -439,7 +439,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // this point it is safe to set the password
                 endEntity.setPassword(newpassword);
                 // Send notifications, if they should be sent
-                sendNotification(admin, endEntity, EndEntityConstants.STATUS_NEW, 0, null);
+                // This is an add user request, if there was an approval involved in add user, it will have been added to extendedInformation
+                int approvalRequestID = 0;
+                if ( (endEntity != null) && (endEntity.getExtendedinformation() != null) && (endEntity.getExtendedinformation().getAddEndEntityApprovalRequestId() != null) ) {
+                    approvalRequestID = endEntity.getExtendedinformation().getAddEndEntityApprovalRequestId().intValue();
+                }
+                sendNotification(admin, endEntity, EndEntityConstants.STATUS_NEW, approvalRequestID, null);
                 if (type.contains(EndEntityTypes.PRINT)) {
                     if (profile == null) {
                         profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
