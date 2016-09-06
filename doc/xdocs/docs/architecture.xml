@@ -88,7 +88,7 @@
   </subsubsection>
   <subsection name="Validation Authority">
   <p>
-  Any decent size PKI solution can love without certificate validation to check certificate revocation. EJBCA has built in Validation Authority (VA), meaning that the Single CA/RA setup comes with complete certificate validation capabilities. 
+  Any decent size PKI solution can't live without certificate validation to check certificate revocation. EJBCA has built in Validation Authority (VA), meaning that the Single CA/RA setup comes with complete certificate validation capabilities. 
   When setting up a larger PKI however you typically want to separate the validation authority from the certificate authority. There are several reasons for this where security is the most prominent, but other factors such as performance
   and organizational factors also play a role. Using a separate Validation Authority you can serve multiple PKIs from a single VA. You can publish revocation information in real time, also called white listing, or using CRLs for periodical revocation updates.      
   </p>
