@@ -319,6 +319,12 @@ public class RaManageRequestBean implements Serializable {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_pending");
         } else if (getRequest().isEditedByMe()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_edited_by_me");
+        } else if (getRequest().isApprovedByMe()) {
+            return raLocaleBean.getMessage("view_request_page_cannot_approve_approved_by_me");
+        } else if (getRequest().isRequestedByMe()) {
+            return raLocaleBean.getMessage("view_request_page_cannot_approve_requested_by_me");  
+        } else if (!getRequest().hasNextApprovalStep()) {
+            return raLocaleBean.getMessage("view_request_page_cannot_approve_no_next_step");              
         } else {
             return raLocaleBean.getMessage("view_request_page_cannot_approve");
         }
