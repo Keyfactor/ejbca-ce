@@ -558,11 +558,9 @@ a {
   text-align: left; }
 
 /*SLUT resterande inputs för max-result-texten*/
-/*.contentForm\:filteredResults,*/
 #contentForm\:filteredResults > table.pure-table > thead {
   line-height: 110%; }
 
-/*.contentForm\:filteredResults,*/
 #contentForm\:filteredResults > table.pure-table:not(#contentForm\:manageRequestTable) > tbody > tr {
   line-height: 79%;
   word-break: break-all; }
@@ -1034,10 +1032,11 @@ span.approvalStep {
       padding: 0 0 0 0;
       height: auto;
       font-size: 85%; } }
-table#contentForm\:searchCertTable > tbody > tr > td > input {
+table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:searchEntityTable > tbody > tr > td > input {
   background: none;
+  border: none;
   font-size: 85%; }
-  table#contentForm\:searchCertTable > tbody > tr > td > input:hover {
+  table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm\:searchEntityTable > tbody > tr > td > input:hover {
     text-decoration: underline; }
 
 @media (max-width: 64.0525em) {
@@ -1609,7 +1608,21 @@ table#contentForm\:searchCertTable > tbody > tr > td > input {
     float: left; }
 
   table#contentForm\:searchCertTable > tbody > tr > td > input {
-    font-size: 76%; } }
+    font-size: 76%; }
+
+  #detailsForm > span.pure-u-1:nth-of-type(2) > label {
+    display: inline-block; }
+  #detailsForm > span.pure-u-1:nth-of-type(2) > span:not(.revokeGroup) {
+    margin-left: 0;
+    margin-bottom: 0;
+    margin: 0.5em 0 0.2em; }
+
+  /*
+  #detailsForm > span.pure-u-1:nth-of-type(2) > span:not(.revokeGroup) {
+  
+  margin-left:0;
+  }
+  */ }
 /*
 "gamla"
     "base"  // smartphone
