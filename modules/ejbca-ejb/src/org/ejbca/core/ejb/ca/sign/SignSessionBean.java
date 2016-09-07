@@ -358,7 +358,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         try {
             if (retrievedUser.getStatus() == EndEntityConstants.STATUS_GENERATED) {
 
-                endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW, 0);
+                endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
 
             }
             if (ignorePassword) {

@@ -1512,7 +1512,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         } catch (Exception e) {
             log.debug("User " + userName + " already exists. Setting the user status to NEW");
             this.endEntityManagementSession.changeUser(ADMIN, user, true);
-            this.endEntityManagementSession.setUserStatus(ADMIN, userName, EndEntityConstants.STATUS_NEW, 0);
+            this.endEntityManagementSession.setUserStatus(ADMIN, userName, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 

@@ -272,10 +272,10 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                 try {
                     if (status == CertificateConstants.CERT_ACTIVE) {
                         endEntityManagementSession.setUserStatus(getAuthenticationToken(),
-                                username, EndEntityConstants.STATUS_GENERATED, 0);
+                                username, EndEntityConstants.STATUS_GENERATED);
                     } else {
                         endEntityManagementSession.setUserStatus(getAuthenticationToken(),
-                                username, EndEntityConstants.STATUS_REVOKED, 0);
+                                username, EndEntityConstants.STATUS_REVOKED);
                     }
                 } catch (FinderException e) {
                     // FIXME: Is this really the right exception to toss?

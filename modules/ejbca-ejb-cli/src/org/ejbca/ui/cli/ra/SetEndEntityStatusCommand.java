@@ -83,7 +83,7 @@ public class SetEndEntityStatusCommand extends BaseRaCommand {
         }
         try {
             EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(), username,
-                    status, 0);
+                    status);
             getLogger().info("New status for end entity " + username + " is " + status);
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {

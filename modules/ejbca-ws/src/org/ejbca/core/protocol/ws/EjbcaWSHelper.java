@@ -789,7 +789,7 @@ public class EjbcaWSHelper {
 	protected void resetUserPasswordAndStatus(AuthenticationToken admin, String username, int status) {
 		try {
 			endEntityManagementSession.setPassword(admin, username, null);
-			endEntityManagementSession.setUserStatus(admin, username, status, 0);	
+			endEntityManagementSession.setUserStatus(admin, username, status);	
 			log.debug("Reset user password to null and status to "+status);
 		} catch (Exception e) {
 			// Catch all because this reset method will be called from withing other catch clauses
@@ -808,7 +808,7 @@ public class EjbcaWSHelper {
 			String msg = intres.getLocalizedMessage("cvc.info.renewallowed", CertTools.getFingerprintAsString(cert), username);            	
 			log.info(msg);
 			endEntityManagementSession.setPassword(admin, username, password);
-			endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW, 0);
+			endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
 			// If we managed to verify the certificate we will break out of the loop									
 			ret = true;															
 		} catch (CertificateNotYetValidException e) {

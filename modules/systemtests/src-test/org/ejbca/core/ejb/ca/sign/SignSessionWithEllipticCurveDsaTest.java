@@ -102,7 +102,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
     @Test
     public void testSignSessionECDSAWithRSACA() throws Exception {
         log.trace(">test12SignSessionECDSAWithRSACA()");
-        endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW, 0);
+        endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(),
@@ -147,7 +147,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
     public void testBCPKCS10ECDSAWithRSACA() throws Exception {
         log.trace(">test13TestBCPKCS10ECDSAWithRSACA()");
 
-        endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW, 0);
+        endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
@@ -185,7 +185,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
     @Test
     public void testSignSessionECDSAWithECDSACA() throws Exception {
         log.trace(">test14SignSessionECDSAWithECDSACA()");
-        endEntityManagementSession.setUserStatus(internalAdmin, ECDSA_USERNAME, EndEntityConstants.STATUS_NEW, 0);
+        endEntityManagementSession.setUserStatus(internalAdmin, ECDSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '" + ECDSA_USERNAME + "' to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(),
@@ -213,7 +213,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
     public void testBCPKCS10ECDSAWithECDSACA() throws Exception {
         log.trace(">test15TestBCPKCS10ECDSAWithECDSACA()");
 
-        endEntityManagementSession.setUserStatus(internalAdmin, ECDSA_USERNAME, EndEntityConstants.STATUS_NEW, 0);
+        endEntityManagementSession.setUserStatus(internalAdmin, ECDSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN="
@@ -257,7 +257,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         createEndEntity(ecDsaImplicitCaUserName, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 ecdsaimplicitlycacaid);
         try {
-            endEntityManagementSession.setUserStatus(internalAdmin, ecDsaImplicitCaUserName, EndEntityConstants.STATUS_NEW, 0);
+            endEntityManagementSession.setUserStatus(internalAdmin, ecDsaImplicitCaUserName, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status of 'fooecdsaimpca' to NEW");
             // user that we know exists...
             X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(),
@@ -293,7 +293,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         createEndEntity(ecDsaImplicitCaUserName, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 ecdsaimplicitlycacaid);
         try {
-            endEntityManagementSession.setUserStatus(internalAdmin, ecDsaImplicitCaUserName, EndEntityConstants.STATUS_NEW, 0);
+            endEntityManagementSession.setUserStatus(internalAdmin, ecDsaImplicitCaUserName, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status of 'foo' to NEW");
             // Create certificate request
             PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN="

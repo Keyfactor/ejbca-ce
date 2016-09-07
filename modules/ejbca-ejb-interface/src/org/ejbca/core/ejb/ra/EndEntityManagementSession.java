@@ -29,7 +29,6 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
@@ -261,13 +260,25 @@ public interface EndEntityManagementSession {
      * @param admin An authentication token 
      * @param username the unique username.
      * @param status the new status, from 'UserData'.
-     * @param approvalRequestId The ID of the approval request submitted to change the status (will only be populated if the method was called when executing a ChangeStatusEndEntityApprovalRequest)
      * 
      * @throws ApprovalException if an approval already is waiting for specified action
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
      */
-    void setUserStatus(AuthenticationToken admin, String username, int status, int approvalRequestId) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException;
+    void setUserStatus(AuthenticationToken admin, String username, int status) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException;
 
+    /**
+     * Changes status of a user. This method is called mainly when executing a ChangeStatusEndEntityApprovalRequest
+     * 
+     * @param admin An authentication token 
+     * @param username the unique username.
+     * @param status the new status, from 'UserData'.
+     * @param approvalRequestId The ID of the approval request submitted to change the status
+     * 
+     * @throws ApprovalException if an approval already is waiting for specified action
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
+     */
+    void setUserStatus(AuthenticationToken admin, String username, int status, int approvalRequestID) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException;
+    
     /**
      * Sets a new password for a user.
      * 
@@ -323,7 +334,7 @@ public interface EndEntityManagementSession {
     
     /** Revoke and then delete a user. */
     void revokeAndDeleteUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, RemoveException, NotFoundException;
-
+    
     /**
      * Method that revokes a user. Revokes all users certificates and then sets user status to revoked.
      * If user status is already revoked it still revokes all users certificates, ignoring the ones that are already revoked.
@@ -335,6 +346,20 @@ public interface EndEntityManagementSession {
      * 
      */
     void revokeUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
+
+    /**
+     * Method that revokes a user. Revokes all users certificates and then sets user status to revoked.
+     * If user status is already revoked it still revokes all users certificates, ignoring the ones that are already revoked.
+     * This method is called mainly when executing a RevocationApprovalRequest
+     * 
+     * @param username the username to revoke.
+     * @param reason revocation reason to use in certificate revocations
+     * @param approvalRequestId The ID of the approval request submitted to revoke the user
+     * @throws AlreadyRevokedException if user is revoked and unrevocation is attempted by sending revocation reason NOTREVOKED or REMOVEFROMCRL
+     * @throws ApprovalException if revocation has been requested and is waiting for approval.
+     * 
+     */
+    void revokeUser(AuthenticationToken admin, String username, int reason, int approvalRequestID) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
      * Same as {@link #revokeCert(AuthenticationToken, BigInteger, String, int)} but also sets the revocation date.
@@ -377,6 +402,31 @@ public interface EndEntityManagementSession {
     void revokeCert(AuthenticationToken admin, BigInteger certserno, String issuerdn, int reason) throws AuthorizationDeniedException,
     		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
+    /**
+     * Method that revokes a certificate for a user. It can also be used to
+     * un-revoke a certificate that has been revoked with reason ON_HOLD. This
+     * is done by giving reason RevokedCertInfo.NOT_REVOKED (or
+     * RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL).
+     * 
+     * This method is called mainly when executing a RevocationApprovalRequest
+     * 
+     * @param admin the administrator performing the action
+     * @param certserno the serno of certificate to revoke.
+     * @param issuerdn
+     * @param reason the reason of revocation, one of the RevokedCertInfo.XX
+     *            constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a
+     *            certificate on hold.
+     * @param approvalRequestId The ID of the approval request submitted to revoke the certificate
+     * @throws AlreadyRevokedException if the certificate was already revoked
+     * @throws FinderException
+     * @throws ApprovalException
+     * @throws WaitingForApprovalException
+     * @throws AlreadyRevokedException
+     */
+    void revokeCert(AuthenticationToken admin, BigInteger certserno, String issuerdn, int reason, int approvalRequestID) throws AuthorizationDeniedException,
+            FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
+
+    
     /**
      * Method that checks if a user with specified users certificate exists in
      * database. IssuerDN/serialNumber is the unique key for a certificate.

@@ -1184,6 +1184,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
     
     @Override
+    public void setUserStatus(final AuthenticationToken admin, final String username, final int status) throws AuthorizationDeniedException,
+            FinderException, ApprovalException, WaitingForApprovalException {
+        setUserStatus(admin, username, status, 0);
+    }
+    
+    @Override
     public void setUserStatus(final AuthenticationToken admin, final String username, final int status, final int approvalRequestID) throws AuthorizationDeniedException,
             FinderException, ApprovalException, WaitingForApprovalException {
         if (log.isTraceEnabled()) {
@@ -1466,7 +1472,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     }
                 }
                 try {
-                    revokeUser(admin, username, reason);
+                    revokeUser(admin, username, reason, 0);
                 } catch (AlreadyRevokedException e) {
                     // This just means that the end entity was revoked before
                     // this request could be completed. No harm.
@@ -1484,6 +1490,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @Override
     public void revokeUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, FinderException,
+            ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
+        revokeUser(admin, username, reason, 0);
+    }
+    
+    @Override
+    public void revokeUser(AuthenticationToken admin, String username, int reason, final int approvalRequestID) throws AuthorizationDeniedException, FinderException,
             ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         if (log.isTraceEnabled()) {
             log.trace(">revokeUser(" + username + ")");
@@ -1546,7 +1558,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     serialNumber = CertTools.getSerialNumber(certificate);
                 }
                 try {
-                    revokeCert(admin, serialNumber, null, cdw.getCertificateData().getIssuerDN(), reason, false, endEntityInformation);
+                    revokeCert(admin, serialNumber, null, cdw.getCertificateData().getIssuerDN(), reason, false, endEntityInformation, 0);
                 } catch (RevokeBackDateNotAllowedForProfileException e) {
                     throw new IllegalStateException("This should not happen since there is no back dating.",e);
                 }
@@ -1557,6 +1569,16 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
             }
         }
+        
+        if(approvalRequestID != 0) { 
+            ExtendedInformation ei = userData.getExtendedInformation();
+            if(ei == null) {
+                ei = new ExtendedInformation();
+            }
+            ei.addRevokeEndEntityApprovalRequestId(Integer.valueOf(approvalRequestID));
+            userData.setExtendedInformation(ei);
+        }
+        
         // Finally set revoke status on the user as well
         try {
             setUserStatus(admin, userData, EndEntityConstants.STATUS_REVOKED, 0);
@@ -1582,7 +1604,16 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public void revokeCert(final AuthenticationToken admin, final BigInteger certserno, final String issuerdn, final int reason)
             throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         try {
-            revokeCert(admin, certserno, null, issuerdn, reason, false, null);
+            revokeCert(admin, certserno, null, issuerdn, reason, false, null, 0);
+        } catch (RevokeBackDateNotAllowedForProfileException e) {
+            throw new IllegalStateException("This should not happen since there is no back dating.",e);
+        }
+    }
+    @Override
+    public void revokeCert(final AuthenticationToken admin, final BigInteger certserno, final String issuerdn, final int reason, final int approvalRequestID)
+            throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
+        try {
+            revokeCert(admin, certserno, null, issuerdn, reason, false, null, approvalRequestID);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
             throw new IllegalStateException("This should not happen since there is no back dating.",e);
         }
@@ -1591,11 +1622,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
-        revokeCert(admin, certserno, revocationdate, issuerdn, reason, checkDate, null);
+        revokeCert(admin, certserno, revocationdate, issuerdn, reason, checkDate, null, 0);
     }
 
     private void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate,
-            final EndEntityInformation endEntityInformationParam) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException,
+            final EndEntityInformation endEntityInformationParam, final int approvalRequestID) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
      if (log.isTraceEnabled()) {
             log.trace(">revokeCert(" + certserno.toString(16) + ", IssuerDN: " + issuerdn + ")");
@@ -1716,6 +1747,18 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         	final String m = intres.getLocalizedMessage("ra.norevokebackdate", profileName, certserno.toString(16), issuerdn);
         	throw new RevokeBackDateNotAllowedForProfileException(m);
         }
+        
+        if(approvalRequestID != 0) {
+            UserData userdata = UserData.findByUsername(entityManager, username);
+            ExtendedInformation ei = userdata.getExtendedInformation();
+            if(ei == null) {
+                ei = new ExtendedInformation();
+            }
+            ei.addRevokeEndEntityApprovalRequestId(Integer.valueOf(approvalRequestID));
+            userdata.setExtendedInformation(ei);
+            userdata.setTimeModified((new Date()).getTime());
+        }
+        
         // Revoke certificate in database and all publishers
         try {
             revocationSession.revokeCertificate(admin, cdw, publishers, revocationdate!=null ? revocationdate : new Date(), reason, certificateSubjectDN);

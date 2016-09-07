@@ -292,7 +292,7 @@ public class StartupSingletonBean {
             final EndEntityInformation defaultCliUser = endEntityAccessSession.findUser(authenticationToken, cliUsername);
             if (defaultCliUser!=null && defaultCliUser.getStatus()==EndEntityConstants.STATUS_NEW) {
                 try {
-                    endEntityManagementSession.setUserStatus(authenticationToken, cliUsername, EndEntityConstants.STATUS_GENERATED, 0);
+                    endEntityManagementSession.setUserStatus(authenticationToken, cliUsername, EndEntityConstants.STATUS_GENERATED);
                 } catch (ApprovalException e) {
                     log.warn("The EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please correct the status manually. Failed with: " + e.getMessage());
                 } catch (FinderException e) {

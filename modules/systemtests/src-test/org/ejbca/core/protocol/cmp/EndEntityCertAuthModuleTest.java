@@ -758,7 +758,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         } catch (EndEntityExistsException e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");
             endEntityManagementSession.changeUser(ADMIN, user, clearpassword);
-            endEntityManagementSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW, 0);
+            endEntityManagementSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 

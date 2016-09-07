@@ -96,7 +96,7 @@ public class SignSessionWithECGOST3410Test extends SignSessionCommon {
     public void testSignSessionECGOST3410WithECGOST3410CA() throws Exception {
         assumeTrue(AlgorithmTools.isGost3410Enabled());
         log.trace(">test14SignSessionECGOST3410WithECGOST3410CA()");
-        userAdminSession.setUserStatus(internalAdmin, ECGOST3410_USERNAME, EndEntityConstants.STATUS_NEW, 0);
+        userAdminSession.setUserStatus(internalAdmin, ECGOST3410_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '" + ECGOST3410_USERNAME + "' to NEW");
 
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, gostkeys.getPrivate(), gostkeys.getPublic(),
@@ -124,7 +124,7 @@ public class SignSessionWithECGOST3410Test extends SignSessionCommon {
     public void testBCPKCS10ECGOST3410WithECGOST3410CA() throws Exception {
         assumeTrue(AlgorithmTools.isGost3410Enabled());
         log.trace(">test15TestBCPKCS10ECGOST3410WithECGOST3410CA()");
-        userAdminSession.setUserStatus(internalAdmin, ECGOST3410_USERNAME, EndEntityConstants.STATUS_NEW, 0);
+        userAdminSession.setUserStatus(internalAdmin, ECGOST3410_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '" + ECGOST3410_USERNAME + "' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("GOST3411withECGOST3410", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN="

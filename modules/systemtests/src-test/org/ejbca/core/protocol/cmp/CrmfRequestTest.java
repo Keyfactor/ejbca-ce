@@ -593,7 +593,7 @@ public class CrmfRequestTest extends CmpTestCase {
             if (userExists) {
                 log.debug("User cmptest already exists.");
                 this.endEntityManagementSession.changeUser(ADMIN, user, true);
-                this.endEntityManagementSession.setUserStatus(ADMIN, "cmptest", EndEntityConstants.STATUS_NEW, 0);
+                this.endEntityManagementSession.setUserStatus(ADMIN, "cmptest", EndEntityConstants.STATUS_NEW);
                 log.debug("Reset status to NEW");
             }
 
