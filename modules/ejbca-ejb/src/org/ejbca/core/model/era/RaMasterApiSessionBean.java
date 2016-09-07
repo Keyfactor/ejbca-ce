@@ -357,8 +357,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         final ApprovalDataVO advo = getApprovalDataNoAuth(authenticationToken, id);
         if (advo == null) {
-            log.debug("Approval not found in editApprovalRequest");
-            throw new IllegalStateException("Request with ID  " + id + " does not exist");
+            if (log.isDebugEnabled()) {
+                log.debug("Approval Request with ID " + id + " not found in editApprovalRequest");
+            }
+            // This method may be called on multiple nodes (e.g. both locally on RA, and on multiple CAs),
+            // so we must not throw any exceptions on the nodes where the request does not exist.
+            return null;
         } else if (getApprovalRequest(authenticationToken, advo) == null) { // Authorization check
             log.debug("Authorization denied to the given approval request");
             throw new AuthorizationDeniedException("You are not authorized to the Request with ID " + id + " at this point");
