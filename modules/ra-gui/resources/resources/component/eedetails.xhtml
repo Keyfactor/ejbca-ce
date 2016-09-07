@@ -254,6 +254,13 @@
             <h:outputText id="editEEApprovalReq" value="#{cc.attrs.raEndEntityDetails.editEndEntityApprovalRequestIds}"
                 rendered="#{cc.attrs.raEndEntityDetails.editEndEntityApprovalRequestIds != ''}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                
+            <h:outputLabel for="revokeEEApprovalReq" value="#{msg.component_eedetails_field_revokeendentity_approvalrequestid}"
+                rendered="#{cc.attrs.raEndEntityDetails.revokeEndEntityApprovalRequestIds != ''}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="revokeEEApprovalReq" value="#{cc.attrs.raEndEntityDetails.revokeEndEntityApprovalRequestIds}"
+                rendered="#{cc.attrs.raEndEntityDetails.revokeEndEntityApprovalRequestIds != ''}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             
 
         </composite:implementation>

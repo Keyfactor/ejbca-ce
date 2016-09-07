@@ -1170,7 +1170,7 @@ public abstract class CmpTestCase extends CaTestCase {
         } catch (Exception e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");
             this.endEntityManagementSession.changeUser(ADMIN, user, false);
-            this.endEntityManagementSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW, 0);
+            this.endEntityManagementSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         return user;
@@ -1205,7 +1205,7 @@ public abstract class CmpTestCase extends CaTestCase {
         if (userExists) {
             log.debug("USER already exists: " + user.getUsername() + ", foo123, " + userDN);
             this.endEntityManagementSession.changeUser(ADMIN, user, true);
-            this.endEntityManagementSession.setUserStatus(ADMIN, user.getUsername(), EndEntityConstants.STATUS_NEW, 0);
+            this.endEntityManagementSession.setUserStatus(ADMIN, user.getUsername(), EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         return userDN;

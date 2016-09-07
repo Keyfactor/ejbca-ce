@@ -174,7 +174,7 @@ public class ScepRaModeExtension implements ScepOperationPlugin {
         try {
             if (endEntityManagementSession.existsUser(username)) {
                 endEntityManagementSession.changeUser(admin, userdata, true);
-                endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW, 0);
+                endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
             } else {
                 endEntityManagementSession.addUser(admin, userdata, true);
             }

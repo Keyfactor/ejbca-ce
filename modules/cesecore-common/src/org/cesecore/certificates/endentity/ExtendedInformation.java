@@ -110,6 +110,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static String ADD_EE_APPROVAL_REQUEST_ID = "ADD_EE_APPROVAL_REQUEST_ID";
     /** The IDs of the approval requests that were submitted to edit the end entity */
     private static String EDIT_EE_APPROVAL_REQUEST_IDS = "EDIT_EE_APPROVAL_REQUEST_IDS";
+    /** The IDs of the approval requests that were submitted to revoke the end entity */
+    private static String REVOKE_EE_APPROVAL_REQUEST_IDS = "REVOKE_EE_APPROVAL_REQUEST_IDS";
     
     /** Certificate request used for enrolling end entity user with public key provided by user (KickAssRA). */
     private static String CERTIFICATE_REQUEST = "CERTIFICATE_REQUEST";
@@ -502,6 +504,21 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         ArrayList<Integer> ids = obj==null? new ArrayList<Integer>() : (ArrayList<Integer>) obj;
         ids.add(requestId);
         data.put(EDIT_EE_APPROVAL_REQUEST_IDS, ids);
+    }
+    
+    public List<Integer> getRevokeEndEntityApprovalRequestIds() {
+        Object ids = data.get(REVOKE_EE_APPROVAL_REQUEST_IDS);
+        if(ids != null) {
+            return (ArrayList<Integer>) ids;
+        }
+        return new ArrayList<Integer>();
+    }
+    
+    public void addRevokeEndEntityApprovalRequestId(Integer requestId) {
+        Object obj = data.get(REVOKE_EE_APPROVAL_REQUEST_IDS);
+        ArrayList<Integer> ids = obj==null? new ArrayList<Integer>() : (ArrayList<Integer>) obj;
+        ids.add(requestId);
+        data.put(REVOKE_EE_APPROVAL_REQUEST_IDS, ids);
     }
     
 }

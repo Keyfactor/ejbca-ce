@@ -169,11 +169,11 @@ public abstract class BatchCreateTool {
                             final String newStatusString;
                             if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
                                 EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(
-                                        authenticationToken, data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY, 0);
+                                        authenticationToken, data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
                                 newStatusString = "KEYRECOVERY";
                             } else {
                                 EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(
-                                        authenticationToken, data.getUsername(), EndEntityConstants.STATUS_FAILED, 0);
+                                        authenticationToken, data.getUsername(), EndEntityConstants.STATUS_FAILED);
                                 newStatusString = "FAILED";
                             }
                             if (e instanceof IllegalKeyException) {

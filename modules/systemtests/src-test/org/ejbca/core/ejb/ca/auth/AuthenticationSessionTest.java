@@ -166,7 +166,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     public void testFailAuthenticateUser() throws Exception {
         log.trace(">test03FailAuthenticateUser()");
         // Set status to GENERATED so authentication will fail
-        endEntityManagementSession.setUserStatus(internalAdmin, username1, EndEntityConstants.STATUS_GENERATED, 0);
+        endEntityManagementSession.setUserStatus(internalAdmin, username1, EndEntityConstants.STATUS_GENERATED);
         boolean authfailed = false;
         try {
             EndEntityInformation auth = authenticationSessionRemote.authenticateUser(internalAdmin, username1, pwd1);
@@ -207,7 +207,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         // create certificate for user
         // Set status to NEW
         endEntityManagementSession.setPassword(internalAdmin, username1, "foo123");
-        endEntityManagementSession.setUserStatus(internalAdmin, username1, EndEntityConstants.STATUS_NEW, 0);
+        endEntityManagementSession.setUserStatus(internalAdmin, username1, EndEntityConstants.STATUS_NEW);
 
         // Create a dummy certificate and keypair.
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -253,7 +253,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         loginUntilLocked(username2, pwd2);
 
         // Reset the status
-        endEntityManagementSession.setUserStatus(internalAdmin, username2, EndEntityConstants.STATUS_NEW, 0);
+        endEntityManagementSession.setUserStatus(internalAdmin, username2, EndEntityConstants.STATUS_NEW);
 
         // After reset: Test that we don't lock the account to early
         loginMaxNumFailedLoginsMinusOneAndThenOk(username2, pwd2);

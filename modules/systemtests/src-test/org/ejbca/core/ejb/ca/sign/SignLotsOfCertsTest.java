@@ -127,7 +127,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
         }
         if (userExists) {
             log.info("User performancefoo already exists, resetting status.");
-            endEntityManagementSession.setUserStatus(admin, "performancefoo" + post, EndEntityConstants.STATUS_NEW, 0);
+            endEntityManagementSession.setUserStatus(admin, "performancefoo" + post, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 

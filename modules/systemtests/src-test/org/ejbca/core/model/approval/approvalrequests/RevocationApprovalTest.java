@@ -19,7 +19,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.security.KeyPair;
 import java.security.Principal;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,14 +48,18 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -67,6 +73,7 @@ import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -117,6 +124,8 @@ public class RevocationApprovalTest extends CaTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(
             SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -408,6 +417,95 @@ public class RevocationApprovalTest extends CaTestCase {
         } finally {
             endEntityManagementSession.deleteUser(internalAdmin, username);
         }
-    } 
+    }
+     
+    @Test
+    public void test05TestRequestIdInExtendedInformation() throws Exception {
+        String username = "test01extendedInfoRevokeUser";
+        
+        // make sure that the end entity we are testing with does not already exist
+        if(endEntityAccessSession.findUser(internalAdmin, username) != null) {
+            endEntityManagementSession.deleteUser(internalAdmin, username);
+        }
 
-}
+        String usercertfp="", usercert2fp="", usercert3fp="";
+        try {
+            
+            createUser(internalAdmin, username, caid);
+            X509Certificate usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username)).iterator().next();
+            assertNotNull("Test user certificate was not created", usercert);
+
+            RevocationApprovalRequest revAr = new RevocationApprovalRequest(CertTools.getSerialNumber(usercert), CertTools.getIssuerDN(usercert), username, 
+                    RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, requestingAdmin, caid, SecConst.EMPTY_ENDENTITYPROFILE, null);
+            revAr.execute(endEntityManagementSession, 4711);
+            // Verify that the certificate was revokes
+            usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username)).iterator().next();
+            assertEquals("Certificate was not revoked.", CertificateStatus.REVOKED, certificateStoreSession.getStatus(CertTools.getIssuerDN(usercert), CertTools.getSerialNumber(usercert)));
+            usercertfp = CertTools.getFingerprintAsString(usercert);
+
+            EndEntityInformation executeUser = endEntityAccessSession.findUser(internalAdmin, username);
+            
+            // Verify that the end entity contains the approval request ID of the RevocationApprovalRequest
+            ExtendedInformation ext = executeUser.getExtendedinformation();
+            assertNotNull("end entity does not contain extended information", ext);
+            List<Integer> revEEReqIds = ext.getRevokeEndEntityApprovalRequestIds();
+            assertNotNull("Extended information does not contain the RevocationApprovalRequestIDs", revEEReqIds);
+            assertEquals(1, revEEReqIds.size());
+            assertEquals(Integer.valueOf(4711), revEEReqIds.get(0));
+            
+            // Issue two more certificate for this user and revoke the user. Verify that the end entity extended information has the correct approval IDs
+            endEntityManagementSession.setClearTextPassword(internalAdmin, username, "foo123");
+            endEntityManagementSession.setUserStatus(internalAdmin, username, EndEntityConstants.STATUS_NEW);
+            KeyPair keys2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            X509Certificate usercert2 = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(keys2.getPublic()));
+            assertNotNull("Test user certificate was not created", usercert2);
+            usercert2fp = CertTools.getFingerprintAsString(usercert2);
+            
+            endEntityManagementSession.setClearTextPassword(internalAdmin, username, "foo123");
+            endEntityManagementSession.setUserStatus(internalAdmin, username, EndEntityConstants.STATUS_NEW);
+            KeyPair keys3 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            X509Certificate usercert3 = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(keys3.getPublic()));
+            assertNotNull("Test user certificate was not created", usercert3);
+            usercert3fp = CertTools.getFingerprintAsString(usercert3);
+            
+            revAr = new RevocationApprovalRequest(false, username, RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED, requestingAdmin, caid, SecConst.EMPTY_ENDENTITYPROFILE, null);
+            revAr.execute(endEntityManagementSession, 4712);
+            
+            
+            List<Certificate> usercerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
+            assertEquals(3, usercerts.size());
+            for(Certificate cert : usercerts) {
+                assertEquals("Certificate was not revoked.", CertificateStatus.REVOKED, certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert)));
+                if(CertTools.getSerialNumber(cert).equals(CertTools.getSerialNumber(usercert))) {
+                    assertEquals("Certificate was not revoked.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert)).getRevocationReason());
+                } else {
+                    assertEquals("Certificate was not revoked.", RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED, certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert)).getRevocationReason());
+                }
+            }
+            
+            executeUser = endEntityAccessSession.findUser(internalAdmin, username);
+            
+            ext = executeUser.getExtendedinformation();
+            assertNotNull("end entity does not contain extended information", ext);
+            revEEReqIds = ext.getRevokeEndEntityApprovalRequestIds();
+            assertNotNull("Extended information does not contain the RevocationApprovalRequestIDs", revEEReqIds);
+            assertEquals(2, revEEReqIds.size());
+            assertTrue(revEEReqIds.contains(Integer.valueOf(4711)));
+            assertTrue(revEEReqIds.contains(Integer.valueOf(4712)));
+            
+            
+        } finally {
+            try {
+                this.internalCertStoreSession.removeCertificate(usercertfp);
+                this.internalCertStoreSession.removeCertificate(usercert2fp);
+                this.internalCertStoreSession.removeCertificate(usercert3fp);
+            } catch(Exception e) {} 
+
+            if (endEntityManagementSession.existsUser(username)) {
+                endEntityManagementSession.deleteUser(internalAdmin, username);
+            }
+            
+            
+        }
+    }
+} 
