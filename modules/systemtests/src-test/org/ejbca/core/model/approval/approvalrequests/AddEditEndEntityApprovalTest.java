@@ -34,8 +34,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
-import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -82,17 +80,13 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
         
         try {
 
-            // Create a simple approval profile to test with
-            final String approvalProfileName = AddEditEndEntityApprovalTest.class.getSimpleName() + "_AccumulativeApprovalProfile";
-            final ApprovalProfile approvalProfile = new AccumulativeApprovalProfile(approvalProfileName);
-
             // Add an end entity through executing an AddEndEntityApprovalRequest
             EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caid, null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
-            AddEndEntityApprovalRequest addAr = new AddEndEntityApprovalRequest(userdata, true, internalAdmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, approvalProfile);
+            AddEndEntityApprovalRequest addAr = new AddEndEntityApprovalRequest(userdata, true, internalAdmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, null);
             addAr.execute(endEntityManagementSession, 4711);
 
             // Verify that the end entity was added
@@ -110,7 +104,7 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
             EndEntityInformation editUserdata = userdata;
             assertEquals("CN=" + username, userdata.getDN());
             editUserdata.setDN("CN=" + username + ", C=SE");
-            EditEndEntityApprovalRequest editAr = new EditEndEntityApprovalRequest(editUserdata, true, userdata, internalAdmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, approvalProfile); 
+            EditEndEntityApprovalRequest editAr = new EditEndEntityApprovalRequest(editUserdata, true, userdata, internalAdmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, null); 
             editAr.execute(endEntityManagementSession, 4712);
             
             // Verify the the end entity has been edited
@@ -131,8 +125,9 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
 
             // Change the status of the end entity through executing a ChangeStatusEndEntityApprovalRequest
             assertEquals(EndEntityConstants.STATUS_NEW, executeUser.getStatus());
-            ChangeStatusEndEntityApprovalRequest statusAr = new ChangeStatusEndEntityApprovalRequest(username, EndEntityConstants.STATUS_NEW, EndEntityConstants.STATUS_GENERATED, internalAdmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, approvalProfile);
-            statusAr.execute(endEntityManagementSession, endEntityAccessSession, 4713);
+            ChangeStatusEndEntityApprovalRequest statusAr = new ChangeStatusEndEntityApprovalRequest(username, EndEntityConstants.STATUS_NEW, 
+                    EndEntityConstants.STATUS_GENERATED, internalAdmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, null);
+            statusAr.execute(endEntityManagementSession, 4713);
             
             // Verify that the end entity status has been changed
             executeUser = endEntityAccessSession.findUser(internalAdmin, username);

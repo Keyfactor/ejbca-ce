@@ -130,7 +130,7 @@ public class UnRevokeEndEntityCommand extends BaseRaCommand {
             } else {
                 try {
                     //Certificates were found and unrevoked. Set status to generates
-                    endEntityManagementSession.setUserStatus(getAuthenticationToken(), username, EndEntityConstants.STATUS_GENERATED, 0);
+                    endEntityManagementSession.setUserStatus(getAuthenticationToken(), username, EndEntityConstants.STATUS_GENERATED);
                     getLogger().info("Setting status of end entity '" + username + "' to GENERATED (40).");
 
                 } catch (ApprovalException e) {

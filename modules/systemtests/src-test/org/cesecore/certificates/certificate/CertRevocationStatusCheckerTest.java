@@ -711,7 +711,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
         } catch (Exception e) {
             log.debug("USER already exists: " + user.getUsername() + ", foo123, " + dn);
             eeManagementSession.changeUser(alwaysAllowToken, user, true);
-            eeManagementSession.setUserStatus(alwaysAllowToken, user.getUsername(), EndEntityConstants.STATUS_NEW, 0);
+            eeManagementSession.setUserStatus(alwaysAllowToken, user.getUsername(), EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
     }

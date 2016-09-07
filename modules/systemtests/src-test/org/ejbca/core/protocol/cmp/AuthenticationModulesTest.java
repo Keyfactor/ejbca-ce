@@ -1732,7 +1732,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         } catch (Exception e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");
             this.endEntityManagementSession.changeUser(ADMIN, user, clearpassword);
-            this.endEntityManagementSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW, 0);
+            this.endEntityManagementSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
