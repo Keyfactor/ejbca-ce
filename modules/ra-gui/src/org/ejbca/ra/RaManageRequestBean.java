@@ -470,7 +470,12 @@ public class RaManageRequestBean implements Serializable {
         
         // TODO error handling
         final RaApprovalEditRequest editReq = new RaApprovalEditRequest(requestData.getId(), editData);
-        requestData = raMasterApiProxyBean.editApprovalRequest(raAuthenticationBean.getAuthenticationToken(), editReq);
+        final RaApprovalRequestInfo newReqData = raMasterApiProxyBean.editApprovalRequest(raAuthenticationBean.getAuthenticationToken(), editReq);
+        if (newReqData == null) {
+            raLocaleBean.addMessageError("view_request_page_error_edit");
+            return;
+        }
+        requestData = newReqData;
         requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean);
         editing = false;
     }
