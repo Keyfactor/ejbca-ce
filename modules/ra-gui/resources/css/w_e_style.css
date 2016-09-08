@@ -141,13 +141,10 @@ img.menu_logo {
     width: 98%; }
     #detailsForm > span.pure-u-1:nth-of-type(1) > .pure-u-2-3 > input:nth-of-type(1) {
       /* DETAILSKNAPPAR */
-      width: 28%;
       height: 40px; }
     #detailsForm > span.pure-u-1:nth-of-type(1) > .pure-u-2-3 > input:nth-of-type(2) {
-      width: 37%;
       height: 40px; }
     #detailsForm > span.pure-u-1:nth-of-type(1) > .pure-u-2-3 > input:nth-of-type(3) {
-      width: 28%;
       height: 40px; }
 
 .revokeGroup {
@@ -314,7 +311,7 @@ textarea#keyPairForm\:certificateRequest {
 #newFileInput {
   margin-left: 5%;
   color: #fff;
-  width: 95%; }
+  width: 100%; }
 
 .tabButton.active {
   background: #e9af13; }
