@@ -992,17 +992,17 @@ span.approvalStep {
     display: block; }
     div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(1):before {
       content: "ID"; }
-    div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(1):before {
-      content: "Request Date"; }
     div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(2):before {
-      content: "CA"; }
+      content: "Request Date"; }
     div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(3):before {
-      content: "Type"; }
+      content: "CA"; }
     div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(4):before {
-      content: "Name"; }
+      content: "Type"; }
     div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(5):before {
-      content: "Requested By"; }
+      content: "Name"; }
     div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(6):before {
+      content: "Requested By"; }
+    div.content-body #contentForm\:manageRequestTable > tbody > tr > td:nth-of-type(7):before {
       content: "Request Status"; }
     div.content-body #contentForm\:manageRequestTable > tbody > tr > td > span {
       word-break: normal; }
