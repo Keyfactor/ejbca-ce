@@ -188,7 +188,8 @@ span .approvalStep,
     margin-left: 1.5%;
     font-weight: bold; }
   #manageRequestForm\:editRequestDataTable input:not([type="submit"]) {
-    width: 100%; }
+    width: 100%;
+    color: #000; }
   #manageRequestForm\:editRequestDataTable span {
     word-break: break-all;
     margin-left: 1.5%;
@@ -242,8 +243,7 @@ ul.pure-menu-list > li.pure-menu-item > ul.pure-menu-children > form > li, ul.pu
     background: #517397;
     color: #fff; }
     ul.pure-menu-list > li.pure-menu-item > ul.pure-menu-children > form > li > a:hover, ul.pure-menu-list > li.pure-menu-item > ul.pure-menu-children > li.pure-menu-item > a:hover {
-      background: #517397;
-      color: #fff; }
+      color: #d0a644; }
 
 /* Kan ev. tas bort då nedanståden står i ovanstående kod */
 .enroll-menu-link-hover {
@@ -347,7 +347,6 @@ textarea#keyPairForm\:certificateRequest {
 #detailsForm\:certDetails\:showMoreLessDetailsButton {
   background: #e9af13;
   color: #fff;
-  width: 150px;
   display: block;
   margin: 2% 0 0 0; }
 
@@ -622,19 +621,21 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
         width: auto; }
 
 /* SLUT Kod för att lägga radioknappar, som ligger inom första ramen i make request, under varandra */
-#contentForm\:viewRequestDataTable, #manageRequestForm\:viewRequestDataTable {
+/*#contentForm\:viewRequestDataTable,*/
+#manageRequestForm\:viewRequestDataTable {
   padding: 1% 0 1% 2%;
   word-break: break-word; }
-  #contentForm\:viewRequestDataTable > label, #manageRequestForm\:viewRequestDataTable > label {
+  #manageRequestForm\:viewRequestDataTable > label {
     font-weight: bold; }
-  #contentForm\:viewRequestDataTable > span, #manageRequestForm\:viewRequestDataTable > span {
+  #manageRequestForm\:viewRequestDataTable > span {
     display: block;
     max-width: 98%;
     color: #fff;
     margin-bottom: 4%; }
 
 @-moz-document url-prefix() {
-  #contentForm\:viewRequestDataTable, #manageRequestForm\:viewRequestDataTable {
+  /*#contentForm\:viewRequestDataTable,*/
+  #manageRequestForm\:viewRequestDataTable {
     word-break: break-all; } }
 #manageRequestForm\:currentStep > .internal-frame > div > label {
   margin-left: 1.5%; }
@@ -781,14 +782,21 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   padding-top: 1%; }
 
 span.approvalStep {
-  margin-left: 1.5%; }
+  margin-left: 1.5%;
+  font-weight: bold;
+  font-style: italic;
+  color: #fff; }
 
 .approvalStep > div {
   padding-left: 1.5%; }
-  .approvalStep > div > .approvalControl > span {
-    display: block; }
   .approvalStep > div > .approvalControl {
     margin-bottom: 0; }
+    .approvalStep > div > .approvalControl > label {
+      font-weight: bold; }
+    .approvalStep > div > .approvalControl > span {
+      display: block;
+      color: #fff;
+      margin-bottom: 4%; }
 
 #contentForm\:commandApprove,
 #contentForm\:commandReject,
@@ -1005,7 +1013,7 @@ span.approvalStep {
 table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:searchEntityTable > tbody > tr > td > input {
   background: none;
   border: none;
-  font-size: 85%; }
+  font-size: 100%; }
   table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm\:searchEntityTable > tbody > tr > td > input:hover {
     text-decoration: underline; }
 
@@ -1572,8 +1580,13 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
   .searchButton {
     margin-left: 2%; }
 
-  .approvalControl > label {
+  .approvalStep > div > .approvalControl > label {
     float: left; }
+  .approvalStep > div > .approvalControl > span {
+    margin-bottom: 0; }
+
+  table#contentForm\:searchCertTable > tbody > tr > td > input {
+    font-size: 85%; }
 
   #detailsForm > span.pure-u-1:nth-of-type(2) > label {
     display: inline-block; }
@@ -1638,3 +1651,5 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
 
   #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage {
     word-break: break-all; } }
+
+/*# sourceMappingURL=w_e_style.css.map */
