@@ -538,8 +538,10 @@ a {
 #contentForm\:filteredResults > table.pure-table > thead {
   line-height: 110%; }
 
+#contentForm\:searchCertTable > tbody > tr {
+  line-height: 79%; }
+
 #contentForm\:filteredResults > table.pure-table:not(#contentForm\:manageRequestTable) > tbody > tr {
-  line-height: 79%;
   word-break: break-all; }
   #contentForm\:filteredResults > table.pure-table:not(#contentForm\:manageRequestTable) > tbody > tr > td > input {
     color: #e9af13; }
@@ -892,6 +894,8 @@ span.approvalStep {
     border: none; }
     div.content-body table#caCertificateTable.pure-table > thead, div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > thead {
       display: none; }
+    div.content-body table#caCertificateTable.pure-table > tbody, div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody {
+      display: block; }
     div.content-body table#caCertificateTable.pure-table > tbody > tr, div.content-body div:not(#contentForm\:viewRequestDataTable) table.pure-table > tbody > tr {
       display: block;
       margin-bottom: 1em;
