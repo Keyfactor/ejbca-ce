@@ -640,12 +640,13 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   #manageRequestForm\:viewRequestDataTable {
     word-break: break-all; } }
 #manageRequestForm\:currentStep > .internal-frame > div > label {
-  margin-left: 1.5%; }
+  margin-left: 1.5%;
+  font-weight: bold; }
 #manageRequestForm\:currentStep > .internal-frame > div > span {
-  color: #fff;
-  font-style: italic; }
+  color: #fff; }
 #manageRequestForm\:currentStep > .internal-frame > div > div > label {
-  margin-left: 1.5%; }
+  margin-left: 1.5%;
+  font-weight: bold; }
 #manageRequestForm\:currentStep > .internal-frame > div > div > table > tbody > tr > td > label {
   display: inline; }
 #manageRequestForm\:currentStep > .internal-frame > div span, #manageRequestForm\:currentStep > .internal-frame input[type="checkbox"] {
@@ -1525,6 +1526,8 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
     display: inline-block;
     margin: 0.5em 0 0.2em; }
 
+  #manageRequestForm\:currentStep > .internal-frame > div > div > table {
+    display: inline; }
   #manageRequestForm\:currentStep > .internal-frame > div span, #manageRequestForm\:currentStep > .internal-frame input[type="checkbox"] {
     display: inline;
     margin-left: 0; }
