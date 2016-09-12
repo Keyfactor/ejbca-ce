@@ -641,11 +641,14 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     word-break: break-all; } }
 #manageRequestForm\:currentStep > .internal-frame > div > label {
   margin-left: 1.5%; }
+#manageRequestForm\:currentStep > .internal-frame > div > span {
+  color: #fff;
+  font-style: italic; }
 #manageRequestForm\:currentStep > .internal-frame > div > div > label {
   margin-left: 1.5%; }
 #manageRequestForm\:currentStep > .internal-frame > div > div > table > tbody > tr > td > label {
   display: inline; }
-#manageRequestForm\:currentStep > .internal-frame > div span, #manageRequestForm\:currentStep > .internal-frame input[type="checkbox"], #manageRequestForm\:currentStep > .internal-frame table {
+#manageRequestForm\:currentStep > .internal-frame > div span, #manageRequestForm\:currentStep > .internal-frame input[type="checkbox"] {
   margin-left: 1.5%;
   display: block; }
 
@@ -776,13 +779,6 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 .h2ManageRequst {
   padding: 2% 0 0 0; }
 
-.approvalControl > label {
-  float: none; }
-.approvalControl > textarea {
-  margin-bottom: 5%; }
-.approvalControl span {
-  padding-top: 1%; }
-
 span.approvalStep {
   margin-left: 1.5%;
   font-weight: bold;
@@ -794,11 +790,14 @@ span.approvalStep {
   .approvalStep > div > .approvalControl {
     margin-bottom: 0; }
     .approvalStep > div > .approvalControl > label {
-      font-weight: bold; }
+      font-weight: bold;
+      float: none; }
     .approvalStep > div > .approvalControl > span {
       display: block;
       color: #fff;
       margin-bottom: 4%; }
+    .approvalStep > div > .approvalControl > textarea {
+      margin-bottom: 5%; }
 
 #contentForm\:commandApprove,
 #contentForm\:commandReject,
@@ -1587,7 +1586,8 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
   .approvalStep > div > .approvalControl > label {
     float: left; }
   .approvalStep > div > .approvalControl > span {
-    margin-bottom: 0; }
+    margin-bottom: 0;
+    padding-top: 1%; }
 
   table#contentForm\:searchCertTable > tbody > tr > td > input {
     font-size: 85%; }
