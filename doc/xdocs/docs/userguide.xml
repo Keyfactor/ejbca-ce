@@ -1334,8 +1334,9 @@ is in the format entityprofile_PROFILENAME-PROFILEID.xml. Any file with a name t
 <subsection name="End Entity Profile fields">
 <subsubsection name="Username Field">
 <p>
-The Username value represents an unique identifier for an end entity (user, server, device, etc). Usernames can be manually set 
-or automatically generated during the operation of adding an end entity. Auto-generation ensures unique values.
+The Username value represents an unique identifier for an end entity (user, server, device, etc). During the operation of adding an 
+end entity username can be manually set or automatically generated. Checking the Auto-generated checkbox in the end entity profile 
+will generate unique values when end entities are added. 
 </p>
 </subsubsection>
 <subsubsection name="Password Fields">
