@@ -218,7 +218,7 @@ public class EnrollWithRequestIdBean implements Serializable {
         byte[] certificateRequest = endEntityInformation.getExtendedinformation().getCertificateRequest();
         if (certificateRequest == null) {
             raLocaleBean.addMessageError("enrollwithrequestid_could_not_find_csr_inside_enrollment_request_with_request_id", requestId);
-            log.info("Could not find CSR inside enrollment request with request ID " + requestId);
+            log.info("Could not find CSR inside enrollment request with ID " + requestId);
             return;
         }
         try {

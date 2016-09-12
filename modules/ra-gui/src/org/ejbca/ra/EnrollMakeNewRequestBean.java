@@ -528,7 +528,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @param tokenType the type of the token that will be created (one of: TOKEN_USERGEN, TOKEN_SOFT_P12, TOKEN_SOFT_JKS from EndEntityConstants)
      * @param tokenName the name of the token. It will be used only in messages and logs
      * @param tokenDownloadType the download type/format of the token. This is used only with TOKEN_USERGEN since this is the only one that have different formats: PEM, DER,...)
-     * @return generated token as byte array
+     * @return generated token as byte array or null if token could not be generated
      */
     private byte[] addEndEntityAndGenerateToken(int tokenType, String tokenName, TokenDownloadType tokenDownloadType) {
         //Update the EndEntityInformation data
@@ -612,7 +612,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return null;
         } catch (WaitingForApprovalException e) {
             requestId = e.getRequestId();
-            log.info("Waiting for approval request with request ID " + requestId + " has been received");
+            log.info("Request with ID " + requestId + " is still waiting for approval");
             return null;
         } catch(EjbcaException e){
             ErrorCode errorCode = EjbcaException.getErrorCode(e);
