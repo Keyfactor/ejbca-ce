@@ -336,7 +336,12 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
         
         switch (approvalData.getApprovalType()) {
+        case ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN: type = raLocaleBean.getMessage("manage_requests_type_activate_ca_token"); break;
         case ApprovalDataVO.APPROVALTYPE_ADDENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_add_end_entity"); break;
+        case ApprovalDataVO.APPROVALTYPE_CHANGESTATUSENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_change_status_end_entity"); break;
+        case ApprovalDataVO.APPROVALTYPE_EDITENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_edit_end_entity"); break;
+        case ApprovalDataVO.APPROVALTYPE_KEYRECOVERY: type = raLocaleBean.getMessage("manage_requests_type_key_recovery"); break;
+        case ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_revoke_and_delete_end_entity"); break;
         case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE: type = raLocaleBean.getMessage("manage_requests_type_revoke_certificate"); break;
         case ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_revoke_end_entity"); break;
         default:
