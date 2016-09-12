@@ -140,12 +140,17 @@
                                 <h:outputLink value="#" styleClass="pure-menu-link">Roles Management</h:outputLink>
                             </li>
                         </ui:fragment>
-                        -->
                         <li class="pure-menu-item pure-menu-allow-hover"><h:outputLink value="#" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_documentation}"/></h:outputLink></li>
-                         </ui:remove>
+                        -->
+                        </ui:remove>
+                        <ui:remove>
+                        <!-- This could be implemented as a link to a different URL (with the default settings it would be https://hostname:8443/ejbca/ra/ ).
+                             But I don't think everyone will want to have a "Log in" link here, since it could confuse public users.
                         <ui:fragment rendered="#{raAuthenticationBean.publicUser}">
                             <li class="pure-menu-item"><h:outputLink value="#" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_login}"/></h:outputLink></li>
                         </ui:fragment>
+                        -->
+                        </ui:remove>
                         <ui:remove>
                         <!-- 
                             Log out is not implemented for administrators using certificate login. This is highly depending on the browser 
