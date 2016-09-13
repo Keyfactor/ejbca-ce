@@ -300,8 +300,12 @@ public class RaManageRequestBean implements Serializable {
     
     public String getStepInfoText() {
         final List<String> roles = new ArrayList<>(requestData.getNextStepAllowedRoles());
-        Collections.sort(roles);
-        return raLocaleBean.getMessage("view_request_page_step_of", getRequest().getCurrentStepOrdinal(), getRequest().getStepCount(), StringUtils.join(roles, ", "));
+        if (!roles.isEmpty()) {
+            Collections.sort(roles);
+            return raLocaleBean.getMessage("view_request_page_step_of_with_roles", getRequest().getCurrentStepOrdinal(), getRequest().getStepCount(), StringUtils.join(roles, ", "));
+        } else {
+            return raLocaleBean.getMessage("view_request_page_step_of", getRequest().getCurrentStepOrdinal(), getRequest().getStepCount());
+        }
     }
     
     public String getCantApproveReason() {
