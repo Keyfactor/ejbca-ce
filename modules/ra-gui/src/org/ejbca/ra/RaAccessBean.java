@@ -53,11 +53,13 @@ public class RaAccessBean implements Serializable {
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
     
-    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();
+    private boolean hasCreateEndEntityAccess;
 
     @PostConstruct
     private void postContruct() {
-        this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken());
+        final IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
+        hasCreateEndEntityAccess = !authorizedEndEntityProfiles.isEmpty();
+        
     }
 
     private boolean isAuthorized(String... resources) {
@@ -108,11 +110,11 @@ public class RaAccessBean implements Serializable {
      * This method shows and hides the make request sub menu item */
     public boolean isAuthorizedToEnrollMakeRequest() {
         // Authorized to make request if user have access to at least one end entity profile
-        if (log.isDebugEnabled() && (this.authorizedEndEntityProfiles.size()==0)) {
+        if (log.isDebugEnabled() && !hasCreateEndEntityAccess) {
             log.debug(">isAuthorizedToEnrollMakeRequest: Not authorized to any End Entity Profiles.");
         }
 
-        return this.authorizedEndEntityProfiles.size()>0;
+        return hasCreateEndEntityAccess;
     }
     
     /** correspond to menu items in menu.xhtml
