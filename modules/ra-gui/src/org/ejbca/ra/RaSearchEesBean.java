@@ -40,6 +40,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaEndEntitySearchRequest;
 import org.ejbca.core.model.era.RaEndEntitySearchResponse;
@@ -114,7 +115,7 @@ public class RaSearchEesBean implements Serializable {
     private IdNameHashMap<EndEntityProfile> getEndEntityProfileMap() {
         if (endEntityProfileMap==null) {
             // This can be quite a massive object, so only retrieve it when asked for
-            endEntityProfileMap = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken());
+            endEntityProfileMap = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.VIEW_END_ENTITY);
         }
         return endEntityProfileMap;
     }
