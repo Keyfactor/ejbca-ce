@@ -826,7 +826,8 @@ span.approvalStep {
 .pure-control-group > label[for="enrollWithRequestIdForm\:passwordField"] {
   width: auto; }
 
-#enrollWithRequestIdForm\:enteredRequestId {
+#enrollWithRequestIdForm\:enteredRequestId,
+#enrollWithRequestIdForm\:requestSubjectDn {
   color: #fff;
   font-style: italic; }
 
