@@ -301,7 +301,9 @@ table.pure-table > tbody a {
     display: block; }
   #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > span {
     margin-left: 2%;
-    display: block; }
+    margin-bottom: 5%;
+    display: block;
+    color: #fff; }
 
 textarea#keyPairForm\:certificateRequest {
   width: 98%;
@@ -647,8 +649,10 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 #manageRequestForm\:currentStep > .internal-frame > div > div > label {
   margin-left: 1.5%;
   font-weight: bold; }
-#manageRequestForm\:currentStep > .internal-frame > div > div > table > tbody > tr > td > label {
-  display: inline; }
+#manageRequestForm\:currentStep > .internal-frame > div > div > table {
+  margin-left: 1.5%; }
+  #manageRequestForm\:currentStep > .internal-frame > div > div > table > tbody > tr > td > label {
+    display: inline; }
 #manageRequestForm\:currentStep > .internal-frame > div span, #manageRequestForm\:currentStep > .internal-frame input[type="checkbox"] {
   margin-left: 1.5%;
   display: block; }
@@ -1405,7 +1409,8 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
   #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > label, #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset span {
     display: inline-block; }
   #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > span {
-    margin-left: 0; }
+    margin-left: 0;
+    margin-bottom: 0; }
 
   /*sökfältet i vyn 'search'*/
   #contentForm\:parentGenericSearchString {
@@ -1527,7 +1532,8 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
     margin: 0.5em 0 0.2em; }
 
   #manageRequestForm\:currentStep > .internal-frame > div > div > table {
-    display: inline; }
+    display: inline;
+    margin-left: 0; }
   #manageRequestForm\:currentStep > .internal-frame > div span, #manageRequestForm\:currentStep > .internal-frame input[type="checkbox"] {
     display: inline;
     margin-left: 0; }
