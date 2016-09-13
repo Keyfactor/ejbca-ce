@@ -426,7 +426,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // Return false so the next master api backend can see if it can handle the approval
             return false;
         } else if (getApprovalRequest(authenticationToken, advo) == null) { // Authorization check
-            log.debug("Authorization denied to the given approval request");
+            if (log.isDebugEnabled()) {
+                log.debug("Authorization denied to approval request ID " + requestResponse.getId() + " for " + authenticationToken);
+            }
             throw new AuthorizationDeniedException("You are not authorized to the Request with ID " + requestResponse.getId() + " at this point");
         }
         
