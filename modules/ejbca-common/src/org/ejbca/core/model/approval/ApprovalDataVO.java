@@ -201,7 +201,7 @@ public class ApprovalDataVO implements Serializable {
             return 0;
         } else {
             if(getApprovalProfile() != null) { 
-            return getApprovalProfile().getRemainingApprovals(getApprovals());
+                return getApprovalProfile().getRemainingApprovals(getApprovals());
             } else {
                 return -1;
             }

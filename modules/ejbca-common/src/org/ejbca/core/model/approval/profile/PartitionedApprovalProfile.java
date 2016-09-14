@@ -147,15 +147,17 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     
     @Override
     public boolean canApprovePartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException {
-        @SuppressWarnings("unchecked")
-        List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS).getValues();
-        for (RoleInformation role : roles) {
-            if (role.equals(ANYBODY)) {
-                return true;
-            } else {
-                for (AccessUserAspectData accessUserAspect : role.getAccessUserAspects()) {
-                    if (authenticationToken.matches(accessUserAspect)) {
-                        return true;
+        if(approvalPartition != null) {
+            @SuppressWarnings("unchecked")
+            List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS).getValues();
+            for (RoleInformation role : roles) {
+                if (role.equals(ANYBODY)) {
+                    return true;
+                } else {
+                    for (AccessUserAspectData accessUserAspect : role.getAccessUserAspects()) {
+                        if (authenticationToken.matches(accessUserAspect)) {
+                            return true;
+                        }
                     }
                 }
             }
