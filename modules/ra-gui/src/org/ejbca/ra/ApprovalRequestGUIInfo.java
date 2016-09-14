@@ -21,6 +21,7 @@ import java.util.TimeZone;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
@@ -447,13 +448,13 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean isEditedByMe() { return request.isEditedByMe(); }
     public boolean isRequestedByMe() { return request.isRequestedByMe(); }
     public boolean isApprovedByMe() { return request.isApprovedByMe(); }
-    public boolean isPending() { return request.isPending(); }
+    public boolean isPending(final AuthenticationToken admin) { return request.isPending(admin); }
     public boolean isPendingExecution() { return request.getStatus() == ApprovalDataVO.STATUS_APPROVED; /* = approved but not executed */ }
     public boolean isExecuted() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTED; }
     public boolean isSuccessful() { return isExecuted() || isPendingExecution(); }
     public boolean isUnsuccessful() { return !isWaitingForApproval() && !isSuccessful(); }
     public boolean isExecutionFailed() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTIONFAILED; }
-    public boolean isWaitingForMe() { return request.isWaitingForMe(); }
+    public boolean isWaitingForMe(final AuthenticationToken admin) { return request.isWaitingForMe(admin); }
     public boolean isWaitingForApproval() { return request.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL; }
     public boolean isExpired() { return request.getStatus() == ApprovalDataVO.STATUS_EXPIRED || request.getStatus() == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED; }
     public boolean hasNextApprovalStep() { return request.getNextApprovalStep() != null; }

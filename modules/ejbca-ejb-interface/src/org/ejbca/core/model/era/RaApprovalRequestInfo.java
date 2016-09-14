@@ -287,7 +287,7 @@ public class RaApprovalRequestInfo implements Serializable {
     }
     
     /** Is waiting for the given admin to do something */
-    public boolean isWaitingForMe() {
+    public boolean isWaitingForMe(final AuthenticationToken admin) {
         if (requestedByMe) {
             // There are approval types that do not get executed automatically on approval.
             // These go into APPROVED (instead of EXECUTED) state and need to executed again by the requester
@@ -295,28 +295,26 @@ public class RaApprovalRequestInfo implements Serializable {
         } else if (approvedByMe) {
             return false; // Already approved by me, so not "waiting for me"
         } else {
-            // TODO need to check if I can approve this. or does the query method do that?
-            return status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
+            if(status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
+                try {
+                    if(approvalProfile.canApprovePartition(admin, nextApprovalStepPartition)) {
+                        return true;
+                    }
+                } catch (AuthenticationFailedException e) { }
+            }
         }
+        return false;
     }
     
     /** Is waiting for someone else to do something */
-    public boolean isPending() {
-        if (requestedByMe || approvedByMe) {
-            // Pending if waiting for other admins to approve it
-            return status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
-        } else {
-            // If the request is in APPROVED state in this case, then another admin must execute it again manually for it to go through. 
-            return status == ApprovalDataVO.STATUS_APPROVED;
-        }
+    public boolean isPending(final AuthenticationToken admin) {
+        return (status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && !isWaitingForMe(admin) ) ||
+               ( status == ApprovalDataVO.STATUS_APPROVED && !requestedByMe);
     }
     
     public boolean isProcessed() {
-        return (status == ApprovalDataVO.STATUS_EXECUTED || 
-                status == ApprovalDataVO.STATUS_EXECUTIONDENIED ||
-                status == ApprovalDataVO.STATUS_EXECUTIONFAILED ||
-                status == ApprovalDataVO.STATUS_REJECTED) &&
-                (requestedByMe || lastEditedByMe || approvedByMe);
+        return status != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && 
+               status != ApprovalDataVO.STATUS_APPROVED;
     }
     
     public boolean isRequestedByMe() {
