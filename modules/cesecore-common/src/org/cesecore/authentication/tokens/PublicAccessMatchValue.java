@@ -40,7 +40,7 @@ public enum PublicAccessMatchValue implements AccessMatchValue {
 
     @Override
     public boolean isDefaultValue() {
-        return true; // Single value
+        return numericValue == TRANSPORT_ANY.numericValue;
     }
 
     @Override
