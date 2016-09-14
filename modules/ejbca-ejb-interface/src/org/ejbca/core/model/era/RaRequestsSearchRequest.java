@@ -25,7 +25,7 @@ public class RaRequestsSearchRequest implements Serializable {
 
     private boolean searchingWaitingForMe;
     private boolean searchingPending;
-    private boolean searchingHistorical;
+    private boolean searchingHistorical; // processed
     
     
     public boolean isSearchingWaitingForMe() {

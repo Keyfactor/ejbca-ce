@@ -496,8 +496,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // That information is only needed when viewing the details or editing a request.
             final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, caIdToNameMap.get(advo.getCAId()), null, null, null, advo, requestDataLite, editableData);
             
-            if ((request.isSearchingWaitingForMe() && ari.isWaitingForMe()) ||
-                    (request.isSearchingPending() && ari.isPending()) ||
+            if ((request.isSearchingWaitingForMe() && ari.isWaitingForMe(authenticationToken)) ||
+                    (request.isSearchingPending() && ari.isPending(authenticationToken)) ||
                     (request.isSearchingHistorical() && ari.isProcessed())) {
                 // This approval should be included in the search results
                 response.getApprovalRequests().add(ari);
