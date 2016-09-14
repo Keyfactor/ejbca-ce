@@ -17,6 +17,7 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
@@ -81,6 +82,11 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
         if (!super.isCreatedInThisJvm()) {
             return false;
         }
+        
+        if (!StringUtils.equals(TOKEN_TYPE, accessUser.getTokenType())) {
+            return false;
+        }
+        
         final PublicAccessMatchValue matchValue = (PublicAccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
         switch (matchValue) {
         case TRANSPORT_CONFIDENTIAL:
@@ -88,8 +94,9 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
         case TRANSPORT_PLAIN:
             return !credential.isConfidentialTransport();
         case TRANSPORT_ANY:
-        default:
             return true;
+        default:
+            return false;
         }
     }
 
