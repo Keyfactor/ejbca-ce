@@ -670,12 +670,16 @@ If persisted timers needs to be removed in JBoss 7 the directory <i>jboss/standa
 </subsubsection>
 
 <subsubsection name="JBoss7/EAP6 deployment timeout">
+<p>
 In the case the deployment fails to complete within 60 seconds it will fail. You can increase this timeout with:
+</p>
 <source>
 /subsystem=deployment-scanner/scanner=default:write-attribute(name=deployment-timeout,value=300) 
 </source>
+<p>
 Unless there is a clear reason why this takes longer than 60 seconds (for example an HSM waiting for human input, or a <i>very</i> slow server,
 check that database indexes are applied and that your network and any used DNS server is fully operational. 
+</p>
 </subsubsection>
 
 <subsubsection name="JBoss 7 and Oracle JDK BC issues">
