@@ -505,7 +505,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 approvalSession.updateApprovalRequest(approvalData.getId(), approvalRequest);
                 if (log.isDebugEnabled()) {
                     log.debug("Upgraded approval with ID " + approvalData.getApprovalid() + " to 6.6.0+ by setting approval profile with id "
-                            + approvalProfile.getApprovalProfileIdentifier() + "(" + approvalProfile.getProfileName() + ").");
+                            + approvalProfile != null ? (approvalProfile.getApprovalProfileIdentifier() + "(" + approvalProfile.getProfileName() + ")") : "(no approval profile)" + ".");
                 }
             }
             returnData.add(approvalInformation);         

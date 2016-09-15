@@ -310,7 +310,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         final String last = getLastPostUpgradedToVersion();
         boolean ret = true;
         if (isLesserThan(last, currentVersion)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Database content version: " + last + " Current application version: " + currentVersion + " -> Starting post-upgrade.");
+            }
             ret = upgradeSession.upgrade(dbType, last, true);
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Database content version: " + last + " Current application version: " + currentVersion + " -> Post-upgrade is not needed.");
+            }
         }
         return ret;
     }
@@ -412,7 +419,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private boolean postUpgrade(String oldVersion, String dbtype) {
         log.debug(">post-upgrade from version: "+oldVersion);
         if (isLesserThan(oldVersion, "3.11")) {
-            log.error("Upgrades directly from versions 3.10.x or earlier are note supported by this version of EJBCA. Please upgrade to a version of 4.0.x first.");
+            log.error("Upgrades directly from versions 3.10.x or earlier ("+oldVersion+" in this case) are not supported by this version of EJBCA. Please upgrade to a version of 4.0.x first.");
             return false;
         }
         // Upgrade database change between EJBCA 3.11.x and EJBCA 4.0.x if needed
@@ -1308,6 +1315,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @Override
     public void migrateDatabase660() throws UpgradeFailedException {
         try {
+            log.debug("migrateDatabase660: Upgrading roles with approval rules");
             // Any roles with access to /ca_functionality/view_certifcate_profiles should be given /ca_functionality/view_approval_profiles
             List<RoleData> endEntityProfileRoles = roleMgmtSession.getAuthorizedRoles(StandardRules.CERTIFICATEPROFILEVIEW.resource(), false);
             for (RoleData role : endEntityProfileRoles) {
@@ -1344,6 +1352,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         Map<Integer, Integer> approvalPartitionCache = new HashMap<>();
         //Add approval profiles to all CAs with approvals 
         try {
+            log.debug("migrateDatabase660: Upgrading CAs with approval profiles");
             for (int caId : caSession.getAllCaIds()) {
                 try {
                     CA ca = caSession.getCAForEdit(authenticationToken, caId);
@@ -1377,6 +1386,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 }
             }
             //Do the same for all certificate profiles (same boilerplate, repeated). 
+            log.debug("migrateDatabase660: Upgrading Certificate Profiles with approval profiles");
             Map<Integer, CertificateProfile> allCertificateProfiles = certProfileSession.getAllCertificateProfiles();
             for (Integer certificateProfileId : allCertificateProfiles.keySet()) {
                 CertificateProfile certificateProfile = allCertificateProfiles.get(certificateProfileId);
@@ -1413,6 +1423,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // only has one step and one partition. The step ID is '0', which is the default step ID in an approval, which 
             // is why the step ID in an approval does not need updating the same way as the partition ID needs updating.
             List<ApprovalData> approvalRequests = approvalSession.findWaitingForApprovalApprovalDataLocal();
+            if (approvalRequests.isEmpty()) {
+                log.debug("migrateDatabase660: No approval requests to upgrade");                
+            } else {
+                log.debug("migrateDatabase660: Upgrading approval requests");
+            }
             for(ApprovalData request : approvalRequests) {
                 Collection<Approval> approvals = request.getApprovals();
                 if(approvals.size() > 0) {
@@ -1628,6 +1643,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @return true of the first version is lower (1.0 < 2.0) than the second, false otherwise. 
      */
     private boolean isLesserThan(final String first, final String second) {
+    	if (log.isTraceEnabled()) {
+    	    log.trace("isLesserThan("+first+", "+second);
+    	}
         final String delimiter = "\\.";
         if (first == null) {
             if (second != null) {
