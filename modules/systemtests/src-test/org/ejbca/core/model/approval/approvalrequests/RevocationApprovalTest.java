@@ -318,6 +318,7 @@ public class RevocationApprovalTest extends CaTestCase {
             }
             
             ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
+            assertNotNull("Could not find approval profile with id: "+approvalProfileId, approvalProfile);
             int partitionId = approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier();
             approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED,
                     ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, approvalCAID, approvalProfile, AccumulativeApprovalProfile.FIXED_STEP_ID, partitionId);
@@ -352,6 +353,7 @@ public class RevocationApprovalTest extends CaTestCase {
                 fail("Allowing addition of identical approval requests.");
             }
             ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
+            assertNotNull("Could not find approval profile with id: "+approvalProfileId, approvalProfile);
             int partitionId = approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier();
             approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED,
                     ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY, approvalCAID, approvalProfile, AccumulativeApprovalProfile.FIXED_STEP_ID, partitionId);
@@ -391,6 +393,7 @@ public class RevocationApprovalTest extends CaTestCase {
                 fail(ERRORALLOWMORETHANONE);
             }
             ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
+            assertNotNull("Could not find approval profile with id: "+approvalProfileId, approvalProfile);
             int partitionId = approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier();
             approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
                     ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, approvalCAID, approvalProfile, AccumulativeApprovalProfile.FIXED_STEP_ID, partitionId);
