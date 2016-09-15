@@ -98,6 +98,7 @@ import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.Req;
 import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
@@ -828,7 +829,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             for (int i=0; i<certs.length; i++) {
                 final X509Certificate certificate = certificateConverter.getCertificate(certs[i]);
                 try {
-                    if (req.isSignatureValid(new JcaContentVerifierProviderBuilder().build(certificate.getPublicKey()))) {
+                    if (req.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(certificate.getPublicKey()))) {
                         signercert = certificate; // if the request signature verifies by this certificate, this is the signer cert 
                         signerSubjectDn = CertTools.getSubjectDN(signercert);
                         log.info(intres.getLocalizedMessage("ocsp.infosigner", signerSubjectDn));
@@ -1659,7 +1660,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             // The client is still responsible for validating the signature, see RFC 6960 Section 3.2.2
             boolean verify;
             try {
-                verify = returnval.isSignatureValid(new JcaContentVerifierProviderBuilder().build(signerCert.getPublicKey()));
+                verify = returnval.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(signerCert.getPublicKey()));
             } catch (OperatorCreationException e) {
                 // Very fatal error
                 throw new EJBException("Can not create Jca content signer: ", e);
