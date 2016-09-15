@@ -329,9 +329,12 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         ApprovalStep previousStep = getStep(stepToDelete.getPreviousStep());
         ApprovalStep nextStep = getStep(stepToDelete.getNextStep());
         if(previousStep == null) {
-            //This step was first, so set the next one first 
-            //TODO: Handle deleting the last sequence, which will cause an NPE here
-            setFirstStep(nextStep.getStepIdentifier());
+            // Handle deleting the last sequence, in which case there is no next step. In this case we can't set "first step" here,
+            // but in the end of this method if there are no steps we initialize, which will recreate the first step in a default manner.
+            if (nextStep != null) {
+                //This step was first, so set the next one first 
+                setFirstStep(nextStep.getStepIdentifier());
+            }
         }
         if(nextStep == null && previousStep != null) {
             //This was the last step, so make sure the previous step knows it's now last
@@ -341,7 +344,11 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
             previousStep.setNextStep(nextStep.getStepIdentifier());
             nextStep.setPreviousStep(previousStep.getStepIdentifier());
         }
-        getSteps().remove(approvalStepIdentifier);      
+        getSteps().remove(approvalStepIdentifier);
+        if (getSteps().isEmpty()) {
+            // We have removed all steps, re-initialize to default
+            initialize();
+        }
         saveTransientObjects();
     }
     
