@@ -308,8 +308,7 @@ public class RaApprovalRequestInfo implements Serializable {
     
     /** Is waiting for someone else to do something */
     public boolean isPending(final AuthenticationToken admin) {
-        return (status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && !isWaitingForMe(admin) ) ||
-               ( status == ApprovalDataVO.STATUS_APPROVED && !requestedByMe);
+        return !isWaitingForMe(admin) && !isProcessed();
     }
     
     public boolean isProcessed() {
