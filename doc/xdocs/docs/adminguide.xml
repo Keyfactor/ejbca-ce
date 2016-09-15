@@ -2718,12 +2718,12 @@ set in the CA, then the approval profile set in the certificate profile.
 <subsection name="Approval Profiles">
 <p> There are two types of approval profiles: Accumulative Approval Profile and Partitioned Approval Profile.</p>
 <subsubsection name="Accumulative Approval Profile">
-<p>In this profile, only the number of required approvals is set. No requirements are specified for the approving adminitrators 
-other than that no adminstrator is allowed to approve the same request more than once.</p>
+<p>In this profile, only the number of required approvals is set. No requirements are specified for the approving administrators 
+other than that no administrator is allowed to approve the same request more than once.</p>
 </subsubsection>
 <subsubsection name="Partitioned Approval Profile">
 <p>In this slightly more complicated approval profile, several options can be set to specify which administrators can approve 
-or reject a request. It is also possible to specify additional data that has to be aquired when a request is approved.</p>
+or reject a request. It is also possible to specify additional data that has to be acquired when a request is approved.</p>
 <p>A partitioned approval consists of two concepts, Steps and Partitions:</p>
 <ul>
 <li>Approval Steps need to be performed sequentially, i.e. step 1 must be approved before step 2 can be acted upon.</li>
@@ -2732,8 +2732,8 @@ Partition 1 and Partition 2 within this step can be approved in any order, indep
 </ul>
 </subsubsection>
 <p>Both types of approval profiles allow for configuring a notification to be send to the end user and/or to the administrator 
-expected to approve the request (See 'Approval Notification' section bellow). Both profile types allow also to set expiration 
-period for the approval and for the request (See 'Explenation of approval status' section bellow).</p>
+expected to approve the request (See 'Approval Notification' section below). Both profile types allow also to set expiration 
+period for the approval and for the request (See 'Explanation of approval status' section below).</p>
 <p>Also see the <a href="userguide.html#Approval%20profiles">User Guide</a> for detailed information about Approval Profile fields.</p>
 </subsection>
 <subsection name="Authorizing Approving Administrators">
@@ -2742,10 +2742,10 @@ In order to authorize an administrator to review approval requests do one of the
 </p><p>
 Using Basic Rule Sets:
 </p><p>
-Give an role the role of SuperAdmin, CAAdmin or RAAdmin with Approve End Entities selected.
+Give a role the role template of SuperAdmin, CAAdmin or RAAdmin with Approve End Entities selected.
 </p><p>
 The SuperAdmin and CAAdmin gives access to approve rules not associated with any end entity profile 
-(I.e dual authenticated CA configuration (Not implemented yet)) while the RAAdmin only can approve actions 
+(i.e dual authenticated CA configuration (Not implemented yet)) while the RAAdmin only can approve actions 
 related to authorized end entity profiles.
 </p><p>
 Using Advanced Rule Sets:
