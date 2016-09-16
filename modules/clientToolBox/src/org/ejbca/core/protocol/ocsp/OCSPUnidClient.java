@@ -332,7 +332,7 @@ public class OCSPUnidClient {
 			// Response responderId does not match signer certificate responderId!
 			ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERID);
 		}
-        if (!brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(signerPub))) {
+        if (!brep.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(signerPub))) {
         	ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNATURE);
         	return ret;
         }

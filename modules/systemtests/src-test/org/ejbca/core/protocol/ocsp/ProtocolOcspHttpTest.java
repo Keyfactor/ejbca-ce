@@ -645,7 +645,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         assertTrue("Response status not the expected.", response.getStatus() != 200);
 
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(cacert.getPublicKey()));
+        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(cacert.getPublicKey()));
         assertTrue("Signature verification", verify);
     }
 
@@ -1865,7 +1865,7 @@ Content-Type: text/html; charset=iso-8859-1
         // We must find a cert to verify the signature with...
         boolean verifyOK = false;
         for (int i = 0; i < certs.length; i++) {
-            if (req.isSignatureValid(new JcaContentVerifierProviderBuilder().build(certs[i])) == true) {
+            if (req.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(certs[i])) == true) {
                 signercert = converter.getCertificate(certs[i]);
                 signer = CertTools.getSubjectDN(signercert);
                 Date now = new Date();
