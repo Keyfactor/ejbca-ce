@@ -55,6 +55,7 @@ import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
@@ -126,7 +127,7 @@ public class OcspJunitHelper {
 		BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
 		X509CertificateHolder[] chain = brep.getCerts();
 		assertNotNull("No certificate chain returned in response (chain == null), is ocsp.includesignercert=false in ocsp.properties?. It should be set to default value for test to run.", chain);
-		boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
+		boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(chain[0]));
 		assertTrue("Response failed to verify.", verify);
 		// Check nonce (if we sent one)
 		if (nonce != null) {
@@ -196,7 +197,7 @@ public class OcspJunitHelper {
 		    X509CertificateHolder[] chain = brep.getCerts();
 		    signCertHolder = chain[0];
 		}
-		boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(signCertHolder));
+		boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(signCertHolder));
 		
 		assertTrue("Response failed to verify.", verify);
 		// Check nonce (if we sent one)

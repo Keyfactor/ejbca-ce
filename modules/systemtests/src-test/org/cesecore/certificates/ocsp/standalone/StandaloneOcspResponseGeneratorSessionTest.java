@@ -320,7 +320,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             log.debug("Subject: " + CertTools.getSubjectDN(actualSignerCertificate));
             log.debug("Issuer:  " + CertTools.getIssuerDN(actualSignerCertificate));
             assertEquals("Response was not signed by the expected certificate.", CertTools.getFingerprintAsString(expectedSigningCertificate), CertTools.getFingerprintAsString(actualSignerCertificate));
-            assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(expectedSigningCertificate.getPublicKey())));
+            assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(expectedSigningCertificate.getPublicKey())));
             try {
                 CertTools.verify(actualSignerCertificate, Arrays.asList(new X509Certificate[] {caCertificate}));
                 assertTrue("", shouldVerify);
@@ -465,7 +465,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
                 final BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
                 assertNotNull("Signed request generated null-response.", basicOcspResponse);
-                assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(ocspSigningCertificate.getPublicKey())));
+                assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(ocspSigningCertificate.getPublicKey())));
                 final SingleResp[] singleResponses = basicOcspResponse.getResponses();
                 assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
                 assertEquals("Response cert did not match up with request cert", importedCertificate.getSerialNumber(), singleResponses[0].getCertID().getSerialNumber());
@@ -610,7 +610,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                     assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
                     final BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
                     assertNotNull("Signed request generated null-response.", basicOcspResponse);
-                    assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(ocspSigningCertificate.getPublicKey())));
+                    assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(ocspSigningCertificate.getPublicKey())));
                     final SingleResp[] singleResponses = basicOcspResponse.getResponses();
                     assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
                     assertEquals("Response cert did not match up with request cert", importedCertificate.getSerialNumber(), singleResponses[0].getCertID().getSerialNumber());
@@ -664,7 +664,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
             //Response will be signed with the OCSP signing certificate, because that certificate's issuing CA was given as a default responder.
             assertTrue("OCSP response was not signed correctly.",
-                    basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(ocspSigningCertificate.getPublicKey())));
+                    basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(ocspSigningCertificate.getPublicKey())));
             SingleResp[] singleResponses = basicOcspResponse.getResponses();
             assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
             assertEquals("Response cert did not match up with request cert", fakeSerialNumber, singleResponses[0].getCertID()
@@ -1201,7 +1201,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, ocspResponse.getStatus());
                 BasicOCSPResp basicOcspResponse = (BasicOCSPResp) ocspResponse.getResponseObject();
                 assertNotNull("Signed request generated null-response.", basicOcspResponse);
-                assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(ocspSigningCertificate.getPublicKey())));
+                assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(ocspSigningCertificate.getPublicKey())));
                 final SingleResp[] singleResponses = basicOcspResponse.getResponses();
                 assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
                 assertEquals("Response cert did not match up with request cert", ocspSigningCertificate.getSerialNumber(), singleResponses[0].getCertID().getSerialNumber());
@@ -1302,7 +1302,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     
     private void validateSuccessfulResponse(final BasicOCSPResp basicOcspResponse, final PublicKey publicKey) throws Exception {
         assertNotNull("Signed request generated null-response.", basicOcspResponse);
-        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(publicKey)));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(publicKey)));
         final SingleResp[] singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
         assertEquals("Response cert did not match up with request cert", ocspSigningCertificate.getSerialNumber(), singleResponses[0].getCertID().getSerialNumber());

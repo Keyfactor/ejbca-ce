@@ -344,7 +344,7 @@ public class ProtocolOcspHttpPerfTest {
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
         X509CertificateHolder[] chain = brep.getCerts();
-        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
+        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(chain[0]));
         assertTrue("Response failed to verify.", verify);
         // Check nonce (if we sent one)
         if (nonce != null) {
