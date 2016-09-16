@@ -108,8 +108,11 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         try {
             //Retrieve the latest non-stale version of the approval profile from the approval request (as the copy of the profile stored in the request may 
             //contain metadata which was added during the approval process. 
-            ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalRequest().getApprovalProfile().getProfileId());
-            if(approvalProfile == null) {
+            final Integer approvalProfileId = approvalData.getApprovalRequest().getApprovalProfile().getProfileId();
+            ApprovalProfile approvalProfile = null;
+            if(approvalProfileId != null) {
+                approvalProfile = approvalProfileSession.getApprovalProfile(approvalData.getApprovalRequest().getApprovalProfile().getProfileId().intValue());
+            } else {
                 approvalProfile = approvalData.getApprovalDataVO().getApprovalRequest().getApprovalProfile();
             }
             final List<Approval> approvalsPerformed = approvalData.getApprovals();
@@ -138,17 +141,18 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                             ((ActivateCATokenApprovalRequest) approvalRequest).execute(caAdminSession);
                         } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
                             ((AddEndEntityApprovalRequest) approvalRequest).execute(endEntityManagementSession, 
-                                    approvalSession.getIdFromApprovalId(approvalId));
+                                    approvalSession.getIdFromApprovalId(approvalId), admin);
                         } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
                             ((ChangeStatusEndEntityApprovalRequest) approvalRequest).execute(endEntityManagementSession, 
-                                    approvalSession.getIdFromApprovalId(approvalId));
+                                    approvalSession.getIdFromApprovalId(approvalId), admin);
                         } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
                             ((EditEndEntityApprovalRequest) approvalRequest).execute(endEntityManagementSession, 
-                                    approvalSession.getIdFromApprovalId(approvalId));
+                                    approvalSession.getIdFromApprovalId(approvalId), admin);
                         } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
                             ((KeyRecoveryApprovalRequest) approvalRequest).execute(endEntityManagementSession);
                         } else if (approvalRequest instanceof RevocationApprovalRequest) {
-                            ((RevocationApprovalRequest) approvalRequest).execute(endEntityManagementSession, approvalSession.getIdFromApprovalId(approvalId));
+                            ((RevocationApprovalRequest) approvalRequest).execute(endEntityManagementSession, 
+                                    approvalSession.getIdFromApprovalId(approvalId), admin);
                         } else {
                             approvalRequest.execute();
                         }
