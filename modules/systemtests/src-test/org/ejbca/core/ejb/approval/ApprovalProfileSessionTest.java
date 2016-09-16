@@ -67,6 +67,7 @@ public class ApprovalProfileSessionTest {
         AccumulativeApprovalProfile accumulativeApprovalProfile = new AccumulativeApprovalProfile(profileName);
         accumulativeApprovalProfile.setNumberOfApprovalsRequired(originalValue);
         int profileId = approvalProfileSession.addApprovalProfile(alwaysAllowToken, accumulativeApprovalProfile);
+        assertEquals("Couldn't set number of approvals required locally?", originalValue, accumulativeApprovalProfile.getNumberOfApprovalsRequired());
         try {
             int newValue = 4711;
             AccumulativeApprovalProfile originalProfile = (AccumulativeApprovalProfile) approvalProfileSession.getApprovalProfile(profileId);
