@@ -152,11 +152,12 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 		throw new RuntimeException("This execution requires additional bean references.");
 	}
 	
-	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID) throws ApprovalRequestExecutionException {
+	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin) 
+	        throws ApprovalRequestExecutionException {
 		log.debug("Executing Change Status  for user:" + username);
 		
 		try{
-			endEntityManagementSession.setUserStatus(getRequestAdmin(), username, newstatus, approvalRequestID);
+			endEntityManagementSession.setUserStatusAfterApproval(getRequestAdmin(), username, newstatus, approvalRequestID, lastApprovingAdmin);
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
 		} catch (FinderException e) {

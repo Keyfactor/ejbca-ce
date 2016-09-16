@@ -79,7 +79,8 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		throw new IllegalStateException("This execution requires additional bean references.");
 	}
 	
-    public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID) throws ApprovalRequestExecutionException {
+    public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID, 
+            final AuthenticationToken lastApprovingAdmin) throws ApprovalRequestExecutionException {
         log.debug("Executing ChangeEndEntity for user:" + newuserdata.getUsername());
         
         // Add the ID of the approval request to the end entity as extended information.
@@ -94,7 +95,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
         newuserdata.setExtendedinformation(ext);
         
         try {
-        	endEntityManagementSession.changeUser(getRequestAdmin(), newuserdata, clearpwd);
+        	endEntityManagementSession.changeUserAfterApproval(getRequestAdmin(), newuserdata, clearpwd, approvalRequestID, lastApprovingAdmin);
         } catch (AuthorizationDeniedException e) {
             throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
         } catch (UserDoesntFullfillEndEntityProfile e) {
