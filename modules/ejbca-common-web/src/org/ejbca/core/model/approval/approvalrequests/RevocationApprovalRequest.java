@@ -103,19 +103,21 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		throw new RuntimeException("This execution requires additional bean references.");
 	}
 	
-	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID) throws ApprovalRequestExecutionException {
+	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID, final AuthenticationToken lastApprovalAdmin) 
+	        throws ApprovalRequestExecutionException {
 		log.debug("Executing " + ApprovalDataVO.APPROVALTYPENAMES[approvalType] + " (" + approvalType + ").");
 		try {
 			switch (approvalType) {
 				case ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY:
-				    endEntityManagementSession.revokeUser(getRequestAdmin(), username, reason, approvalRequestID);
+				    endEntityManagementSession.revokeUserAfterApproval(getRequestAdmin(), username, reason, approvalRequestID, lastApprovalAdmin);
 					break;
 				case ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY:
 				    // Since the end entity will be deleted from the database, there is no point to store the approval request ID in its extendedInformation
 					endEntityManagementSession.revokeAndDeleteUser(getRequestAdmin(), username, reason);
 					break;
 				case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE:
-					endEntityManagementSession.revokeCert(getRequestAdmin(), certificateSerialNumber, issuerDN, reason, approvalRequestID);
+					endEntityManagementSession.revokeCertAfterApproval(getRequestAdmin(), certificateSerialNumber, issuerDN, reason, approvalRequestID, 
+					        lastApprovalAdmin);
 					break;
 				default:
 					log.error("Unknown approval type " + approvalType);

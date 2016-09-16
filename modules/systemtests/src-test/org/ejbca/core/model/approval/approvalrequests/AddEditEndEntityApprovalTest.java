@@ -87,7 +87,7 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
             AddEndEntityApprovalRequest addAr = new AddEndEntityApprovalRequest(userdata, true, internalAdmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, null);
-            addAr.execute(endEntityManagementSession, 4711);
+            addAr.execute(endEntityManagementSession, 4711, null);
 
             // Verify that the end entity was added
             EndEntityInformation executeUser = endEntityAccessSession.findUser(internalAdmin, username);
@@ -105,7 +105,7 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
             assertEquals("CN=" + username, userdata.getDN());
             editUserdata.setDN("CN=" + username + ", C=SE");
             EditEndEntityApprovalRequest editAr = new EditEndEntityApprovalRequest(editUserdata, true, userdata, internalAdmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, null); 
-            editAr.execute(endEntityManagementSession, 4712);
+            editAr.execute(endEntityManagementSession, 4712, null);
             
             // Verify the the end entity has been edited
             executeUser = endEntityAccessSession.findUser(internalAdmin, username);
@@ -127,7 +127,7 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
             assertEquals(EndEntityConstants.STATUS_NEW, executeUser.getStatus());
             ChangeStatusEndEntityApprovalRequest statusAr = new ChangeStatusEndEntityApprovalRequest(username, EndEntityConstants.STATUS_NEW, 
                     EndEntityConstants.STATUS_GENERATED, internalAdmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, null);
-            statusAr.execute(endEntityManagementSession, 4713);
+            statusAr.execute(endEntityManagementSession, 4713, null);
             
             // Verify that the end entity status has been changed
             executeUser = endEntityAccessSession.findUser(internalAdmin, username);

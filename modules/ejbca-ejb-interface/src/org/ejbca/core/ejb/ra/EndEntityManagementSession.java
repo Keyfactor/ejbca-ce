@@ -137,6 +137,37 @@ public interface EndEntityManagementSession {
             EndEntityExistsException, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
+     * Add a new user after an AddEndEntityApprovalRequest had been approved.
+     * 
+     * @param admin the administrator performing the action
+     * @param userdata a EndEntityInformation object, the fields status, timecreated and
+     *            timemodified will not be used.
+     * @param clearpwd true if the password will be stored in clear form in the
+     *            db, otherwise it is hashed.
+     * @param approvalRequestID the unique ID of the approval request (not the hash)
+     * @param lastApprovingAdmin The last administrator to have approved the request
+     * @throws AuthorizationDeniedException
+     *             if administrator isn't authorized to add user
+     * @throws UserDoesntFullfillEndEntityProfile
+     *             if data doesn't fullfil requirements of end entity profile
+     * @throws EndEntityExistsException
+     *             if user already exists or some other database error occur during commit
+     * @throws WaitingForApprovalException
+     *             if approval is required and the action have been added in the
+     *             approval queue.
+     * @throws EjbcaException
+     *             with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the
+     *             SubjectDN Serialnumber already exists when it is specified in
+     *             the CA that it should be unique.
+     * @throws WaitingForApprovalException
+     */
+    void addUserAfterApproval(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, 
+            int approvalRequestID, AuthenticationToken lastApprovingAdmin) 
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EndEntityExistsException, WaitingForApprovalException, CADoesntExistsException, 
+            EjbcaException;
+
+    
+    /**
      * Validates the name and DN in an end entity and canonicalizes/strips
      * the attributes. This method is called by addUser.
      */
@@ -245,6 +276,37 @@ public interface EndEntityManagementSession {
             WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
+     * Change user information after an EditEndEntityApprovalRequest has been approved
+     * 
+     * @param admin the administrator performing the action
+     * @param userdata a EndEntityInformation object, timecreated and timemodified will
+     *             not be used.
+     * @param clearpwd true if the password will be stored in clear form in the
+     *             db, otherwise it is hashed.
+     * @param approvalRequestId the unique ID of the approval request (not the hash)
+     * @param lastApprovingAdmin the last administrator to have approved the request
+     * @throws AuthorizationDeniedException
+     *             if administrator isn't authorized to add user
+     * @throws UserDoesntFullfillEndEntityProfile
+     *             if data doesn't fullfil requirements of end entity profile
+     * @throws ApprovalException
+     *             if an approval already is waiting for specified action
+     * @throws WaitingForApprovalException
+     *             if approval is required and the action have been added in the
+     *             approval queue.
+     * @throws CADoesntExistsException
+     *             if the caid of the user does not exist
+     * @throws EjbcaException
+     *             with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the
+     *             SubjectDN Serialnumber already exists when it is specified in
+     *             the CA that it should be unique.
+     */
+    void changeUserAfterApproval(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, 
+            int approvalRequestId, AuthenticationToken lastApprovingAdmin)
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            WaitingForApprovalException, CADoesntExistsException, EjbcaException;
+    
+    /**
      * Deletes a user from the database. The users certificates must be revoked
      * BEFORE this method is called.
      * 
@@ -273,11 +335,12 @@ public interface EndEntityManagementSession {
      * @param username the unique username.
      * @param status the new status, from 'UserData'.
      * @param approvalRequestId The ID of the approval request submitted to change the status
+     * @param lastApprovingAdmin the last administrator to have approved the request
      * 
      * @throws ApprovalException if an approval already is waiting for specified action
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
      */
-    void setUserStatus(AuthenticationToken admin, String username, int status, int approvalRequestID) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException;
+    void setUserStatusAfterApproval(AuthenticationToken admin, String username, int status, int approvalRequestID, AuthenticationToken lastApprovingAdmin) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException;
     
     /**
      * Sets a new password for a user.
@@ -354,12 +417,14 @@ public interface EndEntityManagementSession {
      * 
      * @param username the username to revoke.
      * @param reason revocation reason to use in certificate revocations
-     * @param approvalRequestId The ID of the approval request submitted to revoke the user
+     * @param approvalRequestId the ID of the approval request submitted to revoke the user
+     * @param lastApprovingAdmin the last administrator to have approved the request
      * @throws AlreadyRevokedException if user is revoked and unrevocation is attempted by sending revocation reason NOTREVOKED or REMOVEFROMCRL
      * @throws ApprovalException if revocation has been requested and is waiting for approval.
      * 
      */
-    void revokeUser(AuthenticationToken admin, String username, int reason, int approvalRequestID) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
+    void revokeUserAfterApproval(AuthenticationToken admin, String username, int reason, int approvalRequestID, AuthenticationToken lastApprovingAdmin) 
+            throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
      * Same as {@link #revokeCert(AuthenticationToken, BigInteger, String, int)} but also sets the revocation date.
@@ -416,14 +481,16 @@ public interface EndEntityManagementSession {
      * @param reason the reason of revocation, one of the RevokedCertInfo.XX
      *            constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a
      *            certificate on hold.
-     * @param approvalRequestId The ID of the approval request submitted to revoke the certificate
+     * @param approvalRequestId the ID of the approval request submitted to revoke the certificate
+     * @param lastApprovingAdmin the last administrator to have approved the request
      * @throws AlreadyRevokedException if the certificate was already revoked
      * @throws FinderException
      * @throws ApprovalException
      * @throws WaitingForApprovalException
      * @throws AlreadyRevokedException
      */
-    void revokeCert(AuthenticationToken admin, BigInteger certserno, String issuerdn, int reason, int approvalRequestID) throws AuthorizationDeniedException,
+    void revokeCertAfterApproval(AuthenticationToken admin, BigInteger certserno, String issuerdn, int reason, int approvalRequestID, 
+            AuthenticationToken lastApprovingAdmin) throws AuthorizationDeniedException,
             FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     
