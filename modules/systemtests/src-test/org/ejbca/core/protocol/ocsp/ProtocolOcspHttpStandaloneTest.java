@@ -52,6 +52,7 @@ import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -417,7 +418,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         // brep.getProducedAt().getTime() <= date); This might not hold on JBoss
         // AS due to the caching of the Date-header
         X509CertificateHolder[] chain = brep.getCerts();
-        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
+        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(chain[0]));
         assertTrue("Response failed to verify.", verify);
         assertNull("No nonce should be present.", brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce));
         SingleResp[] singleResps = brep.getResponses();
@@ -486,7 +487,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         assertEquals("Response status not the expected.", 0, response.getStatus());
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
         X509CertificateHolder[] chain = brep.getCerts();
-        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
+        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(chain[0]));
         assertTrue("Response failed to verify.", verify);
         SingleResp[] singleResps = brep.getResponses();
         assertEquals("No of SingResps should be 1.", 1, singleResps.length);

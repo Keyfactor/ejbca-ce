@@ -57,6 +57,7 @@ import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -428,7 +429,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
         X509CertificateHolder[] chain = brep.getCerts();
-        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
+        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(chain[0]));
         assertTrue("Response failed to verify.", verify);
         return brep;
     }
