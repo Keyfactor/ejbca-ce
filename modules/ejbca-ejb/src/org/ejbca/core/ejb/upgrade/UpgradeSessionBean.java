@@ -1643,9 +1643,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @return true of the first version is lower (1.0 < 2.0) than the second, false otherwise. 
      */
     private boolean isLesserThan(final String first, final String second) {
-    	if (log.isTraceEnabled()) {
-    	    log.trace("isLesserThan("+first+", "+second);
-    	}
+        if (log.isTraceEnabled()) {
+            log.trace("isLesserThan("+first+", "+second+")");
+        }
         final String delimiter = "\\.";
         if (first == null) {
             if (second != null) {
