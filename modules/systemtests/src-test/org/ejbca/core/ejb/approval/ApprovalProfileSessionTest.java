@@ -16,8 +16,10 @@ package org.ejbca.core.ejb.approval;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -34,6 +36,8 @@ import org.junit.Test;
  */
 
 public class ApprovalProfileSessionTest {
+
+    private static final Logger LOG = Logger.getLogger(ApprovalProfileSessionTest.class);
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalProfileTest"));
     
@@ -66,17 +70,20 @@ public class ApprovalProfileSessionTest {
         String profileName = "testChangeApprovalProfile";
         AccumulativeApprovalProfile accumulativeApprovalProfile = new AccumulativeApprovalProfile(profileName);
         accumulativeApprovalProfile.setNumberOfApprovalsRequired(originalValue);
+        LinkedHashMap<Object, Object> map = accumulativeApprovalProfile.getDataMap();
+        LOG.info("accumulativeApprovalProfile: "+map);
         int profileId = approvalProfileSession.addApprovalProfile(alwaysAllowToken, accumulativeApprovalProfile);
         assertEquals("Couldn't set number of approvals required locally?", originalValue, accumulativeApprovalProfile.getNumberOfApprovalsRequired());
         try {
             int newValue = 4711;
-            AccumulativeApprovalProfile originalProfile = (AccumulativeApprovalProfile) approvalProfileSession.getApprovalProfile(profileId);
+            AccumulativeApprovalProfile savedProfile = (AccumulativeApprovalProfile) approvalProfileSession.getApprovalProfile(profileId);
             //Verify that the original value is what it is
-            if (originalValue != originalProfile.getNumberOfApprovalsRequired()) {
+            LOG.info("savedProfile: "+map);
+            if (originalValue != savedProfile.getNumberOfApprovalsRequired()) {
                 throw new IllegalStateException("Test cannot continue, test data was not persisted");
             }
-            originalProfile.setNumberOfApprovalsRequired(newValue);
-            approvalProfileSession.changeApprovalProfile(alwaysAllowToken, originalProfile);
+            savedProfile.setNumberOfApprovalsRequired(newValue);
+            approvalProfileSession.changeApprovalProfile(alwaysAllowToken, savedProfile);
             AccumulativeApprovalProfile updatedProfile = (AccumulativeApprovalProfile) approvalProfileSession.getApprovalProfile(profileId);
             assertEquals("Profile was not updated with new data.", newValue, updatedProfile.getNumberOfApprovalsRequired());
         } finally {
