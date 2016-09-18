@@ -258,7 +258,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
 
     @Override
     public Map<Integer, ApprovalStep> getSteps() {
-        if(steps == null) {
+        if(steps == null || steps.isEmpty()) {
             loadStepsFromMap();
         }
         return steps;
@@ -474,11 +474,21 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
 
     @Override
     public int getNumberOfApprovalsRequired(final int stepIdentifier, final int partitionIdentifier) {
+    	if (log.isTraceEnabled()) {
+    	    log.trace(">getNumberOfApprovalsRequired: "+stepIdentifier+", "+partitionIdentifier);
+    	}
         final DynamicUiProperty<? extends Serializable> numberOfRequiredApprovals = getStep(stepIdentifier).getPartition(partitionIdentifier).getProperty(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS);
         if (numberOfRequiredApprovals==null) {
+            if (log.isTraceEnabled()) {
+                log.trace("<getNumberOfApprovalsRequired: 1");
+            }
             return 1;   // Default to 1 required approval per partition
         }
-        return (Integer) numberOfRequiredApprovals.getValue();
+        final int ret = (Integer) numberOfRequiredApprovals.getValue();
+        if (log.isTraceEnabled()) {
+            log.trace("<getNumberOfApprovalsRequired: "+ret);
+        }
+        return ret;
     }
 
     @Override
