@@ -812,11 +812,15 @@ public class EjbcaWSHelper {
 			// If we managed to verify the certificate we will break out of the loop									
 			ret = true;															
 		} catch (CertificateNotYetValidException e) {
-			// If verification of outer signature fails because the old certificate is not valid, we don't really care, continue as if it was an initial request  
-			log.debug("Certificate we try to verify outer signature with is not yet valid");
+			// If verification of outer signature fails because the old certificate is not valid, we don't really care, continue as if it was an initial request
+			if (log.isDebugEnabled()) {
+			    log.debug("Certificate we try to verify outer signature with is not yet valid. SubjectDN: "+CertTools.getSubjectDN(cert));
+			}
 			throw e;
 		} catch (CertificateExpiredException e) {									
-			log.debug("Certificate we try to verify outer signature with has expired");
+            if (log.isDebugEnabled()) {
+                log.debug("Certificate we try to verify outer signature with has expired. SubjectDN: "+CertTools.getSubjectDN(cert));
+            }
 			throw e;
 		}
 		return ret;
