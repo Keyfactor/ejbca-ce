@@ -2874,14 +2874,14 @@ public abstract class CertTools {
                     final Date start = cvccert.getCVCertificate().getCertificateBody().getValidFrom();
                     final Date end = cvccert.getCVCertificate().getCertificateBody().getValidTo();
                     if (start.after(date)) {
-                        String msg = "Certificate startDate '" + start + "' is after check date '" + date + "'";
+                        String msg = "CV Certificate startDate '" + start + "' is after check date '" + date + "'. Subject: "+CertTools.getSubjectDN(cert);
                         if (log.isTraceEnabled()) {
                             log.trace(msg);
                         }
                         throw new CertificateNotYetValidException(msg);
                     }
                     if (end.before(date)) {
-                        final String msg = "Certificate endDate '" + end + "' is before check date '" + date + "'";
+                        final String msg = "CV Certificate endDate '" + end + "' is before check date '" + date + "'. Subject: "+CertTools.getSubjectDN(cert);
                         if (log.isTraceEnabled()) {
                             log.trace(msg);
                         }
