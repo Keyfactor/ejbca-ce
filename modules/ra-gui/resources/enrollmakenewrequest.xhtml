@@ -322,7 +322,7 @@
                                 value="#{enrollMakeNewRequestBean.renderNonModifiableFields ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
                                 styleClass="toggleMoreButton" immediate="true">
 								<f:ajax execute="@this"
-									render="@form" />
+									render=":requestInfoForm:requestInfoRendered" />
 							</h:commandButton>
                         </fieldset>
 						<script>ejbca.ra.touchUpDocument(); ejbca.ra.handleAutoFocus();</script>
@@ -391,9 +391,8 @@
 							value="#{enrollMakeNewRequestBean.requestPreviewMoreDetails ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
 							styleClass="#{htmlElementFocusBean.requestPreviewMoreDetails?'jsAutoFocusJsf':''} toggleMoreButton" immediate="true">
 							<f:actionListener binding="#{htmlElementFocusBean.setRequestPreviewMoreDetails(true)}"/>
-							<f:ajax execute="@this" render="@form" />
+							<f:ajax execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
 						</h:commandButton>
-
 
 						<h:panelGroup layout="block"
 							styleClass="keygeneration-button-group">
