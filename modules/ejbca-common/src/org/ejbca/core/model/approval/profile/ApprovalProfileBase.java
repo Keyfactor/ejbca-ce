@@ -59,9 +59,6 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     
     
 
-    //Pointer to the first sequence
-    private int firstStep = NO_SEQUENCES;
-
     public ApprovalProfileBase() {
         //Public constructor needed deserialization 
         super();
@@ -135,7 +132,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
             stepClone.put(approvalStep.getStepIdentifier(), new ApprovalStep(approvalStep));
         }
         clone.setSteps(stepClone);
-        clone.setFirstStep(firstStep);
+        clone.setFirstStep(getFirstStepId());
         return clone;
     }
 
@@ -293,7 +290,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         ApprovalStep newStep = new ApprovalStep(identifier);
         addStep(newStep);
         //Set the order. 
-        ApprovalStep previousFirstStep = steps.get(firstStep);
+        ApprovalStep previousFirstStep = steps.get(getFirstStepId());
         setFirstStep(newStep.getStepIdentifier());
         newStep.setNextStep(previousFirstStep.getStepIdentifier());
         previousFirstStep.setPreviousStep(newStep.getStepIdentifier());
@@ -310,7 +307,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         ApprovalStep newStep = new ApprovalStep(identifier);
         addStep(newStep);
         //Find the last step and set this one last
-        ApprovalStep step = steps.get(firstStep);
+        ApprovalStep step = steps.get(getFirstStepId());
         while(step.getNextStep() != null) {
             step = steps.get(step.getNextStep());
         }
@@ -371,15 +368,23 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         return getSteps().get(identifier);
 
     }
+    
+    private int getFirstStepId() {
+        Object value = data.get(FIRST_STEP_KEY);
+        if(value == null) {
+        	return NO_SEQUENCES;
+        }
+        return (int) value;
+        
+    }
 
     @Override
     public ApprovalStep getFirstStep() {
-        return getSteps().get(firstStep);
+        return getSteps().get(getFirstStepId());
     }
 
     @Override
     public void setFirstStep(int firstStep) {
-        this.firstStep = firstStep;
         data.put(FIRST_STEP_KEY, firstStep);
     }
 
@@ -390,17 +395,13 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         if (getSteps() != null) {
             transientObjects.put(STEPS_KEY, encodeSteps(getSteps().values()));
         }
-        transientObjects.put(FIRST_STEP_KEY, firstStep);
+        transientObjects.put(FIRST_STEP_KEY, getFirstStepId());
         data.putAll(transientObjects);
     }
 
     @Override
     protected void loadTransientObjects() {
         loadStepsFromMap();
-        Integer loadedFirstStep = (Integer) data.get(FIRST_STEP_KEY);
-        if(loadedFirstStep != null) {
-            firstStep = loadedFirstStep;
-        }
     }
     
     private  List<String> encodeSteps(Collection<ApprovalStep> stepsToEncode) {
@@ -538,8 +539,8 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         }
         firstStep.setPreviousStep(secondStepIdentifier);
         firstStep.setNextStep(secondStepNext);
-        if(this.firstStep == firstStepIdentifier) {
-            this.firstStep = secondStepIdentifier;
+        if(getFirstStepId() == firstStepIdentifier) {
+            setFirstStep(secondStepIdentifier);
         }
         saveTransientObjects();
     }
