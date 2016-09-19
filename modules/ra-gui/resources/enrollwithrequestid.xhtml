@@ -77,12 +77,12 @@
 								<h:outputLabel for="requestIdField" value="#{msg.enroll_request_id}" />
 								<h:outputText id="requestIdField" value="#{enrollWithRequestIdBean.requestId}" />
 							</h:panelGroup>
-							<h:panelGroup id="requestPassword" layout="block" styleClass="pure-control-group">
-								<h:outputLabel for="requestPasswordField" value="#{msg.enroll_password}" />
+							<h:panelGroup id="enteredRequestPassword" layout="block" styleClass="pure-control-group">
+								<h:outputLabel for="passwordField" value="#{msg.enroll_password}" />
 								<h:inputSecret id="passwordField" value="#{enrollWithRequestIdBean.endEntityInformation.password}">
 									<f:validateRequired/>
 								</h:inputSecret>
-								<h:message for="requestPasswordField" id="passwordFieldMessage" styleClass="showErrorMessage"/>
+								<h:message for="passwordField" id="passwordFieldMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
 							<h:panelGroup id="requestSubjectDn" layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="subjectDnField" value="Subject"/>
