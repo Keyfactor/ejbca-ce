@@ -34,6 +34,19 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * Class for ICAO X509 certificate extension. 
  * See ICAO MRTD Technical Report LDS and PKI Maintenance 1.0 or later for spec of this extension.
  * 
+ * documentTypeList  EXTENSION  ::=  {
+ *     SYNTAX DocumentTypeListSyntax
+ *     IDENTIFIED BY id-icao-mrtd-security-extensions-documentTypeList}
+ * DocumentTypeListSyntax ::= SEQUENCE {
+ *   version DocumentTypeListVersion,
+ *   docTypeList SET OF DocumentType }
+ *
+ * DocumentTypeListVersion ::= INTEGER {v0(0)}
+ * 
+ * -- Document Type as contained in MRZ, e.g. "P" or "ID" where a
+ * -- single letter denotes all document types starting with that letter
+ * DocumentType ::= PrintableString(1..2) 
+ * 
  * @version $Id$
  */
 public class DocumentTypeList extends StandardCertificateExtension {
