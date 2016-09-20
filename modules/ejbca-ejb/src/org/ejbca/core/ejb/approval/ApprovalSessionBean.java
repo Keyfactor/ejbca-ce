@@ -325,6 +325,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @Override
     public List<ApprovalData> findWaitingForApprovalApprovalDataLocal() {
         final javax.persistence.Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.status="+ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
+        @SuppressWarnings("unchecked")
         List<ApprovalData> result = query.getResultList();
         return result;
     }
