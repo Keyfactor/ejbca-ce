@@ -284,19 +284,19 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
     
     @Override
-    public void addUserAfterApproval(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, int approvalRequestID, AuthenticationToken lastApprovingAdmin) 
+    public void addUserAfterApproval(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, AuthenticationToken lastApprovingAdmin) 
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EndEntityExistsException, WaitingForApprovalException, CADoesntExistsException, 
             EjbcaException {
-        addUser(admin, userdata, clearpwd, approvalRequestID, lastApprovingAdmin);
+        addUser(admin, userdata, clearpwd, lastApprovingAdmin);
     }
 
     @Override
     public void addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd) throws AuthorizationDeniedException,
             EjbcaException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException {
-        addUser(admin, endEntity, clearpwd, 0, null);
+        addUser(admin, endEntity, clearpwd, null);
     }
     
-    private void addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd, final int approvalRequestId, 
+    private void addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd, 
             final AuthenticationToken lastApprovingAdmin) throws AuthorizationDeniedException,
             EjbcaException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException {
         final int endEntityProfileId = endEntity.getEndEntityProfileId();
@@ -884,7 +884,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 notificationEndEntityInformation.setPassword(newpassword);
             }
             // Send notification if it should be sent.
-            sendNotification(admin, notificationEndEntityInformation, newstatus, 0, lastApprovingAdmin, null);
+            sendNotification(admin, notificationEndEntityInformation, newstatus, approvalRequestId, lastApprovingAdmin, null);
             if (newstatus != oldstatus) {
                 // Only print stuff on a printer on the same conditions as for
                 // notifications, we also only print if the status changes, not for

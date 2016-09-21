@@ -161,8 +161,7 @@ public interface EndEntityManagementSession {
      *             the CA that it should be unique.
      * @throws WaitingForApprovalException
      */
-    void addUserAfterApproval(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, 
-            int approvalRequestID, AuthenticationToken lastApprovingAdmin) 
+    void addUserAfterApproval(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, AuthenticationToken lastApprovingAdmin) 
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EndEntityExistsException, WaitingForApprovalException, CADoesntExistsException, 
             EjbcaException;
 
