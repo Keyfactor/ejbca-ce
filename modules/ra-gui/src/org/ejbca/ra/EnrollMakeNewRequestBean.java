@@ -45,6 +45,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
@@ -749,6 +750,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
             raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_token_could_not_be_downloaded", fileName), e);
             log.info("Token " + fileName + " could not be downloaded", e);
         }
+    }
+    
+    /**
+     * Update RFC822NAME and DNEMAILADDRESS with value from end entity email
+     * @param event
+     */
+    public void updateOtherEmailFields(AjaxBehaviorEvent event) {
+        EndEntityProfile.FieldInstance rfc822Name = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME).get(0);
+        if(rfc822Name !=null && rfc822Name.isUsed()){
+            rfc822Name.setValue(endEntityInformation.getEmail());
+        }
+        EndEntityProfile.FieldInstance dnEmailAddress = subjectDn.getFieldInstancesMap().get(DnComponents.DNEMAILADDRESS).get(0);
+        if(dnEmailAddress !=null && dnEmailAddress.isUsed()){
+            dnEmailAddress.setValue(endEntityInformation.getEmail());
+        }
+        
     }
    
     //-----------------------------------------------------------------------------------------------
