@@ -88,7 +88,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
         userdata.setExtendedinformation(ext);
 		
 		try{
-			endEntityManagementSession.addUserAfterApproval(getRequestAdmin(), userdata, clearpwd, approvalRequestID, lastApprovingAdmin);
+			endEntityManagementSession.addUserAfterApproval(getRequestAdmin(), userdata, clearpwd, lastApprovingAdmin);
 		} catch (EndEntityExistsException e) {
 			throw new ApprovalRequestExecutionException("Error, user already exist", e);		
 		} catch (AuthorizationDeniedException e) {
