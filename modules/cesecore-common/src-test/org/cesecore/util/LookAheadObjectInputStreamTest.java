@@ -16,7 +16,10 @@ import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -88,6 +91,31 @@ public class LookAheadObjectInputStreamTest {
 
     private static class GoodExtendedExtendedClass extends GoodExtendedClass {
         private static final long serialVersionUID = 6L;
+    }
+    
+    private static class ExternalizableClass implements Externalizable {
+        private final boolean writeExploitObject;
+        
+        @SuppressWarnings("unused")
+        public ExternalizableClass() {
+            this(false);
+        }
+        
+        public ExternalizableClass(final boolean writeExploitObject) {
+            this.writeExploitObject = writeExploitObject;
+        }
+        
+        @Override
+        public void writeExternal(ObjectOutput out) throws IOException {
+            out.writeObject(writeExploitObject ? new ExploitClass() : new GoodClass1(123));
+        }
+
+        @Override
+        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+            final GoodClass1 obj = (GoodClass1) in.readObject();
+            assertEquals("Got wrong data in nested object.", 123, obj.getData());
+        }
+        
     }
 
     /**
@@ -278,6 +306,38 @@ public class LookAheadObjectInputStreamTest {
         log.trace("<testDeserializingMixedObjectArray");
     }
 
+    @Test
+    public void testDeserializeExternalizable() throws Exception {
+        //ExternalizableClass
+        log.trace(">testDeserializeExternalizable");
+        LookAheadObjectInputStream lookAheadObjectInputStream = null;
+        try {
+            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+            ObjectOutputStream o = new ObjectOutputStream(buf);
+            o.writeObject(new ExternalizableClass(true)); // Write exploit object that will be read be readExternal
+            o.close();
+            lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
+            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(2);
+            acceptedClasses.add(GoodClass1.class);
+            acceptedClasses.add(ExternalizableClass.class);
+            lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
+            @SuppressWarnings("unused")
+            ExternalizableClass deserialized = (ExternalizableClass) lookAheadObjectInputStream.readObject(); // deserializing Externalizable object
+            fail("Deserialization was successful. This could be a bug in the test");
+        } catch (IllegalStateException e) {
+            fail("ExploitClass code was not caught with LookAheadSerializer");
+        } catch (SecurityException e) {
+            // Good
+        } catch (Exception e) {
+            fail("Unexpected exception: " + e.getMessage() + " during testDeserializeExternalizable");
+        } finally {
+            if (lookAheadObjectInputStream != null) {
+                lookAheadObjectInputStream.close();
+            }
+        }
+        log.trace("<testDeserializeExternalizable");
+    }
+    
     /**
      * Test limiting maximum count of objects that can be deserialized
      */
