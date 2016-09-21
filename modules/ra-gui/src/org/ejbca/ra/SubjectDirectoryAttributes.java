@@ -13,90 +13,38 @@
 package org.ejbca.ra;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
 
 /**
  * Contains Subject Directory attributes
  * @version $Id$
  *
  */
-public class SubjectDirectoryAttributes {
-
-    private List<EndEntityProfile.FieldInstance> fieldInstances = new ArrayList<>();
-    private String value;
+public class SubjectDirectoryAttributes extends RaAbstractDn{
 
     public SubjectDirectoryAttributes(final EndEntityProfile endEntityProfile) {
-        this(endEntityProfile, null);
+        super(endEntityProfile);
     }
-
-    public SubjectDirectoryAttributes(final EndEntityProfile endEntityProfile, final String subjectDirectoryAttributes) {
-        DNFieldExtractor dnFieldExtractor = null;
-        if (subjectDirectoryAttributes!=null) {
-            dnFieldExtractor = new DNFieldExtractor(subjectDirectoryAttributes, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
-        }
-        for (final String key : DnComponents.getDirAttrFields()) {
-            final Field field = endEntityProfile.new Field(key);
-            for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
-                if (dnFieldExtractor!=null) {
-                    fieldInstance.setValue(dnFieldExtractor.getField(DnComponents.profileIdToDnId(fieldInstance.getProfileId()), fieldInstance.getNumber()));
-                }
-                fieldInstances.add(fieldInstance);
-            }
-        }
-    }
-
-    public List<EndEntityProfile.FieldInstance> getFieldInstances() {
-        return fieldInstances;
-    }
-
-    public void setFieldInstances(List<EndEntityProfile.FieldInstance> fieldInstances) {
-        this.fieldInstances = fieldInstances;
-    }
-
-    public void update(){
-        StringBuilder subjectDn = new StringBuilder();
-        for(EndEntityProfile.FieldInstance fieldInstance : fieldInstances){
-            if(!fieldInstance.getValue().isEmpty()){
-                int dnId = DnComponents.profileIdToDnId(fieldInstance.getProfileId());
-                String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, DNFieldExtractor.TYPE_SUBJECTDIRATTR) + fieldInstance.getValue().trim();
-                nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart);
-                if(subjectDn.length() != 0){
-                    subjectDn.append(", ");
-                }
-                subjectDn.append(nameValueDnPart);
-            }
-        }
-        //TODO DNEMAILADDRESS copying from UserAccountData
-        value = subjectDn.toString();
+    
+    public SubjectDirectoryAttributes(final EndEntityProfile endEntityProfile, final String subjectAlternativeName) {
+        super(endEntityProfile, subjectAlternativeName);
     }
 
     @Override
-    public String toString() {
-        return getValue();
+    protected int getAbstractDnFieldExtractorType() {
+        return DNFieldExtractor.TYPE_SUBJECTDIRATTR;
     }
 
-    /**
-     * @return the value
-     */
-    public String getValue() {
-        if(value == null){
-            update();
-        }
-        return value;
-    }
-    
-    public String getUpdatedValue() {
-        update();
-        return value;
+    @Override
+    protected ArrayList<String> getAbstractDnFields() {
+        return DnComponents.getDirAttrFields();
     }
 
-    @SuppressWarnings("unused")
-    private void setValue(String value) {
-        this.value = value;
+    @Override
+    protected String reorder(String dnBeforeReordering) {
+        return dnBeforeReordering; //No reordering for SubjectDirectoryAttributes
     }
 }

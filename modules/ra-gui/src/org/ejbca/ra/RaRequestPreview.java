@@ -151,7 +151,7 @@ public class RaRequestPreview {
     }
 
     public boolean isSubjectAlternativeNameUsed() {
-        return !subjectAlternativeName.isEmpty() && isMore();
+        return !subjectAlternativeName.isEmpty();
     }
 
     /**

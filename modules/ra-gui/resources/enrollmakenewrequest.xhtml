@@ -206,7 +206,8 @@
 							<fieldset>
 								<ui:repeat id="subjectDn"
 									value="#{enrollMakeNewRequestBean.subjectDn.fieldInstances}"
-									var="instance">
+									var="instance"
+									varStatus="loop">
 									<h:panelGroup layout="block" styleClass="pure-control-group"
     									rendered="#{enrollMakeNewRequestBean.isFieldInstanceRendered(instance)}">
 										<h:outputLabel for="subjectDnField"
@@ -215,19 +216,21 @@
 										<h:outputLabel for="subjectDnField"
 											value="#{msg['subject_dn_'.concat(instance.name)]} *"
 											rendered="#{instance.required}" />
-										<h:inputText id="subjectDnField" value="#{instance.value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
+										<h:inputText id="subjectDnField" value="#{enrollMakeNewRequestBean.subjectDn.fieldInstances[loop.index].value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
 											rendered="#{!instance.selectable}" disabled="#{!instance.modifiable}">
 											<f:validator validatorId="extendedRegexValidator" />
 											<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}"/>
 											<f:validator validatorId="extendedRequiredValidator"/>
 											<f:attribute name="_required" value="#{instance.required}"/>
+											<f:attribute name="_label" value="#{instance.name}"/>
 											<f:ajax event="change" execute="@this" listener="#{enrollMakeNewRequestBean.checkSubjectDn}"
                                                 render=":requestInfoForm:subjectDnMessage :requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
                                             <f:ajax event="keyup" execute="@this"
                                                 render=":requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
 										</h:inputText>
-										<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
+										<h:selectOneMenu value="#{enrollMakeNewRequestBean.subjectDn.fieldInstances[loop.index].value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
 											<f:selectItems value="#{instance.selectableValues}" />
+											<f:attribute name="_label" value="#{instance.name}"/>
 											<f:ajax event="change" execute="@this" listener="#{enrollMakeNewRequestBean.checkSubjectDn}"
                                                 render=":requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage">
                                             </f:ajax>
@@ -245,7 +248,8 @@
 							</h3>
 							<ui:repeat id="subjectAlternativeName"
 								value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances}"
-								var="instance">
+								var="instance"
+								varStatus="loop">
 								<h:panelGroup layout="block" styleClass="pure-control-group"
 									rendered="#{enrollMakeNewRequestBean.isFieldInstanceRendered(instance)}">
 									<h:outputLabel for="subjectAltNameField"
@@ -254,21 +258,24 @@
 									<h:outputLabel for="subjectAltNameField"
 										value="#{msg['subject_alternative_name_'.concat(instance.name)]} *"
 										rendered="#{instance.required}" />
-									<h:inputText id="subjectAltNameField" value="#{instance.value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
+									<h:inputText id="subjectAltNameField" value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].value}"  styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
                                         rendered="#{!instance.selectable}" disabled="#{!instance.modifiable}">
 										<f:validator validatorId="extendedRegexValidator" />
 										<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}"/>
 										<f:validator validatorId="extendedRequiredValidator"/>
 										<f:attribute name="_required" value="#{instance.required}"/>
+										<f:attribute name="_label" value="#{instance.name}"/>
 										<f:ajax event="change" execute="@this"
                                             render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage"/>
 										<f:ajax event="keyup" execute="@this"
                                             render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage"/>
 									</h:inputText>
-									<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
+									<h:selectOneMenu value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
 										<f:selectItems value="#{instance.selectableValues}" />
+										<f:attribute name="_label" value="#{instance.name}"/>
 										<f:ajax event="change" execute="@this"
-                                            render=":requestInfoForm:subjectDnMessage :requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage"/>
+                                            render=":requestInfoForm:subjectDnMessage :requestInfoForm:requestPreviewOuterPanel 
+                                            subjectAltNameFieldMessage"/>
 									</h:selectOneMenu>
 									<h:message for="subjectAltNameField" id="subjectAltNameFieldMessage" styleClass="showErrorMessage"/>
 								</h:panelGroup>
@@ -295,6 +302,7 @@
 										<f:attribute name="pattern" value="#{instance.required ? instance.regexPattern : ''}"/>
 										<f:validator validatorId="extendedRequiredValidator"/>
 										<f:attribute name="_required" value="#{instance.required}"/>
+										<f:attribute name="_label" value="#{instance.name}"/>
 										<f:ajax event="change" execute="@this"
 											render=":requestInfoForm:requestPreviewOuterPanel subjectDirectoryAttributesMessage"/>
 										<f:ajax event="keyup" execute="@this"
@@ -302,6 +310,7 @@
 									</h:inputText>
 									<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
 										<f:selectItems value="#{instance.selectableValues}" />
+										<f:attribute name="_label" value="#{instance.name}"/>
 										<f:ajax event="change" execute="@this"
 											render=":requestInfoForm:requestPreviewOuterPanel subjectDirectoryAttributesMessage"/>
 									</h:selectOneMenu>
@@ -368,7 +377,10 @@
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.emailRendered}">
 								<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
-								<h:inputText id="emailField" value="#{enrollMakeNewRequestBean.endEntityInformation.email}" styleClass="#{component.valid?'':'jsAutoFocusError'}" required="#{enrollMakeNewRequestBean.emailRequired}">
+								<h:inputText id="emailField" value="#{enrollMakeNewRequestBean.endEntityInformation.email}" styleClass="#{component.valid?'':'jsAutoFocusError'}" 
+									required="#{enrollMakeNewRequestBean.emailRequired}">
+									<f:ajax event="change" execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" listener="#{enrollMakeNewRequestBean.updateOtherEmailFields}"/>
+									<f:ajax event="keyup" execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" listener="#{enrollMakeNewRequestBean.updateOtherEmailFields}"/>
 								</h:inputText>
 								<h:message for="emailField" id="emailFieldMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
