@@ -1431,10 +1431,21 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             for(ApprovalData request : approvalRequests) {
                 Collection<Approval> approvals = request.getApprovals();
                 if(approvals.size() > 0) {
-                    int nrOfRequiredApprovals = request.getRemainingapprovals() + approvals.size();
-                    int partitionId = approvalPartitionCache.get(Integer.valueOf(nrOfRequiredApprovals));
-                    for(Approval approval : approvals) {
-                        approval.setPartitionId(partitionId);
+                    final int nrOfRequiredApprovals = request.getRemainingapprovals() + approvals.size();
+                    final Integer partitionId = approvalPartitionCache.get(Integer.valueOf(nrOfRequiredApprovals));
+                    if (partitionId != null) {
+                        // It's an old approval from before 6.6.0, that needs upgrading
+                        for (Approval approval : approvals) {
+                            approval.setPartitionId(partitionId);
+                        }
+                    } else {
+                        // Might be an approval from 6.6.0 in case the upgrade fails at first and the user adds an approval afterwards
+                        // Check that this is really the case
+                        for (Approval approval : approvals) {
+                            if (approval.getPartitionId() == 0) { // not from 6.6.0, and can not be upgraded
+                                throw new IllegalStateException("Approval request with ID " + request.getId() + " could not be upgraded because it could not be mapped to an accumulative approval profile");
+                            }
+                        }
                     }
                     approvalSession.setApprovals(request, approvals);
                 }
