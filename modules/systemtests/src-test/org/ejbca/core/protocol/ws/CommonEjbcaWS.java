@@ -160,6 +160,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
@@ -293,7 +294,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private final PublisherProxySessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-
+    private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     public CommonEjbcaWS() {
         hostname = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
         httpsPort = SystemTestsConfiguration.getRemotePortHttps(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERPRIVHTTPS));
@@ -902,20 +904,28 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             userData2.setSubjectDN("CN=EVTLSEJBCAWSTEST,JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna");
             try {
                 certificateResponse = ejbcaraws.certificateRequest(userData2, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+                // Verify that the response is of the right type
+                assertNotNull(certificateResponse);
+                assertTrue(certificateResponse.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
+                // Verify that the certificate in the response has the same Subject DN
+                // as in the request.
+                cert = certificateResponse.getCertificate();
+                assertNotNull(cert);
+                assertEquals("JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,CN=EVTLSEJBCAWSTEST", CertTools.getSubjectDN(cert));
+            } catch (UserDoesntFullfillEndEntityProfile_Exception e) {
+                // If running EJBCA Community this will be the result of this
+                if (!enterpriseEjbBridgeSession.isRunningEnterprise()) {
+                    log.debug("Community Edition, JurisdictionXY DN components are not available");
+                } else {
+                    log.info("Certificate request with EV TLS DN components should not fail on Enterprise Edition", e);
+                    fail("Certificate request with EV TLS DN components should not fail on Enterprise Edition: " + e.getMessage());
+                }
             } catch (EjbcaException_Exception e) {
                 errorCode = e.getFaultInfo().getErrorCode();
                 log.info(errorCode.getInternalErrorCode(), e);
                 assertNotNull("error code should not be null", errorCode);
                 fail("certificate request with EV TLS DN components failed with error code "+errorCode.getInternalErrorCode());
             }
-            // Verify that the response is of the right type
-            assertNotNull(certificateResponse);
-            assertTrue(certificateResponse.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
-            // Verify that the certificate in the response has the same Subject DN
-            // as in the request.
-            cert = certificateResponse.getCertificate();
-            assertNotNull(cert);
-            assertEquals("JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,CN=EVTLSEJBCAWSTEST", CertTools.getSubjectDN(cert));
         } finally {
             // Clean up immediately
             if (endEntityManagementSession.existsUser("EVTLSEJBCAWSTEST")) {
