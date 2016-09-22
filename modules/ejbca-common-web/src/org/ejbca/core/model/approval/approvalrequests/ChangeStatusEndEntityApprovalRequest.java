@@ -63,6 +63,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	/** Overrides ApprovalRequest.isAllowedTransition()
 	 * @see ApprovalRequest#isAllowedTransition()
 	 */
+    @Override
 	public boolean isAllowedTransition() {
 		boolean ret = false;
 		// Allow Keyrecovery transitions until keyrecovery approvals have been implemented.
