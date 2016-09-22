@@ -101,7 +101,7 @@ public class DnFieldExtractorTest {
     	String dn = "DnsName=foo.bar.se,rfc822Name=foo@bar.se,krb5principal=foo/bar@P.COM";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
     	final HashMap<Integer, Integer> i = extractor.getNumberOfFields();
-    	assertEquals(13,i.size());
+    	assertEquals(14,i.size());
     	final String dns = extractor.getField(DNFieldExtractor.DNSNAME, 0);
     	assertEquals("foo.bar.se", dns);
     	boolean illegal = extractor.isIllegal();
