@@ -49,7 +49,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
@@ -141,6 +140,24 @@ public class CertToolsTest {
             .decode(("MIIFkjCCBPugAwIBAgIIBzGqGNsLMqwwDQYJKoZIhvcNAQEFBQAwWTEYMBYGA1UEAwwPU1VCX0NBX1dJTkRPV1MzMQ8wDQYDVQQLEwZQS0lHVkExHzAdBgNVBAoTFkdlbmVyYWxpdGF0IFZhbGVuY2lhbmExCzAJBgNVBAYTAkVTMB4XDTA2MDQyMTA5NDQ0OVoXDTA4MDQyMDA5NTQ0OVowcTEbMBkGCgmSJomT8ixkAQETC3Rlc3REaXJOYW1lMRQwEgYDVQQDEwt0ZXN0RGlyTmFtZTEOMAwGA1UECxMFbG9nb24xHzAdBgNVBAoTFkdlbmVyYWxpdGF0IFZhbGVuY2lhbmExCzAJBgNVBAYTAkVTMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCDLxMhz40RxCm21HoCBNa9x1UyPmhVkPdtt2V7dixgjOYz+ffKeebjn/jSd4nfXgd7fxpzezB8t673F2OtC3ENl1zek5Msj2KoinVu8vvZ78KMRq/H1rDFguhjSL0o19Cpob0qQFB/ukPZMNoKBNnMVnR1C4juB1eJVXWmHyJxIwIDAQABo4IDSTCCA0UwDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCBaAwMwYDVR0lBCwwKgYIKwYBBQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDBwYKKwYBBAGCNxQCAjAdBgNVHQ4EFgQUZz4hrh3dr6VWvEbAPe8pg7szNi4wHwYDVR0jBBgwFoAUTuOaap9UBpQ8dqwOufYoOQucfUowXAYDVR0RBFUwU6QhMB8xHTAbBgNVBAMMFHRlc3REaXJOYW1lfGRpcnxuYW1loC4GCisGAQQBgjcUAgOgIAwedGVzdERpck5hbWVAamFtYWRvci5wa2kuZ3ZhLmVzMIIBtgYDVR0gBIIBrTCCAakwggGlBgsrBgEEAb9VAwoBADCCAZQwggFeBggrBgEFBQcCAjCCAVAeggFMAEMAZQByAHQAaQBmAGkAYwBhAGQAbwAgAHIAZQBjAG8AbgBvAGMAaQBkAG8AIABkAGUAIABFAG4AdABpAGQAYQBkACAAZQB4AHAAZQBkAGkAZABvACAAcABvAHIAIABsAGEAIABBAHUAdABvAHIAaQBkAGEAZAAgAGQAZQAgAEMAZQByAHQAaQBmAGkAYwBhAGMAaQDzAG4AIABkAGUAIABsAGEAIABDAG8AbQB1AG4AaQB0AGEAdAAgAFYAYQBsAGUAbgBjAGkAYQBuAGEAIAAoAFAAbAAuACAATQBhAG4AaQBzAGUAcwAgADEALgAgAEMASQBGACAAUwA0ADYAMQAxADAAMAAxAEEAKQAuACAAQwBQAFMAIAB5ACAAQwBQACAAZQBuACAAaAB0AHQAcAA6AC8ALwB3AHcAdwAuAGEAYwBjAHYALgBlAHMwMAYIKwYBBQUHAgEWJGh0dHA6Ly93d3cuYWNjdi5lcy9sZWdpc2xhY2lvbl9jLmh0bTBDBgNVHR8EPDA6MDigNqA0hjJodHRwOi8vemFyYXRob3MuamFtYWRvci5ndmEuZXMvU1VCX0NBX1dJTkRPV1MzLmNybDBTBggrBgEFBQcBAQRHMEUwQwYIKwYBBQUHMAGGN2h0dHA6Ly91bGlrLnBraS5ndmEuZXM6ODA4MC9lamJjYS9wdWJsaWN3ZWIvc3RhdHVzL29jc3AwDQYJKoZIhvcNAQEFBQADgYEASofgaj06BOE847RTEgVba52lmPWADgeWxKHZAk1t9LdNzuFJ8B/SC3gi0rsAA/lQGSd4WzPbkmJKkVZ6Q9ybpqg4AJRaIZBkoQw1KNXPYAcgt5XLeIhUACdKIPhfPQr+vQtaC1wi5xV8EBCLpLmpzN9bpZdze/724UB4Y94KhII=")
                     .getBytes());
 
+    private static byte[] altNameCertWithXmppAddr = Base64
+            .decode(("MIIC3zCCAkigAwIBAgIIVdtw0up9G28wDQYJKoZIhvcNAQEFBQAwDzENMAsGA1UE"
+                    +"AwwEVEVTVDAeFw0xNjA5MTkwODU1MDNaFw0xODA5MTkwODQ1MDRaMCwxDDAKBgNV"
+                    +"BAMMA2ZvbzEPMA0GA1UECgwGQW5hVG9tMQswCQYDVQQGEwJTRTCBnzANBgkqhkiG"
+                    +"9w0BAQEFAAOBjQAwgYkCgYEAxkeTqAHhi0hDCM+OPQ5c0Jy5s166t6XtN0zopnyZ"
+                    +"XQj84prW5nVrKDKHogoxtmFrbxMjh034AXOfKsOhHnL719dCyQmV/K1Bc/RQoDGJ"
+                    +"GIJW4UyQM5bob+PYhtK20b+Gf89dZjU6dT6Uo8QrJCuFm8FjJuvYhDQHjoNiiwMI"
+                    +"KmUCAwEAAaOCASUwggEhMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUJfSROx6e"
+                    +"4MH9LOL9s6Jefj9gMLYwgaEGA1UdEQSBmTCBloEKdG9tYXNAYS5zZYIId3d3LmEu"
+                    +"c2WCCHd3dy5iLnNlhhBodHRwOi8vd3d3LmEuc2UvhwQKAQEBiAMpAQKgGAYKKwYB"
+                    +"BAGCNxQCA6AKDAhmb29AYS5zZaAYBgorBgEEAYI3FAIDoAoMCGZvb0BiLnNloCMG"
+                    +"CCsGAQUFBwgFoBcMFXRvbWFzQHhtcHAuZG9tYWluLmNvbTAdBgNVHSUEFjAUBggr"
+                    +"BgEFBQcDAgYIKwYBBQUHAwQwHQYDVR0OBBYEFFojqy3+FOnxF3ivP6XAoDdpTTKZ"
+                    +"MA4GA1UdDwEB/wQEAwIF4DANBgkqhkiG9w0BAQUFAAOBgQBXympOESlI8MC/U+Sf"
+                    +"tQHJzdOVJfIh6b0ZXm8rBcIzw0ybfQs4oFzlE8UEIL6gjoVGJiqcq1tUgdOvR5jL"
+                    +"KqVqbabQDJk6QzU7v96DTeggtVXFdeStoJ33/0w+LmOxOPwmQU3Wqq97yuDVZh5g"
+                    +"97OuRbeVOzroEhSRJCJH2+vK9g==").getBytes());
+            
     /** The reference certificate from RFC3739 */
     private static byte[] qcRefCert = Base64.decode(("MIIDEDCCAnmgAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADBIMQswCQYDVQQGEwJE"
             + "RTE5MDcGA1UECgwwR01EIC0gRm9yc2NodW5nc3plbnRydW0gSW5mb3JtYXRpb25z" + "dGVjaG5payBHbWJIMB4XDTA0MDIwMTEwMDAwMFoXDTA4MDIwMTEwMDAwMFowZTEL"
@@ -716,7 +733,7 @@ public class CertToolsTest {
 
         // We try to examine the general case and som special cases, which we
         // want to be able to handle
-        String alt1 = "rfc822Name=ejbca@primekey.se, dNSName=www.primekey.se, uri=http://www.primekey.se/ejbca,registeredID=1.1.1.3";
+        String alt1 = "rfc822Name=ejbca@primekey.se, dNSName=www.primekey.se, uri=http://www.primekey.se/ejbca,registeredID=1.1.1.3,xmppAddr=tomas@xmpp.domain.com";
         assertEquals(CertTools.getPartFromDN(alt1, CertTools.EMAIL), "ejbca@primekey.se");
         assertNull(CertTools.getPartFromDN(alt1, CertTools.EMAIL1));
         assertNull(CertTools.getPartFromDN(alt1, CertTools.EMAIL2));
@@ -724,6 +741,7 @@ public class CertToolsTest {
         assertNull(CertTools.getPartFromDN(alt1, CertTools.URI));
         assertEquals(CertTools.getPartFromDN(alt1, CertTools.URI1), "http://www.primekey.se/ejbca");
         assertEquals(CertTools.getPartFromDN(alt1, CertTools.REGISTEREDID), "1.1.1.3");
+        assertEquals(CertTools.getPartFromDN(alt1, CertTools.XMPPADDR), "tomas@xmpp.domain.com");
 
         String alt2 = "email=ejbca@primekey.se, dNSName=www.primekey.se, uniformResourceIdentifier=http://www.primekey.se/ejbca";
         assertEquals(CertTools.getPartFromDN(alt2, CertTools.EMAIL1), "ejbca@primekey.se");
@@ -1132,6 +1150,14 @@ public class CertToolsTest {
         assertEquals("www.a.se", name);
         name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
         assertEquals("10.1.1.1", name);
+        altNames = CertTools.getSubjectAlternativeName(CertTools.getCertfromByteArray(altNameCertWithXmppAddr, Certificate.class));
+        log.debug("altNames: "+altNames);
+        name = CertTools.getPartFromDN(altNames, CertTools.UPN);
+        assertEquals("foo@a.se", name);
+        name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
+        assertEquals("1.1.1.2", name);
+        name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
+        assertEquals("tomas@xmpp.domain.com", name);
         log.trace("<test13GetSubjectAltNameString()");
     }
 

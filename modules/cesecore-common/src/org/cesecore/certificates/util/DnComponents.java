@@ -139,6 +139,7 @@ public class DnComponents {
     public static final String UNIFORMRESOURCEID = "UNIFORMRESOURCEID";
     public static final String DIRECTORYNAME = "DIRECTORYNAME";
     public static final String UPN = "UPN";
+    public static final String XMPPADDR = "XMPPADDR";
     public static final String GUID = "GUID";
     public static final String KRB5PRINCIPAL = "KRB5PRINCIPAL";
     public static final String PERMANENTIDENTIFIER = "PERMANENTIDENTIFIER";
@@ -146,6 +147,7 @@ public class DnComponents {
     public static final String OTHERNAME = "OTHERNAME";
     public static final String X400ADDRESS = "X400ADDRESS";
     public static final String EDIPARTYNAME = "EDIPARTYNAME";
+    /// RegisteredID is a standard (rfc5280 otherName that we implement)
     public static final String REGISTEREDID = "REGISTEREDID";
 
     // Subject directory attributes
