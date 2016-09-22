@@ -545,6 +545,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         profile.addField(DnComponents.UPN);
         profile.addField(DnComponents.UPN);
         profile.addField(DnComponents.REGISTEREDID);
+        profile.addField(DnComponents.XMPPADDR);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName, profile);
         try {
@@ -552,7 +553,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
             // Change a user that we know...
             EndEntityInformation userData = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
-                    rsacaid, "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2", 
+                    rsacaid, "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas@xmpp.domain.com", 
                     "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
@@ -562,7 +563,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             String altNames = CertTools.getSubjectAlternativeName(cert);
-            log.debug(altNames);
+            log.debug("Altnames1: "+altNames);
             List<String> list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
             assertEquals(2, list.size());
             assertTrue(list.contains("foo@a.se"));
@@ -579,9 +580,11 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertEquals("10.1.1.1", name);
             name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
             assertEquals("1.1.1.2", name);
+            name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
+            assertEquals("tomas@xmpp.domain.com", name);
             // Change a user that we know...
             EndEntityInformation endEntity = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
-                    rsacaid, "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2", 
+                    rsacaid, "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas@xmpp.domain.com", 
                     "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
@@ -591,7 +594,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             altNames = CertTools.getSubjectAlternativeName(cert);
-            log.debug("Altnames: "+altNames);
+            log.debug("Altnames2: "+altNames);
             list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
             assertEquals(2, list.size());
             assertTrue(list.contains("foo@a.se"));
@@ -608,6 +611,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertEquals("10.1.1.1", name);
             name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
             assertEquals("1.1.1.2", name);
+            name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
+            assertEquals("tomas@xmpp.domain.com", name);
         } finally {
             // Clean up
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName);
