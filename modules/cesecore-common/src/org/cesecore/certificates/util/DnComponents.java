@@ -140,6 +140,7 @@ public class DnComponents {
     public static final String DIRECTORYNAME = "DIRECTORYNAME";
     public static final String UPN = "UPN";
     public static final String XMPPADDR = "XMPPADDR";
+    public static final String SRVNAME = "SRVNAME";
     public static final String GUID = "GUID";
     public static final String KRB5PRINCIPAL = "KRB5PRINCIPAL";
     public static final String PERMANENTIDENTIFIER = "PERMANENTIDENTIFIER";

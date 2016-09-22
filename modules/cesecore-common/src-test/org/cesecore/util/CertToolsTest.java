@@ -141,22 +141,30 @@ public class CertToolsTest {
                     .getBytes());
 
     private static byte[] altNameCertWithXmppAddr = Base64
-            .decode(("MIIC3zCCAkigAwIBAgIIVdtw0up9G28wDQYJKoZIhvcNAQEFBQAwDzENMAsGA1UE"
-                    +"AwwEVEVTVDAeFw0xNjA5MTkwODU1MDNaFw0xODA5MTkwODQ1MDRaMCwxDDAKBgNV"
-                    +"BAMMA2ZvbzEPMA0GA1UECgwGQW5hVG9tMQswCQYDVQQGEwJTRTCBnzANBgkqhkiG"
-                    +"9w0BAQEFAAOBjQAwgYkCgYEAxkeTqAHhi0hDCM+OPQ5c0Jy5s166t6XtN0zopnyZ"
-                    +"XQj84prW5nVrKDKHogoxtmFrbxMjh034AXOfKsOhHnL719dCyQmV/K1Bc/RQoDGJ"
-                    +"GIJW4UyQM5bob+PYhtK20b+Gf89dZjU6dT6Uo8QrJCuFm8FjJuvYhDQHjoNiiwMI"
-                    +"KmUCAwEAAaOCASUwggEhMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUJfSROx6e"
-                    +"4MH9LOL9s6Jefj9gMLYwgaEGA1UdEQSBmTCBloEKdG9tYXNAYS5zZYIId3d3LmEu"
-                    +"c2WCCHd3dy5iLnNlhhBodHRwOi8vd3d3LmEuc2UvhwQKAQEBiAMpAQKgGAYKKwYB"
-                    +"BAGCNxQCA6AKDAhmb29AYS5zZaAYBgorBgEEAYI3FAIDoAoMCGZvb0BiLnNloCMG"
-                    +"CCsGAQUFBwgFoBcMFXRvbWFzQHhtcHAuZG9tYWluLmNvbTAdBgNVHSUEFjAUBggr"
-                    +"BgEFBQcDAgYIKwYBBQUHAwQwHQYDVR0OBBYEFFojqy3+FOnxF3ivP6XAoDdpTTKZ"
-                    +"MA4GA1UdDwEB/wQEAwIF4DANBgkqhkiG9w0BAQUFAAOBgQBXympOESlI8MC/U+Sf"
-                    +"tQHJzdOVJfIh6b0ZXm8rBcIzw0ybfQs4oFzlE8UEIL6gjoVGJiqcq1tUgdOvR5jL"
-                    +"KqVqbabQDJk6QzU7v96DTeggtVXFdeStoJ33/0w+LmOxOPwmQU3Wqq97yuDVZh5g"
-                    +"97OuRbeVOzroEhSRJCJH2+vK9g==").getBytes());
+            .decode(("MIIEdDCCA1ygAwIBAgIIVjkVCQFZomowDQYJKoZIhvcNAQEFBQAwNTEWMBQGA1UE"
+                    +"AwwNTWFuYWdlbWVudCBDQTEOMAwGA1UECgwFUEstRE0xCzAJBgNVBAYTAkFFMB4X"
+                    +"DTE2MDkyMjE1MDgxM1oXDTE2MDkyNDE1MDgxM1owMDEOMAwGA1UEAwwFeG1wcDIx"
+                    +"ETAPBgNVBAoMCFByaW1lS2V5MQswCQYDVQQGEwJBRTCBnzANBgkqhkiG9w0BAQEF"
+                    +"AAOBjQAwgYkCgYEAlYenj6Yh6/WGDyxpSIFu4p8JUn8Gs0+p8jYwNsdwut0n2jRs"
+                    +"92u0ekrmao5C0sdOF3EgVojOAWMGbqA32Q/3skXQqKwapgVlJGJXpNeMm47EwB4z"
+                    +"HTFKDwHNrnUOU3EB4kf4Z3leZU1KsDppVyt3he9M1gPHwnhSMKRkdPg64AkCAwEA"
+                    +"AaOCAg8wggILMBkGB2eBCAEBBgIEDjAMAgEAMQcTAVATAklEMAwGA1UdEwEB/wQC"
+                    +"MAAwHwYDVR0jBBgwFoAUu2ifcFjWKrS4wThm+sPPj8GYatowagYDVR0RBGMwYYgD"
+                    +"KQECoBgGCisGAQQBgjcUAgOgCgwIZm9vQGEuc2WgIwYIKwYBBQUHCAWgFwwVdG9t"
+                    +"YXNAeG1wcC5kb21haW4uY29toBsGCCsGAQUFBwgHoA8WDV9TZXJ2aWNlLk5hbWUw"
+                    +"ggEDBgNVHSAEgfswgfgwKAYDKQECMCEwHwYIKwYBBQUHAgEWE2h0dHBzOi8vZWpi"
+                    +"Y2Eub3JnLzIwKAYDKQEDMCEwHwYIKwYBBQUHAgEWE2h0dHBzOi8vZWpiY2Eub3Jn"
+                    +"LzMwBQYDKQEBMD0GAykBBDA2MDQGCCsGAQUFBwICMCgeJgBNAHkAIABVAHMAZQBy"
+                    +"ACAATgBvAHQAaQBjAGUAIABUAGUAeAB0MFwGAykBBTBVMDAGCCsGAQUFBwICMCQe"
+                    +"IgBFAEoAQgBDAEEAIABVAHMAZQByACAATgBvAHQAaQBjAGUwIQYIKwYBBQUHAgEW"
+                    +"FWh0dHBzOi8vZWpiY2Eub3JnL0NQUzAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYB"
+                    +"BQUHAwQwHQYDVR0OBBYEFMUFBPXfQktUn7WTMUxTHnYSXk8TMA4GA1UdDwEB/wQE"
+                    +"AwIF4DANBgkqhkiG9w0BAQUFAAOCAQEAQ1K6zjPjCNFT1+KJ/E959khU/Hg5dObK"
+                    +"p4LsS+LpPmFu4M9DjS2vwr48lLh+eBB65U+6/WMTO7/3fEeD3AaoD2+f9pnG6pq9"
+                    +"tC3GlfQfuSWELIhebg+73+GcvEpGRqQIKQ0qguTZEJiGK6i7714ECRE+xVD81Hez"
+                    +"BE3M3tBSK1Q6zJ36DdgSx99hz0p8IutMX6ntYDWbA1DJ+V3zzCc5zF3ZSogWv3+T"
+                    +"CJG3EfrGDJ91eVUlGyfDpHRr9a3WOWbypLjh1Q92xxHOJbvgnS9J6mybaOpQYyCn"
+                    +"MVWCdyTMTi9Ik0eybpeVMZYaSEO4xIqwoGbvuBgE2WKm+RuMnMOkfA==").getBytes());
             
     /** The reference certificate from RFC3739 */
     private static byte[] qcRefCert = Base64.decode(("MIIDEDCCAnmgAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADBIMQswCQYDVQQGEwJE"
@@ -733,7 +741,7 @@ public class CertToolsTest {
 
         // We try to examine the general case and som special cases, which we
         // want to be able to handle
-        String alt1 = "rfc822Name=ejbca@primekey.se, dNSName=www.primekey.se, uri=http://www.primekey.se/ejbca,registeredID=1.1.1.3,xmppAddr=tomas@xmpp.domain.com";
+        String alt1 = "rfc822Name=ejbca@primekey.se, dNSName=www.primekey.se, uri=http://www.primekey.se/ejbca,registeredID=1.1.1.3,xmppAddr=tomas@xmpp.domain.com,srvName=_Service.Name";
         assertEquals(CertTools.getPartFromDN(alt1, CertTools.EMAIL), "ejbca@primekey.se");
         assertNull(CertTools.getPartFromDN(alt1, CertTools.EMAIL1));
         assertNull(CertTools.getPartFromDN(alt1, CertTools.EMAIL2));
@@ -742,6 +750,7 @@ public class CertToolsTest {
         assertEquals(CertTools.getPartFromDN(alt1, CertTools.URI1), "http://www.primekey.se/ejbca");
         assertEquals(CertTools.getPartFromDN(alt1, CertTools.REGISTEREDID), "1.1.1.3");
         assertEquals(CertTools.getPartFromDN(alt1, CertTools.XMPPADDR), "tomas@xmpp.domain.com");
+        assertEquals(CertTools.getPartFromDN(alt1, CertTools.SRVNAME), "_Service.Name");
 
         String alt2 = "email=ejbca@primekey.se, dNSName=www.primekey.se, uniformResourceIdentifier=http://www.primekey.se/ejbca";
         assertEquals(CertTools.getPartFromDN(alt2, CertTools.EMAIL1), "ejbca@primekey.se");
@@ -1158,6 +1167,8 @@ public class CertToolsTest {
         assertEquals("1.1.1.2", name);
         name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
         assertEquals("tomas@xmpp.domain.com", name);
+        name = CertTools.getPartFromDN(altNames, CertTools.SRVNAME);
+        assertEquals("_Service.Name", name);
         log.trace("<test13GetSubjectAltNameString()");
     }
 
