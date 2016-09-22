@@ -191,6 +191,7 @@ public abstract class CertTools {
     public static final String DIRECTORYNAME = "directoryName";
     public static final String REGISTEREDID = "registeredID";
     public static final String XMPPADDR = "xmppAddr";
+    public static final String SRVNAME = "srvName";
 
     /** Kerberos altName for smart card logon */
     public static final String KRB5PRINCIPAL = "krb5principal";
@@ -202,6 +203,8 @@ public abstract class CertTools {
     public static final String UPN_OBJECTID = "1.3.6.1.4.1.311.20.2.3";
     /** ObjectID for XmppAddr, rfc6120#section-13.7.1.4 */
     public static final String XMPPADDR_OBJECTID = "1.3.6.1.5.5.7.8.5";
+    /** ObjectID for srvName, rfc4985 */
+    public static final String SRVNAME_OBJECTID =  "1.3.6.1.5.5.7.8.7";
     public static final String PERMANENTIDENTIFIER = "permanentIdentifier";
     public static final String PERMANENTIDENTIFIER_OBJECTID = "1.3.6.1.5.5.7.8.3";
     public static final String PERMANENTIDENTIFIER_SEP = "/";
@@ -2019,7 +2022,8 @@ public abstract class CertTools {
      * (subjectAltName=otherName:1.3.6.1.5.5.7.8.5;UTF8:username@some.domain)
      * 
      * CertTools.UPN_OBJECTID = "1.3.6.1.4.1.311.20.2.3";
-     * CertTools.XMPADDR_OBJECTID = "1.3.6.1.5.5.7.8.5";
+     * CertTools.XMPPADDR_OBJECTID = "1.3.6.1.5.5.7.8.5";
+     * CertTools.SRVNAME_OBJECTID = "1.3.6.1.5.5.7.8.7";
      * 
      * @param cert certificate containing the extension
      * @param oid the OID of the OtherName
@@ -2060,6 +2064,30 @@ public abstract class CertTools {
                     obj = ASN1TaggedObject.getInstance(obj).getObject();
                 }
                 DERUTF8String str = DERUTF8String.getInstance(obj);
+                return str.getString();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Helper method.
+     * 
+     * @param seq the OtherName sequence
+     * @return String which is the decoded ASN.1 IA5String of the (simple) OtherName
+     */
+    private static String getIA5StringFromSequence(final ASN1Sequence seq, final String oid) {
+        if (seq != null) {
+            // First in sequence is the object identifier, that we must check
+            ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
+            if (id.getId().equals(oid)) {
+                ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
+                // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
+                ASN1Primitive obj = oobj.getObject();
+                if (obj instanceof ASN1TaggedObject) {
+                    obj = ASN1TaggedObject.getInstance(obj).getObject();
+                }
+                DERIA5String str = DERIA5String.getInstance(obj);
                 return str.getString();
             }
         }
@@ -2476,6 +2504,11 @@ public abstract class CertTools {
                                     final String xmpAddr = getUTF8StringFromSequence(seq, CertTools.XMPPADDR_OBJECTID);
                                     if (xmpAddr != null) {
                                         result += append + CertTools.XMPPADDR + "=" + xmpAddr;
+                                    } else {
+                                        final String srvName = getIA5StringFromSequence(seq, CertTools.SRVNAME_OBJECTID);
+                                        if (srvName != null) {
+                                            result += append + CertTools.SRVNAME + "=" + srvName;
+                                        }
                                     }
                                 }
                             }
@@ -2584,6 +2617,14 @@ public abstract class CertTools {
             final ASN1EncodableVector v = new ASN1EncodableVector();
             v.add(new ASN1ObjectIdentifier(CertTools.XMPPADDR_OBJECTID));
             v.add(new DERTaggedObject(true, 0, new DERUTF8String(xmppAddr)));
+            vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
+        }
+
+        // srvName is an OtherName see method getIA5String...... for asn.1 definition
+        for (final String srvName : CertTools.getPartsFromDN(altName, CertTools.SRVNAME)) {
+            final ASN1EncodableVector v = new ASN1EncodableVector();
+            v.add(new ASN1ObjectIdentifier(CertTools.SRVNAME_OBJECTID));
+            v.add(new DERTaggedObject(true, 0, new DERIA5String(srvName)));
             vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
         }
 
@@ -2742,6 +2783,11 @@ public abstract class CertTools {
                             final String xmpAddr = getUTF8StringFromSequence(seq, CertTools.XMPPADDR);
                             if (xmpAddr != null) {
                                 ret = CertTools.XMPPADDR + "=" + xmpAddr;
+                            } else {
+                                final String srvName = getIA5StringFromSequence(seq, CertTools.SRVNAME);
+                                if (srvName != null) {
+                                    ret = CertTools.SRVNAME + "=" + srvName;
+                                }
                             }
                         }
                     }
