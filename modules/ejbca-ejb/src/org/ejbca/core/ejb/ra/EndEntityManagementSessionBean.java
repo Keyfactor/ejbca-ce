@@ -384,6 +384,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             if (approvalProfile != null) {
                 AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(endEntity, clearpwd, admin, null, caid,
                         endEntityProfileId, approvalProfile);
+                // How come we pass through here when the request is actually approved?
+                // When the approval request is finally executed, it is executed through AddEndEntityApprovalRequest.execute, which is
+                // the NONAPPROVABLECLASSNAMES_ADDUSER below.
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ADDUSER)) {
                     approvalSession.addApprovalRequest(admin, ar);
                     final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
