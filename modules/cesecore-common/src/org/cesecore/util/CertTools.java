@@ -2780,11 +2780,11 @@ public abstract class CertTools {
                         if (simString != null) {
                             ret = CertTools.IdOnSIM + "=" + simString;
                         } else {
-                            final String xmpAddr = getUTF8StringFromSequence(seq, CertTools.XMPPADDR);
+                            final String xmpAddr = getUTF8StringFromSequence(seq, CertTools.XMPPADDR_OBJECTID);
                             if (xmpAddr != null) {
                                 ret = CertTools.XMPPADDR + "=" + xmpAddr;
                             } else {
-                                final String srvName = getIA5StringFromSequence(seq, CertTools.SRVNAME);
+                                final String srvName = getIA5StringFromSequence(seq, CertTools.SRVNAME_OBJECTID);
                                 if (srvName != null) {
                                     ret = CertTools.SRVNAME + "=" + srvName;
                                 }
