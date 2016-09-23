@@ -771,6 +771,12 @@ Improvement
 New Feature
 	[ECA-4006] - Add test for legacy subject encoding with override enabled via CMP
 
+EJBCA 6.2.6.8, 2016-09-26
+---
+New Feature
+    [ECA-2842] - Add SAN SRVName OtherName for XMPP Client certificates (RFC 6120)
+    [ECA-2843] - Add SAN XmppAddr OtherName for XMPP Client certificates (RFC 6120)
+
 EJBCA 6.2.6.7, 2016-09-08
 ---
 New Feature
