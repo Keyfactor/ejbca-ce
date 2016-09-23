@@ -417,9 +417,13 @@ For upgrade instructions, please see UPGRADE.
 	*   Importing an externally produced certificate with empty DN fields fails https://jira.primekey.se/browse/ECA-4018
 	*   CA Certificates using brainpool curves can't be imported from the ClI. GUI works though. https://jira.primekey.se/browse/ECA-4022 
 
+EJBCA 6.2.6.8
+-----------
+EJBCA 6.2.6.8 is a patch release for ECA-2842 and ECA-2843, out of the box support for the OtherNames xmppAddr and srvName in subject alternative name.
+
 EJBCA 6.2.6.7
 -----------
-EJBCA 6.2.6.6 is a patch release for ECA-5322, Ability to use variables in email subject for email expiration service.
+EJBCA 6.2.6.7 is a patch release for ECA-5322, Ability to use variables in email subject for email expiration service.
 
 EJBCA 6.2.6.6
 -----------
