@@ -84,9 +84,8 @@ public class DocumentTypeList extends StandardCertificateExtension {
         vec.add(new DERSet(dts)); // the DERSet constructor performs the DER normalization (i.e., it sorts the set)
         
         ASN1Object gn = new DERSequence(vec);
-        if(log.isDebugEnabled()) {
-            log.debug("Constructed DocumentTypeList:");
-            log.debug(ASN1Dump.dumpAsString(gn, true));
+        if(log.isTraceEnabled()) {
+            log.trace("Constructed DocumentTypeList: "+ASN1Dump.dumpAsString(gn, true));
         }
         
         return gn;
