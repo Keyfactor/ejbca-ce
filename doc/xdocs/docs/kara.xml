@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<document>
+  <properties>
+    <title>The Registration Authority UI</title>
+  </properties>
+<body>
+
+<section name="Two External RA versions">
+<p>
+Since EJBCA 6.6.0 there are two variants of External RA:
+</p>
+<ul>
+<li>The (new) Peer Connector based External RA, including a user friendly GUI for users and administrators. This is actually a generic RA, but with capabilities to operate in an external polling mode.</li>
+<li>The (old) database polling External RA, described below.</li>
+</ul>
+<p>
+This document describes the first, new, Registration Authority.</p>
+</section>
+<section name="RA Concepts">
+<table>
+<tr><td>EJBCA</td><td>Enterprise Java Beans Certificate Authority, includes both CA, VA and RA</td></tr>
+<tr><td>CA</td><td>Certificate Authority</td></tr>
+<tr><td>RA</td><td>Registration Authority, can be run as part of the CA or as a separate services</td></tr>
+<tr><td><a href="adminguide.html#Peer%20Systems%20(Enterprise%20only)">Peer Systems</a></td><td>A mechanism for connections initiated from the CA to the RA (or VA), where messages for control and operations are passed</td></tr>
+<tr><td>RA User</td><td>A User that makes a certificate request on the RA, the user may have to wait for an RA Admin to approve the request</td></tr>
+<tr><td>RA Admin</td><td>An Administrator that approves requests made by RA Users</td></tr>
+<tr><td><a href="adminguide.html#Approving%20Actions">Approvals</a></td><td>The mechanism for requiring Administrators to approve actions before they are executed</td></tr>
+</table>
+</section>
+
+<section name="Using the RA in External Polling mode">
+<p>
+In many cases, for security reasons, is it preferable to deny all inbound traffic to the CA installation and instead let the CA 
+fetch and process information from an external RA. The EJBCA RA does this using <a href="adminguide.html#Peer%20Systems%20(Enterprise%20only)">Peer Connectors</a>.
+</p>
+</section>
+
+<section name="Security Features">
+<p>Some security features of the RA, using Peer Connectors are:
+</p>
+<ul>
+<li>TLS Connection established from the CA to the RA, only firewall friendly outgoing connections from the CA.</li>
+<li>Mutually authenticated TLS connection.</li>
+<li>JSF 2.0 based Web UI, including Content Security Policy, protection against CSS, CSRF and other attacks.</li>
+<li>Filtered error messages from the CA, only shows non-sensitive information in the RA UI.</li>
+<li>Secure object transfer between RA and CA.</li>
+<li>Location aware authorization. The authorization towards the CA is a combination of the Users authorization, and the RA servers so you can limit what RAs in different groups can be used for.</li>
+</ul>
+</section>
+
+<section name="Clustering the RA">
+<p>
+You can have several RA servers, in order to provide high availability, or increased performance. 
+The RA itself is stateless and therefore any user can access any RA server to perform their tasks, as long as it is an RA with the same privileges (see Security Features).
+User session against the RA UI uses HTTPS sessions, and are typically pinned to a certain node by a load balancer. 
+</p>
+</section>
+
+<section name="Installation">
+<p>The RA UI is part of any EJBCA installation, after installing a CA (on localhost in the example) the RA UI is available over <i>https://loalhost:8443/ejbca/ra/</i>.</p>
+<p>To install the RA as an external service, see the section on <a href="adminguide.html#Peer%20Systems%20(Enterprise%20only)">Peer Systems</a>, in the Admin Guide.</p>
+</section>
+
+<section name="User Authorization">
+<p>TODO: Here we will describe what authorization rules are needed for a RA User and a RA Admin.</p>
+</section>
+</body>
+</document>
