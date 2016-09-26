@@ -2342,9 +2342,9 @@ Both ways works, but don't forget to reconfigure the proxy settings if you upgra
 </subsection>
 </section>
 
-<section name="External RA API (Enterprise Edition Only)">
+<section name="External RA (Enterprise Edition Only)">
 <p>
-Information on how to use the External RA API is available <a href="externalra.html">here</a>.
+Information on how to use the External RA is available <a href="externalra.html">here</a>.
 </p>
 </section>
 
