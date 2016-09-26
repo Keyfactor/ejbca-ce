@@ -89,10 +89,12 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
         
         final PublicAccessMatchValue matchValue = (PublicAccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
         switch (matchValue) {
+        // Disabled for now (ECA-5120)
+        /*
         case TRANSPORT_CONFIDENTIAL:
             return credential.isConfidentialTransport();
         case TRANSPORT_PLAIN:
-            return !credential.isConfidentialTransport();
+            return !credential.isConfidentialTransport();*/
         case TRANSPORT_ANY:
             return true;
         default:
