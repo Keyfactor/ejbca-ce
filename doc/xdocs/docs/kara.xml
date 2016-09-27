@@ -62,7 +62,33 @@ User session against the RA UI uses HTTPS sessions, and are typically pinned to 
 </section>
 
 <section name="User Authorization">
-<p>TODO: Here we will describe what authorization rules are needed for a RA User and a RA Admin.</p>
+<p>To be authorized to use the RA, both the peer connection role (in case the RA runs as an external service) and the user's/admin's role must be configured to
+allow access to the desired functionality. For the built-in role templates, the authorization works as follows:</p>
+
+<p><b>CA Administrators</b> are granted access to all functionality in the RA, but only to the CAs that are selected in the administrator role. CAs and related end entities and certificates, will be hidden if the administrator does not have access.</p>
+
+<p><b>RA Administrators</b> have access to the Enrollment, Search and Manage Requests pages, depending on the selected End Entity Rules. Access is restricted according to the selected CAs and end entity profiles as well.
+In order to make a certificate request, the administrator needs both &quot;Create End Entities&quot; and &quot;Delete End Entities&quot; access.
+Permission to approve or reject a request is controlled by the approval profile, but certificate requests and requests to edit end entities additionally require the
+&quot;Approve End Entity&quot; access. The certificate and end entity search require &quot;View End Entity&quot; access.</p>
+
+<p><b>Supervisors</b> have access to the Enrollment and Search pages only, according to the same rules as for RA Administrators.</p>
+
+<p><b>Auditors</b> have access to **TODO**.</p>
+
+<p>If you configure the access rules in Advanced Mode (i.e. not using the role templates), the access rules work as follows:</p>
+<dl>
+<dt>Enrollment</dt>
+<dd>TODO</dd>
+<dt>Certificate Search</dt>
+<dd>TODO</dd>
+<dt>End Entity Search</dt>
+<dd>TODO</dd>
+<dt>Manage Requests</dt>
+<dd>TODO</dd>
+<dt>CAs &amp; CRLs</dt>
+<dd>TODO</dd>
+</dl>
 </section>
 </body>
 </document>
