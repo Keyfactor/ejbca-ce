@@ -43,6 +43,7 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ValidityDate;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
@@ -611,16 +612,24 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(CERTVERSION, version);
     }
 
+    /** 
+     * @see ValidityDate#getDate(long, java.util.Date)
+     * @return a long that is used to provide the end date of certificates for this profile, interpreted by ValidityDate#getDate
+     */
     public long getValidity() {
         return ((Long) data.get(VALIDITY)).longValue();
     }
 
+    /** 
+     * @see ValidityDate#getDate(long, java.util.Date)
+     * @param validity a long that is used to provide the end date of certificates for this profile, interpreted by ValidityDate#getDate
+     */
     public void setValidity(long validity) {
         data.put(VALIDITY, Long.valueOf(validity));
     }
 
     /**
-     * If validity override is allowed, a certificate can have a shorter validity than the one specefied in the certificate profile, but never longer.
+     * If validity override is allowed, a certificate can have a shorter validity than the one specified in the certificate profile, but never longer.
      * A certificate created with validity override can hava a starting point in the future.
      * 
      * @return true if validity override is allowed
@@ -630,7 +639,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * If validity override is allowed, a certificate can have a shorter validity than the one specefied in the certificate profile, but never longer.
+     * If validity override is allowed, a certificate can have a shorter validity than the one specified in the certificate profile, but never longer.
      * A certificate created with validity override can hava a starting point in the future.
      */
     public void setAllowValidityOverride(boolean allowvalidityoverride) {
