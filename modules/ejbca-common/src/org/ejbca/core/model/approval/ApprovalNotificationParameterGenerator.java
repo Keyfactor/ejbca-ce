@@ -33,6 +33,17 @@ import org.ejbca.util.NotificationParamGen;
  */
 public class ApprovalNotificationParameterGenerator extends NotificationParamGen {
 
+    /**
+     * 
+     * @param approvalRequestID approval request ID, is the ID of the ApprovalData
+     * @param approvalStepId
+     * @param approvalPartitionId
+     * @param approvalPartitionName
+     * @param approvalType one of the ApprovalDataVO.APPROVALTYPENAMES
+     * @param workflowState "APPROVAL_WFSTATE_" + approvalPartitionWorkflowState.name(), where approvalPartitionWorkflowState.name() typically is "approved", "rejected"
+     * @param requestor AuthenticationToken.toString() of the admin who created the approval request
+     * @param lastApprovedBy AuthenticationToken.toString() of the admin who last approved the request, or empty string/null if none
+     */
     public ApprovalNotificationParameterGenerator(final int approvalRequestID, final int approvalStepId, final int approvalPartitionId,
             final String approvalPartitionName, final String approvalType, final String workflowState, final String requestor, final String lastApprovedBy) {
         paramPut("approvalRequest.ID", approvalRequestID);
