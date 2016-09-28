@@ -38,7 +38,7 @@ public class UserNotificationParamGenTest {
 		                                 SecConst.EMPTY_ENDENTITYPROFILE, 
 		                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
 		                                 now, null, SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
-		userdata.setPassword("foo123");
+		userdata.setPassword("foo$123");
 		EndEntityInformation admindata =
 		        new EndEntityInformation("admin", "CN=Test Admin,C=NO", caid, 
 		                                 "rfc822Name=adminalt@foo.se", "adminee@foo.se",
@@ -66,7 +66,7 @@ public class UserNotificationParamGenTest {
         						" ${revokedCertificate.CERTSERIAL} ${revokedCertificate.EXPIREDATE} ${revokedCertificate.CERTSUBJECTDN} " +
         						" ${revokedCertificate.CERTISSUERDN} ${revokedCertificate.REVOCATIONSTATUS} ${revokedCertificate.REVOCATIONREASON} ${approvalRequestID}");
         assertFalse("Interpolating message failed", (msg==null || msg.length()==0));
-        assertEquals("foo foo foo123 foo123 foo foo SE approvaluser SE Org fooee@foo.se fooalt@foo.se adminee@foo.se Test Admin adminalt@foo.se" +
+        assertEquals("foo foo foo$123 foo$123 foo foo SE approvaluser SE Org fooee@foo.se fooalt@foo.se adminee@foo.se Test Admin adminalt@foo.se" +
                 " " + new BigInteger(certificateSerialNumber).toString(16).toUpperCase() +" " + ValidityDate.formatAsISO8601(now, ValidityDate.TIMEZONE_SERVER) + " CN=foo,O=Org,C=SE " +
                 " CN=The CA,O=Org,C=NO Revoked certificateHold 123", msg);
 		
