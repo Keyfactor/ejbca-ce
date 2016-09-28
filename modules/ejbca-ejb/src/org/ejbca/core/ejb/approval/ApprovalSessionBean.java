@@ -521,31 +521,31 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             final List<Approval> approvalsPerformed, final boolean expired) {
         try {
             // When adding a new approval request the list of performed approvals is empty
-            final Approval approval = approvalsPerformed.isEmpty() ? null : approvalsPerformed.get(approvalsPerformed.size()-1);
+            final Approval lastApproval = approvalsPerformed.isEmpty() ? null : approvalsPerformed.get(approvalsPerformed.size()-1);
             // If all steps has been satisfied, the ApprovalStep from getStepBeingEvaluated is null
             final ApprovalStep approvalStep = approvalProfile.getStepBeingEvaluated(approvalsPerformed);
-            if (approval!=null && (!approval.isApproved() || expired)) {
+            if (lastApproval!=null && (!lastApproval.isApproved() || expired)) {
                 if (log.isDebugEnabled()) {
                     log.debug("Creating rejected or expired notification for approval profile: "+approvalProfile.getProfileName());
                 }
-                if (approvalStep==null || approvalStep.getStepIdentifier()==approval.getStepId()) {
+                if (approvalStep==null || approvalStep.getStepIdentifier()==lastApproval.getStepId()) {
                     // If the approval has been rejected or expired, we should notify all partition owners in the current step that still has not approved it
-                    final int currentStepId = approval.getStepId();
-                    final ApprovalPartition currentApprovalPartition = approvalProfile.getStep(currentStepId).getPartition(approval.getPartitionId());
+                    final int currentStepId = lastApproval.getStepId();
+                    final ApprovalPartition currentApprovalPartition = approvalProfile.getStep(currentStepId).getPartition(lastApproval.getPartitionId());
                     if (expired) {
-                        sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.EXPIRED);
+                        sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.EXPIRED, lastApproval);
                     } else {
-                        sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.REJECTED);
+                        sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.REJECTED, lastApproval);
                     }
                     if (approvalStep!=null) {
                         // Check which of the remaining partitions that need to be notified
                         for (final ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
-                            final int remainingApprovalsInPartition = approvalProfile.getRemainingApprovalsInPartition(approvalsPerformed, approval.getStepId(), approvalPartition.getPartitionIdentifier());
+                            final int remainingApprovalsInPartition = approvalProfile.getRemainingApprovalsInPartition(approvalsPerformed, lastApproval.getStepId(), approvalPartition.getPartitionIdentifier());
                             if (remainingApprovalsInPartition>0) {
                                 if (expired) {
-                                    sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, approvalPartition, ApprovalPartitionWorkflowState.EXPIRED);
+                                    sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, approvalPartition, ApprovalPartitionWorkflowState.EXPIRED, lastApproval);
                                 } else {
-                                    sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, approvalPartition, ApprovalPartitionWorkflowState.REJECTED);
+                                    sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, approvalPartition, ApprovalPartitionWorkflowState.REJECTED, lastApproval);
                                 }
                             }
                         }
@@ -556,27 +556,27 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                     }
                 }
             } else {
-                if (approval!=null) {
+                if (lastApproval!=null) {
                     if (log.isDebugEnabled()) {
                         log.debug("Request approved, notify every partition owner who's work flow is affected by the made approval for approval profile: "+approvalProfile.getProfileName());
                     }
                     // Notify every partition owner who's work flow is affected by the made approval
-                    final int currentStepId = approval.getStepId();
-                    final int remainingApprovalsInPartition = approvalProfile.getRemainingApprovalsInPartition(approvalsPerformed, currentStepId, approval.getPartitionId());
-                    final ApprovalPartition currentApprovalPartition = approvalProfile.getStep(approval.getStepId()).getPartition(approval.getPartitionId());
+                    final int currentStepId = lastApproval.getStepId();
+                    final int remainingApprovalsInPartition = approvalProfile.getRemainingApprovalsInPartition(approvalsPerformed, currentStepId, lastApproval.getPartitionId());
+                    final ApprovalPartition currentApprovalPartition = approvalProfile.getStep(lastApproval.getStepId()).getPartition(lastApproval.getPartitionId());
                     if (remainingApprovalsInPartition>0) {
-                        sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.APPROVED_PARTIALLY);
+                        sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.APPROVED_PARTIALLY, lastApproval);
                     } else {
-                        sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.APPROVED);
+                        sendApprovalNotification(approvalRequest, approvalProfile, currentStepId, currentApprovalPartition, ApprovalPartitionWorkflowState.APPROVED, lastApproval);
                     }
                 }
                 // If this is a new approval request or the current approval has completed a step, we should notify all partition owners in the next step
-                if (approval==null || (approvalStep!=null && approvalStep.getStepIdentifier()!=approval.getStepId())) {
+                if (lastApproval==null || (approvalStep!=null && approvalStep.getStepIdentifier()!=lastApproval.getStepId())) {
                     if (log.isDebugEnabled()) {
                         log.debug("This is a new approval request or the current approval has completed a step, we should notify all partition owners in the next step for approval profile: "+approvalProfile.getProfileName());
                     }
                     for (final ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
-                        sendApprovalNotification(approvalRequest, approvalProfile, approvalStep.getStepIdentifier(), approvalPartition, ApprovalPartitionWorkflowState.REQUIRES_ACTION);
+                        sendApprovalNotification(approvalRequest, approvalProfile, approvalStep.getStepIdentifier(), approvalPartition, ApprovalPartitionWorkflowState.REQUIRES_ACTION, lastApproval);
                     }
                 }
             }
@@ -587,7 +587,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     
     /** Send approval notification to the partition owner if it has notifications enabled. */
     private void sendApprovalNotification(final ApprovalRequest approvalRequest, final ApprovalProfile approvalProfile, final int approvalStepId, final ApprovalPartition approvalPartition,
-            final ApprovalPartitionWorkflowState approvalPartitionWorkflowState) {
+            final ApprovalPartitionWorkflowState approvalPartitionWorkflowState, final Approval lastApproval) {
         
         if(!approvalProfile.isNotificationEnabled(approvalPartition) && !approvalProfile.isUserNotificationEnabled(approvalPartition)) {
             if (log.isDebugEnabled()) {
@@ -615,13 +615,26 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         final String approvalType = intres.getLocalizedMessage(ApprovalDataVO.APPROVALTYPENAMES[approvalRequest.getApprovalType()]);
         final String workflowState = intres.getLocalizedMessage("APPROVAL_WFSTATE_" + approvalPartitionWorkflowState.name());
         final String requestor = approvalRequest.getRequestAdmin().toString();
-        
+        final String lastApprovedBy;
+        if (lastApproval != null) {
+            if (lastApproval.getAdmin() != null) {
+                lastApprovedBy = lastApproval.getAdmin().toString();
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("lastApproval.getAdmin returned null for approvalId: "+requestId);
+                }
+                lastApprovedBy = "";
+            }
+        } else {
+            lastApprovedBy = "";            
+        }
+
         if(approvalProfile.isNotificationEnabled(approvalPartition)) {
             final String recipient = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_RECIPIENT).getValue();
             final String sender = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_SENDER).getValue();
             final String subject = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT).getValue();
             final String body = ((MultiLineString)approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY).getValue()).getValue();
-            final ApprovalNotificationParameterGenerator parameters = new ApprovalNotificationParameterGenerator(requestId, approvalStepId, partitionId, partitionName, approvalType, workflowState, requestor);
+            final ApprovalNotificationParameterGenerator parameters = new ApprovalNotificationParameterGenerator(requestId, approvalStepId, partitionId, partitionName, approvalType, workflowState, requestor, lastApprovedBy);
             try {
                 MailSender.sendMailOrThrow(sender, Arrays.asList(recipient.split(" ")), MailSender.NO_CC, parameters.interpolate(subject), parameters.interpolate(body), MailSender.NO_ATTACHMENTS);
                 log.info(intres.getLocalizedMessage("approval.sentnotification", requestId));
@@ -641,7 +654,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 final String userSender = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_SENDER).getValue();
                 final String userSubject = (String) approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT).getValue();
                 final String userBody = ((MultiLineString)approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY).getValue()).getValue();
-                final ApprovalNotificationParameterGenerator userParameters = new ApprovalNotificationParameterGenerator(requestId, approvalStepId, partitionId, partitionName, approvalType, workflowState, requestor);
+                final ApprovalNotificationParameterGenerator userParameters = new ApprovalNotificationParameterGenerator(requestId, approvalStepId, partitionId, partitionName, approvalType, workflowState, requestor, lastApprovedBy);
                 try {
                     MailSender.sendMailOrThrow(userSender, Arrays.asList(userRecipient.split(" ")), MailSender.NO_CC, userParameters.interpolate(userSubject), userParameters.interpolate(userBody), MailSender.NO_ATTACHMENTS);
                     log.info(intres.getLocalizedMessage("approval.sentnotification", requestId));
