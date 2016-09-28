@@ -392,9 +392,10 @@ public class ApprovalRequestGUIInfo implements Serializable {
         if (nextApprovalStep != null && !request.isEditedByMe() && !request.isApprovedByMe() && !request.isRequestedByMe()) {
             canApprove = true;
         } else {
-            canApprove = false; // TODO can it be true in "number of approvals" mode?
+            canApprove = false; // TODO can it be true in accumulative approval mode?
         }
-        canEdit = request.isEditable() && hasEditableData;
+        // Can only edit our own requests, or requests that we could approve irrespective of who made or edited them.
+        canEdit = request.isEditable() && hasEditableData && (nextApprovalStep != null || isRequestedByMe());
         
         previousSteps = new ArrayList<>();
         for (final RaApprovalStepInfo stepInfo : request.getPreviousApprovalSteps()) {

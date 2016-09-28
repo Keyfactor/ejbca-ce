@@ -56,7 +56,9 @@ import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityAppro
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
+import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
@@ -334,6 +336,35 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                         StandardRules.CAACCESS.resource() + approvalData.getCAId(), null);
                 throw new AuthorizationDeniedException(msg);
             }
+        }
+        
+        // Check that the admin is allowed in the approval profile
+        boolean allowed = false;
+        final ApprovalStep nextStep;
+        final ApprovalProfile approvalProfile = approvalData.getApprovalProfile();
+        try {
+            nextStep = approvalProfile.getStepBeingEvaluated(approvalData.getApprovals());
+        } catch (AuthenticationFailedException e) {
+            throw new IllegalStateException(e);
+        }
+        
+        if (nextStep != null) {
+            final Map<Integer, ApprovalPartition> partitions = nextStep.getPartitions();
+            for (ApprovalPartition partition : partitions.values()) {
+                try {
+                    if (approvalProfile.canApprovePartition(admin, partition)) {
+                        allowed = true;
+                        break;
+                    }
+                } catch (AuthenticationFailedException e) {
+                    // If this admin cannot approve this partition, check the next partition
+                }
+            }
+        }
+        if (!allowed) {
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoapprovalrequest",
+                    admin, approvalData.getApprovalId(), approvalProfile.getApprovalProfileIdentifier());
+            throw new AuthorizationDeniedException(msg);
         }
 
     }
