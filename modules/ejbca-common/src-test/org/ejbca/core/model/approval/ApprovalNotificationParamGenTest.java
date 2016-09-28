@@ -7,7 +7,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 /** Tests some substitution variables for approval profile notifications
- * @version $Id
+ * @version $Id$
  */
 public class ApprovalNotificationParamGenTest {
 
