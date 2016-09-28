@@ -2831,6 +2831,7 @@ Variables used with approval notifications:
  <li>${approvalRequest.TYPE}           The type of approval request.</li>
  <li>${approvalRequest.WORKFLOWSTATE}  The work flow state from the perspective of the one(s) responsible for handling the partition.</li>
  <li>${approvalRequest.REQUESTOR}      The human readable version of the authentication token that was used to create the request.</li>
+ <li>${approvalRequest.APPROVALADMIN} The human readable version of the authentication token that was used to last approve the request, if any.</li>
 </ul>
 The work flow states are:
 <ul>
