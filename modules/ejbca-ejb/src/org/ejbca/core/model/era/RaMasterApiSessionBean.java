@@ -379,6 +379,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final ApprovalRequest approvalRequest = advo.getApprovalRequest();
         final RaEditableRequestData editData = edit.getEditableData();
         
+        // Can only edit approvals that we have requested, or that we are authorized to approve (ECA-5408)
+        final AuthenticationToken requestAdmin = approvalRequest.getRequestAdmin();
+        final boolean requestedByMe = requestAdmin != null && requestAdmin.equals(authenticationToken);
+        if (requestedByMe) {
+            log.debug("Request was created by this administrator, so authorization is granted.");
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Will perform approval authorization check, because request was create by another administrator '" + requestAdmin + "'");
+            }
+            approvalExecutionSession.assertAuthorizedToApprove(authenticationToken, advo);
+        }
+        
         if (approvalRequest instanceof AddEndEntityApprovalRequest) {
             // Quick check for obviously illegal values
             if (StringUtils.isEmpty(editData.getUsername()) || StringUtils.isEmpty(editData.getSubjectDN())) {
@@ -431,6 +443,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             throw new AuthorizationDeniedException("You are not authorized to the Request with ID " + requestResponse.getId() + " at this point");
         }
+        
+        // Check that we are authorized before continuing
+        approvalExecutionSession.assertAuthorizedToApprove(authenticationToken, advo);
         
         // Save the update request (needed if there are properties, e.g. checkboxes etc. in the partitions)
         approvalSession.updateApprovalRequest(advo.getId(), requestResponse.getApprovalRequest());

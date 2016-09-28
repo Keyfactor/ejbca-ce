@@ -102,7 +102,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             log.info(msg);
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, msg);
         }
-        assertAuthorizedToApprove(admin, approvalData);   
+        assertAuthorizedToApprove(admin, approvalData.getApprovalDataVO());   
         checkApprovalPossibility(admin, approvalData, approval);
 		approval.setApprovalAdmin(true, admin);
         try {
@@ -208,7 +208,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             log.info(msg);
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, msg);
         }
-        assertAuthorizedToApprove(admin, approvalData);
+        assertAuthorizedToApprove(admin, approvalData.getApprovalDataVO());
         checkApprovalPossibility(admin, approvalData, approval);
         approval.setApprovalAdmin(false, admin);
         try {
@@ -303,12 +303,9 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
 
     }
     
-    /**
-     * Asserts general authorization to approve 
-     * @throws AuthorizationDeniedException if any authorization error occurred  
-     */
-    private void assertAuthorizedToApprove(AuthenticationToken admin, final ApprovalData approvalData) throws AuthorizationDeniedException {
-        if (approvalData.getEndentityprofileid() == ApprovalDataVO.ANY_ENDENTITYPROFILE) {
+    @Override
+    public void assertAuthorizedToApprove(AuthenticationToken admin, final ApprovalDataVO approvalData) throws AuthorizationDeniedException {
+        if (approvalData.getEndEntityProfileiId() == ApprovalDataVO.ANY_ENDENTITYPROFILE) {
             if (!accessControlSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVECAACTION)) {
                 final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_APPROVECAACTION,
                         null);
@@ -323,18 +320,18 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
                     .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
-                if (!accessControlSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + approvalData.getEndentityprofileid()
+                if (!accessControlSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + approvalData.getEndEntityProfileiId()
                         + AccessRulesConstants.APPROVE_END_ENTITY)) {
                     final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                            + approvalData.getEndentityprofileid() + AccessRulesConstants.APPROVE_END_ENTITY, null);
+                            + approvalData.getEndEntityProfileiId() + AccessRulesConstants.APPROVE_END_ENTITY, null);
                     throw new AuthorizationDeniedException(msg);
                 }
             }
         }
-        if (approvalData.getCaid() != ApprovalDataVO.ANY_CA) {
-            if (!accessControlSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + approvalData.getCaid())) {
+        if (approvalData.getCAId() != ApprovalDataVO.ANY_CA) {
+            if (!accessControlSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + approvalData.getCAId())) {
                 final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
-                        StandardRules.CAACCESS.resource() + approvalData.getCaid(), null);
+                        StandardRules.CAACCESS.resource() + approvalData.getCAId(), null);
                 throw new AuthorizationDeniedException(msg);
             }
         }
