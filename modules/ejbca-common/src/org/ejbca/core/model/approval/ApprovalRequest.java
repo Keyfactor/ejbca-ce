@@ -296,6 +296,11 @@ public abstract class ApprovalRequest implements Externalizable {
         return requestAdmin;
     }
     
+    /** 
+     * 
+     * @param admin the admin we want to check if has edited the request _last_
+     * @return true if admin was the last of admins who edited this approval request, false otherwise
+     */
     public boolean isEditedByMe(final AuthenticationToken admin) {
         // admin who edited last can't approve
         if (editedByAdmins.isEmpty()) {
@@ -306,10 +311,18 @@ public abstract class ApprovalRequest implements Externalizable {
         }
     }
     
+    /** When an approval request is edited, we keep a list of which admin edited a request
+     * 
+     * @param admin an admin that edited a request
+     */
     public void addEditedByAdmin(final AuthenticationToken admin) {
         editedByAdmins.add(new TimeAndAdmin(new Date(), admin));
     }
     
+    /** When an approval request is edited, we keep a list of which admin edited a request
+     * 
+     * @return a list of admins that has edited a request
+     */
     public List<TimeAndAdmin> getEditedByAdmins() {
         return editedByAdmins;
     }
