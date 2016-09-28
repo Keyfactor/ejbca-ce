@@ -100,7 +100,10 @@ public class NotificationParamGen {
           // if the pattern does exists, replace it by its value
           // otherwise keep the pattern ( it is group(0) )
           if (value != null) {
-              m.appendReplacement(sb, value);
+              // $ is a group symbol in regexp replacement, see:
+              // http://stackoverflow.com/questions/11913709/why-does-replaceall-fail-with-illegal-group-reference
+              // since we can generate passwords etc with $ in them we need to escape $ signs in the value
+              m.appendReplacement(sb, value.replace("$", "\\$"));
           } else {
               // I'm doing this to avoid the backreference problem as there will be a $
               // if I replace directly with the group 0 (which is also a pattern)
