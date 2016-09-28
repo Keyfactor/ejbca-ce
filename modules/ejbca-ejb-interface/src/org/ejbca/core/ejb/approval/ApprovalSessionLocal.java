@@ -68,7 +68,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
     int getIdFromApprovalId(int approvalId);
 
 	 /**
-      * Updates the approval request field for an approval
+      * Updates the approval request field for an approval. Doesn't do any authorization checks.
       * 
       * @param approvalDataId the ID of an approvalData object (not the approvalID hash)
       * @param approvalRequest the updated approval request
