@@ -15,6 +15,16 @@ package org.ejbca.core.ejb.approval;
 
 import javax.ejb.Local;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.approval.ApprovalDataVO;
+
 @Local
 public interface ApprovalExecutionSessionLocal extends ApprovalExecutionSession {
+
+    /**
+     * Asserts general authorization to approve 
+     * @throws AuthorizationDeniedException if any authorization error occurred  
+     */
+    void assertAuthorizedToApprove(AuthenticationToken admin, ApprovalDataVO approvalData) throws AuthorizationDeniedException;
 }
