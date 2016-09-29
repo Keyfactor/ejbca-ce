@@ -85,7 +85,7 @@
           <li><div class="menuheader">Miscellaneous</div>
             <ul>
               <li>
-                <% java.net.URL adminURL = new java.net.URL("https",request.getServerName(),
+                <% java.net.URL adminURL = new java.net.URL("https",org.ejbca.util.HTMLTools.htmlescape(request.getServerName()),
                 		org.ejbca.config.WebConfiguration.getExternalPrivateHttpsPort(),
                 		"/"+org.ejbca.config.InternalConfiguration.getAppNameLower()+"/adminweb/");  %>
                 <a href="<%=adminURL.toString() %>">Administration</a>
