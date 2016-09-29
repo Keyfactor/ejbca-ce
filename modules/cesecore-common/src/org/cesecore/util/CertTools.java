@@ -4101,7 +4101,7 @@ public abstract class CertTools {
      * @throws OperatorCreationException
      */
     public static ContentVerifierProvider genContentVerifierProvider(PublicKey pubkey) throws OperatorCreationException {
-        return new JcaContentVerifierProviderBuilder().build(pubkey);
+        return new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(pubkey);
     }
 
     /**
