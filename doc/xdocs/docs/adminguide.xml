@@ -2294,11 +2294,10 @@ issuing and/or OCSP response generation must wait for the log server to respond,
 
 <p>The log server needs to accept certificates issued by your CAs. For local testing you can install your own instance of the sample log server from the <a href="https://code.google.com/p/certificate-transparency/">CT open source project</a>, and add your root CA to the list of trusted CAs. For a production system (or testing of one) you must contact the log operator to have your root CA added.</p>
 
-<p>For best performance and redundancy, please use multiple logs with short timeouts.
-You can have more logs than you require in the certificate profiles. In this case, EJBCA will
-connect to as few logs as possible to satisfy the certificate profile requirements.
-Logs are connected to in the order they appear in the list, so fast logs (e.g. geographically close) should be added before slow logs.
-</p>
+<p>For redundancy, it's recommended to add more logs than the minimum required in the certificate profile. That way certificate issuance will not fail if a single log is down.
+It is also a good idea to specify a short timeout value and/or enable the "ct.fastfail.enabled" option in conf/cesecore.properties, so a failing log does not slow down all requests.</p>
+<p>Regarding performance, EJBCA will connect to the logs in the order they have been added and in parallel, with the number of concurrent connections controlled by the "Maximum SCTs" value.
+If you have more logs than the "Maximum SCTs" value, it's recommended to put slow (e.g. geographically distant) or unreliable logs at the end of the list, so they are only contacted as a last resort.</p>
 </subsection>
 <subsection name="EJBCA audit logging">
 <p>The submission of pre-certificates is logged to the EJBCA audit log. When a pre-certificate
