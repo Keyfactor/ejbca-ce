@@ -102,8 +102,8 @@ public class NotificationParamGen {
           if (value != null) {
               // $ is a group symbol in regexp replacement, see:
               // http://stackoverflow.com/questions/11913709/why-does-replaceall-fail-with-illegal-group-reference
-              // since we can generate passwords etc with $ in them we need to escape $ signs in the value
-              m.appendReplacement(sb, value.replace("$", "\\$"));
+              // since we can generate passwords etc with $ in them we need to escape $ signs in the value. The same applies for backslash.
+              m.appendReplacement(sb, Matcher.quoteReplacement(value));
           } else {
               // I'm doing this to avoid the backreference problem as there will be a $
               // if I replace directly with the group 0 (which is also a pattern)
