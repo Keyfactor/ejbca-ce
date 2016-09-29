@@ -230,7 +230,8 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # ------------------- Certificate Transparency settings -------------------
 # If your EJBCA has support for CT in it, you may configure caching of SCTs
 # here. The cache is only used when using CT in OCSP responses (and not in
-# the CT publisher or when using CT in new certificates).
+# the CT publisher or when using CT in new certificates). The fastfail
+# options are applied to all CT log submissions.
 #
 # Enables or disables the cache.
 # Default: true (caching enabled)
