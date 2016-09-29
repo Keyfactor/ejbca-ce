@@ -49,7 +49,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
     private static Logger log = Logger.getLogger(X509ResponseMessage.class);
 
     /** Certificate to be in response message, */
-    private Certificate cert = null;
+    private byte[] certbytes = null;
 
     /** status for the response */
     private ResponseStatus status = ResponseStatus.SUCCESS;
@@ -97,7 +97,11 @@ public class X509ResponseMessage implements CertificateResponseMessage {
      * @param cert certificate in the response message.
      */
     public void setCertificate(Certificate cert) {
-        this.cert = cert;
+        try {
+            this.certbytes = cert.getEncoded();
+        } catch (CertificateEncodingException e) {
+            throw new Error("Could not encode certificate. This should not happen", e);
+        }
     }
 
     /**
@@ -121,9 +125,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
     @Override
     public Certificate getCertificate() {     
         try {
-            return CertTools.getCertfromByteArray(getResponseMessage(), Certificate.class);
-        } catch (CertificateEncodingException e) {
-            throw new Error("Could not encode certificate. This should not happen", e);
+            return CertTools.getCertfromByteArray(certbytes, Certificate.class);
         } catch (CertificateException e) {
             throw new Error("Response was created without containing valid certificate. This should not happen", e);
         }
@@ -131,7 +133,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
 
     @Override
     public byte[] getResponseMessage() throws CertificateEncodingException {
-        return cert.getEncoded();
+        return certbytes;
     }
 
     /**

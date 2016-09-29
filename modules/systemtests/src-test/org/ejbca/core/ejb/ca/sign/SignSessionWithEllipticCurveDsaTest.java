@@ -211,20 +211,31 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
      */
     @Test
     public void testBCPKCS10ECDSAWithECDSACA() throws Exception {
+        testBCPKCS10ECDSAWithECDSACA(ecdsakeys);
+    }
+    /**
+     * tests bouncy PKCS10 with Brainpool EC curve
+     */
+    @Test
+    public void testBCPKCS10ECDSABrainppolWithECDSACA() throws Exception {
+        KeyPair keys = KeyTools.genKeys("brainpoolP160r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        testBCPKCS10ECDSAWithECDSACA(keys);
+    }
+    private void testBCPKCS10ECDSAWithECDSACA(KeyPair keys) throws Exception {
         log.trace(">test15TestBCPKCS10ECDSAWithECDSACA()");
 
         endEntityManagementSession.setUserStatus(internalAdmin, ECDSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN="
-                + ECDSA_USERNAME), ecdsakeys.getPublic(), new DERSet(), ecdsakeys.getPrivate(), null);
+                + ECDSA_USERNAME), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
         dOut.writeObject(req.toASN1Structure());
         dOut.close();
 
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
-        ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(ecdsakeys.getPublic());
+        ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(keys.getPublic());
         boolean verify = req2.isSignatureValid(verifier);
         log.debug("Verify returned " + verify);
         assertTrue(verify);
