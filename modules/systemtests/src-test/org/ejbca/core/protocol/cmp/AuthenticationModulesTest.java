@@ -1602,7 +1602,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         X509Certificate admCert = null;
         String fp = null, fp2 = null;
         try {
-            KeyPair keys = KeyTools.genKeys("prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+            KeyPair keys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
 
             final X500Name userDN = new X500Name("CN=cmpmixuser");
             final byte[] _nonce = CmpMessageHelper.createSenderNonce();
@@ -1612,7 +1612,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
             createUser(testAdminName, testAdminDN, "foo123", true, this.caid, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-            KeyPair admkeys = KeyTools.genKeys("prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+            KeyPair admkeys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
             admToken = createAdminToken(admkeys, testAdminName, testAdminDN, this.caid, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             admCert = getCertFromCredentials(admToken);

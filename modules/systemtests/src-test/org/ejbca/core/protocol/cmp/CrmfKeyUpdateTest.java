@@ -1441,7 +1441,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         //--------------- create the user and issue his first certificate -----------------
         createUser(this.username, this.userDN.toString(), "foo123");
-        KeyPair keys = KeyTools.genKeys("prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        KeyPair keys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         final Certificate certificate;
         try {
             certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
