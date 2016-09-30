@@ -114,7 +114,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         
         /** @return the current multi-valued property's possible values as JSF friendly SelectItems. */
         public List<SelectItem/*<String,String>*/> getPropertyPossibleValues( final DynamicUiProperty<? extends Serializable> property) {
-            final List<SelectItem> propertyPossibleValues = new ArrayList<SelectItem>();
+            final List<SelectItem> propertyPossibleValues = new ArrayList<>();
             if (profilePropertyList != null) {
                 if (property != null && property.getPossibleValues() != null) {
                     for (final Serializable possibleValue : property.getPossibleValues()) {
@@ -260,8 +260,9 @@ public class ApprovalRequestGUIInfo implements Serializable {
     // Whether the current admin can approve this request
     private boolean canApprove;
     private boolean canEdit;
+    private final boolean authorizedToRequestType;
     
-    public ApprovalRequestGUIInfo(final RaApprovalRequestInfo request, final RaLocaleBean raLocaleBean) {
+    public ApprovalRequestGUIInfo(final RaApprovalRequestInfo request, final RaLocaleBean raLocaleBean, final RaAccessBean raAccessBean) {
         this.request = request;
         approvalData = request.getApprovalData();
         
@@ -387,15 +388,17 @@ public class ApprovalRequestGUIInfo implements Serializable {
             editLogEntries.add(raLocaleBean.getMessage("view_request_page_edit_log_entry", editDate, adminName));
         }
         
-        // Steps
-        final ApprovalStep nextApprovalStep = request.getNextApprovalStep();
-        if (nextApprovalStep != null && !request.isEditedByMe() && !request.isApprovedByMe() && !request.isRequestedByMe()) {
-            canApprove = true;
+        if (endEntityInformation != null) {
+            authorizedToRequestType = raAccessBean.isAuthorizedToApproveEndEntityRequests();
         } else {
-            canApprove = false; // TODO can it be true in accumulative approval mode?
+            authorizedToRequestType = raAccessBean.isAuthorizedToApproveCARequests();
         }
+        
+        final ApprovalStep nextApprovalStep = request.getNextApprovalStep();
+        canApprove = nextApprovalStep != null && !request.isEditedByMe() && !request.isApprovedByMe() && !request.isRequestedByMe() && authorizedToRequestType;
+        
         // Can only edit our own requests, or requests that we could approve irrespective of who made or edited them.
-        canEdit = request.isEditable() && hasEditableData && (nextApprovalStep != null || isRequestedByMe());
+        canEdit = authorizedToRequestType && request.isEditable() && hasEditableData && (nextApprovalStep != null || isRequestedByMe());
         
         previousSteps = new ArrayList<>();
         for (final RaApprovalStepInfo stepInfo : request.getPreviousApprovalSteps()) {
@@ -459,5 +462,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean isWaitingForApproval() { return request.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL; }
     public boolean isExpired() { return request.getStatus() == ApprovalDataVO.STATUS_EXPIRED || request.getStatus() == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED; }
     public boolean hasNextApprovalStep() { return request.getNextApprovalStep() != null; }
+    public boolean isAuthorizedToApprovalType() { return authorizedToRequestType; }
     
 }

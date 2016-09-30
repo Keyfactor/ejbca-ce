@@ -18,13 +18,14 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.RequestScoped;
+import javax.faces.bean.SessionScoped;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.util.ConcurrentCache;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -38,7 +39,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * @version $Id$
  */
 @ManagedBean
-@RequestScoped
+@SessionScoped
 public class RaAccessBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -136,9 +137,25 @@ public class RaAccessBean implements Serializable {
     }
     
     public boolean isAuthorizedToManageRequests() {
+        final boolean auth = isAuthorized(AccessRulesConstants.REGULAR_APPROVEENDENTITY) || isAuthorized(AccessRulesConstants.REGULAR_APPROVECAACTION) || isAuthorized(AuditLogRules.VIEW.resource());
+        if (!auth && log.isDebugEnabled()) {
+            log.debug(">isAuthorizedToManageRequests: Not authorized to "+AccessRulesConstants.REGULAR_APPROVEENDENTITY+", "+AccessRulesConstants.REGULAR_APPROVECAACTION+" or "+AuditLogRules.VIEW.resource());
+        }
+        return auth;
+    }
+    
+    public boolean isAuthorizedToApproveEndEntityRequests() {
         final boolean auth = isAuthorized(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
         if (!auth && log.isDebugEnabled()) {
             log.debug(">isAuthorizedToManageRequests: Not authorized to "+AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+        }
+        return auth;
+    }
+    
+    public boolean isAuthorizedToApproveCARequests() {
+        final boolean auth = isAuthorized(AccessRulesConstants.REGULAR_APPROVECAACTION);
+        if (!auth && log.isDebugEnabled()) {
+            log.debug(">isAuthorizedToManageRequests: Not authorized to "+AccessRulesConstants.REGULAR_APPROVECAACTION);
         }
         return auth;
     }

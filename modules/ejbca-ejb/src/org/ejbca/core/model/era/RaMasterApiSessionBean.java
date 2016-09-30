@@ -53,6 +53,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -527,14 +528,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     // TODO this method is copied from RAAuthorization because we couldn't use ComplexAccessControlSession. 
     // We should find a way to use ComplexAccessControlSession here instead
     private String getEndEntityProfileAuthorizationString(AuthenticationToken authenticationToken, String endentityAccessRule) throws AuthorizationDeniedException {
-        boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
-        boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
-     
-        authorizedToApproveCAActions = accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_APPROVECAACTION);
-
-        authorizedToApproveRAActions = accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
-
-        if (!authorizedToApproveCAActions && !authorizedToApproveRAActions) {
+        // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
+        boolean authorizedToApproveCAActions = accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_APPROVECAACTION);
+        // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
+        boolean authorizedToApproveRAActions = accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+        boolean authorizedToAudit = accessControlSession.isAuthorizedNoLogging(authenticationToken, AuditLogRules.VIEW.resource());
+        
+        if (!authorizedToApproveCAActions && !authorizedToApproveRAActions && !authorizedToAudit) {
             throw new AuthorizationDeniedException("Not authorized to query apporvals");
         }
 
