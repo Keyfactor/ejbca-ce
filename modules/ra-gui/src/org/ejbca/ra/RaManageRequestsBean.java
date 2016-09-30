@@ -47,6 +47,10 @@ public class RaManageRequestsBean implements Serializable {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
+    @ManagedProperty(value="#{raAccessBean}")
+    private RaAccessBean raAccessBean;
+    public void setRaAccessBean(final RaAccessBean raAccessBean) { this.raAccessBean = raAccessBean; }
+    
     @ManagedProperty(value="#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
@@ -152,7 +156,7 @@ public class RaManageRequestsBean implements Serializable {
         final List<RaApprovalRequestInfo> reqInfos = lastExecutedResponse.getApprovalRequests();
         final List<ApprovalRequestGUIInfo> guiInfos = new ArrayList<>();
         for (final RaApprovalRequestInfo reqInfo : reqInfos) {
-            guiInfos.add(new ApprovalRequestGUIInfo(reqInfo, raLocaleBean));
+            guiInfos.add(new ApprovalRequestGUIInfo(reqInfo, raLocaleBean, raAccessBean));
         }
         resultsFiltered = guiInfos;
         sort();
