@@ -594,7 +594,12 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 String partitionString = "";
                 if(approvalProfile instanceof PartitionedApprovalProfile) {
                     final DynamicUiProperty<? extends Serializable> partitionNameproperty = approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
-                    final String partitionName = partitionNameproperty.getValueAsString();
+                    final String partitionName;
+                    if (partitionNameproperty != null) {
+                        partitionName = partitionNameproperty.getValueAsString();
+                    } else {
+                        partitionName = "Noname with ID "+approvalPartition.getPartitionIdentifier();
+                    }
                     partitionString = " for partition '"+partitionName + "'";
                 }
                 log.debug("Neither notifications nor user notifications are enabled"+ partitionString + " in approval profile: "+approvalProfile.getProfileName());
