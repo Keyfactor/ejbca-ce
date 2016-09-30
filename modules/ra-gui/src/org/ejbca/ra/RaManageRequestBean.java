@@ -71,6 +71,10 @@ public class RaManageRequestBean implements Serializable {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
+    @ManagedProperty(value="#{raAccessBean}")
+    private RaAccessBean raAccessBean;
+    public void setRaAccessBean(final RaAccessBean raAccessBean) { this.raAccessBean = raAccessBean; }
+    
     @ManagedProperty(value="#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
@@ -78,7 +82,6 @@ public class RaManageRequestBean implements Serializable {
     @ManagedProperty(value="#{raLocaleBean}")
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
-
     
     private ApprovalRequestGUIInfo requestInfo;
     private RaApprovalRequestInfo requestData;
@@ -93,14 +96,14 @@ public class RaManageRequestBean implements Serializable {
         if (requestData == null) {
             throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
         }
-        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean);
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
     }
     private void loadRequestByApprovalId(final int approvalId) {
         requestData = raMasterApiProxyBean.getApprovalRequestByRequestHash(raAuthenticationBean.getAuthenticationToken(), approvalId);
         if (requestData == null) {
             throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
         }
-        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean);
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
     }
     
     private void initializeRequestInfo() {
@@ -319,6 +322,8 @@ public class RaManageRequestBean implements Serializable {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_already_executed_failed");
         } else if (!getRequest().isWaitingForApproval()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_not_waiting");
+        } else if (!getRequest().isAuthorizedToApprovalType()) {
+            return raLocaleBean.getMessage("view_request_page_cannot_approve_not_authorized");
         } else if (getRequest().isEditedByMe()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_edited_by_me");
         } else if (getRequest().isApprovedByMe()) {
@@ -328,7 +333,7 @@ public class RaManageRequestBean implements Serializable {
         } else if (getRequest().isPending(raAuthenticationBean.getAuthenticationToken())) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_pending");
         } else if (!getRequest().hasNextApprovalStep()) {
-            return raLocaleBean.getMessage("view_request_page_cannot_approve_no_next_step");              
+            return raLocaleBean.getMessage("view_request_page_cannot_approve_no_next_step");
         } else {
             return raLocaleBean.getMessage("view_request_page_cannot_approve");
         }
@@ -480,7 +485,7 @@ public class RaManageRequestBean implements Serializable {
             return;
         }
         requestData = newReqData;
-        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean);
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
         editing = false;
     }
     
@@ -490,7 +495,7 @@ public class RaManageRequestBean implements Serializable {
         }
         // Restore everything
         requestData = raMasterApiProxyBean.getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), requestData.getId());
-        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean);
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
         editing = false;
     }
     
