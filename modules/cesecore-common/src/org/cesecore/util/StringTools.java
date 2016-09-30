@@ -515,8 +515,18 @@ public final class StringTools {
     }
 
     private static final char[] p = deobfuscate("OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf").toCharArray();
+    /** number of rounds for password based encryption. 100 is not secure and can easily be broken.
+     * Used for "obfuscating" a string, i.e. it will mask it to not be possible to read and remember from the screen.
+     * This method is not supposed to be used for any real encryption, only obfuscation. 
+     * Someone getting hold of the obfuscated text will easily be able to get the clear text.
+     */
     private static final int iCount = 100;
 
+    /**
+     * Method used for "obfuscating" a string, i.e. it will mask it to not be possible to read and remember from the screen.
+     * This method is not supposed to be used for any real encryption, only obfuscation. 
+     * Someone getting hold of the obfuscated text will easily be able to get the clear text.
+     */
     public static String pbeEncryptStringWithSha256Aes192(final String in) throws NoSuchAlgorithmException, NoSuchProviderException,
             NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException,
             UnsupportedEncodingException {
@@ -542,6 +552,11 @@ public final class StringTools {
         return new String(hex);
     }
 
+    /**
+     * Method used for "obfuscating" a string, i.e. it will mask it to not be possible to read and remember from the screen.
+     * This method is not supposed to be used for any real encryption, only obfuscation. 
+     * Someone getting hold of the obfuscated text will easily be able to get the clear text.
+     */
     public static String pbeDecryptStringWithSha256Aes192(final String in) throws IllegalBlockSizeException, BadPaddingException,
             InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
             UnsupportedEncodingException {
@@ -562,6 +577,11 @@ public final class StringTools {
         return new String(dec);
     }
 
+    /**
+     * Method used for "obfuscating" a string, i.e. it will mask it to not be possible to read and remember from the screen.
+     * This method is not supposed to be used for any real encryption, only obfuscation. 
+     * Someone getting hold of the obfuscated text will easily be able to get the clear text.
+     */
     public static String passwordDecryption(final String in, final String sDebug) {
         try {
             final String tmp = pbeDecryptStringWithSha256Aes192(in);
