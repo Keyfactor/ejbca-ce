@@ -58,9 +58,10 @@ public class RaAccessBean implements Serializable {
 
     @PostConstruct
     private void postContruct() {
+        // This check is intended to be equivalent of EndEntityManagementSessionBean.isAuthorizedToEndEntityProfile, except it checks for access to any profile.
+        // It checks both for access in (any of) the profiles and for the /ra_functions/create_end_entity rule also.
         final IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
-        hasCreateEndEntityAccess = !authorizedEndEntityProfiles.isEmpty();
-        
+        hasCreateEndEntityAccess = !authorizedEndEntityProfiles.isEmpty() && isAuthorized(AccessRulesConstants.REGULAR_CREATEENDENTITY);
     }
 
     private boolean isAuthorized(String... resources) {
