@@ -14,7 +14,6 @@ package org.ejbca.ra;
 
 import java.io.Serializable;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
@@ -29,9 +28,7 @@ import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.util.ConcurrentCache;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
  * Managed bean with isAuthorized method. 
@@ -54,16 +51,6 @@ public class RaAccessBean implements Serializable {
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
     
-    private boolean hasCreateEndEntityAccess;
-
-    @PostConstruct
-    private void postContruct() {
-        // This check is intended to be equivalent of EndEntityManagementSessionBean.isAuthorizedToEndEntityProfile, except it checks for access to any profile.
-        // It checks both for access in (any of) the profiles and for the /ra_functions/create_end_entity rule also.
-        final IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
-        hasCreateEndEntityAccess = !authorizedEndEntityProfiles.isEmpty() && isAuthorized(AccessRulesConstants.REGULAR_CREATEENDENTITY);
-    }
-
     private boolean isAuthorized(String... resources) {
         final AuthenticationToken authenticationToken = raAuthenticationBean.getAuthenticationToken();
         AccessSet myAccess;
@@ -112,11 +99,8 @@ public class RaAccessBean implements Serializable {
      * This method shows and hides the make request sub menu item */
     public boolean isAuthorizedToEnrollMakeRequest() {
         // Authorized to make request if user have access to at least one end entity profile
-        if (log.isDebugEnabled() && !hasCreateEndEntityAccess) {
-            log.debug(">isAuthorizedToEnrollMakeRequest: Not authorized to any End Entity Profiles.");
-        }
-
-        return hasCreateEndEntityAccess;
+        // Compared to org.ejbca.core.model.authorization.AccessRulesConstants.ENDENTITYPROFILEBASE we don't check CAs
+        return isAuthorized(AccessRulesConstants.ENDENTITYPROFILEPREFIX + AccessSet.WILDCARD_SOME + AccessRulesConstants.CREATE_END_ENTITY);
     }
     
     /** correspond to menu items in menu.xhtml
