@@ -34,6 +34,8 @@ org.ejbca.ui.web.admin.cainterface.CAInfoView
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
+<jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
+<jsp:setProperty name="rabean" property="*" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 <jsp:setProperty name="cabean" property="*" /> 
 <%!
@@ -42,6 +44,14 @@ org.ejbca.ui.web.admin.cainterface.CAInfoView
   final static String HIDDEN_CAID           = "hiddencaid";
   final static String BUTTON_CREATECRL      = "buttoncreatecrl";
   final static String BUTTON_CREATEDELTACRL = "buttoncreatedeltacrl";
+  
+  final static String ACTION_IMPORT_CRL		= "actionimportcrl";
+  final static String FILE_IMPORTCRL		= "fileimportcrl";
+  final static String BUTTON_IMPORT_CRL 	= "buttonimportcrl";
+  final static String SELECT_CA_IMPORTCRL	= "selectcaimportcrl";
+  
+  
+  
 %>
 <%   // Initialize environment
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource()); 
@@ -65,6 +75,18 @@ org.ejbca.ui.web.admin.cainterface.CAInfoView
 
   RequestHelper.setDefaultCharacterEncoding(request);
 
+	Map<String, String> requestMap = new HashMap<String, String>();
+	byte[] filebuffer = rabean.getfileBuffer(request, requestMap);
+	String msg = cabean.importCRL(requestMap.get(SELECT_CA_IMPORTCRL), filebuffer);
+	if (msg.startsWith("Error:")) {
+		%> <div style="color: #FF0000;"> <%
+    } else {
+    	%> <div style="color: #000000;"> <%
+    } %>
+    	<c:out value="<%= msg %>"/>
+   	</div> <%
+	
+	
   if(request.getParameter(HIDDEN_NUMBEROFCAS) != null){
     int numberofcas = Integer.parseInt(request.getParameter(HIDDEN_NUMBEROFCAS));
     for(int i = 0; i < numberofcas; i++){       
@@ -139,6 +161,41 @@ function getPasswordAndSubmit(formname) {
   	   	    return o1.compareToIgnoreCase(o2);
   	   	}
   	 });
+  	 %>
+  	 
+  	 
+  	 <h2>Import CRL</h2>  	 
+  	 
+  	 <form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+  	 	<input type="hidden" name='action' value='<%=ACTION_IMPORT_CRL %>'>
+		<table class="action" width="70%" border="0" cellspacing="3" cellpadding="3">
+			<tr> 
+				<td width="10%" valign="top" align="right">Import CRL</td>
+
+				<td width="55%" valign="top">
+					<input TYPE="FILE" NAME="<%= FILE_IMPORTCRL %>">
+				</td>
+
+				<td width="20%" valign="top">
+					<select name="<%=SELECT_CA_IMPORTCRL %>" size="1" >
+            			<% for(String caNameForCrl : caNameList){ %>
+           					<option  value='<c:out value="<%= caNameForCrl %>"/>'><c:out value="<%= caNameForCrl %>" /></option>
+            			<% } %>
+        			</select>
+				</td>
+			
+				<td width="15%" valign="top">
+					<input type="submit" name="<%= BUTTON_IMPORT_CRL %>" onClick='return check()' value="<%= ejbcawebbean.getText("IMPORT") %>" >
+				</td>
+			</tr>
+		</table>
+	 </form>
+  	 
+  	 
+  	 
+  	 <h2>Basic Functions</h2>
+  	 
+  	 <%
      int number = 0;
      for(String caname : caNameList) { 
        int caid = ((Integer) canames.get(caname)).intValue();
