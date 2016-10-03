@@ -74,12 +74,12 @@ Permission to approve or reject a request is controlled by the approval profile,
 
 <p><b>Supervisors</b> have access to the Enrollment and Search pages only, according to the same rules as for RA Administrators.</p>
 
-<p><b>Auditors</b> have access to **TODO**.</p>
+<p><b>Auditors</b> have read-only access to everything (except the Enrollment page), similar to how this role works in the Admin GUI.</p>
 
 <p>If you configure the access rules in Advanced Mode (i.e. not using the role templates), the access rules work as follows:</p>
 <dl>
 <dt>Enrollment</dt>
-<dd>TODO</dd>
+<dd>TODO*/delete_end_entity</dd>
 <dt>Certificate Search</dt>
 <dd>TODO</dd>
 <dt>End Entity Search</dt>
