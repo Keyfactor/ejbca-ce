@@ -211,7 +211,10 @@ public final class ConcurrentCache<K,V> {
             // Found valid entry in cache
             if (log.isDebugEnabled()) {
                 log.debug("Found valid entry in cache for key "+key);
-                log.trace("<ConcurrentCache.openCacheEntry");
+                if (log.isTraceEnabled()) {
+                    log.debug("Value: "+entry.value);
+                    log.trace("<ConcurrentCache.openCacheEntry");
+                }
             }
             cleanupIfNeeded();
             return new Entry(key, entry);
