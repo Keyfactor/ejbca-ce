@@ -76,19 +76,43 @@ Permission to approve or reject a request is controlled by the approval profile,
 
 <p><b>Auditors</b> have read-only access to everything (except the Enrollment page), similar to how this role works in the Admin GUI.</p>
 
-<p>If you configure the access rules in Advanced Mode (i.e. not using the role templates), the access rules work as follows:</p>
+<p>If you configure the access rules in Advanced Mode (i.e. not using the role templates), you will need to following access rules (listed per menu item).
+In addition, you <strong>also</strong> need access to any related CAs and End Entity Profiles.</p>
 <dl>
 <dt>Enrollment</dt>
-<dd>TODO*/delete_end_entity</dd>
-<dt>Certificate Search</dt>
-<dd>TODO</dd>
-<dt>End Entity Search</dt>
-<dd>TODO</dd>
+<dd>
+<code>/ra_functionality/create_end_entity</code><br />
+<code>/endentityprofilesrules/.../create_end_entity</code><br />
+<code>endentityprofilesrules/.../delete_end_entity</code><br />
+</dd>
+
+<dt>Certificate and End Entity Search</dt>
+<dd>
+<code>/ra_functionality/view_end_entity</code><br />
+<code>/endentityprofilesrules/.../view_end_entity</code><br />
+TODO ca rules?
+</dd>
+
 <dt>Manage Requests</dt>
-<dd>TODO</dd>
+<dd>
+<code>/endentityprofilesrules/.../approve_end_entity</code><br />
+and at least one of:
+<ul>
+<li><code>/ra_functionality/approve_end_entity</code> - to approve certificate requests and end entity operations</li>
+<li><code>/ca_functionality/approve_caaction</code> - to approve other operations</li>
+<li><code>/secureaudit/auditor/select</code> - to see requests without being able to approve them</li>
+</ul>
+</dd>
+
 <dt>CAs &amp; CRLs</dt>
-<dd>TODO</dd>
+<dd>
+<code>/ca_functionality/view_ca</code><br />
+TODO ca rules?
+TODO</dd>
 </dl>
+
+<p>Note that RA does not support Decline rules. If a role that has a Decline rule is used over the RA, it will be denied access to everything as a security precaution.</p>
+
 </section>
 </body>
 </document>
