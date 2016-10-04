@@ -99,7 +99,7 @@ public class RaAccessBean implements Serializable {
      * This method shows and hides the make request sub menu item */
     public boolean isAuthorizedToEnrollMakeRequest() {
         // Authorized to make request if user have access to at least one end entity profile
-        return isAuthorized(AccessRulesConstants.ENDENTITYPROFILEPREFIX + AccessSet.WILDCARD_SOME + AccessRulesConstants.CREATE_END_ENTITY);
+        return isAuthorized(AccessRulesConstants.ENDENTITYPROFILEPREFIX + AccessSet.WILDCARD_SOME + AccessRulesConstants.CREATE_END_ENTITY) && isAuthorized(AccessRulesConstants.REGULAR_CREATEENDENTITY);
     }
     
     /** correspond to menu items in menu.xhtml
