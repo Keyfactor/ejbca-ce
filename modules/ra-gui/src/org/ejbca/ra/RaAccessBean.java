@@ -131,7 +131,7 @@ public class RaAccessBean implements Serializable {
     public boolean isAuthorizedToApproveEndEntityRequests() {
         final boolean auth = isAuthorized(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
         if (!auth && log.isDebugEnabled()) {
-            log.debug(">isAuthorizedToManageRequests: Not authorized to "+AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+            log.debug(">isAuthorizedToApproveEndEntityRequests: Not authorized to "+AccessRulesConstants.REGULAR_APPROVEENDENTITY);
         }
         return auth;
     }
@@ -139,7 +139,7 @@ public class RaAccessBean implements Serializable {
     public boolean isAuthorizedToApproveCARequests() {
         final boolean auth = isAuthorized(AccessRulesConstants.REGULAR_APPROVECAACTION);
         if (!auth && log.isDebugEnabled()) {
-            log.debug(">isAuthorizedToManageRequests: Not authorized to "+AccessRulesConstants.REGULAR_APPROVECAACTION);
+            log.debug(">isAuthorizedToApproveCARequests: Not authorized to "+AccessRulesConstants.REGULAR_APPROVECAACTION);
         }
         return auth;
     }
