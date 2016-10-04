@@ -290,9 +290,15 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         Properties returnValue = new Properties();
         
         for (Object key : properties.keySet()) {
-            String keyString = (String) key;
-            if (keyString.equals(SLOT_LABEL_KEY)) {
+            final String keyString = (String) key;
+            if (log.isDebugEnabled()) {
+                log.debug(">upgradePropertiesFileFrom5_0_x, keyString: "+key);
+            }
+            if (keyString.equalsIgnoreCase(SLOT_LABEL_KEY)) {
                 String keyValue = properties.getProperty(keyString);
+                if (log.isDebugEnabled()) {
+                    log.debug(">upgradePropertiesFileFrom5_0_x, keyValue: "+keyValue);
+                }
                 // In 5.0.11, the "slot" value may contain just an integer, but may also encode an integer, an index
                 // a token label or a config file. 
                 final String oldLabelPrefix = "TOKEN_LABEL:";
@@ -318,14 +324,20 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
                     returnValue.setProperty(SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SUN_FILE.getKey());
                 }
                 
-            } else if (((String) key).equals(SLOT_LIST_INDEX_KEY)) {
+            } else if (keyString.equalsIgnoreCase(SLOT_LIST_INDEX_KEY)) {
                 String indexValue = properties.getProperty(keyString);
                 if (indexValue.charAt(0) != 'i') {
                     indexValue = "i" + indexValue;
                 }
+                if (log.isDebugEnabled()) {
+                    log.debug(">upgradePropertiesFileFrom5_0_x, indexValue: "+indexValue);
+                }
                 returnValue.setProperty(SLOT_LABEL_VALUE, indexValue);
                 returnValue.setProperty(SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_INDEX.getKey());
             } else {
+                if (log.isDebugEnabled()) {
+                    log.debug(">upgradePropertiesFileFrom5_0_x, keyString is neither "+SLOT_LABEL_KEY+" or "+SLOT_LIST_INDEX_KEY+", just setting the property without SLOT_LABEL_TYPE.");
+                }
                 returnValue.setProperty(keyString, properties.getProperty(keyString));
             }
         }
