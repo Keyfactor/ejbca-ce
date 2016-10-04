@@ -49,6 +49,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -58,7 +59,7 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
 /**
  * This is a servlet that is used for creating a user into EJBCA and retrieving her certificate.
  * This servlet requires authentication of the administrator, specifically it requires that the
- * client certificate has the privilege "/ra_functionallity/create_end_entity", as defined in the
+ * client certificate has the privilege "/ra_functionality/create_end_entity", as defined in the
  * admin-GUI.
  * 
  * <p>
@@ -168,7 +169,7 @@ public class AdminCertReqServlet extends HttpServlet {
         // Check if authorized
         EjbcaWebBean ejbcawebbean = getEjbcaWebBean(request);
         try {
-            ejbcawebbean.initialize(request, "/ra_functionallity/create_end_entity");
+            ejbcawebbean.initialize(request, AccessRulesConstants.REGULAR_CREATEENDENTITY);
         } catch (Exception e) {
             throw new IOException("Authorization Denied");
         }
