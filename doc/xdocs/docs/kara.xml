@@ -77,20 +77,21 @@ Permission to approve or reject a request is controlled by the approval profile,
 <p><b>Auditors</b> have read-only access to everything (except the Enrollment page), similar to how this role works in the Admin GUI.</p>
 
 <p>If you configure the access rules in Advanced Mode (i.e. not using the role templates), you will need to following access rules (listed per menu item).
-In addition, you <strong>also</strong> need access to any related CAs and End Entity Profiles.</p>
+In addition, you <strong>also</strong> need access to any related CAs and End Entity Profiles, including <strong>all</strong> CAs referenced by the End Entity Profiles.</p>
 <dl>
 <dt>Enrollment</dt>
 <dd>
 <code>/ra_functionality/create_end_entity</code><br />
+<code>/ca/...</code><br />
 <code>/endentityprofilesrules/.../create_end_entity</code><br />
-<code>endentityprofilesrules/.../delete_end_entity</code><br />
+<code>/endentityprofilesrules/.../delete_end_entity</code><br />
 </dd>
 
 <dt>Certificate and End Entity Search</dt>
 <dd>
 <code>/ra_functionality/view_end_entity</code><br />
-<code>/endentityprofilesrules/.../view_end_entity</code><br />
 <code>/ca/...</code><br />
+<code>/endentityprofilesrules/.../view_end_entity</code><br />
 </dd>
 
 <dt>Manage Requests</dt>
