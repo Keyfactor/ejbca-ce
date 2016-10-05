@@ -365,7 +365,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // so we must not throw any exceptions on the nodes where the request does not exist.
             return null;
         } else if (getApprovalRequest(authenticationToken, advo) == null) { // Authorization check
-            log.debug("Authorization denied to the given approval request");
+            if (log.isDebugEnabled()) {
+                log.debug("Authorization denied to approval request with ID " + id + " for administrator '" + authenticationToken + "'");
+            }
             throw new AuthorizationDeniedException("You are not authorized to the Request with ID " + id + " at this point");
         }
         
@@ -384,10 +386,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final AuthenticationToken requestAdmin = approvalRequest.getRequestAdmin();
         final boolean requestedByMe = requestAdmin != null && requestAdmin.equals(authenticationToken);
         if (requestedByMe) {
-            log.debug("Request was created by this administrator, so authorization is granted.");
+            if (log.isDebugEnabled()) {
+                log.debug("Request (ID " + id + ") was created by this administrator, so authorization is granted. Editing administrator: '" + authenticationToken + "'");
+            }
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("Will perform approval authorization check, because request was create by another administrator '" + requestAdmin + "'");
+                log.debug("Will perform approval authorization check, because request (ID " + id + ") was create by another administrator '" + requestAdmin + "'. Editing administrator: '" + authenticationToken + "'");
             }
             approvalExecutionSession.assertAuthorizedToApprove(authenticationToken, advo);
         }
@@ -411,6 +415,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             ei.setSubjectDirectoryAttributes(editData.getSubjectDirAttrs());
         } else {
             // TODO implement more types of requests? (ECA-5290)
+            if (log.isDebugEnabled()) {
+                log.debug("Tried to edit approval request with ID " + id + " which is of an unsupported type: " + approvalRequest.getClass().getName());
+            }
             throw new IllegalStateException("Editing of this type of request is not implemented: " + approvalRequest.getClass().getName());
         }
         
