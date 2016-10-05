@@ -90,7 +90,7 @@ In addition, you <strong>also</strong> need access to any related CAs and End En
 <dd>
 <code>/ra_functionality/view_end_entity</code><br />
 <code>/endentityprofilesrules/.../view_end_entity</code><br />
-<code>/ca/*</code><br />
+<code>/ca/...</code><br />
 </dd>
 
 <dt>Manage Requests</dt>
@@ -107,7 +107,7 @@ and at least one of:
 <dt>CAs &amp; CRLs</dt>
 <dd>
 <code>/ca_functionality/view_ca</code><br />
-<code>/ca/*</code><br />
+<code>/ca/...</code><br />
 </dd>
 </dl>
 
