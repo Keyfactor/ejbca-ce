@@ -539,6 +539,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         getSubjectDirectoryAttributes().update();
         
         //Fill End Entity information
+        final EndEntityInformation endEntityInformation = getEndEntityInformation();
         endEntityInformation.setCAId(getCAInfo().getCAId());
         endEntityInformation.setCardNumber(""); //TODO Card Number
         endEntityInformation.setCertificateProfileId(authorizedCertificateProfiles.get(Integer.parseInt(getSelectedCertificateProfile())).getId());
@@ -736,7 +737,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
         ec.setResponseContentType(responseContentType);
         ec.setResponseContentLength(token.length);
-        String fileName = CertTools.getPartFromDN(endEntityInformation.getDN(), "CN");
+        String fileName = CertTools.getPartFromDN(getEndEntityInformation().getDN(), "CN");
         if(fileName == null){
             fileName = "certificatetoken"; 
         }
@@ -759,11 +760,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void updateOtherEmailFields(AjaxBehaviorEvent event) {
         EndEntityProfile.FieldInstance rfc822Name = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME).get(0);
         if(rfc822Name !=null && rfc822Name.isUsed()){
-            rfc822Name.setValue(endEntityInformation.getEmail());
+            rfc822Name.setValue(getEndEntityInformation().getEmail());
         }
         EndEntityProfile.FieldInstance dnEmailAddress = subjectDn.getFieldInstancesMap().get(DnComponents.DNEMAILADDRESS).get(0);
         if(dnEmailAddress !=null && dnEmailAddress.isUsed()){
-            dnEmailAddress.setValue(endEntityInformation.getEmail());
+            dnEmailAddress.setValue(getEndEntityInformation().getEmail());
         }
         
     }
@@ -777,23 +778,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
     
     public final void checkUserCredentials() {
-        if (endEntityInformation != null && endEntityInformation.getUsername() != null && !endEntityInformation.getUsername().isEmpty()
-                && raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername()) != null) {
+        final String username = getEndEntityInformation().getUsername();
+        if (username != null && !username.isEmpty() && raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username) != null) {
             FacesContext.getCurrentInstance().addMessage(userCredentialsMessagesComponent.getClientId(), new FacesMessage(FacesMessage.SEVERITY_WARN,
-                    raLocaleBean.getMessage("enroll_username_already_exists", endEntityInformation.getUsername()), null));
+                    raLocaleBean.getMessage("enroll_username_already_exists", username), null));
         }
     }
     
     public final void checkSubjectDn() {
         try {
-            if (endEntityInformation != null) {
-                endEntityInformation.setCAId(getCAInfo().getCAId());
-                if (log.isDebugEnabled()) {
-                    log.debug("checkSubjectDn: '"+subjectDn.getUpdatedValue()+"'");
-                }
-                endEntityInformation.setDN(subjectDn.getUpdatedValue());
-                raMasterApiProxyBean.checkSubjectDn(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+            final EndEntityInformation endEntityInformation = getEndEntityInformation();
+            endEntityInformation.setCAId(getCAInfo().getCAId());
+            if (log.isDebugEnabled()) {
+                log.debug("checkSubjectDn: '"+subjectDn.getUpdatedValue()+"'");
             }
+            endEntityInformation.setDN(subjectDn.getUpdatedValue());
+            raMasterApiProxyBean.checkSubjectDn(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
         } catch (AuthorizationDeniedException e) {
             log.error(e);
         } catch (EjbcaException e) {
