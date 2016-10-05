@@ -354,7 +354,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public RaApprovalRequestInfo editApprovalRequest(final AuthenticationToken authenticationToken, final RaApprovalEditRequest edit) throws AuthorizationDeniedException {
         final int id = edit.getId();
         if (log.isDebugEnabled()) {
-            log.debug("Editing approval request " + id);
+            log.debug("Editing approval request " + id + ". Administrator: " + authenticationToken);
         }
         final ApprovalDataVO advo = getApprovalDataNoAuth(authenticationToken, id);
         if (advo == null) {
