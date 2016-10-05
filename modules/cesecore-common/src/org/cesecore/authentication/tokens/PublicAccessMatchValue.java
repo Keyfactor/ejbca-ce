@@ -19,7 +19,6 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookup
  * @version $Id: UsernameAccessMatchValue.java 18613 2014-03-17 13:31:40Z mikekushner $
  */
 public enum PublicAccessMatchValue implements AccessMatchValue {
-    // There's a bug that causes TRANSPORT_PLAIN and TRANSPORT_CONFIDENTIAL to only match about half of the access rules (ECA-5120). It's also disabled in PublicAccessAuthenticationToken
     TRANSPORT_ANY(0),
     TRANSPORT_PLAIN(1),
     TRANSPORT_CONFIDENTIAL(2);
