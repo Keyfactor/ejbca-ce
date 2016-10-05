@@ -90,7 +90,7 @@ In addition, you <strong>also</strong> need access to any related CAs and End En
 <dd>
 <code>/ra_functionality/view_end_entity</code><br />
 <code>/endentityprofilesrules/.../view_end_entity</code><br />
-TODO ca rules?
+<code>/ca/*</code><br />
 </dd>
 
 <dt>Manage Requests</dt>
@@ -107,8 +107,8 @@ and at least one of:
 <dt>CAs &amp; CRLs</dt>
 <dd>
 <code>/ca_functionality/view_ca</code><br />
-TODO ca rules?
-TODO</dd>
+<code>/ca/*</code><br />
+</dd>
 </dl>
 
 <p>Note that RA does not support Decline rules. If a role that has a Decline rule is used over the RA, it will be denied access to everything as a security precaution.</p>
