@@ -90,6 +90,7 @@ In addition, you <strong>also</strong> need access to any related CAs and End En
 <dt>Certificate and End Entity Search</dt>
 <dd>
 <code>/ra_functionality/view_end_entity</code><br />
+<code>/ra_functionality/revoke_end_entity</code> - if the role should be allowed to revoke certificates<br />
 <code>/ca/...</code><br />
 <code>/endentityprofilesrules/.../view_end_entity</code><br />
 </dd>
