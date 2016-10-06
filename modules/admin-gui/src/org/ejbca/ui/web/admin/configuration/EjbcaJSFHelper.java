@@ -102,7 +102,7 @@ public class EjbcaJSFHelper {
              if (ejbcawebbean == null){
                  ejbcawebbean = new org.ejbca.ui.web.admin.configuration.EjbcaWebBean();
                  try {
-                     ejbcawebbean.initialize((HttpServletRequest) ctx.getExternalContext().getRequest(), "/administrator");
+                     ejbcawebbean.initialize((HttpServletRequest) ctx.getExternalContext().getRequest(), AccessRulesConstants.ROLE_ADMINISTRATOR);
                      session.setAttribute("ejbcawebbean", ejbcawebbean);
                  } catch (Exception e) {
                      log.error(e);
