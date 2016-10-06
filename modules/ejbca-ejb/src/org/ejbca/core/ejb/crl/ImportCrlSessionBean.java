@@ -36,10 +36,12 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CrlImportException;
 import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
@@ -121,7 +123,7 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
                     certStoreSession.updateLimitedCertificateDataStatus(authenticationToken, cainfo.getCAId(), issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint);
                 } else {
                     final String serialHex = serialNumber.toString(16).toUpperCase();
-                    if (certStoreSession.isRevoked(issuerDn, serialNumber)) {
+                    if (isCertAlreadyRevoked(issuerDn, serialNumber, reasonCode)) {
                         log.info("Certificate '" + serialHex + "' is already revoked");
                         continue;
                     }
@@ -149,6 +151,17 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
         // Last of all, store the CRL if there were no errors during creation of database entries
         crlStoreSession.storeCRL(authenticationToken, crlbytes, caFingerprint, newCrlNumber, issuerDn, x509crl.getThisUpdate(), x509crl.getNextUpdate(), isDeltaCrl?1:-1);
     
+    }
+    
+    private boolean isCertAlreadyRevoked(final String issuerDN, final BigInteger certSerialnumber, final int revocationReason) {
+        if(certStoreSession.isRevoked(issuerDN, certSerialnumber)) {
+            final CertificateInfo certInfo = certStoreSession.findFirstCertificateInfo(issuerDN, certSerialnumber);
+            final int storedRevocationReason = certInfo.getRevocationReason();
+            if(storedRevocationReason==RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
+                return revocationReason==storedRevocationReason;
+            }
+        }
+        return false;
     }
     
     private void verifyCrlIssuer(final X509CRL crl, final String issuerDN, final X509Certificate cacert) throws CrlImportException {
