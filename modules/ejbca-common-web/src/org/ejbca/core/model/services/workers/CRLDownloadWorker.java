@@ -158,14 +158,19 @@ public class CRLDownloadWorker extends BaseWorker {
     }
     
     private X509CRL getAndProcessCrl(final URL cdpUrl, final int maxSize, final X509Certificate caCertificate, final CAInfo caInfo,
-            final ImportCrlSessionLocal importCrlSession) throws CrlStoreException, AuthorizationDeniedException, CrlImportException, CRLException {
+            final ImportCrlSessionLocal importCrlSession) throws CrlStoreException, AuthorizationDeniedException, CrlImportException {
         X509CRL newCrl = null;
         final byte[] crlBytesNew = NetworkTools.downloadDataFromUrl(cdpUrl, maxSize);
         if (crlBytesNew==null) {
             log.warn("Unable to download CRL for " + CertTools.getSubjectDN(caCertificate));
         } else {
-            newCrl = CertTools.getCRLfromByteArray(crlBytesNew);
-            importCrlSession.importCrl(admin, caInfo, crlBytesNew);
+            try {
+                newCrl = CertTools.getCRLfromByteArray(crlBytesNew);
+                importCrlSession.importCrl(admin, caInfo, crlBytesNew);
+            } catch (CRLException e) {
+                log.warn("Unable to decode downloaded CRL for '" + caInfo.getSubjectDN() + "'.");
+                return null;
+            }
         }
         return newCrl;
     }
