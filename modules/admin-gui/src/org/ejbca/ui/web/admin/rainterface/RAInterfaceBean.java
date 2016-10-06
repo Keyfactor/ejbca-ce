@@ -926,36 +926,36 @@ public class RAInterfaceBean implements Serializable {
     //-------------------------------------------------------
     public byte[]  getfileBuffer(HttpServletRequest request, Map<String, String> requestMap) throws IOException, FileUploadException {
         byte[] fileBuffer = null;
-            if (ServletFileUpload.isMultipartContent(request)) {
-                final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-                diskFileItemFactory.setSizeThreshold(59999);
-                ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
-                upload.setSizeMax(60000);                   
-                final List<FileItem> items = upload.parseRequest(request);     
-                for (final FileItem item : items) {
-                    if (item.isFormField()) {
-                        final String fieldName = item.getFieldName();
-                        final String currentValue = requestMap.get(fieldName);
-                        if (currentValue != null) {
-                            requestMap.put(fieldName, currentValue + ";" + item.getString("UTF8"));
-                        } else {
-                            requestMap.put(fieldName, item.getString("UTF8"));
-                        }
+        if (ServletFileUpload.isMultipartContent(request)) {
+            final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+            diskFileItemFactory.setSizeThreshold(59999);
+            ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
+            upload.setSizeMax(60000);                   
+            final List<FileItem> items = upload.parseRequest(request);     
+            for (final FileItem item : items) {
+                if (item.isFormField()) {
+                    final String fieldName = item.getFieldName();
+                    final String currentValue = requestMap.get(fieldName);
+                    if (currentValue != null) {
+                        requestMap.put(fieldName, currentValue + ";" + item.getString("UTF8"));
                     } else {
-                        importedProfileName = item.getName();
-                        final InputStream file = item.getInputStream();
-                        byte[] fileBufferTmp = FileTools.readInputStreamtoBuffer(file);
-                        if (fileBuffer == null && fileBufferTmp.length > 0) {
-                            fileBuffer = fileBufferTmp;
-                        }
+                        requestMap.put(fieldName, item.getString("UTF8"));
                     }
-                } 
-            } else {
-                final Set<String> keySet = request.getParameterMap().keySet();
-                for (final String key : keySet) {
-                    requestMap.put(key, request.getParameter(key));
+                } else {
+                    importedProfileName = item.getName();
+                    final InputStream file = item.getInputStream();
+                    byte[] fileBufferTmp = FileTools.readInputStreamtoBuffer(file);
+                    if (fileBuffer == null && fileBufferTmp.length > 0) {
+                        fileBuffer = fileBufferTmp;
+                    }
                 }
+            } 
+        } else {
+            final Set<String> keySet = request.getParameterMap().keySet();
+            for (final String key : keySet) {
+                requestMap.put(key, request.getParameter(key));
             }
+        }
         
         return fileBuffer;
     }
