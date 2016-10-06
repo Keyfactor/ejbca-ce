@@ -65,6 +65,7 @@ import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
@@ -425,7 +426,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             }
         
             X509CertificateHolder[] chain = brep.getCerts();
-            boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
+            boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(chain[0]));
             if(!verify) {
                 log.warn("OCSP response signature was not valid");
                 return null;
