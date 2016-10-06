@@ -169,7 +169,9 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
         X509CRL lastCrlOfSameType = null;
         try {
             lastCrlOfSameType = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(issuerDN, isDeltaCrl));
-        } catch (CRLException e) {}
+        } catch (CRLException e) {
+            log.warn("Could not retrieve an older CRL issued by " + issuerDN, e);
+        }
 
         if(lastCrlOfSameType!=null && !crl.getThisUpdate().after(lastCrlOfSameType.getThisUpdate())) {
             return null;
