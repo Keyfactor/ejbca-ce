@@ -161,43 +161,44 @@ function getPasswordAndSubmit(formname) {
 	<br />
 <% // Import CRLs of external CAs
   	 List<String> extCaNameList = new ArrayList<String>(extcanames.keySet());
-  	 Collections.sort(extCaNameList, new Comparator<String>() {
-  	   	public int compare(String o1, String o2) {
-  	   	    return o1.compareToIgnoreCase(o2);
-  	   	}
-  	 });
-  	 %>
+	 if(extCaNameList.size() > 0) {
+	  	 Collections.sort(extCaNameList, new Comparator<String>() {
+  		   	public int compare(String o1, String o2) {
+  	   		    return o1.compareToIgnoreCase(o2);
+  	   		}
+  		 });
+  		 %>
   	 
-  	 <h2>Import CRL</h2>  	 
+  		 <h2>Import CRL</h2>  	 
   	 
-  	 <form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
-  	 	<input type="hidden" name='action' value='<%=ACTION_IMPORT_CRL %>'>
-		<table class="action" width="70%" border="0" cellspacing="3" cellpadding="3">
-			<tr> 
-				<td width="10%" valign="top" align="right">Import CRL</td>
+  		 <form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+  	 		<input type="hidden" name='action' value='<%=ACTION_IMPORT_CRL %>'>
+			<table class="action" width="70%" border="0" cellspacing="3" cellpadding="3">
+				<tr> 
+					<td width="10%" valign="top" align="right">Import CRL</td>
+					
+					<td width="55%" valign="top">
+						<input TYPE="FILE" NAME="<%= FILE_IMPORTCRL %>">
+					</td>
 
-				<td width="55%" valign="top">
-					<input TYPE="FILE" NAME="<%= FILE_IMPORTCRL %>">
-				</td>
-
-				<td width="20%" valign="top">
-					<select name="<%=SELECT_CA_IMPORTCRL %>" size="1" >
-            			<% for(String caNameForCrl : extCaNameList){ %>
-           					<option  value='<c:out value="<%= caNameForCrl %>"/>'><c:out value="<%= caNameForCrl %>" /></option>
-            			<% } %>
-        			</select>
-				</td>
+					<td width="20%" valign="top">
+						<select name="<%=SELECT_CA_IMPORTCRL %>" size="1" >
+            				<% for(String caNameForCrl : extCaNameList){ %>
+           						<option  value='<c:out value="<%= caNameForCrl %>"/>'><c:out value="<%= caNameForCrl %>" /></option>
+            				<% } %>
+        				</select>
+					</td>
 			
-				<td width="15%" valign="top">
-					<input type="submit" name="<%= BUTTON_IMPORT_CRL %>" onClick='return check()' value="<%= ejbcawebbean.getText("IMPORT") %>" >
-				</td>
-			</tr>
-		</table>
-	 </form>
-  	 
-  	 
+					<td width="15%" valign="top">
+						<input type="submit" name="<%= BUTTON_IMPORT_CRL %>" onClick='return check()' value="<%= ejbcawebbean.getText("IMPORT") %>" >
+					</td>
+				</tr>
+			</table>
+	 	</form>
 
-  <% // Display CA info one by one.
+  	<% }
+	 
+	 // Display CA info one by one.
 
   	 List<String> caNameList = new ArrayList<String>(canames.keySet());
   	 Collections.sort(caNameList, new Comparator<String>() {
