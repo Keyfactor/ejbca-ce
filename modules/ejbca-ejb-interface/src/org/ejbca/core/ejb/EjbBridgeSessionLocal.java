@@ -44,6 +44,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
@@ -113,5 +114,6 @@ public interface EjbBridgeSessionLocal {
     CryptoTokenManagementSessionLocal getCryptoTokenManagementSession();
     InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession();
     PublishingCrlSessionLocal getPublishingCrlSession();
+    ImportCrlSessionLocal getImportCrlSession();
     RaMasterApiProxyBeanLocal getRaMasterApiProxyBean();
 }

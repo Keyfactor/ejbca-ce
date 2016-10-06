@@ -12,22 +12,14 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
-import java.math.BigInteger;
 import java.net.URL;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
-import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -36,13 +28,14 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.X509CAInfo;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.crl.CrlImportException;
 import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.NetworkTools;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
@@ -69,7 +62,7 @@ public class CRLDownloadWorker extends BaseWorker {
         // Get references to all EJB's that will be used
         final CaSessionLocal caSession = (CaSessionLocal) ejbs.get(CaSessionLocal.class);
         final CrlStoreSessionLocal crlStoreSession = (CrlStoreSessionLocal) ejbs.get(CrlStoreSessionLocal.class);
-        final CertificateStoreSessionLocal certificateStoreSession = (CertificateStoreSessionLocal) ejbs.get(CertificateStoreSessionLocal.class);
+        final ImportCrlSessionLocal importCrlSession = (ImportCrlSessionLocal) ejbs.get(ImportCrlSessionLocal.class);
         // Parse worker configuration
         Collection<Integer> caIdsToCheck = getCAIdsToCheck(true);
         if (caIdsToCheck!=null && caIdsToCheck.contains(Integer.valueOf(CAConstants.ALLCAS))) {
@@ -106,7 +99,7 @@ public class CRLDownloadWorker extends BaseWorker {
                         log.info("Next full CRL update for CA '" + caInfo.getName() + "' will be " + ValidityDate.formatAsISO8601(lastFullCrl.getNextUpdate(), null) + ". Skipping download.");
                         newestFullCrl = lastFullCrl;
                     } else {
-                        final X509CRL downloadedFullCrl = getAndProcessCrl(url, maxDownloadSize, caCertificate, caInfo, crlStoreSession, certificateStoreSession, lastFullCrl, lastFullCrl);
+                        final X509CRL downloadedFullCrl = getAndProcessCrl(url, maxDownloadSize, caCertificate, caInfo, importCrlSession);
                         if (downloadedFullCrl==null) {
                             newestFullCrl = lastFullCrl;
                         } else {
@@ -132,7 +125,7 @@ public class CRLDownloadWorker extends BaseWorker {
                                         log.info("Unusable Freshest CDP HTTP URL '" + freshestCdpUrl + "' in CRL. Skipping download.");
                                         continue;
                                     }
-                                    final X509CRL newDeltaCrl = getAndProcessCrl(freshestCdpUrl, maxDownloadSize, caCertificate, caInfo, crlStoreSession, certificateStoreSession, lastFullCrl, lastDeltaCrl);
+                                    final X509CRL newDeltaCrl = getAndProcessCrl(freshestCdpUrl, maxDownloadSize, caCertificate, caInfo, importCrlSession);
                                     if (newDeltaCrl!=null) {
                                         break;
                                     }
@@ -149,6 +142,8 @@ public class CRLDownloadWorker extends BaseWorker {
                 log.error("Last known CRL read from the database for CA Id " + caId + " has encoding problems.", e);
             } catch (CrlStoreException e) {
                 log.error("Failed to store the downloaded CRL in the database for CA Id " + caId + ".", e);
+            } catch (CrlImportException e) {
+                log.error("Failed to import the downloaded CRL in the database for CA Id " + caId + ".", e);
             } catch (AuthorizationDeniedException e) {
                 throw new ServiceExecutionFailedException("Service should always be authorized to any CA.", e);
             }
@@ -162,93 +157,15 @@ public class CRLDownloadWorker extends BaseWorker {
         return null;
     }
     
-    private X509CRL getAndProcessCrl(final URL cdpUrl, final int maxSize, final X509Certificate caCertificate, final CAInfo caInfo, final CrlStoreSessionLocal crlStoreSession,
-            final CertificateStoreSessionLocal certificateStoreSession, final X509CRL lastFullCrl, final X509CRL lastCrlOfSameType) throws CrlStoreException, AuthorizationDeniedException {
+    private X509CRL getAndProcessCrl(final URL cdpUrl, final int maxSize, final X509Certificate caCertificate, final CAInfo caInfo,
+            final ImportCrlSessionLocal importCrlSession) throws CrlStoreException, AuthorizationDeniedException, CrlImportException, CRLException {
         X509CRL newCrl = null;
         final byte[] crlBytesNew = NetworkTools.downloadDataFromUrl(cdpUrl, maxSize);
         if (crlBytesNew==null) {
             log.warn("Unable to download CRL for " + CertTools.getSubjectDN(caCertificate));
         } else {
-            final String caFingerprint = CertTools.getFingerprintAsString(caCertificate);
-            final String issuerDn = CertTools.getSubjectDN(caCertificate);
-            try {
-                newCrl = CertTools.getCRLfromByteArray(crlBytesNew);
-                // Verify signature
-                newCrl.verify(caCertificate.getPublicKey(), "BC");
-            } catch (CRLException e) {
-                log.warn("Unable to decode downloaded CRL for '" + issuerDn + "'.");
-                return null;
-            } catch (SignatureException e) {
-                log.warn("Signature of the downloaded CRL could not be verfied with the CA certificate of the issuer '" + issuerDn + "'.", e);
-                return null;
-            } catch (InvalidKeyException e) {
-                log.warn("Private key that signed the downloaded CRL does not match the public key of the issuer '" + issuerDn + "'.", e);
-                return null;
-            } catch (NoSuchAlgorithmException e) {
-                log.warn("The signature algorithm used to sign the downloaded CRL is not available in this environment.", e);
-                return null;
-            } catch (NoSuchProviderException e) {
-                log.warn("The signature provider used to verify the downloaded CRL is not available in this environment.", e);
-                return null;
-            }
-            // Check if the CRL is already stored locally
-            final boolean isDeltaCrl = CrlExtensions.getDeltaCRLIndicator(newCrl).intValue() != -1;
-            final int downloadedCrlNumber = CrlExtensions.getCrlNumber(newCrl).intValue();
-            if (log.isTraceEnabled()) {
-                log.trace("Delta CRL:  " + isDeltaCrl);
-                log.trace("IssuerDn:   " + issuerDn);
-                log.trace("CRL Number: " + downloadedCrlNumber);
-            }
-            if (lastFullCrl!=null && !newCrl.getThisUpdate().after(lastFullCrl.getThisUpdate())) {
-                log.info((isDeltaCrl?"Delta":"Full") + " CRL number " + downloadedCrlNumber + " for CA '" + caInfo.getName() + "' is not newer than last known full CRL. Ignoring download.");
-                return null;
-            }
-            if (isDeltaCrl && lastCrlOfSameType!=null && !newCrl.getThisUpdate().after(lastCrlOfSameType.getThisUpdate())) {
-                log.info("Delta CRL number " + downloadedCrlNumber + " for CA '" + caInfo.getName() + "' is not newer than last known delta CRL. Ignoring download.");
-                return null;
-            }
-            // If the CRL is newer than the last known or there wasn't any old one, loop through it
-            if (newCrl.getRevokedCertificates()==null) {
-                log.info("No revoked certificates in " + (isDeltaCrl?"delta":"full") + " CRL for CA '" + caInfo.getName() + "'");
-            } else {
-                final Set<X509CRLEntry> crlEntries = new HashSet<X509CRLEntry>();
-                crlEntries.addAll(newCrl.getRevokedCertificates());
-                if (log.isDebugEnabled()) {
-                    log.debug("Downloaded CRL contains " + crlEntries.size() + " entries.");
-                }
-                if (lastCrlOfSameType != null && lastCrlOfSameType.getRevokedCertificates()!=null) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Last known CRL contains " + lastCrlOfSameType.getRevokedCertificates().size() + " entries.");
-                    }
-                    // Remove all entries that were processed last time
-                    crlEntries.removeAll(lastCrlOfSameType.getRevokedCertificates());
-                }
-                log.info("Found " + crlEntries.size() + " new entires in " + (isDeltaCrl?"delta":"full")+ " CRL number " + downloadedCrlNumber + " issued by '" + issuerDn + "' compared to previous.");
-                // For each entry that was updated after the last known CRL, create/update a new database entry with the new status
-                for (final X509CRLEntry crlEntry : crlEntries) {
-                    final Date revocationDate = crlEntry.getRevocationDate();
-                    final BigInteger serialNumber = crlEntry.getSerialNumber();
-                    final int reasonCode = CrlExtensions.extractReasonCode(crlEntry);
-                    if (crlEntry.getCertificateIssuer()!=null) {
-                        final String entryIssuerDn = CertTools.stringToBCDNString(crlEntry.getCertificateIssuer().getName());
-                        if (!issuerDn.equals(entryIssuerDn)) {
-                            log.warn("CA's subjectDN does not match CRL entry's issuerDn '"+entryIssuerDn+"' and entry with serialNumber " + serialNumber + " will be ignored.");
-                        }
-                    }
-                    // Store as much as possible about what we know about the certificate and its status (which is limited) in the database
-                    certificateStoreSession.updateLimitedCertificateDataStatus(getAdmin(), caInfo.getCAId(), issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint);
-                }
-            }
-            // Calculate (make up) the CRL Number if the number was not present
-            final int newCrlNumber;
-            if (downloadedCrlNumber==0) {
-                final int lastCrlNumber = crlStoreSession.getLastCRLNumber(issuerDn, isDeltaCrl);
-                newCrlNumber = lastCrlNumber+1;
-            } else {
-                newCrlNumber = downloadedCrlNumber;
-            }
-            // Last of all, store the CRL if there were no errors during creation of database entries
-            crlStoreSession.storeCRL(admin, crlBytesNew, caFingerprint, newCrlNumber, issuerDn, newCrl.getThisUpdate(), newCrl.getNextUpdate(), isDeltaCrl?1:-1);
+            newCrl = CertTools.getCRLfromByteArray(crlBytesNew);
+            importCrlSession.importCrl(admin, caInfo, crlBytesNew);
         }
         return newCrl;
     }

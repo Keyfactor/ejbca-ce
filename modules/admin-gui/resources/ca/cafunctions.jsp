@@ -109,6 +109,7 @@ org.ejbca.ui.web.admin.cainterface.CAInfoView
   }
 
   TreeMap<String, Integer> canames = ejbcawebbean.getInformationMemory().getAllCANames();
+  TreeMap<String, Integer> extcanames = ejbcawebbean.getInformationMemory().getExternalCAs();
 
 %>
 <head>
@@ -153,16 +154,14 @@ function getPasswordAndSubmit(formname) {
   </div> -->
 
 	<br />
-  <% // Display CA info one by one.
-
-  	 List<String> caNameList = new ArrayList<String>(canames.keySet());
-  	 Collections.sort(caNameList, new Comparator<String>() {
+<% // Import CRLs of external CAs
+  	 List<String> extCaNameList = new ArrayList<String>(extcanames.keySet());
+  	 Collections.sort(extCaNameList, new Comparator<String>() {
   	   	public int compare(String o1, String o2) {
   	   	    return o1.compareToIgnoreCase(o2);
   	   	}
   	 });
   	 %>
-  	 
   	 
   	 <h2>Import CRL</h2>  	 
   	 
@@ -178,7 +177,7 @@ function getPasswordAndSubmit(formname) {
 
 				<td width="20%" valign="top">
 					<select name="<%=SELECT_CA_IMPORTCRL %>" size="1" >
-            			<% for(String caNameForCrl : caNameList){ %>
+            			<% for(String caNameForCrl : extCaNameList){ %>
            					<option  value='<c:out value="<%= caNameForCrl %>"/>'><c:out value="<%= caNameForCrl %>" /></option>
             			<% } %>
         			</select>
@@ -192,6 +191,16 @@ function getPasswordAndSubmit(formname) {
 	 </form>
   	 
   	 
+
+  <% // Display CA info one by one.
+
+  	 List<String> caNameList = new ArrayList<String>(canames.keySet());
+  	 Collections.sort(caNameList, new Comparator<String>() {
+  	   	public int compare(String o1, String o2) {
+  	   	    return o1.compareToIgnoreCase(o2);
+  	   	}
+  	 });
+  	 %>
   	 
   	 <h2>Basic Functions</h2>
   	 
