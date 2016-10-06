@@ -340,7 +340,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     /** @return the provideRequestMetadataRendered */
     public boolean isProvideUserCredentialsRendered() {
-        return isKeyAlgorithmAvailable();
+        return isKeyAlgorithmAvailable() && (isUsernameRendered() || isPasswordRendered() || isEmailRendered());
     }
 
     /** @return the confirmRequestRendered */
