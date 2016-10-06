@@ -19,6 +19,7 @@
 java.util.*,
 java.security.cert.Certificate,
 java.security.cert.X509Certificate,
+org.apache.commons.lang.StringUtils,
 org.cesecore.authorization.AuthorizationDeniedException,
 org.cesecore.authorization.control.StandardRules,
 org.cesecore.certificates.ca.CAConstants,
@@ -45,6 +46,7 @@ org.ejbca.ui.web.admin.cainterface.CAInfoView
   final static String BUTTON_CREATECRL      = "buttoncreatecrl";
   final static String BUTTON_CREATEDELTACRL = "buttoncreatedeltacrl";
   
+  final static String ACTION				= "action";
   final static String ACTION_IMPORT_CRL		= "actionimportcrl";
   final static String FILE_IMPORTCRL		= "fileimportcrl";
   final static String BUTTON_IMPORT_CRL 	= "buttonimportcrl";
@@ -77,14 +79,17 @@ org.ejbca.ui.web.admin.cainterface.CAInfoView
 
 	Map<String, String> requestMap = new HashMap<String, String>();
 	byte[] filebuffer = rabean.getfileBuffer(request, requestMap);
-	String msg = cabean.importCRL(requestMap.get(SELECT_CA_IMPORTCRL), filebuffer);
-	if (msg.startsWith("Error:")) {
-		%> <div style="color: #FF0000;"> <%
-    } else {
-    	%> <div style="color: #000000;"> <%
-    } %>
-    	<c:out value="<%= msg %>"/>
-   	</div> <%
+	
+	if(StringUtils.equals(ACTION_IMPORT_CRL, requestMap.get(ACTION))) {
+		String msg = cabean.importCRL(requestMap.get(SELECT_CA_IMPORTCRL), filebuffer);
+		if (msg.startsWith("Error:")) {
+			%> <div style="color: #FF0000;"> <%
+   		} else {
+    		%> <div style="color: #000000;"> <%
+   		} %>
+    		<c:out value="<%= msg %>"/>
+   		</div> <%
+	}
 	
 	
   if(request.getParameter(HIDDEN_NUMBEROFCAS) != null){
