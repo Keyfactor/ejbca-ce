@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -92,7 +93,7 @@ public class SernoGeneratorTest {
     }
     
     /** Using only 32 bit serial numbers will produce collisions 
-     * about 1-5 times for 1§00.000 serial numbers
+     * about 1-5 times for 100.000 serial numbers
      */
     @Test
     public void testGenerateSernos4OctetsSHA1PRNG() throws Exception {
@@ -128,6 +129,7 @@ public class SernoGeneratorTest {
             } catch (NoSuchMethodException nsme) {
                 // Yep, this JDK didn't have SecureRandom.getInstanceStrong(), so let it pass
                 log.debug("Trying to get SecureRandom.getInstanceStrong() on JDK < 8 resulted in an IllegalStateException, as expected");
+                assumeTrue("Test is only relevant on Java 8.", false);
             }
         }
     }
