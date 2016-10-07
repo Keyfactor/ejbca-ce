@@ -413,7 +413,8 @@ EJBCA should run on any on any JEE5 compliant application server in theory. In r
 It is not enough to pass JEE validation in order to run on all application servers.
 <ol>
 <li>JBoss 7.1.1.Final / JBoss EAP 6: Works well.</li>
-<li>WildFly 8, 9, 10: Works well.</li>
+<li>WildFly 10 / JBoss EAP 7: Works well.</li>
+<li>WildFly 8, 9: Works well.</li>
 <li>JBoss 5.1.0.GA / JBoss EAP 5.1: JEE5, only supported in older version of EJBCA.</li>
 <li>Glassfish 3.1.1: Not supported yet.</li>
 <li>Glassfish 2.1.1: Works with older versions of EJBCA (before v6).</li>
@@ -690,8 +691,9 @@ In EJBCA 6.0.4 <a href="https://jira.primekey.se/browse/ECA-3371">ECA-3371</a> s
 
 </subsection>
 
-<subsection name="WildFly 10">
-<p>EJBCA 6.x compiles, deploys and runs with WildFly 10 (release following 6.3.1.1).</p>
+<subsection name="WildFly 10 / JBoss EAP 7">
+<p>EJBCA 6.x compiles, deploys and runs with WildFly 10 (release following 6.3.1.1).
+JBoss EAP 7 is based on Wildfly 10 and these instructions applies for EAP 7 as well. Note that JDK 8 is required.</p>
 <p>For WildFly, deploy and install does not automagically configure the Application server for you, instead we supply configuration instructions for the Application server for you to follow.
 This makes your configuration robust, and possible to script on your own.</p>
 <note>
@@ -704,12 +706,21 @@ You can use a generic name, without version number, in order to get a generic 'd
 <source>
 >cp mariadb-java-client-1.2.0.jar wildfly_home/standalone/deployments/mariadb-java-client.jar
 </source>
+<p>
+If you are using another type of database, copy the JDBC driver to the deployments-directory and make note of the driver class and driver-name shown in the server log
+and for later use when adding the DataSource. E.g.
+</p>
+<source>
+... INFO  [org.jboss.as.connector.deployers.jdbc] (...) WFLYJCA0005: Deploying non-JDBC-compliant driver class org.postgresql.Driver (version 9.2)
+... INFO  [org.jboss.as.connector.deployers.jdbc] (...) WFLYJCA0018: Started Driver service with driver-name = postgresql-jdbc3.jar
+</source>
+
 </subsubsection>
 
 <subsubsection name="Increase allowed memory usage">
-<p>By default, only 512MiB of heap and 256MiB PermGen space is allowed. Edit wildfly_home/bin/standalone.conf to increase this to a more suitable value, e.g. </p>
+<p>By default, only 512MiB of heap is allowed. Edit wildfly_home/bin/standalone.conf to increase this to a more suitable value, e.g. </p>
 <source>
-   JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MaxPermSize=384m -Djava.net.preferIPv4Stack=true"
+   JAVA_OPTS="-Xms2048m -Xmx2048m -Djava.net.preferIPv4Stack=true"
 </source>
 </subsubsection>
 
@@ -742,6 +753,9 @@ For InnoDB in some configurations the "binlog_format" defaults to "statement". R
 > data-source add --name=ejbcads --driver-name="mariadb-java-client.jar" --connection-url="jdbc:mysql://127.0.0.1:3306/ejbca" --jndi-name="java:/EjbcaDS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="ejbca" --password="ejbca" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"
 > :reload
 </source>
+<p>
+If you are using another type of database, adapt the statement above with the correct driver-name, connection-url, driver-class and check-valid-connection-sql.
+</p>
 </subsubsection>
 
 <subsubsection name="Configure WildFly Remoting">
