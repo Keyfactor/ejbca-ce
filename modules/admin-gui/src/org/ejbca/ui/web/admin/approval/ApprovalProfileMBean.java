@@ -502,7 +502,9 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
         // Configure some nice defaults
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final String hostnameFromRequest = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getServerName();
+        String hostnameFromRequest = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getServerName();
+        // Escape value taken from the request, just to be sure there can be no XSS
+        hostnameFromRequest = org.ejbca.util.HTMLTools.htmlescape(hostnameFromRequest);
         final String baseUrl = globalConfiguration.getBaseUrl(hostnameFromRequest);
         final String defaultSubject = "[AR-${approvalRequest.ID}-${approvalRequest.STEP_ID}-${approvalRequest.PARTITION_ID}] " +
                 "Approval Request to ${approvalRequest.TYPE} is now in state ${approvalRequest.WORKFLOWSTATE}";

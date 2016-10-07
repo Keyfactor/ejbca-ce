@@ -88,7 +88,7 @@
                 <a href="../retrieve/check_status.jsp">Check Certificate Status</a>
               </li>
               <li>
-                <% java.net.URL adminURL = new java.net.URL("https",request.getServerName(),
+                <% java.net.URL adminURL = new java.net.URL("https",org.ejbca.util.HTMLTools.htmlescape(request.getServerName()),
                 		org.ejbca.config.WebConfiguration.getExternalPrivateHttpsPort(),
                 		"/"+org.ejbca.config.InternalConfiguration.getAppNameLower()+"/adminweb/");  %>
                 <a href="<%=adminURL.toString() %>">Administration</a>
