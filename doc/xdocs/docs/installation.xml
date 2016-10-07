@@ -427,7 +427,7 @@ It is not enough to pass JEE validation in order to run on all application serve
 </ol>
 </p>
 
-<subsection name="JBoss">
+<subsection name="JBoss 7 GA / JBoss EAP 6">
 <note>JBoss 7 / EAP 6 are the official well tested platforms for EJBCA 6.x. Most of the development is done against JBoss.</note>
 
 <subsubsection name="JBoss 7/EAP 6 General Notes">
