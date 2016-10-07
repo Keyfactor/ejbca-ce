@@ -21,7 +21,7 @@
 # Using the value "default" (or an empty value which is hard to set here) uses the OS:es default implementation, 
 #   which may vary. See the documentation of Java's SecureRandom for more information. On Linux this uses /dev/(u)random.
 # Using the value "defaultstrong" is only available in JDK 8 and later and will use the SecureRandom.getInstanceStrong(), to get
-#   an ensured "strong" random number generator. On JDK's below 8 if will throw an error if used. 
+#   an ensured "strong" random number generator. On JDK's below 8 it will throw an error if used. 
 #   Before using "defaultstrong" take note that it will on most cases use a blocking random number generator, 
 #   and if you don't have enough entropy it may take a long time, >60 seconds, to create a single random number (i.e. to generate a certificate). 
 #   Test well before using. 
