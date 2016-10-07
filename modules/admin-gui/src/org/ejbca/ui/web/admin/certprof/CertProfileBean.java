@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -643,7 +643,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
     public void setEnabledCTLogs(final List<String> in) throws AuthorizationDeniedException {
-        final Set<Integer> out = new HashSet<Integer>();
+        final Set<Integer> out = new LinkedHashSet<>();
         for (String current : in) {
             out.add(Integer.parseInt(current));
         }
