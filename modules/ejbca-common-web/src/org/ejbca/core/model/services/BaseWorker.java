@@ -51,6 +51,7 @@ public abstract class BaseWorker implements IWorker {
 	/**
 	 * @see org.ejbca.core.model.services.IWorker#init(org.ejbca.core.model.services.ServiceConfiguration, java.lang.String)
 	 */
+	@Override
 	public void init(AuthenticationToken admin, ServiceConfiguration serviceConfiguration,
 			String serviceName, long runTimeStamp, long nextRunTimeStamp) {
 		this.admin = admin;
@@ -97,6 +98,7 @@ public abstract class BaseWorker implements IWorker {
 	/**
 	 * @see org.ejbca.core.model.services.IWorker#getNextInterval()
 	 */
+	@Override
 	public long getNextInterval() {		
 		return interval.getTimeToExecution();
 	}
