@@ -221,7 +221,7 @@ public class ServiceData extends ProtectedData implements Serializable {
     // End Database integrity protection methods
     //
 
-	/** @return true if an service with the old timestamps existed and was updated */
+	/** @return true if a service with the old timestamps existed (a.runTimeStamp=:oldRunTimeStamp AND a.nextRunTimeStamp=:oldNextRunTimeStamp) and was updated */
 	public static boolean updateTimestamps(EntityManager entityManager, Integer id, long oldRunTimeStamp, long oldNextRunTimeStamp, long newRunTimeStamp, long newNextRunTimeStamp) {
 		Query query = entityManager.createQuery("UPDATE ServiceData a SET a.runTimeStamp=:newRunTimeStamp, a.nextRunTimeStamp=:newNextRunTimeStamp"
 				+ " WHERE a.id=:id AND a.runTimeStamp=:oldRunTimeStamp AND a.nextRunTimeStamp=:oldNextRunTimeStamp");
