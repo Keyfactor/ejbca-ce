@@ -41,6 +41,7 @@ public class RolloverWorker extends BaseWorker {
 	private static final Logger log = Logger.getLogger(RolloverWorker.class);
     /** Internal localization of logs and errors */
 
+    @Override
     public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">Worker started");
         final CaSessionLocal caSession = ((CaSessionLocal) ejbs.get(CaSessionLocal.class));
