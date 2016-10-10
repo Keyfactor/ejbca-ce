@@ -215,7 +215,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	public boolean isRunOnAllNodes() {
 	    Boolean ret = (Boolean) data.get(RUNONALLNODES);
 	    if (ret != null) {
-	        return ((Boolean) data.get(RUNONALLNODES)).booleanValue();
+	        return ret.booleanValue();
 	    }
 	    return false;
 	}
