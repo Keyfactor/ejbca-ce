@@ -24,8 +24,10 @@
     <application>
         <locale-config>
             <default-locale>en_US</default-locale>
+            <!-- Disable locales used for testing that does not have proper translations.
             <supported-locale>sv_SE</supported-locale>
             <supported-locale>ar_AE</supported-locale>
+             -->
         </locale-config>
         <resource-bundle>
             <base-name>org.ejbca.ra.jsfext.Utf8ResourceBundleMessages</base-name>
