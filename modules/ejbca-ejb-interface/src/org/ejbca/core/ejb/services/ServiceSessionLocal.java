@@ -46,12 +46,22 @@ public interface ServiceSessionLocal extends ServiceSession {
 
     /**
      * Reads the current timeStamp values and tries to update them in a single transaction.
-     * If the database commit is successful the method returns the worker, otherwise an
-     * exception is thrown.
+     * If the database commit is successful the method returns the worker, otherwise null.
+     * Could throw a runtime exception if there are database errors, so these should be caught.
      * 
      * Should only be called from timeoutHandler
+     * @param serviceId the ID of the service to check
+     * @param nextTimeout the next time the service should run
+     * @return IWorker if it should run, null otherwise
      */
-	IWorker getWorkerIfItShouldRun(final Integer timerInfo, final long nextTimeout);
+	IWorker getWorkerIfItShouldRun(final Integer serviceId, final long nextTimeout);
+
+	/** As above but used to JUnit testing to be able to "fake" that the service was running on another node 
+	 * Should only be used for testing the logic 
+	 * @param testRunOnOtherNode set to true to force the service to believe it has been running on another node
+	 * @see #getWorkerIfItShouldRun(Integer, long)
+	 */
+    IWorker getWorkerIfItShouldRun(Integer serviceId, long nextTimeout, boolean testRunOnOtherNode);
 
 	/** Executes a the service in a separate in no transaction. */
 	void executeServiceInNoTransaction(final IWorker worker, final String serviceName);

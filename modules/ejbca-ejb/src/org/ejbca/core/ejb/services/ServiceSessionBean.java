@@ -457,7 +457,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 serviceName = serviceDataSession.findNameById(timerInfo);
             } catch (Throwable t) { // NOPMD: we really need to catch everything to not risk hanging somewhere in limbo
                 log.warn("Exception finding service name: ", t); // if this throws, there is a failed database or similar
-                // Unexpected error (probably database related). We need to reschedule the service w a default interval.
+                // Unexpected error (probably database related). We need to reschedule the service with a default interval.
                 addTimer(30 * 1000, timerInfo);
             }
             if (serviceName == null) {
@@ -469,7 +469,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     serviceInterval = serviceSession.getServiceInterval(timerInfo);
                 } catch (Throwable t) { // NOPMD: we really need to catch everything to not risk hanging somewhere in limbo
                     log.warn("Exception getting service interval: ", t); // if this throws, there is a failed database or similar
-                    // Unexpected error (probably database related). We need to reschedule the service w a default interval.
+                    // Unexpected error (probably database related). We need to reschedule the service with a default interval.
                     addTimer(30 * 1000, timerInfo);
                 }
                 // Reschedule timer
@@ -523,7 +523,12 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public IWorker getWorkerIfItShouldRun(Integer serviceId, long nextTimeout) {
+    public IWorker getWorkerIfItShouldRun(final Integer serviceId, final long nextTimeout) {
+        return getWorkerIfItShouldRun(serviceId, nextTimeout, false);
+    }
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public IWorker getWorkerIfItShouldRun(final Integer serviceId, final long nextTimeout, final boolean testRunOnOtherNode) {
         IWorker worker = null;
         ServiceData serviceData = serviceDataSession.findById(serviceId);
         ServiceConfiguration serviceConfiguration = serviceData.getServiceConfiguration();
@@ -545,38 +550,50 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 }
                 return null; // Don't return an inactive worker to run
             }
-            Date runDateCheck = new Date(oldNextRunTimeStamp); // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now
-                                                               // here
-            Date currentDate = new Date();
+            // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now here
+            final Date runDateCheck = new Date(oldNextRunTimeStamp); 
+            final Date currentDate = new Date();
             if (log.isDebugEnabled()) {
-                Date nextRunDate = new Date(nextTimeout);
+                final Date nextRunDate = new Date(nextTimeout);
                 log.debug("nextRunDate is:  " + nextRunDate);
                 log.debug("runDateCheck is: " + runDateCheck);
                 log.debug("currentDate is:  " + currentDate);
             }
-            /*
-             * Check if the current date is after when the service should run. If a
-             * service on another cluster node has updated this timestamp already,
-             * then it will return false and this service will not run. This is a
-             * semaphore (not the best one admitted) so that services in a cluster
-             * only runs on one node and don't compete with each other. If a worker
-             * on one node for instance runs for a very long time, there is a chance
-             * that another worker on another node will break this semaphore and run
-             * as well.
-             */
-            if (currentDate.after(runDateCheck)) {
+            // Check if this is a service that should run on all nodes, i.e. ignore if it is already running on another node in a cluster
+            // This is used for services that do (lighter) work local to each node, such as HSM keepalive service
+            if (!serviceConfiguration.isRunOnAllNodes()) {
                 /*
-                 * We only update the nextRunTimeStamp if the service is allowed to run on this node.
-                 * 
-                 * However, we need to make sure that no other node has already acquired the semaphore
-                 * if our current database allows non-repeatable reads.
+                 * Check if the current date is after when the service should run. If a
+                 * service on another cluster node has updated this timestamp already,
+                 * then it will return false and this service will not run. This is a
+                 * semaphore (not the best one admitted) so that services in a cluster
+                 * only runs on one node and don't compete with each other. If a worker
+                 * on one node for instance runs for a very long time, there is a chance
+                 * that another worker on another node will break this semaphore and run
+                 * as well.
                  */
-                if (!serviceDataSession.updateTimestamps(serviceId, oldRunTimeStamp, oldNextRunTimeStamp, runDateCheck.getTime(), nextTimeout)) {
-                    log.debug("Another node had already updated the database at this point. This node will not run.");
-                    worker = null; // Failed to update the database.
+                if (currentDate.after(runDateCheck)) {
+                    /*
+                     * We only update the nextRunTimeStamp if the service is allowed to run on this node.
+                     * 
+                     * However, we need to make sure that no other node has already acquired the semaphore
+                     * if our current database allows non-repeatable reads.
+                     */
+                    final boolean updateTimestamps = serviceDataSession.updateTimestamps(serviceId, oldRunTimeStamp, oldNextRunTimeStamp, runDateCheck.getTime(), nextTimeout);
+                    if (!updateTimestamps || testRunOnOtherNode) {
+                        if (testRunOnOtherNode && updateTimestamps) {
+                            log.info("testRunOnOtherNode == true, we are returning null even though another node had not updated the database. This node will not run.");
+                        } else {
+                            log.debug("Another node had already updated the database at this point. This node will not run.");
+                        }
+                        worker = null; // Failed to update the database.                            
+                    }
+                } else {
+                    worker = null; // Don't return a worker, since this node should not run
                 }
-            } else {
-                worker = null; // Don't return a worker, since this node should not run
+            } else if (log.isDebugEnabled()) {
+                log.debug("Service " + serviceName + " is set to run on all nodes and will run on this node: \"" + hostname + "\", updating timeStamps");
+                serviceDataSession.updateTimestamps(serviceId, oldRunTimeStamp, oldNextRunTimeStamp, runDateCheck.getTime(), nextTimeout);
             }
         } else {
             worker = null;

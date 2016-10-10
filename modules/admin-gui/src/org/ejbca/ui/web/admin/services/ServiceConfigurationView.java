@@ -67,6 +67,7 @@ public class ServiceConfigurationView implements Serializable{
 	private boolean hidden = false;
 	private String description = "";
 	private String[] pinToNodes = new String[0];
+	private boolean runOnAllNodes = false;
 	
 	private ServiceConfiguration serviceConfiguration;
 	
@@ -112,6 +113,7 @@ public class ServiceConfigurationView implements Serializable{
 		setActive(serviceConfiguration.isActive());
 		setHidden(serviceConfiguration.isHidden());
 		setPinToNodes(serviceConfiguration.getPinToNodes());
+		setRunOnAllNodes(serviceConfiguration.isRunOnAllNodes());
 	}
 	
 	/**
@@ -130,6 +132,7 @@ public class ServiceConfigurationView implements Serializable{
 		retval.setWorkerClassPath(getWorkerType().getClassPath());
 		retval.setWorkerProperties(getWorkerType().getProperties(errorMessages));
 		retval.setPinToNodes(getPinToNodes());
+		retval.setRunOnAllNodes(isRunOnAllNodes());
 		return retval;
 	}
 
@@ -408,7 +411,18 @@ public class ServiceConfigurationView implements Serializable{
 		}
 		this.pinToNodes = pinToNodes;
 	}
-	
+
+    public boolean isRunOnAllNodes() {
+        return runOnAllNodes;
+    }
+    
+	public void setRunOnAllNodes(boolean runOnAllNodes) {
+	    if (log.isDebugEnabled()) {
+	        log.debug("view setRunOnAllNodes: " + runOnAllNodes);
+	    }
+	    this.runOnAllNodes = runOnAllNodes;
+	}
+
 	public List<SelectItem> getNodesInCluster() {
 		final List<SelectItem> ret = new LinkedList<SelectItem>();
 		final Set<String> nodes = EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getNodesInCluster();  

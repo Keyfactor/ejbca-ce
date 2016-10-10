@@ -133,6 +133,13 @@
 		</h:selectManyListbox>
 	</h:panelGroup>
 	<h:panelGroup>
+		<h:outputText value="#{web.text.RUNONALLNODES}"/><f:verbatim> </f:verbatim><%= ejbcawebbean.getHelpReference("/adminguide.html#Run%20on%20all%20Nodes") %>
+	</h:panelGroup>
+	<h:panelGroup>
+		<h:selectBooleanCheckbox id="runOnAllNodesCheckbox" value="#{editService.serviceConfigurationView.runOnAllNodes}" disabled="#{not editService.hasEditRights}"/>
+		<h:outputLabel for="runOnAllNodesCheckbox" value="#{web.text.RUNONALLNODES}" />
+	</h:panelGroup>
+	<h:panelGroup>
 		<h:outputText value="#{web.text.DESCRIPTION}"/>
 	</h:panelGroup>
 	<h:panelGroup>

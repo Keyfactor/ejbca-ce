@@ -13,6 +13,8 @@
 package org.ejbca.ui.cli.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
@@ -43,6 +45,7 @@ public class ServiceEditCommandTest extends ServiceTestCase {
     
     private static final String[] EDIT_EMPTY_ARGS = { SERVICE_NAME };
     private static final String[] EDIT_BOOL_ARGS = { SERVICE_NAME, "active=false" };
+    private static final String[] EDIT_BOOL_ARGS2 = { SERVICE_NAME, "runOnAllNodes=true" };
     private static final String[] EDIT_LIST_ARGS = { SERVICE_NAME, "pinToNodes=10.0.0.1,10.0.0.2" };
     private static final String[] EDIT_CLASSPATH_ARGS = { SERVICE_NAME, "intervalClassPath=org.ejbca.core.model.services.intervals.PeriodicalInterval" };
     private static final String[] EDIT_PROPERTY_ARGS = { SERVICE_NAME, "worker.timebeforeexpiring=2000" };
@@ -79,17 +82,19 @@ public class ServiceEditCommandTest extends ServiceTestCase {
     @Test
     public void testExecuteHappyPathArgs() {
         assertEquals(CommandResult.SUCCESS, serviceEditCommand.execute(EDIT_BOOL_ARGS));
+        assertEquals(CommandResult.SUCCESS, serviceEditCommand.execute(EDIT_BOOL_ARGS2));
         assertEquals(CommandResult.SUCCESS, serviceEditCommand.execute(EDIT_LIST_ARGS));
         assertEquals(CommandResult.SUCCESS, serviceEditCommand.execute(EDIT_CLASSPATH_ARGS));
         assertEquals(CommandResult.SUCCESS, serviceEditCommand.execute(EDIT_PROPERTY_ARGS));
         
         ServiceConfiguration sc = getServiceSession().getService(SERVICE_NAME);
-        assertEquals("active", false, sc.isActive());
+        assertFalse("active", sc.isActive());
         assertEquals("workerClassPath", "org.ejbca.core.model.services.workers.CRLUpdateWorker", sc.getWorkerClassPath());
         assertEquals("intervalClassPath", "org.ejbca.core.model.services.intervals.PeriodicalInterval", sc.getIntervalClassPath());
         Properties props = sc.getWorkerProperties();
         assertEquals("worker.timebeforeexpiring", "2000", props.getProperty("worker.timebeforeexpiring"));
         String[] pinToNodes = sc.getPinToNodes();
+        assertTrue("runOnAllNodes", sc.isRunOnAllNodes());
         assertEquals("pinToNodes length", 2, pinToNodes.length);
         assertEquals("pinToNodes[0]", "10.0.0.1", pinToNodes[0]);
         assertEquals("pinToNodes[0]", "10.0.0.2", pinToNodes[1]);
