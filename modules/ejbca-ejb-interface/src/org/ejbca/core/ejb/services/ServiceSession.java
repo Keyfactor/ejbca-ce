@@ -103,7 +103,7 @@ public interface ServiceSession {
     
     /**
      * Updates service configuration, but does not re-set the timer
-     * @param noLogging if true no logging (to the database will be done
+     * @param noLogging if true no logging to the database will be done
      */
     void changeService(AuthenticationToken admin, String name, ServiceConfiguration serviceConfiguration, boolean noLogging);
     
