@@ -37,7 +37,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     
-	private static final float LATEST_VERSION = 5;
+	private static final float LATEST_VERSION = 6;
 	
 	private static final String INTERVALCLASSPATH = "INTERVALCLASSPATH";
 	private static final String INTERVALPROPERTIES = "INTERVALPROPERTIES";
@@ -49,6 +49,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	private static final String ACTIVE = "ACTIVE";
 	private static final String HIDDEN = "HIDDEN";
 	private static final String PINTONODES = "PINTONODES";
+	private static final String RUNONALLNODES = "RUNONALLNODES";
 	
 	/**
 	 * Constructor used to create a new service configuration.
@@ -63,6 +64,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 		setWorkerProperties(new Properties());
 		setIntervalClassPath("");
 		setIntervalProperties(new Properties());
+		setRunOnAllNodes(false);
 	}
 	
 	
@@ -201,11 +203,25 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	 * @param nodes the list of nodes to pin this service (empty if no nodes)
 	 */
 	public void setPinToNodes(String[] nodes) {
-		log.debug("setPinToNodes: " + Arrays.toString(nodes));
+	    if (log.isDebugEnabled()) {
+	        log.debug("setPinToNodes: " + Arrays.toString(nodes));
+	    }
 		if (nodes == null) {
 			nodes = new String[0];
 		}
 		data.put(PINTONODES, nodes);
+	}
+
+	public boolean isRunOnAllNodes() {
+	    Boolean ret = (Boolean) data.get(RUNONALLNODES);
+	    if (ret != null) {
+	        return ((Boolean) data.get(RUNONALLNODES)).booleanValue();
+	    }
+	    return false;
+	}
+
+	public void setRunOnAllNodes(boolean b) {
+	    data.put(RUNONALLNODES, Boolean.valueOf(b));
 	}
 
 	@Override
@@ -292,6 +308,11 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	            log.debug("Upgrading to version 5");
 	            // The PINTONODES field was added
             	setPinToNodes(null);
+            }
+            if (Float.compare(Float.valueOf(6), getVersion()) > 0) { // v6
+                log.debug("Upgrading to version 6");
+                // The RUNONALLNODES field was added
+                setRunOnAllNodes(false);
             }
 
 			data.put(VERSION, new Float(LATEST_VERSION));

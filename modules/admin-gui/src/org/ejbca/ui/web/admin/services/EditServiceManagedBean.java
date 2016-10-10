@@ -42,6 +42,7 @@ import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.workers.CRLDownloadWorker;
 import org.ejbca.core.model.services.workers.CRLUpdateWorker;
 import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
+import org.ejbca.core.model.services.workers.HsmKeepAliveWorker;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.core.model.services.workers.RenewCAWorker;
 import org.ejbca.core.model.services.workers.RolloverWorker;
@@ -59,6 +60,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifie
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.HsmKeepAliveWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.IntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
@@ -225,6 +227,9 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		}
         if ( (cp != null) && cp.equals(CRLDownloadWorker.class.getName()) ) {
             ret = CRLDownloadWorkerType.NAME;
+        }
+        if ( (cp != null) && cp.equals(HsmKeepAliveWorker.class.getName()) ) {
+            ret = HsmKeepAliveWorkerType.NAME;
         }
         if (ret==null) {
             ret = CustomWorkerType.NAME;
