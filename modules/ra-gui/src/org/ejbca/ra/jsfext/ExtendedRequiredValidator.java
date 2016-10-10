@@ -63,7 +63,7 @@ public class ExtendedRequiredValidator extends RequiredValidator {
         Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
         String validationRequiredFromRequest = params.get("validationRequiredFromRequest");
         if (log.isTraceEnabled()) {
-            log.trace("validationRequiredFromRequest" + validationRequiredFromRequest + "_required="+ required + " clientId=" + component.getClientId() + " value=" + value);
+            log.trace("validationRequiredFromRequest=" + validationRequiredFromRequest + ", _required="+ required + ", clientId=" + component.getClientId() + " value=" + value);
         }
         
         if(!required || validationRequiredFromRequest == null || validationRequiredFromRequest.equalsIgnoreCase("false")){

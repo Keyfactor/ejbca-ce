@@ -2214,6 +2214,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public boolean isUsed() {return EndEntityProfile.this.getUse(name, number);}
         public boolean isRequired() {return EndEntityProfile.this.isRequired(name, number);}
         public boolean isModifiable() {return EndEntityProfile.this.isModifyable(name, number);}
+        public boolean isRegexPatternRequired() {return isRequired() || StringUtils.isNotBlank(getValue());}
         public String getValue(){return value;}
         public void setValue(String value){this.value = value;}
         public String getDefaultValue(){return defaultValue;}
