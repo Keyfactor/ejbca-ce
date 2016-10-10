@@ -31,6 +31,9 @@
             <base-name>org.ejbca.ra.jsfext.Utf8ResourceBundleMessages</base-name>
             <var>msg</var>
         </resource-bundle>
+        <message-bundle>
+	  		Messages
+	  	</message-bundle>
     </application>
     <factory>
         <exception-handler-factory>org.ejbca.ra.jsfext.RaExceptionHandlerFactory</exception-handler-factory>
