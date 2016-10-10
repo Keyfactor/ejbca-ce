@@ -59,7 +59,8 @@ public class ExtendedRegexValidator extends RegexValidator {
         Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
         String validationRequiredFromRequest = params.get("validationRequiredFromRequest");
         if (log.isTraceEnabled()) {
-            log.trace("validationRequiredFromRequest" + validationRequiredFromRequest + "pattern="+ pattern + " clientId=" + component.getClientId() + " value=" + value);
+            log.trace("validationRequiredFromRequest=" + validationRequiredFromRequest + ", pattern=" + pattern + ", clientId="
+                    + component.getClientId() + ", value=" + value);
         }
      
         if(validationRequiredFromRequest == null || validationRequiredFromRequest.equalsIgnoreCase("false")){

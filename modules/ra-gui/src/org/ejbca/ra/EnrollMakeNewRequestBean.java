@@ -158,7 +158,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private boolean requestPreviewMoreDetails;
     private UIComponent subjectDnMessagesComponent;
     private UIComponent userCredentialsMessagesComponent;
-  
+    private UIComponent confirmPasswordComponent;
 
 
 
@@ -816,11 +816,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
             UIInput uiInputConfirmPassword = (UIInput) components.findComponent("passwordConfirmField");
             String confirmPassword = uiInputConfirmPassword.getLocalValue() == null ? "" : uiInputConfirmPassword.getLocalValue().toString();
             if(password.isEmpty()){
-                FacesContext.getCurrentInstance().addMessage("passwordFieldMessage", raLocaleBean.getFacesMessage("enroll_passwords_are_not_equal"));
+                FacesContext.getCurrentInstance().addMessage(confirmPasswordComponent.getClientId(fc), raLocaleBean.getFacesMessage("enroll_password_can_not_be_empty"));
                 fc.renderResponse();
             }
             if (!password.equals(confirmPassword)) {
-                FacesContext.getCurrentInstance().addMessage("passwordFieldMessage", raLocaleBean.getFacesMessage("enroll_passwords_are_not_equal"));
+                FacesContext.getCurrentInstance().addMessage(confirmPasswordComponent.getClientId(fc), raLocaleBean.getFacesMessage("enroll_passwords_are_not_equal"));
                 fc.renderResponse();
             }
         }
@@ -1444,6 +1444,20 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public void setSubjectDnMessagesComponent(UIComponent subjectDnMessagesComponent) {
         this.subjectDnMessagesComponent = subjectDnMessagesComponent;
+    }
+
+    /**
+     * @return the confirmPasswordComponent
+     */
+    public UIComponent getConfirmPasswordComponent() {
+        return confirmPasswordComponent;
+    }
+
+    /**
+     * @param confirmPasswordComponent the confirmPasswordComponent to set
+     */
+    public void setConfirmPasswordComponent(UIComponent confirmPasswordComponent) {
+        this.confirmPasswordComponent = confirmPasswordComponent;
     }
     
     
