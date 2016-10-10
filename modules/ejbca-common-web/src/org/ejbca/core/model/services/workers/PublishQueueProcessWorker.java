@@ -48,6 +48,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      * 
      * @see org.ejbca.core.model.services.IWorker#work()
      */
+    @Override
     public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">work");
         final PublisherSessionLocal publisherSession = ((PublisherSessionLocal)ejbs.get(PublisherSessionLocal.class));

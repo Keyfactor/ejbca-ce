@@ -48,6 +48,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
      * 
      * @see org.ejbca.core.model.services.IWorker#work()
      */
+    @Override
     public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">Worker started");
         final EndEntityManagementSessionLocal endEntityManagementSession = ((EndEntityManagementSessionLocal)ejbs.get(EndEntityManagementSessionLocal.class));

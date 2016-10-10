@@ -42,6 +42,7 @@ public class CRLUpdateWorker extends BaseWorker {
 	 * 
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
+    @Override
 	public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         final PublishingCrlSessionLocal publishingCrlSession = ((PublishingCrlSessionLocal)ejbs.get(PublishingCrlSessionLocal.class));
 		// A semaphore used to not run parallel CRL generation jobs if it is slow
