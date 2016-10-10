@@ -2979,6 +2979,10 @@ isn't specified by the worker.
 <p>With this option, it is possible to choose on which nodes the service is allowed to execute. By not choosing any nodes in the list the service can be executed on any of the nodes.</p>
 <p>On startup of EJBCA each node adds its hostname to the list of nodes. The list can also be manually edited on the System Configuration page.</p>
 </subsubsection>
+<subsubsection name="Run on all Nodes">
+<p>By default services will execute on only one node in a cluster, or one of the pinned nodes. There are some services however that we want to run on all nodes, such as the HSM Keepalive Service.
+Checking 'Run on all nodes' disables the check if the service has been running on another node and thus executes the service on all nodes.</p>
+</subsubsection>
 </subsection>
 
 <subsection name="Multiple services and clustering">

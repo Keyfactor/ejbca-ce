@@ -40,6 +40,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSession;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
+import org.ejbca.core.ejb.services.ServiceTestSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
@@ -66,18 +67,20 @@ public class ServiceServiceTest extends CaTestCase {
     private static final String TEST01_SERVICE = "TestServiceService_Test01Service";
     private static final String TEST02_SERVICE = "TestServiceService_Test02Service";
     private static final String TEST03_SERVICE = "TestServiceService_Test03Service";
+    private static final String TEST04_SERVICE = "TestServiceService_Test04Service";
     private static final String TESTCA1 = "TestServiceService_TestCA1";
     private static final String TESTCA2 = "TestServiceService_TestCA2";
     private static final String TESTCA3 = "TestServiceService_TestCA3";
 
     private static Collection<String> usernames = new LinkedList<String>();
-    private static Collection<String> services = Arrays.asList(TEST01_SERVICE, TEST02_SERVICE, TEST03_SERVICE);
+    private static Collection<String> services = Arrays.asList(TEST01_SERVICE, TEST02_SERVICE, TEST03_SERVICE, TEST04_SERVICE);
     private static Collection<String> cas = Arrays.asList(TESTCA1, TESTCA2, TESTCA3);
 
     private EndEntityManagementSession endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private ServiceSession serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
-    
+    private final ServiceTestSessionRemote serviceTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         createTestCA(TESTCA1);
@@ -175,6 +178,69 @@ public class ServiceServiceTest extends CaTestCase {
         log.trace("<test03NotPinnedService()");
     }
 
+    /**
+     * Tests checking if a service should run
+     */
+    @Test
+    public void testGetWorkerIfItShouldRun() throws Exception {
+        log.trace(">testGetWorkerIfItShouldRun()");
+
+        final String username = genRandomUserName();
+        usernames.add(username);
+        final ServiceConfiguration config = createAServiceConfig(username, TESTCA3);
+
+        // Do not pin this service to any node - it should be allowed to execute on any
+        config.setPinToNodes(new String[0]);
+
+        final int serviceID = addAndActivateService(TEST04_SERVICE, config, TESTCA3);
+        long thisrun = System.currentTimeMillis();
+        // It should run now, nothing preventing it
+        assertTrue(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, false));
+        // It should not run now, time has not passed enough
+        assertFalse(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, false));
+        Thread.sleep(500);
+        assertTrue(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, false));
+        // PIN it to a node which is not me
+        config.setPinToNodes(new String[]{"foo"});
+        serviceSession.changeService(admin, TEST04_SERVICE, config, true);
+        // It should not run now
+        Thread.sleep(500);
+        assertFalse(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, false));
+        // Even if we sleep longer
+        Thread.sleep(500);
+        assertFalse(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, false));
+        // Un-PIN again
+        config.setPinToNodes(new String[0]);
+        serviceSession.changeService(admin, TEST04_SERVICE, config, true);
+        // It should run now, nothing preventing it
+        Thread.sleep(500);
+        assertTrue(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, false));
+        // Fake that it's running on another node, then it should not run, even if it is time
+        assertFalse(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, true));
+        Thread.sleep(500);
+        assertFalse(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, true));
+        // But, if we set it to run on all nodes, it should run
+        config.setRunOnAllNodes(true);
+        serviceSession.changeService(admin, TEST04_SERVICE, config, true);
+        Thread.sleep(500);
+        assertTrue(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, true));
+        Thread.sleep(500);
+        assertTrue(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, true));
+        // Of course, also when another node is not running it, it should run
+        Thread.sleep(500);
+        assertTrue(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, false));
+        // Set back, it should not run
+        config.setRunOnAllNodes(false);
+        serviceSession.changeService(admin, TEST04_SERVICE, config, true);
+        Thread.sleep(500);
+        assertFalse(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, true));
+        // Finally, it runs if not another node runs it
+        Thread.sleep(500);
+        assertFalse(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, false));
+
+        log.trace("<testGetWorkerIfItShouldRun()");
+    }
+
     private void waitForRun(String username) throws Exception {
         Thread.sleep(3 * 1000);
         for (int i = 0; i < 30; i++) {
@@ -238,7 +304,9 @@ public class ServiceServiceTest extends CaTestCase {
         return config;
     }
 
-    private void addAndActivateService(final String name, final ServiceConfiguration config, final String caName) throws Exception {
+    /** Add and activate service to run every 3 seconds 
+     * @return the ID of the service that was added */ 
+    private int addAndActivateService(final String name, final ServiceConfiguration config, final String caName) throws Exception {
         Properties intervalprop = new Properties();
         // Run the service every 3:rd second
         intervalprop.setProperty(PeriodicalInterval.PROP_VALUE, "3");
@@ -255,6 +323,7 @@ public class ServiceServiceTest extends CaTestCase {
 
         getServiceSession().addService(admin, name, config);
         getServiceSession().activateServiceTimer(admin, name);        
+        return getServiceSession().getServiceId(name);
 
     }
 

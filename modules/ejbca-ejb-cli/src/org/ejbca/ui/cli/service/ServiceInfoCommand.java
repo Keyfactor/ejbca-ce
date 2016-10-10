@@ -65,6 +65,7 @@ public class ServiceInfoCommand extends BaseServiceCommand {
         getLogger().info("----- General Settings -----");
         info("Active", serviceConfig.isActive());
         info("Pin to nodes", serviceConfig.getPinToNodes());
+        info("Run on all nodes", serviceConfig.isRunOnAllNodes());
         info("Description", serviceConfig.getDescription());
         return CommandResult.SUCCESS;
     }
