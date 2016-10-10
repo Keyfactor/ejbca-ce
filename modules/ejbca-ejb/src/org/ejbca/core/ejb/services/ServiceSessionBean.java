@@ -591,8 +591,11 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 } else {
                     worker = null; // Don't return a worker, since this node should not run
                 }
-            } else if (log.isDebugEnabled()) {
-                log.debug("Service " + serviceName + " is set to run on all nodes and will run on this node: \"" + hostname + "\", updating timeStamps");
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Service " + serviceName + " is set to run on all nodes and will run on this node: \"" + hostname + "\", updating timeStamps");
+                }
+                // Always update timestamp so we have a record of running, and nextTimeout is set for service reload
                 serviceDataSession.updateTimestamps(serviceId, oldRunTimeStamp, oldNextRunTimeStamp, runDateCheck.getTime(), nextTimeout);
             }
         } else {
