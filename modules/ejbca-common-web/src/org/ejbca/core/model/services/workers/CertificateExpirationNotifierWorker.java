@@ -52,6 +52,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
      * 
      * @see org.ejbca.core.model.services.IWorker#work()
      */
+    @Override
     public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">CertificateExpirationNotifierWorker.work started");
         final CaSessionLocal caSession = ((CaSessionLocal) ejbs.get(CaSessionLocal.class));

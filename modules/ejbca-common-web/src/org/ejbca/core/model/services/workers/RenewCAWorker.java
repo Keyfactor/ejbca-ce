@@ -47,6 +47,7 @@ public class RenewCAWorker extends BaseWorker {
 	 * 
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
+    @Override
 	public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
 		log.trace(">Worker started");
         final CAAdminSessionLocal caAdminSession = ((CAAdminSessionLocal)ejbs.get(CAAdminSessionLocal.class));
