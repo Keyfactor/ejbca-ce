@@ -54,7 +54,9 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	public GlobalConfigurationData(String configurationId, ConfigurationBase configuration) {
 		setConfigurationId(configurationId);
 		setConfiguration(configuration);
-		log.debug("Created configuration "+configurationId);
+		if (log.isDebugEnabled()) {
+		    log.debug("Created configuration "+configurationId);
+		}
 	}
 	
 	public GlobalConfigurationData() { }
