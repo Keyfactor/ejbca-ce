@@ -163,6 +163,7 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
                 if(storedRevocationReason==RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
                     return revocationReason==storedRevocationReason;
                 }
+                return true;
             }
         }
         return false;
