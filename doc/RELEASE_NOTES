@@ -1,14 +1,18 @@
 EJBCA 6.6.0
 -----------
-- New RA GUI with configurable approval work-flow and administrator edit capabilities. Working as an integrated RA or standalone external RA (EJBCA Enterprise only). External RA only uses
-outgoing network connections from the CA.
-- User friendly Certificate search in the new RA GUI with free text search on both subject DN and altName (see note below regarding altName search).
+- New RA GUI with configurable approval work-flow and administrator edit capabilities. Working as an integrated RA or 
+  standalone external RA (EJBCA Enterprise only using Peer Connectors). 
+- Running as an External RA there are only outgoing network connections from the CA.
+- User friendly Certificate search in the new RA GUI with free text search on both subject DN and altName 
+  (see note below regarding altName search).
 - Full GUI support for the new eIDAS standard (QC statement extension in certificates)
 - Completely reworked Approvals with multiple approvals, ordered or not, with flexible approval notifications.
-- Support for RegisteredID subjectAltName.
+- Support for RegisteredID (rfc5280), xmppName (rfc6120) and srvName (rfc4985) subject alternative names.
 - Now allows longer subject DN and altName by default in new installations.
-- Lots of bug fixes and improvements
+- Additional CVC OIDs for SHA512 and SHA384
+- Add support for Services that run on all hosts to enable HSM Keepalive Service to run on all nodes in a cluster
 - Additional security hardening and improvements
+- Lots of bug fixes and improvements
   
 During issuance of X.509 certificates, the Subject Alternative Name can be stored in a searchable database column. This is enabled for all new
 Certificate Profiles, but not for existing profiles.
