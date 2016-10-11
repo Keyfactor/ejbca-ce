@@ -1550,6 +1550,9 @@ public abstract class CertTools {
      */
     public static X509CRL getCRLfromByteArray(byte[] crl) throws CRLException {
         log.trace(">getCRLfromByteArray");
+        if(crl == null) {
+            throw new CRLException("No content in crl byte array");
+        }
         CertificateFactory cf = CertTools.getCertificateFactory();
         X509CRL x509crl = (X509CRL) cf.generateCRL(new ByteArrayInputStream(crl));
         log.trace("<getCRLfromByteArray");
