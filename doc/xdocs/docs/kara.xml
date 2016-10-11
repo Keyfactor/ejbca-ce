@@ -68,23 +68,27 @@ allow access to the desired functionality. For the built-in role templates, the 
 <p><b>CA Administrators</b> are granted access to all functionality in the RA, but only to the CAs that are selected in the administrator role. CAs and related end entities and certificates, will be hidden if the administrator does not have access.</p>
 
 <p><b>RA Administrators</b> have access to the Enrollment, Search and Manage Requests pages, depending on the selected End Entity Rules. Access is restricted according to the selected CAs and end entity profiles as well.
-In order to make a certificate request, the administrator needs both &quot;Create End Entities&quot; and &quot;Delete End Entities&quot; access.
+In order to make a certificate request, the administrator needs both &quot;Create End Entities&quot;, &quot;View End Entities&quot; and &quot;Delete End Entities&quot; access.
 Permission to approve or reject a request is controlled by the approval profile, but certificate requests and requests to edit end entities additionally require the
 &quot;Approve End Entity&quot; access. The certificate and end entity search require &quot;View End Entity&quot; access.</p>
 
-<p><b>Supervisors</b> have access to the Enrollment and Search pages only, according to the same rules as for RA Administrators.</p>
+<p><b>Supervisors</b> have access to the Manage Requests and Search pages only, in read-only mode. In the Manage Requests page, it is limited to see CA requests only (such as CA activation), and not end-entity requests.</p>
 
-<p><b>Auditors</b> have read-only access to everything, similar to how this role works in the Admin GUI. Any actions that cause something to change are disabled, and means that the entire Enrollment menu is hidden.</p>
+<p><b>Auditors</b> have access to everything in read-only mode, except for the Enrollment pages which are not accessible.</p>
 
 <p>If you configure the access rules in Advanced Mode (i.e. not using the role templates), you will need to following access rules (listed per menu item).
 In addition, you <strong>also</strong> need access to any related CAs and End Entity Profiles, including <strong>all</strong> CAs referenced by the End Entity Profiles.</p>
 <dl>
 <dt>Enrollment</dt>
 <dd>
+<code>/ca_functionality/create_certificate</code><br />
 <code>/ra_functionality/create_end_entity</code><br />
+<code>/ra_functionality/delete_end_entity</code><br />
+<code>/ra_functionality/view_end_entity</code><br />
 <code>/ca/...</code><br />
 <code>/endentityprofilesrules/.../create_end_entity</code><br />
 <code>/endentityprofilesrules/.../delete_end_entity</code><br />
+<code>/endentityprofilesrules/.../view_end_entity</code><br />
 </dd>
 
 <dt>Certificate and End Entity Search</dt>
