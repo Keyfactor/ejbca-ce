@@ -72,7 +72,7 @@ In order to make a certificate request, the administrator needs both &quot;Creat
 Permission to approve or reject a request is controlled by the approval profile, but certificate requests and requests to edit end entities additionally require the
 &quot;Approve End Entity&quot; access. The certificate and end entity search require &quot;View End Entity&quot; access.</p>
 
-<p><b>Supervisors</b> have access to the Manage Requests and Search pages only, in read-only mode. In the Manage Requests page, it is limited to see CA requests only (such as CA activation), and not end-entity requests.</p>
+<p><b>Supervisors</b> have access to the Manage Requests and Search pages only, in read-only mode.</p>
 
 <p><b>Auditors</b> have access to everything in read-only mode, except for the Enrollment pages which are not accessible.</p>
 
