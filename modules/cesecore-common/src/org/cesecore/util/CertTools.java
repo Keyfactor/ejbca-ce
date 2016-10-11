@@ -3310,6 +3310,18 @@ public abstract class CertTools {
     }
 
     /**
+     * Generate SHA256 fingerprint of byte array in string representation.
+     * 
+     * @param in byte array to fingerprint.
+     * 
+     * @return String containing hex format of SHA256 fingerprint.
+     */
+    public static String getSHA256FingerprintAsString(byte[] in) {
+        byte[] res = generateSHA256Fingerprint(in);
+        return new String(Hex.encode(res));
+    }
+
+    /**
      * Generate a SHA1 fingerprint from a byte array containing a certificate
      * 
      * @param ba Byte array containing DER encoded Certificate or CRL.
