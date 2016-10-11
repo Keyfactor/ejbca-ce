@@ -1126,8 +1126,8 @@ function toggleCANameChange(){
         <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
       </td>
       <td width="50%">
-        <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSPERMITTED%>" rows="4" cols="38" <%= (hasEditRights ? "" : "disabled") %>>
-        	<c:out value="<%= nameConstraintsPermittedString %>"/></textarea>
+        <%-- Do not put the c:out on a separate line, because that will add extra whitespace in the textarea --%>
+        <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSPERMITTED%>" rows="4" cols="38" <%= (hasEditRights ? "" : "disabled") %>><c:out value="<%= nameConstraintsPermittedString %>"/></textarea>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP1\") %>" /><br />
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>" /></p>
       </td>
@@ -1138,9 +1138,8 @@ function toggleCANameChange(){
         <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
       </td>
       <td width="50%">
-        <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSEXCLUDED%>" rows="4" cols="38" <%= (hasEditRights ? "" : "disabled") %>>
-        	<c:out value="<%= nameConstraintsExcludedString %>"/>
-        </textarea>
+        <%-- Do not put the c:out on a separate line, because that will add extra whitespace in the textarea --%>
+        <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSEXCLUDED%>" rows="4" cols="38" <%= (hasEditRights ? "" : "disabled") %>><c:out value="<%= nameConstraintsExcludedString %>"/></textarea>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP\") %>" /></p>
       </td>
     </tr>
