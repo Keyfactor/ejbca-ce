@@ -564,7 +564,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	log.info(" Processing GlobalConfigurationData entities.");
     	GlobalConfigurationData gcd = globalConfigurationSession.findByConfigurationId(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 		HashMap h = getDataUnsafe(gcd.getDataUnsafe());
-    	gcd.setDataUnsafe(h);
+    	gcd.setObjectUnsafe(h);
     }
 
 	/**

@@ -538,7 +538,7 @@ public class DatabaseSchemaTest {
         logMemStats();
         GlobalConfigurationData entity = new GlobalConfigurationData();
         entity.setConfigurationId(VARCHAR_250B);
-        entity.setDataUnsafe(HASHMAP_200K);
+        entity.setObjectUnsafe(HASHMAP_200K);
         entity.setRowProtection(CLOB_10KiB);
         entity.setRowVersion(0);
         storeAndRemoveEntity(entity);
