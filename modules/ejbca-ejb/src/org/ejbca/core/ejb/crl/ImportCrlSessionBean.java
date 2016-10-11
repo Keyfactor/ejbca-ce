@@ -35,8 +35,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
-import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CrlImportException;
 import org.cesecore.certificates.crl.CrlStoreException;
@@ -118,12 +119,13 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
                     }
                 }
                 
-                if(isLimitedCertificate(issuerDn, serialNumber)) {
+                final CertificateDataWrapper cdw = certStoreSession.getCertificateDataByIssuerAndSerno(issuerDn, serialNumber);
+                if(isLimitedCertificate(issuerDn, serialNumber, cdw)) {
                     // Store as much as possible about what we know about the certificate and its status (which is limited) in the database
                     certStoreSession.updateLimitedCertificateDataStatus(authenticationToken, cainfo.getCAId(), issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint);
                 } else {
                     final String serialHex = serialNumber.toString(16).toUpperCase();
-                    if (isCertAlreadyRevoked(issuerDn, serialNumber, reasonCode)) {
+                    if (isCertAlreadyRevoked(reasonCode, cdw)) {
                         log.info("Certificate '" + serialHex + "' is already revoked");
                         continue;
                     }
@@ -153,12 +155,14 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
     
     }
     
-    private boolean isCertAlreadyRevoked(final String issuerDN, final BigInteger certSerialnumber, final int revocationReason) {
-        if(certStoreSession.isRevoked(issuerDN, certSerialnumber)) {
-            final CertificateInfo certInfo = certStoreSession.findFirstCertificateInfo(issuerDN, certSerialnumber);
-            final int storedRevocationReason = certInfo.getRevocationReason();
-            if(storedRevocationReason==RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
-                return revocationReason==storedRevocationReason;
+    private boolean isCertAlreadyRevoked(final int revocationReason, final CertificateDataWrapper cdw) {
+        if(cdw != null) {
+            final CertificateData certData = cdw.getCertificateData();
+            if(certData.getStatus()==CertificateConstants.CERT_REVOKED) {
+                final int storedRevocationReason = certData.getRevocationReason();
+                if(storedRevocationReason==RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
+                    return revocationReason==storedRevocationReason;
+                }
             }
         }
         return false;
@@ -192,9 +196,8 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
         return lastCrlOfSameType;
     }
     
-    private boolean isLimitedCertificate(final String issuerDn, final BigInteger serialNumber) {
+    private boolean isLimitedCertificate(final String issuerDn, final BigInteger serialNumber, final CertificateDataWrapper cdw) {
         final String limitedFingerprint = CertTools.getFingerprintAsString((issuerDn+";"+serialNumber).getBytes());
-        CertificateDataWrapper cdw = certStoreSession.getCertificateDataByIssuerAndSerno(issuerDn, serialNumber);
         return (cdw==null) || (limitedFingerprint.equals(cdw.getCertificateData().getFingerprint()));
     }
 
