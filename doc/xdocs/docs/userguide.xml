@@ -414,6 +414,9 @@ The intended work-flow is to specify the name constraints on the end-entity for 
 It's also possible to add name constraints directly on a CA.
 </p>
 <p>
+<strong>Note:</strong> Name constraints are added on the Issuing CA in a certificate hierarchy, i.e. not in the end user/server certificate, and not in the Root CA certificate.
+</p>
+<p>
 <strong>Note:</strong> Name constraints must first be enabled in the Certificate Profile and the End-Entity Profile (the latter is for end-entities only). At the time of writing (May 2014) they are not supported in Apple Safari or on iOS devices, so this extension can not yet be marked as critical if there are such clients. The default mode is non-critical for this reason.
 </p>
 <p>
@@ -441,6 +444,31 @@ If you get an name constraint error about &quot;CMSCertificate&quot; when creati
 <p>
 Name constraints are only checked for the types of constraints that are specified. So, if e.g. no IP addresses are addresses then the IP address will not be constrained. Conversely, if e.g. a domain name is listed as permitted then no other domain names will be permitted. If neither any permitted or excluded names are entered, then the Name Constraints extension will be omitted from the certificate.
 </p>
+<p>An example Name Constrained certificate, as displayed using OpenSSL could contain:</p>
+<source>
+X509v3 Name Constraints: 
+  Permitted:
+    DNS:onlythis.com
+    DirName: C = US, ST = MA, L = Boston, O = Example LLC
+  Excluded:
+    IP:0.0.0.0/0.0.0.0
+    IP:0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
+</source>
+<p>To issue such a certificate you would make the following configuration:</p>
+<ul>
+<li>In the Certificate Profile check "Name Constraints - Use"</li>
+<li>In the End Entity Profile check "Name Constraints, Permitted - Use" and "Name Constraints, Excluded - Use"</li>
+<li>Add the End Entity and put the following in the fields for "Name Constraints, Permitted" and "Name Constraints, Excluded"</li>
+<li>Generate the certificate and verify the contents with 'openssl x509 -in cert.pem -text'</li>
+</ul>
+<source>
+onlythis.com
+C=US,ST=MA,L=Boston,O=Example LLC
+</source>
+<source>
+0.0.0.0/0
+::/0
+</source>
 </subsubsection>
 
 <subsubsection name="Issuing Distribution Point on CRLs">
