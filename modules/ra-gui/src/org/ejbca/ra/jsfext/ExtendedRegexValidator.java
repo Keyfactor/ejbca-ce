@@ -20,6 +20,7 @@ import javax.faces.validator.FacesValidator;
 import javax.faces.validator.RegexValidator;
 import javax.faces.validator.ValidatorException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -71,7 +72,7 @@ public class ExtendedRegexValidator extends RegexValidator {
         }
         
         //Applying regex pattern
-        if (pattern != null && !pattern.isEmpty()) {
+        if (pattern != null && StringUtils.isNotBlank(pattern) && StringUtils.isNotBlank(value.toString())){
             setPattern(pattern);
             super.validate(context, component, value);
         }
