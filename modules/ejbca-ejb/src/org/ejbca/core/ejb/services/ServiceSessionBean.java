@@ -69,6 +69,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -173,6 +174,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private CryptoTokenManagementSessionLocal cryptoTokenSession;
     @EJB
     private CmpMessageDispatcherSessionLocal cmpMsgDispatcherSession;
+    @EJB
+    private ImportCrlSessionLocal importCrlSession;
 
     // The administrator that the services should be run as. Internal, allow all.
     private AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceSession"));
@@ -642,6 +645,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(PublishingCrlSessionLocal.class, publishingCrlSession);
             ejbs.put(CryptoTokenManagementSessionLocal.class, cryptoTokenSession);
             ejbs.put(CmpMessageDispatcherSessionLocal.class, cmpMsgDispatcherSession);
+            ejbs.put(ImportCrlSessionLocal.class, importCrlSession);
             worker.work(ejbs);
             final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName);
             log.info(msg);
