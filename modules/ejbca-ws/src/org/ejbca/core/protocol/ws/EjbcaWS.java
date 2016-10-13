@@ -2821,6 +2821,7 @@ public class EjbcaWS implements IEjbcaWS {
 	        if (createJKS) {
 	        	ks = java.security.KeyStore.getInstance("JKS");
 	        } else {
+	            // BC PKCS12 uses 3DES for key protection and 40 bit RC2 for protecting the certificates
 	        	ks = java.security.KeyStore.getInstance("PKCS12", "BC");
 	        }
 	        ks.load(new ByteArrayInputStream(encodedKeyStore), userdata.getPassword().toCharArray());

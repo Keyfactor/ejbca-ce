@@ -584,6 +584,7 @@ public final class KeyTools {
                 log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
             }
             // store the key and the certificate chain
+            // BC PKCS12 uses 3DES for key protection and 40 bit RC2 for protecting the certificates
             final KeyStore store = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             store.load(null, null);
             store.setKeyEntry(alias, pk, null, chain);
