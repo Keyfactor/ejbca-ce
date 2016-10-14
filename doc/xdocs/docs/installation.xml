@@ -783,7 +783,9 @@ If you are using another type of database, adapt the statement above with the co
 <p>Run the following commands in JBoss CLI to remove existing TLS and HTTP configuration (just to be safe).</p>
 <source>
 /subsystem=undertow/server=default-server/http-listener=default:remove
+/subsystem=undertow/server=default-server/https-listener=https:remove
 /socket-binding-group=standard-sockets/socket-binding=http:remove
+/socket-binding-group=standard-sockets/socket-binding=https:remove
 :reload
 </source>
 <p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
@@ -835,9 +837,8 @@ ant deploy-keystore
 /core-service=management/security-realm=SSLRealm/authentication=truststore:add(keystore-path="${jboss.server.config.dir}/keystore/truststore.jks", keystore-password="changeit")
 /socket-binding-group=standard-sockets/socket-binding=httpspriv:add(port="8443",interface="httpspriv")
 /socket-binding-group=standard-sockets/socket-binding=httpspub:add(port="8442", interface="httpspub")
-:reload
 </source>
-<p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
+<p>Restart the application server completely. Wait for it to finish start up by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
 <source>
 /subsystem=undertow/server=default-server/https-listener=httpspriv:add(socket-binding=httpspriv, security-realm="SSLRealm", verify-client=REQUIRED)
 /subsystem=undertow/server=default-server/https-listener=httpspub:add(socket-binding=httpspub, security-realm="SSLRealm")
