@@ -156,7 +156,7 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
             newCrlNumber = downloadedCrlNumber;
         }
         // Last of all, store the CRL if there were no errors during creation of database entries
-        crlStoreSession.storeCRL(authenticationToken, crlbytes, caFingerprint, newCrlNumber, issuerDn, x509crl.getThisUpdate(), x509crl.getNextUpdate(), isDeltaCrl?1:-1);
+        crlStoreSession.storeCRL(authenticationToken, x509crl.getEncoded(), caFingerprint, newCrlNumber, issuerDn, x509crl.getThisUpdate(), x509crl.getNextUpdate(), isDeltaCrl?1:-1);
     
     }
     
