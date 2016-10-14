@@ -87,6 +87,11 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
         }
         
         X509CRL lastCrlOfSameType = getLastCrlOfSameType(x509crl, isDeltaCrl, issuerDn);
+        if(lastCrlOfSameType!=null && !x509crl.getThisUpdate().after(lastCrlOfSameType.getThisUpdate())) {
+            log.info((isDeltaCrl?"Delta":"Full") + " CRL number " + downloadedCrlNumber + " for CA '" + cainfo.getName() + 
+                    "' is not newer than last known " + (isDeltaCrl?"delta":"full") + " CRL. Ignoring download.");
+            return;
+        }
         
         // If the CRL is newer than the last known or there wasn't any old one, loop through it
         if (x509crl.getRevokedCertificates()==null) {
@@ -192,9 +197,6 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
             } catch (CRLException e) {
                 log.warn("Could not retrieve an older CRL issued by " + issuerDN, e);
             }
-        }
-        if(lastCrlOfSameType!=null && !crl.getThisUpdate().after(lastCrlOfSameType.getThisUpdate())) {
-            return null;
         }
         return lastCrlOfSameType;
     }
