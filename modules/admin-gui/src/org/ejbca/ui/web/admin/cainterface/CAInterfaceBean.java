@@ -1357,6 +1357,7 @@ public class CAInterfaceBean implements Serializable {
             
             if(StringUtils.equals(cainfo.getSubjectDN(), CertTools.getIssuerDN(x509crl))) {
                 ejbLocalHelper.getImportCrlSession().importCrl(authenticationToken, cainfo, crlBytes);
+                retMsg = "CRL imported successfully or a newer version is already in the database";
             } else {
                 retMsg = "Error: The CRL in the file in not issued by " + caname;
             }
