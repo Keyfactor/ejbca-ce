@@ -245,19 +245,22 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                     storedApprovalProfile.addPropertiesToPartition(currentStep.getStepIdentifier(), partitionId, updatedProperties);
                     //Update any set meta data. 
                     final Approval approval = new Approval(comment, currentStep.getStepIdentifier(), partitionId);
-                    switch (getPartitionActions().get(partitionId)) {
-                    case APPROVE:
-                        approvalExecutionSession.approve(admin, approvalDataVOView.getApprovalId(), approval);
-                        updateApprovalRequestData(approvalDataVOView.getApproveActionDataVO().getId());
-                        break;
-                    case REJECT:
-                        approvalExecutionSession.reject(admin, approvalDataVOView.getApprovalId(), approval);
-                        updateApprovalRequestData(approvalDataVOView.getApproveActionDataVO().getId());
-                        break;
-                    case NO_ACTION:
-                        break;
-                    default:
-                        break;
+                    Action action = getPartitionActions().get(partitionId);
+                    if(action != null) {
+                        switch (action) {
+                        case APPROVE:
+                            approvalExecutionSession.approve(admin, approvalDataVOView.getApprovalId(), approval);
+                            updateApprovalRequestData(approvalDataVOView.getApproveActionDataVO().getId());
+                            break;
+                        case REJECT:
+                            approvalExecutionSession.reject(admin, approvalDataVOView.getApprovalId(), approval);
+                            updateApprovalRequestData(approvalDataVOView.getApproveActionDataVO().getId());
+                            break;
+                        case NO_ACTION:
+                            break;
+                        default:
+                            break;
+                        }
                     }
                 } catch (ApprovalRequestExpiredException e) {
                     addErrorMessage("APPROVALREQUESTEXPIRED");
