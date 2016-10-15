@@ -188,7 +188,13 @@ public class ServiceServiceTest extends CaTestCase {
         final String username = genRandomUserName();
         usernames.add(username);
         final ServiceConfiguration config = createAServiceConfig(username, TESTCA3);
-
+        // In this test, set configuration when it should run "normally" to a long period, because we have a 
+        // special test if it "should run" that bypasses the configured run time. 
+        // So we don't want the service to execute and update timestamps while we are running the test
+        Properties intervalprop = new Properties();
+        intervalprop.setProperty(PeriodicalInterval.PROP_VALUE, "1");
+        intervalprop.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_HOURS);
+        config.setIntervalProperties(intervalprop);
         // Do not pin this service to any node - it should be allowed to execute on any
         config.setPinToNodes(new String[0]);
 
@@ -224,7 +230,7 @@ public class ServiceServiceTest extends CaTestCase {
         serviceSession.changeService(admin, TEST04_SERVICE, config, true);
         Thread.sleep(500);
         assertTrue(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, true));
-        Thread.sleep(500);
+        Thread.sleep(1000);
         assertTrue(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, true));
         // Of course, also when another node is not running it, it should run
         Thread.sleep(500);
@@ -234,9 +240,9 @@ public class ServiceServiceTest extends CaTestCase {
         serviceSession.changeService(admin, TEST04_SERVICE, config, true);
         Thread.sleep(500);
         assertFalse(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, true));
-        // Finally, it runs if not another node runs it
+        // Finally, it should run if another node is not running it
         Thread.sleep(500);
-        assertFalse(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, false));
+        assertTrue(serviceTestSession.getWorkerIfItShouldRun(serviceID, thisrun+=500, false));
 
         log.trace("<testGetWorkerIfItShouldRun()");
     }
@@ -307,11 +313,13 @@ public class ServiceServiceTest extends CaTestCase {
     /** Add and activate service to run every 3 seconds 
      * @return the ID of the service that was added */ 
     private int addAndActivateService(final String name, final ServiceConfiguration config, final String caName) throws Exception {
-        Properties intervalprop = new Properties();
-        // Run the service every 3:rd second
-        intervalprop.setProperty(PeriodicalInterval.PROP_VALUE, "3");
-        intervalprop.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_SECONDS);
-        config.setIntervalProperties(intervalprop);
+        // Run the service every 3:rd second, if we haven't configured anything else from the test already
+        if ((config.getIntervalProperties() != null) && (config.getIntervalProperties().getProperty(PeriodicalInterval.PROP_VALUE) == null)) {
+            Properties intervalprop = new Properties();
+            intervalprop.setProperty(PeriodicalInterval.PROP_VALUE, "3");
+            intervalprop.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_SECONDS);
+            config.setIntervalProperties(intervalprop);            
+        }
         config.setWorkerClassPath(UserPasswordExpireWorker.class.getName());
         Properties workerprop = new Properties();
         workerprop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS, "FALSE");
