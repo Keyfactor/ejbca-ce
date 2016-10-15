@@ -427,7 +427,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private OcspSigningCacheEntry makeOcspSigningCacheEntry(X509Certificate ocspSigningCertificate, OcspKeyBinding ocspKeyBinding) {
         final List<X509Certificate> caCertificateChain = getCaCertificateChain(ocspSigningCertificate);
         if (caCertificateChain == null) {
-            log.warn("OcspKeyBinding " + ocspKeyBinding.getName() + " ( " + ocspKeyBinding.getId() + ") has an signing certificate, but no chain and will be ignored.");
+            log.warn("OcspKeyBinding " + ocspKeyBinding.getName() + " ( " + ocspKeyBinding.getId() + ") has a signing certificate, but no chain and will be ignored.");
             return null;
         }
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ocspKeyBinding.getCryptoTokenId());
