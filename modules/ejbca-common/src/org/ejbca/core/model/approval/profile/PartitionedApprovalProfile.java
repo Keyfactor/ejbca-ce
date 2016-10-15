@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -40,6 +41,8 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
     private static final long serialVersionUID = 6991912129797327010L;
         
+    private static final Logger log = Logger.getLogger(PartitionedApprovalProfile.class);
+
     private static final InternalResources intres = InternalResources.getInstance();
     
     public static final RoleInformation ANYBODY = new RoleInformation(-1, "Anybody", new ArrayList<AccessUserAspectData>());
@@ -151,6 +154,9 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
             @SuppressWarnings("unchecked")
             List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS).getValues();
             for (RoleInformation role : roles) {
+                if (log.isTraceEnabled()) {
+                    log.trace("Checking if authenticationToken '"+authenticationToken+"' matches role "+role.getName());
+                }
                 if (role.equals(ANYBODY)) {
                     return true;
                 } else {
@@ -161,6 +167,14 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
                     }
                 }
             }
+        } else {
+            if (log.isTraceEnabled()) {
+                log.trace("Approval partition is null, canApprovePartition returns false for authenticationToken "+authenticationToken);
+            }
+            return false;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Administrator '"+authenticationToken+"' does not belong to a role that can approve partition "+approvalPartition.getPartitionIdentifier());
         }
         return false;
     }
