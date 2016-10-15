@@ -58,7 +58,9 @@ User session against the RA UI uses HTTPS sessions, and are typically pinned to 
 
 <section name="Installation">
 <p>The RA UI is part of any EJBCA installation, after installing a CA (on localhost in the example) the RA UI is available over <i>https://loalhost:8443/ejbca/ra/</i>.</p>
-<p>To install the RA as an external service, see the section on <a href="adminguide.html#Peer%20Systems%20(Enterprise%20only)">Peer Systems</a>, in the Admin Guide.</p>
+<p>To install the RA as an external service you first install EJBCA with an external Management CA (from your EJBCA CA) and after this configure a Peer Connection from the CA to the RA.
+<br/>See the section on <a href="userguide.html#Installing%20EJBCA%20with%20external%20administrators">Installing EJBCA with external administrators</a> in the User Guide.
+<br/>See the section on <a href="adminguide.html#Peer%20Systems%20(Enterprise%20only)">Peer Systems</a>, in the Admin Guide.</p>
 </section>
 
 <section name="User Authorization">
@@ -82,13 +84,13 @@ In addition, you <strong>also</strong> need access to any related CAs and End En
 <dt>Enrollment</dt>
 <dd>
 <code>/ca_functionality/create_certificate</code><br />
+<code>/ra_functionality/view_end_entity</code><br />
 <code>/ra_functionality/create_end_entity</code><br />
 <code>/ra_functionality/delete_end_entity</code><br />
-<code>/ra_functionality/view_end_entity</code><br />
 <code>/ca/...</code><br />
+<code>/endentityprofilesrules/.../view_end_entity</code><br />
 <code>/endentityprofilesrules/.../create_end_entity</code><br />
 <code>/endentityprofilesrules/.../delete_end_entity</code><br />
-<code>/endentityprofilesrules/.../view_end_entity</code><br />
 </dd>
 
 <dt>Certificate and End Entity Search</dt>
@@ -119,6 +121,97 @@ and at least one of:
 
 <p>Note that RA does not support Decline rules. If a role that has a Decline rule is used over the RA, it will be denied access to everything as a security precaution.</p>
 
+</section>
+
+<section name="Sample Configuration">
+<p>This example configuration will create one <i>RA User</i> that can request certificates (needing Approval) and one <i>RA Admin</i> that can approve the requests.</p>
+<p>We will assume that you already have a CA (names High Assurance CA), a Certificate Profile (named EV TLS) and an End Entity Profile (also named EV TLS), where the profiles are set to issue from that CA.</p>
+<subsection name="Create Roles">
+<p>In order to set up approvals we first need to roles that will be part of the approval process.</p>
+<ul>
+<li>In the Admin GUI, go to Administrator Roles</li>
+<li>Add a role called 'RA User'</li>
+<li>Add a role called 'RA Admin'</li>
+<li>Edit Access Rules for 'RA User'</li>
+<ul>
+<li>Custom->Advanced Mode</li>
+<li>/ca_functionality/create_certificate</li>
+<li>/ra_functionality/view_end_entity</li>
+<li>/ra_functionality/create_end_entity</li>
+<li>/ra_functionality/delete_end_entity</li>
+<li>/ca/High Assurance CA</li>
+<li>/endentityprofilesrules/EV TLS/view_end_entity</li>
+<li>/endentityprofilesrules/EV TLS/create_end_entity</li>
+<li>/endentityprofilesrules/EV TLS/delete_end_entity</li>
+</ul>
+<li>Click 'Save'</li>
+<li>Edit Access Rules for 'RA Admin'</li>
+<ul>
+<li>RA Administrator</li>
+<li>Authorized CAs: High Assurance CA</li>
+<li>End Entity Rules: all</li>
+<li>End Entity Profiles: EV TLS</li>
+<li>Other rules: none</li>
+</ul>
+<li>Click 'Save'</li>
+</ul>
+<p>Now add some users to the 'RA User' and 'RA Admin' roles.</p>
+</subsection>
+<subsection name="Create an Approval Profile">
+<p>In order to configure the system to require approvals for issuing certain certificate we need to create an Approval Profile.</p>
+<p>One peculiarity of the approvals system is that the role privileges are stored per request, so if you change roles in an Approval Profile, you need to make a new request for the new role attributes to be applied. 
+Old requests will live after the rules set up when those requests were made.</p>
+<p>Create an Approval Profile with two parts.</p>
+<p>First one part for verifying the evidence:</p>
+<ul>
+<li>In the Admin GUI, go to Approval Profiles</li>
+<li>Enter 'EV TLS Approval' and click 'Add'</li>
+<li>Click 'Edit' for 'EV TLS Approval'</li>
+<li>Change 'Approval Profile Type' to 'Partitioned Approval'</li>
+<li>In the first partition: Select 'RA Admin' as 'Roles which may approve this partition'</li>
+<li>In the first partition: Select 'Anybody' as 'Roles which may view this partition'</li>
+<li>In the first partition: Add a checkbox called 'Verified Evidence'</li>
+<li>In the first partition: Add a textfield called 'Path to evidence'</li>
+<li>Enter 'Evidence' in the name field of the first partition</li>
+<li>Click 'Save'</li>
+</ul>
+<p>Next one part for verifying the payment:</p>
+<ul>
+<li>In the Admin GUI, go to Approval Profiles</li>
+<li>Click 'Edit' for 'EV TLS Approval'</li>
+<li>Click 'Add Partition'</li>
+<li>Change 'Approval Profile Type' to 'Partitioned Approval'</li>
+<li>In the second partition: Select 'RA Admin' as 'Roles which may approve this partition'</li>
+<li>In the second partition: Select 'Anybody' as 'Roles which may view this partition'</li>
+<li>In the second partition: Add a checkbox called 'Verified payment'</li>
+<li>In the second partition: Add a radiobutton called 'Payment method' and add two rows, 'Credit card' and 'Invoice'</li>
+<li>In the second partition: Add a textfield called 'Path to receipt'</li>
+<li>Enter 'Payment' in the name field of the second partition</li>
+<li>Click 'Save'</li>
+</ul>
+</subsection>
+<subsection name="Configure Certificate Profile to use Approval Profile">
+<p>We need to configure the Certificate Profile to use the Approval Profile.</p>
+<ul>
+<li>In the Admin GUI, go to Certificate Profiles</li>
+<li>Click 'Edit' for 'EV TLS'</li>
+<li>Under 'Approval Settings' check 'Add/Edit End Entity', 'Revocation' and 'Key Recovery'</li>
+<li>For 'Approval Profiles' select the newly created 'EV TLS Approval'</li>
+<li>Click 'Save'</li>
+</ul>
+</subsection>
+<subsection name="Email Notifications">
+<p>You can configure email notifications both for RA Admins and RA Users to inform them when a request have been created or changed, and the link to approve or check status.
+Experiment with the notification configurations in End Entity Profiles and in Approval Profiles. See the documentation on <a href="adminguide.html#Email%20notifications">Email notifications</a> for information about parameters that can be used in emails.</p>
+</subsection>
+<subsection name="Request Certificates">
+<p>Start a new browser session and access the RA at <a href="https://localhost:8443/ejbca/ra/">https://localhost:8443/ejbca/ra/</a>. You should now be able to request certificates using the function in 'Enroll->Make New Request'.</p>
+<p>Depending on what RA User has access to, one or several profiles, one or several CAs etc, you will be presented with different information. The user will not be presented with options that are non-selectable, so with a limited configuration there are very few choices (easy to use).</p>
+<p>When you have created a request you will be presented with a message that your request have been submitted for approval, and given a Request ID so you can follow the status of your request.</p>
+</subsection>
+<subsection name="Approving Requests">
+<p>Start a new browser session and access the RA again as 'RA Admin'. You should now have to option to 'Manage Requests'. Here you can view and approve (or reject) requests. Requests can also be edited, and once edited have to be approved by another administrator (you are now allowed to approve your own edits).</p>
+</subsection>
 </section>
 </body>
 </document>
