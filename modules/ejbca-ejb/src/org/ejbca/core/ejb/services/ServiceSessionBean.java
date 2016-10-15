@@ -532,6 +532,9 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public IWorker getWorkerIfItShouldRun(final Integer serviceId, final long nextTimeout, final boolean testRunOnOtherNode) {
+    	if (log.isTraceEnabled()) {
+    	    log.trace(">getWorkerIfItShouldRun: "+serviceId+", "+nextTimeout+", "+testRunOnOtherNode);
+    	}
         IWorker worker = null;
         ServiceData serviceData = serviceDataSession.findById(serviceId);
         ServiceConfiguration serviceConfiguration = serviceData.getServiceConfiguration();
@@ -549,7 +552,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             worker = getWorker(serviceConfiguration, serviceName, oldRunTimeStamp, oldNextRunTimeStamp);
             if (worker.getNextInterval() == IInterval.DONT_EXECUTE) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Service has interval IInterval.DONT_EXECUTE.");
+                    log.debug("Service "+serviceName+" has interval IInterval.DONT_EXECUTE.");
                 }
                 return null; // Don't return an inactive worker to run
             }
@@ -585,13 +588,20 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     final boolean updateTimestamps = serviceDataSession.updateTimestamps(serviceId, oldRunTimeStamp, oldNextRunTimeStamp, runDateCheck.getTime(), nextTimeout);
                     if (!updateTimestamps || testRunOnOtherNode) {
                         if (testRunOnOtherNode && updateTimestamps) {
-                            log.info("testRunOnOtherNode == true, we are returning null even though another node had not updated the database. This node will not run.");
+                            log.info("testRunOnOtherNode == true, we are returning null even though another node had not updated the database. This node will not run the service "+serviceName+".");
                         } else {
-                            log.debug("Another node had already updated the database at this point. This node will not run.");
+                            log.debug("Another node had already updated the database at this point. This node will not run the service "+serviceName+".");
                         }
                         worker = null; // Failed to update the database.                            
+                    } else {
+                        if (log.isTraceEnabled()) {
+                            log.trace("Timestamps updated, service "+serviceName+" will run: "+currentDate+", "+runDateCheck);
+                        }                        
                     }
                 } else {
+                    if (log.isTraceEnabled()) {
+                        log.trace("!currentDate.after(runDateCheck), service "+serviceName+" will not run: "+currentDate+", "+runDateCheck);
+                    }
                     worker = null; // Don't return a worker, since this node should not run
                 }
             } else {
@@ -607,6 +617,9 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 log.debug("Service " + serviceName + " will not run on this node: \"" + hostname + "\", Pinned to: "
                         + Arrays.toString(serviceConfiguration.getPinToNodes()));
             }
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<getWorkerIfItShouldRun: "+serviceName+", ret: "+ (worker != null ? worker.getClass().getName() : "null"));
         }
         return worker;
     }
