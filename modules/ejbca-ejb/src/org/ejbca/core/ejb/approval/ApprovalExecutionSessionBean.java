@@ -363,7 +363,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         }
         if (!allowed) {
             final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoapprovalrequest",
-                    admin, approvalData.getApprovalId(), approvalProfile.getApprovalProfileIdentifier());
+                    admin, approvalData.getApprovalId(), approvalProfile.getProfileId());
             throw new AuthorizationDeniedException(msg);
         }
 
