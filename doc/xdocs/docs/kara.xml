@@ -88,7 +88,6 @@ In addition, you <strong>also</strong> need access to any related CAs and End En
 <dt>Enrollment</dt>
 <dd>
 <code>/ca_functionality/create_certificate</code><br />
-<code>/ra_functionality</code><br />
 <code>/ra_functionality/view_end_entity</code><br />
 <code>/ra_functionality/create_end_entity</code><br />
 <code>/ra_functionality/delete_end_entity</code><br />
@@ -96,6 +95,7 @@ In addition, you <strong>also</strong> need access to any related CAs and End En
 <code>/endentityprofilesrules/.../view_end_entity</code><br />
 <code>/endentityprofilesrules/.../create_end_entity</code><br />
 <code>/endentityprofilesrules/.../delete_end_entity</code><br />
+Depending on your configuration, you might also need <code>/ra_functionality</code> and/or <code>/ra_functionality/edit_end_entity</code> + <code>/endentityprofilesrules/.../edit_end_entity</code>. This is a known bug (ECA-5458), which will be fixed in a future release.<br />
 </dd>
 
 <dt>Certificate and End Entity Search</dt>
