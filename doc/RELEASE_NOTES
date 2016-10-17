@@ -1,5 +1,9 @@
 EJBCA 6.6.0
 -----------
+Primekey Solutions is very pleased to release EJBCA 6.6.0. Being the release with the most number of issue fixed ever, 
+this release of EJBCA 6.6.0 adds a completely new RA architecture, including a brand new RA GUI. 
+Together with all other improvements, bugfixes and security enhancements, this is a leap forward for EJBCA.
+
 - New RA GUI with configurable approval work-flow and administrator edit capabilities. 
 - The RA can work as an integrated RA or as a standalone external RA (EJBCA Enterprise only subject to separate license). 
 - Running as an External RA there are only outgoing network connections from the CA, using Peer Connectors.
