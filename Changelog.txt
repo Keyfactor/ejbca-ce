@@ -1,3 +1,356 @@
+EJBCA 6.6.0, 2016-10-19
+---
+Bug
+    [ECA-3897] - Unrevoked certificates do not appear on delta CRLs
+    [ECA-4549] - In Basic Access Rules, 'All' is listed last in the list of CAs
+    [ECA-4596] - ClientToolBox is unable to verify signature when testing more exotic EC keys in HSM
+    [ECA-4647] - Basic Access Rules: Pre-selected end entity rules for RAAdmin role template do not correspond to actual rules.
+    [ECA-4834] - Security hardening
+    [ECA-4856] - Security Hardening
+    [ECA-4858] - Confusing audit log message when reactivating a crypto token
+    [ECA-4860] - CryptoToken Id not updated when importing a statedump with the merge option
+    [ECA-4862] - CmpMessageHelper.createUnprotectedErrorMessage throws an NPE if a nonce is not included in the CMP message
+    [ECA-4872] - System configuration page broken in WildFly 10
+    [ECA-4877] - CertTools.isCertificateValid logs cert serno in decimal instead of hex
+    [ECA-4882] - CMP Proxy: Message signer chain should have its own configuration key in cmpProxy.properties
+    [ECA-4883] - CMP Proxy: NPE when the right CA certificate is not found
+    [ECA-4884] - Reference to Hudson in code when deploying ant
+    [ECA-4885] - Key recovery requires 'Edit End Entities'-rights
+    [ECA-4889] - Change all references from "Enrolment" to "Enrollment"
+    [ECA-4892] - Clearing caches fails locally if clearing the cache on any clustered nodes fails as well.
+    [ECA-4893] - CMP Proxy: Revocation status cache is read incorrectly
+    [ECA-4915] - SecureXMLDecoder can't deserialize all standard types
+    [ECA-4923] - ClientToolBox is missing lib/ejbca-ws.jar dependency
+    [ECA-4925] - Old version of cert-cvc still under lib
+    [ECA-4928] - CMP Proxy Servlet doesn't properly handle messages with faulty ASN.1 syntax
+    [ECA-4929] - Sample code not updated after refactorings
+    [ECA-4930] - Left-over old generated web services sources
+    [ECA-4931] - Minor security issue
+    [ECA-4945] - Edit admin entities broken in WildFly 10
+    [ECA-4955] - CMP Proxy swallows underlying error message when verifying certificate path
+    [ECA-4956] - Regression: Key alias in CMS CA service was changed so it can not be read after upgrade
+    [ECA-4964] - NoClassDefFound in PeerConnectorServlet.destroy(), causes JBoss to freeze
+    [ECA-4971] - Partial fix for handling InterruptedException correctly
+    [ECA-4974] - Regression: SecureXMLDecoder doesn't allow import of CertificatePolicy objects
+    [ECA-4988] - CMP Aliases can't handle that End Entity Profiles are renamed
+    [ECA-4990] - CMP aliases can't handle CA removal
+    [ECA-4992] - SHA256WithRSAAndMGF1 broken in some cases
+    [ECA-4996] - Editing a CMP configuration while having limited access leads to hidden aliases being deleted
+    [ECA-5003] - Profiles export fail if hard tokens are enabled.
+    [ECA-5005] - Root access required to save system configuration
+    [ECA-5072] - KeyBindings do not work if there's a CVC CA or uninitialized CA available
+    [ECA-5098] - ApprovalProfile table breaks EJBCA DB CLI
+    [ECA-5128] - Invoke postUpgrade instead of upgrade from placeholder
+    [ECA-5165] - Access rule "store_certificate" is not used in the code
+    [ECA-5185] - Regression: can not revoke user when user's registered CAId does not exist
+    [ECA-5187] - languagefile.en.properties: correct different typings of ID
+    [ECA-5193] - Fix broken jenkins test with non-serializable Keystore in RaMasterApi
+    [ECA-5204] - RA enrollment: User doesn't get its request ID if RA is running on peer
+    [ECA-5206] - CMP revocation requests fails CA authorisation if issuer CA has X.500 ordering
+    [ECA-5213] - GUI bug in send notification, can not be set afterwards if set to required in profile
+    [ECA-5216] - Checking requestId gives possibility to finalize even if it's not possible
+    [ECA-5217] - WebService method checkRevokationStatus does not return null for non existing certificates as documented
+    [ECA-5220] - Notification related fields show up on the approvals page
+    [ECA-5224] - RA enrollment: Fix and improve the enrollment with approval buttons
+    [ECA-5228] - Circular dependency between ApprovalProfileCacheBean and StartupSingletonBean
+    [ECA-5232] - Adding approval profile metadata fields only works correctly for the final step
+    [ECA-5234] - Store authentication token instead of admin cert serial number/issuer in approval requests
+    [ECA-5236] - 'Hour' format in Advanced Mode for Search End Entities
+    [ECA-5239] - GUI improvements to the Manage Request page
+    [ECA-5244] - Cloning Approval Profiles ignores the new name and it's not possible to rename
+    [ECA-5245] - NPE approving as another Admin in KaRA
+    [ECA-5258] - RA enrollment: Support for enrolling PEM keystores
+    [ECA-5260] - Occasional ConcurrentModificationException when re-deploying
+    [ECA-5261] - Use id instead of approvalId as a Request ID
+    [ECA-5262] - End Entity notifications when using approval always uses the requestAdmin, and not the approvalAdmin
+    [ECA-5267] - RA enrollment: Unique Subject DN check is done after approval
+    [ECA-5268] - Internal database constraint test audit logs certificate storage
+    [ECA-5275] - Deleting Approval steps doesn't actually remove the step
+    [ECA-5277] - Fix NPE when trying to list processed approvals in the RA
+    [ECA-5278] - Handle approval editing in one step in ApprovalSessionBean, so the id can be preserved
+    [ECA-5281] - EjbcaWSTest.test25CreateandGetCRL fails sporadically
+    [ECA-5282] - Update "previous steps" in the RA approval page to handle partitions
+    [ECA-5289] - Approval requests listing in the RA are never shown if older than the default validity (8 hours)
+    [ECA-5293] - Regression: Manage Request page does not work over peers
+    [ECA-5296] - Approval class has updated serialVersionUID
+    [ECA-5297] - Number of remaining approvals is reset after upgrade
+    [ECA-5298] - Fix Exceptions in RA GUI approvals
+    [ECA-5299] - EjbcaWSTest.test03_5CertificateRequest fails with End Entity Profile limitations on
+    [ECA-5305] - Regression: SecureXMLDecoder doesn't allow import of CTLog objects
+    [ECA-5321] - JUnit: handle test case where we try to add non existing DN parameter to EE profile
+    [ECA-5323] - Client toolbox start script not working for p11 when JAVA_HOME is set
+    [ECA-5324] - NPE when trying to approve and the approval profile is to type Accumulative
+    [ECA-5335] - KaRA: authorization cache is for ever, even with clear caches
+    [ECA-5338] - External RA GUI should not bundle hibernate jar to deploy on WildFly 10
+    [ECA-5342] - ui:repeat does not respect the "rendered" parameter on the RA Manage Request page, causing exceptions
+    [ECA-5345] - KaRA: Manage Requests->Processed doesn't show anything
+    [ECA-5346] - Name field does not work on Manage Request page
+    [ECA-5347] - Java type inconsistencies in NameToIdMap
+    [ECA-5349] - Not able to import statedump from EJBCA 6.5 into EJBCA 6.6
+    [ECA-5350] - CA importcert CLI command should halt on error when no superadmincn is provided
+    [ECA-5351] - statedump.sh script doesn't handle relative paths
+    [ECA-5353] - Statedump source ziprelease includes .class files
+    [ECA-5358] - KaRA: Text for 'Upload CSR' in RA GUI truncated
+    [ECA-5363] - Headers are offset by one in Manage Requests view in mobile layout
+    [ECA-5366] - Login link on public RA pages does not work
+    [ECA-5367] - Edit End Entity requests show up with type = "???" in the RA
+    [ECA-5375] - Enrollment from RA requires Edit End Entity access, instead of Add End Entity
+    [ECA-5376] - Missing Administrator info in 'Waiting for Approval' section
+    [ECA-5378] - Fix NPE when deleting the only step in an approval profile
+    [ECA-5388] - OCSPResponseGenerator should use BC provider for signature verification
+    [ECA-5391] - Wrong encoding of documentTypeList in ICAO 9303 DS certificates
+    [ECA-5392] - ApprovalProfileBase.getSteps checks for null instead of empty
+    [ECA-5403] - Improve messages in the RA Enrollment page
+    [ECA-5411] - Email Notification parameters containing $ sign causes error
+    [ECA-5414] - Systemtest failures with non JDK handled EC curves
+    [ECA-5420] - Availability of EEPs in RA is cached session cached
+    [ECA-5422] - Access rule misspelled in AdminCertReqServlet
+    [ECA-5425] - Error codes of Peer Connectors does not work
+    [ECA-5427] - NPE when doing direct issuance via RA
+    [ECA-5431] - Typo in 'Notification Messages' under End Entity Profile page
+    [ECA-5435] - Don't render Provide User Credentials section in RA when empty
+    [ECA-5436] - Regression: Order of CT log might not be respected
+    [ECA-5439] - Installation instructions don't work for Wildfly 10 / JBoss EAP 7.0 in some cases
+    [ECA-5440] - Verification of database protection not working for Custom Certificate extensions
+    [ECA-5441] - Statedump import failure for InternalKeyBinding
+    [ECA-5454] - NPE in AdminGUI when the same admin approves a request a second time
+
+Improvement
+    [ECA-3959] - Editing end entity profile generates unnecessary INFO
+    [ECA-4413] - Simplify EJB lookups in CAAdminSessionBean
+    [ECA-4438] - Remove unused caid parameter in CA.createPKCS7Rollover
+    [ECA-4499] - Allow longer SAN and DN by default
+    [ECA-4673] - Downloading an non-existent delta-CRL on the public web leads to a 404
+    [ECA-4690] - Replace deprecated references to org.bouncycastle.asn1.x509.SubjectPublicKeyInfo.SubjectPublicKeyInfo(ASN1Sequence)
+    [ECA-4795] - External RA: NPE in external RA gui when externalra-gui.issuerchain points to a non existing file
+    [ECA-4803] - Security hardening
+    [ECA-4906] - Limit OCSP Nonce to 32 bytes
+    [ECA-4914] - Don't throw RTE when checking for non-existing CryptoToken activation status
+    [ECA-4932] - Exclude install properties files from ejbca.ear
+    [ECA-4936] - ConcurrentCache: Improve performance
+    [ECA-4947] - Resetting an end entity password after key recovery should not require 'Edit End Entities'-rights
+    [ECA-4952] - Simplified X509CertificateAuthenticationToken constructor
+    [ECA-4963] - Certificate Profiles: Keep sorting, but sort default profile types first.
+    [ECA-4970] - Set secure flag on Admin GUI session cookie
+    [ECA-4983] - ejbcajslib.js has unneeded comment chars
+    [ECA-4987] - Set search.cgi welcome page for RFC 4387 CRL and certificate stores
+    [ECA-4998] - Document that CMP Unid support currently isn't supported
+    [ECA-5029] - Usability improvement, limit Policy User Notice text field to 200 characters
+    [ECA-5044] - Security Improvement
+    [ECA-5047] - Improve pom.xml for cert-cvc
+    [ECA-5088] - Move all CRUD methods from ApprovalData into ApprovalSessionBean
+    [ECA-5106] - Add database column for subjectAltNames (SAN) in CertificateData
+    [ECA-5115] - Allow notifications to be sent when admin has an external certificate not available in the database
+    [ECA-5130] - Fix some resource leaks and thread locking issues in source
+    [ECA-5142] - Generalize and improve InternalKeyBindingProperty
+    [ECA-5147] - MS SQL server support in External RA build task
+    [ECA-5148] - Perform some cosmetic improvements to the approve action page
+    [ECA-5160] - Have externalized Approvals initialize their authentication tokens
+    [ECA-5168] - Improve system tests for application servers that enforce class loading
+    [ECA-5192] - Don't show admin roles that can't approve or view approvals
+    [ECA-5195] - RA Enrollment: Show password only with downloading keystore
+    [ECA-5196] - RA Enrollment: Provide user with more verbose error message during token creation
+    [ECA-5203] - RA enrollment: Add support for autogenerated passwords
+    [ECA-5212] - Sort Approvals by Request Date by default
+    [ECA-5214] - KaRA: creating end entity should set email notification when it is required
+    [ECA-5215] - KaRA: PRA Error handling when not unique subject DN or public key
+    [ECA-5226] - Improve exceptions handling over peers to support more than just a message
+    [ECA-5241] - Improve RA API exception handling
+    [ECA-5247] - Change which requests are shown under the Pending and Processed tabs
+    [ECA-5257] - RA enrollment: Download Token name should be CN value
+    [ECA-5273] - Query.toString() should output something readable
+    [ECA-5300] - Certificate Policies in the same order in certificate encoding as in the GUI
+    [ECA-5301] - Add instruction for upgrade
+    [ECA-5307] - PRA: Manage requests should show request ID
+    [ECA-5317] - Autogenerated EE usernames as configurable with EEP
+    [ECA-5318] - RA enrollment: Remove password fields with certificate creation if approval are not required
+    [ECA-5332] - Statedump import should skip revocation of end entities' certificates
+    [ECA-5343] - KaRA: AuthLoginException should contain error code, fix missing parameter to error messages
+    [ECA-5344] - KaRA: password should be called enrollment code
+    [ECA-5355] - KaRA: some reasons missing when explaining why admin can't approve a certain request
+    [ECA-5356] - Delete modules/dist directory on clean
+    [ECA-5357] - KaRA Usability: request form clearing and email
+    [ECA-5362] - KaRA Usability: Rename "Needs Approval" and "Pending Approval"
+    [ECA-5371] - KaRA Usability: more information when finalizing enrollment
+    [ECA-5377] - Improvements for Approval Profiles Documentation
+    [ECA-5393] - Log subject DN of cert failing validity check
+    [ECA-5400] - KaRA: Document authorization rules for RA User and RA Admin
+    [ECA-5405] - Security hardening
+    [ECA-5410] - Approval profile notifications ability to include admin who last approved request
+    [ECA-5418] - Show approval request type on the Manage Request page
+    [ECA-5421] - CA Token Properties upgrade should debug log and be case insensitive
+
+Master Ticket
+    [ECA-5315] - KaRA Usability: improve usability of wording in KaRA
+
+New Feature
+    [ECA-2277] - NetBeans IDE project
+    [ECA-2390] - Import CRL via the WebUI
+    [ECA-2842] - Add SAN SRVName OtherName for Service Name in Certificates (RFC 4985)
+    [ECA-2843] - Add SAN XmppAddr OtherName for XMPP Client certificates (RFC 6120)
+    [ECA-4379] - Add additional CVC OIDs for SHA512 and SHA384
+    [ECA-4473] - Shell script for running statedump tool
+    [ECA-4861] - Add Windows Certificate Autoenroll files as module
+    [ECA-4972] - GUI Support for PKI Disclosure Statements (PDS) QCStatement and QCType
+    [ECA-5111] - ID on SIM (RFC-4683) support in cesecore
+    [ECA-5145] - Internal profile support for eIDAS Qualified Extension types Type and PDS
+    [ECA-5264] - Make requestID available for end entity notifications when an Approval request to add end entity is created (waiting for approval)
+    [ECA-5265] - Configure WS genTokenCertificates and viewHardToken to use the new approval profiles
+    [ECA-5274] - Audit log approval profiles
+    [ECA-5279] - Support RegisteredID in subject alternative name
+    [ECA-5310] - Update SQL scripts for EJBCA 6.6.0 database schema changes
+    [ECA-5322] - Ability to use variables in email subject for email expiration service
+    [ECA-5412] - Add support for Services that run on all hosts to enable HSM Keepalive Service to run on all nodes in a cluster
+
+Story
+    [ECA-4782] - RA must be configurable to demand logged in users
+    [ECA-4784] - RA interface must handle certificate management tasks including requesting revocation
+    [ECA-4786] - RA must allow searching for End Entities
+    [ECA-4788] - All requests must be given a universal identifier so that they can be tracked through logs
+    [ECA-4796] - RA must handle certificate requests by manual CSRs
+    [ECA-4801] - RA Administrators must be able to be notified about user requests
+    [ECA-4804] - Notify other administrators about certificate issuances or revocations
+    [ECA-4805] - RA administrators must be able to edit user requests.
+    [ECA-4820] - RA users should be able to see the status of their requests
+    [ECA-4863] - Approvals should be partitioned
+    [ECA-4873] - PRA must allow searching for Certificates
+    [ECA-4895] - RA users will be able to request server side generated keystores
+    [ECA-4896] - Logged in RA users should see the certificate types types they're authorized to
+    [ECA-4979] - RA Interface should allow download of CA certificates and CRLs
+    [ECA-5153] - RA administrators must be able to create end entities from the PRA
+    [ECA-5336] - KaRA: As a RA User I have forgotten my requestID and need to finalize enrollment
+
+Task
+    [ECA-4868] - Security Issue
+    [ECA-5031] - Update cmp proxy web.xml to JEE6
+    [ECA-5209] - Remove additional left-over old generated web services sources
+    [ECA-5263] - Update the RA to handle partitioned approvals properly
+    [ECA-5348] - Add JUnit test for Certificate Profile extension
+    [ECA-5361] - Evaluate security test report
+    [ECA-5370] - KaRA usability: Rename Generate buttons to Download
+    [ECA-5408] - Add authorization checks when trying to edit a request
+    [ECA-5409] - Allow the Auditor role to see all RA pages except enrollment
+    [ECA-5413] - Update CT log documentation
+    [ECA-5437] - Document that Wildfly 10 config also applies to JBoss EAP 7.0.x
+    [ECA-5446] - Prevent locales used during development to be selected in RA
+
+Technical Requirement
+    [ECA-4817] - An authentication token must travel in a nestled fashion from the RA to the CA, rights will be the intersection of all nestled tokens' rights
+    [ECA-4819] - CA->ERA/PRA should use Peers to establish their connection
+    [ECA-4826] - ERA/PRA must extract a subset of access rules from the CA
+    [ECA-4869] - Deployable Public RA interface (PRA) as part of the EJBCA EAR
+    [ECA-4917] - RA Proxy Authorization Cache
+
+Sub-task
+    [ECA-4446] - Introduce typing for ListDataModel
+    [ECA-4800] - Support for request revocation of authorized certificates
+    [ECA-4867] - Long hanging peer connections for reverse calls
+    [ECA-4870] - Create a module for the Public RA interface and make sure it is deployed with the EJBCA EAR
+    [ECA-4874] - Add End Entity Profile ID column to CertificateData
+    [ECA-4875] - Create a basic PrimeKey branded CSS for the RA interface
+    [ECA-4879] - Create/modify an authentication token that handles nestled credentials
+    [ECA-4881] - Reverse calls should use AuthenticationToken with caller's server side TLS cert
+    [ECA-4898] - Create initial RA enrollment workflow
+    [ECA-4907] - Implement Approval Profiles and convert the old approvals to the appropriate profile.
+    [ECA-4908] - KaRA-Approvals: Handle approval request according to approval profiles
+    [ECA-4911] - KaRA-Approvals: Implement "Edit"
+    [ECA-4918] - Method to list access rules that the AuthenticationToken is authorized to
+    [ECA-4919] - Call RA peer when access rules change
+    [ECA-4920] - RaAccessBean on RA for checking authorization
+    [ECA-4922] - Introduce PublicAccessAuthenticationToken
+    [ECA-4927] - Improve logging and retries of peer connections
+    [ECA-4934] - Improve performance of LookAheadObjecInputStream tree
+    [ECA-4937] - Proper error handling
+    [ECA-4938] - Basic RA client HTTP session handling
+    [ECA-4940] - I18N: Handle right to left languages in RA
+    [ECA-4941] - I18N: Use UTF-8 in resource bundles and add fallback to default language
+    [ECA-4942] - Peer Connector config for long-handing RA threads
+    [ECA-4944] - Simplify authorization of server side TLS certificates for Peer RA
+    [ECA-4948] - Test required access rules for EJBCA WS keyRecovery operation
+    [ECA-4954] - Event driven throttle up of long hanging connections
+    [ECA-4962] - Per-AuthenticationToken cache for AccessSets
+    [ECA-4966] - Prevent race condition when app server is started and quickly shutdown
+    [ECA-4969] - Prevent HTTP session stealing for TLS authenticated clients
+    [ECA-4973] - Reloading the RA Authorization Cache instead of clearing it
+    [ECA-4975] - Improve RA JSF base according to best practices
+    [ECA-4977] - KaRA: Add OWASP ESAPI best practices
+    [ECA-4981] - KaRA Approvals: Create access rules to manage ApprovalProfiles
+    [ECA-4984] - RA page for CA certificate and CRL downloads
+    [ECA-4986] - Leave a database mark for EEP Id population when upgrading to 6.6.0
+    [ECA-4994] - Convert RaMasterApiProxy into a singleton
+    [ECA-4995] - Progressive Enhancement with KickAss RA
+    [ECA-5006] - Page to view/handle approval requests in the RA UI
+    [ECA-5011] - Create certificate search base page and basic API call to improve on
+    [ECA-5013] - Use RaAccessBean to limit displayed choices in the menu
+    [ECA-5016] - Use reflection Proxy for RaMasterApi mock objects in tests
+    [ECA-5018] - Detect if RFC4387 CRL store is enabled and adapt CRL download URLs
+    [ECA-5028] - Inform RA of latest authorization cache update number on reconnect
+    [ECA-5032] - Create end entity search base page and basic API call to improve on
+    [ECA-5040] - Test search functionality on large dataset and limit query database load when possible
+    [ECA-5042] - Override serialization of CertificateDataWrapper, to handle passing CertificateData between different versions
+    [ECA-5051] - KaRA-Approvals: Move method accessing the database to the session bean
+    [ECA-5052] - KaRA-Approvals: Replace the current cache with a @singleton bean
+    [ECA-5053] - KaRA-Approvals: Sort approval profiles in the AdminGUI
+    [ECA-5054] - Remove unused approvals code from UI
+    [ECA-5058] - Add Approval and Request Expiration periods options to Approval Profile
+    [ECA-5061] - KaRA-Approvals: Set the right approval profiles
+    [ECA-5064] - Change class name of ApprovalProfileNumberOfApprovals
+    [ECA-5067] - KaRA-Approvals: Approval Profile Cache should be cleared in the CLI too
+    [ECA-5068] - KaRA-Approvals: Update documentation about approvals
+    [ECA-5070] - Authorization rights for enrollment with new request
+    [ECA-5077] - KaRA-Approvals: ApprovalProfileTypes in ServiceLoader
+    [ECA-5082] - Maintain 100% uptime when upgrading Approvals
+    [ECA-5090] - Clean up test methods in RaMasterApi
+    [ECA-5092] - JUnit test for API design violations
+    [ECA-5097] - RA Certificate chain download as PKCS#7
+    [ECA-5100] - Certificate details view in RA
+    [ECA-5109] - Serialize exceptions from invocations
+    [ECA-5110] - Implement RA certificate search by Subject Alternative Name
+    [ECA-5113] - RA method to get approval request by hash (approvalId)
+    [ECA-5120] - Public Access token match either PLAIN or CONFIDENTIAL transport
+    [ECA-5121] - AccessMatchType.NONE should not requre a matchValue
+    [ECA-5123] - Admin should be able to see which admin an approval request is waiting for
+    [ECA-5125] - Log who edited an approval request
+    [ECA-5126] - Add notBefore column to CertificateData
+    [ECA-5127] - Implement RA certificate search by issuance date as advanced option
+    [ECA-5137] - Split generic search string into fields
+    [ECA-5143] - Add view functionality for EEs in RA
+    [ECA-5154] - Show preview of certificate during RA enrollment
+    [ECA-5157] - Update admin guide on Peer Systems with new RA functionality
+    [ECA-5159] - Invoke EEP's revoked notification when an individual certificate is revoked
+    [ECA-5162] - Add approval metadata to Partitioned Approval Profiles
+    [ECA-5163] - Add view rights to partitioned approval profiles
+    [ECA-5164] - Display completed steps as view only when performing approval (if view rights are held)
+    [ECA-5172] - Add an e-mail field to approval partitions
+    [ECA-5173] - Add notification evaluation to approval executions
+    [ECA-5177] - Refactor download credentials type during enrollment on PRA
+    [ECA-5180] - Show "certificate preview" during enrollment on PRA
+    [ECA-5182] - Enforce certificate profile algorightms for CSR during PRA enrollment
+    [ECA-5183] - Fix approvals in the RA GUI after the refactoring
+    [ECA-5186] - PRA enrollment: add support for the multiple non-modifiable values for EE fields
+    [ECA-5189] - Approval Profile page renderes non-JS button in view mode
+    [ECA-5200] - Add Web Designer styles and modifications, including mobile
+    [ECA-5201] - Add support for nesting of parameter type List<AuthenticationToken> in RaMasterApi
+    [ECA-5202] - Deserialized NestableAuthenticationTokens needs to be re-initialized within JVM
+    [ECA-5205] - Use certs-only PKCS#7 / CMS on RA
+    [ECA-5207] - Allow configuration of /ra_slave/manage from simplified peer auth view
+    [ECA-5208] - RA enrollment: Refactor the RA interface according to the synchup week 27
+    [ECA-5211] - Clean up GUI request authorization checks
+    [ECA-5218] - Use more efficient backend call for RaMasterApi.getApprovalDataByRequestHash
+    [ECA-5219] - Add buttons for changing step order in the approval profile UI
+    [ECA-5221] - Split generic search string into fields
+    [ECA-5222] - RA enrollment: Improve handling of NoJS buttons
+    [ECA-5225] - RA enrollment: Hide static fields by default
+    [ECA-5229] - Better handling of CSR upload during RA enrollment
+    [ECA-5231] - Remove the approvalprofileid column from ApprovalData
+    [ECA-5237] - Populate modifiable SAN fields from CSR during RA enrollment
+    [ECA-5243] - Enforce CSR or key spec in EndEntityInformation when issuing a certificate
+    [ECA-5248] - Don't localize logged messages using current users selected locale
+    [ECA-5313] - KaRA Usability: Start step with nr 1 instead of 0 in Approval Profiles in Admin GUI
+    [ECA-5314] - KaRA Usability: should be able to notify what partition (name) was performed
+    [ECA-5316] - KaRA Usability: rename the word Partition for appoval parts
+    [ECA-5340] - KaRA Usability: Shorten auto-generated username to 32 chars
+
 EJBCA 6.5.3, 2016-06-22
 ---
 Bug
