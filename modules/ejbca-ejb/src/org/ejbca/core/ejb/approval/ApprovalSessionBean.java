@@ -498,14 +498,14 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                             caSession.getCAInfoInternal(approvalRequest.getCAId()),
                             certificateProfile);
                 } catch (CADoesntExistsException e) {
-                    throw new IllegalStateException("Persisted approval request with id " + approvalData.getApprovalid()
+                    throw new IllegalStateException("Persisted approval request with ID " + approvalData.getApprovalid()
                             + " was created for CA with ID " + approvalRequest.getCAId() + ", which appears to not exist.");
                 }
                 approvalRequest.setApprovalProfile(approvalProfile);
                 approvalInformation.setApprovalRequest(approvalRequest);
                 approvalSession.updateApprovalRequest(approvalData.getId(), approvalRequest);
                 if (log.isDebugEnabled()) {
-                    log.debug("Upgraded approval with ID " + approvalData.getApprovalid() + " to 6.6.0+ by setting approval profile with id "
+                    log.debug("Upgraded approval with ID " + approvalData.getApprovalid() + " to 6.6.0+ by setting approval profile with ID "
                             + approvalProfile != null ? (approvalProfile.getProfileId() + "(" + approvalProfile.getProfileName() + ")") : "(no approval profile)" + ".");
                 }
             }
