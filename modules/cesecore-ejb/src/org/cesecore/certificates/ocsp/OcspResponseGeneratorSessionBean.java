@@ -348,7 +348,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             for (final Certificate certificate : caInfo.getCertificateChain()) {
                                 caCertificateChain.add((X509Certificate) certificate);
                             }
-                            final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificateChain.get(0), true);
+                            final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificateChain.get(0), false);
                             // Check if CA cert has been revoked somehow. Always make this check, even if this CA has an OCSP signing certificate, because
                             // signing will still fail even if the signing cert is valid. 
                             if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
@@ -470,22 +470,39 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      * Additionally, if the "unspecified" reason is used we will consider this as a known private key compromise. (Safety first!)
      * 
      * @param caCertificate the X.509 CA certificate to check
-     * @param modifyReason set to true if the revocation reason of the CA should be replaced by "cACompromise" in the OCSP response for the leaf
-     * @return the revocation status that we will use if the CA is revoked
+     * @param suppressInfo set to true to only do debug logging instead of info logging
+     * @return the revocation status that we will use if the CA is revoked (same revocation date, but with reasonCode "cACompromise")
      */
-    private CertificateStatus getRevocationStatusWhenCasPrivateKeyIsCompromised(final X509Certificate caCertificate, final boolean modifyReason) {
-        final CertificateStatus certificateStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificate), CertTools.getSerialNumber(caCertificate));
+    private CertificateStatus getRevocationStatusWhenCasPrivateKeyIsCompromised(final X509Certificate caCertificate, final boolean suppressInfo) {
+        final String issuerDn = CertTools.getIssuerDN(caCertificate);
+        final BigInteger serialNumber = CertTools.getSerialNumber(caCertificate);
+        final CertificateStatus certificateStatus = certificateStoreSession.getStatus(issuerDn, serialNumber);
         if (certificateStatus.isRevoked()) {
+            final String subjectDn = CertTools.getSubjectDN(caCertificate);
             if (certificateStatus.revocationReason == RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED ||
                     certificateStatus.revocationReason == RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE ||
                     certificateStatus.revocationReason == RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE ||
                     certificateStatus.revocationReason == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE) {
-                if (modifyReason) {
-                    return new CertificateStatus(certificateStatus.toString(), certificateStatus.revocationDate.getTime(),
-                            RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, certificateStatus.certificateProfileId);
+                final String msg = "CA certificate Subject DN '" + subjectDn + "', Issuer DN '" + issuerDn + "' and serial number " +
+                    serialNumber.toString() + " (0x" + serialNumber.toString(16) +
+                    ") is revoked with reason code " +certificateStatus.revocationReason + ". " +
+                    "The cACompromise revocation reason will be used for all certs issued by this CA.";
+                if (suppressInfo) {
+                    log.debug(msg);
                 } else {
-                    return certificateStatus;
+                    log.info(msg);
                 }
+                return new CertificateStatus(certificateStatus.toString(), certificateStatus.revocationDate.getTime(),
+                        RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, certificateStatus.certificateProfileId);
+            }
+            final String msg = "CA certificate Subject DN '" + subjectDn + "', Issuer DN '" + issuerDn + "' and serial number " +
+                serialNumber.toString() + " (0x" + serialNumber.toString(16) +
+                ") is revoked with reason code " +certificateStatus.revocationReason + ". " +
+                "Status of individual leaf certificate will still be checked.";
+            if (suppressInfo) {
+                log.debug(msg);
+            } else {
+                log.info(msg);
             }
         }
         return CertificateStatus.OK;
