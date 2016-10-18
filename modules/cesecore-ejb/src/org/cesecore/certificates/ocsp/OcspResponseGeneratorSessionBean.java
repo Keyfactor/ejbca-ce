@@ -125,6 +125,7 @@ import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.cache.OcspExtensionsCache;
 import org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCache;
@@ -324,7 +325,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             final String signatureProviderName = cryptoToken.getSignProviderName();
                             if (caCertificateChain.size() > 0) {
                                 X509Certificate caCertificate = caCertificateChain.get(0);
-                                CertificateStatus caCertificateStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificate), CertTools.getSerialNumber(caCertificate));
+                                final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
                                 OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
                                         signatureProviderName, null, OcspConfiguration.getResponderIdType()));
                                 // Check if CA cert has been revoked somehow. Always make this check, even if this CA has an OCSP signing certificate, because
@@ -347,8 +348,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             for (final Certificate certificate : caInfo.getCertificateChain()) {
                                 caCertificateChain.add((X509Certificate) certificate);
                             }
-                            CertificateStatus caCertificateStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificateChain.get(0)),
-                                    CertTools.getSerialNumber(caCertificateChain.get(0)));
+                            final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificateChain.get(0), true);
                             // Check if CA cert has been revoked somehow. Always make this check, even if this CA has an OCSP signing certificate, because
                             // signing will still fail even if the signing cert is valid. 
                             if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
@@ -451,8 +451,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (log.isDebugEnabled()) {
             log.debug("Adding OcspKeyBinding "+ocspKeyBinding.getId()+", "+ocspKeyBinding.getName());
         }
-        CertificateStatus certificateStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificateChain.get(0)),
-                CertTools.getSerialNumber(caCertificateChain.get(0)));
+        final CertificateStatus certificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificateChain.get(0), true);
         final int respIdType;
         if (ResponderIdType.NAME.equals(ocspKeyBinding.getResponderIdType())) {
             respIdType = OcspConfiguration.RESPONDERIDTYPE_NAME;
@@ -463,6 +462,35 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 signatureProviderName, ocspKeyBinding, respIdType);
     }
     
+    /** 
+     * RFC 6960 Section 2.7 states that if it is known CA's private key has been compromised, it MAY return the "revoked"
+     * state for all certificates issued by that CA.
+     * 
+     * We interpret this as if the revocation reasons is one of "keyCompromise", "cACompromise" or "aACompromise" we know this.
+     * Additionally, if the "unspecified" reason is used we will consider this as a known private key compromise. (Safety first!)
+     * 
+     * @param caCertificate the X.509 CA certificate to check
+     * @param modifyReason set to true if the revocation reason of the CA should be replaced by "cACompromise" in the OCSP response for the leaf
+     * @return the revocation status that we will use if the CA is revoked
+     */
+    private CertificateStatus getRevocationStatusWhenCasPrivateKeyIsCompromised(final X509Certificate caCertificate, final boolean modifyReason) {
+        final CertificateStatus certificateStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificate), CertTools.getSerialNumber(caCertificate));
+        if (certificateStatus.isRevoked()) {
+            if (certificateStatus.revocationReason == RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED ||
+                    certificateStatus.revocationReason == RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE ||
+                    certificateStatus.revocationReason == RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE ||
+                    certificateStatus.revocationReason == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE) {
+                if (modifyReason) {
+                    return new CertificateStatus(certificateStatus.toString(), certificateStatus.revocationDate.getTime(),
+                            RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, certificateStatus.certificateProfileId);
+                } else {
+                    return certificateStatus;
+                }
+            }
+        }
+        return CertificateStatus.OK;
+    }
+
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
         final List<X509Certificate> caCertificateChain = new ArrayList<X509Certificate>();
         X509Certificate currentLevelCertificate = leafCertificate;
