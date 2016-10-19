@@ -376,7 +376,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     }
     
     /** 
-     * Tests the case of a standalone OCSP responder with a revoked certificate issuer.
+     * Tests the case of a stand-alone OCSP responder with a revoked certificate issuer using the keyCompromise reason code.
      * 
      * This should respond revoked, as from the RFC:
      * 
@@ -385,27 +385,85 @@ public class StandaloneOcspResponseGeneratorSessionTest {
      *  certificates issued by that CA.
      */
     @Test
-    public void testResponseWithRevokedResponderIssuer() throws Exception {
-        //Now delete the original CA, making this test completely standalone.
+    public void testResponseWithRevokedResponderIssuerKeyCompromise() throws Exception {
+        testResponseWithRevokedResponderIssuer(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
+    }
+    @Test
+    public void testResponseWithRevokedResponderIssuerCaCompromise() throws Exception {
+        testResponseWithRevokedResponderIssuer(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
+    }
+    @Test
+    public void testResponseWithRevokedResponderIssuerAaCompromise() throws Exception {
+        testResponseWithRevokedResponderIssuer(RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
+    }
+    @Test
+    public void testResponseWithRevokedResponderIssuerUnspecifiedReason() throws Exception {
+        testResponseWithRevokedResponderIssuer(RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
+    }
+
+    /** 
+     * Tests the case of a stand-alone OCSP responder with a revoked certificate issuer using the cessationOfOperation reason code.
+     * 
+     * This should not respond revoked, as from the RFC:
+     * 
+     *  If an OCSP responder knows that a particular CA's private key has
+     *  been compromised, it MAY return the revoked state for all
+     *  certificates issued by that CA.
+     */
+    @Test
+    public void testResponseWithRevokedResponderIssuerAffiliationChanged() throws Exception {
+        testResponseWithRevokedResponderIssuer(RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED, -1);
+    }
+    @Test
+    public void testResponseWithRevokedResponderIssuerAffiliationCertificateHold() throws Exception {
+        testResponseWithRevokedResponderIssuer(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, -1);
+    }
+    @Test
+    public void testResponseWithRevokedResponderIssuerCessationOfOperation() throws Exception {
+        testResponseWithRevokedResponderIssuer(RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, -1);
+    }
+    @Test
+    public void testResponseWithRevokedResponderIssuerAffiliationPrivilegesWithdrawn() throws Exception {
+        testResponseWithRevokedResponderIssuer(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, -1);
+    }
+    @Test
+    public void testResponseWithRevokedResponderIssuerAffiliationRemoveFromCrl() throws Exception {
+        testResponseWithRevokedResponderIssuer(RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, -1);
+    }
+    @Test
+    public void testResponseWithRevokedResponderIssuerAffiliationSuperseded() throws Exception {
+        testResponseWithRevokedResponderIssuer(RevokedCertInfo.REVOCATION_REASON_SUPERSEDED, -1);
+    }
+
+    private void testResponseWithRevokedResponderIssuer(final int caRevocationReason, final int expectedLeftRevocationCode) throws Exception {
+        final CertificateStatus status = getStatusResponseWithRevokedResponderIssuer(caRevocationReason);
+        if (expectedLeftRevocationCode == -1) {
+            assertFalse("Status is RevokedStatus even though the CA was revoked with a reason that would not lead us to suspect a private key compromise.", status instanceof RevokedStatus);
+        } else {
+            assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
+            final RevokedStatus revokedStatus = (RevokedStatus) status;
+            assertTrue("Status does not have reason", revokedStatus.hasRevocationReason());
+            final int reason = revokedStatus.getRevocationReason();
+            assertEquals("Wrong revocation reason of leaf when the CA's private key has been compromised.", expectedLeftRevocationCode, reason);
+        }
+    }
+
+    public CertificateStatus getStatusResponseWithRevokedResponderIssuer(final int caRevocationReason) throws Exception {
+        // Delete the original CA, making this test completely stand-alone.
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
         activateKeyBinding(internalKeyBindingId);
-        //Revoke the issuer cert
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caCertificate, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+        // Revoke the issuer certificate with the specified reason
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caCertificate, new Date(), caRevocationReason);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Do the OCSP request
         final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
         final OCSPResp response = sendRequest(ocspRequest);
-        BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        SingleResp[] singleResponses = basicOcspResponse.getResponses();
+        final BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+        final SingleResp[] singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
         assertEquals("Response cert did not match up with request cert", ocspSigningCertificate.getSerialNumber(), singleResponses[0].getCertID()
                 .getSerialNumber());
-        Object status = singleResponses[0].getCertStatus();
-        assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
-        RevokedStatus rev = (RevokedStatus) status;
-        assertTrue("Status does not have reason", rev.hasRevocationReason());
-        int reason = rev.getRevocationReason();
-        assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+        return singleResponses[0].getCertStatus();
     }
         
     /** Tests using the default responder for external CAs for a good certificate. */
