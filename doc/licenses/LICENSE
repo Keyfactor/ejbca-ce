@@ -7,15 +7,15 @@ The text "either version 2.1 of the License, or any later version" in the licens
 is there to make EJBCA compatible with later versions of the license, i.e. it is possible 
 to mix in code from EJBCA in other projects using a later version of the license.    
 
-A clarification about the relationsship between the LGPL and Java can be found on:
+A clarification about the relationship between the LGPL and Java can be found on:
 http://www.gnu.org/licenses/lgpl-java.html
 In short, LGPL works exactly the same way in Java or in C. I.e. using a library (jar) 
-from an application does not make the application a derivatve work that must be 
+from an application does not make the application a derivative work that must be 
 licensed under the LGPL.
 
 To clarify the case for EJBCA, this means that:
-The code itself (java code, tools, jars, etc) can NOT be changed without changes beeing 
-put under the same licence as EJBCA.
+The code itself (java code, tools, jars, etc) can NOT be changed without changes being 
+put under the same license as EJBCA.
 Using the interfaces to use or integrate EJBCA in another project, without 
 modifying EJBCA code is allowed and does not put any constraints on the product 
 (the derived work).
