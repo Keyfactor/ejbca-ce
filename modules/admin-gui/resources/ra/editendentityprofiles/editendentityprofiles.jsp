@@ -196,6 +196,7 @@
   boolean  cannotcloneempty          = false;
   boolean  fileuploadfailed          = false;
   boolean  fileuploadsuccess         = false;
+  boolean  savedprofilesuccess       = false;
   boolean  buttonupload             = false;
   final Map<String,String> editerrors = new HashMap<String,String>();
   
@@ -882,7 +883,8 @@
                  ejbcarabean.changeEndEntityProfile(profile,profiledata);
                  ejbcarabean.setTemporaryEndEntityProfile(null);
                  ejbcarabean.setTemporaryEndEntityProfileNotification(null);
-                 includefile="endentityprofilespage.jspf";  
+                 includefile="endentityprofilespage.jspf"; 
+                 savedprofilesuccess = true;
              }
              
 			 if(request.getParameter(BUTTON_UPLOADTEMPLATE) != null){

@@ -53,6 +53,12 @@
       <td width="60%"></td>
     </tr>
   <% } %>
+  <% if(savedprofilesuccess){ %> 
+    <tr> 
+      <td width="40%"><%= ejbcawebbean.getText("ENDENTITYPROFILESAVED") %></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
     <tr> 
       <td width="40%"><h3><%= ejbcawebbean.getText("LISTOFENDENTITYPROFILES") %></h3></td>
       <td width="60%"></td>
