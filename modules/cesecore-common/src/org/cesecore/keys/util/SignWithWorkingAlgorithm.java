@@ -49,7 +49,7 @@ public class SignWithWorkingAlgorithm {
      * Finds the registered provider from sProvider and calls {@link #doSignTask(List, Provider, ISignOperation)}.
      * @param availableSignAlgorithms algorithms to choose from.
      * @param sProvider provider name
-     * @param operation operation the performs the signing
+     * @param operation operation the performs the signing, is an instance of ISignOperation for example KeyTools.SignDataOperation
      * @return true if the signing was done.
      * @throws NoSuchProviderException if the provider is not found.
      * @throws TaskWithSigningException  thrown if {@link ISignOperation#taskWithSigning(String, Provider)} is failing.
