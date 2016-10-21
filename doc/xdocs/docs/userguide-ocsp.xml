@@ -19,10 +19,56 @@ $TOOLBOX_HOME/ejbcaClientToolBox.sh OCSP
 </p>
 </section>
 
-<section name="Chain validation">
+<section name="Multiple responder and CA certificates">
 <p>
-When returning status of a certificate whose status is requested in an OCSP request, the status of the CA certificate
-of this certificate is also validated.
+The OCSP responder can have many responder certificates, each issued by one CA and mapped by an OcspKeyBinding.
+This means that the responder can answer requests targeted at multiple CAs. 
+There is no built in limitation on the number of CAs that can be handled.
+</p>
+<subsection name="Selection of OCSP signing certificate from a request">
+<p>
+In the OCSP request as defined in RFC 6960, the hash of both issuing CA's Subject DN and public key is available:
+</p>
+<source>
+   CertID          ::=     SEQUENCE {
+       hashAlgorithm       AlgorithmIdentifier,
+       issuerNameHash      OCTET STRING, -- Hash of issuer's DN
+       issuerKeyHash       OCTET STRING, -- Hash of issuer's public key
+       serialNumber        CertificateSerialNumber }
+</source>
+<p>
+EJBCA will select OcspKeyBinding based on the subject DN and public key of the CA certificate that issued an OCSP signing certificate.
+The issuing CA certificate is determined from the OCSP certificate chain and the construction of thi chain is described below.
+</p>
+</subsection>
+<subsection name="CA key renewal considerations">
+<p>
+EJBCA considered two X.509 CA certificates as the same CA if they share the same Subject DN and as different versions
+of the same CA if the public key is different.
+Since both subject and key pair is used in the request, you will need two OcspKeyBindings (one issued before key
+renewal and one after) to be able to serve OCSP requests where clients use CA certificate for both the old and new key
+pair in their requests.
+</p>
+<note>
+EJBCA will currently only allow you to issue OCSP signing certificate from the latest version of the CA,
+which means that before such CA key renewal you will need to issue OCSP signing certificates that will last for the
+life-time of the CA certificate.
+</note>
+</subsection>
+</section>
+
+<section name="How the certificate chain is constructed">
+<p>
+EJBCA currently builds the chain for each OCSP signing certificate by looking for the latest CA certificate with an
+Subject DN equal to the Issuer DN of the OCSP signing certificate.
+Unless the found CA certificate is self signed, the procedure is repeated until the full chain is built.
+</p>
+<p>
+If the built chain is unable to verify the OCSP signing certificate (due to CA certificate key renewal), a different
+algorithm is used where EJBCA uses the internal CertificateData.cAFingerprint value to determine the exact certificate
+that has issued an OCSP signing certificate.
+Similar to the case where we build the chain using the Issuer DN of the OCSP signing certificate, the process is
+repeated until a full chain leading up to a self signed CA is built.
 </p>
 </section>
 
@@ -42,6 +88,26 @@ of the value of 'ocsp.includecertchain'</li>
 </ul>
 </section>
 
+<section name="Revoked CA certificates">
+<p>
+When the first entry in the CA certificate chain matching an OCSP request is revoked with one of the reason codes
+"keyCompromise", "cACompromise", "aACompromise" or "unspecified", the status of the requested certificate will be
+returned as revoked with reason "cACompromise"
+</p>
+<p>
+This means that you can instantly block the use of leaf certificates by revoking the issuer of these certificates using
+for example the "cACompromise" reason code even if the CA certificate is still considered valid according to a CRL at
+the client.
+</p>
+<note>
+This would also apply if you revoked a cross-signed CA certificate for one of these reasons or import such CA revocation
+status update to you VAs.
+</note>
+<p>
+We still recommend that you revoke the individual certificates, to ensure that they appear in fall-back CRLs.
+</p>
+</section>
+
 <section name="Expired certificates">
 <p>
 EJBCA keeps the status of expired certificates in the database, so the responder will answer queries also for expired
@@ -58,18 +124,6 @@ The algorithm is:
 <li>If status is neither CERT_REVOKED or CERT_ARCHIVED the certificate is NOT revoked.</li>
 </ul>
 <p>The archive cutoff extension is used as defined in <a href="http://www.ietf.org/rfc/rfc6960.txt">RFC 6960</a>.</p>
-</section>
-
-<section name="Multiple responder and CA certificates">
-<p>
-The OCSP responder can have many responder certificates, each issued by one CA and mapped by an OcspKeyBinding.
-This means that the responder can answer requests targeted at multiple CAs. 
-There is no built in limitation on the number of CAs that can be handled.
-</p><p>
-There can exist multiple CA certificates with the same DN.
-The OCSP standard includes IssuerNameHash and IssuerKeyHash in the request, meaning that the OCSP protocol, and the
-responder, can handle key roll-over on the CA without issues. 
-</p>
 </section>
 
 <section name="Using the OCSP API">
