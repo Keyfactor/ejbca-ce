@@ -454,7 +454,8 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 // Go through them and create a CRL, at the same time archive expired certificates
                 //
                 // Archiving is only done for full CRLs, not delta CRLs.
-                // RFC5280 states that a certificate must not be removed from the CRL until it has appeared on at least one full CRL.
+                // RFC5280, section 3.3, states that a certificate must not be removed from the CRL until it has appeared on at least one full CRL.
+                // RFC5280, section 5: A full and complete CRL lists all unexpired certificates issued by a CA that have been revoked for any reason.
                 // See RFC5280 section 5.2.4, specifically:
                 //  If a certificate revocation notice first appears on a delta CRL, then
                 //  it is possible for the certificate validity period to expire before
