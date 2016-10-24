@@ -733,6 +733,17 @@ public class CertToolsTest {
         String dn32 = "CN=eidas,O=MyOrg,ORGANIZATIONIDENTIFIER=12345,C=SE";
         assertEquals("CN=eidas,organizationIdentifier=12345,O=MyOrg,C=SE", CertTools.stringToBCDNString(dn32));
 
+        // Test spaces in the RDN value
+        String dn33a = "CN=cn,O= the org ,C=SE";
+        assertEquals("CN=cn,O=the org,C=SE", CertTools.stringToBCDNString(dn33a));
+        String dn33b = "CN=cn,O= the org ";
+        assertEquals("CN=cn,O=the org", CertTools.stringToBCDNString(dn33b));
+        // The following has changed from earlier EJBCA versions there the trailing escaped space would have been kept. (Perhaps through a change in BC's X500NameBuilder.)
+        // Document the current behavior with this test to catch future changes.
+        String dn34a = "CN=cn,O=\\ the org\\ ,C=SE";
+        assertEquals("CN=cn,O=\\ the org\\\\,C=SE", CertTools.stringToBCDNString(dn34a));
+        String dn34b = "CN=cn,O=\\ the org\\ ";
+        assertEquals("CN=cn,O=\\ the org\\\\", CertTools.stringToBCDNString(dn34b));
     }
 
     @Test
