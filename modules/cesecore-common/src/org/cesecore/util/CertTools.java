@@ -429,7 +429,7 @@ public abstract class CertTools {
         }
         final X500Name x500Name = nameBuilder.build();
         if (log.isTraceEnabled()) {
-            log.trace(">stringToUnorderedX500Name: x500Name=" + x500Name.toString());
+            log.trace("<stringToUnorderedX500Name: x500Name=" + x500Name.toString());
         }
         return x500Name;
     }
