@@ -495,12 +495,14 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
      * Reads the content of 'httpErrorStream' and ignores it. 
      */
     private void handleContentOfErrorStream(final InputStream httpErrorStream) {
-        try {
-            OutputStream os = new NullOutputStream();
-            IOUtils.copy(httpErrorStream, os);
-            httpErrorStream.close();
-            os.close();
-        } catch(IOException ex) {}
+        if (httpErrorStream != null) {
+            try {
+                OutputStream os = new NullOutputStream();
+                IOUtils.copy(httpErrorStream, os);
+                httpErrorStream.close();
+                os.close();
+            } catch(IOException ex) {}
+        }
     }
     
     private ArrayList<String> getOcspUrls(Certificate cert) {
