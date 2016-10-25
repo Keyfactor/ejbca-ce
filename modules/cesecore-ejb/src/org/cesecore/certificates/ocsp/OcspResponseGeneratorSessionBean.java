@@ -328,16 +328,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
                                 OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
                                         signatureProviderName, null, OcspConfiguration.getResponderIdType()));
-                                // Check if CA cert has been revoked somehow. Always make this check, even if this CA has an OCSP signing certificate, because
+                                // Check if CA cert has been revoked (only key compromise as returned above). Always make this check, even if this CA has an OCSP signing certificate, because
                                 // signing will still fail even if the signing cert is valid. Shouldn't happen, but log it just in case.
                                 if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
                                     log.warn("Active CA with subject DN '" + CertTools.getSubjectDN(caCertificate) + "' and serial number "
-                                            + CertTools.getSerialNumber(caCertificate) + " has a revoked certificate.");
+                                            + CertTools.getSerialNumber(caCertificate) + " has a revoked certificate with reason " + caCertificateStatus.revocationReason + ".");
                                 }
                                 //Check if CA cert is expired
                                 if (!CertTools.isCertificateValid(caCertificate)) {
                                     log.warn("Active CA with subject DN '" + CertTools.getSubjectDN(caCertificate) + "' and serial number "
-                                            + CertTools.getSerialNumber(caCertificate) + " has an expired certificate.");
+                                            + CertTools.getSerialNumber(caCertificate) + " has an expired certificate with expiration date " + CertTools.getNotAfter(caCertificate) + ".");
                                 }
                             } else {
                                 log.warn("CA with ID " + caId
@@ -349,16 +349,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 caCertificateChain.add((X509Certificate) certificate);
                             }
                             final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificateChain.get(0), false);
-                            // Check if CA cert has been revoked somehow. Always make this check, even if this CA has an OCSP signing certificate, because
+                            // Check if CA cert has been revoked (only key compromise as returned above). Always make this check, even if this CA has an OCSP signing certificate, because
                             // signing will still fail even if the signing cert is valid. 
                             if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
                                 log.info("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
-                                        + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has a revoked certificate.");
+                                        + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has a revoked certificate with reason " + caCertificateStatus.revocationReason + ".");
                             }
                             //Check if CA cert is expired
                             if (!CertTools.isCertificateValid(caCertificateChain.get(0))) {
                                 log.info("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
-                                        + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has an expired certificate.");
+                                        + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has an expired certificate with expiration date " + CertTools.getNotAfter(caCertificateChain.get(0)) + ".");
                             }
                             //Add an entry with just a chain and nothing else
                             OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
@@ -471,7 +471,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      * 
      * @param caCertificate the X.509 CA certificate to check
      * @param suppressInfo set to true to only do debug logging instead of info logging
-     * @return the revocation status that we will use if the CA is revoked (same revocation date, but with reasonCode "cACompromise")
+     * @return OK or the revocation status that we will use if the CA is revoked (same revocation date, but with reasonCode "cACompromise")
      */
     private CertificateStatus getRevocationStatusWhenCasPrivateKeyIsCompromised(final X509Certificate caCertificate, final boolean suppressInfo) {
         final String issuerDn = CertTools.getIssuerDN(caCertificate);
