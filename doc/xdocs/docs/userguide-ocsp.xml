@@ -38,12 +38,12 @@ In the OCSP request as defined in RFC 6960, the hash of both issuing CA's Subjec
 </source>
 <p>
 EJBCA will select OcspKeyBinding based on the subject DN and public key of the CA certificate that issued an OCSP signing certificate.
-The issuing CA certificate is determined from the OCSP certificate chain and the construction of thi chain is described below.
+The issuing CA certificate is determined from the OCSP certificate chain and the construction of the chain is described below.
 </p>
 </subsection>
 <subsection name="CA key renewal considerations">
 <p>
-EJBCA considered two X.509 CA certificates as the same CA if they share the same Subject DN and as different versions
+EJBCA considers two X.509 CA certificates as the same CA if they share the same Subject DN and as different versions
 of the same CA if the public key is different.
 Since both subject and key pair is used in the request, you will need two OcspKeyBindings (one issued before key
 renewal and one after) to be able to serve OCSP requests where clients use CA certificate for both the old and new key
@@ -92,7 +92,7 @@ of the value of 'ocsp.includecertchain'</li>
 <p>
 When the first entry in the CA certificate chain matching an OCSP request is revoked with one of the reason codes
 "keyCompromise", "cACompromise", "aACompromise" or "unspecified", the status of the requested certificate will be
-returned as revoked with reason "cACompromise"
+returned as revoked with reason "cACompromise". This is in accordance with RFC6960, section 2.7.
 </p>
 <p>
 This means that you can instantly block the use of leaf certificates by revoking the issuer of these certificates using
