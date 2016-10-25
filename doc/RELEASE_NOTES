@@ -1,6 +1,6 @@
 EJBCA 6.6.0
 -----------
-Primekey Solutions is very pleased to release EJBCA 6.6.0. Being the release with the most number of issue fixed ever, 
+PrimeKey Solutions is very pleased to release EJBCA 6.6.0. Being the release with the most number of issue fixed ever, 
 this release of EJBCA 6.6.0 adds a completely new RA architecture, including a brand new RA GUI. 
 Together with all other improvements, bugfixes and security enhancements, this is a leap forward for EJBCA and many man years of work 
 has gone into making this release.
@@ -26,6 +26,27 @@ Certificate Profiles, but not for existing profiles.
 
 The CertificateData table has three new columns "notBefore", "endEntityProfileId" and "subjectAltName". A CA upgrade using direct database
 publishing to VA also requires schema changes on the connected VAs. Please see the UPGRADE document for details.
+
+EJBCA 6.5.4
+-----------
+An autumn patch release to the so far stable EJBCA 6.5 branch, EJBCA 6.5.4 adds a few fixes to issues that showed up in production, as well as two 
+new features and a couple of improvements.
+All in all, this release contains 10 bug fixes and improvements.
+
+Features: 
+- Add support for RegisteredID in subject alternative name
+- Add the ability to use variables in email subject for email expiration service
+
+ICAO CSCA:
+- Issuer altName was not set when creating a new Root CA
+
+OCSP: 
+- Change behavior when CA certificates are revoked to only regard revocation reasons *Compromise as CA private key compromise in VA
+
+Bugs:
+- CMP revocation requests failed CA authorization if issuer CA has X.500 ordering
+- clientToolbox did not start when using PKCS#11 and there was no JAVA_HOME set
+- Verification of database integrity protection did not work for custom certificate extensions
 
 EJBCA 6.5.3
 -----------

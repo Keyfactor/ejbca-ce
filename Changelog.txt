@@ -351,6 +351,24 @@ Sub-task
     [ECA-5316] - KaRA Usability: rename the word Partition for appoval parts
     [ECA-5340] - KaRA Usability: Shorten auto-generated username to 32 chars
 
+EJBCA 6.5.4, 2016-10-27
+---
+Bug
+    [ECA-5206] - CMP revocation requests fails CA authorization if issuer CA has X.500 ordering
+    [ECA-5253] - NPE should be avoided when not receiving an OCSP response in CmpProxyServlet
+    [ECA-5305] - Regression: SecureXMLDecoder doesn't allow import of CTLog objects
+    [ECA-5323] - Client toolbox start script not working for p11 when JAVA_HOME is set
+    [ECA-5387] - Issuer Alternative Name not included in Root CA until it's renewed
+    [ECA-5440] - Verification of database protection not working for Custom Certificate extensions
+
+New Feature
+    [ECA-5279] - Support RegisteredID in subject alternative name
+    [ECA-5322] - Ability to use variables in email subject for email expiration service
+
+Improvement
+    [ECA-5300] - Certificate Policies in the same order in certificate encoding as in the GUI
+    [ECA-5459] - Only regard revocation reasons *Compromise and unspecified as CA private key compromise in VA
+
 EJBCA 6.5.3, 2016-06-22
 ---
 Bug
