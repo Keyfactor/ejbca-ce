@@ -1139,12 +1139,12 @@ public class EjbcaWebBean implements Serializable {
                     // "ProfileDefault" is not a CA name and if the profile default is used, this will be implicitly checked be checking access to the EEP
                     caNames.add(raCaName);
                 }
-                Integer endEntityProfileId = Integer.valueOf(cmpconfiguration.getRAEEProfile(alias));
-                if (endEntityProfileId != null && endEntityProfileSession.getEndEntityProfile(Integer.valueOf(endEntityProfileId)) != null) {
-                    if (!authorizedProfileIds.contains(endEntityProfileId)) {
+                String eeProfileIdString = cmpconfiguration.getRAEEProfile(alias);
+                if (eeProfileIdString != null && endEntityProfileSession.getEndEntityProfile(Integer.valueOf(eeProfileIdString)) != null) {
+                    if (!authorizedProfileIds.contains(Integer.valueOf(eeProfileIdString))) {
                         if (log.isDebugEnabled()) {
                             log.debug("CMP alias " + alias + " hidden because admin lacks access to a CA used in end entity profile with ID: "
-                                    + endEntityProfileId);
+                                    + eeProfileIdString);
                         }
                         returnValue.removeAlias(alias);
                         //Profile was not in the authorized list, skip out on this alias. 
