@@ -28,9 +28,12 @@ import java.util.Set;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.faces.model.DataModelEvent;
+import javax.faces.model.DataModelListener;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -41,6 +44,7 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -81,6 +85,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     private String newCaIssuer = "";
     private ListDataModel<String> documentTypeList = null;
     private String documentTypeListNew = "";
+    private ListDataModel<PKIDisclosureStatement> pdsListModel = null;
 
     /** Since this MBean is session scoped we need to reset all the values when needed. */
     private void reset() {
@@ -92,6 +97,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         newCaIssuer = "";
         documentTypeList = null;
         documentTypeListNew = "";
+        pdsListModel = null;
     }
 
     public CertProfilesBean getCertProfilesBean() { return certProfilesBean; }
@@ -175,6 +181,14 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 if (!certificateProfile.getUseFreshestCRL() || certificateProfile.getUseCADefinedFreshestCRL()) {
                     certificateProfile.setFreshestCRLURI("");
                 }
+                final List<PKIDisclosureStatement> pdsList = certificateProfile.getQCEtsiPds();
+                final List<PKIDisclosureStatement> pdsCleaned = new ArrayList<>();
+                for (final PKIDisclosureStatement pds : pdsList) {
+                    if (!StringUtils.isEmpty(pds.getUrl())) {
+                        pdsCleaned.add(pds);
+                    }
+                }
+                certificateProfile.setQCEtsiPds(pdsCleaned);
                 // Modify the profile
                 getEjbcaWebBean().getEjb().getCertificateProfileSession().changeCertificateProfile(getAdmin(), getSelectedCertProfileName(), certificateProfile);
                 getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
@@ -577,6 +591,56 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public void toggleUseQCStatement() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseQCStatement(!getCertificateProfile().getUseQCStatement());
         redirectToComponent("header_qcStatements");
+    }
+    
+    private List<PKIDisclosureStatement> getQCEtsiPdsList() {
+        List<PKIDisclosureStatement> pdsList = getCertificateProfile().getQCEtsiPds();
+        if (pdsList == null) {
+            pdsList = new ArrayList<>();
+            // Add a blank line, so the user can fill it in quickly (and blank lines are
+            // automatically deleted when saving, so this will never end up in certificates)
+            pdsList.add(new PKIDisclosureStatement("", "en"));
+        }
+        return pdsList;
+    }
+    
+    public ListDataModel<PKIDisclosureStatement> getQCEtsiPds() {
+        if (pdsListModel == null) {
+            final List<PKIDisclosureStatement> pdsList = getQCEtsiPdsList();
+            pdsListModel = new ListDataModel<>(pdsList);
+            // Listener that sends back changes into the cert profile
+            pdsListModel.addDataModelListener(new DataModelListener() {
+                @Override
+                public void rowSelected(final DataModelEvent event) {
+                    final PKIDisclosureStatement pds = (PKIDisclosureStatement) event.getRowData();
+                    final int index = event.getRowIndex();
+                    if (index != -1 && index < pdsList.size()) {
+                        pdsList.set(index, pds);
+                        getCertificateProfile().setQCEtsiPds(pdsList);
+                    }
+                }
+            });
+        }
+        return pdsListModel;
+    }
+    
+    public String addQCEtsiPds() throws IOException {
+        final List<PKIDisclosureStatement> pdsList = getQCEtsiPdsList();
+        pdsList.add(new PKIDisclosureStatement("", "en"));
+        getCertificateProfile().setQCEtsiPds(pdsList);
+        pdsListModel = null;
+        redirectToComponent("header_qcStatements");
+        return "";
+    }
+
+    public String deleteQCEtsiPds() throws IOException {
+        final List<PKIDisclosureStatement> pdsList = getQCEtsiPdsList();
+        int index = getQCEtsiPds().getRowIndex();
+        pdsList.remove(index);
+        getCertificateProfile().setQCEtsiPds(pdsList);
+        pdsListModel = null;
+        redirectToComponent("header_qcStatements");
+        return "";
     }
     
     public void toggleUseQCEtsiValueLimit() throws AuthorizationDeniedException, IOException {

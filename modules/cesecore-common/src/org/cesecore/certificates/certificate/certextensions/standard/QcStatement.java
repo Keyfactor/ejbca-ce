@@ -39,6 +39,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 
@@ -126,15 +127,14 @@ public class QcStatement extends StandardCertificateExtension {
             qc = new QCStatement(new ASN1ObjectIdentifier("0.4.0.1862.1.6"), seq); // ETSIQCObjectIdentifiers.id_etsi_qcs_QcType in BC > 1.54
             qcs.add(qc);
         }
-        if (StringUtils.isNotEmpty(certProfile.getQCEtsiPdsUrl())) {
-            if (StringUtils.isEmpty(certProfile.getQCEtsiPdsLang())) {
-                throw new CertificateExtensionException("When using ETSI QC PDS URL, a Language (ISO 639-1 code) must also be set.");
-            }
+        if (certProfile.getQCEtsiPds() != null) {
             final ASN1EncodableVector locations = new ASN1EncodableVector();
-            final ASN1EncodableVector location = new ASN1EncodableVector();
-            location.add(new DERIA5String(certProfile.getQCEtsiPdsUrl()));
-            location.add(new DERPrintableString(certProfile.getQCEtsiPdsLang()));
-            locations.add(new DERSequence(location));
+            for (PKIDisclosureStatement pds : certProfile.getQCEtsiPds()) {
+                final ASN1EncodableVector location = new ASN1EncodableVector();
+                location.add(new DERIA5String(pds.getUrl()));
+                location.add(new DERPrintableString(pds.getLanguage()));
+                locations.add(new DERSequence(location));
+            }
             qc = new QCStatement(new ASN1ObjectIdentifier("0.4.0.1862.1.5"), new DERSequence(locations)); // ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds in BC > 1.54
             qcs.add(qc);
         }
