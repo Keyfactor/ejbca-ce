@@ -29,24 +29,26 @@ publishing to VA also requires schema changes on the connected VAs. Please see t
 
 EJBCA 6.5.4
 -----------
-An autumn patch release to the so far stable EJBCA 6.5 branch, EJBCA 6.5.4 adds a few fixes to issues that showed up in production, as well as two 
-new features and a couple of improvements.
+An autumn patch release to the so far stable EJBCA 6.5 branch, EJBCA 6.5.4 adds a few fixes to issues that showed up during production, 
+as well as two new features and a couple of improvements.
+All in all, this release contain 10 bug fixes and improvements.
+
 All in all, this release contains 10 bug fixes and improvements.
 
-Features: 
-- Add support for RegisteredID in subject alternative name
-- Add the ability to use variables in email subject for email expiration service
+Features:
+- Support for RegisteredID in subject alternative name.
+- Ability to use variables in email subject for email expiration services.
 
-ICAO CSCA:
-- Issuer altName was not set when creating a new Root CA
+Improvement: ICAO CSCA
+- Issuer altName is now automatically set when creating a new Root CA.
 
-OCSP: 
-- Change behavior when CA certificates are revoked to only regard revocation reasons *Compromise as CA private key compromise in VA
+Improvement: OCSP
+- When CA certificates are revoked, OCSP responder will respond revoked for leaf certificates only if CA revocation reason indicates a CA compromise.
 
 Bugs:
-- CMP revocation requests failed CA authorization if issuer CA has X.500 ordering
-- clientToolbox did not start when using PKCS#11 and there was no JAVA_HOME set
-- Verification of database integrity protection did not work for custom certificate extensions
+- CMP revocation requests failed CA authorization, if issuer CA had X.500 ordering.
+- clientToolbox did not start when using PKCS#11 and there was no JAVA_HOME set.
+- Verification of database integrity protection did not work for custom certificate extensions.
 
 EJBCA 6.5.3
 -----------
