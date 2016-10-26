@@ -243,8 +243,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEQCETSISIGNATUREDEVICE = "useqcetsisignaturedevice";
     protected static final String USEQCETSITYPE = "useqcetsitype";
     protected static final String QCETSITYPE = "qcetsitype";
-    protected static final String USEQCETSIPDS = "useqcetsipds";
+    protected static final String QCETSIPDS = "qcetsipds";
+    @Deprecated
     protected static final String QCETSIPDSURL = "qcetsipdsurl";
+    @Deprecated
     protected static final String QCETSIPDSLANG = "qcetsipdslang";
     protected static final String USEQCCUSTOMSTRING = "useqccustomstring";
     protected static final String QCCUSTOMSTRINGOID = "qccustomstringoid";
@@ -444,8 +446,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setUseQCCustomString(false);
         setQCCustomStringOid(null);
         setQCCustomStringText(null);
-        setQCEtsiPdsUrl(null);
-        setQCEtsiPdsLang(null);
+        setQCEtsiPds(null);
         setQCEtsiType(null);
         
         setUseCertificateTransparencyInCerts(false);
@@ -1049,14 +1050,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /** Type is used when setting BasicConstraints, i.e. to determine if it is a CA or an end entity 
-     * @see CertificateConstants.CERTTYPE_ROOTCA etc
+     * @see CertificateConstants.CERTTYPE_ROOTCA, etc
      */
     public int getType() {
         return ((Integer) data.get(TYPE)).intValue();
     }
 
     /** Type is used when setting BasicConstraints, i.e. to determine if it is a CA or an end entity 
-     * @see CertificateConstants.CERTTYPE_ROOTCA etc
+     * @see CertificateConstants.CERTTYPE_ROOTCA, etc
      */
     public void setType(int type) {
         data.put(TYPE, Integer.valueOf(type));
@@ -1767,24 +1768,50 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(QCETSITYPE, qcetsitype);
     }
 
-    /** @return String with PDS URL or null (or empty string) if it's not to be used (EN 319 412-05) */
-    public String getQCEtsiPdsUrl() {
-        return (String) data.get(QCETSIPDSURL);
-    }
-    public void setQCEtsiPdsUrl(String qcetsipdsurl) {
-        data.put(QCETSIPDSURL, qcetsipdsurl);
-    }
-    /** Shall be a two letter ISO 639-1 code, i.e. en, sv, fr  
-     * @return String with PDS Language or empty string (EN 319 412-05) 
+    /**
+     * Returns the PKI Disclosure Statements (EN 319 412-05) used in this profile, or null if none are present.
      */
-    public String getQCEtsiPdsLang() {
-        return (String) data.get(QCETSIPDSLANG);
+    @SuppressWarnings("unchecked")
+    public List<PKIDisclosureStatement> getQCEtsiPds() {
+        List<PKIDisclosureStatement> result = null;
+        List<PKIDisclosureStatement> pdsList = (List<PKIDisclosureStatement>)data.get(QCETSIPDS);
+        if (pdsList == null) {
+            // EJBCA 6.6.0 or older
+            // TODO move this code into the upgrade() method
+            final String url = (String) data.get(QCETSIPDSURL);
+            final String lang = (String) data.get(QCETSIPDSLANG);
+            if (url != null) {
+                result = new ArrayList<>();
+                result.add(new PKIDisclosureStatement(url, lang));
+            }
+        } else if (!pdsList.isEmpty()) {
+            // EJBCA 6.6.1 and newer
+            result = new ArrayList<>(pdsList.size());
+            try {
+                for (final PKIDisclosureStatement pds : pdsList) {
+                    result.add((PKIDisclosureStatement) pds.clone());
+                }
+            } catch (CloneNotSupportedException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        return result;
     }
-    /** Sets String with PDS Language (EN 319 412-05) 
-     * Shall be a two letter ISO 639-1 code, i.e. en, sv, fr 
+    
+    /**
+     * Sets the PKI Disclosure Statements (EN 319 412-05).
+     * Both null and empty lists are interpreted as an "none". 
      */
-    public void setQCEtsiPdsLang(String qcetsipdslang) {
-        data.put(QCETSIPDSLANG, qcetsipdslang);
+    public void setQCEtsiPds(final List<PKIDisclosureStatement> pds) {
+        if (pds == null || pds.isEmpty()) { // never store an empty list
+            data.put(QCETSIPDS, null);
+        } else {
+            data.put(QCETSIPDS, new ArrayList<>(pds));
+        }
+        // These were used by EJBCA <= 6.6.0
+        // TODO move this code into the upgrade() method
+        data.remove(QCETSIPDSURL);
+        data.remove(QCETSIPDSLANG);
     }
     
     public boolean getUseQCCustomString() {

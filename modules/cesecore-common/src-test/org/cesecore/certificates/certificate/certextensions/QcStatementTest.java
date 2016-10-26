@@ -18,6 +18,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -30,6 +31,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.cesecore.certificates.util.cert.QCStatementExtension;
 import org.junit.Test;
 
@@ -46,8 +48,7 @@ public class QcStatementTest {
         prof.setUseQCEtsiQCCompliance(true);
         prof.setUseQCEtsiSignatureDevice(true);
         prof.setQCEtsiType("0.4.0.1862.1.6.1");
-        prof.setQCEtsiPdsUrl("http://qcs.localhost/QcPDS");
-        prof.setQCEtsiPdsLang("en");
+        prof.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("http://qcs.localhost/QcPDS", "en")));
         QcStatement statement = new QcStatement();
         byte[] value = statement.getValueEncoded(null, null, prof, null, null, null);
         @SuppressWarnings("resource")
@@ -58,7 +59,7 @@ public class QcStatementTest {
         // Dump included IDs
         final ASN1Sequence seq = (ASN1Sequence) ASN1Sequence.fromByteArray(value);
         // This is just a loop to get all the statement IDs in the QcStatements extension, so we can view them and count them
-        ArrayList<String> oids = new ArrayList<String>();
+        ArrayList<String> oids = new ArrayList<>();
         for (int i = 0; i < seq.size(); i++) {
             final QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));
             final ASN1ObjectIdentifier oid = qc.getStatementId();

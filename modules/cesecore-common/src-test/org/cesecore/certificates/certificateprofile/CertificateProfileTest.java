@@ -20,10 +20,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +40,7 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -436,6 +439,7 @@ public class CertificateProfileTest {
         assertEquals(clonemap2.size(), profmap.size()-1);
     }
     
+    @SuppressWarnings("deprecation")
     @Test
     public void test09ManyValues() {
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
@@ -529,15 +533,43 @@ public class CertificateProfileTest {
         assertTrue(profile.isApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY));
         assertFalse(profile.isApprovalRequired(CAInfo.REQ_APPROVAL_KEYRECOVER));
         
-        assertNull(profile.getQCEtsiPdsLang());
-        assertNull(profile.getQCEtsiPdsUrl());
         assertNull(profile.getQCEtsiType());
-        profile.setQCEtsiPdsLang("en");
-        assertEquals("en", profile.getQCEtsiPdsLang());
-        profile.setQCEtsiPdsUrl("http://pds.foo.bar/pds");
-        assertEquals("http://pds.foo.bar/pds", profile.getQCEtsiPdsUrl());
+        assertNull(profile.getQCEtsiPds());
+        // Check reading of old values from EJBCA <= 6.6.0
+        setProfileValue(profile, CertificateProfile.QCETSIPDSURL, null);
+        assertNull(profile.getQCEtsiPds());
+        setProfileValue(profile, CertificateProfile.QCETSIPDSURL, "http://example.com/pds");
+        setProfileValue(profile, CertificateProfile.QCETSIPDSLANG, "sv");
+        List<PKIDisclosureStatement> pdsResult = profile.getQCEtsiPds();
+        assertNotNull(pdsResult);
+        assertEquals(1, pdsResult.size());
+        assertEquals("sv", pdsResult.get(0).getLanguage());
+        assertEquals("http://example.com/pds", pdsResult.get(0).getUrl());
+        // Setting an empty list causes it to be changed into null
+        profile.setQCEtsiPds(new ArrayList<PKIDisclosureStatement>());
+        assertNull(profile.getQCEtsiPds());
+        profile.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("http://pds.foo.bar/pds", "en")));
+        pdsResult = profile.getQCEtsiPds();
+        assertNotNull(pdsResult);
+        assertEquals(1, pdsResult.size());
+        assertEquals("en", pdsResult.get(0).getLanguage());
+        assertEquals("http://pds.foo.bar/pds", pdsResult.get(0).getUrl());
         profile.setQCEtsiType("1.2.3.4");
         assertEquals("1.2.3.4", profile.getQCEtsiType());
+    }
+    
+    /** Sets any value in the hashmap in the profile */
+    @SuppressWarnings("unchecked")
+    private void setProfileValue(final CertificateProfile profile, final String name, final String value) {
+        try {
+            final Field field = UpgradeableDataHashMap.class.getDeclaredField("data");
+            field.setAccessible(true);
+            final HashMap<String,Object> map = (HashMap<String,Object>) field.get(profile);
+            map.put(name, value);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        }
+        
     }
 
     @Test
