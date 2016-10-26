@@ -888,7 +888,7 @@ SHA-256 checksum: ${cesecoresrcSHA256}
 	<!-- Note that this zip is not standalone but needs to be unzipped inside an -->
 	<!-- existing EJBCA installation and built there.							 -->
     <!-- ======================================================================= -->
-    <target name="ziprelease-statedump-src" if="${mod.statedump.exists}">
+    <target name="ziprelease-statedump-src" if="${mod.statedump.exists}" description="Make a source zip for the Statedump modules">
         <property name="statedump.src.basezipfile" value="statedump-${app.version.number}-src"/>
         <delete file="../${statedump.src.basezipfile}.zip"/>
 
