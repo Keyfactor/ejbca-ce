@@ -182,13 +182,15 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                     certificateProfile.setFreshestCRLURI("");
                 }
                 final List<PKIDisclosureStatement> pdsList = certificateProfile.getQCEtsiPds();
-                final List<PKIDisclosureStatement> pdsCleaned = new ArrayList<>();
-                for (final PKIDisclosureStatement pds : pdsList) {
-                    if (!StringUtils.isEmpty(pds.getUrl())) {
-                        pdsCleaned.add(pds);
+                if (pdsList != null) {
+                    final List<PKIDisclosureStatement> pdsCleaned = new ArrayList<>();
+                    for (final PKIDisclosureStatement pds : pdsList) {
+                        if (!StringUtils.isEmpty(pds.getUrl())) {
+                            pdsCleaned.add(pds);
+                        }
                     }
+                    certificateProfile.setQCEtsiPds(pdsCleaned);
                 }
-                certificateProfile.setQCEtsiPds(pdsCleaned);
                 // Modify the profile
                 getEjbcaWebBean().getEjb().getCertificateProfileSession().changeCertificateProfile(getAdmin(), getSelectedCertProfileName(), certificateProfile);
                 getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
