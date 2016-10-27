@@ -904,7 +904,9 @@ class CMPTest extends ClientToolBox {
             System.out.println("\t'RA Verify Proof-of-Possession' must be 'Allow'");
             System.out.println("\t'Response Protection' must be 'signature'.");
             System.out.println("\t'Authentication Module' must have 'password' as 'Specify Secret'.");
+            System.out.println("\t'RA End Entity Profile' and 'RA Certificate Profile' must be set to user defined values in order to 'Allow subject DN override by CSR' (see below).");
             System.out.println("EJBCA CA configuration requires 'Enforce unique public keys' to be unchecked, i.e. to not enforce unique public keys. The same key pair is used for all users in order to gain maximum speed in the test client.");
+            System.out.println("EJBCA Certificate Profile configuration requires 'Allow subject DN override by CSR' to be checked, i.e. to not use the DN from the CRMF request message. This because the CMP test sends a non-normalized DN and compares the result.");
             return;
         }
         hostName = args[1];
