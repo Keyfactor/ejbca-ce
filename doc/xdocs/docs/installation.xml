@@ -429,10 +429,11 @@ It is not enough to pass JEE validation in order to run on all application serve
 
 <subsection name="JBoss 7 GA / JBoss EAP 6">
 <note>JBoss 7 / EAP 6 are the official well tested platforms for EJBCA 6.x. Most of the development is done against JBoss.</note>
+<p>To be able to run JBoss EAP 6 with Java 8 you will at least EAP 6.4.1+ (OpenJDK 8) or EAP 6.3.4 (OracleJDK 8). JBoss AS 7.1.1.GA will not work with Java 8.</p>
 
 <subsubsection name="JBoss 7/EAP 6 General Notes">
 <p>
-Version JBoss AS 7.1.1.Final, EAP 6.1 and EAP 6.2 (and possibly later ones) has been tested with EJBCA, and it should work. There's a couple of caveats and notes you should be aware of:
+Version JBoss AS 7.1.1.Final, EAP 6.1-6.4 (and possibly later ones) has been tested with EJBCA, and it should work. There's a couple of caveats and notes you should be aware of:
 <ul>
 <li>Start and connect with the JBoss 7/EAP6 cli like this:
 <pre>
