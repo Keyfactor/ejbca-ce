@@ -56,7 +56,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 42.0;
+    public static final float LATEST_VERSION = (float) 43.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -220,6 +220,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEOCSPNOCHECK = "useocspnocheck";
     protected static final String USEAUTHORITYINFORMATIONACCESS = "useauthorityinformationaccess";
     protected static final String USEOCSPSERVICELOCATOR = "useocspservicelocator";
+    protected static final String USEDEFAULTCAISSUER = "usedefaultcaissuer";
     protected static final String USEDEFAULTOCSPSERVICELOCATOR = "usedefaultocspservicelocator";
     protected static final String OCSPSERVICELOCATORURI = "ocspservicelocatoruri";
     protected static final String USECAISSUERS = "usecaissuersuri";
@@ -457,6 +458,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setUseNameConstraints(false);
         setUseAuthorityInformationAccess(false);
         setCaIssuers(new ArrayList<String>());
+        setUseDefaultCAIssuer(false);
         setUseDefaultOCSPServiceLocator(false);
         setOCSPServiceLocatorURI("");
 
@@ -1617,6 +1619,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(USEAUTHORITYINFORMATIONACCESS, Boolean.valueOf(useauthorityinformationaccess));
     }
 
+    public boolean getUseDefaultCAIssuer() {
+        return ((Boolean) data.get(USEDEFAULTCAISSUER)).booleanValue();
+    }
+
+    public void setUseDefaultCAIssuer(boolean usedefaultcaissuer) {
+        data.put(USEDEFAULTCAISSUER, Boolean.valueOf(usedefaultcaissuer));
+    }
+    
     public boolean getUseDefaultOCSPServiceLocator() {
         return ((Boolean) data.get(USEDEFAULTOCSPSERVICELOCATOR)).booleanValue();
     }
@@ -2454,7 +2464,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setUseDefaultCRLDistributionPoint(false);
                 setUseDefaultOCSPServiceLocator(false);
             }
-
+            
             if (data.get(USEQCCUSTOMSTRING) == null) {
                 setUseQCCustomString(false);
                 setQCCustomStringOid(null);
@@ -2633,6 +2643,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             // v42. ETSI QC Type and PDS specified in EN 319 412-05.
             // Nothing to set though, since null values means to not use the new values
+            
+            if (data.get(USEDEFAULTCAISSUER) == null) {
+                setUseDefaultCAIssuer(false); // v43
+            }
             
             data.put(VERSION, new Float(LATEST_VERSION));
         }

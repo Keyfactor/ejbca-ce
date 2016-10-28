@@ -3109,6 +3109,14 @@ public abstract class CertTools {
     }
 
     /**
+     * @return all CA issuer URI that are inside AuthorityInformationAccess extension or an empty list
+     */
+    public static List<String> getAuthorityInformationAccessCAIssuerUris(Certificate cert) {
+        return getAuthorityInformationAccessCaIssuerUris(cert, false);
+    }
+    
+    
+    /**
      * Returns the first OCSP URL that is inside AuthorityInformationAccess extension, or null.
      * 
      * @param cert is the certificate to parse
@@ -3129,6 +3137,44 @@ public abstract class CertTools {
     }
     
     /**
+     * @return all CA issuer URI that are inside AuthorityInformationAccess extension or an empty list.
+     */
+    private static List<String> getAuthorityInformationAccessCaIssuerUris(Certificate cert, final boolean onlyfirst) {
+        final List<String> urls = new ArrayList<>();
+        if(cert instanceof X509Certificate) {
+            X509Certificate x509cert = (X509Certificate) cert;
+            final ASN1Primitive obj = getExtensionValue(x509cert, Extension.authorityInfoAccess.getId());
+            if (obj != null) {
+                final AccessDescription[] accessDescriptions = AuthorityInformationAccess.getInstance(obj).getAccessDescriptions();
+                if (accessDescriptions != null) {
+                    for (final AccessDescription accessDescription : accessDescriptions) {
+                        // OID 1.3.6.1.5.5.7.48.2: 2 times in Bouncy Castle X509ObjectIdentifiers class.
+                        // X509ObjectIdentifiers.id_ad_caIssuers = X509ObjectIdentifiers.crlAccessMethod
+                        if (accessDescription.getAccessMethod().equals(X509ObjectIdentifiers.id_ad_caIssuers)) {
+                            final GeneralName generalName = accessDescription.getAccessLocation();
+                            if (generalName.getTagNo() == GeneralName.uniformResourceIdentifier) {
+                                // After encoding in a cert, it is tagged an extra time...
+                                ASN1Primitive gnobj = generalName.toASN1Primitive();
+                                if (gnobj instanceof ASN1TaggedObject) {
+                                    gnobj = ASN1TaggedObject.getInstance(gnobj).getObject();
+                                }
+                                final DERIA5String str = DERIA5String.getInstance(gnobj);
+                                if(str != null) {
+                                    urls.add(str.getString());
+                                }
+                                if(onlyfirst) {
+                                    return urls; // returning only the first URL
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return urls;
+    }
+    
+    /**
      * @return all OCSP URL that is inside AuthorityInformationAccess extension or an empty list
      */
     private static List<String> getAuthorityInformationAccessOcspUrls(Certificate cert, final boolean onlyfirst) {
@@ -3140,6 +3186,8 @@ public abstract class CertTools {
                 final AccessDescription[] accessDescriptions = AuthorityInformationAccess.getInstance(obj).getAccessDescriptions();
                 if (accessDescriptions != null) {
                     for (final AccessDescription accessDescription : accessDescriptions) {
+                        // OID 1.3.6.1.5.5.7.48.1: 2 times in Bouncy Castle X509ObjectIdentifiers class.
+                        // X509ObjectIdentifiers.id_ad_ocsp = X509ObjectIdentifiers.ocspAccessMethod
                         if (accessDescription.getAccessMethod().equals(X509ObjectIdentifiers.ocspAccessMethod)) {
                             final GeneralName generalName = accessDescription.getAccessLocation();
                             if (generalName.getTagNo() == GeneralName.uniformResourceIdentifier) {

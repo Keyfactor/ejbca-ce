@@ -311,6 +311,14 @@ public class CertificateView implements Serializable {
         }
         return returnval; 
     }
+    
+    public List<String> getAuthorityInformationAccessCaIssuerUris() {
+        return CertTools.getAuthorityInformationAccessCAIssuerUris(certificate);
+    }
+    
+    public List<String> getAuthorityInformationAccessOcspUrls() {
+        return CertTools.getAuthorityInformationAccessOcspUrls(certificate);
+    }
 
     public String getBasicConstraints(String localizedNoneText, String localizedNolimitText, String localizedEndEntityText, String localizedCaPathLengthText) {
         if (certificate==null) {

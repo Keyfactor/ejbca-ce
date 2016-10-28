@@ -613,24 +613,37 @@
 			 rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}" 
 			 disabled="#{certProfileBean.certificateProfile.useDefaultOCSPServiceLocator or certProfilesBean.viewOnly}"/>
 
-		<%-- caIssuers part of Authority Information Access (AIA) extension --%>
-
-		<h:outputLabel for="caIssuers" value="#{web.text.EXT_PKIX_AIA_CAISSUERS_URI}" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}"
+		<%-- CA Issuers URIs part of Authority Information Access (AIA) extension --%>		
+		
+		<h:outputLabel for="checkusedefaultcaissuergroup" value="#{web.text.EXT_PKIX_AIA_CA_ISSUER_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}"
 			 styleClass="subItem"/>
+		<h:panelGroup id="checkusedefaultcaissuergroup" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}">
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useDefaultCAIssuer}" rendered="#{!web.legacyInternetExplorer}"
+				disabled="#{certProfilesBean.viewOnly}"/>
+			<h:commandButton id="checkusedefaultcaissuer" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseDefaultCAIssuer}"
+				value="#{certProfileBean.certificateProfile.useDefaultCAIssuer?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
+				disabled="#{certProfilesBean.viewOnly}"/>
+			<h:outputLabel for="checkusedefaultcaissuer" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
+		</h:panelGroup>
+		
+		<h:panelGroup rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}">
+			<h:outputLabel for="caIssuers" value="#{web.text.EXT_PKIX_AIA_CAISSUERS_URI}" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}" styleClass="subItem"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#CA%20Issuer%20URI") %>
+		</h:panelGroup>
 		<h:dataTable id="caIssuers" value="#{certProfileBean.caIssuers}" var="caIssuer" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}">
 			<h:column>
 				<h:outputText value="#{caIssuer}"/>
 				<f:facet name="footer">
 					<h:inputText id="textfieldcaissueruri" value="#{certProfileBean.newCaIssuer}" size="45" maxlength="255" title="#{web.text.FORMAT_URI}"
-						disabled="#{certProfilesBean.viewOnly}"/>
+						disabled="#{certProfileBean.certificateProfile.useDefaultCAIssuer or certProfilesBean.viewOnly}"/>
 				</f:facet>
 			</h:column>
 			<h:column>
 				<h:commandButton id="buttondeletecaissueruri" value="#{web.text.DELETE}" action="#{certProfileBean.deleteCaIssuer}"
-					disabled="#{certProfilesBean.viewOnly}" />
+					disabled="#{certProfileBean.certificateProfile.useDefaultCAIssuer or certProfilesBean.viewOnly}" />
 				<f:facet name="footer">
 					<h:commandButton id="buttonaddcaissueruri" value="#{web.text.ADD}" action="#{certProfileBean.addCaIssuer}"
-						disabled="#{certProfilesBean.viewOnly}"/>
+						disabled="#{certProfileBean.certificateProfile.useDefaultCAIssuer or certProfilesBean.viewOnly}"/>
 				</f:facet>
 			</h:column>
 		</h:dataTable>

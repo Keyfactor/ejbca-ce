@@ -232,7 +232,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         // Test edit using a new "edit" CAInfo
         X509CAInfo newinfo = new X509CAInfo(cainfo.getCAId(), cainfo.getValidity(), cainfo.getCAToken(), "new description", 
         		cainfo.getCRLPeriod(), cainfo.getCRLIssueInterval(), cainfo.getCRLOverlapTime(), cainfo.getDeltaCRLPeriod(), 
-        		cainfo.getCRLPublishers(), true, false, true, false, null, null, null, null, null, null, null, cainfo.getFinishUser(), 
+        		cainfo.getCRLPublishers(), true, false, true, false, null, null, null, null, null, null, null, null, cainfo.getFinishUser(), 
         		cainfo.getExtendedCAServiceInfos(), true, cainfo.getApprovalSettings(), cainfo.getApprovalProfile(), false, true, 
         		false, false, cainfo.getIncludeInHealthCheck(), cainfo.isDoEnforceUniquePublicKeys(), cainfo.isDoEnforceUniqueDistinguishedName(), 
         		cainfo.isDoEnforceUniqueSubjectDNSerialnumber(), cainfo.isUseCertReqHistory(), cainfo.isUseUserStorage(), cainfo.isUseCertificateStorage(), null);

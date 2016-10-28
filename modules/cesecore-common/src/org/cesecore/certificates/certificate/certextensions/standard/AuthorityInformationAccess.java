@@ -13,7 +13,7 @@
 package org.cesecore.certificates.certificate.certextensions.standard;
 
 import java.security.PublicKey;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -53,40 +53,50 @@ public class AuthorityInformationAccess extends StandardCertificateExtension {
     @Override
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
-		final ASN1EncodableVector accessList = new ASN1EncodableVector();
-        GeneralName accessLocation;
-        String url;
-
-        // caIssuers
-        final List<String> caIssuers = certProfile.getCaIssuers();
-        if (caIssuers != null) {
-        	for(final Iterator<String> it = caIssuers.iterator(); it.hasNext(); ) {
-        		url = it.next();
-        		if(StringUtils.isNotEmpty(url)) {
-        			accessLocation = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(url));
-        			accessList.add(new AccessDescription(AccessDescription.id_ad_caIssuers,
-        					accessLocation));
-        		}
-        	}            	
+        final X509CA x509ca = (X509CA) ca;
+        List<String> caIssuerUris = new ArrayList<String>();
+        List<String> ocspServiceLocatorUrls = new ArrayList<String>();
+        
+        // Get AIA by CAs default AIA section or by the certificate profiles configuration.
+        if (certProfile.getUseDefaultCAIssuer()) {
+            caIssuerUris = x509ca.getCertificateAiaDefaultCaIssuerUri();
+        } else {
+            caIssuerUris = certProfile.getCaIssuers();
+        }
+        
+        // Get OCSP by CAs default OCSP Service Locator section or by the certificate profiles configuration.
+        if (certProfile.getUseDefaultOCSPServiceLocator()) {
+        	if (StringUtils.isNotBlank(x509ca.getDefaultOCSPServiceLocator())) {
+                ocspServiceLocatorUrls.add(x509ca.getDefaultOCSPServiceLocator());
+            }
+        } else {
+            if (StringUtils.isNotBlank(certProfile.getOCSPServiceLocatorURI())) {
+                ocspServiceLocatorUrls.add(certProfile.getOCSPServiceLocatorURI());
+            }
         }
 
-        // ocsp url
-        final X509CA x509ca = (X509CA)ca;
-        url = certProfile.getOCSPServiceLocatorURI();
-        if(certProfile.getUseDefaultOCSPServiceLocator()){
-        	url = x509ca.getDefaultOCSPServiceLocator();
+        if (log.isDebugEnabled()) {
+            log.debug("Using certificate AIA (CA Issuer URIs): " + caIssuerUris);
+            log.debug("Using certificate AIA (OCSP Service Locators): " + ocspServiceLocatorUrls);
         }
-        if (StringUtils.isNotEmpty(url)) {
-        	accessLocation = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(url));
-        	accessList.add(new AccessDescription(AccessDescription.id_ad_ocsp,
-        			accessLocation));
+        
+        final ASN1EncodableVector aia = new ASN1EncodableVector();
+        for (String uri : caIssuerUris) {
+            if(StringUtils.isNotEmpty(uri)) {
+                aia.add(new AccessDescription(AccessDescription.id_ad_caIssuers, new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri))));
+            }
+        }
+        for (String url : ocspServiceLocatorUrls) {
+            if(StringUtils.isNotEmpty(url)) {
+                aia.add(new AccessDescription(AccessDescription.id_ad_ocsp,new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(url))));
+            }
         }
         org.bouncycastle.asn1.x509.AuthorityInformationAccess ret = null;
-        if (accessList.size() > 0) {        	
-            ret = org.bouncycastle.asn1.x509.AuthorityInformationAccess.getInstance(new DERSequence(accessList));
+        if (aia.size() > 0) {        	
+            ret = org.bouncycastle.asn1.x509.AuthorityInformationAccess.getInstance(new DERSequence(aia));
         }
 		if (ret == null) {
-			log.error("AuthorityInformationAccess is used, but nor caIssuers not Ocsp url are defined!");
+			log.error("AIA extension was used, but neither CA issuer URIs or OCSP service locator URLs was defined!");
 		}
 		return ret;
 	}	

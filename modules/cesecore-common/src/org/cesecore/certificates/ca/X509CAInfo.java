@@ -54,6 +54,7 @@ public class X509CAInfo extends CAInfo{
 	private boolean crlDistributionPointOnCrlCritical;
 	private String cmpRaAuthSecret = "";
 	private List<String> authorityInformationAccess;
+	private List<String> certificateAiaDefaultCaIssuerUri;
 	private List<String> nameConstraintsPermitted;
 	private List<String> nameConstraintsExcluded;
 	private String externalCdp;
@@ -92,7 +93,8 @@ public class X509CAInfo extends CAInfo{
              null, // defaultcrldistpoint
              null, // defaultcrlissuer
              null, // defaultocsplocator
-             null, // Authority Information Access
+             null, // CRL Authority Information Access (AIA) extension
+             null, // Certificate AIA default CA issuer URI
              null, null, // Name Constraints (permitted/excluded)
              null, // defaultfreshestcrl
              true, // Finish User
@@ -126,7 +128,10 @@ public class X509CAInfo extends CAInfo{
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
     		final Collection<Integer> crlpublishers, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical, 
     		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,  
-    		final String defaultocspservicelocator, final List<String> authorityInformationAccess, final List<String> nameConstraintsPermitted, final List<String> nameConstraintsExcluded, final String cadefinedfreshestcrl, 
+    		final String defaultocspservicelocator, 
+    		final List<String> authorityInformationAccess, 
+    		final List<String> certificateAiaDefaultCaIssuerUri,
+    		final List<String> nameConstraintsPermitted, final List<String> nameConstraintsExcluded, final String cadefinedfreshestcrl, 
     		final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
     		final boolean useUTF8PolicyText, final Collection<Integer> approvalSettings, final int approvalProfile, final boolean usePrintableStringSubjectDN, 
     		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
@@ -195,6 +200,7 @@ public class X509CAInfo extends CAInfo{
         this.useCertificateStorage = _useCertificateStorage;
         setCmpRaAuthSecret(_cmpRaAuthSecret);
         this.authorityInformationAccess = authorityInformationAccess;
+        this.certificateAiaDefaultCaIssuerUri = certificateAiaDefaultCaIssuerUri;
         this.nameConstraintsPermitted = nameConstraintsPermitted;
         this.nameConstraintsExcluded = nameConstraintsExcluded;
     }
@@ -204,7 +210,9 @@ public class X509CAInfo extends CAInfo{
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
     		final Collection<Integer> crlpublishers, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
     		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer, 
-    		final String defaultocspservicelocator, final List<String> authorityInformationAccess, final List<String> nameConstraintsPermitted, final List<String> nameConstraintsExcluded, final String cadefinedfreshestcrl, 
+    		final String defaultocspservicelocator, final List<String> crlAuthorityInformationAccess, 
+    		final List<String> certificateAiaDefaultCaIssuerUri,
+    		final List<String> nameConstraintsPermitted, final List<String> nameConstraintsExcluded, final String cadefinedfreshestcrl, 
     		final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
     		final boolean useUTF8PolicyText, final Collection<Integer> approvalSettings, final int approvalProfile, final boolean usePrintableStringSubjectDN, 
     		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
@@ -244,7 +252,8 @@ public class X509CAInfo extends CAInfo{
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
         setCmpRaAuthSecret(_cmpRaAuthSecret);
-        this.authorityInformationAccess = authorityInformationAccess;
+        this.authorityInformationAccess = crlAuthorityInformationAccess;
+        this.certificateAiaDefaultCaIssuerUri = certificateAiaDefaultCaIssuerUri;
         this.nameConstraintsPermitted = nameConstraintsPermitted;
         this.nameConstraintsExcluded = nameConstraintsExcluded;
     }
@@ -331,10 +340,20 @@ public class X509CAInfo extends CAInfo{
         return authorityInformationAccess;
     }
 
-    public void setAuthorityInformationAccess(List<String> authorityInformationAccess) {
-        this.authorityInformationAccess = authorityInformationAccess;
+    public void setAuthorityInformationAccess(List<String> list) {
+        this.authorityInformationAccess = list;
     }
     
+    /** @return the certificateAiaDefaultCaIssuerUri */
+    public List<String> getCertificateAiaDefaultCaIssuerUri() {
+        return certificateAiaDefaultCaIssuerUri;
+    }
+
+    /** @param list the certificateAiaDefaultCaIssuerUri to set */
+    public void setCertificateAiaDefaultCaIssuerUri(List<String> list) {
+        this.certificateAiaDefaultCaIssuerUri = list;
+    }
+
     /** @return a list of encoded names of the permitted names in issued certificates */
     public List<String> getNameConstraintsPermitted() {
         return nameConstraintsPermitted;

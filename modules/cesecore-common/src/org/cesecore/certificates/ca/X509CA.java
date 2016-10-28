@@ -164,7 +164,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /** Version of this class, if this is increased the upgrade() method will be called automatically */
-    public static final float LATEST_VERSION = 20;
+    public static final float LATEST_VERSION = 21;
 
     // protected fields for properties specific to this type of CA.
     protected static final String POLICIES = "policies";
@@ -172,6 +172,7 @@ public class X509CA extends CA implements Serializable {
     protected static final String USEAUTHORITYKEYIDENTIFIER = "useauthoritykeyidentifier";
     protected static final String AUTHORITYKEYIDENTIFIERCRITICAL = "authoritykeyidentifiercritical";
     protected static final String AUTHORITY_INFORMATION_ACCESS = "authorityinformationaccess";
+    protected static final String CERTIFICATE_AIA_DEFAULT_CA_ISSUER_URI = "certificateaiadefaultcaissueruri";
     protected static final String USECRLNUMBER = "usecrlnumber";
     protected static final String CRLNUMBERCRITICAL = "crlnumbercritical";
     protected static final String DEFAULTCRLDISTPOINT = "defaultcrldistpoint";
@@ -216,11 +217,11 @@ public class X509CA extends CA implements Serializable {
         setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
         setCmpRaAuthSecret(cainfo.getCmpRaAuthSecret());
         setAuthorityInformationAccess(cainfo.getAuthorityInformationAccess());
+        setCertificateAiaDefaultCaIssuerUri(cainfo.getCertificateAiaDefaultCaIssuerUri());
         setNameConstraintsPermitted(cainfo.getNameConstraintsPermitted());
         setNameConstraintsExcluded(cainfo.getNameConstraintsExcluded());
         data.put(CA.CATYPE, Integer.valueOf(CAInfo.CATYPE_X509));
         data.put(VERSION, new Float(LATEST_VERSION));
-        
     }
 
     /**
@@ -249,7 +250,10 @@ public class X509CA extends CA implements Serializable {
                 getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(), getCAToken(), getDescription(),
                 getRevocationReason(), getRevocationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(),
                 getDeltaCRLPeriod(), getCRLPublishers(), getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(), getUseCRLNumber(),
-                getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getAuthorityInformationAccess(), getNameConstraintsPermitted(), getNameConstraintsExcluded(), getCADefinedFreshestCRL(),
+                getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), 
+                getAuthorityInformationAccess(), 
+                getCertificateAiaDefaultCaIssuerUri(),
+                getNameConstraintsPermitted(), getNameConstraintsExcluded(), getCADefinedFreshestCRL(),
                 getFinishUser(), externalcaserviceinfos, getUseUTF8PolicyText(), getApprovalSettings(), getApprovalProfile(),
                 getUsePrintableStringSubjectDN(), getUseLdapDNOrder(), getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical(),
                 getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName(),
@@ -295,8 +299,17 @@ public class X509CA extends CA implements Serializable {
         return (List<String>) data.get(AUTHORITY_INFORMATION_ACCESS);
     }
 
-    public void setAuthorityInformationAccess(Collection<String> authorityInformationAccess) {
+    public void setAuthorityInformationAccess(List<String> authorityInformationAccess) {
         data.put(AUTHORITY_INFORMATION_ACCESS, authorityInformationAccess);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<String> getCertificateAiaDefaultCaIssuerUri() {
+        return (List<String>) data.get(CERTIFICATE_AIA_DEFAULT_CA_ISSUER_URI);
+    }
+
+    public void setCertificateAiaDefaultCaIssuerUri(List<String> uris) {
+        data.put(CERTIFICATE_AIA_DEFAULT_CA_ISSUER_URI, uris);
     }
     
     public boolean getUseCRLNumber() {
@@ -471,6 +484,7 @@ public class X509CA extends CA implements Serializable {
         X509CAInfo info = (X509CAInfo) cainfo;
         setPolicies(info.getPolicies());
         setAuthorityInformationAccess(info.getAuthorityInformationAccess());
+        setCertificateAiaDefaultCaIssuerUri(info.getCertificateAiaDefaultCaIssuerUri());
         setUseAuthorityKeyIdentifier(info.getUseAuthorityKeyIdentifier());
         setAuthorityKeyIdentifierCritical(info.getAuthorityKeyIdentifierCritical());
         setUseCRLNumber(info.getUseCRLNumber());
@@ -1714,6 +1728,14 @@ public class X509CA extends CA implements Serializable {
             }
             if(data.get(NAMECHANGED) == null) {
                 setNameChanged(false);
+            }
+            // v21, AIA: Copy CA issuer URI to separated AIA field.
+            if(data.get(CERTIFICATE_AIA_DEFAULT_CA_ISSUER_URI) == null) {
+            	if (null != getAuthorityInformationAccess()) {
+            	    setCertificateAiaDefaultCaIssuerUri( getAuthorityInformationAccess());
+            	} else {
+            		setCertificateAiaDefaultCaIssuerUri( new ArrayList<String>());
+            	}
             }
         }
     }
