@@ -1100,7 +1100,7 @@ public interface IEjbcaWS {
 	ApprovalException, WaitingForApprovalException, EjbcaException;
 	/**
 	 * Generates a certificate for a user.
-	 * If the user is not already present in the database, the user is added.<br>
+	 * If the user is not already present in the database it will be added otherwise it will be overwritten.<br>
 	 * Status is automatically set to STATUS_NEW.<p>
 	 * Authorization requirements:<pre>
 	 * - /administrator
