@@ -1374,20 +1374,19 @@ function toggleCANameChange(){
       </td>
       <td width="50%">
       	<% String authorityInformationAccess = "";
-       /* Note: the code in this section only ever uses a single value for
-          Authority Information Access. According to rfc4325 a CRL should have 
-          support for multiple such values. -mikek
-          */
-       if(x509cainfo != null) {
-    	   List<String> existingCaIssuers = x509cainfo.getAuthorityInformationAccess();
-           if(existingCaIssuers != null) {
-        	   if(existingCaIssuers.size() > 0) {
-        		   authorityInformationAccess = existingCaIssuers.get(0);
-        	   }
-           }
-       }    
-       %>
-        <input type="text" name="<%=TEXTFIELD_AUTHORITYINFORMATIONACCESS%>" size="40" maxlength="256" value="<c:out value="<%= authorityInformationAccess %>"/>" <%= (hasEditRights ? "" : "disabled") %>>        
+       	   if(x509cainfo != null) {
+    	   		final List<String> uris = x509cainfo.getAuthorityInformationAccess();
+    	   		authorityInformationAccess = null != uris ? String.join( ";", uris) : "";
+       		} %>
+        <% if (isexternal) {%>
+                <c:out value="<%= authorityInformationAccess %>"/>
+        <% } else { %>
+                <input type="text" name="<%=TEXTFIELD_AUTHORITYINFORMATIONACCESS%>" size="40" maxlength="256" title="<%= ejbcawebbean.getText("FORMAT_URI") %>" value="<c:out value="<%= authorityInformationAccess %>"/>" 
+        	<% if (editca) { %>
+        		<%= (hasEditRights ? "" : "disabled") %> />
+        	<% } %> 
+        <% } %>
+           
       </td>
     </tr>
 
@@ -1412,22 +1411,45 @@ function toggleCANameChange(){
        </select>
      </td>
    </tr>
-         
-    <%-- ---------- Services -------------------- --%>
-
+   
     <tr id="Row<%=row%2%>" class="section"> 
       <td width="50%"  align="right"> 
-        <strong><%= ejbcawebbean.getText("SERVICES") %></strong>
+        <strong><%= ejbcawebbean.getText("DEFAULT_USER_CERTIFICATE_AIA") %></strong>
       </td>
       <td width="50%"> 
         &nbsp;
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>">
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("EXT_PKIX_AIA_CAISSUERS_URI") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Default%20user%20certificate%20AIA%20extension") %>
+      </td>
+        <% String certificateAiaDefaultCaIssuerUri = "";
+       	   if(x509cainfo != null) {
+    	   		final List<String> uris = x509cainfo.getCertificateAiaDefaultCaIssuerUri();
+    	   		certificateAiaDefaultCaIssuerUri = null != uris ? String.join( ";", uris) : "";
+       		} %>
+      <td width="50%">
+           <% if (isexternal) {%>
+                <c:out value="<%= certificateAiaDefaultCaIssuerUri %>"/>
+           <% } else { %>
+                <input type="text" name="<%=TEXTFIELD_CERTIFICATEAIADEFAULTCAISSUERURI%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
+           		<% if (editca) { %>
+           			value="<c:out value="<%= certificateAiaDefaultCaIssuerUri %>"/>"
+           		<% } %> 
+           		<%= (hasEditRights ? "" : "disabled") %> />
+           <% } %>
+           <br/>
+           <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
       </td>
     </tr>
 
      <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("OCSPSERVICE_DEFAULTURI") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#OCSP%20Service%20Locator") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Default%20user%20certificate%20AIA%20extension") %>
       </td>
       <td width="50%">
            <% if(isexternal){%>
@@ -1439,6 +1461,17 @@ function toggleCANameChange(){
            	value="<%= ejbcawebbean.getText("GENERATE") %>" <%= (hasEditRights ? "" : "disabled") %> />
            <br />
            <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
+      </td>
+    </tr>
+     
+    <%-- ---------- Services -------------------- --%>
+
+    <tr id="Row<%=row%2%>" class="section"> 
+      <td width="50%"  align="right"> 
+        <strong><%= ejbcawebbean.getText("SERVICES") %></strong>
+      </td>
+      <td width="50%"> 
+        &nbsp;
       </td>
     </tr>
 
