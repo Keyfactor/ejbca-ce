@@ -489,6 +489,16 @@ There are four settings in CA configuration dictating the times when CRL generat
 </p>
 </subsubsection>
 
+<subsubsection name="Default user certificate AIA extension">
+<p>
+The values of the semi-colon separated list for the 'CA issuer' and 'OCSP Service Locator' (only one URL possible) are used for the certificates Authority Information Access extension as specified in <a href="http://tools.ietf.org/rfc/rfc5280.txt">RFC5280</a> (section 4.2.2.1).<br/>
+Certificate profiles used to issue end entity certificates with that CA must have the "Authority Information Access", as well as the "Use CA defined CA issuer" and/or the "Use CA defined OCSP locator" options enabled.<br/>
+</p>
+<p>
+See also information about the <a href="#CA%20Issuer%20URI">CA Issuer URI</a> field and the <a href="#OCSP%20Service%20Locator">OCSP Service Locator</a> field.
+</p>
+</subsubsection>
+
 <subsubsection name="Finish User">
 <p>
 The Finish User configuration defines if the CA calls a process called "finishUser" after a certificate has been issued for an end entity. 
@@ -1161,9 +1171,8 @@ The default URL for the internal OCSP responder in EJBCA is http://hostname:8080
 
 <subsubsection name="CA Issuer URI">
 <p>
-This value is used for the Authority Information Access CRL Extension as specified in <a href="http://tools.ietf.org/rfc/rfc5280.txt">RFC5280</a> (section 5.2.7).
-The URI specified in this field must point to a certificate containing file containing either a single certificate (.cer) or a collection of 
-certificates (.p7c).
+This value is used for the Authority Information Access CRL extensions field 'CA Issuer' as specified in <a href="http://tools.ietf.org/rfc/rfc5280.txt">RFC5280</a> (section 5.2.7).<br/>
+The URIs specified in this semi-colon separated list must point to files containing either a single certificate (.cer or .der) or a collection of certificates (.p7c).
 </p>
 </subsubsection>
 

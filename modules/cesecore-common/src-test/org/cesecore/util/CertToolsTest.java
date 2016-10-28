@@ -1555,6 +1555,13 @@ public class CertToolsTest {
 
         log.trace("<test24GetCrlDistributionPoint()");
     }
+    
+    @Test
+    public void test25AiaCaIssuerUri() throws Exception {
+        // Only 1 CA Issuer in static aiaCert: "http://localhost:8080/caIssuer"!
+        Certificate cert = CertTools.getCertfromByteArray(aiaCert, Certificate.class);
+        assertEquals("http://localhost:8080/caIssuer", CertTools.getAuthorityInformationAccessCAIssuerUris( cert).get(0));
+    }
 
     @Test
     public void testKrb5PrincipalName() throws Exception {

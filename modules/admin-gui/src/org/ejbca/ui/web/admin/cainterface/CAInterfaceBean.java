@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -517,7 +518,9 @@ public class CAInterfaceBean implements Serializable {
             long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
             String availablePublisherValues, boolean usecrlnumber, boolean crlnumbercritical,
             String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator,
-            String authorityInformationAccessString, String nameConstraintsPermittedString, String nameConstraintsExcludedString,
+            String authorityInformationAccessString,
+            String certificateAiaDefaultCaIssuerUriString,
+            String nameConstraintsPermittedString, String nameConstraintsExcludedString,
             String caDefinedFreshestCrlString, boolean useutf8policytext,
             boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
             boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive,
@@ -576,7 +579,9 @@ public class CAInterfaceBean implements Serializable {
                     useCertReqHistory, useUserStorage, useCertificateStorage, subjectaltname, policyid,
                     useauthoritykeyidentifier, authoritykeyidentifiercritical, crlperiod, crlIssueInterval,
                     crlOverlapTime, deltacrlperiod, availablePublisherValues, usecrlnumber, crlnumbercritical,
-                    defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccessString,
+                    defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, 
+                    authorityInformationAccessString,
+                    certificateAiaDefaultCaIssuerUriString,
                     nameConstraintsPermittedString, nameConstraintsExcludedString,
                     caDefinedFreshestCrlString, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
                     usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive,
@@ -606,7 +611,9 @@ public class CAInterfaceBean implements Serializable {
             long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
             String availablePublisherValues, boolean usecrlnumber, boolean crlnumbercritical,
             String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator,
-            String authorityInformationAccessString, String nameConstraintsPermittedString, String nameConstraintsExcludedString, String caDefinedFreshestCrlString, boolean useutf8policytext,
+            String authorityInformationAccessString,
+            String certificateAiaDefaultCaIssuerUriString,
+            String nameConstraintsPermittedString, String nameConstraintsExcludedString, String caDefinedFreshestCrlString, boolean useutf8policytext,
             boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
             boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive,
             boolean serviceCmsActive, String sharedCmpRaSecret, boolean buttonCreateCa, boolean buttonMakeRequest,
@@ -715,8 +722,14 @@ public class CAInterfaceBean implements Serializable {
 	                    crlpublishers.add(Integer.valueOf(availablePublisherId));
 	                }
 	            }
-	            final List<String> authorityInformationAccess = new ArrayList<String>();
-	            authorityInformationAccess.add(authorityInformationAccessString);
+	            List<String> authorityInformationAccess = new ArrayList<String>();
+	            if (StringUtils.isNotBlank(authorityInformationAccessString)) {
+	            	authorityInformationAccess = new ArrayList<String>( Arrays.asList(authorityInformationAccessString.split(";")));	
+	            }
+	            List<String> certificateAiaDefaultCaIssuerUri = new ArrayList<String>();
+	            if (StringUtils.isNotBlank(certificateAiaDefaultCaIssuerUriString)) {
+	                certificateAiaDefaultCaIssuerUri = new ArrayList<String>( Arrays.asList(certificateAiaDefaultCaIssuerUriString.split(";")));
+	            }
 	            String cadefinedfreshestcrl = "";
 	            if (caDefinedFreshestCrlString != null) {
 	                cadefinedfreshestcrl = caDefinedFreshestCrlString;
@@ -745,6 +758,7 @@ public class CAInterfaceBean implements Serializable {
 	                            defaultcrlissuer,
 	                            defaultocsplocator, 
 	                            authorityInformationAccess,
+	                            certificateAiaDefaultCaIssuerUri,
 	                            nameConstraintsPermitted, nameConstraintsExcluded,
 	                            cadefinedfreshestcrl,
 	                            finishUser, extendedcaservices,
@@ -790,6 +804,7 @@ public class CAInterfaceBean implements Serializable {
 	                            defaultcrlissuer,
 	                            defaultocsplocator, 
 	                            authorityInformationAccess,
+	                            certificateAiaDefaultCaIssuerUri,
 	                            nameConstraintsPermitted, nameConstraintsExcluded,
 	                            cadefinedfreshestcrl,
 	                            finishUser, extendedcaservices,
@@ -940,7 +955,8 @@ public class CAInterfaceBean implements Serializable {
 	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String approvalSettingValues,
 	        String approvalProfileParam,
 	        String availablePublisherValues, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical, boolean usecrlnumber,
-	        boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator, String authorityInformationAccessParam,
+	        boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator, String crlAuthorityInformationAccessParam, 
+	        String certificateAiaDefaultCaIssuerUriParam,
 	        String nameConstraintsPermittedString, String nameConstraintsExcludedString,
 	        String caDefinedFreshestCrl, boolean useutf8policytext, boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
 	        boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceCmsActive, String sharedCmpRaSecret
@@ -993,8 +1009,14 @@ public class CAInterfaceBean implements Serializable {
            }
            // Info specific for X509 CA
            if (catype == CAInfo.CATYPE_X509) {
-               final List<String> authorityInformationAccess = new ArrayList<String>();
-               authorityInformationAccess.add(authorityInformationAccessParam);
+               List<String> authorityInformationAccess = new ArrayList<String>();
+               if (StringUtils.isNotEmpty(crlAuthorityInformationAccessParam)) {
+                   authorityInformationAccess = new ArrayList<String>( Arrays.asList(crlAuthorityInformationAccessParam.split(";")));
+               }
+               List<String> certificateAiaDefaultCaIssuerUri = new ArrayList<String>();
+               if (StringUtils.isNotEmpty(certificateAiaDefaultCaIssuerUriParam)) {
+                   certificateAiaDefaultCaIssuerUri = new ArrayList<String>( Arrays.asList(certificateAiaDefaultCaIssuerUriParam.split(";")));
+               }
                final String cadefinedfreshestcrl = (caDefinedFreshestCrl==null ? "" : caDefinedFreshestCrl);
                // Create extended CA Service updatedata.
                final int cmsactive = serviceCmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
@@ -1013,6 +1035,7 @@ public class CAInterfaceBean implements Serializable {
                        defaultcrlissuer,
                        defaultocsplocator, 
                        authorityInformationAccess,
+                       certificateAiaDefaultCaIssuerUri,
                        parseNameConstraintsInput(nameConstraintsPermittedString), parseNameConstraintsInput(nameConstraintsExcludedString),
                        cadefinedfreshestcrl,
                        finishUser,extendedcaservices,

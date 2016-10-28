@@ -641,11 +641,88 @@ public class X509CATest {
 	}
 	
 	/** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */
+    @Test
+    public void testAuthorityInformationAccessCertificateExtension() throws Exception {
+        // test data for CA - level
+        final List<String> caIssuerUris = new ArrayList<String>();
+        caIssuerUris.add( "http://ca-defined.ca.issuer.uri1.sw");
+        caIssuerUris.add( "http://ca-defined.ca.issuer.uri2.sw");
+        final List<String> ocspUrls = new ArrayList<String>();
+        ocspUrls.add("http://ca-defined.ocsp.service.locator.url.sw");
+        // test data for certificate profile - level
+        final List<String> cpCaIssuerUris = new ArrayList<String>();
+        cpCaIssuerUris.add( "http://certificate-profile.ca.issuer.uri1.sw");
+        cpCaIssuerUris.add( "http://certificate-profile.ca.issuer.uri2.sw");
+        final List<String> cpOcspUrls = new ArrayList<String>();
+        cpOcspUrls.add("http://certificate-profile.ocsp.service.locator.url.sw");
+        // set up test CA, end entity and certificate profile
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final KeyPair keypair = KeyTools.genKeys("1024", "RSA");
+        final X509CA ca = createTestCA(cryptoToken, "CN=foo");
+        final EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        profile.setUseAuthorityInformationAccess(true); // enable certificate AIA
+        Certificate certificate = null;
+        
+        // 1. test with all values filled and both 'Use CA defined' switches are true
+        ca.setCertificateAiaDefaultCaIssuerUri(caIssuerUris);
+        ca.setDefaultOCSPServiceLocator(ocspUrls.get(0));
+        profile.setCaIssuers(cpCaIssuerUris);
+        profile.setOCSPServiceLocatorURI(cpOcspUrls.get(0));
+        profile.setUseDefaultCAIssuer(true);
+        profile.setUseDefaultOCSPServiceLocator(true);
+        try {
+            certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, profile, "00000", cceConfig);
+            assertCertificateAuthorityInformationAccess( certificate, caIssuerUris, ocspUrls);
+        } catch (CAOfflineException e) {
+            fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
+        }
+        
+        // 2. test with all values filled and both 'Use CA defined' switches are false
+        profile.setUseDefaultCAIssuer(false);
+        profile.setUseDefaultOCSPServiceLocator(false);
+        try {
+            certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, profile, "00000", cceConfig);
+            assertCertificateAuthorityInformationAccess( certificate, cpCaIssuerUris, cpOcspUrls);
+        } catch (CAOfflineException e) {
+            fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
+        }
+        
+        // 3a. test with all values filled and 'Use CA defined' CA issuer switch true, the other false, 
+        profile.setUseDefaultCAIssuer(true);
+        profile.setUseDefaultOCSPServiceLocator(false);
+        try {
+            certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, profile, "00000", cceConfig);
+            assertCertificateAuthorityInformationAccess( certificate, caIssuerUris, cpOcspUrls);
+        } catch (CAOfflineException e) {
+            fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
+        }
+        
+        // 3b. test with all values filled and 'Use CA defined' OCSP service switch true, the other false, 
+        profile.setUseDefaultCAIssuer(false);
+        profile.setUseDefaultOCSPServiceLocator(true);
+        try {
+            certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, profile, "00000", cceConfig);
+            assertCertificateAuthorityInformationAccess( certificate, cpCaIssuerUris, ocspUrls);
+        } catch (CAOfflineException e) {
+            fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
+        }
+    }
+    
+    private final void assertCertificateAuthorityInformationAccess(Certificate certificate, List<String> caIssuerUris, List<String> ocspUrls) {
+        List<String> testList = CertTools.getAuthorityInformationAccessCAIssuerUris(certificate);
+        assertTrue("Certificate CA issuer URIs " + Arrays.toString(caIssuerUris.toArray()) + " expected but was " + Arrays.toString(testList.toArray()), caIssuerUris.equals(testList));
+        testList = CertTools.getAuthorityInformationAccessOcspUrls(certificate);
+        assertTrue("Certificate OCSP service locators " + Arrays.toString(ocspUrls.toArray()) + " expected but was " + Arrays.toString(testList.toArray()), ocspUrls.equals(testList));
+    }
+        
+        
+	/** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */
 	@Test
 	public void testAuthorityInformationAccessCrlExtension() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
 	    X509CA testCa = createTestCA(cryptoToken, "CN=foo");
-	    Collection<String> authorityInformationAccess = new ArrayList<String>();
+	    List<String> authorityInformationAccess = new ArrayList<String>();
 	    authorityInformationAccess.add("http://example.com/0");
 	    authorityInformationAccess.add("http://example.com/1");
 	    authorityInformationAccess.add("http://example.com/2");

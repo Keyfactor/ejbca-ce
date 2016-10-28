@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, org.cesecore.certificates.certificateprofile.CertificateProfile,
+<%@page errorPage="/errorpage.jsp"  import="java.util.List, java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, org.cesecore.certificates.certificateprofile.CertificateProfile,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.CertificateView, org.ejbca.ui.web.RevokedInfoView,org.ejbca.core.model.SecConst,
                  org.cesecore.authorization.AuthorizationDeniedException, org.cesecore.util.CertTools, org.cesecore.certificates.certificate.CertificateConstants,
                  org.cesecore.authorization.control.StandardRules, org.ejbca.core.model.authorization.AccessRulesConstants" %>
@@ -560,6 +560,24 @@ function confirmrepublish(){
              %></td>
        </tr>
        
+       <tr id="Row<%=(row++)%2%>">
+         <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_PKIX_AUTHORITYINFOACCESS") %></td>
+         <td><% StringBuilder builder = new StringBuilder();
+         		final List<String> aiaOcspServiceLocators = certificatedata.getAuthorityInformationAccessOcspUrls();
+         		if (null != aiaOcspServiceLocators && aiaOcspServiceLocators.size() > 0) {
+         			builder.append( ejbcawebbean.getText("EXT_PKIX_AIA_OCSP_URI")).append( ":").append("<br/>&nbsp;").append( String.join( "<br/>&nbsp;", aiaOcspServiceLocators)).append( "<br/>");
+         		}
+                final List<String> aiaCaIssuerUris = certificatedata.getAuthorityInformationAccessCaIssuerUris();
+                if (null != aiaCaIssuerUris && aiaCaIssuerUris.size() > 0) {
+                	builder.append( ejbcawebbean.getText("EXT_PKIX_AIA_CAISSUERS_URI")).append( ":").append( "<br/>&nbsp;").append( String.join( "<br/>&nbsp;", aiaCaIssuerUris));
+                }
+                if (builder.length() > 0) {
+                	out.write(builder.toString());
+                } else {
+                	out.write(ejbcawebbean.getText("NO"));
+                }
+             %></td>
+       </tr>
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_ABBR_QCSTATEMENTS") %></td>
 		 <td><% if (certificatedata.hasQcStatement()) {

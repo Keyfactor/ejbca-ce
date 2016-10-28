@@ -517,6 +517,11 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         redirectToComponent("header_x509v3extensions_valdata");
     }
     
+    public void toggleUseDefaultCAIssuer() throws AuthorizationDeniedException, IOException {
+        getCertificateProfile().setUseDefaultCAIssuer(!getCertificateProfile().getUseDefaultCAIssuer());
+        redirectToComponent("header_x509v3extensions_valdata");
+    }
+    
     public void toggleUseDefaultOCSPServiceLocator() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseDefaultOCSPServiceLocator(!getCertificateProfile().getUseDefaultOCSPServiceLocator());
         redirectToComponent("header_x509v3extensions_valdata");
