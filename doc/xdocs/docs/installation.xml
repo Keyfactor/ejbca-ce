@@ -1327,8 +1327,6 @@ The default transaction timout is 300 seconds. To change this to 600 seconds, ru
 <source>
 /subsystem=transactions/:write-attribute(name=default-timeout,value=600)
 </source>
-<source>
-</source>
 </subsection>
 </section>
 
