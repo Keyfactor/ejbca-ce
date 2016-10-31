@@ -21,6 +21,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -31,6 +32,7 @@ import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.time.TrustedTime;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.QueryResultWrapper;
 
 /**
  * An alternative implementation of the SecurityEventsLogger interface. It handles the creation of a signed log for an event.
@@ -63,8 +65,21 @@ public class IntegrityProtectedLoggerSessionBean implements IntegrityProtectedLo
             log.trace(String.format(">log:%s:%s:%s:%s:%s:%s", eventType, eventStatus, module, service, authToken, additionalDetails));
         }
         try {
-            final String nodeId = CesecoreConfiguration.getNodeIdentifier();
-            final Long sequenceNumber = NodeSequenceHolder.INSTANCE.getNext(entityManager, nodeId);
+            final Long sequenceNumber = NodeSequenceHolder.INSTANCE.getNext(new NodeSequenceHolder.OnInitCallBack() {
+                @Override
+                public String getNodeId() {
+                    return CesecoreConfiguration.getNodeIdentifier();
+                }
+                @Override
+                public long getMaxSequenceNumberForNode(final String nodeId) {
+                    // Get the latest sequenceNumber from last run from the database..
+                    final Query query = entityManager.createQuery("SELECT MAX(a.sequenceNumber) FROM AuditRecordData a WHERE a.nodeId=:nodeId");
+                    query.setParameter("nodeId", nodeId);
+                    return QueryResultWrapper.getSingleResult(query, Long.valueOf(-1)).longValue();
+                }
+            });
+            // Make sure to use the Node Identifier that this log sequence was initialized with (for example hostnames reported by the system could change)
+            final String nodeId = NodeSequenceHolder.INSTANCE.getNodeId();
             final Long timeStamp = Long.valueOf(trustedTime.getTime().getTime());
             final AuditRecordData auditRecordData = new AuditRecordData(nodeId, sequenceNumber, timeStamp, eventType, eventStatus, authToken,
                     service, module, customId, searchDetail1, searchDetail2, additionalDetails);
