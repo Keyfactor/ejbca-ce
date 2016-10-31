@@ -2116,7 +2116,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (log.isTraceEnabled()) {
             log.trace(">checkForCAId()");
         }
-        return UserData.countByCaId(entityManager, caid) > 0;
+        final long count = UserData.countByCaId(entityManager, caid);
+        if (count > 0) {
+            if (log.isDebugEnabled()) {
+                log.debug("CA exists in end entities: " + count);
+            }
+        }
+        return count > 0;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
