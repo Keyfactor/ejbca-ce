@@ -23,6 +23,7 @@ import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
@@ -99,6 +100,7 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -684,15 +686,19 @@ public class CAInterfaceBean implements Serializable {
             description = "";
 	    }
 
-        final long validity;
-        if (buttonMakeRequest) {
-            validity = 0; // not applicable
-        } else {
-            validity = ValidityDate.encode(validityString);
-    	    if (validity<0) {
-    	        throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
-    	    }
-        }
+	    if (buttonMakeRequest) {
+	        validityString = "0d"; // not applicable
+	    } else {
+	        // Fixed end dates are not limited.
+	        try {
+	            ValidityDate.parseAsIso8601(validityString);
+	        } catch(ParseException e ) {
+	            final long millis = SimpleTime.parseMillies(validityString);
+                if (millis < 0) {
+                    throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+                }
+	        }
+	    }
 
 	    if (catoken != null && catype != 0 && subjectdn != null && caName != null && signedby != 0) {
 	        // Approvals is generic for all types of CAs
@@ -746,7 +752,7 @@ public class CAInterfaceBean implements Serializable {
 	                if (buttonCreateCa) {
 	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceCmsActive);
 	                    X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
-	                            certprofileid, validity, 
+	                            certprofileid, validityString, 
 	                            null, catype, signedby,
 	                            null, catoken, description, -1, null,
 	                            policies, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
@@ -792,7 +798,7 @@ public class CAInterfaceBean implements Serializable {
 	                if (buttonMakeRequest) {
 	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceCmsActive);
 	                    X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
-	                            certprofileid, validity,
+	                            certprofileid, validityString,
 	                            null, catype, CAInfo.SIGNEDBYEXTERNALCA,
 	                            null, catoken, description, -1, null, 
 	                            policies, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
@@ -843,7 +849,7 @@ public class CAInterfaceBean implements Serializable {
 	                }
 	                // Create the CAInfo to be used for either generating the whole CA or making a request
 	                CVCCAInfo cvccainfo = new CVCCAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(),
-	                        certprofileid, validity, 
+	                        certprofileid, validityString, 
 	                        null, catype, signedby,
 	                        null, catoken, description, -1, null,
 	                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
@@ -981,14 +987,19 @@ public class CAInterfaceBean implements Serializable {
             description = "";
         }
         final int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
-        final long validity;
-        if (validityString == null && signedby == CAInfo.SIGNEDBYEXTERNALCA) {
+        if (StringUtils.isBlank(validityString) && signedby == CAInfo.SIGNEDBYEXTERNALCA) {
             // A validityString of null is allowed, when using a validity is not applicable
-            validity = 0;
+            validityString = "0d";
         } else {
-            validity = ValidityDate.encode(validityString);
-            if (validity<0) {
-                throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+            try {
+                // Fixed dates are not limited.
+                ValidityDate.parseAsIso8601(validityString);
+            } catch(ParseException e) {
+             // no negative relative times allowed.
+                final long millis = SimpleTime.parseMillies(validityString);
+                if (millis < 0) {
+                    throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+                }
             }
         }
         if (caid != 0  && catype !=0) {
@@ -1024,7 +1035,7 @@ public class CAInterfaceBean implements Serializable {
                extendedcaservices.add(new CmsCAServiceInfo(cmsactive, false)); 
                // No need to add the HardTokenEncrypt or Keyrecovery extended service here, because they are only "updated" in EditCA, and there
                // is not need to update them.
-               cainfo = new X509CAInfo(caid, validity,
+               cainfo = new X509CAInfo(caid, validityString,
                        catoken, description, 
                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
                        useauthoritykeyidentifier, 
@@ -1061,7 +1072,7 @@ public class CAInterfaceBean implements Serializable {
                // A CVC CA does not have any of the external services OCSP, CMS
                final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
                // Create the CAInfo to be used for either generating the whole CA or making a request
-               cainfo = new CVCCAInfo(caid, validity, 
+               cainfo = new CVCCAInfo(caid, validityString, 
                        catoken, description,
                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
                        finishUser, extendedcaservices,

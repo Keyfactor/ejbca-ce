@@ -289,7 +289,7 @@ public class CrlCreateSessionTest {
             // Create sub ca
             final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(authenticationToken, subcaname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            X509CAInfo subcainfo = new X509CAInfo(subcadn, subcaname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 365, CAInfo.SIGNEDBYEXTERNALCA, null, catoken);
+            X509CAInfo subcainfo = new X509CAInfo(subcadn, subcaname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "365d", CAInfo.SIGNEDBYEXTERNALCA, null, catoken);
             X509CA subca = new X509CA(subcainfo);
             subca.setCAToken(catoken);
             caSession.addCA(authenticationToken, subca);

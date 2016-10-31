@@ -11,12 +11,10 @@
 				org.cesecore.certificates.util.DNFieldExtractor, org.cesecore.certificates.util.DnComponents, 
 				org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory, 
 				org.cesecore.certificates.certificateprofile.CertificatePolicy,
-                org.cesecore.certificates.ca.CAInfo, org.cesecore.util.ValidityDate, org.ejbca.ui.web.ParameterException, 
+                org.cesecore.certificates.ca.CAInfo, org.ejbca.ui.web.ParameterException, 
                 org.cesecore.certificates.util.AlgorithmConstants, org.cesecore.certificates.certificate.CertificateConstants, 
                 org.ejbca.core.model.authorization.AccessRulesConstants,org.ejbca.config.CmpConfiguration, org.ejbca.core.model.ra.UsernameGeneratorParams,
                 org.cesecore.authorization.control.StandardRules"%>
-                
-<%@page import="org.cesecore.util.YearMonthDayTime"%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
