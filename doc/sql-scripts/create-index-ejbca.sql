@@ -10,6 +10,8 @@ CREATE INDEX auditrecorddata_idx3 ON AuditRecordData (timeStamp);
 
 -- unique to ensure that no two CRLs with the same CRLnumber from the same issuer is created
 CREATE UNIQUE INDEX crldata_idx3 ON CRLData (cRLNumber, issuerDN);
+-- Index to ensure CRL generation is not slowed down when looking for the next CRL Number, even of you have hundreds of thounsand of old CRL in the DB
+CREATE INDEX crldata_idx4 ON CRLData (issuerDN,deltaCRLIndicator,crlNumber);
 
 -- unique to ensure that no two CAs with the same name is created, since EJBCA code assumes that name is unique
 CREATE UNIQUE INDEX cadata_idx1 ON CAData (name);
