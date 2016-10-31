@@ -222,12 +222,13 @@ function checkfieldforgender(thetextfield, alerttext) {
   
 }
 
-/** Verify that the field is of format '*d *h *m' */
-function checkFieldForSimpleTimeMinutes(thetextfield , alerttext) {
+/** Verify that the field is of format '*y *mo *d' with optional sequence and formulas (+-) accepted. */
+function checkFieldForCrlSimpleTime(thetextfield, alerttext) {
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /^\s*(\d+\s*[dD])?\s*(\d+\s*[hH])?\s*(\d+\s*[mM])?\s*$/;
-  if (re.exec(text)) {
+  re = /\s*(([+-]?\d+)\s*([m][o]|[y]|[d]))\s*/ig;
+  tokens = text.match(re);
+  if (null != tokens && tokens.length > 0 && tokens.join("").valueOf() == text.valueOf()) {
 	  return true;
   }
   alert(alerttext);
@@ -239,18 +240,6 @@ function checkFieldForYearsMonthsDays(thetextfield , alerttext) {
   field = eval(thetextfield);
   var text = new String(field.value);
   re = /^\s*((\d+\s*[yY])?\s*(\d+\s*[mM][oO])?\s*(\d+\s*[dD])?)\s*$|^\s*[0-9]+\s*$/;
-  if (re.exec(text)) {
-	  return true;
-  }
-  alert(alerttext);
-  return false;
-}
-
-/** Verify that the field is of format '*y *mo *d *h *m' */
-function checkFieldForCombineTime(thetextfield, alerttext) {
-  field = eval(thetextfield);
-  var text = new String(field.value);
-  re = /^\s*(\d+\s*[yY])?\s*(\d+\s*[mM][oO])?\s*(\d+\s*[dD])?\s*(\d+\s*[hH])?\s*(\d+\s*[mM])?\s*$/;
   if (re.exec(text)) {
 	  return true;
   }

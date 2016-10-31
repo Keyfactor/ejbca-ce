@@ -47,7 +47,6 @@ import org.ejbca.core.model.approval.profile.ApprovalProfilesFactory;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.util.CombineTime;
 
 /**
  * JSF MBean backing the approval profile pages.
@@ -159,25 +158,25 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public String getRequestExpirationPeriod() {
-        long milisecs = getApprovalProfile().getRequestExpirationPeriod();
-        CombineTime combTime = CombineTime.getInstance(milisecs);
-        return combTime.toString(SimpleTime.TYPE_DAYS);    
+        final long millis = getApprovalProfile().getRequestExpirationPeriod();
+        final SimpleTime time = SimpleTime.getInstance(millis);
+        return time.toString(SimpleTime.TYPE_DAYS);    
     }
     
     public void setRequestExpirationPeriod(String expirationPeriod) {
-        CombineTime combTime = CombineTime.getInstance(expirationPeriod);
-        getApprovalProfile().setRequestExpirationPeriod(combTime.getLong());
+        final SimpleTime time = SimpleTime.getInstance(expirationPeriod);
+        getApprovalProfile().setRequestExpirationPeriod(time.getLong());
     }
 
     public String getApprovalExpirationPeriod() {
-        long milisecs = getApprovalProfile().getApprovalExpirationPeriod();
-        CombineTime combTime = CombineTime.getInstance(milisecs);
-        return combTime.toString(SimpleTime.TYPE_DAYS);
+        final long millis = getApprovalProfile().getApprovalExpirationPeriod();
+        final SimpleTime time = SimpleTime.getInstance(millis);
+        return time.toString(SimpleTime.TYPE_DAYS);
     }
     
     public void setApprovalExpirationPeriod(String expirationPeriod) {
-        CombineTime combTime = CombineTime.getInstance(expirationPeriod);
-        getApprovalProfile().setApprovalExpirationPeriod(combTime.getLong());
+        final SimpleTime time = SimpleTime.getInstance(expirationPeriod);
+        getApprovalProfile().setApprovalExpirationPeriod(time.getLong());
     }
     
     @SuppressWarnings("unchecked")

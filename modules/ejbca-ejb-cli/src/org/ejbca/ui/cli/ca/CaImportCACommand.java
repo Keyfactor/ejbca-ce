@@ -124,7 +124,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
             }
             String p12file = parameters.get(P12_FILE_KEY);
             if(p12file == null) {
-                log.error("P12 file needs to be specified for soft keys.");
+                log.error("P12 file needs to be specified for soft keys, use "+P12_FILE_KEY+" switch.");
                 return CommandResult.CLI_FAILURE;
             }
             String alias = parameters.get(SIGNATURE_ALIAS_KEY);

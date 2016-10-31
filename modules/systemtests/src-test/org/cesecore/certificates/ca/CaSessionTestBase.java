@@ -172,10 +172,10 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         CryptoToken cryptoToken1 = cryptoTokenManagementProxySession.getCryptoToken(ca1.getCAToken().getCryptoTokenId());
         final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
                 globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-        Certificate usercert1 = ca1.generateCertificate(cryptoToken1, user, keypair.getPublic(), 0, null, 10L, cp, "00000", cceConfig);
+        Certificate usercert1 = ca1.generateCertificate(cryptoToken1, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
         assertEquals("CN=User", CertTools.getSubjectDN(usercert1));
         CryptoToken cryptoToken2 = cryptoTokenManagementProxySession.getCryptoToken(ca2.getCAToken().getCryptoTokenId());
-        Certificate usercert2 = ca2.generateCertificate(cryptoToken2, user, keypair.getPublic(), 0, null, 10L, cp, "00000", cceConfig);
+        Certificate usercert2 = ca2.generateCertificate(cryptoToken2, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
         assertEquals("CN=User", CertTools.getSubjectDN(usercert2));
         
 
@@ -230,7 +230,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertEquals("SE002", ca.getCAInfo().getCAToken().getKeySequence());
 
         // Test edit using a new "edit" CAInfo
-        X509CAInfo newinfo = new X509CAInfo(cainfo.getCAId(), cainfo.getValidity(), cainfo.getCAToken(), "new description", 
+        X509CAInfo newinfo = new X509CAInfo(cainfo.getCAId(), cainfo.getEncodedValidity(), cainfo.getCAToken(), "new description", 
         		cainfo.getCRLPeriod(), cainfo.getCRLIssueInterval(), cainfo.getCRLOverlapTime(), cainfo.getDeltaCRLPeriod(), 
         		cainfo.getCRLPublishers(), true, false, true, false, null, null, null, null, null, null, null, null, cainfo.getFinishUser(), 
         		cainfo.getExtendedCAServiceInfos(), true, cainfo.getApprovalSettings(), cainfo.getApprovalProfile(), false, true, 

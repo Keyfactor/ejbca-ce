@@ -655,11 +655,11 @@ public class ProtocolScepHttpTest {
             final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, ROLLOVER_SUB_CA, "1024");
             final CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             X509CAInfo cainfo = new X509CAInfo(ROLLOVER_SUB_CA_DN, ROLLOVER_SUB_CA, CAConstants.CA_ACTIVE,
-                        CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 1000, CAInfo.SIGNEDBYEXTERNALCA, null, caToken);
+                        CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "1000d", CAInfo.SIGNEDBYEXTERNALCA, null, caToken);
             cainfo.setDescription("JUnit Test Sub CA for SCEP GetNextCACert test");
             cainfo.setSignedBy(x509ca.getCAId());
             cainfo.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
-            cainfo.setValidity(14L*24L*3600L*1000L);
+            cainfo.setEncodedValidity("14d");
             cainfo.setDoEnforceUniqueDistinguishedName(false);
             if (caSession.existsCa(ROLLOVER_SUB_CA)) {
                 caSession.removeCA(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getCAId());
@@ -683,7 +683,7 @@ public class ProtocolScepHttpTest {
             final byte[] requestbytes = caAdminSession.makeRequest(admin, subCAId, null, null);
             final CertificateProfile certProf = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             certProf.setAllowValidityOverride(true);
-            certProf.setValidity(14L*24L*3600L*1000L);
+            certProf.setEncodedValidity("14d");
             final int certProfId = certificateProfileSession.addCertificateProfile(admin, "TestScepCARollover", certProf);
             final EndEntityInformation endentity = new EndEntityInformation("TestScepCARollover", ROLLOVER_SUB_CA_DN, x509ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
                     certProfId, EndEntityConstants.TOKEN_USERGEN, 0, null);

@@ -800,7 +800,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         certificateProfileSession.removeCertificateProfile(internalAdmin, validityOverrideProfileName);
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certprof.setAllowValidityOverride(false);
-        certprof.setValidity(298);
+        certprof.setEncodedValidity("298d");
         certprof.setUseCardNumber(true);
         certificateProfileSession.addCertificateProfile(internalAdmin, validityOverrideProfileName, certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId(validityOverrideProfileName);
@@ -850,7 +850,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             // Change so that we allow override of validity time
             CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
             prof.setAllowValidityOverride(true);
-            prof.setValidity(3065);
+            prof.setEncodedValidity("3065d");
             prof.setUseCardNumber(false);
             certificateProfileSession.changeCertificateProfile(internalAdmin, validityOverrideProfileName, prof);
             cal = Calendar.getInstance();
@@ -889,7 +889,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             try { Thread.sleep(5); }
             catch (InterruptedException ie) { throw new IllegalStateException(ie); }
             prof = certificateProfileSession.getCertificateProfile(cprofile);
-            prof.setValidity(50);
+            prof.setEncodedValidity("50d");
             certificateProfileSession.changeCertificateProfile(internalAdmin, validityOverrideProfileName, prof);
             notBefore = Calendar.getInstance();
             notBefore.add(Calendar.DAY_OF_MONTH, -2);
@@ -1167,7 +1167,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Default profile does not allow Extension override
-        certprof.setValidity(298);
+        certprof.setEncodedValidity("298d");
         certificateProfileSession.addCertificateProfile(internalAdmin, profileName, certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId(profileName);
         // Create a good end entity profile (good enough), allowing multiple UPN
@@ -1342,7 +1342,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTDNOVERRIDE");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Default profile does not allow DN override
-        certprof.setValidity(298);
+        certprof.setEncodedValidity("298d");
         certificateProfileSession.addCertificateProfile(internalAdmin, "TESTDNOVERRIDE", certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId("TESTDNOVERRIDE");
         // Create a good end entity profile (good enough), allowing multiple UPN

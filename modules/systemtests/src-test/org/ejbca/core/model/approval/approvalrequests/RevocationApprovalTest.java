@@ -259,7 +259,7 @@ public class RevocationApprovalTest extends CaTestCase {
         ArrayList<Integer> approvalSettings = new ArrayList<Integer>();
         approvalSettings.add(approvalRequirementType);
         X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, CAConstants.CA_ACTIVE, 
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d",
                 CAInfo.SELFSIGNED, null, caToken);
         cainfo.setExpireTime(new Date(System.currentTimeMillis() + 364 * 24 * 3600 * 1000));
         cainfo.setApprovalProfile(approvalProfileId);

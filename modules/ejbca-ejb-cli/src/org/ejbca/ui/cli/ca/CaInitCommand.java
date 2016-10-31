@@ -250,7 +250,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         }
         final String keyspec = parameters.get(KEY_SPEC_KEY);
         final String keytype = parameters.get(KEY_TYPE_KEY);
-        final long validity = Long.parseLong(parameters.get(VALIDITY_KEY));
+        final String encodedValidity = Long.parseLong(parameters.get(VALIDITY_KEY)) + SimpleTime.TYPE_DAYS;
         String policyId = parameters.get(POLICY_ID_KEY);
         final ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
         if ((policyId != null) && (policyId.toLowerCase().trim().equals("null"))) {
@@ -365,7 +365,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         getLogger().info("CA token password: " + (catokenpassword == null ? "null" : "hidden"));
         getLogger().info("Keytype: " + keytype);
         getLogger().info("Keyspec: " + keyspec);
-        getLogger().info("Validity (days): " + validity);
+        getLogger().info("Validity: " + encodedValidity);
         getLogger().info("Policy ID: " + policyId);
         getLogger().info("Signature alg: " + signAlg);
         getLogger().info("Certificate profile: " + profileName);
@@ -536,7 +536,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                         caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_ALPHANUMERIC);
                     }
                 }
-                cainfo = createCVCCAInfo(dn, caname, certificateProfileId, validity, signedByCAId, caToken);
+                cainfo = createCVCCAInfo(dn, caname, certificateProfileId, encodedValidity, signedByCAId, caToken);
                 break;
             case X509:
                 //Default, slip below.
@@ -555,7 +555,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                         extendedServiceKeySpec, keytype));
                 extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
                 extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-                cainfo = createX509CaInfo(dn, caname, certificateProfileId, validity, signedByCAId, caToken, policies, extendedcaservices);
+                cainfo = createX509CaInfo(dn, caname, certificateProfileId, encodedValidity, signedByCAId, caToken, policies, extendedcaservices);
                 break;
             }
             getLogger().info("Creating CA...");
@@ -639,9 +639,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
         return "init";
     }
 
-    private CAInfo createX509CaInfo(String dn, String caname, int certificateProfileId, long validity, int signedByCAId, CAToken catokeninfo,
+    private CAInfo createX509CaInfo(String dn, String caname, int certificateProfileId, String validityString, int signedByCAId, CAToken catokeninfo,
             List<CertificatePolicy> policies, List<ExtendedCAServiceInfo> extendedcaservices) {
-        X509CAInfo cainfo = new X509CAInfo(dn, caname, CAConstants.CA_ACTIVE, certificateProfileId, validity,                                             
+        X509CAInfo cainfo = new X509CAInfo(dn, caname, CAConstants.CA_ACTIVE, certificateProfileId, validityString,                                             
                 signedByCAId, new ArrayList<Certificate>(), catokeninfo);
         cainfo.setDescription(caname + "created using CLI");
         cainfo.setCertificateChain(new ArrayList<Certificate>());
@@ -651,9 +651,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
         return cainfo;
     }
 
-    private CAInfo createCVCCAInfo(String dn, String caname, int certificateProfileId, long validity, int signedByCa, CAToken catokeninfo) {
+    private CAInfo createCVCCAInfo(String dn, String caname, int certificateProfileId, String validityString, int signedByCa, CAToken catokeninfo) {
         CVCCAInfo cainfo = new CVCCAInfo(dn, caname, CAConstants.CA_ACTIVE,
-                certificateProfileId, validity, signedByCa, new ArrayList<Certificate>(), catokeninfo);
+                certificateProfileId, validityString, signedByCa, new ArrayList<Certificate>(), catokeninfo);
         cainfo.setDescription("Initial CA");
         return cainfo;
     }

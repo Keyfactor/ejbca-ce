@@ -15,6 +15,7 @@ package org.ejbca.ra;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.util.ValidityDate;
@@ -47,7 +48,12 @@ public class RaRequestPreview {
         if(certificateProfile == null){
             return;
         }
-        validity = ValidityDate.getString(certificateProfile.getValidity());
+        final String encodedValidity = certificateProfile.getEncodedValidity();
+        if (StringUtils.isNotBlank(encodedValidity)) {
+            validity = encodedValidity;
+        } else {
+            validity = ValidityDate.getStringBeforeVersion661(certificateProfile.getValidity());
+        }
         keyUsages.clear();
         final boolean[] keyUsageArray = certificateProfile.getKeyUsage();
         for (int i=0; i<keyUsageArray.length; i++) {

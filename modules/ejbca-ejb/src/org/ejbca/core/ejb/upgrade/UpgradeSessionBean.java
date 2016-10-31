@@ -93,6 +93,7 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.JBossUnmarshaller;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -442,6 +443,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("6.3.2");
         }
+        if (isLesserThan(oldVersion, "6.6.1")) {
+            if (!postMigrateDatabase661()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("6.6.1");
+        }
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -450,7 +457,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "6.3.2");
+        return isLesserThan(getLastPostUpgradedToVersion(), "6.6.1");
     }
 
     /**
@@ -1200,6 +1207,77 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
         }
         return true;
+    }
+    
+    /**
+    * EJBCA 6.6.1 enables relative times for CA or certificate profile validity with years, months, days, hours, minutes and seconds. 
+    * This method initializes the new blank validity fields 'encodedValidity' (set in the upgrade methods of X509CA, CVCCA and 
+    * CertificateProfile). If a new validity field is not blank anymore, it MUST have been set by the user in AdminGUI during the 
+    * upgrade or this method was called more than one time! If a new validity field of a CA or a certificate profile 
+    * is not blank anymore, this value will be used and the one of the old field named 'validity' will be ignored! 
+    * 
+    * @see org.cesecore.certificates.ca.CA#getValidity()
+    * @see org.cesecore.certificates.ca.CA#getEncodedValidity()
+    * @see org.cesecore.certificates.ca.CA#setEncodedValidity()
+    * @see org.cesecore.certificates.ca.X509CA#upgrade()
+    * @see org.cesecore.certificates.ca.CvCCA#upgrade()
+    * @see org.cesecore.certificates.certificateprofile.CertificateProfile#getValidity()
+    * @see org.cesecore.certificates.certificateprofile.CertificateProfile#getEncodedValidity()
+    * @see org.cesecore.certificates.certificateprofile.CertificateProfile#upgrade()
+    * @return true if the upgrade was successful.
+    */
+    @SuppressWarnings("deprecation")
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public boolean postMigrateDatabase661() {
+        log.error("(this is not an error) Starting post upgrade to 6.6.1");
+        boolean success = true;
+        
+        log.info("ECA-5141: Upgrading CA's validities ...");
+        CA ca = null; 
+        String encodedValidity = null;
+        long validity = -1;
+        String name = null;
+        for (int caId : caSession.getAllCaIds()) {
+            try {
+                ca = caSession.getCAForEdit(authenticationToken, caId);
+                encodedValidity = ca.getEncodedValidity();
+                name = ca.getName();
+                if (StringUtils.isBlank(encodedValidity)) { // see X509CA.upgrade and CVCCA.upgrade
+                    validity = ca.getValidity();
+                    encodedValidity = ValidityDate.getStringBeforeVersion661(validity * 24 * 60 * 60 * 1000);
+                    ca.setEncodedValidity(encodedValidity);
+                    caSession.editCA(authenticationToken, ca, true);
+                    log.info("ECA-5141: Encoded validity of CA " + name + " with value " + encodedValidity + " was stored (old validity was " + validity + ").");
+                }              
+            } catch (Exception e) {
+                log.error("ECA-5141: Encoded validity of CA " + name + " could not be stored (old validity was " + validity + ". Upgrade failed!", e);
+                success = false;
+            }
+        }
+        
+        log.info("ECA-5141: Upgrading certificate profiles validities ...");
+        final Map<Integer, CertificateProfile> profiles = certProfileSession.getAllCertificateProfiles();
+        CertificateProfile profile = null;
+        for (Integer id: profiles.keySet()) {
+            profile = profiles.get(id);
+            encodedValidity = profile.getEncodedValidity();
+            if (StringUtils.isBlank(encodedValidity)) { // see CertificateProfile.upgrade
+                try {
+                    validity = profile.getValidity();
+                    encodedValidity = ValidityDate.getStringBeforeVersion661(validity * 24 * 60 * 60 * 1000);
+                    profile.setEncodedValidity(encodedValidity);
+                    name = certProfileSession.getCertificateProfileName(id);
+                    certProfileSession.changeCertificateProfile(authenticationToken, name, profile);
+                    log.info("ECA-5141: Encoded validity of certificate profile " + name + " with value " + encodedValidity + " was stored (old validity was " + validity + ").");
+                } catch(Exception e) {
+                    log.error("ECA-5141: Encoded validity of certificate profile " + name + " could not be stored (old validity was " + validity + ". Upgrade failed!");
+                    success = false;
+                }
+            }
+        }
+        
+        log.error("(This is not an error) Completed upgrade procedure to 6.6.1");
+        return success;
     }
     
     /**
