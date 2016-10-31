@@ -42,6 +42,7 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -576,7 +577,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         if (log.isDebugEnabled()) {
             log.debug("addTimer: " + timerId+", "+intervalInSeconds);
         }
-        return timerService.createTimer(intervalInSeconds*1000, timerId);
+        return timerService.createSingleActionTimer(intervalInSeconds*1000, new TimerConfig(timerId, false));
     }
 
     /**

@@ -36,6 +36,7 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -800,7 +801,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         if (log.isDebugEnabled()) {
             log.debug("addTimer: " + id);
         }
-        return timerService.createTimer(interval, id);
+        return timerService.createSingleActionTimer(interval, new TimerConfig(id, false));
     }
 
     /**

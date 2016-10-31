@@ -39,6 +39,7 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -1564,7 +1565,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             // Schedule a new timer of this type
             final long interval = OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
             if (interval > 0) {
-                timerService.createTimer(interval, Integer.valueOf(TIMERID_CACERTIFICATECACHE));
+                timerService.createSingleActionTimer(interval, new TimerConfig(Integer.valueOf(TIMERID_CACERTIFICATECACHE), false));
             }
         }
     }
