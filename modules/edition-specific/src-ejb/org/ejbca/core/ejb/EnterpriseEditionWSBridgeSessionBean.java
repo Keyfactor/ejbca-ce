@@ -43,7 +43,7 @@ public class EnterpriseEditionWSBridgeSessionBean implements EnterpriseEditionWS
     }
 
     @Override
-    public void createCA(AuthenticationToken admin, String caname, String cadn, String catype, long validityInDays, String certprofile, 
+    public void createCA(AuthenticationToken admin, String caname, String cadn, String catype, String encodedValidity, String certprofile, 
             String signAlg, int signedByCAId, String cryptoTokenName, List<KeyValuePair> purposeKeyMapping, List<KeyValuePair> caProperties) 
             throws UnsupportedMethodException {
         throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");   

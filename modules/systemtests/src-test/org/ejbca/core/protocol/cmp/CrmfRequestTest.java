@@ -562,7 +562,7 @@ public class CrmfRequestTest extends CmpTestCase {
             String caname = CertTools.getPartFromDN(subcaDN, "CN");
             boolean ldapOrder = !CertTools.isDNReversed(subcaDN);
             X509CAInfo cainfo = new X509CAInfo(subcaDN, caname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA,
-                    3650, this.caid, this.testx509ca.getCertificateChain(), catoken);
+                    "3650d", this.caid, this.testx509ca.getCertificateChain(), catoken);
             cainfo.setDescription("JUnit RSA SubCA");
             cainfo.setExtendedCAServiceInfos(extendedCaServices);
             cainfo.setUseLdapDnOrder(ldapOrder);

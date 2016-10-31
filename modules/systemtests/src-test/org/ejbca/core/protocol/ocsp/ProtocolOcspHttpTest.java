@@ -1666,7 +1666,7 @@ Content-Type: text/html; charset=iso-8859-1
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
             X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, CAInfo.SELFSIGNED, null, catoken);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
             cainfo.setDescription("JUnit ECDSA CA");
             cainfo.setPolicies(policies);
             cainfo.setExtendedCAServiceInfos(extendedcaservices);
@@ -1735,7 +1735,7 @@ Content-Type: text/html; charset=iso-8859-1
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
             X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, CAInfo.SELFSIGNED, null, catoken);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
             cainfo.setDescription("JUnit DSA CA");
             cainfo.setPolicies(policies);
             caAdminSession.createCA(admin, cainfo);
@@ -1774,7 +1774,7 @@ Content-Type: text/html; charset=iso-8859-1
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
             
             X509CAInfo cainfo = new X509CAInfo(subcaDN, subcaDN, CAConstants.CA_ACTIVE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 365, signbyID, null, catoken);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "365d", signbyID, null, catoken);
             cainfo.setDescription("JUnit DSA CA");
             cainfo.setPolicies(policies);
             cainfo.setExtendedCAServiceInfos(extendedcaservices);    

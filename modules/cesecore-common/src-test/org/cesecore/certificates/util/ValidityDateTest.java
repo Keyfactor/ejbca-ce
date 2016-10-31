@@ -43,98 +43,113 @@ public class ValidityDateTest {
     }
     
     @Test
-    public void testEncodeRelative() {
-        LOG.trace(">testEncodeRelative");
+    @Deprecated
+    public void testEncodeRelativeBeforePostUpdateOfVersion661() {
+        LOG.trace(">testEncodeRelativeBeforePostUpdateOfVersion661");
         final long ERROR_CODE = -1;
-        encodeInternal(RELATIVE, "0", ERROR_CODE);
-        encodeInternal(RELATIVE, "0d", 0);
-        encodeInternal(RELATIVE, "-1d", ERROR_CODE);
-        encodeInternal(RELATIVE, "1d", 1);
-        encodeInternal(RELATIVE, "1d1h1m", ERROR_CODE);
-        encodeInternal(RELATIVE, "0y0m1d", ERROR_CODE);
-        encodeInternal(RELATIVE, "0y0mo1d", 1);
-        LOG.trace("<testEncodeRelative");
+        encodeBeforePostUpdateOfVersion661(RELATIVE, "0", ERROR_CODE);
+        encodeBeforePostUpdateOfVersion661(RELATIVE, "0d", ERROR_CODE);
+        encodeBeforePostUpdateOfVersion661(RELATIVE, "-1d", ERROR_CODE);
+        encodeBeforePostUpdateOfVersion661(RELATIVE, "1d", 1);
+        encodeBeforePostUpdateOfVersion661(RELATIVE, "1d1h1m", ERROR_CODE);
+        encodeBeforePostUpdateOfVersion661(RELATIVE, "0y0m1d", ERROR_CODE);
+        encodeBeforePostUpdateOfVersion661(RELATIVE, "0y0mo1d", 1);
+        encodeBeforePostUpdateOfVersion661(RELATIVE, "1d0y0mo", 1);
+        encodeBeforePostUpdateOfVersion661(RELATIVE, "+0y-0mo+1d", 1);
+        encodeBeforePostUpdateOfVersion661(RELATIVE, "ii +0y-0mo+1d", ERROR_CODE);
+        encodeBeforePostUpdateOfVersion661(RELATIVE, "+0y-ii0mo+1d", ERROR_CODE);
+        encodeBeforePostUpdateOfVersion661(RELATIVE, "+0y-0mo+1d ii", ERROR_CODE);
+        LOG.trace("<testEncodeRelativeBeforePostUpdateOfVersion661");
     }
     
     @Test
-    public void testEncodeAbsolute() {
-        LOG.trace(">testEncodeAbsolute");
+    @Deprecated
+    public void testEncodeAbsoluteBeforePostUpdateOfVersion661() {
+        LOG.trace(">testEncodeAbsoluteBeforePostUpdateOfVersion661");
         final long ERROR_CODE = -1;
-        encodeInternal(ABSOLUTE, "yyyy-MM-dd HH:mm:ssZZ", ERROR_CODE);
-        encodeInternal(ABSOLUTE, "2011-05-09T16:58:00+00:00", ERROR_CODE);
-        encodeInternal(ABSOLUTE, "2011-05-09 16:58:00+00:00", 1304960280000L);
-        LOG.trace("<testEncodeAbsolute");
+        encodeBeforePostUpdateOfVersion661(ABSOLUTE, "yyyy-MM-dd HH:mm:ssZZ", ERROR_CODE);
+        encodeBeforePostUpdateOfVersion661(ABSOLUTE, "2011-05-09T16:58:00+00:00", ERROR_CODE);
+        encodeBeforePostUpdateOfVersion661(ABSOLUTE, "2011-05-09 16:58:00+00:00", 1304960280000L);
+        LOG.trace("<testEncodeAbsoluteBeforePostUpdateOfVersion661");
     }
-
-    private void encodeInternal(final String type, final String subject, final long result) {
-        Assert.assertEquals("Test of " + type + " date " + subject + " failed.", result, ValidityDate.encode(subject));
+    
+    @Deprecated
+    private void encodeBeforePostUpdateOfVersion661(final String type, final String subject, final long result) {
+        Assert.assertEquals("Test of " + type + " date " + subject + " failed.", result, ValidityDate.encodeBeforeVersion661(subject));
     }
 
     @Test
-    public void testGetString() throws ParseException {
-        LOG.trace(">testGetString");
+    @Deprecated
+    public void testGetStringBeforeVersion661() throws ParseException {
+        LOG.trace(">testGetStringBeforeVersion661");
         // Test relative times (<Integer.MAX_VALUE)
-        getStringInternalRel(0, "0d");
-        getStringInternalRel(1, "1d");
+        getStringInternalRelBeforeVersion661(0, "0d");
+        getStringInternalRelBeforeVersion661(1, "1d");
         // Test absolute time (==Integer.MAX_VALUE)
-        getStringInternalAbs(Integer.MAX_VALUE, "1970-01-25 20:31:23+00:00");
+        getStringInternalAbsBeforeVersion661(Integer.MAX_VALUE, "1970-01-25 20:31:23+00:00");
         // Test absolute times (>Integer.MAX_VALUE)
-        getStringInternalAbs(Long.valueOf(Integer.MAX_VALUE)+1, "1970-01-25 20:31:23+00:00");
-        getStringInternalAbs(1304960280000L, "2011-05-09 16:58:00+00:00");
-        LOG.trace("<testGetString");
+        getStringInternalAbsBeforeVersion661(Long.valueOf(Integer.MAX_VALUE)+1, "1970-01-25 20:31:23+00:00");
+        getStringInternalAbsBeforeVersion661(1304960280000L, "2011-05-09 16:58:00+00:00");
+        LOG.trace("<testGetStringBeforeVersion661");
     }
 
-    private void getStringInternalRel(final long subject, final String result) {
-        Assert.assertEquals("Failed to fetch relative time for " + subject, result, ValidityDate.getString(subject));
+    @Deprecated
+    private void getStringInternalRelBeforeVersion661(final long subject, final String result) {
+        Assert.assertEquals("Failed to fetch relative time for " + subject, result, ValidityDate.getStringBeforeVersion661(subject));
     }
 
-    private void getStringInternalAbs(final long subject, final String result) throws ParseException {
-        Assert.assertEquals("Failed to fetch absolute time for " + subject, ValidityDate.parseAsIso8601(result), ValidityDate.parseAsIso8601(ValidityDate.getString(subject)));
+    @Deprecated
+    private void getStringInternalAbsBeforeVersion661(final long subject, final String result) throws ParseException {
+        Assert.assertEquals("Failed to fetch absolute time for " + subject, ValidityDate.parseAsIso8601(result), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(subject)));
     }
     
     @Test
-    public void testGetDate() {
-        LOG.trace(">testGetDate");
+    @Deprecated
+    public void testGetDateBeforeVersion661() {
+        LOG.trace(">testGetDateBeforeVersion661");
         final Date now = new Date();
         // Test errors (no error handling available in this method)
         //testGetDateInternal(0, null, null);
         //testGetDateInternal(-1, now, null);
         // Test relative times (<Integer.MAX_VALUE)
-        getDateInternal(0, now, now);
-        getDateInternal(1, now, new Date(now.getTime()+24*3600*1000));
+        getDateInternalBeforeVersion661(0, now, now);
+        getDateInternalBeforeVersion661(1, now, new Date(now.getTime()+24*3600*1000));
         // Test absolute time (==Integer.MAX_VALUE)
-        getDateInternal(Integer.MAX_VALUE, now, new Date(Integer.MAX_VALUE));
+        getDateInternalBeforeVersion661(Integer.MAX_VALUE, now, new Date(Integer.MAX_VALUE));
         // Test absolute times (>Integer.MAX_VALUE)
-        getDateInternal(Long.valueOf(Integer.MAX_VALUE)+1, now, new Date(Long.valueOf(Integer.MAX_VALUE)+1));
-        LOG.trace("<testGetDate");
+        getDateInternalBeforeVersion661(Long.valueOf(Integer.MAX_VALUE)+1, now, new Date(Long.valueOf(Integer.MAX_VALUE)+1));
+        LOG.trace("<testGetDateBeforeVersion661");
     }
 
-    private void getDateInternal(final long subjectLEncoded, final Date subjectFromDate, final Date result) {
-        Assert.assertEquals("Failed to fetch date for " + subjectLEncoded + " and " + subjectFromDate, result, ValidityDate.getDate(subjectLEncoded, subjectFromDate));
+    @Deprecated
+    private void getDateInternalBeforeVersion661(final long subjectLEncoded, final Date subjectFromDate, final Date result) {
+        Assert.assertEquals("Failed to fetch date for " + subjectLEncoded + " and " + subjectFromDate, result, ValidityDate.getDateBeforeVersion661(subjectLEncoded, subjectFromDate));
     }
 
     @Test
-    public void testGetEncode() {
-        LOG.trace(">testGetEncode");
+    @Deprecated
+    public void testGetEncodeBeforeVersion661() {
+        LOG.trace(">testGetEncodeBeforeVersion661");
         // Test relative times (<Integer.MAX_VALUE)
-        Assert.assertEquals("", 0, ValidityDate.encode(ValidityDate.getString(0)));
-        Assert.assertEquals("", 1, ValidityDate.encode(ValidityDate.getString(1)));
+        Assert.assertEquals("", -1L, ValidityDate.encodeBeforeVersion661(ValidityDate.getStringBeforeVersion661(0)));
+        Assert.assertEquals("", 1L, ValidityDate.encodeBeforeVersion661(ValidityDate.getStringBeforeVersion661(1)));
         // Test absolute times (>Integer.MAX_VALUE)
         final long nowWithOutSeconds = (new Date().getTime()/60000)*60000;
-        Assert.assertEquals("", nowWithOutSeconds, ValidityDate.encode(ValidityDate.getString(nowWithOutSeconds)));
-        LOG.trace("<testGetEncode");
+        Assert.assertEquals("", nowWithOutSeconds, ValidityDate.encodeBeforeVersion661(ValidityDate.getStringBeforeVersion661(nowWithOutSeconds)));
+        LOG.trace("<testGetEncodeBeforeVersion661");
     }
 
     @Test
-    public void testEncodeGet() throws ParseException {
-        LOG.trace(">testEncodeGet");
-        Assert.assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58:00+00:00"), ValidityDate.parseAsIso8601(ValidityDate.getString(ValidityDate.encode("2011-05-09 16:58:00+00:00"))));
-        Assert.assertEquals("", ValidityDate.parseAsIso8601("1970-01-25 20:32:00+00:00"), ValidityDate.parseAsIso8601(ValidityDate.getString(ValidityDate.encode("1970-01-25 20:32:00+00:00"))));
-        Assert.assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58:12"), ValidityDate.parseAsIso8601(ValidityDate.getString(ValidityDate.encode("2011-05-09 16:58:12"))));
-        Assert.assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58"), ValidityDate.parseAsIso8601(ValidityDate.getString(ValidityDate.encode("2011-05-09 16:58"))));
-        Assert.assertEquals("", ValidityDate.parseAsIso8601("2012-02-29"), ValidityDate.parseAsIso8601(ValidityDate.getString(ValidityDate.encode("2012-02-29"))));
-        Assert.assertEquals("", ValidityDate.parseAsIso8601("2012-02-29").getTime(), ValidityDate.encode("2012-02-29 00:00:00+00:00"));
-        LOG.trace("<testEncodeGet");
+    @Deprecated
+    public void testEncodeGetBeforeVersion661() throws ParseException {
+        LOG.trace(">testEncodeGetBeforeVersion661");
+        Assert.assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58:00+00:00"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("2011-05-09 16:58:00+00:00"))));
+        Assert.assertEquals("", ValidityDate.parseAsIso8601("1970-01-25 20:32:00+00:00"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("1970-01-25 20:32:00+00:00"))));
+        Assert.assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58:12"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("2011-05-09 16:58:12"))));
+        Assert.assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("2011-05-09 16:58"))));
+        Assert.assertEquals("", ValidityDate.parseAsIso8601("2012-02-29"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("2012-02-29"))));
+        Assert.assertEquals("", ValidityDate.parseAsIso8601("2012-02-29").getTime(), ValidityDate.encodeBeforeVersion661("2012-02-29 00:00:00+00:00"));
+        LOG.trace("<testEncodeGetBeforeVersion661");
     }
 
     /** Test the Date the feature was designed for (http://en.wikipedia.org/wiki/Year_2038_problem) */

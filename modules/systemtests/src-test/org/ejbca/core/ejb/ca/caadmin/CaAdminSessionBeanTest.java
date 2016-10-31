@@ -303,7 +303,7 @@ public class CaAdminSessionBeanTest {
             cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_ALIAS_EC, KEY_SPEC_EC);
             final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
             final int certificateProfileId = certificateProfileSession.addCertificateProfile(alwaysAllowToken, TEST_NAME, certificateProfile);
-            final X509CAInfo x509CaInfo = new X509CAInfo("CN="+TEST_NAME, TEST_NAME, CAConstants.CA_ACTIVE, certificateProfileId, 3650, CAInfo.SELFSIGNED, null, caToken);
+            final X509CAInfo x509CaInfo = new X509CAInfo("CN="+TEST_NAME, TEST_NAME, CAConstants.CA_ACTIVE, certificateProfileId, "3650d", CAInfo.SELFSIGNED, null, caToken);
             // Test happy path. RSA 1024 bit key. RSA 1024 allowed by certificate profile.
             testInvalidKeySpecsInternal(true, TEST_NAME, x509CaInfo, new String[] {AlgorithmConstants.KEYALGORITHM_RSA},
                     new String[] {CertificateProfile.ANY_EC_CURVE}, new int[] {1024}, KEY_ALIAS_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);

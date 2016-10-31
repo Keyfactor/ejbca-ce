@@ -554,7 +554,8 @@ public class EjbcaWS implements IEjbcaWS {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    logAdminName(ejbhelper.getAdmin(),logger);
 	    try {
-	        enterpriseWSBridgeSession.createCA(ejbhelper.getAdmin(), caname, cadn, catype, validityInDays, certprofile, 
+	        String encodedValidity = String.valueOf(validityInDays)+"d";
+	        enterpriseWSBridgeSession.createCA(ejbhelper.getAdmin(), caname, cadn, catype, encodedValidity, certprofile, 
 	                signAlg, signedByCAId, cryptoTokenName, purposeKeyMapping, caProperties);
 	    } catch (AuthorizationDeniedException e) {
 	        throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);

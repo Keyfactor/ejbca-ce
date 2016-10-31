@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ServiceLoader;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -30,6 +31,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.util.ValidityDate;
 
 
 /**
@@ -49,7 +51,7 @@ public abstract class CvcCA extends CA implements Serializable {
 	private static final InternalResources intres = InternalResources.getInstance();
 
 	/** Version of this class, if this is increased the upgrade() method will be called automatically */
-	public static final float LATEST_VERSION = 3;
+	public static final float LATEST_VERSION = 4;
 
 	/** Creates a new instance of CA, this constructor should be used when a new CA is created */
 	public void init(CVCCAInfo cainfo) {
@@ -106,8 +108,13 @@ public abstract class CvcCA extends CA implements Serializable {
                 }
             }
 		}
+        
+        String encodedValidity = getEncodedValidity();
+        if (StringUtils.isBlank(encodedValidity)) {
+            encodedValidity = ValidityDate.getStringBeforeVersion661(getValidity());
+        }
 		final CVCCAInfo info = new CVCCAInfo(subjectDN, name, status, updateTime, getCertificateProfileId(),  
-				getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
+				encodedValidity, getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
 				getCAToken(), getDescription(), getRevocationReason(), getRevocationDate(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), 
 				getCRLPublishers(), getFinishUser(), externalcaserviceinfos, 
 				getApprovalSettings(), getApprovalProfile(),
@@ -176,6 +183,12 @@ public abstract class CvcCA extends CA implements Serializable {
             	setDeltaCRLPeriod(0L);
             }
 
+            // v4.
+            // 'encodedValidity' MUST set to "" (Empty String) here. The initialization is done during post-upgrade of EJBCA 6.6.1.
+            if(null == data.get(ENCODED_VALIDITY)) {
+                setEncodedValidity(StringUtils.EMPTY);
+            }
+            
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}  
 	}

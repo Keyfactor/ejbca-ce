@@ -321,7 +321,7 @@ public class CAImportExportTest  {
      */
 	private X509CAInfo getNewCAInfo(String caname, CAToken catoken) {
         cainfo = new X509CAInfo("CN="+caname, caname, CAConstants.CA_ACTIVE, 
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, CAInfo.SELFSIGNED, null, catoken);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("Used for testing CA import and export");
         cainfo.setExpireTime(new Date(System.currentTimeMillis()+364*24*3600*1000));
         cainfo.setDeltaCRLPeriod(0 * SimpleTime.MILLISECONDS_PER_HOUR);

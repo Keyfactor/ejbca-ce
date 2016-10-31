@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -77,6 +78,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 
@@ -211,16 +213,13 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
     		certProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT,true);
     		certProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT,true);
     		certProfile.setKeyUsageCritical(true);
-    		final Certificate certificate =
-    			ca.generateCertificate(cryptoToken, new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,new EndEntityType(),0,0, null,null,0,0,null),
-    					cmskeys.getPublic(),
-    					-1, // KeyUsage
-                        null, // Custom not before date
-    					ca.getValidity(),
-    					certProfile, 
-    					null, // sequence
-    					cceConfig // AvailableCustomCertificateExtensionsConfiguration
-    			);
+            String encodedValidity = ca.getEncodedValidity();
+            if (StringUtils.isBlank(encodedValidity)) {
+                encodedValidity = ValidityDate.getStringBeforeVersion661(ca.getValidity());
+            }
+            final EndEntityInformation eeInformation = new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,new EndEntityType(),0,0, null,null,0,0,null);
+            final Certificate certificate = ca.generateCertificate(cryptoToken, eeInformation,
+            		cmskeys.getPublic(), -1, null, encodedValidity, certProfile, null, cceConfig);
     		certificatechain = new ArrayList<Certificate>();
     		certificatechain.add(certificate);
     		certificatechain.addAll(ca.getCertificateChain());

@@ -110,22 +110,68 @@
 		<h:selectOneMenu id="selectsignaturealgorithm" value="#{certProfileBean.signatureAlgorithm}" disabled="#{certProfilesBean.viewOnly}">
 			<f:selectItems value="#{certProfileBean.signatureAlgorithmAvailable}"/>
 		</h:selectOneMenu>
-
+		
+		<%-- Validity --%>
+		
 		<h:panelGroup>
 			<h:outputLabel for="textfieldvalidity" value="#{web.text.CERT_VALIDITY}"/>
-			<h:outputText value=" #{web.text.FORMAT_TIME_YMD} #{web.text.ORENDDATE}"/>
+			<h:outputText value=" #{web.text.FORMAT_TIME_YMODHMS} #{web.text.ORENDDATE}"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText id="textfieldvalidity" value="#{certProfileBean.validity}" title="#{web.text.FORMAT_TIME_YMD} #{web.text.OR} #{web.text.FORMAT_ISO8601}" size="25" maxlength="255"
-				disabled="#{certProfilesBean.viewOnly}"/>
+			<h:inputText id="textfieldvalidity" value="#{certProfileBean.validity}" 
+			    title="#{web.text.FORMAT_TIME_YMODHMS} #{web.text.OR} #{web.text.FORMAT_ISO8601}" size="25" maxlength="255"
+				disabled="#{certProfilesBean.viewOnly}"
+				validatorMessage="#{web.text.INVALIDVALIDITYORCERTEND}">
+				<f:validator validatorId="validityDateValidator"/>
+			</h:inputText>
 			<br/>
 			<h:panelGroup styleClass="help">
 				<h:outputText value="#{web.text.DATE_HELP}"/>
-				<h:outputText value=" #{web.ejbcaWebBean.dateExample}"/>
+				<h:outputText value="#{web.ejbcaWebBean.dateExample}"/></br>
+				<h:outputText value="#{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}"/>
 			</h:panelGroup>
 		</h:panelGroup>
+		
+		<%-- Expiration restriction for weekdays (ECA-5330) --%>
 
+		<h:panelGroup>
+			<h:outputLabel for="checkuseexpirationtrestrictionforweekdaysgroup" value="#{web.text.CERT_EXPRIATION_RESTRICTIONS}"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Expiration%20restrictions") %>
+		</h:panelGroup>	
+		<h:panelGrid columns="1">
+			<h:panelGroup id="checkuseexpirationtrestrictionforweekdaysgroup">
+				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays}" rendered="#{!web.legacyInternetExplorer}"
+					disabled="#{certProfilesBean.viewOnly}"/>				
+				<h:commandButton id="checkuseexpirationtrestrictionforweekdays" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseExpirationRestrictionForWeekdays}"
+					value="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
+					disabled="#{certProfilesBean.viewOnly}"/>
+				<h:outputLabel for="checkuseexpirationtrestrictionforweekdays" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
+			</h:panelGroup>
+			<h:outputLabel for="expirationRestrictionWeekdaysSelection" value="#{web.text.CERT_EXPRIATION_RESTRICTION_FOR_WEEKDAYS}:" rendered="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays}"/>
+			<h:panelGrid id="expirationRestrictionWeekdaysSelection" columns="8" rendered="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays}">
+				<h:selectBooleanCheckbox id="expirationRestrictionMonday" value="#{certProfileBean.expirationRestrictionMonday}" disabled="#{certProfilesBean.viewOnly}"/>
+				<h:outputLabel for="expirationRestrictionMonday" value="#{web.text.DAY_MONDAY}"/>
+				<h:selectBooleanCheckbox id="expirationRestrictionTuesday" value="#{certProfileBean.expirationRestrictionTuesday}" disabled="#{certProfilesBean.viewOnly}"/>
+				<h:outputLabel for="expirationRestrictionTuesday" value="#{web.text.DAY_TUESDAY}"/>
+				<h:selectBooleanCheckbox id="expirationRestrictionWednesday" value="#{certProfileBean.expirationRestrictionWednesday}" disabled="#{certProfilesBean.viewOnly}"/>
+				<h:outputLabel for="expirationRestrictionWednesday" value="#{web.text.DAY_WEDNESDAY}"/>
+				<h:selectBooleanCheckbox id="expirationRestrictionThursday" value="#{certProfileBean.expirationRestrictionThursday}" disabled="#{certProfilesBean.viewOnly}"/>
+				<h:outputLabel for="expirationRestrictionThursday" value="#{web.text.DAY_THURSDAY}"/>
+				<h:selectBooleanCheckbox id="expirationRestrictionFriday" value="#{certProfileBean.expirationRestrictionFriday}" disabled="#{certProfilesBean.viewOnly}"/>
+				<h:outputLabel for="expirationRestrictionFriday" value="#{web.text.DAY_FRIDAY}"/>
+				<h:selectBooleanCheckbox id="expirationRestrictionSaturday" value="#{certProfileBean.expirationRestrictionSaturday}" disabled="#{certProfilesBean.viewOnly}"/>
+				<h:outputLabel for="expirationRestrictionSaturday" value="#{web.text.DAY_SATURDAY}"/>
+				<h:selectBooleanCheckbox id="expirationRestrictionSunday" value="#{certProfileBean.expirationRestrictionSunday}" disabled="#{certProfilesBean.viewOnly}"/>
+				<h:outputLabel for="expirationRestrictionSunday" value="#{web.text.DAY_SUNDAY}"/>
+			</h:panelGrid>
+			<h:panelGroup id="expirationRestrictionWeekdaysBeforeGroup" rendered="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays}">
+			    <h:outputLabel for="expirationRestrictionWeekdaysBefore" value="#{web.text.CERT_EXPRIATION_RESTRICTION_FOR_WEEKDAYS_BUT} "/>
+				<h:selectOneMenu id="expirationRestrictionWeekdaysBefore" value="#{certProfileBean.certificateProfile.expirationRestrictionForWeekdaysExpireBefore}" disabled="#{certProfilesBean.viewOnly}">
+					<f:selectItems value="#{certProfileBean.expirationRestrictionWeekdaysAvailable}"/>
+				</h:selectOneMenu>
+			</h:panelGroup>	
+		</h:panelGrid>
 	</h:panelGrid>
 
 
@@ -663,8 +709,11 @@
 				<h:outputLabel for="cbuseprivkeyusageperiodnotbefore" value="#{web.text.EXT_PKIX_PKUP_STARTOFFSET}…" styleClass="checkBoxOverlay"/>
 			</h:panelGroup>
 			<h:inputText id="textfieldprivkeyusageperiodstartoffset" value="#{certProfileBean.privateKeyUsagePeriodStartOffset}" size="20" maxlength="255"
-				disabled="#{!certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotBefore or certProfilesBean.viewOnly}"/>
-			<h:outputText styleClass="help" value="#{web.text.FORMAT_TIME_YMD}"/>
+				disabled="#{!certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotBefore or certProfilesBean.viewOnly}" 
+				validatorMessage="#{web.text.INVALIDPRIVKEYSTARTOFFSET}">
+				<f:validator validatorId="simpleTimeSecondsValidator" />
+			</h:inputText>
+			<h:outputText styleClass="help" value="#{web.text.FORMAT_TIME_YMODHMS}"/>
 			
 			<h:panelGroup>
 				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotAfter}" 
@@ -675,8 +724,11 @@
 				<h:outputLabel for="cbuseprivkeyusageperiodnotafter" value="#{web.text.EXT_PKIX_PKUP_PERIODLENGTH}…" styleClass="checkBoxOverlay"/>
 			</h:panelGroup>
 			<h:inputText id="textfieldprivkeyusageperiodlength" value="#{certProfileBean.privateKeyUsagePeriodLength}" size="20" maxlength="255"
-				disabled="#{!certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotAfter or certProfilesBean.viewOnly}"/>
-			<h:outputText styleClass="help" value="#{web.text.FORMAT_TIME_YMD}"/>
+				disabled="#{!certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotAfter or certProfilesBean.viewOnly}" 
+				validatorMessage="#{web.text.INVALIDPRIVKEYPERIOD}">
+				<f:validator validatorId="simpleTimeSecondsValidator" />
+			</h:inputText>
+			<h:outputText styleClass="help" value="#{web.text.FORMAT_TIME_YMODHMS}"/>
 		</h:panelGrid>
 
 	</h:panelGrid>

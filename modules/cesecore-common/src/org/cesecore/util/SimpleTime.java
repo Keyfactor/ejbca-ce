@@ -14,6 +14,7 @@
 package org.cesecore.util;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -28,21 +29,47 @@ import org.apache.log4j.Logger;
  */
 public class SimpleTime {
 
+	public static final long MILLISECONDS_PER_YEAR = 31536000000L; // 365 days
+	public static final long MILLISECONDS_PER_MONTH = 2592000000L; // 30 days
     public static final long MILLISECONDS_PER_DAY = 86400000L;
 	public static final long MILLISECONDS_PER_HOUR = 3600000L;
 	public static final long MILLISECONDS_PER_MINUTE = 60000L;
 	public static final long MILLISECONDS_PER_SECOND = 1000L;
 	
+	public static final String TYPE_YEARS = "y";
+	public static final String TYPE_MONTHS = "mo";
 	public static final String TYPE_DAYS = "d";
 	public static final String TYPE_HOURS = "h";
 	public static final String TYPE_MINUTES = "m";
 	public static final String TYPE_SECONDS = "s";
 	public static final String TYPE_MILLISECONDS = "ms";
 	    
-    private static final Logger log = Logger.getLogger(SimpleTime.class);
-    private static final UnitParser unitParser = new UnitParser(Arrays.asList(new String[] {TYPE_DAYS, TYPE_HOURS, TYPE_MINUTES, TYPE_SECONDS, TYPE_MILLISECONDS}));
+	private static final Map<String, Long> MILLISECONDS_FACTOR = new LinkedHashMap<String, Long>();
+	static {
+	    MILLISECONDS_FACTOR.put(TYPE_YEARS, MILLISECONDS_PER_YEAR);
+	    MILLISECONDS_FACTOR.put(TYPE_MONTHS, MILLISECONDS_PER_MONTH);
+	    MILLISECONDS_FACTOR.put(TYPE_DAYS, MILLISECONDS_PER_DAY);
+	    MILLISECONDS_FACTOR.put(TYPE_HOURS, MILLISECONDS_PER_HOUR);
+	    MILLISECONDS_FACTOR.put(TYPE_MINUTES, MILLISECONDS_PER_MINUTE);
+	    MILLISECONDS_FACTOR.put(TYPE_SECONDS, MILLISECONDS_PER_SECOND);
+	    MILLISECONDS_FACTOR.put(TYPE_MILLISECONDS, 1L);
+	}
 	
+    private static final Logger log = Logger.getLogger(SimpleTime.class);
+	
+    private static final TimeUnitFormat DAYS_FORMAT_INSTANCE = new TimeUnitFormat(
+            Arrays.asList(new String[] { TYPE_YEARS, TYPE_MONTHS, TYPE_DAYS }), MILLISECONDS_FACTOR);
+
+    private static final TimeUnitFormat SECONDS_FORMAT_INSTANCE = new TimeUnitFormat(
+            Arrays.asList(new String[] { TYPE_YEARS, TYPE_MONTHS, TYPE_DAYS, TYPE_HOURS, TYPE_MINUTES, TYPE_SECONDS }), MILLISECONDS_FACTOR);
+
+    // ANJAKOBS: Limitation 'ms' (or 'mo') MUST NOT be configured after units containing one of their characters 'm', 's' or 'o'!
+    private static final TimeUnitFormat MILLISECONDS_FORMAT_INSTANCE = new TimeUnitFormat(
+            Arrays.asList(new String[] { TYPE_MILLISECONDS, TYPE_YEARS, TYPE_MONTHS, TYPE_DAYS, TYPE_HOURS, TYPE_MINUTES, TYPE_SECONDS}), MILLISECONDS_FACTOR);
+    
     private long longTime = 0;
+    private long years = 0;
+    private long months = 0;
     private long days = 0;
     private long hours = 0;
     private long minutes = 0;
@@ -53,15 +80,7 @@ public class SimpleTime {
 	 * @param time milliseconds
 	 */
 	private SimpleTime(long time) {
-		longTime = time;
-		days = time / MILLISECONDS_PER_DAY;
-		time %= MILLISECONDS_PER_DAY;
-		hours = time / MILLISECONDS_PER_HOUR;
-		time %= MILLISECONDS_PER_HOUR;
-		minutes = time / MILLISECONDS_PER_MINUTE;
-		time %= MILLISECONDS_PER_MINUTE;
-		seconds = time / MILLISECONDS_PER_SECOND;
-		milliSeconds = time % MILLISECONDS_PER_SECOND;
+	    setTime(time);
 	}
 
 	/**
@@ -69,7 +88,7 @@ public class SimpleTime {
 	 * @throws Exception if unable to parse a String
 	 */
 	private SimpleTime(String time) throws Exception {
-		parse(time);
+	    setTime(parseMillies(time));
 	}
 
 	/**
@@ -81,7 +100,7 @@ public class SimpleTime {
 		if (time == null || time.trim().length()==0) {
 			time = defaultTime;
 		}
-		parse(time);
+		setTime(parseMillies(time));
 	}
 	
 	/**
@@ -123,63 +142,87 @@ public class SimpleTime {
 		}
 		return simpleTime;
 	}
-
+	
 	/**
-	 * Parse string and convert it to usable local variables.
-	 * @param time AdBhCmDsEu meaning A days, B hours, C minutes, D seconds and E milliseconds
-	 * @throws Exception if an parsing error occurs
-	 */
-	private void parse(String time) throws Exception {
-		Map<String, Long> values = unitParser.parse(time);
-		days = (Long) values.get(TYPE_DAYS);
-		hours = (Long) values.get(TYPE_HOURS);
-		minutes = (Long) values.get(TYPE_MINUTES);
-		seconds = (Long) values.get(TYPE_SECONDS);
-		milliSeconds = (Long) values.get(TYPE_MILLISECONDS);
+     * Gets the time unit formatter with the default formatting style for days
+     * (with year(y), months (mo) and days (d)).
+     * 
+     * @return a time unit formatter.
+     */
+    public static final TimeUnitFormat getDaysFormat() {
+        return DAYS_FORMAT_INSTANCE;
+    }
 
-		longTime = days * MILLISECONDS_PER_DAY + hours * MILLISECONDS_PER_HOUR + minutes * MILLISECONDS_PER_MINUTE + seconds * MILLISECONDS_PER_SECOND + milliSeconds;
+    /**
+     * Gets the time unit formatter with the default formatting style for
+     * seconds (with year(y), months (mo), days (d), hours (h), minutes (m) and
+     * seconds (s)).
+     * 
+     * @return a time unit formatter.
+     */
+    public static final TimeUnitFormat getSecondsFormat() {
+        return SECONDS_FORMAT_INSTANCE;
+    }
+
+    /**
+     * Gets the time unit formatter with the default formatting style for
+     * milliseconds (with year(y), months (mo), days (d), hours (h), minutes (m), 
+     * seconds (s) and milliseconds (ms)).
+     * 
+     * @return a time unit formatter.
+     */
+    public static final TimeUnitFormat getMilliSecondsFormat() {
+        return MILLISECONDS_FORMAT_INSTANCE;
+    }
+    
+    public static final String toString(final long millis, final String zeroType) {
+        return SimpleTime.getMilliSecondsFormat().format(millis, MILLISECONDS_FACTOR, zeroType);
+    }
+    
+    public static final long parseMillies(String time) throws NumberFormatException {
+        return SimpleTime.getMilliSecondsFormat().parseMillis(time);
+    }
+	
+	private void setTime(long time) {
+	    longTime = time;
+        years = time / MILLISECONDS_PER_YEAR;
+        time %= MILLISECONDS_PER_YEAR;
+        months = time / MILLISECONDS_PER_MONTH;
+        time %= MILLISECONDS_PER_MONTH;
+        days = time / MILLISECONDS_PER_DAY;
+        time %= MILLISECONDS_PER_DAY;
+        hours = time / MILLISECONDS_PER_HOUR;
+        time %= MILLISECONDS_PER_HOUR;
+        minutes = time / MILLISECONDS_PER_MINUTE;
+        time %= MILLISECONDS_PER_MINUTE;
+        seconds = time / MILLISECONDS_PER_SECOND;
+        time %= MILLISECONDS_PER_SECOND;
+        milliSeconds = time;
 	}
 
 	/** Get the total number of milliseconds for this time (including days, hours etc).*/
 	public long getLong() { return longTime; }
+	public long getYears() { return years; }
+	public long getMonths() { return months; }
 	public long getDays() { return days; }
 	public long getHours() { return hours; }
 	public long getMinutes() { return minutes; }
 	public long getSeconds() { return seconds; }
 	public long getMilliSeconds() { return milliSeconds; }
-	
+
 	/**
-	 * Get nicely formatted form of this object using seconds as default type.
-	 * @return time in the format AdBhCmDsEu meaning A days, B hours, C minutes, D seconds and E milliseconds or "0s" if time is 0.
-	 */
-	public String toString() {
-		return toString(TYPE_SECONDS);
-	}
-	
-	/**
-	 * @param zeroType the type of the returned value if '0'. One of the SimpleType.TYPE_ constants.
-	 * @return time in the format AdBhCmDsEu meaning A days, B hours, C minutes, D seconds and E milliseconds
-	 */
-	public String toString(String zeroType) {
-		String ret = "";
-		if (getDays() != 0) {
-			ret += getDays() + TYPE_DAYS;
-		}
-		if (getHours() != 0) {
-			ret += (ret.length()==0?"":" ") + getHours() + TYPE_HOURS;
-		}
-		if (getMinutes() != 0) {
-			ret += (ret.length()==0?"":" ") + getMinutes() + TYPE_MINUTES;
-		}
-		if (getSeconds() != 0) {
-			ret += (ret.length()==0?"":" ") + getSeconds() + TYPE_SECONDS;
-		}
-		if (getMilliSeconds() != 0) {
-			ret += (ret.length()==0?"":" ") + getMilliSeconds() + TYPE_MILLISECONDS;
-		}
-		if (ret.length()==0) {
-			ret = "0" + zeroType;
-		}
-		return ret;
-	}
+     * Get nicely formatted form of this object using seconds as default type.
+     * @return time in the format AdBhCmDsEu meaning A days, B hours, C minutes, D seconds and E milliseconds or "0s" if time is 0.
+     */
+    public String toString() {
+        return toString(TYPE_SECONDS);
+    }
+    
+    /**
+     * @param zeroType the type of the returned value if '0'. One of the SimpleType.TYPE_ constants.
+     * @return time in the format AdBhCmDsEu meaning A days, B hours, C minutes, D seconds and E milliseconds
+     */
+    public String toString(String zeroType) {
+        return SimpleTime.getMilliSecondsFormat().format(getLong(), MILLISECONDS_FACTOR, zeroType); 
+    }
 }

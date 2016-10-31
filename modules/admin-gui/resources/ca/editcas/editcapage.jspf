@@ -311,18 +311,18 @@ function checkallfields(){
    if(!checkfieldforipaddess("document.ca.<%=TEXTFIELD_POLICYID%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + ejbcawebbean.getText("POLICYID")%>"))
       illegalfields++;
       <% } %>
-    if(!checkFieldForCombineTime("document.ca.<%=TEXTFIELD_CRLPERIOD%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
+    if(!checkFieldForCrlSimpleTime("document.ca.<%=TEXTFIELD_CRLPERIOD%>","<%= ejbcawebbean.getText("INVALIDCRLEXPIREPERIOD") %>"))
       illegalfields++;
     if((document.ca.<%= TEXTFIELD_CRLPERIOD %>.value == "")){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CRL_CA_CRLPERIOD")%>");
       illegalfields++;
       if(jumpTo == '') { jumpTo = '<%=TEXTFIELD_CRLPERIOD%>'; }
     }
-    if(!checkFieldForCombineTime("document.ca.<%=TEXTFIELD_CRLISSUEINTERVAL%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
+    if(!checkFieldForCrlSimpleTime("document.ca.<%=TEXTFIELD_CRLISSUEINTERVAL%>","<%= ejbcawebbean.getText("INVALIDCRLISSUEINTERVAL") %>"))
         illegalfields++;
-    if(!checkFieldForCombineTime("document.ca.<%=TEXTFIELD_CRLOVERLAPTIME%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
+    if(!checkFieldForCrlSimpleTime("document.ca.<%=TEXTFIELD_CRLOVERLAPTIME%>","<%= ejbcawebbean.getText("INVALIDCRLOVERLAPTIME") %>"))
         illegalfields++;
-    if(!checkFieldForCombineTime("document.ca.<%=TEXTFIELD_DELTACRLPERIOD%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
+    if(!checkFieldForCrlSimpleTime("document.ca.<%=TEXTFIELD_DELTACRLPERIOD%>","<%= ejbcawebbean.getText("INVALIDDELTACRLPERIOD") %>"))
       illegalfields++;
     if((document.ca.<%= TEXTFIELD_DELTACRLPERIOD %>.value == "")){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CRL_CA_DELTACRLPERIOD")%>");
@@ -988,25 +988,26 @@ function toggleCANameChange(){
     <% if (!isexternal) { %>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <strong><%= ejbcawebbean.getText("CERT_VALIDITY") %></strong> <%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("ORENDDATE") %>
+        <strong><%= ejbcawebbean.getText("CERT_VALIDITY") %></strong> <%= ejbcawebbean.getText("FORMAT_TIME_YMODHMS") %> <%= ejbcawebbean.getText("ORENDDATE") %>
         <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %> <br />
       </td>
       <td width="50%"> 
         <% if(isexternal || (editca && !isUninitialized && signbyexternal)){
-              if (cainfo.getValidity() != 0) {
-                out.write("" + cainfo.getValidity() + YearMonthDayTime.TYPE_DAYS);
+        	  if (StringUtils.isNotBlank( cainfo.getEncodedValidity())) {
+                out.write(cainfo.getEncodedValidity());
               } else {
                 out.write(ejbcawebbean.getText("NOTUSED"));
               }
+              
            }else{ %>
-        <input type="obligatory" name="<%=TEXTFIELD_VALIDITY%>" id="<%=TEXTFIELD_VALIDITY%>" size="25" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("OR") %> <%= ejbcawebbean.getText("FORMAT_ISO8601") %>"
-           <% if(editca) out.write("value=\"" + ValidityDate.getString(cainfo.getValidity()) + "\""); %> <%= (hasEditRights ? "" : "disabled") %> />
+        <input type="obligatory" name="<%=TEXTFIELD_VALIDITY%>" id="<%=TEXTFIELD_VALIDITY%>" size="25" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMODHMS") %> <%= ejbcawebbean.getText("OR") %> <%= ejbcawebbean.getText("FORMAT_ISO8601") %>"
+           <% if(editca) out.write("value=\"" + cainfo.getEncodedValidity() + "\""); %> <%= (hasEditRights ? "" : "disabled") %> />
            <% if(editca) { %>
         &nbsp;
         <span class="help"><%= ejbcawebbean.getText("CERT_VALIDITY_CA_HELP") %></span>
            <% } %>
         <% } %>
-        <p class="help"><%= ejbcawebbean.getText("DATE_HELP") %> <%= ejbcawebbean.getDateExample() %></p>
+        <p class="help"><%= ejbcawebbean.getText("DATE_HELP") %> <%= ejbcawebbean.getDateExample() %></br><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %></p>
       </td>
     </tr>
     <% } %>
@@ -1308,11 +1309,11 @@ function toggleCANameChange(){
      </td>
      <td width="50%">
           <% if (isexternal) {
-               out.write(CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES));
+               out.write(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
              } else { %>
-        <input type="obligatory" name="<%=TEXTFIELD_CRLPERIOD%>" id="<%=TEXTFIELD_CRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
-          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='1"+CombineTime.TYPE_DAYS+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
+        <input type="obligatory" name="<%=TEXTFIELD_CRLPERIOD%>" id="<%=TEXTFIELD_CRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMODHMS") %>"
+          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='1"+SimpleTime.TYPE_DAYS+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
           <% } %>
           &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
@@ -1324,11 +1325,11 @@ function toggleCANameChange(){
      </td>
      <td width="50%">
           <% if (isexternal) {
-               out.write(CombineTime.getInstance(cainfo.getCRLIssueInterval()).toString(CombineTime.TYPE_MINUTES));
+               out.write(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
              } else { %>
         <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
-          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLIssueInterval()).toString(CombineTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
+          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='0"+SimpleTime.TYPE_MINUTES+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
           <% } %> 
           &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
@@ -1340,11 +1341,11 @@ function toggleCANameChange(){
      </td>
      <td width="50%">
           <% if (isexternal) {
-               out.write(CombineTime.getInstance(cainfo.getCRLOverlapTime()).toString(CombineTime.TYPE_MINUTES));
+               out.write(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
              } else { %>
         <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
-          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLOverlapTime()).toString(CombineTime.TYPE_MINUTES) + "'"); }
-               else {out.write(" value='10"+CombineTime.TYPE_MINUTES+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
+          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
+               else {out.write(" value='10"+SimpleTime.TYPE_MINUTES+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
           <% } %> 
           &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
@@ -1356,11 +1357,11 @@ function toggleCANameChange(){
      </td>
      <td width="50%">
           <% if (isexternal) {
-               out.write("" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES));
+               out.write("" + SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
              } else { %>
         <input type="obligatory" name="<%=TEXTFIELD_DELTACRLPERIOD%>" id="<%=TEXTFIELD_DELTACRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
-          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'");} %> <%= (hasEditRights ? "" : "disabled") %> />
+          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='0"+SimpleTime.TYPE_MINUTES+"'");} %> <%= (hasEditRights ? "" : "disabled") %> />
           <% } %> 
           &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %>
           <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CRL_CA_DELTACRLPERIOD_HELP\") %>" /></p>

@@ -86,7 +86,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @param caname The CA name
      * @param cadn The CA subjectDN
      * @param catype The CA type. It could be either 'x509' or 'cvc'
-     * @param validityInDays Validity of the CA in days.
+     * @param encodedValidity Validity of the CA  encoded for example as "3650d".
      * @param certprofile Makes the CA use the certificate profile 'certprofile' instead of the default ROOTCA or SUBCA.
      * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
      *        SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, SHA1WithDSA, 
@@ -105,7 +105,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @throws CryptoTokenOfflineException if the crypto token was unavailable
      * @throws InvalidAlgorithmException if the CA signature algorithm was invalid
      */
-    void createCA(AuthenticationToken admin, String caname, String cadn, String catype, long validityInDays, String certprofile, 
+    void createCA(AuthenticationToken admin, String caname, String cadn, String catype, String encodedValidity, String certprofile, 
             String signAlg, int signedByCAId, String cryptoTokenName, List<KeyValuePair> purposeKeyMapping, List<KeyValuePair> caProperties) 
             throws UnsupportedMethodException, SignedByExternalCANotSupportedException, CAExistsException, AuthorizationDeniedException, 
             CertificateProfileDoesNotExistException, CertificateProfileTypeNotAcceptedException, CryptoTokenOfflineException, InvalidAlgorithmException;

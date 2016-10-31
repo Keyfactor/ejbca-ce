@@ -37,9 +37,9 @@ public class CVCCAInfo extends CAInfo {
      * This constructor can be used when creating a CA.
      * This constructor uses defaults for the fields that are not specified.
      * */
-    public CVCCAInfo(String subjectdn, String name, int status, int certificateprofileid, long validity, int signedby, Collection<Certificate> certificatechain, CAToken catoken) {
+    public CVCCAInfo(String subjectdn, String name, int status, int certificateprofileid, String encodedValidity, int signedby, Collection<Certificate> certificatechain, CAToken catoken) {
         this(subjectdn, name, status, new Date(), certificateprofileid,
-                validity, null, // expire time
+                encodedValidity, null, // expire time
                 CAInfo.CATYPE_CVC, signedby,
                 certificatechain, // Certificate chain
                 catoken, // CA token
@@ -70,7 +70,7 @@ public class CVCCAInfo extends CAInfo {
 	 * Please use the shorter form if you do not need to set all of the values.
 	 */
 	public CVCCAInfo(String subjectdn, String name, int status, Date updateTime, int certificateprofileid, 
-			long validity, Date expiretime, int catype, int signedby, Collection<Certificate> certificatechain, 
+			String encodedValidity, Date expiretime, int catype, int signedby, Collection<Certificate> certificatechain, 
 			CAToken catoken, String description, int revocationReason, Date revocationDate,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
 			Collection<Integer> crlpublishers,boolean finishuser,Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
@@ -83,7 +83,7 @@ public class CVCCAInfo extends CAInfo {
 		this.name = name;
 		this.status = status;
 		this.updatetime = updateTime;
-		this.validity = validity;
+		this.encodedValidity = encodedValidity;
 		this.expiretime = expiretime;
 		this.catype = catype;
 		this.signedby = signedby;
@@ -115,7 +115,7 @@ public class CVCCAInfo extends CAInfo {
 	 * Constructor that should be used when updating CA data.
      * Used by the web. Jsp and stuff like that.
 	 */
-	public CVCCAInfo(int caid, long validity, CAToken catoken, String description,
+	public CVCCAInfo(int caid, String encodedValidity, CAToken catoken, String description,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
 			Collection<Integer> crlpublishers,
 			boolean finishuser, Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
@@ -124,7 +124,7 @@ public class CVCCAInfo extends CAInfo {
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
 			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {        
 		this.caid = caid;
-		this.validity=validity;
+		this.encodedValidity=encodedValidity;
 		this.catoken = catoken;
 		this.description = description;    
 		this.crlperiod = crlperiod;

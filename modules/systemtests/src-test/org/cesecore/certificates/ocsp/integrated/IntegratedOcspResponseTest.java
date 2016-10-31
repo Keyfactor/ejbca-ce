@@ -769,7 +769,7 @@ public class IntegratedOcspResponseTest {
             // Create an inactive OSCP CA Service.
 
             X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", CAConstants.CA_WAITING_CERTIFICATE_RESPONSE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 1000, CAInfo.SIGNEDBYEXTERNALCA, // Signed by the first TEST CA we created
+                    CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "1000d", CAInfo.SIGNEDBYEXTERNALCA, // Signed by the first TEST CA we created
                     null, catoken);
             cainfo.setDescription("TESTSIGNEDBYEXTERNAL");
             try {
@@ -804,12 +804,13 @@ public class IntegratedOcspResponseTest {
             // Now, construct an external CA. 
             final String externalCaName = "testStandAloneOcspResponseExternalCa";
             final String externalCaSubjectDn = "CN=" + externalCaName;
-            long validity = 3650L;
+            final long validity = 3650L;
+            final String encodedValidity = "3650d";
             KeyPair externalCaKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             Certificate externalCaCertificate = CertTools.genSelfCert(externalCaSubjectDn, validity, null, externalCaKeys.getPrivate(),
                     externalCaKeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
             X509CAInfo externalCaInfo = new X509CAInfo(externalCaSubjectDn, externalCaName, CAConstants.CA_EXTERNAL,
-                    CertificateProfileConstants.CERTPROFILE_NO_PROFILE, validity, CAInfo.SELFSIGNED, null, null);
+                    CertificateProfileConstants.CERTPROFILE_NO_PROFILE, encodedValidity, CAInfo.SELFSIGNED, null, null);
             CAToken token = new CAToken(externalCaInfo.getCAId(), new NullCryptoToken().getProperties());
             X509CA externalCa = new X509CA(externalCaInfo);
             externalCa.setCAToken(token);

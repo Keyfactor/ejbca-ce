@@ -41,6 +41,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ValidityDate;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,14 +61,14 @@ public class CertificateValidityTest {
 
 	@Test
     public void test01TestCertificateValidity() throws Exception {
-        testBaseTestCertificateValidity(50);
+        testBaseTestCertificateValidity("50d");
     }
 
 	@Test
     public void test02TestCertificateValidity() throws Exception {
         final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
         cal.add(Calendar.DATE, 50);
-        testBaseTestCertificateValidity(cal.getTime().getTime());
+        testBaseTestCertificateValidity(ValidityDate.formatAsISO8601(cal.getTime(), ValidityDate.TIMEZONE_SERVER));
     }
 	
 	@Test
@@ -169,7 +170,7 @@ public class CertificateValidityTest {
         CertificateValidity.checkPrivateKeyUsagePeriod(cert);
 	}
 	
-    private void testBaseTestCertificateValidity(long encodedValidity) throws Exception {
+    private void testBaseTestCertificateValidity(String encodedValidity) throws Exception {
 
 		KeyPair keys = KeyTools.genKeys("1024", "RSA");
 		
@@ -185,7 +186,8 @@ public class CertificateValidityTest {
     	EndEntityInformation subject = new EndEntityInformation();
 
     	final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-    	cp.setValidity(encodedValidity);
+    	cp.setEncodedValidity(encodedValidity);
+    	cp.setUseExpirationRestrictionForWeekdays(false);
     	cp.setAllowValidityOverride(false);
     
     	// First see that when we don't have a specified time requested and validity override is not allowed, the end time should be ruled by the certificate profile.
@@ -275,18 +277,18 @@ public class CertificateValidityTest {
         // This will be counted in number of days since notBefore, and notBefore here is taken from requestNotBefore which is two, 
         // so we have to add 2 to certificate profile validity to get the resulting notAfter but not if certificate end is an 
         // absolute end date.
-        if ( encodedValidity > Integer.MAX_VALUE) {
+        if (isRelativeTime(encodedValidity)) {
+            cal1.add(Calendar.DAY_OF_MONTH, 51);
+            cal2.add(Calendar.DAY_OF_MONTH, 53);
+        } else {
             cal1.add(Calendar.DAY_OF_MONTH, 49);
             cal2.add(Calendar.DAY_OF_MONTH, 51);
-        } else {
-            cal1.add(Calendar.DAY_OF_MONTH, 51);
-            cal2.add(Calendar.DAY_OF_MONTH, 53);            
         }
     	assertTrue(notAfter.after(cal1.getTime()));
     	assertTrue(notAfter.before(cal2.getTime()));
 
     	// Check that we can not supersede the CA end time
-    	cp.setValidity(400);
+    	cp.setEncodedValidity(400 + SimpleTime.TYPE_DAYS);
         cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false);
     	notBefore = cv.getNotBefore();
     	notAfter = cv.getNotAfter();
@@ -385,4 +387,14 @@ public class CertificateValidityTest {
         assertTrue(thrown);
         CertificateValidity.setTooLateExpireDate(new Date(Long.MAX_VALUE));
 	}
+    
+    private final boolean isRelativeTime(String encodedValidity) {
+        try {
+            ValidityDate.parseAsIso8601(encodedValidity);
+            return false;
+        } catch(ParseException e) {
+            // must be SimpleTime here
+            return true;
+        }
+    }
 }

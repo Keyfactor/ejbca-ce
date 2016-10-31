@@ -148,6 +148,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.ValidityDate;
 
 /**
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation according to the X509 standard.
@@ -164,7 +165,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /** Version of this class, if this is increased the upgrade() method will be called automatically */
-    public static final float LATEST_VERSION = 21;
+    public static final float LATEST_VERSION = 22;
 
     // protected fields for properties specific to this type of CA.
     protected static final String POLICIES = "policies";
@@ -246,7 +247,12 @@ public class X509CA extends CA implements Serializable {
                 }
             }
         }
-        CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName(), getCertificateProfileId(), getValidity(),
+
+        String encodedValidity = getEncodedValidity();
+        if (StringUtils.isBlank(encodedValidity)) {
+            encodedValidity = ValidityDate.getStringBeforeVersion661(getValidity());
+        }
+        final CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName(), getCertificateProfileId(), encodedValidity,
                 getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(), getCAToken(), getDescription(),
                 getRevocationReason(), getRevocationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(),
                 getDeltaCRLPeriod(), getCRLPublishers(), getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(), getUseCRLNumber(),
@@ -1699,6 +1705,7 @@ public class X509CA extends CA implements Serializable {
             }
             // v17->v18 is only an upgrade in order to upgrade CA token
             // v18->v19
+            // ANJAKOBS: Could this be a CRITICAL bug for the next upgrade?
             Object o = data.get(CRLPERIOD);
             if (o instanceof Integer) {
                 setCRLPeriod(((Integer) o).longValue() * SimpleTime.MILLISECONDS_PER_HOUR); // h to ms
@@ -1736,6 +1743,11 @@ public class X509CA extends CA implements Serializable {
             	} else {
             		setCertificateAiaDefaultCaIssuerUri( new ArrayList<String>());
             	}
+            }
+            // v22.
+            // 'encodedValidity' MUST set to "" (Empty String) here. The initialization is done during post-upgrade of EJBCA 6.6.1.
+            if(null == data.get(ENCODED_VALIDITY)) {
+                setEncodedValidity(StringUtils.EMPTY);
             }
         }
     }

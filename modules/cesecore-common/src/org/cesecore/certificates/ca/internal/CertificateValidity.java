@@ -15,8 +15,10 @@ package org.cesecore.certificates.ca.internal;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
@@ -142,8 +144,23 @@ public class CertificateValidity {
         if (firstDate == null) {
         	firstDate = now;
         }
-        final long val = certProfile.getValidity();        
-        Date certProfileLastDate = ValidityDate.getDate(val,firstDate);
+        Date certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(certProfile, firstDate));
+        if (certProfile.getUseExpirationRestrictionForWeekdays()) {
+            log.info("Applying expiration restrictions for weekdays: " + Arrays.asList(certProfile.getExpirationRestrictionWeekdays()));
+            try {
+                final Date newDate = ValidityDate.applyExpirationRestrictionForWeekdays(certProfileLastDate, 
+                    certProfile.getExpirationRestrictionWeekdays(), certProfile.getExpirationRestrictionForWeekdaysExpireBefore());
+                if (!firstDate.before(newDate)) {
+                    log.warn("Expiration restriction of certificate profile could not be applied because it's before start date!");    
+                } else if (!tooLateExpireDate.after(newDate)) {
+                    log.warn("Expiration restriction of certificate profile could not be applied because it's after latest possible end date!");
+                } else {
+                    certProfileLastDate = newDate;
+                }
+            } catch(Exception e) {
+                log.warn("Expiration restriction of certificate profile could not be applied!");
+            }
+        }
         if (lastDate == null) {
         	lastDate = certProfileLastDate;
         }
@@ -161,11 +178,8 @@ public class CertificateValidity {
 			log.error(intres.getLocalizedMessage("createcert.errorbeforecurrentdate",firstDate,subject.getUsername()));
     		firstDate = now;
     		// Update valid length from the profile since the starting point has changed
-			certProfileLastDate = ValidityDate.getDate(val,firstDate);
+			certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(certProfile, firstDate));
     		// Update lastDate if we use maximum validity
-    		if (lastDate.equals(certProfileLastDate)) {
-    			lastDate = certProfileLastDate;
-    		}
     	}
 		// Limit validity: We do not allow a certificate to be valid after the the validity of the certificate profile
     	if (lastDate.after(certProfileLastDate)) {
@@ -195,6 +209,20 @@ public class CertificateValidity {
 
 	public Date getNotBefore() {
 		return firstDate;
+	}
+	
+	/**
+	 * Returns the validity end date for the certificate.
+	 */
+	private long getCertificateProfileValidtyEndDate(CertificateProfile profile, Date firstDate) {
+        final String encodedValidity = profile.getEncodedValidity();
+        Date date = null;
+        if (StringUtils.isNotBlank(encodedValidity)) {
+            date = ValidityDate.getDate( encodedValidity, firstDate);
+        } else {
+            date = ValidityDate.getDateBeforeVersion661(profile.getValidity(),firstDate);
+        }
+        return date.getTime();
 	}
 	 
 	/**
@@ -258,6 +286,4 @@ public class CertificateValidity {
             log.debug("No CA certificate available, not checking PrivateKeyUsagePeriod.");       
         }
     }
-
-
 }

@@ -15,11 +15,14 @@ package org.ejbca.ui.web.admin.certprof;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +55,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
@@ -171,6 +175,19 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                     success = false;
                 }
             }
+            if (prof.getUseExpirationRestrictionForWeekdays()) {
+                boolean allDaysExcluded = true;
+                for (boolean enabled: prof.getExpirationRestrictionWeekdays()) {
+                    if (!enabled) {
+                        allDaysExcluded = false;
+                        break;
+                    }
+                }
+                if (allDaysExcluded) {
+                    addErrorMessage("CERT_EXPRIATION_RESTRICTION_FOR_WEEKDAYS_ALL_EXCLUDED");
+                    success = false;
+                }
+            }
             if (success) {
                 // Remove the added defaults if they were never used
                 final CertificateProfile certificateProfile = getCertificateProfile();
@@ -181,6 +198,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 if (!certificateProfile.getUseFreshestCRL() || certificateProfile.getUseCADefinedFreshestCRL()) {
                     certificateProfile.setFreshestCRLURI("");
                 }
+                
+                applyExpirationRestrictionForValidityWithFixedDate( certificateProfile);
+                
                 final List<PKIDisclosureStatement> pdsList = certificateProfile.getQCEtsiPds();
                 if (pdsList != null) {
                     final List<PKIDisclosureStatement> pdsCleaned = new ArrayList<>();
@@ -202,6 +222,33 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage("Not authorized to edit certificate profile.");
         }
         return "";
+    }
+    
+    private final void applyExpirationRestrictionForValidityWithFixedDate(final CertificateProfile profile) {
+        final String encodedValidty = profile.getEncodedValidity();
+        if (profile.getUseExpirationRestrictionForWeekdays()) {
+            Date endDate = null;
+            try {
+                endDate = ValidityDate.parseAsIso8601( encodedValidty);
+            } catch(ParseException e) {
+                // NOOP
+            }
+            if (null != endDate) { // for fixed end dates.
+                log.info("Applying expiration restrictions for weekdays with fixed end date: " + encodedValidty + " days " + Arrays.toString(profile.getExpirationRestrictionWeekdays()));
+                try {
+                    final Date appliedDate = ValidityDate.applyExpirationRestrictionForWeekdays(endDate, 
+                        profile.getExpirationRestrictionWeekdays(), profile.getExpirationRestrictionForWeekdaysExpireBefore());
+                    if (!appliedDate.equals(endDate)) {
+                        final String newEncodedValidity = ValidityDate.formatAsISO8601ServerTZ(appliedDate.getTime(), ValidityDate.TIMEZONE_SERVER);
+                        profile.setEncodedValidity(newEncodedValidity);
+                        addInfoMessage("CERT_EXPRIATION_RESTRICTION_FIXED_DATE_CHANGED", encodedValidty, newEncodedValidity);
+                    }
+                }
+                catch(Exception e) {
+                    log.warn("Expiration restriction of certificate profile could not be applied!");
+                }
+            }
+        }
     }
 
     public boolean isTypeCA() throws AuthorizationDeniedException {
@@ -296,19 +343,55 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     }
     
     public String getValidity() throws AuthorizationDeniedException {
-        return ValidityDate.getString(getCertificateProfile().getValidity());
-    }
-    public void setValidity(String validityString) throws AuthorizationDeniedException, ParameterException {
-        validityString = validityString.trim();
-        if (validityString.length()>0) {
-            final long validity = ValidityDate.encode(validityString);
-            if (validity<0) {
-                throw new ParameterException(getEjbcaWebBean().getText("INVALIDVALIDITYORCERTEND"));
-            }
-            getCertificateProfile().setValidity(validity);
+        final String encodedValidity = getCertificateProfile().getEncodedValidity();
+        if (StringUtils.isNotBlank(encodedValidity)) {
+            return encodedValidity;
+        } else {
+            return ValidityDate.getStringBeforeVersion661(getCertificateProfile().getValidity());
         }
     }
 
+    public void setValidity(String value) throws AuthorizationDeniedException, ParameterException {
+        if (null != value) {
+            try {
+                // parse fixed date ISO8601
+                // ANJAKOBS: negative relative times allowed here but filtered with ValidityDateValiditor.java!
+                ValidityDate.parseAsIso8601(value);
+            } catch (ParseException e) {
+                // parse simple time and get canonical string, negative value did not pass the ValidityDateValidtor
+                value = SimpleTime.toString( SimpleTime.getSecondsFormat().parseMillis(value), SimpleTime.TYPE_DAYS);
+            }
+            getCertificateProfile().setEncodedValidity(value);
+        }
+    }
+
+    public void toggleUseExpirationRestrictionForWeekdays() throws AuthorizationDeniedException, IOException {
+        getCertificateProfile().setUseExpirationRestrictionForWeekdays(!getCertificateProfile().getUseExpirationRestrictionForWeekdays());
+        redirectToComponent("header_x509v3extensions");
+    }
+    
+    public boolean isExpirationRestrictionMonday() throws AuthorizationDeniedException { return getCertificateProfile().getExpirationRestrictionWeekday(Calendar.MONDAY); }
+    public boolean isExpirationRestrictionTuesday() throws AuthorizationDeniedException { return getCertificateProfile().getExpirationRestrictionWeekday(Calendar.TUESDAY); }
+    public boolean isExpirationRestrictionWednesday() throws AuthorizationDeniedException { return getCertificateProfile().getExpirationRestrictionWeekday(Calendar.WEDNESDAY); }
+    public boolean isExpirationRestrictionThursday() throws AuthorizationDeniedException { return getCertificateProfile().getExpirationRestrictionWeekday(Calendar.THURSDAY); }
+    public boolean isExpirationRestrictionFriday() throws AuthorizationDeniedException { return getCertificateProfile().getExpirationRestrictionWeekday(Calendar.FRIDAY); }
+    public boolean isExpirationRestrictionSaturday() throws AuthorizationDeniedException { return getCertificateProfile().getExpirationRestrictionWeekday(Calendar.SATURDAY); }
+    public boolean isExpirationRestrictionSunday() throws AuthorizationDeniedException { return getCertificateProfile().getExpirationRestrictionWeekday(Calendar.SUNDAY); }
+    public void setExpirationRestrictionMonday(final boolean enabled) throws AuthorizationDeniedException { getCertificateProfile().setExpirationRestrictionWeekday(Calendar.MONDAY, enabled); }
+    public void setExpirationRestrictionTuesday(final boolean enabled) throws AuthorizationDeniedException { getCertificateProfile().setExpirationRestrictionWeekday(Calendar.TUESDAY, enabled); }
+    public void setExpirationRestrictionWednesday(final boolean enabled) throws AuthorizationDeniedException { getCertificateProfile().setExpirationRestrictionWeekday(Calendar.WEDNESDAY, enabled); }
+    public void setExpirationRestrictionThursday(final boolean enabled) throws AuthorizationDeniedException { getCertificateProfile().setExpirationRestrictionWeekday(Calendar.THURSDAY, enabled); }
+    public void setExpirationRestrictionFriday(final boolean enabled) throws AuthorizationDeniedException { getCertificateProfile().setExpirationRestrictionWeekday(Calendar.FRIDAY, enabled); }
+    public void setExpirationRestrictionSaturday(final boolean enabled) throws AuthorizationDeniedException { getCertificateProfile().setExpirationRestrictionWeekday(Calendar.SATURDAY, enabled); }
+    public void setExpirationRestrictionSunday(final boolean enabled) throws AuthorizationDeniedException { getCertificateProfile().setExpirationRestrictionWeekday(Calendar.SUNDAY, enabled); }
+
+    public List<SelectItem> getExpirationRestrictionWeekdaysAvailable() {
+        final List<SelectItem> result = new ArrayList<SelectItem>();
+        result.add(new SelectItem(Boolean.TRUE, getEjbcaWebBean().getText("CERT_EXPRIATION_RESTRICTION_BEFORE")));
+        result.add(new SelectItem(Boolean.FALSE, getEjbcaWebBean().getText("CERT_EXPRIATION_RESTRICTION_AFTER")));
+        return result;
+    }
+    
     public void toggleUseBasicConstraints() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseBasicConstraints(!getCertificateProfile().getUseBasicConstraints());
         redirectToComponent("header_x509v3extensions");
@@ -555,19 +638,17 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public String getPrivateKeyUsagePeriodStartOffset() throws AuthorizationDeniedException {
         final CertificateProfile certificateProfile = getCertificateProfile();
         if (certificateProfile.isUsePrivateKeyUsagePeriodNotBefore()) {
-            return ValidityDate.getString(certificateProfile.getPrivateKeyUsagePeriodStartOffset() / (24 * 3600));
+            return SimpleTime.toString(certificateProfile.getPrivateKeyUsagePeriodStartOffset() * 1000, SimpleTime.TYPE_DAYS);
         } else {
             return "";
         }
     }
-    public void setPrivateKeyUsagePeriodStartOffset(String privateKeyUsagePeriodStartOffset) throws ParameterException, AuthorizationDeniedException {
-        privateKeyUsagePeriodStartOffset = privateKeyUsagePeriodStartOffset.trim();
-        if (privateKeyUsagePeriodStartOffset.length()>0) {
-            final long validity = ValidityDate.encode(privateKeyUsagePeriodStartOffset);
-            if (validity<0) {
-                throw new ParameterException(getEjbcaWebBean().getText("INVALIDPRIVKEYSTARTOFFSET"));
+    public void setPrivateKeyUsagePeriodStartOffset(String value) throws AuthorizationDeniedException {
+        if (null != value) {
+            final long millis = SimpleTime.getSecondsFormat().parseMillis(value);
+            if (millis > 0) {
+                getCertificateProfile().setPrivateKeyUsagePeriodStartOffset(millis / 1000);
             }
-            getCertificateProfile().setPrivateKeyUsagePeriodStartOffset(validity*24*3600);
         }
     }
 
@@ -579,19 +660,17 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public String getPrivateKeyUsagePeriodLength() throws AuthorizationDeniedException {
         final CertificateProfile certificateProfile = getCertificateProfile();
         if (certificateProfile.isUsePrivateKeyUsagePeriodNotAfter()) {
-            return ValidityDate.getString(certificateProfile.getPrivateKeyUsagePeriodLength() / (24 * 3600));
+            return SimpleTime.toString(certificateProfile.getPrivateKeyUsagePeriodLength() * 1000, SimpleTime.TYPE_DAYS);
         } else {
             return "";
         }
     }
-    public void setPrivateKeyUsagePeriodLength(String privateKeyUsagePeriodLength) throws ParameterException, AuthorizationDeniedException {
-        privateKeyUsagePeriodLength = privateKeyUsagePeriodLength.trim();
-        if (privateKeyUsagePeriodLength.length()>0) {
-            final long validity = ValidityDate.encode(privateKeyUsagePeriodLength);
-            if (validity<0) {
-                throw new ParameterException(getEjbcaWebBean().getText("INVALIDPRIVKEYPERIOD"));
+    public void setPrivateKeyUsagePeriodLength(String value) throws AuthorizationDeniedException {
+        if (null != value) {
+            final long millis = SimpleTime.getSecondsFormat().parseMillis(value);
+            if (millis > 0) {
+                getCertificateProfile().setPrivateKeyUsagePeriodLength(millis / 1000);
             }
-            getCertificateProfile().setPrivateKeyUsagePeriodLength(validity*24*3600);
         }
     }
 

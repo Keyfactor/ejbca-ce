@@ -2,6 +2,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="
+java.text.ParseException,
 java.util.*,
 java.util.Map.Entry,
 java.io.*,
@@ -56,8 +57,6 @@ org.cesecore.certificates.certificateprofile.CertificatePolicy,
 org.ejbca.ui.web.admin.cainterface.CAInfoView,
 org.bouncycastle.jce.exception.ExtCertPathValidatorException,
 org.cesecore.util.SimpleTime,
-org.cesecore.util.YearMonthDayTime,
-org.ejbca.util.CombineTime,
 org.cesecore.util.ValidityDate,
 org.ejbca.ui.web.ParameterException,
 org.cesecore.util.StringTools,
@@ -346,7 +345,7 @@ java.security.InvalidAlgorithmParameterException
                 final String certificateProfileIdString = requestMap.get(SELECT_CERTIFICATEPROFILE);
                 final String signedByString = requestMap.get(SELECT_SIGNEDBY);
                 final String description = requestMap.get(TEXTFIELD_DESCRIPTION);
-                final String validityString = requestMap.get(TEXTFIELD_VALIDITY);
+                String validityString = requestMap.get(TEXTFIELD_VALIDITY);
                 final String approvalSettingValues = requestMap.get(SELECT_APPROVALSETTINGS);//request.getParameterValues(SELECT_APPROVALSETTINGS);
                 final String approvalProfileParam = requestMap.get(SELECT_APPROVALPROFILE);
                 final boolean finishUser = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_FINISHUSER));
@@ -361,10 +360,10 @@ java.security.InvalidAlgorithmParameterException
                 final boolean useauthoritykeyidentifier = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIER));
                 final boolean authoritykeyidentifiercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL));
                 // CRL periods and publishers is specific for X509 CAs
-                final long crlperiod = CombineTime.getInstance(requestMap.get(TEXTFIELD_CRLPERIOD), "1"+CombineTime.TYPE_DAYS).getLong();
-                final long crlIssueInterval = CombineTime.getInstance(requestMap.get(TEXTFIELD_CRLISSUEINTERVAL), "0"+CombineTime.TYPE_MINUTES).getLong();
-                final long crlOverlapTime = CombineTime.getInstance(requestMap.get(TEXTFIELD_CRLOVERLAPTIME), "10"+CombineTime.TYPE_MINUTES).getLong();
-                final long deltacrlperiod = CombineTime.getInstance(requestMap.get(TEXTFIELD_DELTACRLPERIOD), "0"+CombineTime.TYPE_MINUTES).getLong();              
+                final long crlperiod = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLPERIOD), "1"+SimpleTime.TYPE_DAYS).getLong();
+                final long crlIssueInterval = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLISSUEINTERVAL), "0"+SimpleTime.TYPE_MINUTES).getLong();
+                final long crlOverlapTime = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLOVERLAPTIME), "10"+SimpleTime.TYPE_MINUTES).getLong();
+                final long deltacrlperiod = SimpleTime.getInstance(requestMap.get(TEXTFIELD_DELTACRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();              
                 final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
                 final boolean usecrlnumber = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLNUMBER));
                 final boolean crlnumbercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLNUMBERCRITICAL));
@@ -532,11 +531,11 @@ java.security.InvalidAlgorithmParameterException
                 final String keySequenceFormatParam = requestMap.get(SELECT_KEY_SEQUENCE_FORMAT);
                 final String keySequence = requestMap.get(TEXTFIELD_KEYSEQUENCE);
                 final String description = requestMap.get(TEXTFIELD_DESCRIPTION);
-                final String validityString = requestMap.get(TEXTFIELD_VALIDITY);
-                final long crlperiod = CombineTime.getInstance(requestMap.get(TEXTFIELD_CRLPERIOD), "0"+CombineTime.TYPE_MINUTES).getLong();
-                final long crlIssueInterval = CombineTime.getInstance(requestMap.get(TEXTFIELD_CRLISSUEINTERVAL), "0"+CombineTime.TYPE_MINUTES).getLong();
-                final long crlOverlapTime = CombineTime.getInstance(requestMap.get(TEXTFIELD_CRLOVERLAPTIME), "0"+CombineTime.TYPE_MINUTES).getLong();
-                final long deltacrlperiod = CombineTime.getInstance(requestMap.get(TEXTFIELD_DELTACRLPERIOD), "0"+CombineTime.TYPE_MINUTES).getLong();              
+                String validityString = requestMap.get(TEXTFIELD_VALIDITY);
+                final long crlperiod = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();
+                final long crlIssueInterval = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLISSUEINTERVAL), "0"+SimpleTime.TYPE_MINUTES).getLong();
+                final long crlOverlapTime = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLOVERLAPTIME), "0"+SimpleTime.TYPE_MINUTES).getLong();
+                final long deltacrlperiod = SimpleTime.getInstance(requestMap.get(TEXTFIELD_DELTACRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();              
                 final boolean finishUser = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_FINISHUSER));
                 final boolean isDoEnforceUniquePublicKeys = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS));
                 final boolean isDoEnforceUniqueDistinguishedName = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUEDN));
@@ -578,6 +577,17 @@ java.security.InvalidAlgorithmParameterException
                     subjectdn = cainfo.getSubjectDN();
                     signedByString = String.valueOf(cainfo.getSignedBy());
                 }
+               	if (null != validityString) {
+           			try {
+               			// parse fixed date ISO8601
+               			// ANJAKOBS: before 6.6.1 range was a little more than epoch to 9999-12-31 23:59:59+01:00, now min value is '0001-01-01 00:00:00'
+               			ValidityDate.parseAsIso8601(validityString);
+           			} catch (ParseException e) {
+               			// parse simple time and get canonical string.
+               			// ANJAKOBS: negative relative times allowed!
+               			validityString = SimpleTime.toString( SimpleTime.getSecondsFormat().parseMillis(validityString), SimpleTime.TYPE_DAYS);
+           			}
+           		}	
                 final CAInfo cainfo = cabean.createCaInfo(caid, caname, subjectdn, catype,
             		keySequenceFormatParam, keySequence, signedByString, description, validityString,
             		crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, finishUser,
@@ -595,13 +605,18 @@ java.security.InvalidAlgorithmParameterException
                 
                 if (cadatahandler.getCAInfo(caid).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
                     // Allow changing of subjectDN etc. for uninitialized CAs
-                    if (validityString != null) {
-                        final long validity = ValidityDate.encode(validityString);
-                        if (validity<0) {
-                            throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
-                        }
-                        cainfo.setValidity(validity);
-                    }
+                    if (null != validityString) {
+            			try {
+                			// parse fixed date ISO8601
+                			// ANJAKOBS: before 6.6.1 range was a little more than epoch to 9999-12-31 23:59:59+01:00, now min value is '0001-01-01 00:00:00'
+                			ValidityDate.parseAsIso8601(validityString);
+            			} catch (ParseException e) {
+                			// parse simple time and get canonical string.
+                			// ANJAKOBS: negative relative times allowed!
+                			validityString = SimpleTime.toString( SimpleTime.getSecondsFormat().parseMillis(validityString), SimpleTime.TYPE_DAYS);
+            			}
+            		}
+                    cainfo.setEncodedValidity(validityString);
                     cainfo.setSubjectDN(subjectdn);
                     
                     // We can only update the CAToken properties if we have selected a valid cryptotoken

@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,7 +57,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 43.0;
+    public static final float LATEST_VERSION = (float) 44.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -140,9 +141,21 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int[] DEFAULTBITLENGTHS = { 0, 192, 224, 239, 256, 384, 512, 521, 1024, 1536, 2048, 3072, 4096, 6144, 8192 };
     public static final byte[] DEFAULT_CVC_RIGHTS_AT = { 0, 0, 0, 0, 0 };
 
+    /** Constants for validity and private key usage period. */
+    public static final String DEFAULT_CERTIFICATE_VALIDITY = "2y";
+    /** Constant for default validity for fixed profiles is 25 years including 6 or 7 leap days. */
+    public static final String DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA = "25y7d";
+    public static final long DEFAULT_PRIVATE_KEY_USAGE_PERIOD_OFFSET = 0;
+    public static final long DEFAULT_PRIVATE_KEY_USAGE_PERIOD_LENGTH = 730 * 24 * 3600;
+    
     // Profile fields
     protected static final String CERTVERSION = "certversion";
+    @Deprecated
     protected static final String VALIDITY = "validity";
+    protected static final String ENCODED_VALIDITY = "encodedvalidity";
+    protected static final String USE_EXPIRATION_RESTRICTION_FOR_WEEKDAYS = "useexpirationrestrictionforweekdays";
+    protected static final String EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE = "expirationrestrictionforweekdaysbefore";
+    protected static final String EXPIRATION_RESTRICTION_WEEKDAYS = "expirationrestrictionweekdays";
     protected static final String ALLOWVALIDITYOVERRIDE = "allowvalidityoverride";
     protected static final String ALLOWKEYUSAGEOVERRIDE = "allowkeyusageoverride";
     protected static final String ALLOWBACKDATEDREVOCATION = "allowbackdatedrevokation";
@@ -345,7 +358,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private void setCommonDefaults() {
         setType(CertificateConstants.CERTTYPE_ENDENTITY);
         setCertificateVersion(VERSION_X509V3);
-        setValidity(730);
+        setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY);
+        setUseExpirationRestrictionForWeekdays(false);
+        setExpirationRestrictionForWeekdaysExpireBefore(true);
+        setDefaultExpirationRestrictionWeekdays();
         setAllowValidityOverride(false);
 
         setAllowExtensionOverride(false);
@@ -470,11 +486,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setApprovalSettings(emptyList);
         setApprovalProfileID(-1);
         
-     // PrivateKeyUsagePeriod extension
+        // PrivateKeyUsagePeriod extension
         setUsePrivateKeyUsagePeriodNotBefore(false);
         setUsePrivateKeyUsagePeriodNotAfter(false);
-        setPrivateKeyUsagePeriodStartOffset(0);
-        setPrivateKeyUsagePeriodLength(getValidity() * 24 * 3600);
+        setPrivateKeyUsagePeriodStartOffset(DEFAULT_PRIVATE_KEY_USAGE_PERIOD_OFFSET);
+        setPrivateKeyUsagePeriodLength(DEFAULT_PRIVATE_KEY_USAGE_PERIOD_LENGTH);
         
         setSingleActiveCertificateConstraint(false);
     }
@@ -494,7 +510,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setKeyUsage(CertificateConstants.KEYCERTSIGN, true);
             setKeyUsage(CertificateConstants.CRLSIGN, true);
             setKeyUsageCritical(true);
-            setValidity(25 * 365 + 7); // Default validity for this profile is 25 years including 6 or 7 leap days
+            setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA);
         } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA) {
             setType(CertificateConstants.CERTTYPE_SUBCA);
             setAllowValidityOverride(true);
@@ -504,7 +520,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setKeyUsage(CertificateConstants.KEYCERTSIGN, true);
             setKeyUsage(CertificateConstants.CRLSIGN, true);
             setKeyUsageCritical(true);
-            setValidity(25 * 365 + 7); // Default validity for this profile is 25 years including 6 or 7 leap days
+            setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA);
         } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER) {
             setType(CertificateConstants.CERTTYPE_ENDENTITY);
             // Standard key usages for end users are: digitalSignature | nonRepudiation, and/or (keyEncipherment or keyAgreement)
@@ -616,21 +632,117 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /** 
-     * @see ValidityDate#getDate(long, java.util.Date)
+     * @see ValidityDate#getDateBeforeVersion661(long, java.util.Date)
      * @return a long that is used to provide the end date of certificates for this profile, interpreted by ValidityDate#getDate
+     * @deprecated since since EJBCA 6.7.0
      */
+    @Deprecated 
     public long getValidity() {
         return ((Long) data.get(VALIDITY)).longValue();
     }
-
-    /** 
-     * @see ValidityDate#getDate(long, java.util.Date)
-     * @param validity a long that is used to provide the end date of certificates for this profile, interpreted by ValidityDate#getDate
+    
+    /**
+     * Gets the validity as relative time (format '*y *mo *d *h *m *s', i.e. '1y +2mo -3d 4h 5m 6s') or as fixed end date 
+     * (ISO8601 format, i.e. 'yyyy-MM-dd HH:mm:ssZZ', 'yyyy-MM-dd HH:mmZZ' or 'yyyy-MM-ddZZ' with optional '+00:00' appended).
+     * @return the validity.
      */
-    public void setValidity(long validity) {
-        data.put(VALIDITY, Long.valueOf(validity));
+    public String getEncodedValidity() {
+        return (String) data.get(ENCODED_VALIDITY);
     }
 
+    /**
+     * Sets the validity as relative time (format '*y *mo *d *h *m *s', i.e. '1y +2mo -3d 4h 5m 6s') or as fixed end date 
+     * (ISO8601 format, i.e. 'yyyy-MM-dd HH:mm:ssZZ', 'yyyy-MM-dd HH:mmZZ' or 'yyyy-MM-ddZZ' with optional '+00:00' appended).
+     *
+     * @param encodedValidity
+     */
+    public void setEncodedValidity(String encodedValidity) {
+        data.put(ENCODED_VALIDITY, encodedValidity);
+    }
+
+    /** 
+     * @return true if we should apply restrictions that certificate expiration can only occur on week days specified by setExpirationRestrictionWeekday
+     * @see #setExpirationRestrictionWeekdays(boolean[])  
+     */
+    public boolean getUseExpirationRestrictionForWeekdays() {
+        return Boolean.valueOf((Boolean) data.get(USE_EXPIRATION_RESTRICTION_FOR_WEEKDAYS));
+    }
+
+    /**
+     * Use validity expiration restriction.
+     * @param enabled 
+     */
+    public void setUseExpirationRestrictionForWeekdays(boolean enabled) {
+        data.put(USE_EXPIRATION_RESTRICTION_FOR_WEEKDAYS, Boolean.valueOf(enabled));
+    }
+    
+    /** 
+     * @return true if we should roll back expiration or false of we should roll forward expiration to match week days specified by setExpirationRestrictionWeekday
+     * @see #setExpirationRestrictionWeekdays(boolean[])  
+     */
+    public boolean getExpirationRestrictionForWeekdaysExpireBefore() {
+        return Boolean.valueOf((Boolean) data.get(EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE));
+    }
+    
+    /**
+     * Sets if the certificate validity shall expire earlier as requested if a the expiration 
+     * restriction was applied?
+     * 
+     * @param enabled true, otherwise false.
+     */
+    public void setExpirationRestrictionForWeekdaysExpireBefore(boolean enabled) {
+        data.put(EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE, Boolean.valueOf(enabled));
+    }
+    
+    /**
+     * @param weekday (see java.util.Calendar.MONDAY - SUNDAY)
+     * @return true if the weekday is selected as validity expiration restriction.
+     */
+    @SuppressWarnings("unchecked")
+    public boolean getExpirationRestrictionWeekday(int weekday) {
+        return ((ArrayList<Boolean>) data.get(EXPIRATION_RESTRICTION_WEEKDAYS)).get(weekday-1).booleanValue();
+    }
+    
+    /**
+     * Include a weekday as validity expiration restriction.
+     * @param weekday (see java.util.Calendar.MONDAY - SUNDAY)
+     * @param enabled
+     */
+    @SuppressWarnings("unchecked")
+    public void setExpirationRestrictionWeekday(int weekday, boolean enabled) {
+        ((ArrayList<Boolean>) data.get(EXPIRATION_RESTRICTION_WEEKDAYS)).set(weekday-1, Boolean.valueOf(enabled));
+    }
+    
+    /**
+     * Gets a copy of the List<Boolean> where validity restriction for weekdays are stored.
+     * 
+     * @return boolean array.
+     */
+    @SuppressWarnings("unchecked") 
+    public boolean[] getExpirationRestrictionWeekdays() {
+        final ArrayList<Boolean> list = (ArrayList<Boolean>) data.get(EXPIRATION_RESTRICTION_WEEKDAYS);
+        final boolean[] result = new boolean[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            result[i] = list.get(i).booleanValue();
+        }
+        return result;
+    }
+
+    private void setExpirationRestrictionWeekdays(boolean[] weekdays) {
+        final ArrayList<Boolean> list = new ArrayList<Boolean>(weekdays.length);
+        for (int i = 0; i < weekdays.length; i++) {
+            list.add(Boolean.valueOf(weekdays[i]));
+        }
+        data.put(EXPIRATION_RESTRICTION_WEEKDAYS, list);
+    }
+    
+    private void setDefaultExpirationRestrictionWeekdays() {
+        setExpirationRestrictionWeekdays(new boolean[7]);
+        setExpirationRestrictionWeekday(Calendar.TUESDAY, true);
+        setExpirationRestrictionWeekday(Calendar.WEDNESDAY, true);
+        setExpirationRestrictionWeekday(Calendar.THURSDAY, true);
+    }
+    
     /**
      * If validity override is allowed, a certificate can have a shorter validity than the one specified in the certificate profile, but never longer.
      * A certificate created with validity override can hava a starting point in the future.
@@ -2599,10 +2711,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setUsePrivateKeyUsagePeriodNotAfter(false);
             }
             if (data.get(PRIVKEYUSAGEPERIODSTARTOFFSET) == null) { // v 35
-                setPrivateKeyUsagePeriodStartOffset(0);
+                setPrivateKeyUsagePeriodStartOffset(DEFAULT_PRIVATE_KEY_USAGE_PERIOD_OFFSET);
             }
             if (data.get(PRIVKEYUSAGEPERIODLENGTH) == null) { // v 35
-                setPrivateKeyUsagePeriodLength(getValidity() * 24 * 3600);
+                setPrivateKeyUsagePeriodLength(DEFAULT_PRIVATE_KEY_USAGE_PERIOD_LENGTH);
             }
             if(data.get(USEISSUERALTERNATIVENAME) == null) { // v 36
                 setUseIssuerAlternativeName(false);
@@ -2642,10 +2754,28 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setApprovalProfileID(-1);
             }
             // v42. ETSI QC Type and PDS specified in EN 319 412-05.
-            // Nothing to set though, since null values means to not use the new values
-            
+            // Nothing to set though, since null values means to not use the new values            
+
             if (data.get(USEDEFAULTCAISSUER) == null) {
-                setUseDefaultCAIssuer(false); // v43
+                setUseDefaultCAIssuer(false); // v43, ECA-5304
+            }
+            
+            // v44. ECA-5141
+            // 'encodedValidity' MUST set to "" (Empty String) here. The initialization is done during post-upgrade of EJBCA 6.6.1.
+            if(null == data.get(ENCODED_VALIDITY)) {
+                setEncodedValidity(StringUtils.EMPTY);
+            }
+            
+            // v44. ECA-5330
+            // initialize fields for expiration restriction for weekdays. use is false because of backward compatibility, the before restriction default is true
+            if(null == data.get(USE_EXPIRATION_RESTRICTION_FOR_WEEKDAYS)) {
+                setUseExpirationRestrictionForWeekdays(false);
+            }
+            if(null == data.get(EXPIRATION_RESTRICTION_WEEKDAYS)) {
+                setDefaultExpirationRestrictionWeekdays();
+            }
+            if(null == data.get(EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE)) {
+                setExpirationRestrictionForWeekdaysExpireBefore(true);
             }
             
             data.put(VERSION, new Float(LATEST_VERSION));

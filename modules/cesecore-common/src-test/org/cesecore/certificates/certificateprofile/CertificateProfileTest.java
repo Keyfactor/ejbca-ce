@@ -60,7 +60,10 @@ public class CertificateProfileTest {
     	// Check that default values are as they should be
     	assertEquals(CertificateProfile.VERSION_X509V3, prof.getCertificateVersion());
     	assertEquals(CertificateConstants.CERTTYPE_ENDENTITY, prof.getType());
-    	assertEquals(730, prof.getValidity());
+    	// ECA-5141: old setValidity methods are removed, getValidity only reads the old validity value from 
+    	// DB to display it on GUI. After post-upgrade the method is supposed not to be called anymore!
+//    	assertEquals(730, prof.getValidity());
+    	assertEquals("2y", prof.getEncodedValidity());
     	assertNull(prof.getSignatureAlgorithm());
         assertEquals(false, prof.getAllowValidityOverride());
         assertEquals(false, prof.getAllowExtensionOverride());

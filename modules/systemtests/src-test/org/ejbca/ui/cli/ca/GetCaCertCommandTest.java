@@ -64,7 +64,7 @@ public class GetCaCertCommandTest {
         rootCa = CaTestUtils.createTestX509CA("CN=GetCaCertCommandTestRoot", null, false);
         caSession.addCA(authenticationToken, rootCa);
         cainfo = new X509CAInfo("CN=GetCaCertCommandTestSub", "GetCaCertCommandTestSub", CAConstants.CA_ACTIVE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, rootCa.getCAId(), rootCa.getCertificateChain(), rootCa.getCAToken());
+                CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "3650d", rootCa.getCAId(), rootCa.getCertificateChain(), rootCa.getCAToken());
         caAdminSession.createCA(authenticationToken, cainfo);
         
     }
