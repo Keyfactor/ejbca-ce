@@ -62,16 +62,17 @@ earlier version of EJBCA.
 The current installation procedures for JBoss 7 / EAP 6 uses the JBoss CLI to configure the application server.
 The JBoss CLI turns out not to be well suited for automated deploys however, so functions can break. 
 For example if the machine has too few cores CLI connections will mysteriously terminate and report errors.
-<br/>
-Contributions to improve the automated installation on JBoss 7 / EAP 6 are welcome.
 </note>
 <p>This section provides a fast way to get installed and running for a test using Ubuntu Linux. 
 To get more information about configuration options etc (there are plenty), you should follow the regular <strong>Installation guide</strong> below.
 </p><p>
-This quick start guide assumes EJBCA 6.3, JBoss 7.1.1.Final and Java 7, but other version should also be possible to use by just replacing the versions.
+This quick start guide assumes EJBCA 6.5, JBoss EAP 6.3 and Java 7, but other version should also be possible to use by just replacing the versions.
 We also assume installation is made in a user account with username "user". In your environment simply replace user with the username you are using.
 <br/><b>Note</b> that the quick install will create a H2 database as ~/ejbcadb. If you run this multiple times, delete this file in order to remove the old database.
 </p>
+<note>
+The quick start guide uses the JBoss built in database, H2. This is not a database you want to use in production, so don't use these quick start settings for a production installation.
+</note>
 <ol>
 <li>Install Ubuntu 14.04 server x64, default config, only OpenSSH server selected (or other Ubuntu of your choice, for example Ubuntu Desktop).
 <ul>
@@ -84,27 +85,25 @@ We also assume installation is made in a user account with username "user". In y
 <li>sudo apt-get install openjdk-7-jdk ant ant-optional unzip ntp</li>
 </ul>
 </li>
-<li>Install software not in Ubuntu repositories, JBoss 7.1.1.Final and EJBCA 6.3.<br/>
+<li>Install software not in Ubuntu repositories, JBoss EAP 6.3 and EJBCA 6.5.0.<br/>
 <ul>
-<li>wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.zip</li>
-<li>wget http://downloads.sourceforge.net/project/ejbca/ejbca6/ejbca_6_3_1_1/ejbca_ce_6_3_1_1.zip</li>
-<li>unzip jboss-as-7.1.1.Final.zip</li>
-<li>unzip ejbca_6_3_1_1.zip</li>
+<li>unzip jboss-eap-6.3.0.zip</li>
+<li>unzip ejbca_ce_6_5_0.zip</li>
 </ul>
 </li>
 <li>Configure EJBCA so it can find the application server (JBoss).
 <ul>
-<li>echo "appserver.home=/home/user/jboss-as-7.1.1.Final" >> ejbca_6_3_1_1/conf/ejbca.properties</li>
+<li>echo "appserver.home=/home/user/jboss-eap-6.3" >> ejbca_ce_6_5_0/conf/ejbca.properties</li>
 </ul>
 </li>
 <li>Open new terminal "jboss" and start JBoss.<br/>
 <ul>
-<li>jboss-as-7.1.1.Final/bin/standalone.sh</li>
+<li>jboss-eap-6.3/bin/standalone.sh</li>
 </ul>
 </li>
 <li>Build and deploy EJBCA to JBoss.
 <ul>
-<li>cd ejbca_6_3_1_1</li>
+<li>cd ejbca_ce_6_5_0</li>
 <li>ant deploy (just press enter if questions show up)</li>
 <li>(now wait a little for JBoss to reload)</li>
 </ul>
@@ -119,10 +118,10 @@ why it will not start correctly in your environment, See the <a href="adminguide
 <li>Go back to terminal "jboss" and restart JBoss.<br/>
 <ul>
 <li>ctrl-c</li>
-<li>jboss-as-7.1.1.Final/bin/standalone.sh</li>
+<li>jboss-eap-6.3/bin/standalone.sh</li>
 </ul>
 </li>
-<li>Copy /home/user/ejbca_6_3_1_1/p12/superadmin.p12 to admin desktop machine and import in web browser.</li>
+<li>Copy /home/user/ejbca_ce_6_5_0/p12/superadmin.p12 to admin desktop machine and import in web browser.</li>
 <li>Open URL https://server:8443/ejbca, where 'server' is the servers name/ip.</li>
 <li>Configure JBoss for logging, see <a href="#JBoss%207%20and%20EAP%206%20logging">JBoss 7 and EAP 6 logging</a> for instructions.</li>
 </ol>
@@ -136,51 +135,40 @@ To get more information a about configuration options etc (there are plenty), yo
 </p>
 <p>
 This quick start guide makes the same assumptions and uses the same procedures as the Ubuntu quick start guide.
-RHEL by default only installs with a 'root' account. Therefore we start by creating a user account with username "user". In your environment simply replace "user" with your own username.
 </p>
 <ol>
-<li>Install RHEL 6.4 x86_64, default config, 'Basic Server'.</li>
+<li>Install RHEL 7.2 x86_64, this guide used a DVD install disk</li>
 <ul>
-<li>Don't forget to 'Configure Network' at the screen where you set the server hostname.</li>
-<li>Make sure the hostname you set is present in /etc/hosts, or in DNS (or use the default localhost). If not JBoss will not start.</li>
-<li>Log in as root.</li>
-<li>Test that hostname is reachable.</li>
+<li>In the graphical installation selection, under 'Software selection' choose 'Basic Server'</li>
+<li>under 'Add-ons for the chosen environment' choose 'Java platform'</li>
+<li>don't forget to 'Configure Network'</li>
+<li>create a user (except root) to run JBoss, here we create a user called 'user'</li>
+</ul>
+<li>Log in as root to complete the installation</li>
 <ul>
-<li>ping hostname (where hostname is the name you set during installation)</li>
+<li>Enable EJBCA ports in the RHEL firewall, ports 8080, 8442 and 8443</li>
 </ul>
-<li>Add user with username 'user'. The path /home/user means the user's home directory below.</li>
-<ul>
-<li>adduser user</li>
-<li>passwd user</li>
-</ul>
-<li>Enable EJBCA ports in the firewall.</li>
-<ul>
-<li>system-config-firewall-tui</li>
-<li>Add port 8080, protocol tcp</li>
-<li>Add port 8442, protocol tcp</li>
-<li>Add port 8443, protocol tcp</li>
-</ul>
-</ul>
-<li>Install needed software from RedHat repositories, still logged in as root (assumes RHEL 6.4 DVD in cdrom).</li>
+<pre>
+sudo firewall-cmd --add-port=8443/tcp --permanent
+sudo firewall-cmd --add-port=8442/tcp --permanent
+sudo firewall-cmd --add-port=8080/tcp --permanent
+</pre>
 <ul>
 <li>vi /etc/yum.repos.d/install_dvd.repo</li>
 </ul>
 <pre>
 [INSTALL_DVD] 
 name=Installation DVD 
-baseurl=file:///media/Server 
+baseurl=file:///media 
 enabled=1 
 gpgcheck=0 
 </pre>
 <ul>
 <li>mount /dev/cdrom /media/</li>
-<li>yum install ant ant-nodeps</li>
+<li>yum install ant</li>
 <li>umount /media/</li>
 </ul>
 This will install OpenJDK and apache ant.
-<br/>Unfortunately the ant in RHEL 6 is too old (v1.7.1) so you need download a fresh version of ant. 
-<br/>RHEL 7 contains a fresh version of ant, so the following is not needed for RHEL 7.
-<li><a href="http://ant.apache.org/bindownload.cgi">Download apache ant</a> and set it up to be first in the path. run 'ant -version' to verify that you have a recent ant version.</li>
 <li>Log out from root account and log in as 'user' in a new terminal 'ejbca'.</li>
 <li>After this follow the same steps, 4-11 as in the 'Ubuntu quick start' above.</li>
 </ol>
