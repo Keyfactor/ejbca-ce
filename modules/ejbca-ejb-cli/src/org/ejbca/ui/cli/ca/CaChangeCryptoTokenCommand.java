@@ -42,7 +42,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
  * The command will look for other CAs that reference the same HSM slot and use the specified CA's CryptoToken id for
  * all the CAs.
  * 
- * @version $Id: CaMergeCryptoTokenCommand.java 20457 2014-12-12 14:38:32Z jeklund $
+ * @version $Id$
  */
 public class CaChangeCryptoTokenCommand extends BaseCaAdminCommand {
 
