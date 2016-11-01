@@ -278,6 +278,45 @@ For upgrade instructions, please see UPGRADE.
     * 	Certificate profile key length restriction ignored when creating CA: https://jira.primekey.se/browse/ECA-4310
     *	Race condition when multiple RA threads are requesting certificates for the same user: https://jira.primekey.se/browse/ECA-4347
 
+EJBCA 6.3.2.5
+-----------
+This patch release fixes one bug and introduces a new feature:
+* A small bug where soft crypto tokens generated during CA creation had auto-activate set during cache reload, even if that property had been set false.
+* Custom order of DN in issued certificates can now be defined in Certificate Profiles
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+EJBCA 6.3.2.4
+-----------
+This patch release fixes two bugs:
+* An issue in SCEP Client Certificate Renewal in regards to renewing a certificate with the same issuing date as its issuing certificate 
+* A change to the enforcement of Single Active Certificate Constraints, where certificates where revoked by subjectdn+issuer instead of by username
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+EJBCA 6.3.2.3
+-----------
+This patch release primarily fixes bugs and adds missing functionality with respect to Client Certificate Renewal via SCEP. 
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+EJBCA 6.3.2.2 
+-----------
+This patch release primarily fixes the issue of the DirectoryName component of subjectAltName not being included in certificates 
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+EJBCA 6.3.2.1
+-----------
+This patch release primarily fixes the issue of certain elliptic curves having different human readable names in the JDK vs BouncyCastle
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
 EJBCA 6.3.2
 -----------
 This maintenance release contains 23 new features, bug fixes and improvements, in addition to all fixes made in 6.2.10. Below is a 
