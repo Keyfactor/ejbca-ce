@@ -168,6 +168,9 @@ public abstract class CAInfo implements Serializable {
         this.catype = catype;
     }
 
+    /**
+     * @return A CAId or CAInfo.SELFSIGNED, CAInfo.SIGNEDBYEXTERNALCA etc
+     */
     public int getSignedBy() {
         return signedby;
     }
