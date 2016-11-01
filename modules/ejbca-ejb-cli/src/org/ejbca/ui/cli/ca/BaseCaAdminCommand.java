@@ -35,12 +35,15 @@ import org.bouncycastle.pkcs.PKCSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
+import org.cesecore.keys.token.CryptoTokenInfo;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -256,7 +259,23 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
             CAInfo info;
             try {
                 info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caid);
-                casList += TAB + info.getName() + ":" + info.getCAToken().getSignatureAlgorithm() + "\n";
+                if (info.getStatus() == CAConstants.CA_EXTERNAL) {
+                    casList += TAB + info.getName() + ": External CA";
+                } else {
+                    int cryptoTokenId = info.getCAToken().getCryptoTokenId();
+                    String cryptoTokenName = "Current CLI user does not have authorization to Crypto Tokens.\n";
+                    try {
+                        CryptoTokenInfo ctInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class).getCryptoTokenInfo(getAuthenticationToken(), cryptoTokenId);
+                        if (ctInfo != null) {
+                            cryptoTokenName = ctInfo.getName();
+                        } else {
+                            cryptoTokenName = "ID "+cryptoTokenId;
+                        }
+                    } catch (AuthorizationDeniedException e) {
+                        // NOPMD: ignore, use string above
+                    }
+                    casList += TAB + info.getName() + ":" + cryptoTokenName + ":" + info.getCAToken().getSignatureAlgorithm() + "\n";
+                }
             } catch (CADoesntExistsException e) {
                 //This can't happen
             } catch (AuthorizationDeniedException e) {
