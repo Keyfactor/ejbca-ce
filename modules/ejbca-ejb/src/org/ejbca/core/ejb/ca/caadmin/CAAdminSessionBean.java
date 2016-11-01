@@ -1678,12 +1678,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (certprof.getCertificatePolicies() != null && certprof.getCertificatePolicies().size() > 0) {
                 policies.addAll(certprof.getCertificatePolicies());
             }
-
-            String encodedValidity = ca.getEncodedValidity();
-            if (StringUtils.isBlank(encodedValidity)) {
-                encodedValidity = ValidityDate.getStringBeforeVersion661(ca.getValidity());
-            }
-            final X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, encodedValidity, signedby, null, null);
+            final X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validityString, signedby, null, null);
             x509cainfo.setSubjectAltName(subjectaltname);
             x509cainfo.setPolicies(policies);
             x509cainfo.setExpireTime(CertTools.getNotAfter(x509CaCertificate));
