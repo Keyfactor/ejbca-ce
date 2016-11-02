@@ -18,8 +18,12 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
@@ -43,12 +47,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -427,8 +433,10 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                         certificateInternalCaId = ca.getCAId();
                         caCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());
                         caCertificateSerialNumber = CertTools.getSerialNumberAsString(ca.getCACertificate());
-                    } catch (Exception e) {
-                        // CADoesntExistsException or AuthorizationDeniedException
+                        // Check that the current CA certificate is the issuer of the IKB certificate
+                        certificate.verify(ca.getCACertificate().getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
+                    } catch (CADoesntExistsException | AuthorizationDeniedException | InvalidKeyException | CertificateException | NoSuchAlgorithmException |
+                            NoSuchProviderException | SignatureException e) {
                         // The CA is for the purpose of "internal" renewal not available to this administrator.
                         // Try to find the issuer (CA) certificate by other means, trying to get it through CA certificate link from the bound certificate 
                         CertificateInfo info = certificateStoreSession.getCertificateInfo(certificateId);
