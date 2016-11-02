@@ -5,7 +5,7 @@
 <%@page errorPage="/errorpage.jsp"  import="java.util.List, java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, org.cesecore.certificates.certificateprofile.CertificateProfile,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.CertificateView, org.ejbca.ui.web.RevokedInfoView,org.ejbca.core.model.SecConst,
                  org.cesecore.authorization.AuthorizationDeniedException, org.cesecore.util.CertTools, org.cesecore.certificates.certificate.CertificateConstants,
-                 org.cesecore.authorization.control.StandardRules, org.ejbca.core.model.authorization.AccessRulesConstants" %>
+                 org.cesecore.authorization.control.StandardRules, org.ejbca.core.model.authorization.AccessRulesConstants, org.apache.commons.lang.StringUtils" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -565,11 +565,11 @@ function confirmrepublish(){
          <td><% StringBuilder builder = new StringBuilder();
          		final List<String> aiaOcspServiceLocators = certificatedata.getAuthorityInformationAccessOcspUrls();
          		if (null != aiaOcspServiceLocators && aiaOcspServiceLocators.size() > 0) {
-         			builder.append( ejbcawebbean.getText("EXT_PKIX_AIA_OCSP_URI")).append( ":").append("<br/>&nbsp;").append( String.join( "<br/>&nbsp;", aiaOcspServiceLocators)).append( "<br/>");
+         			builder.append( ejbcawebbean.getText("EXT_PKIX_AIA_OCSP_URI")).append( ":").append("<br/>&nbsp;").append( StringUtils.join( aiaOcspServiceLocators, "<br/>&nbsp;")).append( "<br/>");
          		}
                 final List<String> aiaCaIssuerUris = certificatedata.getAuthorityInformationAccessCaIssuerUris();
                 if (null != aiaCaIssuerUris && aiaCaIssuerUris.size() > 0) {
-                	builder.append( ejbcawebbean.getText("EXT_PKIX_AIA_CAISSUERS_URI")).append( ":").append( "<br/>&nbsp;").append( String.join( "<br/>&nbsp;", aiaCaIssuerUris));
+                	builder.append( ejbcawebbean.getText("EXT_PKIX_AIA_CAISSUERS_URI")).append( ":").append( "<br/>&nbsp;").append( StringUtils.join( aiaCaIssuerUris, "<br/>&nbsp;"));
                 }
                 if (builder.length() > 0) {
                 	out.write(builder.toString());

@@ -1377,7 +1377,7 @@ function toggleCANameChange(){
       	<% String authorityInformationAccess = "";
        	   if(x509cainfo != null) {
     	   		final List<String> uris = x509cainfo.getAuthorityInformationAccess();
-    	   		authorityInformationAccess = null != uris ? String.join( ";", uris) : "";
+    	   		authorityInformationAccess = null != uris ? StringUtils.join(uris, ";") : "";
        		} %>
         <% if (isexternal) {%>
                 <c:out value="<%= authorityInformationAccess %>"/>
@@ -1430,7 +1430,7 @@ function toggleCANameChange(){
         <% String certificateAiaDefaultCaIssuerUri = "";
        	   if(x509cainfo != null) {
     	   		final List<String> uris = x509cainfo.getCertificateAiaDefaultCaIssuerUri();
-    	   		certificateAiaDefaultCaIssuerUri = null != uris ? String.join( ";", uris) : "";
+    	   		certificateAiaDefaultCaIssuerUri = null != uris ? StringUtils.join( uris, ";") : "";
        		} %>
       <td width="50%">
            <% if (isexternal) {%>
