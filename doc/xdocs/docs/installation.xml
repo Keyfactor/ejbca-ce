@@ -87,18 +87,18 @@ The quick start guide uses the JBoss built in database, H2. This is not a databa
 </li>
 <li>Install software not in Ubuntu repositories, JBoss EAP 6.3 and EJBCA 6.5.0.<br/>
 <ul>
-<li>unzip jboss-eap-6.3.0.zip</li>
+<li>unzip jboss-eap-6.4.0.zip</li>
 <li>unzip ejbca_ce_6_5_0.zip</li>
 </ul>
 </li>
 <li>Configure EJBCA so it can find the application server (JBoss).
 <ul>
-<li>echo "appserver.home=/home/user/jboss-eap-6.3" >> ejbca_ce_6_5_0/conf/ejbca.properties</li>
+<li>echo "appserver.home=/home/user/jboss-eap-6.4" >> ejbca_ce_6_5_0/conf/ejbca.properties</li>
 </ul>
 </li>
 <li>Open new terminal "jboss" and start JBoss.<br/>
 <ul>
-<li>jboss-eap-6.3/bin/standalone.sh</li>
+<li>jboss-eap-6.4/bin/standalone.sh</li>
 </ul>
 </li>
 <li>Build and deploy EJBCA to JBoss.
@@ -118,7 +118,7 @@ why it will not start correctly in your environment, See the <a href="adminguide
 <li>Go back to terminal "jboss" and restart JBoss.<br/>
 <ul>
 <li>ctrl-c</li>
-<li>jboss-eap-6.3/bin/standalone.sh</li>
+<li>jboss-eap-6.4/bin/standalone.sh</li>
 </ul>
 </li>
 <li>Copy /home/user/ejbca_ce_6_5_0/p12/superadmin.p12 to admin desktop machine and import in web browser.</li>
