@@ -226,7 +226,7 @@ function checkfieldforgender(thetextfield, alerttext) {
 function checkFieldForCrlSimpleTime(thetextfield, alerttext) {
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /\s*(([+-]?\d+)\s*([m][o]|[y]|[d]))\s*/ig;
+  re = /\s*(([+-]?\d+)\s*([m][o]|[y]|[d]|[h]|[m]))\s*/ig;
   tokens = text.match(re);
   if (null != tokens && tokens.length > 0 && tokens.join("").valueOf() == text.valueOf()) {
 	  return true;
