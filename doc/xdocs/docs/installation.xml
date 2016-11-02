@@ -66,7 +66,7 @@ For example if the machine has too few cores CLI connections will mysteriously t
 <p>This section provides a fast way to get installed and running for a test using Ubuntu Linux. 
 To get more information about configuration options etc (there are plenty), you should follow the regular <strong>Installation guide</strong> below.
 </p><p>
-This quick start guide assumes EJBCA 6.5, JBoss EAP 6.3 and Java 7, but other version should also be possible to use by just replacing the versions.
+This quick start guide assumes EJBCA 6.5, JBoss EAP 6.4 and Java 7, but other version should also be possible to use by just replacing the versions.
 We also assume installation is made in a user account with username "user". In your environment simply replace user with the username you are using.
 <br/><b>Note</b> that the quick install will create a H2 database as ~/ejbcadb. If you run this multiple times, delete this file in order to remove the old database.
 </p>
@@ -85,7 +85,7 @@ The quick start guide uses the JBoss built in database, H2. This is not a databa
 <li>sudo apt-get install openjdk-7-jdk ant ant-optional unzip ntp</li>
 </ul>
 </li>
-<li>Install software not in Ubuntu repositories, JBoss EAP 6.3 and EJBCA 6.5.0.<br/>
+<li>Install software not in Ubuntu repositories, JBoss EAP 6.4 and EJBCA 6.5.0.<br/>
 <ul>
 <li>unzip jboss-eap-6.4.0.zip</li>
 <li>unzip ejbca_ce_6_5_0.zip</li>
