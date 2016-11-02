@@ -516,19 +516,32 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     }
 
     private void authorizedToEditProfile(AuthenticationToken admin, CertificateProfile profile, int id) throws AuthorizationDeniedException {
-        final Collection<Integer> ids = profile.getAvailableCAs();
-        final String[] rules = new String[ids.size()+1];
         // We need to check that admin also have rights to edit certificate profiles
-        rules[0] = StandardRules.CERTIFICATEPROFILEEDIT.resource();
-        int i=1;
+        if (!authorizedToProfileWithResource(admin, profile, id, true, StandardRules.CERTIFICATEPROFILEEDIT.resource())) {
+            final String msg = INTRES.getLocalizedMessage("store.editcertprofilenotauthorized", admin.toString(), id);
+            throw new AuthorizationDeniedException(msg);            
+        }
+    }
+
+    public boolean authorizedToProfileWithResource(AuthenticationToken admin, CertificateProfile profile, int id, boolean logging, String... resources) {
+        final Collection<Integer> ids = profile.getAvailableCAs();
+        final String[] rules = new String[ids.size()+resources.length];
+        // We need to check that admin also have rights to the passed in resources
+        int i=0;
+        for (String resource : resources) {
+            rules[i++] = resource;            
+        }
         // Check that admin is authorized to all CAids
         for (Integer caid : ids) {
             rules[i++] = StandardRules.CAACCESS.resource() + caid;
         }
         // Perform authorization check
-        if (!accessSession.isAuthorized(admin, rules)) {
-            final String msg = INTRES.getLocalizedMessage("store.editcertprofilenotauthorized", admin.toString(), id);
-            throw new AuthorizationDeniedException(msg);
+        boolean ret = false;
+        if (logging) {
+            ret = accessSession.isAuthorized(admin, rules);
+        } else {
+            ret = accessSession.isAuthorizedNoLogging(admin, rules);
         }
+        return ret;
     }
 }

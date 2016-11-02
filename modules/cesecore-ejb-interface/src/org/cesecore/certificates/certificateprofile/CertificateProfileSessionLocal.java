@@ -16,6 +16,8 @@ import java.util.Map;
 
 import javax.ejb.Local;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+
 /**
  * @version $Id$
  */
@@ -28,4 +30,19 @@ public interface CertificateProfileSessionLocal extends CertificateProfileSessio
      */
     Map<Integer, CertificateProfile> getAllCertificateProfiles();
     
+    /**
+     * Checks authorization to profiles. Only profiles that refer to CA's that the authentication token is 
+     * authorized to will be OK. Also checks the passed in extra resources. 
+     * Does this in a single call to accessControlSession to keep it efficient   
+     * 
+     * @param admin Administrator performing the operation
+     * @param profile Certificate Profile that we want to check authorization for
+     * @param id the ID of the above profile
+     * @param logging if we should log access or not
+     * @param resources, additional resources to check, for example StandardRules.CERTIFICATEPROFILEEDIT.resource()
+     * @return true if authorized to the profile and the resources
+     */
+    boolean authorizedToProfileWithResource(AuthenticationToken admin, CertificateProfile profile, int id, boolean logging, String... resources);
+
+
 }
