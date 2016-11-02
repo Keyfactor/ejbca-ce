@@ -20,14 +20,19 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,6 +49,7 @@ import javax.ejb.TransactionAttributeType;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CesecoreException;
@@ -925,13 +931,60 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         // Find caFingerprint through ca(Admin?)Session
         final List<Integer> availableCaIds = caSession.getAuthorizedCaIds(authenticationToken);
         final String issuerDn = CertTools.getIssuerDN(certificate);
+        /*
+         * Algorithm:
+         * - Find current CA with a certificate with a SubjectDN matching the IssuerDN of the leaf cert.
+         * - If found, check if the current CA certificate can verify the leaf cert's signature.
+         * - If this key didn't sign the leaf certificate, find the latest issued CA certificate with the CA's SubjectDN that can verify the leaf cert.
+         */
         String caFingerprint = null;
         for (final Integer caId : availableCaIds) {
             try {
                 final Certificate caCert = caSession.getCAInfo(authenticationToken, caId).getCertificateChain().iterator().next();
                 final String subjectDn = CertTools.getSubjectDN(caCert);
                 if (subjectDn.equals(issuerDn)) {
-                    caFingerprint = CertTools.getFingerprintAsString(caCert);
+                    try {
+                        certificate.verify(caCert.getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
+                        caFingerprint = CertTools.getFingerprintAsString(caCert);
+                    } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Unable to verify IKB certificate to import using current CA certificate with serialnumber " +
+                                    CertTools.getSerialNumber(caCert) + " (0x"+CertTools.getSerialNumberAsString(caCert)+"): " + e.getMessage());
+                        }
+                        // Since there exists a CA on this system with the correct issuer, this might be for a previous version of this CA using a different key
+                        final List<Certificate> potentialCaCerts = certificateStoreSession.findCertificatesBySubject(issuerDn);
+                        potentialCaCerts.remove(caCert);
+                        for (final Certificate potentialCaCert : new ArrayList<>(potentialCaCerts)) {
+                            if (!CertTools.isCA(potentialCaCert)) {
+                                potentialCaCerts.remove(potentialCaCert);
+                                continue;
+                            }
+                            try {
+                                certificate.verify(potentialCaCert.getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
+                            } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e1) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Unable to verify IKB certificate to import using CA certificate with serialnumber " +
+                                            CertTools.getSerialNumber(potentialCaCert) + " (0x"+CertTools.getSerialNumberAsString(potentialCaCert)+"): " + e1.getMessage());
+                                }
+                                potentialCaCerts.remove(potentialCaCert);
+                                continue;
+                            }
+                        }
+                        if (!potentialCaCerts.isEmpty()) {
+                            // Sort by notBefore descending and to use the latest issued (newest notBefore)
+                            Collections.sort(potentialCaCerts, new Comparator<Certificate>() {
+                                @Override
+                                public int compare(final Certificate o1, final Certificate o2) {
+                                    return CertTools.getNotBefore(o2).compareTo(CertTools.getNotBefore(o1));
+                                }
+                            });
+                            final Certificate choosenCaCert = potentialCaCerts.get(0);
+                            log.info("Able to verify IKB certificate to import using CA certificate with serialnumber " +
+                                    CertTools.getSerialNumber(choosenCaCert) + " (0x"+CertTools.getSerialNumberAsString(choosenCaCert)+").");
+                            caFingerprint = CertTools.getFingerprintAsString(choosenCaCert);
+                        }
+                    }
+                    // No need to check other CAs even if the right CA cert was not found
                     break;
                 }
             } catch (CADoesntExistsException e) {
