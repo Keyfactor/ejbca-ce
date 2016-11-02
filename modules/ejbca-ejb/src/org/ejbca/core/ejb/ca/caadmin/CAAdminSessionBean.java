@@ -3127,7 +3127,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         
         //Secondly, find all CAs
         for (final int caId : caSession.getAllCaIds()) {
-            boolean authorizedToCa = caSession.authorizedToCA(admin, caId);
             try {
                 Collection<Integer> crlPublishers = caSession.getCAInfoInternal(caId).getCRLPublishers();
                 if (crlPublishers != null) {
@@ -3135,7 +3134,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     for (Integer caPublisherId : crlPublishers) {
                         //This publisher is owned by a CA 
                         allPublishers.remove(caPublisherId);
-                        if (authorizedToCa) {
+                        // We don't need to log this access (to CA) since it only decides which publishers to display
+                        if (caSession.authorizedToCANoLogging(admin, caId)) {
                             //Admin has access to the CA, so return it as a result. 
                             result.add(caPublisherId);
                         }

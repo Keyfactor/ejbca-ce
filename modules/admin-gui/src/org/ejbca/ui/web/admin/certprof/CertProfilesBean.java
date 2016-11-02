@@ -187,21 +187,12 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isAuthorizedToEdit() {
-        return isAuthorizedTo(StandardRules.CERTIFICATEPROFILEEDIT.resource()) && isAuthorizedToSelectedCertificateProfile();
-    }
-
-    public boolean isAuthorizedToOnlyView() {
-        return isAuthorizedTo(StandardRules.CERTIFICATEPROFILEVIEW.resource()) && !isAuthorizedToEdit();
-    }
-
-    private boolean isAuthorizedToSelectedCertificateProfile() {
-        CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
         Integer selectedProfileId = getSelectedCertProfileId();
         if (selectedProfileId != null) {
+            CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
             CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(selectedProfileId);
             if (certificateProfile != null) {
-                return certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), certificateProfile.getType()).contains(
-                        selectedProfileId);
+                return certificateProfileSession.authorizedToProfileWithResource(getAdmin(), certificateProfile, selectedProfileId, false, StandardRules.CERTIFICATEPROFILEEDIT.resource());
             } else {
                 //Can happen if cache wasn't updated. 
                 return true;
@@ -209,6 +200,10 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         } else {
             return true;
         }
+    }
+
+    public boolean isAuthorizedToOnlyView() {
+        return isAuthorizedTo(StandardRules.CERTIFICATEPROFILEVIEW.resource()) && !isAuthorizedToEdit();
     }
 
     public String actionEdit() {
