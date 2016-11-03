@@ -1249,6 +1249,20 @@ function toggleCANameChange(){
       </td>
     </tr>
 
+   <tr id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+         <%= ejbcawebbean.getText("KEEPEXPIREDONCRL") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Keep%20expired%20certificates%20on%20CRL") %>
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_KEEPEXPIREDONCRL %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if (editca && x509cainfo.getKeepExpiredCertsOnCRL()) {
+                 out.write("CHECKED");
+              }
+              if(isexternal) out.write(" disabled "); 
+           %> id="<%=CHECKBOX_KEEPEXPIREDONCRL%>">
+      </td>
+    </tr>
+
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
         <strong><%= ejbcawebbean.getText("CRL_CA_DEFAULTCRLURI") %></strong>

@@ -526,7 +526,7 @@ public class CAInterfaceBean implements Serializable {
             String caDefinedFreshestCrlString, boolean useutf8policytext,
             boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
             boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive,
-            boolean serviceCmsActive, String sharedCmpRaSecret, boolean buttonCreateCa, boolean buttonMakeRequest,
+            boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL, boolean buttonCreateCa, boolean buttonMakeRequest,
             String cryptoTokenIdString, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
             String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
             byte[] fileBuffer) throws Exception {
@@ -587,7 +587,7 @@ public class CAInterfaceBean implements Serializable {
                     nameConstraintsPermittedString, nameConstraintsExcludedString,
                     caDefinedFreshestCrlString, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
                     usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive,
-                    serviceCmsActive, sharedCmpRaSecret, buttonCreateCa, buttonMakeRequest, cryptoTokenId,
+                    serviceCmsActive, sharedCmpRaSecret, keepExpiredCertsOnCRL, buttonCreateCa, buttonMakeRequest, cryptoTokenId,
                     keyAliasCertSignKey, keyAliasCrlSignKey, keyAliasDefaultKey, keyAliasHardTokenEncryptKey,
                     keyAliasKeyEncryptKey, keyAliasKeyTestKey, fileBuffer);
         } catch (Exception e) {
@@ -618,7 +618,7 @@ public class CAInterfaceBean implements Serializable {
             String nameConstraintsPermittedString, String nameConstraintsExcludedString, String caDefinedFreshestCrlString, boolean useutf8policytext,
             boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
             boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive,
-            boolean serviceCmsActive, String sharedCmpRaSecret, boolean buttonCreateCa, boolean buttonMakeRequest,
+            boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL, boolean buttonCreateCa, boolean buttonMakeRequest,
             int cryptoTokenId, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
             String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
             byte[] fileBuffer) throws Exception {
@@ -782,7 +782,8 @@ public class CAInterfaceBean implements Serializable {
 	                            useCertReqHistory,
 	                            useUserStorage,
 	                            useCertificateStorage,
-	                            sharedCmpRaSecret);
+	                            sharedCmpRaSecret,
+	                            keepExpiredCertsOnCRL);
                         try {
                             cadatahandler.createCA((CAInfo) x509cainfo);
                         } catch (EJBException e) {
@@ -828,7 +829,8 @@ public class CAInterfaceBean implements Serializable {
 	                            useCertReqHistory,
 	                            useUserStorage,
 	                            useCertificateStorage,
-	                            null);
+	                            null,
+	                            keepExpiredCertsOnCRL);
 	                    saveRequestInfo(x509cainfo);                
 	                }
 	            }                          
@@ -965,7 +967,7 @@ public class CAInterfaceBean implements Serializable {
 	        String certificateAiaDefaultCaIssuerUriParam,
 	        String nameConstraintsPermittedString, String nameConstraintsExcludedString,
 	        String caDefinedFreshestCrl, boolean useutf8policytext, boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
-	        boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceCmsActive, String sharedCmpRaSecret
+	        boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL
 	        ) throws Exception {
         // We need to pick up the old CAToken, so we don't overwrite with default values when we save the CA further down
         CAInfoView infoView = cadatahandler.getCAInfo(caid);  
@@ -1064,7 +1066,8 @@ public class CAInterfaceBean implements Serializable {
                        useCertReqHistory,
                        useUserStorage,
                        useCertificateStorage,
-                       sharedCmpRaSecret);
+                       sharedCmpRaSecret,
+                       keepExpiredCertsOnCRL);
            }
            // Info specific for CVC CA
            if (catype == CAInfo.CATYPE_CVC) {

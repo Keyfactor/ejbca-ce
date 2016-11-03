@@ -63,13 +63,16 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
@@ -82,6 +85,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -110,6 +114,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
 
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
     private PublishingCrlSessionRemote publishingCrlSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
     private PublishingCrlProxySessionRemote publishingCrlProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
@@ -216,7 +221,90 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         } else {
             assertEquals(0, revfp.size());
         }
+    }
 
+    /**
+     * Tests how expired certificates behave on the CRL
+     */
+    @Test
+    public void testCRLWithExpiry() throws Exception {
+        // Create a certificate profile where we can decide what validity we will have
+        CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certProfile.setAllowValidityOverride(true);
+        int profileId = certificateProfileSession.addCertificateProfile(roleMgmgToken, PublishingCrlSessionTest.class.getSimpleName(), certProfile);
+
+        String fp = null;
+        try {
+            // Set the CA to keep expired certificates on the CRL
+            CAInfo info = caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
+            info.setKeepExpiredCertsOnCRL(true);
+            caSession.editCA(alwaysAllowToken, info);
+
+            // Generate a certificate that is expired from the get go
+            ExtendedInformation ei = new ExtendedInformation();
+            ei.setCustomData(EndEntityProfile.STARTTIME, "2001-04-20 01:22");
+            ei.setCustomData(EndEntityProfile.ENDTIME, "2012-05-12 05:33");
+            EndEntityInformation user = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=crltest", testx509ca.getCAId(), null, "crltest@anatom.se",
+                    new EndEntityType(EndEntityTypes.ENDUSER), 0, profileId, EndEntityConstants.TOKEN_USERGEN, 0, ei);
+            SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
+            X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+            X509Certificate cert = (X509Certificate)resp.getCertificate();
+            fp = CertTools.getFingerprintAsString(cert);
+            assertTrue("Certificate should be expired, but is not. notAfter: "+cert.getNotAfter()+", now: "+new Date(), cert.getNotAfter().before(new Date()));
+
+            // Create a CRL verify that our expired, but unrevoked certificate is not on it
+            publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
+            byte[] crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            assertNotNull("Could not get CRL", crl);
+            X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
+            assertFalse("Certificate should not be present on the CRL", x509crl.isRevoked(cert));
+            // Revoke it, it shall now be on the CRL
+            internalCertificateStoreSession.setRevokeStatus(alwaysAllowToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
+            publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
+            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            assertNotNull("Could not get CRL", crl);
+            x509crl = CertTools.getCRLfromByteArray(crl);
+            assertTrue("Certificate should be present on the CRL", x509crl.isRevoked(cert));
+            // And two more times, to make sure it doesn't disappear, since we use keepExpiredCertsOnCRL
+            info = caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
+            assertTrue(info.getKeepExpiredCertsOnCRL());
+            publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
+            publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
+            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            assertNotNull("Could not get CRL", crl);
+            x509crl = CertTools.getCRLfromByteArray(crl);
+            assertTrue("Certificate should be present on the CRL", x509crl.isRevoked(cert));
+
+            // Change to not keep expired certificates on CRL
+            info = caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
+            info.setKeepExpiredCertsOnCRL(false);
+            caSession.editCA(alwaysAllowToken, info);
+            // It should be in the first, because it is now that status is set to archived to it will not appear on the next CRL
+            CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(fp);
+            assertEquals("Info should be REVOKED before generating CRL that will set it to ARCHIVED", CertificateConstants.CERT_REVOKED, certInfo.getStatus());
+            publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
+            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            assertNotNull("Could not get CRL", crl);
+            x509crl = CertTools.getCRLfromByteArray(crl);
+            assertTrue("Certificate should be present on the CRL", x509crl.isRevoked(cert));
+            certInfo = certificateStoreSession.getCertificateInfo(fp);
+            assertEquals("Info should be ARCHIVED after generating CRL", CertificateConstants.CERT_ARCHIVED, certInfo.getStatus());
+            // Second time it should be gone
+            publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
+            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            assertNotNull("Could not get CRL", crl);
+            x509crl = CertTools.getCRLfromByteArray(crl);
+            assertFalse("Certificate should not be present on the CRL", x509crl.isRevoked(cert));
+        } finally {
+            // Remove certificate profile we created here
+            certificateProfileSession.removeCertificateProfile(alwaysAllowToken, PublishingCrlSessionTest.class.getSimpleName());
+            // Remove generated certificate
+            internalCertificateStoreSession.removeCertificate(fp);
+            // Set back default value for keep expired certificates on CRL
+            CAInfo info = caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
+            info.setKeepExpiredCertsOnCRL(false);
+            caSession.editCA(alwaysAllowToken, info);
+        }
     }
 
     /**
@@ -343,7 +431,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         // Fetch CAInfo and save CRLPeriod
         CAInfo cainfo = testx509ca.getCAInfo();
         long tempCRLPeriod = cainfo.getCRLPeriod();
-        X509Certificate cert = createCertWithValidity(1);
+        X509Certificate cert = createCert();
         try {
             // Revoke the user
             internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
@@ -500,10 +588,6 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
     //
 
     private X509Certificate createCert() throws Exception {
-        return createCertWithValidity(10);
-    }
-
-    private X509Certificate createCertWithValidity(int validity) throws Exception {
         EndEntityInformation user = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=crltest", testx509ca.getCAId(), null, "crltest@anatom.se",
                 new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
@@ -512,4 +596,5 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         assertNotNull("Failed to create certificate", cert);
         return cert;
     }
+
 }
