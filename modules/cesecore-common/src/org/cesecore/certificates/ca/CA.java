@@ -127,6 +127,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     private static final String USE_USER_STORAGE = "useUserStorage";
     private static final String USE_CERTIFICATE_STORAGE = "useCertificateStorage";
     private static final String LATESTLINKCERTIFICATE = "latestLinkCertificate";
+    private static final String KEEPEXPIREDCERTSONCRL = "keepExpiredCertsOnCRL";
 
     private HashMap<Integer, ExtendedCAService> extendedcaservicemap = new HashMap<Integer, ExtendedCAService>();
 
@@ -154,6 +155,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(DESCRIPTION, cainfo.getDescription());
         data.put(REVOCATIONREASON, Integer.valueOf(-1));
         data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
+        setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL()); 
         setCRLPeriod(cainfo.getCRLPeriod());
         setCRLIssueInterval(cainfo.getCRLIssueInterval());
         setCRLOverlapTime(cainfo.getCRLOverlapTime());
@@ -372,6 +374,18 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(CRLPUBLISHERS, crlpublishers);
     }
 
+    public boolean getKeepExpiredCertsOnCRL() {
+        if(data.containsKey(KEEPEXPIREDCERTSONCRL)) {
+            return ((Boolean)data.get(KEEPEXPIREDCERTSONCRL)).booleanValue();   
+        } else {
+            return false;
+        }   
+    }
+
+    public void setKeepExpiredCertsOnCRL(boolean keepexpiredcertsoncrl) {
+        data.put(KEEPEXPIREDCERTSONCRL, Boolean.valueOf(keepexpiredcertsoncrl));   
+    }
+        
     public int getCertificateProfileId() {
         return ((Integer) data.get(CERTIFICATEPROFILEID)).intValue();
     }
@@ -799,6 +813,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         if (cainfo.getCertificateProfileId() > 0) {
             data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
         }
+        setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL()); 
+
         if (cainfo.getCAToken() != null) {
             setCAToken(cainfo.getCAToken());
         }

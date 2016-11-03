@@ -2756,8 +2756,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             // v42. ETSI QC Type and PDS specified in EN 319 412-05.
             // Nothing to set though, since null values means to not use the new values            
 
+            // v43, ECA-5304. 
             if (data.get(USEDEFAULTCAISSUER) == null) {
-                setUseDefaultCAIssuer(false); // v43, ECA-5304
+                setUseDefaultCAIssuer(false);
             }
             
             // v44. ECA-5141
@@ -2765,7 +2766,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if(null == data.get(ENCODED_VALIDITY)) {
                 setEncodedValidity(StringUtils.EMPTY);
             }
-            
             // v44. ECA-5330
             // initialize fields for expiration restriction for weekdays. use is false because of backward compatibility, the before restriction default is true
             if(null == data.get(USE_EXPIRATION_RESTRICTION_FOR_WEEKDAYS)) {
