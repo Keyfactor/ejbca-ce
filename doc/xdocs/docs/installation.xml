@@ -66,7 +66,7 @@ For example if the machine has too few cores CLI connections will mysteriously t
 <p>This section provides a fast way to get installed and running for a test using Ubuntu Linux. 
 To get more information about configuration options etc (there are plenty), you should follow the regular <strong>Installation guide</strong> below.
 </p><p>
-This quick start guide assumes EJBCA 6.5, JBoss EAP 6.4 and Java 7, but other version should also be possible to use by just replacing the versions.
+This quick start guide assumes EJBCA 6.5, JBoss EAP 6.4 and Java 8, but other version should also be possible to use by just replacing the versions.
 We also assume installation is made in a user account with username "user". In your environment simply replace user with the username you are using.
 <br/><b>Note</b> that the quick install will create a H2 database as ~/ejbcadb. If you run this multiple times, delete this file in order to remove the old database.
 </p>
@@ -74,15 +74,16 @@ We also assume installation is made in a user account with username "user". In y
 The quick start guide uses the JBoss built in database, H2. This is not a database you want to use in production, so don't use these quick start settings for a production installation.
 </note>
 <ol>
-<li>Install Ubuntu 14.04 server x64, default config, only OpenSSH server selected (or other Ubuntu of your choice, for example Ubuntu Desktop).
+<li>Install Ubuntu 16.04 server x64, default config, only OpenSSH server selected (or other Ubuntu of your choice, for example Ubuntu Desktop).
 <ul>
 <li>Add user with username 'user' during install. The path /home/user means the user's home directory below.</li>
+<li>Make sure that networking and hostnames work correctly, i.e. hostname and ip are configured in /etc/hosts.</li>
 </ul>
 </li>
 <li>Open a new terminal "ejbca".</li>
 <li>Install needed software from Ubuntu repositories.
 <ul>
-<li>sudo apt-get install openjdk-7-jdk ant ant-optional unzip ntp</li>
+<li>sudo apt-get install default-jdk-headless ant ant-optional unzip</li>
 </ul>
 </li>
 <li>Install software not in Ubuntu repositories, JBoss EAP 6.4 and EJBCA 6.5.0.<br/>
@@ -108,7 +109,7 @@ The quick start guide uses the JBoss built in database, H2. This is not a databa
 <li>(now wait a little for JBoss to reload)</li>
 </ul>
 </li>
-<li>Run install (in terminal "ejbca") to create initial Management CA and TLS keystores.<br/>
+<li>Run installation (in terminal "ejbca") to create initial Management CA and TLS keystores.<br/>
 <ul>
 <li>ant install (choose all default values)</li>
 </ul>
@@ -121,9 +122,8 @@ why it will not start correctly in your environment, See the <a href="adminguide
 <li>jboss-eap-6.4/bin/standalone.sh</li>
 </ul>
 </li>
-<li>Copy /home/user/ejbca_ce_6_5_0/p12/superadmin.p12 to admin desktop machine and import in web browser.</li>
+<li>Copy /home/user/ejbca_ce_6_5_0/p12/superadmin.p12 to admin desktop machine and import in web browser (keystore password is ejbca by default).</li>
 <li>Open URL https://server:8443/ejbca, where 'server' is the servers name/ip.</li>
-<li>Configure JBoss for logging, see <a href="#JBoss%207%20and%20EAP%206%20logging">JBoss 7 and EAP 6 logging</a> for instructions.</li>
 </ol>
 <p>Done!</p>
 <p>After installation <strong>do not forget to secure your installation</strong> as described in <a href="security.html#Securing JBoss">securing JBoss</a>.</p>
