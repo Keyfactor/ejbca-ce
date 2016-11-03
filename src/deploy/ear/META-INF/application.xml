@@ -78,6 +78,12 @@
             <context-root>/ejbca/adminweb</context-root>
         </web>
     </module>
+    <module>
+        <web>
+            <web-uri>acme.war</web-uri>
+            <context-root>/ejbca/acme</context-root>
+        </web>
+    </module>
        <!--@ejbca-systemtest-ejb.jar@-->
        <!--@ejbca-ws-ejb.jar@-->
        <!--@doc.war@-->
