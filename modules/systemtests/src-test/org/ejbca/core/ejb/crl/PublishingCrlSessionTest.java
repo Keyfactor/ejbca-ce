@@ -274,7 +274,10 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             assertTrue("Certificate should be present on the CRL", x509crl.isRevoked(cert));
-
+            // Also verify that the ExpiredCertsOnCRL CRL extension is on this CRL
+            Set<String> extensions = x509crl.getNonCriticalExtensionOIDs();
+            assertTrue("CRL does not contain the ExpiredCertsOnCRL extension, even though KeepExpiredCertsOnCRL is set to true", extensions.contains("2.5.29.60"));
+            
             // Change to not keep expired certificates on CRL
             info = caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
             info.setKeepExpiredCertsOnCRL(false);
@@ -295,6 +298,9 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             assertFalse("Certificate should not be present on the CRL", x509crl.isRevoked(cert));
+            // Also verify that the ExpiredCertsOnCRL CRL extension is not on this CRL
+            extensions = x509crl.getNonCriticalExtensionOIDs();
+            assertFalse("CRL contains the ExpiredCertsOnCRL extension, even though KeepExpiredCertsOnCRL is set to false", extensions.contains("2.5.29.60"));
         } finally {
             // Remove certificate profile we created here
             certificateProfileSession.removeCertificateProfile(alwaysAllowToken, PublishingCrlSessionTest.class.getSimpleName());
