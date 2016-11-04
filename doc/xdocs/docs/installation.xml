@@ -123,7 +123,7 @@ why it will not start correctly in your environment, See the <a href="adminguide
 </ul>
 </li>
 <li>Copy /home/user/ejbca_ce_6_5_0/p12/superadmin.p12 to admin desktop machine and import in web browser (keystore password is ejbca by default).</li>
-<li>Open URL https://server:8443/ejbca, where 'server' is the servers name/ip.</li>
+<li>Open URL https://server:8443/ejbca, where 'server' is the servers name/ip. You will see a warning that the server side TLS certificate is not trusted, but if you ignore this warning you are prompted to connect using your imported P12.</li>
 </ol>
 <p>Done!</p>
 <p>After installation <strong>do not forget to secure your installation</strong> as described in <a href="security.html#Securing JBoss">securing JBoss</a>.</p>
