@@ -37,12 +37,11 @@ public interface CertificateProfileSessionLocal extends CertificateProfileSessio
      * 
      * @param admin Administrator performing the operation
      * @param profile Certificate Profile that we want to check authorization for
-     * @param id the ID of the above profile
      * @param logging if we should log access or not
      * @param resources, additional resources to check, for example StandardRules.CERTIFICATEPROFILEEDIT.resource()
      * @return true if authorized to the profile and the resources
      */
-    boolean authorizedToProfileWithResource(AuthenticationToken admin, CertificateProfile profile, int id, boolean logging, String... resources);
+    boolean authorizedToProfileWithResource(AuthenticationToken admin, CertificateProfile profile, boolean logging, String... resources);
 
 
 }
