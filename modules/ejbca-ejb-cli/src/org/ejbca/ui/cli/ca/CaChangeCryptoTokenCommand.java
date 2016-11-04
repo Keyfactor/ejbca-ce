@@ -53,8 +53,8 @@ public class CaChangeCryptoTokenCommand extends BaseCaAdminCommand {
     {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, "The name of the CA."));
         registerParameter(new Parameter(CRYPTOTOKEN_NAME_KEY, "Crypto token name", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, "The name of the new crypto token the CA should reference."));
-        registerParameter(new Parameter(CA_TOKEN_PROPERTIES_KEY, "Filename", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "CA Token properties is a file were you define key aliases for the CA."));
+        registerParameter(new Parameter(CA_TOKEN_PROPERTIES_KEY, "Filename", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "CA Token properties is a file were you define key aliases for the CA, leave out to keep existing properties."));
         registerParameter(Parameter.createFlag(EXECUTE_KEY, "Make the change instead of displaying what would change."));
     }
 
@@ -105,8 +105,6 @@ nextCertSignKey fooalias03
                     }
                 }
             }
-        } else {
-            throw new IllegalStateException("Crypto token properties file must be supplied.");            
         }
 
         try {
