@@ -260,7 +260,7 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
             try {
                 info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caid);
                 if (info.getStatus() == CAConstants.CA_EXTERNAL) {
-                    casList += TAB + info.getName() + ": External CA";
+                    casList += TAB + info.getName() + ": External CA\n";
                 } else {
                     int cryptoTokenId = info.getCAToken().getCryptoTokenId();
                     String cryptoTokenName = "Current CLI user does not have authorization to Crypto Tokens.\n";
