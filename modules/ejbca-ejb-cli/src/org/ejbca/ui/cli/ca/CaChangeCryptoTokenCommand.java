@@ -37,10 +37,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
- * CLI command to change crypto token of a CA.
- * 
- * The command will look for other CAs that reference the same HSM slot and use the specified CA's CryptoToken id for
- * all the CAs.
+ * CLI command to change crypto token and CA token properties of a CA.
  * 
  * @version $Id$
  */
@@ -92,14 +89,14 @@ nextCertSignKey fooalias03
             if ((caTokenPropertiesFile != null) && (!caTokenPropertiesFile.equalsIgnoreCase("null"))) {
                 File file = new File(caTokenPropertiesFile);
                 if (!file.exists()) {
-                    getLogger().error("CA Token propoerties file " + caTokenPropertiesFile + " does not exist.");
+                    getLogger().error("CA Token properties file " + caTokenPropertiesFile + " does not exist.");
                     return CommandResult.FUNCTIONAL_FAILURE;
                 } else if (file.isDirectory()) {
-                    getLogger().error("CA Token propoerties file " + caTokenPropertiesFile + " is a directory.");
+                    getLogger().error("CA Token properties file " + caTokenPropertiesFile + " is a directory.");
                     return CommandResult.FUNCTIONAL_FAILURE;
                 } else {
-                    try {
-                        caTokenProperties.load(new FileInputStream(caTokenPropertiesFile));
+                    try (final FileInputStream fis = new FileInputStream(caTokenPropertiesFile)) {
+                        caTokenProperties.load(fis);
                     } catch (FileNotFoundException e) {
                         //Can't happen
                         throw new IllegalStateException("Newly referenced file " + caTokenPropertiesFile + " was not found.", e);
@@ -121,7 +118,7 @@ nextCertSignKey fooalias03
 
             getLogger().info("CA '" + caInfo.getName() + "' references crypto token '" + cryptoTokenInfo.getName() + "'");
             getLogger().info("New crypto token: " + cryptoTokenName);
-            getLogger().info("CA token properties: " + caTokenProperties.toString());
+            getLogger().info("CA token properties: " + caTokenPropertiesFile);
             getLogger().info("");
 
             
@@ -135,7 +132,7 @@ nextCertSignKey fooalias03
             final CryptoTokenInfo newCryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAuthenticationToken(), newId);
 
             getLogger().info((force?"Changing ":"Would change" )+" CA '" + caInfo.getName() + "' that currently references crypto token '" + cryptoTokenInfo.getName() + "' to instead reference '" + newCryptoTokenInfo.getName() + "'.");
-            getLogger().info(" Properties: " + caTokenProperties);
+            getLogger().info(" CA token properties that will be updated: " + caTokenProperties);
 
             
             if (force) {
