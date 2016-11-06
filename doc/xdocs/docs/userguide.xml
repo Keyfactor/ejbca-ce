@@ -945,8 +945,15 @@ in ejbca.properties. See the documentation in conf/ejbca.properties.sample for m
 <li>Add new end entities and issue a certificates for them.</li>
 </ul>
 <p><i>Short lived certificates:</i>
-<br/>In a Certificate Profile you can configure validity down to a single day. Using validity override and requesting a specific validity time through the protocols and APIs (WS, CMP, SCEP) even shorter times can be requested, down to minutes and seconds.
+<br/>In a Certificate Profile you can configure validity down to a minutes. Also using validity override and requesting a specific validity time through the protocols and APIs (WS, CMP, SCEP) short times can be requested, down to minutes and seconds.
 When using shorter validity periods than what is configured in the Certificate Profile the value in the profile will function as an upper limit. Longer times than that is not possible to issue.
+</p>
+</subsubsection>
+<subsubsection name="Expiration restrictions">
+<p>
+Expiration restrictions define specific days when a certificate is not allowed to expire. When issuing the certificate the 
+configured Validity will be evaluated to see if the notAfter date (certificate expiration) will occur on one of those days. If so
+the notAfter date will be moves back or moved forward to a day no among one of the restricted days.
 </p>
 </subsubsection>
 <subsubsection name="Allow extension override">
