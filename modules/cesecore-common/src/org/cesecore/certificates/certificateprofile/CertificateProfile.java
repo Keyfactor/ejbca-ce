@@ -57,7 +57,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 44.0;
+    public static final float LATEST_VERSION = (float) 45.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -1897,17 +1897,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public List<PKIDisclosureStatement> getQCEtsiPds() {
         List<PKIDisclosureStatement> result = null;
         List<PKIDisclosureStatement> pdsList = (List<PKIDisclosureStatement>)data.get(QCETSIPDS);
-        if (pdsList == null) {
-            // EJBCA 6.6.0 or older
-            // TODO move this code into the upgrade() method
-            final String url = (String) data.get(QCETSIPDSURL);
-            final String lang = (String) data.get(QCETSIPDSLANG);
-            if (url != null) {
-                result = new ArrayList<>();
-                result.add(new PKIDisclosureStatement(url, lang));
-            }
-        } else if (!pdsList.isEmpty()) {
-            // EJBCA 6.6.1 and newer
+        if (pdsList != null && !pdsList.isEmpty()) {
             result = new ArrayList<>(pdsList.size());
             try {
                 for (final PKIDisclosureStatement pds : pdsList) {
@@ -1930,10 +1920,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         } else {
             data.put(QCETSIPDS, new ArrayList<>(pds));
         }
-        // These were used by EJBCA <= 6.6.0
-        // TODO move this code into the upgrade() method
-        data.remove(QCETSIPDSURL);
-        data.remove(QCETSIPDSLANG);
     }
     
     public boolean getUseQCCustomString() {
@@ -2760,7 +2746,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if (data.get(USEDEFAULTCAISSUER) == null) {
                 setUseDefaultCAIssuer(false);
             }
-            
+           
             // v44. ECA-5141
             // 'encodedValidity' MUST set to "" (Empty String) here. The initialization is done during post-upgrade of EJBCA 6.6.1.
             if(null == data.get(ENCODED_VALIDITY)) {
@@ -2776,6 +2762,20 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             if(null == data.get(EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE)) {
                 setExpirationRestrictionForWeekdaysExpireBefore(true);
+            }
+            
+            // v45: Multiple ETSI QC PDS values (ECA-5478)
+            if (!data.containsKey(QCETSIPDS)) {
+                final String url = (String) data.get(QCETSIPDSURL);
+                final String lang = (String) data.get(QCETSIPDSLANG);
+                List<PKIDisclosureStatement> pdsList = null;
+                if (StringUtils.isNotEmpty(url)) {
+                    pdsList = new ArrayList<>();
+                    pdsList.add(new PKIDisclosureStatement(url, lang));
+                }
+                setQCEtsiPds(pdsList);
+                data.remove(QCETSIPDSURL);
+                data.remove(QCETSIPDSLANG);
             }
             
             data.put(VERSION, new Float(LATEST_VERSION));

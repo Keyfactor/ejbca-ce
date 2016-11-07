@@ -538,41 +538,17 @@ public class CertificateProfileTest {
         
         assertNull(profile.getQCEtsiType());
         assertNull(profile.getQCEtsiPds());
-        // Check reading of old values from EJBCA <= 6.6.0
-        setProfileValue(profile, CertificateProfile.QCETSIPDSURL, null);
-        assertNull(profile.getQCEtsiPds());
-        setProfileValue(profile, CertificateProfile.QCETSIPDSURL, "http://example.com/pds");
-        setProfileValue(profile, CertificateProfile.QCETSIPDSLANG, "sv");
-        List<PKIDisclosureStatement> pdsResult = profile.getQCEtsiPds();
-        assertNotNull(pdsResult);
-        assertEquals(1, pdsResult.size());
-        assertEquals("sv", pdsResult.get(0).getLanguage());
-        assertEquals("http://example.com/pds", pdsResult.get(0).getUrl());
         // Setting an empty list causes it to be changed into null
         profile.setQCEtsiPds(new ArrayList<PKIDisclosureStatement>());
         assertNull(profile.getQCEtsiPds());
         profile.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("http://pds.foo.bar/pds", "en")));
-        pdsResult = profile.getQCEtsiPds();
+        List<PKIDisclosureStatement> pdsResult = profile.getQCEtsiPds();
         assertNotNull(pdsResult);
         assertEquals(1, pdsResult.size());
         assertEquals("en", pdsResult.get(0).getLanguage());
         assertEquals("http://pds.foo.bar/pds", pdsResult.get(0).getUrl());
         profile.setQCEtsiType("1.2.3.4");
         assertEquals("1.2.3.4", profile.getQCEtsiType());
-    }
-    
-    /** Sets any value in the hashmap in the profile */
-    @SuppressWarnings("unchecked")
-    private void setProfileValue(final CertificateProfile profile, final String name, final String value) {
-        try {
-            final Field field = UpgradeableDataHashMap.class.getDeclaredField("data");
-            field.setAccessible(true);
-            final HashMap<String,Object> map = (HashMap<String,Object>) field.get(profile);
-            map.put(name, value);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
-        
     }
 
     @Test
@@ -651,7 +627,55 @@ public class CertificateProfileTest {
         assertEquals("1.1.1.3", pol.getPolicyID() );
         assertNull(pol.getQualifier());
         assertEquals("foo", pol.getQualifierId());
-    } 
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCertificateProfileUpgradeDefaults() {
+        // Test with default/unset values
+        final Map<String,Object> data = new HashMap<>();
+        initDataMap(data);
+        data.put(UpgradeableDataHashMap.VERSION, 1.0F);
+        data.put(CertificateProfile.QCETSIPDSLANG, "");
+        data.put(CertificateProfile.QCETSIPDSURL, "");
+        final CertificateProfile cp = new CertificateProfile();
+        cp.loadData(data);
+        
+        final Map<String,Object> res = (Map<String, Object>) cp.saveData();
+        assertFalse("Old property should have been removed", res.containsKey(CertificateProfile.QCETSIPDSLANG));
+        assertFalse("Old property should have been removed", res.containsKey(CertificateProfile.QCETSIPDSURL));
+        assertTrue("New property should have been added", res.containsKey(CertificateProfile.QCETSIPDS));
+        assertNull(res.get(CertificateProfile.QCETSIPDS));
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCertificateProfileUpgradeNonDefaults() {
+        final Map<String,Object> data = new HashMap<>();
+        initDataMap(data);
+        data.put(CertificateProfile.QCETSIPDSLANG, "en");
+        data.put(CertificateProfile.QCETSIPDSURL, "https://example.com/pds.pdf");
+        final CertificateProfile cp = new CertificateProfile();
+        cp.loadData(data);
+
+        final Map<String,Object> res = (Map<String, Object>) cp.saveData();
+        assertFalse("Old property should have been removed", res.containsKey(CertificateProfile.QCETSIPDSLANG));
+        assertFalse("Old property should have been removed", res.containsKey(CertificateProfile.QCETSIPDSURL));
+        assertTrue("New property should have been added", res.containsKey(CertificateProfile.QCETSIPDS));
+        final List<PKIDisclosureStatement> pdsList = (List<PKIDisclosureStatement>) res.get(CertificateProfile.QCETSIPDS);
+        assertNotNull(pdsList);
+        assertEquals(1, pdsList.size());
+        assertEquals("en", pdsList.get(0).getLanguage());
+        assertEquals("https://example.com/pds.pdf", pdsList.get(0).getUrl());
+    }
+
+    /** Initializes a data hash map. This does not (yet) initialize the full data hashmap from "v1", so it might be necessary to add additional properties in the future. */
+    private void initDataMap(final Map<String, Object> data) {
+        data.put(UpgradeableDataHashMap.VERSION, 1.0F);
+        data.put(CertificateProfile.AVAILABLEBITLENGTHS, new ArrayList<>(Arrays.asList(1024)));
+        data.put(CertificateProfile.MINIMUMAVAILABLEBITLENGTH, Integer.valueOf(1024));
+        data.put(CertificateProfile.MAXIMUMAVAILABLEBITLENGTH, Integer.valueOf(1024));
+    }
 
     @Test
     public void testInvalidKeySpecs() throws InvalidAlgorithmParameterException {
