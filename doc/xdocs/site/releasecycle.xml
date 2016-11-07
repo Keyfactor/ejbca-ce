@@ -8,20 +8,25 @@
 <body>
   <section name="EJBCA release cycle">
 	  <p>
-	  The EJBCA release numbering is on the form EJBCA x.y.z where the numbering follows these rules:  
+	  The EJBCA release numbering is on the form EJBCA x.y.z.w (for example 6.3.1.1) where the numbering follows these rules:  
 	  </p>
 	  <ul>
-	  <li>The first indice indicates a major paradigm shift. Examples are moving from one EJB standard to the next (ejb1 -> ejb2 etc) or making the shift from 
-	  a single CA per installation to multiple CAs. These shift are very rare with years between them. A paradigm release probably requires major upgrade activities.</li>
-	  <li>The second indice corresponds to major enhancements in term of functionalities, or of significant upgrade of embedded component versions. 
-	  These releases may occur once or twice a year, or it may also be longer between them. A major release may require (but not always) database upgrades, where upgrade scripts should be provided.</li>
-	  <li>The third indice corresponds to maintenance releases. A maintenance release contains bugfixes and minor funcionality enhancements.
-	  A maintenance release should not require database upgrades, except in extreme cases. Maintenance releases are usually plug-in upgrades.</li>
-	  <li>A svn branch is always created when a major version is released. The branch name corresponds to the major version, e.g. Branch_3_2.</li>
-	  <li>Maintenance releases are always made from a branch, and only selected, safe changes are done in the branch. These changes always correspond to a specific bug report or a specific minor user requirement.
-	  A maintenance release is tagged with the release number in svn, e.g. Rel_3_2_1.</li>
-	  <li>Some maintenance releases may be tagged but not released when it is a single fix for a specific user where the fix is not deemed of interest for a broader audience.</li>
+	  <li>Major Release (x): The first number indicates a major paradigm shift. Examples are moving from one EJB standard to the next (ejb3 -> ejb3 etc) or making the shift from 
+	  a single CA per installation to multiple CAs, something that changes how you work with EJBCA. These shift are very rare with many years between them. A major release probably requires major upgrade activities.</li>
+	  <li>Feature Release (y): The second number corresponds to major enhancements in terms of functionality, or of significant upgrade of embedded component versions. 
+	  These releases may occur once or twice a year, or it may also be longer between them. A major release may require (but not always) database upgrades, where upgrade scripts are provided.</li>
+	  <li>Minor Release (z): The third number corresponds to minor upgrades with regards to bugfixes and functionality enhancements.
+	  A minor release should not require database upgrades, except in extreme cases. Minor releases are usually plug-in upgrades and occurs frequently, several times each year.</li>
+	  <li>Maintenance Release (w): The fourth number corresponds to a maintenance release that contains important bugfixes, or other cherry picked changes, to a stable release branch.
+	  Maintenance releases are plug-in upgrades and only occur when needed.</li>
 	  </ul>
+	  <p>
+	  A branch in the version control system is always created when a Major or Feature release is done. The branch name corresponds to the version, e.g. Branch_6_6.
+	  Minor and Maintenance releases are always made from a branch.
+	  </p><p>
+	  All releases are tagged with the release number and date in the version control system, e.g. EJBCA_6_3_1_1-20150601, although tags are typically not publicly visible.
+	  Some releases may be tagged but not released when it is a single fix for a specific user where the fix is not deemed of interest for a broader audience.
+	  </p>
   </section>
 
 </body>
