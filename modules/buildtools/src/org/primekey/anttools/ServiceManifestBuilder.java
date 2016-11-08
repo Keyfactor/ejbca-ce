@@ -204,7 +204,7 @@ public class ServiceManifestBuilder {
      * @throws IOException 
      */
     private static List<Class<?>> getImplementingClasses(final File baseLocation, File location, Class<?> interfaceClass) {
-        final List<Class<?>> result = new ArrayList<Class<?>>();
+        final List<Class<?>> result = new ArrayList<>();
         if (location.isDirectory()) {
             //Recurse to find all files in all subdirectories
             final int baseLocationAbsolutePathLength = baseLocation.getAbsolutePath().length() + File.separator.length();
@@ -217,7 +217,8 @@ public class ServiceManifestBuilder {
                     if (indexOfExtension!=-1 && indexOfExtension==absolutePath.length()-CLASS_EXTENSION.length()) {
                         final String className = absolutePath.substring(baseLocationAbsolutePathLength, indexOfExtension).replace(File.separatorChar, '.');
                         try {
-                            final Class<?> candidate = Class.forName(className);
+                            // We set the "initialize" parameter to false here, because initialization can also pull in a lot of other classes and isn't needed anyway (ECA-5501)
+                            final Class<?> candidate = Class.forName(className, false, ServiceManifestBuilder.class.getClassLoader());
                             if (interfaceClass.isAssignableFrom(candidate) && !Modifier.isAbstract(candidate.getModifiers())
                                     && !candidate.isInterface()) {                              
                                 result.add(candidate);
