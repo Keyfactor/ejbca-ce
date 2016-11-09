@@ -31,6 +31,7 @@
     </target>
 
     <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web, ejbca-ws-cli"/></target>
+	
     <target name="compile" depends="compile-external-deps">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
