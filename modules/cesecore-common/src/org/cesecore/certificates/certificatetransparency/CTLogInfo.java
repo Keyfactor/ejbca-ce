@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
@@ -32,11 +33,13 @@ public final class CTLogInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private final int logId;
-    private final byte[] publicKeyBytes;
-    private final String url; // base URL, without "add-chain" or "add-pre-chain"
+    private byte[] publicKeyBytes;
+    private String url; // base URL, without "add-chain" or "add-pre-chain"
     private int timeout = 5000; // milliseconds
     
     private transient PublicKey publicKey;
+    
+    private static final Random random = new Random();
     
     /**
      * Creates a CT log info object, but does not parse the public key yet
@@ -54,7 +57,7 @@ public final class CTLogInfo implements Serializable {
         if (!url.endsWith("/ct/v1/")) {
             log.warn("CT Log URL should end with /ct/v1/. URL: "+url);
         }
-        this.logId = url.hashCode();
+        this.logId = random.nextInt();
         this.url = url;
         if (publicKeyBytes == null) {
             throw new IllegalArgumentException("publicKeyBytes is null");
@@ -81,6 +84,11 @@ public final class CTLogInfo implements Serializable {
         return publicKey;
     }
     
+    public void setLogPublicKey(final byte[] publicKeyBytes) {
+        this.publicKey = null;
+        this.publicKeyBytes = publicKeyBytes;
+    }
+    
     /** @return Log Key ID as specified by the RFC, in human-readable format */
     public String getLogKeyIdString() {
         try {
@@ -98,6 +106,10 @@ public final class CTLogInfo implements Serializable {
 
     public String getUrl() {
         return url;
+    }
+    
+    public void setUrl(final String url) {
+        this.url = url;
     }
     
     public int getTimeout() {

@@ -558,8 +558,8 @@ org.cesecore.authorization.AuthorizationDeniedException
    				<f:facet name="header">
    					<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
    				</f:facet>
-				<h:commandButton action="#{systemConfigMBean.removeCTLog}"	value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"
-					rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+				<h:commandButton action="#{systemConfigMBean.editCTLog}" value="#{web.text.EDIT}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+				<h:commandButton action="#{systemConfigMBean.removeCTLog}" value="#{web.text.REMOVE}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
 				<f:facet name="footer">
 					<h:commandButton  value="#{web.text.ADD}" action="#{systemConfigMBean.addCTLog}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
 				</f:facet>

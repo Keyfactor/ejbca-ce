@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -275,8 +277,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private String currentNode = null;
     private ListDataModel<CTLogInfo> ctLogs = null;
     private String currentCTLogURL = null;
+    private String editedCTLogURL;
     private int currentCTLogTimeout;
+    private int editedCTLogTimeout;
     private UploadedFile currentCTLogPublicKeyFile = null;
+    private UploadedFile editedCTLogPublicKeyFile;
+    private CTLogInfo editedCTLog;
     private boolean excludeActiveCryptoTokensFromClearCaches = true;
     private boolean customCertificateExtensionViewMode = false;
     private UploadedFile statedumpFile = null;
@@ -769,7 +775,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     public void addCTLog() {
-        
         if (currentCTLogURL == null || !currentCTLogURL.contains("://")) {
             addErrorMessage("CTLOGTAB_MISSINGPROTOCOL");
             return;
@@ -784,21 +789,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return;
         }
         
-        final CTLogInfo ctlogToAdd;
-        try {
-            byte[] uploadedFileBytes = currentCTLogPublicKeyFile.getBytes();
-            byte[] keybytes = KeyTools.getBytesFromPublicKeyFile(uploadedFileBytes);
-            ctlogToAdd = new CTLogInfo(CTLogInfo.fixUrl(currentCTLogURL), keybytes);
-            ctlogToAdd.setTimeout(timeout);
-        } catch (IOException e) {
-            log.info("Could not parse the public key file", e);
-            addErrorMessage("CTLOGTAB_BADKEYFILE", getCurrentCTLogPublicKeyFile().getName(), e.getLocalizedMessage());
-            return;
-        } catch (Exception e) {
-            log.info("Failed to add CT Log", e);
-            addErrorMessage("CTLOGTAB_GENERICADDERROR", e.getLocalizedMessage());
+        final byte[] keybytes = getCTPubKeyUploadBytes(currentCTLogPublicKeyFile);
+        if (keybytes == null) {
+            // Error already reported
             return;
         }
+        final CTLogInfo ctlogToAdd = new CTLogInfo(CTLogInfo.fixUrl(currentCTLogURL), keybytes);
+        ctlogToAdd.setTimeout(timeout);
 
         for (CTLogInfo existing : currentConfig.getCtLogs()) {
             if (StringUtils.equals(existing.getUrl(), ctlogToAdd.getUrl())) {
@@ -813,6 +810,24 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         ctLogs = new ListDataModel<>(ctlogs);
         
         saveCurrentConfig();
+    }
+
+    private byte[] getCTPubKeyUploadBytes(final UploadedFile upload) {
+        if (log.isDebugEnabled()) {
+            log.debug("Received uploaded public key file file: " + upload.getName());
+        }
+        try {
+            byte[] uploadedFileBytes = upload.getBytes();
+            return KeyTools.getBytesFromPublicKeyFile(uploadedFileBytes);
+        } catch (IOException e) {
+            log.info("Could not parse the public key file", e);
+            addErrorMessage("CTLOGTAB_BADKEYFILE", upload.getName(), e.getLocalizedMessage());
+            return null;
+        } catch (Exception e) {
+            log.info("Failed to add CT Log", e);
+            addErrorMessage("CTLOGTAB_GENERICADDERROR", e.getLocalizedMessage());
+            return null;
+        }
     }
 
     public void removeCTLog() {
@@ -839,6 +854,93 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         currentConfig.setCtLogs(ctlogs);
         ctLogs = new ListDataModel<>(ctlogs);
         saveCurrentConfig();
+    }
+    
+    public String editCTLog() {
+        editedCTLog = ctLogs.getRowData();
+        editedCTLogURL = editedCTLog.getUrl();
+        editedCTLogTimeout = editedCTLog.getTimeout();
+        editedCTLogPublicKeyFile = null; // nothing will change unless a new file is uploaded
+        return "editCTLog";
+    }
+    
+    public String getEditedCTLogDisplayName() {
+        try {
+            return new URL(editedCTLog.getUrl()).getHost();
+        } catch (MalformedURLException e) {
+            return editedCTLog.getUrl() + " (malformed URL)";
+        }
+    }
+    
+    public String getEditedCTLogURL() {
+        return editedCTLogURL;
+    }
+    
+    public void setEditedCTLogURL(final String url) {
+        editedCTLogURL = url;
+    }
+    
+    public String getEditedCTLogPublicKeyID() {
+        return editedCTLog.getLogKeyIdString();
+    }
+
+    public int getEditedCTLogTimeout() {
+        return editedCTLogTimeout;
+    }
+    
+    public void setEditedCTLogTimeout(final int timeout) {
+        this.editedCTLogTimeout = timeout;
+    }
+    
+    public UploadedFile getEditedCTLogPublicKeyFile() {
+        return editedCTLogPublicKeyFile;
+    }
+
+    public void setEditedCTLogPublicKeyFile(final UploadedFile publicKeyFile) {
+        this.editedCTLogPublicKeyFile = publicKeyFile;
+    }
+    
+    public String saveEditedCTLog() {
+        log.trace(">saveEditedCTLog");
+        // Get and validate input
+        if (editedCTLogURL == null || !editedCTLogURL.contains("://")) {
+            addErrorMessage("CTLOGTAB_MISSINGPROTOCOL");
+            return "";
+        }
+        
+        final int timeout = getEditedCTLogTimeout();
+        if (timeout < 0) {
+            addErrorMessage("CTLOGTAB_TIMEOUTNEGATIVE");
+            return "";
+        }
+
+        // Only replace the key if a new one was selected
+        if (editedCTLogPublicKeyFile != null) {
+            final byte[] keybytes = getCTPubKeyUploadBytes(editedCTLogPublicKeyFile);
+            if (keybytes == null) {
+                // Error already reported
+                return "";
+            }
+            editedCTLog.setLogPublicKey(keybytes);
+        }
+        editedCTLog.setTimeout(timeout);
+        editedCTLog.setUrl(editedCTLogURL);
+
+        // Update the configuration
+        final List<CTLogInfo> ctlogs = currentConfig.getCtLogs();
+        for (int i = 0; i < ctlogs.size(); i++) {
+            if (ctlogs.get(i).getLogId() == editedCTLog.getLogId()) {
+                // Update and save
+                ctlogs.set(i, editedCTLog);
+                currentConfig.setCtLogs(ctlogs);
+                saveCurrentConfig();
+                editedCTLog = null;
+                log.trace("<saveEditedCTLog [success]");
+                return "saved";
+            }
+        }
+        log.trace("<saveEditedCTLog [failure]");
+        throw new IllegalStateException("Log was not found. Can not save");
     }
     
     
