@@ -376,4 +376,8 @@
         <available file="${mod.statedump.path}/build.xml" />
     </condition>
 
+	<condition property="mod.msautoenroll-war.exists">
+		<available file="${mod.ms-autoenroll.path}/build.xml" />
+	</condition>
+
 </project>
