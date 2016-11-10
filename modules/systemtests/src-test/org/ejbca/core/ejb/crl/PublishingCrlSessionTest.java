@@ -272,7 +272,9 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
             crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
+            final BigInteger initialCrlNumber = CrlExtensions.getCrlNumber(x509crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
+            assertFalse("Forced CRL generation did nothing.", CrlExtensions.getCrlNumber(x509crl).equals(initialCrlNumber));
             assertTrue("Certificate should be present on the CRL", x509crl.isRevoked(cert));
             // Also verify that the ExpiredCertsOnCRL CRL extension is on this CRL
             Set<String> extensions = x509crl.getNonCriticalExtensionOIDs();
