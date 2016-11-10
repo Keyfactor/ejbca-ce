@@ -759,7 +759,7 @@ For details on how the application server should be configured, see the installa
 *Notes for on-line upgrades*
 1. If you were running an earlier version of EJBCA on an older JBoss (4.2.3 was recommended for EJBCA 3.x), 
    *and* you need to do an on-line upgrade (upgrade one cluster node while another is running) you should 
-   first upgrade your cluster to to running on JBoss 5.1.x before upgrading any of the cluster nodes to EJBCA 4. 
+   first upgrade your cluster to run on JBoss 5.1.x before upgrading any of the cluster nodes to EJBCA 4. 
 2. Configure "app.version.effective=3.11.x" in conf/ejbca.properties for all but the last node that you
    deploy with EJBCA 4.0.x. Comment out the property and redeploy the other nodes again. This will ensure that
    the JBoss serialization still works for the deployed EJBCA 3.11.x nodes during the migration.

@@ -39,7 +39,7 @@ public class CryptoTools {
             return null;
         }
         final int rounds = EjbcaConfiguration.getPasswordLogRounds();
-        if (rounds > 0 && EjbcaConfiguration.getEffectiveApplicationVersion() > 311) {
+        if (rounds > 0) {
             return BCrypt.hashpw(password, BCrypt.gensalt(rounds));
         } else {
             return makeOldPasswordHash(password);
@@ -47,7 +47,9 @@ public class CryptoTools {
     }
 
     /**
-     * Creates the hashed password using the old hashing, which is a plain SHA1 password
+     * Creates the hashed password using the old hashing, which is a plain SHA1 password.
+     * 
+     * This was used for password creation until the EJBCA 4.0 release.
      */
     public static String makeOldPasswordHash(String password) {
         if (password == null) {
