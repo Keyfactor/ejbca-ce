@@ -229,7 +229,27 @@ function checkFieldForCrlSimpleTime(thetextfield, alerttext) {
   re = /\s*(([+-]?\d+)\s*([m][o]|[y]|[d]|[h]|[m]))\s*/ig;
   tokens = text.match(re);
   if (null != tokens && tokens.length > 0 && tokens.join("").valueOf() == text.valueOf()) {
-	  return true;
+	  var result = 0;
+	  for (i=0;i<tokens.length;i++) {
+	    if (tokens[i].toLowerCase().indexOf('mo') > 0) {
+			result=result+parseInt(tokens[i])*30*24*60*60*1000;
+		}
+		if (tokens[i].toLowerCase().indexOf('y') > 0) {
+			result=result+parseInt(tokens[i])*365*24*60*60*1000;
+		}
+		if (tokens[i].toLowerCase().indexOf('d') > 0) {
+		    result=result+parseInt(tokens[i])*24*60*60*1000;
+		}
+		if (tokens[i].toLowerCase().indexOf('h') > 0) {
+		    result=result+parseInt(tokens[i])*60*60*1000;
+		}
+		if (tokens[i].toLowerCase().indexOf('m') > 0) {
+		    result=result+parseInt(tokens[i])*60*1000;
+		}
+	  }
+	  if (result > -1) {
+		return true;
+	  }
   }
   alert(alerttext);
   return false;
