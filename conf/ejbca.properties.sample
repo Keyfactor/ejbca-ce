@@ -147,11 +147,6 @@ ejbca.cli.defaultpassword=ejbca
 # Default: ""
 #ejbca.customavailableaccessrules=
 
-# When upgrading a 100% up-time cluster, all nodes should be deployed with the effective version
-# of the oldest still running EJBCA version.
-# Default: ${app.version.number}
-#app.version.effective=4.0.x
-
 # To better protect from off-line brute force attacks of passwords on a compromised database, the
 # computationally expensive BCrypt algorithm can be used. Using a higher log-rounds value will
 # increase computational cost by log2. 1-31 can be used as BCrypt strength.
