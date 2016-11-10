@@ -2797,7 +2797,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             // v44. ECA-5141
             // 'encodedValidity' is derived by the former long value!
             if(null == data.get(ENCODED_VALIDITY)) {
-                setEncodedValidity(getEncodedValidity());
+                if (data.get(VALIDITY) != null) { // avoid NPE if this is a very raw profile
+                    setEncodedValidity(ValidityDate.getStringBeforeVersion661(getValidity()));
+                }
+                // Don't upgrade to anything is there was nothing to upgrade
             }
             // v44. ECA-5330
             // initialize fields for expiration restriction for weekdays. use is false because of backward compatibility, the before restriction default is true
