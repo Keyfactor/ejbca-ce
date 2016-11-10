@@ -957,7 +957,7 @@ in ejbca.properties. See the documentation in conf/ejbca.properties.sample for m
 When using shorter validity periods than what is configured in the Certificate Profile the value in the profile will function as an upper limit. Longer times than that is not possible to issue.
 </p>
 </subsubsection>
-<subsubsection name="Validity Offset">
+<subsubsection name="Validity offset">
 <p>
 A validity offset can be configured in the certificate profile as a relative time in the form of '*y *mo *d *h *m *s'. With this the certificates default offset (specified in cesecore.properties '-10m') will be overwritten.
 </p>
