@@ -52,7 +52,7 @@ org.cesecore.authorization.control.StandardRules
             <h:panelGroup id="placeholder1"/>
 
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/>
-            <h:inputText value="#{systemConfigMBean.editedCTLogURL}"/>
+            <h:inputText value="#{systemConfigMBean.editedCTLogURL}" size="46"/>
             
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_CURRENT_PUBLICKEY}"/>
             <h:outputText value="#{systemConfigMBean.editedCTLogPublicKeyID}" styleClass="monospace"/>
