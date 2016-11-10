@@ -959,11 +959,12 @@ When using shorter validity periods than what is configured in the Certificate P
 </subsubsection>
 <subsubsection name="Validity offset">
 <p>
-A validity offset (used for setting back start date to handle clock skew) can be configured in the certificate profile as a relative time in the form of '*y *mo *d *h *m *s'. With this the certificates default offset (specified in cesecore.properties '-10m') will be overwritten.
+A validity offset (used for setting back or forth start date to handle clock skew) can be configured in the certificate profile as a relative time in the form of '*y *mo *d *h *m *s'. With this the certificates default offset (specified in cesecore.properties '-10m') will be overwritten.
 </p>
 <p>
 If a fixed end date in the form '2016-10-09 14:41:39+01:00' is used as certificate validity, only the start date of the certificate will be offset.
 <br/>If a relative time in form of '*y *mo *d *h *m *s' is used as certificate validity, start and end date of the certificate are offset.
+<br/>Example: Use the value '-5m' to have a notBefore date that is 5 minutes before the current time, in order to be valid on relying parties if their clocks are a bit behind.
 </p>
 </subsubsection>
 <subsubsection name="Expiration restrictions">
