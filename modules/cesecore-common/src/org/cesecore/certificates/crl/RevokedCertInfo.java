@@ -104,6 +104,13 @@ public class RevokedCertInfo implements Serializable {
         this.userCertificate = serno==null ? null : serno.toByteArray();
     }
 
+    /** 
+     * @return true is there is a revocationDate set (getRevocationDate() != null), false otherwise
+     */
+    public boolean isRevocationDateSet() {
+        return revocationDate != 0;
+    }
+
     /**
      * Date when the certificate was revoked.
      **/
