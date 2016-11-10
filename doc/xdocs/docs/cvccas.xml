@@ -182,6 +182,17 @@
   <note>
   Existing IS end entities should not be reused for new systems or when replacing an old IS, but a new one should always be created.
   </note>
+  <subsection name="IS Certificate Profiles">
+  <p>In order to configure a Certificate Profile for Inspection Systems these are the settings you should look at:</p>
+  <ul>
+  <li>Type: an IS is an 'End Entity' type.</li>
+  <li>Available Key Algorithms, ECDSA curves and bit lengths, to match your EAC hierarchy (all certificate in an EAC chain must use the same type of keys and signature algorithms).</li>
+  <li>Validity: IS certificate are typically valid from 1-30 days.</li>
+  <li>Validity offset: should be set to '0m' to not consider any clock skew. Assume that all components are on the correct time.</li>
+  <li>CVC terminal type: Use 'Inspection System'.</li>
+  <li>CVC access rights: DG3, DG4 or both.</li>
+  </ul>
+  </subsection>
   </section>
   
   <section name="Authentication and Signature Terminals">
