@@ -1972,6 +1972,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         } else {
             data.put(QCETSIPDS, new ArrayList<>(pds));
         }
+        // Remove old data from EJBCA < 6.6.1
+        data.remove(QCETSIPDSURL);
+        data.remove(QCETSIPDSLANG);
     }
     
     public boolean getUseQCCustomString() {
@@ -2831,14 +2834,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if (!data.containsKey(QCETSIPDS)) {
                 final String url = (String) data.get(QCETSIPDSURL);
                 final String lang = (String) data.get(QCETSIPDSLANG);
-                List<PKIDisclosureStatement> pdsList = null;
                 if (StringUtils.isNotEmpty(url)) {
-                    pdsList = new ArrayList<>();
+                    final List<PKIDisclosureStatement> pdsList = new ArrayList<>();
                     pdsList.add(new PKIDisclosureStatement(url, lang));
+                    data.put(QCETSIPDS, pdsList);
+                } else {
+                    data.put(QCETSIPDS, null);
                 }
-                setQCEtsiPds(pdsList);
-                data.remove(QCETSIPDSURL);
-                data.remove(QCETSIPDSLANG);
             }
             
             data.put(VERSION, new Float(LATEST_VERSION));
