@@ -28,6 +28,19 @@ $ ant web-configure
 All database upgrades require CREATE and ALTER TABLE privileges besides the regular SELECT, UPDATE, INSERT and DELETE. The SQL executed by 
 database upgrades code is available in "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 6.6.0 to EJBCA 6.6.1
+-------------------------------
+
+The upgrade to EJBCA 6.6.1 enables seconds precision for CA and user certificate configuration and allows the issuance of short living certificates.
+
+To achieve this, for the CA and the certificate profile a new field for the validity is implemented. This field is populated when a CA and 
+certificate profile is loaded from data object for the first time.
+
+100% Upgrade Uptime Notes: 
+After the upgrade of the first node of an EJBCA cluster, the validity of a CA or certificate profile MUST NOT be changed by the user until 
+the upgrade of the last node to EJBCA version 6.6.1 has completed. In mixed cluster environments, running nodes with EJBCA version 6.6.1 and 
+earlier, it can not be guaranteed, that the newly stored validity is used for certificate issuance!
+
 From EJBCA 6.5.x to EJBCA 6.6.0
 -------------------------------
 

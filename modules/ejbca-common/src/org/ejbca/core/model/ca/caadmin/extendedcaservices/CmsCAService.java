@@ -213,13 +213,9 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
     		certProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT,true);
     		certProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT,true);
     		certProfile.setKeyUsageCritical(true);
-            String encodedValidity = ca.getEncodedValidity();
-            if (StringUtils.isBlank(encodedValidity)) {
-                encodedValidity = ValidityDate.getStringBeforeVersion661(ca.getValidity());
-            }
             final EndEntityInformation eeInformation = new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,new EndEntityType(),0,0, null,null,0,0,null);
             final Certificate certificate = ca.generateCertificate(cryptoToken, eeInformation,
-            		cmskeys.getPublic(), -1, null, encodedValidity, certProfile, null, cceConfig);
+            		cmskeys.getPublic(), -1, null, ca.getEncodedValidity(), certProfile, null, cceConfig);
     		certificatechain = new ArrayList<Certificate>();
     		certificatechain.add(certificate);
     		certificatechain.addAll(ca.getCertificateChain());

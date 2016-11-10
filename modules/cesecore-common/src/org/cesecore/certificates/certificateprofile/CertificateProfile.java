@@ -145,6 +145,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String DEFAULT_CERTIFICATE_VALIDITY = "2y";
     /** Constant for default validity for fixed profiles is 25 years including 6 or 7 leap days. */
     public static final String DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA = "25y7d";
+    /** Constant for default validity offset (for backward compatibility': -10m'!) */
+    public static final String DEFAULT_CERTIFICATE_VALIDITY_OFFSET = "-10m";
     public static final long DEFAULT_PRIVATE_KEY_USAGE_PERIOD_OFFSET = 0;
     public static final long DEFAULT_PRIVATE_KEY_USAGE_PERIOD_LENGTH = 730 * 24 * 3600;
     
@@ -153,6 +155,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @Deprecated
     protected static final String VALIDITY = "validity";
     protected static final String ENCODED_VALIDITY = "encodedvalidity";
+    protected static final String USE_CERTIFICATE_VALIDITY_OFFSET = "usecertificatevalidityoffset";
+    protected static final String CERTIFICATE_VALIDITY_OFFSET = "certificatevalidityoffset";
     protected static final String USE_EXPIRATION_RESTRICTION_FOR_WEEKDAYS = "useexpirationrestrictionforweekdays";
     protected static final String EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE = "expirationrestrictionforweekdaysbefore";
     protected static final String EXPIRATION_RESTRICTION_WEEKDAYS = "expirationrestrictionweekdays";
@@ -359,6 +363,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setType(CertificateConstants.CERTTYPE_ENDENTITY);
         setCertificateVersion(VERSION_X509V3);
         setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY);
+        setUseCertificateValidityOffset(false);
+        setCertificateValidityOffset(DEFAULT_CERTIFICATE_VALIDITY_OFFSET);
         setUseExpirationRestrictionForWeekdays(false);
         setExpirationRestrictionForWeekdaysExpireBefore(true);
         setDefaultExpirationRestrictionWeekdays();
@@ -642,24 +648,64 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     
     /**
-     * Gets the validity as relative time (format '*y *mo *d *h *m *s', i.e. '1y +2mo -3d 4h 5m 6s') or as fixed end date 
-     * (ISO8601 format, i.e. 'yyyy-MM-dd HH:mm:ssZZ', 'yyyy-MM-dd HH:mmZZ' or 'yyyy-MM-ddZZ' with optional '+00:00' appended).
-     * @return the validity.
+     * Gets the encoded validity.
+     * @return the validity as ISO8601 date or relative time.
+     * @See {@link org.cesecore.util.ValidityDate ValidityDate}
+     * @See {@link org.cesecore.util.SimpleTime SimpleTime}
      */
     public String getEncodedValidity() {
-        return (String) data.get(ENCODED_VALIDITY);
+        String result = (String) data.get(ENCODED_VALIDITY);
+        if (StringUtils.isBlank(result)) {
+            result = ValidityDate.getStringBeforeVersion661(getValidity());
+        }
+        return result;
     }
 
     /**
-     * Sets the validity as relative time (format '*y *mo *d *h *m *s', i.e. '1y +2mo -3d 4h 5m 6s') or as fixed end date 
-     * (ISO8601 format, i.e. 'yyyy-MM-dd HH:mm:ssZZ', 'yyyy-MM-dd HH:mmZZ' or 'yyyy-MM-ddZZ' with optional '+00:00' appended).
-     *
-     * @param encodedValidity
+     * Sets the encoded validity .
+     * @param encodedValidity the validity as ISO8601 date or relative time.
+     * @See {@link org.cesecore.util.ValidityDate ValidityDate}
+     * @See {@link org.cesecore.util.SimpleTime SimpleTime}
      */
     public void setEncodedValidity(String encodedValidity) {
         data.put(ENCODED_VALIDITY, encodedValidity);
     }
+    
+    /** 
+     * Gets the certificate validity offset.
+     * @return true if we should overwrite the default certificate validity offset with the one specified in the certificate profile.
+     * @see {@link #setCertificateValidityOffset(String)} 
+     */
+    public boolean getUseCertificateValidityOffset() {
+        return Boolean.valueOf((Boolean) data.get(USE_CERTIFICATE_VALIDITY_OFFSET));
+    }
 
+    /**
+     * Use certificate validity offset.
+     * @param enabled
+     */
+    public void setUseCertificateValidityOffset(boolean enabled) {
+        data.put(USE_CERTIFICATE_VALIDITY_OFFSET, Boolean.valueOf(enabled));
+    }
+    
+    /**
+     * Gets the certificate validity offset. 
+     * @return the offset as simple time string with seconds precision (i.e. '-10m') 
+     * @see #link{org.cesecore.util.SimpleTime}
+     */
+    public String getCertificateValidityOffset() {
+        return (String) data.get(CERTIFICATE_VALIDITY_OFFSET);
+    }
+    
+    /**
+     * Sets the certificate not before offset.
+     * @param simpleTime the offset as simple time string with seconds precision.
+     * @see org.cesecore.util.SimpleTime
+     */
+    public void setCertificateValidityOffset(String simpleTime) {
+        data.put(CERTIFICATE_VALIDITY_OFFSET, simpleTime);
+    }
+    
     /** 
      * @return true if we should apply restrictions that certificate expiration can only occur on week days specified by setExpirationRestrictionWeekday
      * @see #setExpirationRestrictionWeekdays(boolean[])  
@@ -2748,9 +2794,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
            
             // v44. ECA-5141
-            // 'encodedValidity' MUST set to "" (Empty String) here. The initialization is done during post-upgrade of EJBCA 6.6.1.
+            // 'encodedValidity' is derived by the former long value!
             if(null == data.get(ENCODED_VALIDITY)) {
-                setEncodedValidity(StringUtils.EMPTY);
+                setEncodedValidity(getEncodedValidity());
             }
             // v44. ECA-5330
             // initialize fields for expiration restriction for weekdays. use is false because of backward compatibility, the before restriction default is true
@@ -2762,6 +2808,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             if(null == data.get(EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE)) {
                 setExpirationRestrictionForWeekdaysExpireBefore(true);
+            }
+            // v44. ECA-3554
+            // initialize default certificate not before offset (default '-10m' because of backward compatibility).
+            if(null == data.get(USE_CERTIFICATE_VALIDITY_OFFSET)) {
+                setUseCertificateValidityOffset(false);
+            }
+            if(null == data.get(CERTIFICATE_VALIDITY_OFFSET)) {
+                setCertificateValidityOffset(DEFAULT_CERTIFICATE_VALIDITY_OFFSET);
             }
             
             // v45: Multiple ETSI QC PDS values (ECA-5478)

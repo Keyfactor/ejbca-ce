@@ -342,32 +342,59 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setSignatureAlgorithm(signatureAlgorithm);
     }
     
+    /**
+     * Gets the validity.
+     * @return the validity as ISO8601 date or relative time.
+     * @See {@link org.cesecore.util.ValidityDate ValidityDate}
+     */
     public String getValidity() throws AuthorizationDeniedException {
-        final String encodedValidity = getCertificateProfile().getEncodedValidity();
-        if (StringUtils.isNotBlank(encodedValidity)) {
-            return encodedValidity;
-        } else {
-            return ValidityDate.getStringBeforeVersion661(getCertificateProfile().getValidity());
-        }
+        return getCertificateProfile().getEncodedValidity();
     }
 
+    /**
+     * Sets the validity .
+     * @param value the validity as ISO8601 date or relative time.
+     * @See {@link org.cesecore.util.ValidityDate ValidityDate}
+     */
     public void setValidity(String value) throws AuthorizationDeniedException, ParameterException {
         if (null != value) {
             try {
                 // parse fixed date ISO8601
-                // ANJAKOBS: negative relative times allowed here but filtered with ValidityDateValiditor.java!
                 ValidityDate.parseAsIso8601(value);
             } catch (ParseException e) {
-                // parse simple time and get canonical string, negative value did not pass the ValidityDateValidtor
+                // parse simple time and get canonical string
                 value = SimpleTime.toString( SimpleTime.getSecondsFormat().parseMillis(value), SimpleTime.TYPE_DAYS);
             }
             getCertificateProfile().setEncodedValidity(value);
         }
     }
+    
+    /**
+     * Gets the validity offset.
+     * @return the offset as relative time.
+     * @See {@link org.cesecore.util.SimpleTime SimpleTime}
+     */
+    public String getCertificateValidityOffset() throws AuthorizationDeniedException {
+        return certificateProfile.getCertificateValidityOffset();
+    }
+    
+    /**
+     * Sets the validity offset.
+     * @param value the offset as relative time.
+     * @See {@link org.cesecore.util.SimpleTime SimpleTime}
+     */
+    public void setCertificateValidityOffset(String value) throws AuthorizationDeniedException {
+        certificateProfile.setCertificateValidityOffset(SimpleTime.toString( SimpleTime.getSecondsFormat().parseMillis(value), SimpleTime.TYPE_MINUTES));
+    }
 
+    public void toggleUseCertificateValidityOffset() throws AuthorizationDeniedException, IOException {
+        getCertificateProfile().setUseCertificateValidityOffset(!getCertificateProfile().getUseCertificateValidityOffset());
+        redirectToComponent("checkusecertificatevalidityoffsetgroup");
+    }
+    
     public void toggleUseExpirationRestrictionForWeekdays() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseExpirationRestrictionForWeekdays(!getCertificateProfile().getUseExpirationRestrictionForWeekdays());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("checkuseexpirationtrestrictionforweekdaysgroup");
     }
     
     public boolean isExpirationRestrictionMonday() throws AuthorizationDeniedException { return getCertificateProfile().getExpirationRestrictionWeekday(Calendar.MONDAY); }

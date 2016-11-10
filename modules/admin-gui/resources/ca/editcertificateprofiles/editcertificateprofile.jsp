@@ -114,8 +114,7 @@
 		<%-- Validity --%>
 		
 		<h:panelGroup>
-			<h:outputLabel for="textfieldvalidity" value="#{web.text.CERT_VALIDITY}"/>
-			<h:outputText value=" #{web.text.FORMAT_TIME_YMODHMS} #{web.text.ORENDDATE}"/>
+			<h:outputLabel for="textfieldvalidity" value="#{web.text.CERT_VALIDITY} #{web.text.ORENDDATE}"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %>
 		</h:panelGroup>
 		<h:panelGroup>
@@ -127,18 +126,44 @@
 			</h:inputText>
 			<br/>
 			<h:panelGroup styleClass="help">
-				<h:outputText value="#{web.text.DATE_HELP}"/>
-				<h:outputText value="#{web.ejbcaWebBean.dateExample}"/></br>
-				<h:outputText value="#{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}"/>
+				<h:outputText value="#{web.text.DATE_HELP} #{web.ejbcaWebBean.dateExample}"/></br>
+				<h:outputText value="#{web.text.FORMAT_TIME_YMODHMS} - #{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}"/>
 			</h:panelGroup>
 		</h:panelGroup>
 		
+		<%-- Validity offset (ECA-3554) --%>
+		
+		<h:panelGroup>
+			<h:outputLabel for="checkusecertificatevalidityoffsetgroup" value="#{web.text.CERT_VALIDITY_OFFSET}"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Validity%20offset") %>
+		</h:panelGroup>
+		<h:panelGrid columns="1">
+			<h:panelGroup id="checkusecertificatevalidityoffsetgroup">
+				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCertificateValidityOffset}" rendered="#{!web.legacyInternetExplorer}"
+					disabled="#{certProfilesBean.viewOnly}"/>				
+				<h:commandButton id="checkusecertificatevalidityoffset" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCertificateValidityOffset}"
+					value="#{certProfileBean.certificateProfile.useCertificateValidityOffset?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
+					disabled="#{certProfilesBean.viewOnly}"/>
+				<h:outputLabel for="checkusecertificatevalidityoffset" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
+			</h:panelGroup>
+			<h:panelGroup rendered="#{certProfileBean.certificateProfile.useCertificateValidityOffset}">
+				<h:inputText id="textfieldcertificatevalidityoffset" value="#{certProfileBean.certificateValidityOffset}" 
+			    	title="#{web.text.FORMAT_TIME_YMODHMS}" size="25" maxlength="255"
+					disabled="#{certProfilesBean.viewOnly}"
+					validatorMessage="#{web.text.INVALIDCERTVALIDITYOFFSET}">
+					<f:validator validatorId="simpleTimeSecondsValidator"/>
+					<f:attribute name="allowNegativeValues" value="true" />
+				</h:inputText></br>
+				<h:outputText value="#{web.text.FORMAT_TIME_YMODHMS} - #{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}"/>
+			</h:panelGroup>
+		</h:panelGrid>
+			
 		<%-- Expiration restriction for weekdays (ECA-5330) --%>
 
 		<h:panelGroup>
 			<h:outputLabel for="checkuseexpirationtrestrictionforweekdaysgroup" value="#{web.text.CERT_EXPRIATION_RESTRICTIONS}"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Expiration%20restrictions") %>
-		</h:panelGroup>	
+		</h:panelGroup>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="checkuseexpirationtrestrictionforweekdaysgroup">
 				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays}" rendered="#{!web.legacyInternetExplorer}"

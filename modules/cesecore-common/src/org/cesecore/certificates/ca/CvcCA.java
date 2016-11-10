@@ -109,12 +109,8 @@ public abstract class CvcCA extends CA implements Serializable {
             }
 		}
         
-        String encodedValidity = getEncodedValidity();
-        if (StringUtils.isBlank(encodedValidity)) {
-            encodedValidity = ValidityDate.getStringBeforeVersion661(getValidity());
-        }
 		final CVCCAInfo info = new CVCCAInfo(subjectDN, name, status, updateTime, getCertificateProfileId(),  
-				encodedValidity, getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
+		        getEncodedValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
 				getCAToken(), getDescription(), getRevocationReason(), getRevocationDate(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), 
 				getCRLPublishers(), getFinishUser(), externalcaserviceinfos, 
 				getApprovalSettings(), getApprovalProfile(),
