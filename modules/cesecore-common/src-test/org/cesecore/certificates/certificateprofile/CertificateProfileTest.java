@@ -541,12 +541,23 @@ public class CertificateProfileTest {
         // Setting an empty list causes it to be changed into null
         profile.setQCEtsiPds(new ArrayList<PKIDisclosureStatement>());
         assertNull(profile.getQCEtsiPds());
-        profile.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("http://pds.foo.bar/pds", "en")));
+        // Test with one PDS
+        profile.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("https://pds.foo.bar/pds", "en")));
         List<PKIDisclosureStatement> pdsResult = profile.getQCEtsiPds();
         assertNotNull(pdsResult);
         assertEquals(1, pdsResult.size());
         assertEquals("en", pdsResult.get(0).getLanguage());
-        assertEquals("http://pds.foo.bar/pds", pdsResult.get(0).getUrl());
+        assertEquals("https://pds.foo.bar/pds", pdsResult.get(0).getUrl());
+        // Test with two PDSes
+        profile.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("https://pds.foo.bar/pds", "en"), new PKIDisclosureStatement("https://pds.example.com/pds.pdf", "sv")));
+        pdsResult = profile.getQCEtsiPds();
+        assertNotNull(pdsResult);
+        assertEquals(2, pdsResult.size());
+        assertEquals("en", pdsResult.get(0).getLanguage());
+        assertEquals("https://pds.foo.bar/pds", pdsResult.get(0).getUrl());
+        assertEquals("sv", pdsResult.get(1).getLanguage());
+        assertEquals("https://pds.example.com/pds.pdf", pdsResult.get(1).getUrl());
+        // Test QC ETSI Type
         profile.setQCEtsiType("1.2.3.4");
         assertEquals("1.2.3.4", profile.getQCEtsiType());
     }
@@ -641,11 +652,16 @@ public class CertificateProfileTest {
         final CertificateProfile cp = new CertificateProfile();
         cp.loadData(data);
         
-        final Map<String,Object> res = (Map<String, Object>) cp.saveData();
-        assertFalse("Old property should have been removed", res.containsKey(CertificateProfile.QCETSIPDSLANG));
-        assertFalse("Old property should have been removed", res.containsKey(CertificateProfile.QCETSIPDSURL));
+        Map<String,Object> res = (Map<String, Object>) cp.saveData();
+        assertTrue("Old property should still exist, so 100% uptime upgrades work", res.containsKey(CertificateProfile.QCETSIPDSLANG));
+        assertTrue("Old property should still exist, so 100% uptime upgrades work", res.containsKey(CertificateProfile.QCETSIPDSURL));
         assertTrue("New property should have been added", res.containsKey(CertificateProfile.QCETSIPDS));
         assertNull(res.get(CertificateProfile.QCETSIPDS));
+        
+        cp.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("https://example.com/pds", "en")));
+        res = (Map<String, Object>) cp.saveData();
+        assertFalse("Old property should have been removed after profile modification", res.containsKey(CertificateProfile.QCETSIPDSLANG));
+        assertFalse("Old property should have been removed after profile modification", res.containsKey(CertificateProfile.QCETSIPDSURL));
     }
     
     @SuppressWarnings("unchecked")
@@ -659,8 +675,8 @@ public class CertificateProfileTest {
         cp.loadData(data);
 
         final Map<String,Object> res = (Map<String, Object>) cp.saveData();
-        assertFalse("Old property should have been removed", res.containsKey(CertificateProfile.QCETSIPDSLANG));
-        assertFalse("Old property should have been removed", res.containsKey(CertificateProfile.QCETSIPDSURL));
+        assertTrue("Old property should still exist, so 100% uptime upgrades work", res.containsKey(CertificateProfile.QCETSIPDSLANG));
+        assertTrue("Old property should still exist, so 100% uptime upgrades work", res.containsKey(CertificateProfile.QCETSIPDSURL));
         assertTrue("New property should have been added", res.containsKey(CertificateProfile.QCETSIPDS));
         final List<PKIDisclosureStatement> pdsList = (List<PKIDisclosureStatement>) res.get(CertificateProfile.QCETSIPDS);
         assertNotNull(pdsList);

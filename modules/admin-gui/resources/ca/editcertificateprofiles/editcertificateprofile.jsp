@@ -862,7 +862,7 @@
 						disabled="#{certProfilesBean.viewOnly}" validatorMessage="#{web.text.EXT_ETSI_QCS_PDS_error_message}">
 					<f:converter converterId="stringConverter"/>
 					<f:validateLength minimum="0" maximum="256"/>
-					<f:validateRegex pattern="^(?i)(https://)[a-zA-Z0-9/?#\\[\\]@!$&amp;'()*+,;:=-_.~]+"/>
+					<f:validateRegex pattern="^(?i)(https://).+"/>
 				</h:inputText>
 			</h:column>
 			<h:column>
@@ -896,9 +896,9 @@
 				</h:selectOneMenu>
 			</h:column>
 			<h:column>
-				<h:commandButton id="buttondeleteqcetsipds" value="#{web.text.DELETE}" action="#{certProfileBean.deleteQCEtsiPds}" disabled="#{certProfilesBean.viewOnly}" />
+				<h:commandButton id="buttondeleteqcetsipds" value="#{web.text.DELETE}" action="#{certProfileBean.deleteQCEtsiPds}" disabled="#{certProfilesBean.viewOnly or not certProfileBean.ableToDeletePDSUrl}" />
 				<f:facet name="footer">
-					<h:commandButton id="buttonaddqcetsipds" value="#{web.text.ADD}" action="#{certProfileBean.addQCEtsiPds}" disabled="#{certProfilesBean.viewOnly}"/>
+					<h:commandButton id="buttonaddqcetsipds" value="#{web.text.ADDANOTHER}" action="#{certProfileBean.addQCEtsiPds}" disabled="#{certProfilesBean.viewOnly}"/>
 				</f:facet>
 			</h:column>
 		</h:dataTable>
