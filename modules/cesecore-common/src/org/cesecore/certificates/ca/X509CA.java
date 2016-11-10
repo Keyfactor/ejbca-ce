@@ -1546,29 +1546,16 @@ public class X509CA extends CA implements Serializable {
         // that expire at or after the date contained in the ExpiredCertsOnCRL extension).
         final ASN1ObjectIdentifier ExpiredCertsOnCRL = new ASN1ObjectIdentifier("2.5.29.60");
         boolean keepexpiredcertsoncrl = getKeepExpiredCertsOnCRL();
-        log.info("SOGEI ECA-1628: KeepExpiredCertsOnCRL: " + keepexpiredcertsoncrl);
         if(keepexpiredcertsoncrl) {
             SimpleDateFormat sdf = new SimpleDateFormat();
             final String GMTdatePattern = "yyyyMMddHHmmss";
-            log.info("SOGEI ECA-1628: ExpiredCertsOnCRL is required");
             sdf.setTimeZone(new SimpleTimeZone(0, "GMT"));
             sdf.applyPattern(GMTdatePattern);
-
-            // String confDate=EjbcaConfiguration.getKeepExpiredCertsDate();
-            // or now force parameter with date equals NotBefore of CA certificate            
-            Date keepDate = cacert != null ? cacert.getNotBefore() : new Date();
-            String confDate = sdf.format(keepDate);
-            try {
-                keepDate = sdf.parse(confDate);
-            } catch (ParseException e) {
-                log.info("Invalid format for keepexpiredcertsdate value. ExpiredCertsOnCRL extension will not be included in CRL.");
-                keepDate=null;
-            }
-            if (keepDate!=null) {
-                crlgen.addExtension(ExpiredCertsOnCRL, false, new DERGeneralizedTime(sdf.format(keepDate) + ".000Z"));
-                if (log.isDebugEnabled()) {
-                    log.debug("ExpiredCertsOnCRL extension added to CRL. Keep date: "+sdf.format(keepDate) + ".000Z");
-                }
+            // For now force parameter with date equals NotBefore of CA certificate, or now            
+            final Date keepDate = cacert != null ? cacert.getNotBefore() : new Date();
+            crlgen.addExtension(ExpiredCertsOnCRL, false, new DERGeneralizedTime(keepDate));
+            if (log.isDebugEnabled()) {
+                log.debug("ExpiredCertsOnCRL extension added to CRL. Keep date: "+keepDate);
             }
         }
         

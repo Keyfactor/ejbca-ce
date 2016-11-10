@@ -479,7 +479,7 @@ According to RFC5280 this CRL extension MUST be critical. If you however notice 
 
 <subsubsection name="Keep expired certificates on CRL">
 <p>
-This setting regulates what happens with revoked expired certificates. The default is unchecked (false) and should be used in all but a rare few use cases.
+This setting regulates what happens with revoked expired certificates. The default is unchecked (false) and should be left unchecked in all but a rare few use cases.
 </p><p>
 For most CA operations the default behavior, as specified in RFC5280, should be used.
 In this setting expired and revoked certificates are removed from the CRL. This keeps the size of the CRL down as it will not grow more than your active revoked certificates. 
@@ -492,7 +492,7 @@ from future CRLs, and thus the CRL can grow infinitely if you are not careful. F
 'Minimum Requirements for the Issuance and Management of Publicly-Trusted Code Signing Certificates', version 1.1, section 13.2.1.  
 </p>
 <p>
-Note: This setting should be set at CA activation and then never changed. This is because if unchecked, revoked and expired certificates will be set in state 'archived' and not be put on a CRL again, 
+Note: This setting should be set at CA creation and then never changed. This is because if unchecked, revoked and expired certificates will be set in state 'archived' and not be put on a CRL again, 
 even if the checkbox is re-checked again.
 </p>
 </subsubsection>
