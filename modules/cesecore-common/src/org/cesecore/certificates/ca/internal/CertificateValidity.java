@@ -30,6 +30,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ValidityDate;
 
 /** Class used to construct validity times based on a range of different input parameters and configuration. 
@@ -38,101 +39,116 @@ import org.cesecore.util.ValidityDate;
  */
 public class CertificateValidity {
 
+	/** Class logger. */
     private static final Logger log = Logger.getLogger(CertificateValidity.class);
-    
-    /** 
-     * Number of seconds before the issuing time the certificates notBefore date
-     * will be set to.
-     * The start date is set back ten minutes to avoid some problems with 
-     * unsynchronized clocks.
-     */
-    public static final long SETBACKTIME = 10 * 60 * 1000;
     
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-
-    private Date lastDate;
-    private Date firstDate;
     
-    private static Date tooLateExpireDate = ValidityDate.parseCaLatestValidDateTime(CesecoreConfiguration.getCaTooLateExpireDate());
-
-    /** Protected method so we can JUnit test this
-     */
-    protected static void setTooLateExpireDate(Date date) {
-    	tooLateExpireDate = date;
+    /** Issuing certificates with 'notAfter' greater than this value throws an exception. */
+    private static Date TOO_LATE_EXPIRE_DATE;
+    static {
+        final String value = CesecoreConfiguration.getCaTooLateExpireDate();
+        try {
+            TOO_LATE_EXPIRE_DATE = ValidityDate.parseCaLatestValidDateTime(value);
+        } catch (Exception e) {
+            // ANJAKOBS: Set default value?
+            TOO_LATE_EXPIRE_DATE = ValidityDate.parseCaLatestValidDateTime( "2038-01-19 03:14:08+00:00");
+            log.warn("cesecore.properties ca.toolateexpiredate '" + value + "' could not be parsed Using default value '2038-01-19 03:14:08+00:00'", e);
+        }
     }
     
-	public CertificateValidity(final EndEntityInformation subject, final CertificateProfile certProfile, 
-			final Date notBefore, final Date notAfter, 
-			final Certificate cacert, final boolean isRootCA) throws IllegalValidityException {
+    /** 
+     * Validity offset in milliseconds (offset for the 'notBefore' value)
+     * The default start date is set 10 minutes back to avoid some problems with unsynchronized clocks.
+     */
+    private static long DEFAULT_VALIDITY_OFFSET;
+    static {
+        final String value = CesecoreConfiguration.getCertificateValidityOffset();
+        try {
+            DEFAULT_VALIDITY_OFFSET = SimpleTime.getSecondsFormat().parseMillis( value);
+        } catch (Exception e) {
+            // Use old value for compatibility reasons!
+            DEFAULT_VALIDITY_OFFSET = -10L * 60 * 1000;
+            log.warn("cesecore.properties certificate.validityoffset '" + value + "' could not be parsed as relative time string. Using default value '-10m' = -60000ms", e);
+        }
+    }
+    
+    /**
+     * Gets the default validity offset.
+     * @return the offset as relative time.
+     * @See {@link org.cesecore.util.SimpleTime SimpleTime}
+     */
+    public static final long getValidityOffset() {
+        return DEFAULT_VALIDITY_OFFSET;
+    }
+    
+    /**
+     * Gets the maximum possible value for the certificates 'notAfter' value.
+     * @return ISO8601 date
+     */
+    public static Date getToolLateExpireDate() {
+        return TOO_LATE_EXPIRE_DATE;
+    }
+    
+    /**
+     * Sets the maximum possible value for the certificates 'notAfter' value. This method MUST NOT BE CALLED, except for unit testing.
+     * @param date the date to set.
+     */
+    public static void setTooLateExpireDate(final Date date) {
+        TOO_LATE_EXPIRE_DATE = date;
+    }
+    
+    /** The certificates 'notAfter' value. */
+    private Date lastDate;
+
+    /** The certificates 'notBefore' value. */
+    private Date firstDate;
+   
+    public CertificateValidity(final EndEntityInformation subject, final CertificateProfile certProfile, 
+            final Date notBefore, final Date notAfter, final Certificate cacert, final boolean isRootCA) throws IllegalValidityException {
+        this(new Date(), subject, certProfile, notBefore, notAfter, cacert, isRootCA);
+    }
+   
+    /** Constructor that injects the reference point (now). This constructor mainly is used for unit testing. */
+	public CertificateValidity(Date now, final EndEntityInformation subject, final CertificateProfile certProfile, 
+			final Date notBefore, final Date notAfter, final Certificate cacert, final boolean isRootCA) throws IllegalValidityException {
 		if (log.isDebugEnabled()) {
-			log.debug("Requested notBefore: "+notBefore);
+		    log.debug("Requested notBefore: "+notBefore);
 			log.debug("Requested notAfter: "+notAfter);
+			if (null != subject.getExtendedinformation()) {
+			    log.debug("End entity extended information 'notBefore': "+subject.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
+			}
+			if (null != subject.getExtendedinformation()) {
+                log.debug("End entity extended information 'notAfter': "+subject.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+            }
+			log.debug("Default validty offset: "+DEFAULT_VALIDITY_OFFSET);
+			log.debug("Certificate profile validty: "+certProfile.getEncodedValidity());
+			log.debug("Certificate profile use validty offset: "+certProfile.getUseCertificateValidityOffset());
+			log.debug("Certificate profile validty offset: "+certProfile.getCertificateValidityOffset());
+			log.debug("Certificate profile use expiration restrictions for weekdays: "+certProfile.getUseExpirationRestrictionForWeekdays());
+			log.debug("Certificate profile expiration restrictions weekdays: "+certProfile.getExpirationRestrictionWeekdays());
+			log.debug("Certificate profile expiration restrictions for weekdays before: "+certProfile.getExpirationRestrictionForWeekdaysExpireBefore());
 		}
-		if ( tooLateExpireDate==null ) {
+		if ( TOO_LATE_EXPIRE_DATE==null ) {
 		    throw new IllegalValidityException("ca.toolateexpiredate in ejbca.properties is not a valid date.");
 		}
-        // Set back start date ten minutes to avoid some problems with unsynchronized clocks.
-        final Date now = new Date((new Date()).getTime() - SETBACKTIME);
-        Date startTimeDate = null;
-        Date endTimeDate = null;
-        // Extract requested start and endtime from end endtity profile / user data
-        final ExtendedInformation ei = subject.getExtendedinformation();
-        if ( ei != null ) {
-            final String eiStartTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
-            final String eiEndTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
-        	if ( eiStartTime != null ) {
-        		if ( eiStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-        			final String[] startTimeArray = eiStartTime.split(":");
-        			long relative = (Long.parseLong(startTimeArray[0])*24*60 + Long.parseLong(startTimeArray[1])*60 +
-        					Long.parseLong(startTimeArray[2])) * 60 * 1000;
-        			startTimeDate = new Date(now.getTime() + relative);
-        		} else {
-        			try {
-        				// Try parsing data as "yyyy-MM-dd HH:mm" assuming UTC
-        				startTimeDate = ValidityDate.parseAsUTC(eiStartTime);
-        			} catch (ParseException e) {
-        				log.error(intres.getLocalizedMessage("createcert.errorinvalidstarttime",eiStartTime));
-        			}
-        		}
-    			if ( startTimeDate != null && startTimeDate.before(now)) {
-    			    if ((log.isDebugEnabled())) {
-    			        log.debug("Using custom start time, but it is before current date, will only be allowed if allowValidityOverride is true.");
-    			    }
-    			}
-                if ((log.isDebugEnabled())) {
-                    log.debug("Custom notBefore: "+startTimeDate);
-                }
-	        }
-	        if ( eiEndTime != null ) {
-        		if ( eiEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-        			final String[] endTimeArray = eiEndTime.split(":");
-        			long relative = (Long.parseLong(endTimeArray[0])*24*60 + Long.parseLong(endTimeArray[1])*60 +
-        					Long.parseLong(endTimeArray[2])) * 60 * 1000;
-        			endTimeDate = new Date(now.getTime() + relative);
-        		} else {
-        			try {
-        				// Try parsing data as "yyyy-MM-dd HH:mm" assuming UTC
-        				endTimeDate = ValidityDate.parseAsUTC(eiEndTime);
-        			} catch (ParseException e) {
-        				log.error(intres.getLocalizedMessage("createcert.errorinvalidstarttime",eiEndTime));
-        			}
-        		}
-                if ((log.isDebugEnabled())) {
-                    log.debug("Custom notAfter: "+endTimeDate);
-                }
-	        }
-        }
-        // Find out what start and end time to actually use..
+        
+		// ECA-3554 add the offset
+		now = getNowWithOffset(now, certProfile);
+		if (log.isDebugEnabled()) {
+		    log.debug("Using new start time including offset: " + now);
+		}
+         
+		// Find out what start and end time to actually use..
         if (certProfile.getAllowValidityOverride()) {
-            // Prio 1 is infomation supplied in Extended information object. This allows RA-users to set the time-span.
-            firstDate = startTimeDate;
-            lastDate = endTimeDate;
-            // Prio 2 is the information supplied in the arguments
+            // First Priority has information supplied in Extended information object. This allows RA-users to set the time-span.
+            // Second Priority has the information supplied in the method arguments
+            firstDate = getExtendedInformationStartTime(now, subject);
             if (firstDate == null) {
             	firstDate = notBefore;
             }
-            if (lastDate == null) {
+            if ((lastDate = getExtendedInformationEndTime(now, subject)) == null) {
             	lastDate = notAfter;
             }    	
             if (log.isDebugEnabled()) {
@@ -140,19 +156,20 @@ public class CertificateValidity {
                 log.debug("Allow validity override, notAfter: "+lastDate);
             }
         }
-        // Prio 3 is default values
+        // Third priority: If nothing could be set by external information have the default  3 is default values
         if (firstDate == null) {
         	firstDate = now;
         }
         Date certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(certProfile, firstDate));
-        if (certProfile.getUseExpirationRestrictionForWeekdays()) {
+        // Limit validity: ECA-5330 Apply expiration restriction for weekdays 
+        if (certProfile.getUseExpirationRestrictionForWeekdays() && isRelativeTime(certProfile.getEncodedValidity())) {
             log.info("Applying expiration restrictions for weekdays: " + Arrays.asList(certProfile.getExpirationRestrictionWeekdays()));
             try {
                 final Date newDate = ValidityDate.applyExpirationRestrictionForWeekdays(certProfileLastDate, 
                     certProfile.getExpirationRestrictionWeekdays(), certProfile.getExpirationRestrictionForWeekdaysExpireBefore());
                 if (!firstDate.before(newDate)) {
                     log.warn("Expiration restriction of certificate profile could not be applied because it's before start date!");    
-                } else if (!tooLateExpireDate.after(newDate)) {
+                } else if (!TOO_LATE_EXPIRE_DATE.after(newDate)) {
                     log.warn("Expiration restriction of certificate profile could not be applied because it's after latest possible end date!");
                 } else {
                     certProfileLastDate = newDate;
@@ -182,38 +199,56 @@ public class CertificateValidity {
     		// Update lastDate if we use maximum validity
     	}
 		// Limit validity: We do not allow a certificate to be valid after the the validity of the certificate profile
+    	// ANJAKOBS: Can this be removed -> backward compatibility?
     	if (lastDate.after(certProfileLastDate)) {
     		log.info(intres.getLocalizedMessage("createcert.errorbeyondmaxvalidity",lastDate,subject.getUsername(),certProfileLastDate));
     		lastDate = certProfileLastDate;
     	}
 		// Limit validity: We do not allow a certificate to be valid after the the validity of the CA (unless it's RootCA during renewal)
-        if (cacert != null && lastDate.after(CertTools.getNotAfter(cacert)) && !isRootCA) {
-        	log.info(intres.getLocalizedMessage("createcert.limitingvalidity", lastDate.toString(), CertTools.getNotAfter(cacert)));
-            lastDate = CertTools.getNotAfter(cacert);
+    	if (cacert != null && !isRootCA) {
+    	    final Date caNotAfter = CertTools.getNotAfter(cacert);
+    	    if (lastDate.after(caNotAfter)) {
+    	        log.info(intres.getLocalizedMessage("createcert.limitingvalidity", lastDate.toString(), caNotAfter));
+    	        lastDate = caNotAfter;
+    	    }
+    	}
+    	// Limit validity: We do not allow a certificate to be valid before the the CA becomes valid (unless it's RootCA during renewal)
+    	if (cacert != null && !isRootCA) {
+    	    final Date caNotBefore = CertTools.getNotBefore(cacert);
+    	    if (firstDate.before(caNotBefore)) {
+    	        log.info(intres.getLocalizedMessage("createcert.limitingvaliditystart", firstDate.toString(), caNotBefore));
+    	        firstDate = caNotBefore;
+    	    }
         }
-        // Limit validity: We do not allow a certificate to be valid before the the CA becomes valid (unless it's RootCA during renewal)
-        if (cacert != null && firstDate.before(CertTools.getNotBefore(cacert)) && !isRootCA) {
-            log.info(intres.getLocalizedMessage("createcert.limitingvaliditystart", firstDate.toString(), CertTools.getNotBefore(cacert)));
-            firstDate = CertTools.getNotBefore(cacert);
-        } 
-        if ( !lastDate.before(CertificateValidity.tooLateExpireDate) ) {
-        	String msg = intres.getLocalizedMessage("createcert.errorbeyondtoolateexpiredate", lastDate.toString(), CertificateValidity.tooLateExpireDate.toString()); 
+        if ( !lastDate.before(CertificateValidity.TOO_LATE_EXPIRE_DATE) ) {
+        	String msg = intres.getLocalizedMessage("createcert.errorbeyondtoolateexpiredate", lastDate.toString(), CertificateValidity.TOO_LATE_EXPIRE_DATE.toString()); 
         	log.info(msg);
             throw new IllegalValidityException(msg);
         }
 	}
 
+	/** 
+	 * Gets the certificates 'notAter' value.
+	 * @return the 'notAfter' date.
+	 */
 	public Date getNotAfter() {
 		return lastDate;
 	}
 
+	/** 
+     * Gets the certificates 'notBefore' value.
+     * @return the 'notBefore' date.
+     */
 	public Date getNotBefore() {
 		return firstDate;
 	}
 	
 	/**
-	 * Returns the validity end date for the certificate.
-	 */
+     * Gets the validity end date for the certificate using the certificate profiles encoded validity.
+     * @param profile the certificate profile
+     * @param firstDate the start time.
+     * @return the encoded validity.
+     */
 	private long getCertificateProfileValidtyEndDate(CertificateProfile profile, Date firstDate) {
         final String encodedValidity = profile.getEncodedValidity();
         Date date = null;
@@ -224,7 +259,69 @@ public class CertificateValidity {
         }
         return date.getTime();
 	}
+	
+	/**
+	 * Offsets the certificates 'notBefore' (reference point) with the global offset or the offset of the certificate profile.
+	 * @param now the reference point
+	 * @param profile the certificate profile
+	 * @return the offset reference point
+	 */
+	private Date getNowWithOffset(final Date now, final CertificateProfile profile) {
+        Date result = null;
+        if (profile.getUseCertificateValidityOffset()) {
+            final String offset = profile.getCertificateValidityOffset();
+            try {
+                result = new Date(now.getTime() + SimpleTime.parseMillies(offset));
+                if (log.isDebugEnabled()) {
+                    log.debug( "Using validity offset by certificate profile: " + offset);
+                }
+            } catch(NumberFormatException e) {
+                log.warn("Could not parse certificate validity offset " + offset + "; using default " + DEFAULT_VALIDITY_OFFSET);
+            }
+        } else {
+            result = new Date(now.getTime() + DEFAULT_VALIDITY_OFFSET);
+            if (log.isDebugEnabled()) {
+                log.debug( "Using validity offset by cesecore.properties: " + SimpleTime.toString(DEFAULT_VALIDITY_OFFSET, SimpleTime.TYPE_DAYS));
+            }
+        }
+        return result;
+	}
 	 
+	/**
+	 * Gets the start time by the extended entity information.
+	 * @param now the reference point.
+	 * @param subject the end entity information.
+	 */
+	private Date getExtendedInformationStartTime(final Date now, final EndEntityInformation subject) {
+	    Date result = null;
+        final ExtendedInformation extendedInformation = subject.getExtendedinformation();
+        if (extendedInformation != null) {
+            result = parseExtendedInformationEncodedValidity(now, extendedInformation.getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Using ExtendedInformationStartTime: " + result);
+        }
+        return result;
+	}
+	
+	/**
+     * Gets the end time by the extended entity information.
+     * @param now the reference point.
+     * @param subject the end entity information.
+     */
+	private Date getExtendedInformationEndTime(final Date now, final EndEntityInformation subject) {
+        Date result = null;
+        final ExtendedInformation extendedInformation = subject.getExtendedinformation();
+        if (extendedInformation != null) {
+            result = parseExtendedInformationEncodedValidity(now, extendedInformation.getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Using ExtendedInformationEndTime: " + result);
+        }
+        return result;
+	}
+	
+	
 	/**
 	 * Checks that the PrivateKeyUsagePeriod of the certificate is valid at this time
 	 * @param cacert
@@ -285,5 +382,57 @@ public class CertificateValidity {
         } else if (log.isDebugEnabled()) {
             log.debug("No CA certificate available, not checking PrivateKeyUsagePeriod.");       
         }
+    }
+    
+    /**
+     * Checks if the encoded validity is an ISO8601 date or a relative time.
+     * @param encodedValidity the validity
+     * @return Boolean.TRUE if it is a relative time, Boolean.FALSE if it is an ISO8601 date, otherwise NULL.
+     * @See {@link org.cesecore.util.ValidityDate ValidityDate}
+     * @See {@link org.cesecore.util.SimpleTime SimpleTime}
+     */
+    private static final Boolean isRelativeTime(final String encodedValidity) {
+        try {
+            ValidityDate.parseAsIso8601(encodedValidity);
+            return Boolean.FALSE;
+        } catch(ParseException e) {
+            // NOOP
+        }
+        try {
+            SimpleTime.parseMillies(encodedValidity);
+            return Boolean.TRUE;
+        } catch(NumberFormatException nfe) {
+            return null;
+        }
+    }
+    
+    /**
+     * Parses the entity extended information start and end time format and offsets it with the reference point.
+     * @param now the reference point
+     * @param timeString the value in form of 'days:minutes:hours'
+     * @return the parse value offset with now (reference point).
+     */
+    private static final Date parseExtendedInformationEncodedValidity(final Date now, final String timeString) {
+        Date result = null;
+        if (timeString != null) {
+            if (timeString.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
+                final String[] endTimeArray = timeString.split(":");
+                long relative = (Long.parseLong(endTimeArray[0])*24*60 
+                              + Long.parseLong(endTimeArray[1])*60 
+                              + Long.parseLong(endTimeArray[2])) * 60 * 1000;
+                result = new Date(now.getTime() + relative);
+            } else {
+                try {
+                    // Try parsing data as "yyyy-MM-dd HH:mm" assuming UTC
+                    result = ValidityDate.parseAsUTC(timeString);
+                } catch (ParseException e) {
+                    log.error(intres.getLocalizedMessage("createcert.errorinvalidstarttime",timeString));
+                }
+            }
+            if ((log.isDebugEnabled())) {
+                log.debug("Time string by end entity extended Information: "+result);
+            }
+        }
+        return result;
     }
 }

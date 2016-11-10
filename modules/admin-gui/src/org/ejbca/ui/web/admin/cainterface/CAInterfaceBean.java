@@ -686,6 +686,7 @@ public class CAInterfaceBean implements Serializable {
             description = "";
 	    }
 
+	    // If 'buttonMakeRequest' set encodedValidity to zero days, otherwise perform validation if it's an absolute date or a relative time.
 	    if (buttonMakeRequest) {
 	        validityString = "0d"; // not applicable
 	    } else {

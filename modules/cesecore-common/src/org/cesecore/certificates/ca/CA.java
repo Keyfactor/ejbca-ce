@@ -272,11 +272,16 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
     
     /**
-     * Gets the validity as relative time (format '*y *mo *d *h *m *s', i.e. '1y +2mo -3d 4h 5m 6s') or as fixed end date 
-     * (ISO8601 format, i.e. 'yyyy-MM-dd HH:mm:ssZZ', 'yyyy-MM-dd HH:mmZZ' or 'yyyy-MM-ddZZ' with optional '+00:00' appended).
+     * Gets the validity.
+     * @return the validity as ISO8601 date or relative time.
+     * @See {@link org.cesecore.util.ValidityDate ValidityDate}
      */
     public String getEncodedValidity() {
-        return (String) data.get(ENCODED_VALIDITY);
+        String result = (String) data.get(ENCODED_VALIDITY);
+        if (StringUtils.isBlank(result)) {
+            result = ValidityDate.getStringBeforeVersion661(getValidity());
+        }
+        return result;
     }
 
     /**

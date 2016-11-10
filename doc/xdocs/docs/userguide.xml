@@ -895,7 +895,15 @@ Select 0 bits for implicit EC curves.
 
 <subsubsection name="Validity">
 <p>
-The validity determines the validity in days of certificates from the time the certificate is issued.
+The validity determines the end date of the issued certificates and can be configured as: 
+<ol>
+<li><b>fixed date</b> with ISO8601 format 'yyyy-MM-dd HH:mm:ssZZ', i.e. '2011-06-03 18:15:00+00:00', or</li>
+<li><b>relative time</b> in terms of years, months, days, hours, and seconds in the form '*y *mo *d *h *m *s', i.e. '2y-10d'</li>
+</ol>
+For a relative validity, the end date of the certificate is calculated by its start date plus the value configured. 
+The start time usually is the time point of issuance (i.e. if no offset for the start time is configured). 
+</p>
+<p>
 The field 'notAfter' in the issued certificate will have the value 'now + validity days'.
 It can also, if noted in the field, be entered in terms of years, months and days. For instance '10y 9mo 8d' is translated to 
 10 years, 9 months and 8 days from now.
@@ -947,6 +955,15 @@ in ejbca.properties. See the documentation in conf/ejbca.properties.sample for m
 <p><i>Short lived certificates:</i>
 <br/>In a Certificate Profile you can configure validity down to a minutes. Also using validity override and requesting a specific validity time through the protocols and APIs (WS, CMP, SCEP) short times can be requested, down to minutes and seconds.
 When using shorter validity periods than what is configured in the Certificate Profile the value in the profile will function as an upper limit. Longer times than that is not possible to issue.
+</p>
+</subsubsection>
+<subsubsection name="Validity Offset">
+<p>
+A validity offset can be configured in the certificate profile as a relative time in the form of '*y *mo *d *h *m *s'. With this the certificates default offset (specified in cesecore.properties '-10m') will be overwritten.
+</p>
+<p>
+If a fixed end date in the form '2016-10-09 14:41:39+01:00' is used as certificate validity, only the start date of the certificate will be offset.
+<br/>If a relative time in form of '*y *mo *d *h *m *s' is used as certificate validity, start and end date of the certificate are offset.
 </p>
 </subsubsection>
 <subsubsection name="Expiration restrictions">

@@ -103,7 +103,6 @@ public class ValidityDate {
 	 */
 	@Deprecated
 	public static long encodeBeforeVersion661(final String validity) {
-	    log.warn("ECA-5141: This method MUST NOT be called after post-upgrade of EJBCA 6.6.1!");
 		long result = -1;
         try {
             // parse ISO8601 time stamp, i.e 'yyyy-MM-dd HH:mm:ssZZ'.
@@ -135,7 +134,6 @@ public class ValidityDate {
 	 */
 	@Deprecated
 	public static String getStringBeforeVersion661(final long lEncoded) {
-		log.warn("ECA-5141: This method MUST NOT be called after post-upgrade of EJBCA 6.6.1!");
 		if (isDeltaTimeBeforeVersion661(lEncoded)) {
 			return SimpleTime.toString(lEncoded * 24 * 60 * 60 * 1000, SimpleTime.TYPE_DAYS);
 		}
@@ -149,7 +147,6 @@ public class ValidityDate {
 	 */
 	@Deprecated
 	public static Date getDateBeforeVersion661(final long lEncoded, final Date firstDate) {
-	    log.warn("ECA-5141: This method MUST NOT be called after post-upgrade of EJBCA 6.6.1!");
 		if (isDeltaTimeBeforeVersion661(lEncoded) ) {
 			return new Date(firstDate.getTime() + (lEncoded * 24 * 60 * 60 * 1000));
 		}

@@ -24,22 +24,23 @@ import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
-/** JSF validator to check that the input does not contain any invalid characters and is a valid time unit format (i.e. '3y 6mo -10d 6h 30m 30s'). 
+/** JSF validator to check that the input does not contain any invalid characters and is a valid time unit format (i.e. '3y 6mo -10d 6h +30m 30s'). 
  * 
  * @version $Id$
  */
 public class SimpleTimeSecondsValidator implements Validator {
 
-	
     private static final Logger log = Logger.getLogger(SimpleTimeSecondsValidator.class);
 
     @Override
     public void validate(FacesContext facesContext, UIComponent component, Object object) throws ValidatorException {
         final String value = (String) object;
+        final boolean allowNegativeValues = Boolean.valueOf((String) component.getAttributes().get("allowNegativeValues")); 
         boolean failed = true;
         if (!StringTools.hasSqlStripChars(value)) {
             try {
-                if (SimpleTime.getSecondsFormat().parseMillis(value) > -1) {
+                final long millis = SimpleTime.getSecondsFormat().parseMillis(value);
+                if (allowNegativeValues || (!allowNegativeValues && millis > 0)) {
                     failed = false;
                 }
             } catch (NumberFormatException e) {

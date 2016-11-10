@@ -48,12 +48,7 @@ public class RaRequestPreview {
         if(certificateProfile == null){
             return;
         }
-        final String encodedValidity = certificateProfile.getEncodedValidity();
-        if (StringUtils.isNotBlank(encodedValidity)) {
-            validity = encodedValidity;
-        } else {
-            validity = ValidityDate.getStringBeforeVersion661(certificateProfile.getValidity());
-        }
+        validity = certificateProfile.getEncodedValidity();
         keyUsages.clear();
         final boolean[] keyUsageArray = certificateProfile.getKeyUsage();
         for (int i=0; i<keyUsageArray.length; i++) {
