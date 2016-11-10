@@ -1998,11 +1998,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // get from CAtoken to make sure it is fresh
                 String sequence = caToken.getKeySequence();
 
-                String encodedValidity = ca.getEncodedValidity();
-                if (StringUtils.isBlank(encodedValidity)) {
-                    encodedValidity = ValidityDate.getStringBeforeVersion661(ca.getValidity());
-                }
-                cacertificate = ca.generateCertificate(cryptoToken, cainfodata, caPublicKey, -1, customNotBefore, encodedValidity, certprofile,
+                cacertificate = ca.generateCertificate(cryptoToken, cainfodata, caPublicKey, -1, customNotBefore, ca.getEncodedValidity(), certprofile,
                 		sequence, cceConfig);
                 // Build Certificate Chain
                 cachain = new ArrayList<Certificate>();
@@ -2035,11 +2031,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     String sequence = caToken.getKeySequence(); // get from CAtoken to make sure it is fresh
                     CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
                     
-                    String encodedValidity = ca.getEncodedValidity();
-                    if (StringUtils.isBlank(encodedValidity)) {
-                        encodedValidity = ValidityDate.getStringBeforeVersion661(ca.getValidity());
-                    }
-                    cacertificate = signca.generateCertificate(signCryptoToken, cainfodata, caPublicKey, -1, customNotBefore, encodedValidity,
+                    cacertificate = signca.generateCertificate(signCryptoToken, cainfodata, caPublicKey, -1, customNotBefore, ca.getEncodedValidity(),
                             certprofile, sequence, cceConfig);                    
                     // Build Certificate Chain
                     Collection<Certificate> rootcachain = signca.getCertificateChain();

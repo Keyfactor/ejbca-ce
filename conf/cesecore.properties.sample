@@ -47,6 +47,9 @@
 #ca.toolateexpiredate=80000000
 #ca.toolateexpiredate=2038-01-19 03:14:08+00:00
 
+# This offsets the certificates 'notBefore' value (and the 'notAfter' value if a relative validity is configured).
+# The offset can be overwritten by the user with it's corresponding value in a certificate profile
+certificate.validityoffset=-10m
 
 # The idea of a HSM to use a HSM is to have the private keys protected. It should not be possible to extract them.
 # To prevent using a key with the private part extractable a test is made before activating a CA.

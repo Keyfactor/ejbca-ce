@@ -85,6 +85,17 @@ public final class CesecoreConfiguration {
     public static String getCaTooLateExpireDate() {
         return ConfigurationHolder.getExpandedString("ca.toolateexpiredate");
     }
+    
+    /**
+     * The relative time offset for the notBefore value of CA and end entity certificates. Changing this value, 
+     * also changes the notAfter attribute of the certificates, if a relative time is used for its validity. While 
+     * certificate issuance this value can be overwritten by the corresponding value in the certificate profile used.
+     * @See {@link org.cesecore.certificates.certificateprofile.CertificateProfile#getCertificateValidityOffset()}
+     * @See {@link org.cesecore.util.SimpleTime}
+     */
+    public static String getCertificateValidityOffset() {
+        return ConfigurationHolder.getExpandedString("certificate.validityoffset");
+    }
 
     /**
      * @return true if it is permitted to use an extractable private key in a HSM.
