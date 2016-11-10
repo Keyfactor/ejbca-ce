@@ -784,9 +784,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
     private void setDefaultExpirationRestrictionWeekdays() {
         setExpirationRestrictionWeekdays(new boolean[7]);
-        setExpirationRestrictionWeekday(Calendar.TUESDAY, true);
-        setExpirationRestrictionWeekday(Calendar.WEDNESDAY, true);
-        setExpirationRestrictionWeekday(Calendar.THURSDAY, true);
+        setExpirationRestrictionWeekday(Calendar.MONDAY, true);
+        setExpirationRestrictionWeekday(Calendar.FRIDAY, true);
+        setExpirationRestrictionWeekday(Calendar.SATURDAY, true);
+        setExpirationRestrictionWeekday(Calendar.SUNDAY, true);
     }
     
     /**
