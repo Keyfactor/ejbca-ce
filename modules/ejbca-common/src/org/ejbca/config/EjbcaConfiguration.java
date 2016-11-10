@@ -215,17 +215,6 @@ public final class EjbcaConfiguration {
     }
 
     /**
-     * Parameter to specify how to treat data in the database, when running in a clustered environment with different EJBCA versions.
-     */
-    public static int getEffectiveApplicationVersion() {
-        final String readVersion = EjbcaConfigurationHolder.getString("app.version.effective");
-        if (readVersion.startsWith("3.11")) {
-            return 311;
-        }
-        return 400;
-    }
-
-    /**
      * Parameter to specify if how many rounds the BCrypt algorithm should process passwords stored in the database.
      * 0 means use the old way instead of BCrypt.
      */
