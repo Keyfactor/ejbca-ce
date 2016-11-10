@@ -907,11 +907,19 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             addErrorMessage("CTLOGTAB_MISSINGPROTOCOL");
             return "";
         }
+        editedCTLogURL = CTLogInfo.fixUrl(editedCTLogURL);
         
         final int timeout = getEditedCTLogTimeout();
         if (timeout < 0) {
             addErrorMessage("CTLOGTAB_TIMEOUTNEGATIVE");
             return "";
+        }
+        
+        for (final CTLogInfo existing : currentConfig.getCtLogs()) {
+            if (existing.getLogId() != editedCTLog.getLogId() && StringUtils.equals(existing.getUrl(), editedCTLogURL)) {
+                addErrorMessage("CTLOGTAB_ALREADYEXISTS", existing.getUrl());
+                return "";
+            }
         }
 
         // Only replace the key if a new one was selected
