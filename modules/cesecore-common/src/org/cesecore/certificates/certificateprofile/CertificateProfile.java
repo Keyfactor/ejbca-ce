@@ -677,7 +677,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @see {@link #setCertificateValidityOffset(String)} 
      */
     public boolean getUseCertificateValidityOffset() {
-        return Boolean.valueOf((Boolean) data.get(USE_CERTIFICATE_VALIDITY_OFFSET));
+        // Extra null check to handle in-development upgrades
+        if (data.get(USE_CERTIFICATE_VALIDITY_OFFSET) != null) {
+            return Boolean.valueOf((Boolean) data.get(USE_CERTIFICATE_VALIDITY_OFFSET));            
+        } else {
+            return false;
+        }
     }
 
     /**
