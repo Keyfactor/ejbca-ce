@@ -737,9 +737,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return pdsListModel;
     }
     
+    /** Called when the user presses the "Add" button to add a new PDS URL field */
     public String addQCEtsiPds() throws IOException {
         final List<PKIDisclosureStatement> pdsList = getQCEtsiPdsList();
-        pdsList.add(new PKIDisclosureStatement("", "en"));
+        pdsList.add(new PKIDisclosureStatement("", "en")); // start with blank values, that the user can fill in
         getCertificateProfile().setQCEtsiPds(pdsList);
         pdsListModel = null;
         redirectToComponent("header_qcStatements");
@@ -754,6 +755,17 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         pdsListModel = null;
         redirectToComponent("header_qcStatements");
         return "";
+    }
+    
+    /** Returns true if there's a PDS URL filled in that can be deleted */
+    public boolean isAbleToDeletePDSUrl() {
+        final List<PKIDisclosureStatement> pdsList = getQCEtsiPdsList();
+        if (pdsList.size() == 1) {
+            // Note that when we reach zero items, there will be a blank placeholder where the user can fill in an URL.
+            return !pdsList.get(0).getUrl().isEmpty(); // can't delete the placeholder itself
+        } else {
+            return true;
+        }
     }
     
     public void toggleUseQCEtsiValueLimit() throws AuthorizationDeniedException, IOException {
