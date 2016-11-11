@@ -34,7 +34,6 @@ import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -212,7 +211,7 @@ public abstract class RequestMessageUtils {
                                 log.debug("CRMF POPOSigningKey is not defined even though POP type is popSigningKey. Validation will fail.");
                             }
                         }
-                        final ContentVerifierProvider cvp = new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(publicKey);
+                        final ContentVerifierProvider cvp = CertTools.genContentVerifierProvider(publicKey);
                         // Work around for bug in BC where jcrm.hasSigningKeyProofOfPossessionWithPKMAC() will throw NPE if PoposkInput is null
                         if (popoSigningKey.getPoposkInput()!=null && jcrm.hasSigningKeyProofOfPossessionWithPKMAC()) {
                             final PKMACBuilder pkmacBuilder = new PKMACBuilder(new JcePKMACValuesCalculator().setProvider(BouncyCastleProvider.PROVIDER_NAME));
