@@ -648,7 +648,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
      */
     private void assertSerialNumberForIssuerOk(final CA ca, final String issuerDN, final BigInteger serialNumber) throws CertificateSerialNumberException {
         if (ca.getCAType()==CAInfo.CATYPE_X509 && !isUniqueCertificateSerialNumberIndex()) {
-            if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serialNumber)!=null) {
+            if (certificateStoreSession.existsByIssuerAndSerno(issuerDN, serialNumber)) {
                 final String msg = intres.getLocalizedMessage("createcert.cert_serial_number_already_in_database", serialNumber.toString());
                 log.info(msg);
                 throw new CertificateSerialNumberException(msg);
