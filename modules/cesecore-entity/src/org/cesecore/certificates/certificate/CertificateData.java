@@ -36,6 +36,7 @@ import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -862,27 +863,35 @@ public class CertificateData extends ProtectedData implements Serializable {
             query.setParameter("issuerDN", issuerDN);
             return new HashSet<String>(query.getResultList());
     }
+
+    /** @return return true if a certificate exists, false otherwise. */
+    public static boolean existsByIssuerAndSerno(EntityManager entityManager, String subjectDN, String issuerDN) {
+            final Query query = entityManager.createQuery("SELECT a.fingerprint FROM CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
+            query.setParameter("subjectDN", subjectDN);
+            query.setParameter("issuerDN", issuerDN);
+            @SuppressWarnings("rawtypes")
+            final List list = query.getResultList();
+            return (list == null ? false : (query.getResultList().size() > 0));
+    }
+    
     
     /** @return return the query results as a List. */
-    @SuppressWarnings("unchecked")
     public static List<CertificateData> findBySubjectDN(EntityManager entityManager, String subjectDN) {
-        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN");
+        final TypedQuery<CertificateData> query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN", CertificateData.class);
         query.setParameter("subjectDN", subjectDN);
         return query.getResultList();
     }
 
     /** @return return the query results as a List. */
-    @SuppressWarnings("unchecked")
     public static List<CertificateData> findBySerialNumber(EntityManager entityManager, String serialNumber) {
-        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.serialNumber=:serialNumber");
+        final TypedQuery<CertificateData> query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.serialNumber=:serialNumber", CertificateData.class);
         query.setParameter("serialNumber", serialNumber);
         return query.getResultList();
     }
 
     /** @return return the query results as a List. */
-    @SuppressWarnings("unchecked")
     public static List<CertificateData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
-        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
+        final TypedQuery<CertificateData> query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber", CertificateData.class);
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("serialNumber", serialNumber);
         return query.getResultList();

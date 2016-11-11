@@ -247,4 +247,12 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @throws AuthorizationDeniedException
      */
     void setRolloverDoneStatus(AuthenticationToken admin, String fingerprint) throws AuthorizationDeniedException;
+
+    /** Method for speedy checks if a certificate exists for issuerDN, serno
+     * 
+     * @param issuerDN issuer DN of the desired certificate.
+     * @param serno serial number of the desired certificate!
+     * @return true if a Certificate exists, false otherwise
+     */
+    boolean existsByIssuerAndSerno(String issuerDN, BigInteger serno);
 }

@@ -687,6 +687,21 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
+    public boolean existsByIssuerAndSerno(String issuerDN, BigInteger serno) {
+        if (log.isTraceEnabled()) {
+            log.trace(">existsByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
+        }
+        // First make a DN in our well-known format
+        final String dn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
+        final boolean ret = CertificateData.existsByIssuerAndSerno(entityManager, dn, serno.toString());
+        if (log.isTraceEnabled()) {
+            log.trace("<existsByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16)+", ret="+ret);
+        }
+        return ret;        
+    }
+    
+
+    @Override
     public Certificate findCertificateByIssuerAndSerno(String issuerDN, BigInteger serno) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
