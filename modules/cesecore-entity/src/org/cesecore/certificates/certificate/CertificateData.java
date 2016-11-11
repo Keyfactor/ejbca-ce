@@ -865,11 +865,11 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @return return true if a certificate exists, false otherwise. */
-    public static boolean existsByIssuerAndSerno(EntityManager entityManager, String subjectDN, String issuerDN) {
-            final Query query = entityManager.createQuery("SELECT a.fingerprint FROM CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
-            query.setParameter("subjectDN", subjectDN);
-            query.setParameter("issuerDN", issuerDN);
-            return query.getResultList().size() > 0;
+    public static boolean existsByIssuerAndSerno(EntityManager entityManager, String issuerDN, String serialNumber) {
+        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("serialNumber", serialNumber);
+        return query.getResultList().size() > 0;
     }
     
     
