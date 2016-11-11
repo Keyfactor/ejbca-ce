@@ -104,7 +104,6 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.CollectionStore;
@@ -1628,7 +1627,7 @@ public class X509CA extends CA implements Serializable {
             }
         }
         try {
-            final ContentVerifierProvider verifier = new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(verifyKey);
+            final ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(verifyKey);
             if (!crl.isSignatureValid(verifier)) {
                 throw new SignatureException("Error verifying CRL to be returned.");
             }
