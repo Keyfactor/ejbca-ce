@@ -990,9 +990,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final int caid = data1.getCaId();
             final ExtendedInformation ei = data1.getExtendedInformation();
             if (ei != null) {
-                resetRemainingLoginAttemptsInternal(ei, username, caid);
-                data1.setTimeModified(new Date().getTime());
-                data1.setExtendedInformation(ei);
+                if (resetRemainingLoginAttemptsInternal(ei, username, caid)) {
+                    data1.setTimeModified(new Date().getTime());
+                    data1.setExtendedInformation(ei);
+                }
             }
         } else {
             log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
@@ -1008,21 +1009,27 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     /**
      * Assumes authorization has already been checked.. Modifies the ExtendedInformation object to reset the remaining login attempts.
+     * @return true if any change was made, false otherwise
      */
-    private void resetRemainingLoginAttemptsInternal(final ExtendedInformation ei, final String username,
+    private boolean resetRemainingLoginAttemptsInternal(final ExtendedInformation ei, final String username,
             final int caid) {
         if (log.isTraceEnabled()) {
             log.trace(">resetRemainingLoginAttemptsInternal");
         }
+        final boolean ret;
         final int resetValue = ei.getMaxLoginAttempts();
         if (resetValue != -1 || ei.getRemainingLoginAttempts() != -1) {
             ei.setRemainingLoginAttempts(resetValue);
             final String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);
             log.info(msg);
+            ret = true;
+        } else {
+            ret = false;
         }
         if (log.isTraceEnabled()) {
-            log.trace("<resetRamainingLoginAttemptsInternal: " + resetValue);
+            log.trace("<resetRamainingLoginAttemptsInternal: " + resetValue+", "+ret);
         }
+        return ret;
     }
 
     @Override
@@ -1042,11 +1049,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     // if it isn't already
                     if (data1.getStatus() != EndEntityConstants.STATUS_GENERATED) {
                         data1.setStatus(EndEntityConstants.STATUS_GENERATED);
-                        final String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
-                        log.info(msg);
-                        resetRemainingLoginAttemptsInternal(ei, username, caid);
                         data1.setTimeModified(new Date().getTime());
-                        data1.setExtendedInformation(ei);
+                        if (resetRemainingLoginAttemptsInternal(ei, username, caid)) {
+                            final String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
+                            log.info(msg);
+                            data1.setExtendedInformation(ei);
+                        }
                     }
                 } else if (counter != -1) {
                     if (log.isDebugEnabled()) {
@@ -1282,9 +1290,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // re-set the allowed request counter to the default values
                 resetRequestCounter(admin, false, ei, username, endEntityProfileId);
                 // Reset remaining login counter
-                resetRemainingLoginAttemptsInternal(ei, username, caid);
-                // data1.setTimeModified(new Date().getTime());
-                data1.setExtendedInformation(ei);
+                if (resetRemainingLoginAttemptsInternal(ei, username, caid)) {
+                    // TimeModified is set finally below, since this method sets status as well
+                    // data1.setTimeModified(new Date().getTime());
+                    data1.setExtendedInformation(ei);
+                }
             }
         } else {
             if (log.isDebugEnabled()) {
