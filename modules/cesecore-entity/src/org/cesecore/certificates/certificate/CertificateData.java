@@ -869,9 +869,7 @@ public class CertificateData extends ProtectedData implements Serializable {
             final Query query = entityManager.createQuery("SELECT a.fingerprint FROM CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
             query.setParameter("subjectDN", subjectDN);
             query.setParameter("issuerDN", issuerDN);
-            @SuppressWarnings("rawtypes")
-            final List list = query.getResultList();
-            return (list == null ? false : (query.getResultList().size() > 0));
+            return query.getResultList().size() > 0;
     }
     
     
