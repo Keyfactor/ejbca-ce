@@ -60,6 +60,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
     /** Possible clear text error information in the response. Defaults to null. */
     private String failText = null;
     
+    private transient Certificate certificate;
     private transient CertificateData certificateData;
     private transient Base64CertData base64CertData;
     
@@ -96,9 +97,10 @@ public class X509ResponseMessage implements CertificateResponseMessage {
      *
      * @param cert certificate in the response message.
      */
-    public void setCertificate(Certificate cert) {
+    public void setCertificate(final Certificate certificate) {
+        this.certificate = certificate;
         try {
-            this.certbytes = cert.getEncoded();
+            this.certbytes = certificate.getEncoded();
         } catch (CertificateEncodingException e) {
             throw new Error("Could not encode certificate. This should not happen", e);
         }
@@ -123,12 +125,16 @@ public class X509ResponseMessage implements CertificateResponseMessage {
 	}
 
     @Override
-    public Certificate getCertificate() {     
-        try {
-            return CertTools.getCertfromByteArray(certbytes, Certificate.class);
-        } catch (CertificateException e) {
-            throw new Error("Response was created without containing valid certificate. This should not happen", e);
+    public Certificate getCertificate() {
+        // Deserialize certificate using BC if this entire object has been serialized
+        if (certificate==null) {
+            try {
+                certificate = CertTools.getCertfromByteArray(certbytes, Certificate.class);
+            } catch (CertificateException e) {
+                throw new Error("Response was created without containing valid certificate. This should not happen", e);
+            }
         }
+        return certificate;
     }
 
     @Override
