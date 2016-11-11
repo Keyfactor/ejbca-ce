@@ -161,7 +161,8 @@ public class ProfileData extends ProtectedData implements Serializable {
     @SuppressWarnings("unchecked")
     @Transient
     public Profile getProfile() {
-        Class<? extends Profile> implementationClass = (Class<? extends Profile>) getDataMap().get(Profile.PROFILE_TYPE);
+        LinkedHashMap<Object, Object> datamap = (LinkedHashMap<Object, Object>)getDataMap();
+        Class<? extends Profile> implementationClass = (Class<? extends Profile>) datamap.get(Profile.PROFILE_TYPE);
         Profile returnValue;
         try {     
             returnValue = implementationClass.newInstance();
@@ -170,7 +171,7 @@ public class ProfileData extends ProtectedData implements Serializable {
         }
         returnValue.setProfileName(profileName);
         returnValue.setProfileId(id);
-        returnValue.setDataMap((LinkedHashMap<Object, Object>) getDataMap());
+        returnValue.setDataMap(datamap);
         return returnValue;
     }
 
