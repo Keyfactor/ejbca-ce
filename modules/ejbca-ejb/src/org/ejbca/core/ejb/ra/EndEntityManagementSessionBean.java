@@ -1288,9 +1288,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             if (ei != null) {
                 // If status is set to new, when it is not already new, we should
                 // re-set the allowed request counter to the default values
-                resetRequestCounter(admin, false, ei, username, endEntityProfileId);
+                final boolean counterChanged = resetRequestCounter(admin, false, ei, username, endEntityProfileId);
                 // Reset remaining login counter
-                if (resetRemainingLoginAttemptsInternal(ei, username, caid)) {
+                final boolean resetChanged = resetRemainingLoginAttemptsInternal(ei, username, caid);
+                if (counterChanged || resetChanged) {
                     // TimeModified is set finally below, since this method sets status as well
                     // data1.setTimeModified(new Date().getTime());
                     data1.setExtendedInformation(ei);
@@ -2318,8 +2319,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * 
      * @param admin administrator
      * @param ei the ExtendedInformation object to modify
+     * @return true if ExtendedInformation was changed (i.e. it should be saved), false otherwise
      */
-    private void resetRequestCounter(final AuthenticationToken admin, final boolean onlyRemoveNoUpdate, final ExtendedInformation ei,
+    private boolean resetRequestCounter(final AuthenticationToken admin, final boolean onlyRemoveNoUpdate, final ExtendedInformation ei,
             final String username, final int endEntityProfileId) {
         if (log.isTraceEnabled()) {
             log.trace(">resetRequestCounter(" + username + ", " + onlyRemoveNoUpdate + ")");
@@ -2343,12 +2345,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // value will be set to null
         // We only re-set this value if the COUNTER was used in the first
         // place, if never used, we will not fiddle with it
+        boolean ret = false;
         if (counter != null) {
             if ((!onlyRemoveNoUpdate) || (onlyRemoveNoUpdate && (value == null))) {
                 ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, value);
                 if (log.isDebugEnabled()) {
                     log.debug("Re-set request counter for user '" + username + "' to:" + value);
                 }
+                ret = true;
             } else {
                 if (log.isDebugEnabled()) {
                     log.debug("No re-setting counter because we should only remove");
@@ -2358,9 +2362,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             if (log.isDebugEnabled()) {
                 log.debug("Request counter not used, not re-setting it.");
             }
-        }
+        }        
         if (log.isTraceEnabled()) {
-            log.trace("<resetRequestCounter(" + username + ", " + onlyRemoveNoUpdate + ")");
+            log.trace("<resetRequestCounter(" + username + ", " + onlyRemoveNoUpdate + "): "+ret);
         }
+        return ret;
     }
 }
