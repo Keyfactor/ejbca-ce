@@ -842,15 +842,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 keyRecoverySession.unmarkUser(admin, username);
             }
             if (ei != null) {
-                boolean eiChanged = false;
                 final String requestCounter = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
                 if (StringUtils.equals(requestCounter, "0") && newstatus == EndEntityConstants.STATUS_NEW && oldstatus != EndEntityConstants.STATUS_NEW) {
                     // If status is set to new, we should re-set the allowed request counter to the default values
                     // But we only do this if no value is specified already, i.e. 0 or null
-                    eiChanged = resetRequestCounter(admin, false, ei, username, endEntityProfileId);
+                    resetRequestCounter(admin, false, ei, username, endEntityProfileId);
                 } else {
                     // If status is not new, we will only remove the counter if the profile does not use it
-                    eiChanged = resetRequestCounter(admin, true, ei, username, endEntityProfileId);
+                    resetRequestCounter(admin, true, ei, username, endEntityProfileId);
                 }
                 
                 // Make sure that information about related approval requests are carried over to the edited end entity. 
@@ -860,19 +859,15 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     List<Integer> editApprovalReqIds = oldExtendedInfo.getEditEndEntityApprovalRequestIds();
                     for(Integer id : editApprovalReqIds) {
                         ei.addEditEndEntityApprovalRequestId(id);
-                        eiChanged = true;
                     }
                 
                     Integer addApprovalReqId = oldExtendedInfo.getAddEndEntityApprovalRequestId();
                     if(addApprovalReqId != null) {
                         ei.setAddEndEntityApprovalRequestId(addApprovalReqId);
-                        eiChanged = true;
                     }
                 }
-                if (eiChanged) {
-                    userData.setExtendedInformation(ei);
-                }
             }
+            userData.setExtendedInformation(ei);
             userData.setStatus(newstatus);
             if (StringUtils.isNotEmpty(newpassword)) {
                 if (clearpwd) {
