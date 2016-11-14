@@ -235,7 +235,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                 if (log.isDebugEnabled()) {
                     log.debug("New User " + username + ", adding userdata. New status of user '" + userdata.getStatus() + "'.");
                 }
-                // addUserfromWS also checks useUserStorage internally, so don't dupliace the check
+                // addUserfromWS also checks useUserStorage internally, so don't duplicate the check
                 endEntityManagementSession.addUserFromWS(admin, userdata, clearpwd);
             }
         } catch (WaitingForApprovalException e) {
