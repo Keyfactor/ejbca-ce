@@ -869,6 +869,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("serialNumber", serialNumber);
+        query.setMaxResults(1);
         return query.getResultList().size() > 0;
     }
     
