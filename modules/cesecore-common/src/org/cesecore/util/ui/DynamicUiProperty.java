@@ -19,6 +19,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -243,21 +244,18 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             throw new IllegalStateException("Attempted to set multiple values from a dynamic property with single value.");
         }
         if (object == null) {
-            values.clear();
-            values.add(defaultValue);
+            this.values = new ArrayList<>(Arrays.asList(defaultValue));
         } else {
             if (possibleValues != null) {
                 for (final T possibleValue : possibleValues) {
                     if (possibleValue.equals(object)) {
-                        values.clear();
-                        values.add((T) object);
+                        this.values = new ArrayList<>(Arrays.asList(object));
                         return;
                     }
                 }
                 throw new IllegalArgumentException(object + " is not in the list of approved objects.");
             } else {
-                values.clear();
-                values.add((T) object);
+                this.values = new ArrayList<>(Arrays.asList(object));
             }
         }
     }
@@ -270,17 +268,17 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             this.values.set(0, defaultValue);
         } else {
             if (possibleValues != null && !possibleValues.isEmpty()) {
-                this.values.clear();
+                final List<T> values = new ArrayList<>();
                 OBJECT_LOOP: for (final T object : objects) {
                     for (final T possibleValue : possibleValues) {
                         if (possibleValue.equals(object)) {
-                            this.values.add((T) object);
+                            values.add(object);
                             continue OBJECT_LOOP;
                         }
                     }
                     throw new IllegalArgumentException(object + " is not in the list of approved objects.");
                 }
-
+                this.values = values;
             } else {
                 this.values = objects;
             }
@@ -295,16 +293,14 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         return getAsEncodedValues(getValues());
     }
 
-    @SuppressWarnings("unchecked")
-    public String getAsEncodedValue(Serializable possibleValue) {
-        return new String(Base64.encode(getAsByteArray((T) possibleValue), false));
+    public String getAsEncodedValue(final Serializable possibleValue) {
+        return new String(Base64.encode(getAsByteArray(possibleValue), false));
     }
 
-    @SuppressWarnings("unchecked")
-    private List<String> getAsEncodedValues(List<T> list) {
-        List<String> encodedValues = new ArrayList<>();
-        for (Serializable possibleValue : list) {
-            encodedValues.add(new String(Base64.encode(getAsByteArray((T) possibleValue), false)));
+    private List<String> getAsEncodedValues(final List<T> list) {
+        final List<String> encodedValues = new ArrayList<>();
+        for (final Serializable possibleValue : list) {
+            encodedValues.add(new String(Base64.encode(getAsByteArray(possibleValue), false)));
         }
         return encodedValues;
     }
@@ -326,24 +322,22 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     @SuppressWarnings("unchecked")
     public void setValueGeneric(Serializable object) {
         if (object == null) {
-            this.values.clear();
-            this.values.add(defaultValue);
+            this.values = new ArrayList<>(Arrays.asList(defaultValue));
         } else {
-            this.values.clear();
-            this.values.add((T) object);
+            this.values = new ArrayList<>(Arrays.asList((T) object));
         }
     }
 
     @SuppressWarnings("unchecked")
     public void setValuesGeneric(List<? extends Serializable> list) {
         if (list == null || list.isEmpty()) {
-            this.values.clear();
-            this.values.add(defaultValue);
+            this.values = new ArrayList<>(Arrays.asList(defaultValue));
         } else {
-            this.values.clear();
-            for (Serializable object : list) {
-                this.values.add((T) object);
+            final List<T> values = new ArrayList<>();
+            for (final Serializable object : list) {
+                values.add((T) object);
             }
+            this.values = values;
         }
     }
 
@@ -354,34 +348,23 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         return (DynamicUiProperty<T>) getAsObject(getAsByteArray(this));
     }
 
-    private byte[] getAsByteArray(Serializable o) {
+    private byte[] getAsByteArray(final Serializable o) {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            final ObjectOutputStream oos = new ObjectOutputStream(baos);
-            try {
-                oos.writeObject(o);
-            } finally {
-                oos.close();
-            }
-            return baos.toByteArray();
+        try (final ObjectOutputStream oos = new ObjectOutputStream(baos);) {
+            oos.writeObject(o);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+        return baos.toByteArray();
     }
 
     public static Serializable getAsObject(String encodedValue) {
         return getAsObject(Base64.decode(encodedValue.getBytes()));
     }
     
-    private static Serializable getAsObject(byte[] bytes) {
-        try {
-            final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
-            try {
-                final Object o = ois.readObject();
-                return (Serializable) o;
-            } finally {
-                ois.close();
-            }
+    private static Serializable getAsObject(final byte[] bytes) {
+        try (final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));) {
+            return (Serializable) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
