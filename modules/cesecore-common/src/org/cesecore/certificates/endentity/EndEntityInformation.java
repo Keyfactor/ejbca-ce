@@ -12,14 +12,14 @@
  *************************************************************************/ 
 package org.cesecore.certificates.endentity;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
-import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.StringTools;
 
@@ -280,47 +280,39 @@ public class EndEntityInformation implements Serializable {
 	public void setExtendedinformation(ExtendedInformation extendedinformation) {
 		this.extendedinformation = extendedinformation;
 	}
-	
-	
+
     /**
      * Help Method used to create an ExtendedInformation from String representation.
      * Used when creating an ExtendedInformation from queries.
      */
-    public static ExtendedInformation getExtendedInformation(String extendedinfostring) {
+    public static ExtendedInformation getExtendedInformation(final String extendedinfostring) {
         ExtendedInformation returnval = null;
-        if ( (extendedinfostring != null) && (extendedinfostring.length() > 0) ) {
-            try {
-            	java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(extendedinfostring.getBytes("UTF8")));            	
-            	HashMap<?, ?> h = (HashMap<?, ?>) decoder.readObject();
-            	decoder.close();
-                // Handle Base64 encoded string values
-                HashMap<?, ?> data = new Base64GetHashMap(h);
-            	int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
-            	switch(type){
-            	  case ExtendedInformation.TYPE_BASIC :
-              		returnval = new ExtendedInformation();            	
-              		returnval.loadData(data);
-              		break;
-            	}            	
-            }catch (Exception e) {
-            	throw new RuntimeException("Problems generating extended information from String",e);
+        if (extendedinfostring != null && !extendedinfostring.isEmpty() ) {
+            try (final java.beans.XMLDecoder decoder = new java.beans.XMLDecoder(new ByteArrayInputStream(extendedinfostring.getBytes(StandardCharsets.UTF_8)));) {            	
+            	final HashMap<?, ?> data = (HashMap<?, ?>) decoder.readObject();
+            	// No need to b64 decode Integer value, just read it
+            	final int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
+            	switch (type) {
+            	case ExtendedInformation.TYPE_BASIC :
+            	    returnval = new ExtendedInformation();            	
+            	    returnval.loadData(data);
+            	    break;
+            	}
             }
         }
         return returnval;
     }
     
-    @SuppressWarnings("unchecked")
-    public static String extendedInformationToStringData(ExtendedInformation extendedinformation) throws UnsupportedEncodingException {
+    public static String extendedInformationToStringData(final ExtendedInformation extendedinformation) {
     	String ret = null;
-    	if(extendedinformation != null){
+    	if (extendedinformation != null){
             // We must base64 encode string for UTF safety
-            HashMap<Object, Object> a = new Base64PutHashMap();
-            a.putAll((Map<Object, Object>)extendedinformation.saveData());
-            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-    		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-    		encoder.writeObject(a);
-    		encoder.close();
-    		ret = baos.toString("UTF8");
+            final HashMap<Object, Object> b64DataMap = Base64PutHashMap.getAsBase64PutHashMapWrapper(extendedinformation.getRawData());
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    		try (final java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);) {
+    		    encoder.writeObject(b64DataMap);
+    		}
+    		ret = new String(baos.toByteArray(), StandardCharsets.UTF_8);
     	}
     	return ret;
     }
@@ -340,6 +332,4 @@ public class EndEntityInformation implements Serializable {
             return StringTools.getBase64String(subjectDNClean);
     	}
     }
-
-
 }

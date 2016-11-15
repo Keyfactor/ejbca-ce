@@ -14,7 +14,6 @@
 package org.ejbca.core.ejb.ra;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
@@ -487,13 +486,8 @@ public class UserData extends ProtectedData implements Serializable {
     /**
      * Non-searchable information about a user.
      */
-    public void setExtendedInformation(ExtendedInformation extendedinformation) {
-        try {
-            String eidata = EndEntityInformation.extendedInformationToStringData(extendedinformation);
-            setExtendedInformationData(eidata);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Problems storing extended information for user :" + getUsername(), e);
-        }
+    public void setExtendedInformation(final ExtendedInformation extendedInformation) {
+        setExtendedInformationData(EndEntityInformation.extendedInformationToStringData(extendedInformation));
     }
 
     /**

@@ -14,7 +14,6 @@
 package org.ejbca.core.model.ca.publisher;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -115,12 +114,7 @@ public class PublisherQueueVolatileInformation extends UpgradeableDataHashMap im
     }
     
     public void setExtendedInformation(ExtendedInformation ei) {
-    	String eidata = null;
-    	try {
-			eidata = EndEntityInformation.extendedInformationToStringData(ei);
-		} catch (UnsupportedEncodingException e) {
-			log.error(e);
-		}
+    	final String eidata = EndEntityInformation.extendedInformationToStringData(ei);
     	if (eidata != null) {
     		data.put(EXTENDEDINFORMATION, eidata);
     	}
