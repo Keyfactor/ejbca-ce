@@ -673,7 +673,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public void setPrivateKeyUsagePeriodStartOffset(String value) throws AuthorizationDeniedException {
         if (null != value) {
             final long millis = SimpleTime.getSecondsFormat().parseMillis(value);
-            if (millis > 0) {
+            if (millis >= 0) {
                 getCertificateProfile().setPrivateKeyUsagePeriodStartOffset(millis / 1000);
             }
         }

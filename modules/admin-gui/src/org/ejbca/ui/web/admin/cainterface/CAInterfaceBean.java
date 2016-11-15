@@ -694,8 +694,9 @@ public class CAInterfaceBean implements Serializable {
 	        try {
 	            ValidityDate.parseAsIso8601(validityString);
 	        } catch(ParseException e ) {
+	            // Only positive relative times allowed.
 	            final long millis = SimpleTime.parseMillies(validityString);
-                if (millis < 0) {
+                if (millis <= 0) {
                     throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
                 }
 	        }
@@ -998,11 +999,18 @@ public class CAInterfaceBean implements Serializable {
                 // Fixed dates are not limited.
                 ValidityDate.parseAsIso8601(validityString);
             } catch(ParseException e) {
-             // no negative relative times allowed.
-                final long millis = SimpleTime.parseMillies(validityString);
-                if (millis < 0) {
+                // Only positive relative times allowed.
+                long millis;
+                try {
+                    millis = SimpleTime.getSecondsFormat().parseMillis(validityString);                
+                } catch(NumberFormatException nfe) {
                     throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
                 }
+                if (millis <= 0) {
+                    throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+                }
+                // format validityString before saving
+                validityString = SimpleTime.toString(millis, SimpleTime.TYPE_DAYS);
             }
         }
         if (caid != 0  && catype !=0) {

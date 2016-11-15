@@ -181,8 +181,8 @@ public abstract class CvcCA extends CA implements Serializable {
 
             // v4.
             // 'encodedValidity' MUST set to "" (Empty String) here. The initialization is done during post-upgrade of EJBCA 6.6.1.
-            if(null == data.get(ENCODED_VALIDITY)) {
-                setEncodedValidity(StringUtils.EMPTY);
+            if(null == data.get(ENCODED_VALIDITY) && null != data.get(VALIDITY)) {
+                setEncodedValidity(getEncodedValidity());
             }
             
 			data.put(VERSION, new Float(LATEST_VERSION));

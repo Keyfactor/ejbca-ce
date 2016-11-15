@@ -57,9 +57,8 @@ public class PrivateKeyUsagePeriod extends StandardCertificateExtension {
             start = val.getNotBefore().getTime();
         } else {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("No validity passed in to getValue, using default 'Date().getTime() - CertificateValidity.SETBACKTIME'");
+                LOG.debug("No validity passed in to getValue, using default 'Date().getTime() - CertificateValidity.getValidityOffset()'");
             }
-            // ANJAKOBS: now is not the real now!
             start = new Date().getTime() - CertificateValidity.getValidityOffset();
         }
         if (certProfile.isUsePrivateKeyUsagePeriodNotBefore()) {
