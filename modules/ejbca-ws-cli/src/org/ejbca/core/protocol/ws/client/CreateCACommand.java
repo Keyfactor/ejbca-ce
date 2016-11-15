@@ -72,7 +72,7 @@ public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminComma
             String caname = args[ARG_CANAME];
             String cadn = args[ARG_CADN];
             String catype = args[ARG_CATYPE];
-            String validityEncoded = args[ARG_VALIDITY_IN_DAYS];
+            String validityString = args[ARG_VALIDITY_IN_DAYS];
             String certprofile = StringUtils.equalsIgnoreCase(args[ARG_CERT_PROFILE], "null")? null : args[ARG_CERT_PROFILE];
             String signalg = args[ARG_SIGN_ALG];
             int signedByCAId = Integer.parseInt(args[ARG_SIGNED_BY_CAID]);
@@ -89,7 +89,7 @@ public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminComma
                 caproperties = getKeyValuePairListFromProperties(props);
             }
                         
-            long validityInDays = Long.valueOf(validityEncoded);
+            final long validityInDays = Long.valueOf(validityString);
             getEjbcaRAWS().createCA(caname, cadn, catype, validityInDays, certprofile, signalg, signedByCAId, cryptotokenName, 
                     purposeKeyMapping, caproperties);
             getPrintStream().println("Create new CA: " + caname);

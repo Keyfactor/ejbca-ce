@@ -640,7 +640,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /** 
      * @see ValidityDate#getDateBeforeVersion661(long, java.util.Date)
      * @return a long that is used to provide the end date of certificates for this profile, interpreted by ValidityDate#getDate
-     * @deprecated since since EJBCA 6.7.0
+     * @deprecated since since EJBCA 6.6.1
      */
     @Deprecated 
     public long getValidity() {
