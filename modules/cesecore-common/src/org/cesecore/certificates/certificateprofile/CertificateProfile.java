@@ -57,7 +57,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 45.0;
+    public static final float LATEST_VERSION = (float) 44.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -721,7 +721,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /**
      * Use validity expiration restriction.
-     * @param enabled 
+     * @param enabled
      */
     public void setUseExpirationRestrictionForWeekdays(boolean enabled) {
         data.put(USE_EXPIRATION_RESTRICTION_FOR_WEEKDAYS, Boolean.valueOf(enabled));

@@ -579,18 +579,7 @@ java.security.InvalidAlgorithmParameterException
                     CAInfo cainfo = cadatahandler.getCAInfo(caid).getCAInfo();
                     subjectdn = cainfo.getSubjectDN();
                     signedByString = String.valueOf(cainfo.getSignedBy());
-                }
-               	if (null != validityString) {
-           			try {
-               			// parse fixed date ISO8601
-               			// ANJAKOBS: before 6.6.1 range was a little more than epoch to 9999-12-31 23:59:59+01:00, now min value is '0001-01-01 00:00:00'
-               			ValidityDate.parseAsIso8601(validityString);
-           			} catch (ParseException e) {
-               			// parse simple time and get canonical string.
-               			// ANJAKOBS: negative relative times allowed!
-               			validityString = SimpleTime.toString( SimpleTime.getSecondsFormat().parseMillis(validityString), SimpleTime.TYPE_DAYS);
-           			}
-           		}	
+                }	
                 final CAInfo cainfo = cabean.createCaInfo(caid, caname, subjectdn, catype,
             		keySequenceFormatParam, keySequence, signedByString, description, validityString,
             		crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, finishUser,
@@ -608,18 +597,6 @@ java.security.InvalidAlgorithmParameterException
                 
                 if (cadatahandler.getCAInfo(caid).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
                     // Allow changing of subjectDN etc. for uninitialized CAs
-                    if (null != validityString) {
-            			try {
-                			// parse fixed date ISO8601
-                			// ANJAKOBS: before 6.6.1 range was a little more than epoch to 9999-12-31 23:59:59+01:00, now min value is '0001-01-01 00:00:00'
-                			ValidityDate.parseAsIso8601(validityString);
-            			} catch (ParseException e) {
-                			// parse simple time and get canonical string.
-                			// ANJAKOBS: negative relative times allowed!
-                			validityString = SimpleTime.toString( SimpleTime.getSecondsFormat().parseMillis(validityString), SimpleTime.TYPE_DAYS);
-            			}
-            		}
-                    cainfo.setEncodedValidity(validityString);
                     cainfo.setSubjectDN(subjectdn);
                     
                     // We can only update the CAToken properties if we have selected a valid cryptotoken

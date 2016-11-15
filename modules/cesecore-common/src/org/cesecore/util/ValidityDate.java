@@ -223,13 +223,12 @@ public class ValidityDate {
 	 * @throws IllegalArgumentException if given date or weekday restriction are null or all weekdays shall be excluded!
 	 */
 	public static Date applyExpirationRestrictionForWeekdays(final Date date, boolean[] restrictionsForWeekdays, boolean before) throws IllegalArgumentException {
-	    // ANJAKOBS: What's about checks for domain objects? It should be as restrictive as possible. Same as user input :-)
-//	    if (null == date) {
-//	        throw new IllegalArgumentException("Date cannot be null!");
-//	    }
-//	    if (null == restrictionsForWeekdays) {
-//	        throw new IllegalArgumentException("Weekday restrictions cannot be null!");
-//	    }
+	    if (null == date) {
+	        throw new IllegalArgumentException("Date cannot be null!");
+	    }
+	    if (null == restrictionsForWeekdays) {
+	        throw new IllegalArgumentException("Weekday restrictions cannot be null!");
+	    }
 	    boolean allDaysExcluded = true;
 	    for (boolean enabled: restrictionsForWeekdays) {
 	        if (!enabled) {

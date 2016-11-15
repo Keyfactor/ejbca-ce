@@ -52,9 +52,9 @@ public class CertificateValidity {
         try {
             TOO_LATE_EXPIRE_DATE = ValidityDate.parseCaLatestValidDateTime(value);
         } catch (Exception e) {
-            // ANJAKOBS: Set default value?
-            TOO_LATE_EXPIRE_DATE = ValidityDate.parseCaLatestValidDateTime( "2038-01-19 03:14:08+00:00");
-            log.warn("cesecore.properties ca.toolateexpiredate '" + value + "' could not be parsed Using default value '2038-01-19 03:14:08+00:00'", e);
+            final String newValue = ValidityDate.formatAsISO8601(new Date(Long.MAX_VALUE), ValidityDate.TIMEZONE_SERVER);
+            TOO_LATE_EXPIRE_DATE = ValidityDate.parseCaLatestValidDateTime(newValue);
+            log.warn("cesecore.properties ca.toolateexpiredate '" + value + "' could not be parsed Using default value '"+newValue+"'.", e);
         }
     }
     
@@ -199,7 +199,6 @@ public class CertificateValidity {
     		// Update lastDate if we use maximum validity
     	}
 		// Limit validity: We do not allow a certificate to be valid after the the validity of the certificate profile
-    	// ANJAKOBS: Can this be removed -> backward compatibility?
     	if (lastDate.after(certProfileLastDate)) {
     		log.info(intres.getLocalizedMessage("createcert.errorbeyondmaxvalidity",lastDate,subject.getUsername(),certProfileLastDate));
     		lastDate = certProfileLastDate;

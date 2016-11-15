@@ -10,6 +10,7 @@
 <%@page import="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" %>
 <%@page import="org.ejbca.core.model.authorization.AccessRulesConstants" %>
 <%@page import="org.cesecore.authorization.control.StandardRules" %>
+<%@page import="org.cesecore.util.SimpleTime" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 <%
@@ -123,6 +124,8 @@
 				disabled="#{certProfilesBean.viewOnly}"
 				validatorMessage="#{web.text.INVALIDVALIDITYORCERTEND}">
 				<f:validator validatorId="validityDateValidator"/>
+				<f:attribute name="precision" value="seconds"/>
+				<f:attribute name="minimumValue" value="1" />
 			</h:inputText>
 			<br/>
 			<h:panelGroup styleClass="help">
@@ -151,8 +154,8 @@
 			    	title="#{web.text.FORMAT_TIME_YMODHMS}" size="25" maxlength="255"
 					disabled="#{certProfilesBean.viewOnly}"
 					validatorMessage="#{web.text.INVALIDCERTVALIDITYOFFSET}">
-					<f:validator validatorId="simpleTimeSecondsValidator"/>
-					<f:attribute name="allowNegativeValues" value="true" />
+					<f:validator validatorId="simpleTimeValidator"/>
+					<f:attribute name="precision" value="seconds"/>
 				</h:inputText></br>
 				<h:outputText value="#{web.text.FORMAT_TIME_YMODHMS} - #{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}"/>
 			</h:panelGroup>
@@ -736,7 +739,9 @@
 			<h:inputText id="textfieldprivkeyusageperiodstartoffset" value="#{certProfileBean.privateKeyUsagePeriodStartOffset}" size="20" maxlength="255"
 				disabled="#{!certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotBefore or certProfilesBean.viewOnly}" 
 				validatorMessage="#{web.text.INVALIDPRIVKEYSTARTOFFSET}">
-				<f:validator validatorId="simpleTimeSecondsValidator" />
+				<f:validator validatorId="simpleTimeValidator" />
+				<f:attribute name="precision" value="seconds"/>
+				<f:attribute name="minimumValue" value="0" />
 			</h:inputText>
 			<h:outputText styleClass="help" value="#{web.text.FORMAT_TIME_YMODHMS}"/>
 			
@@ -751,7 +756,9 @@
 			<h:inputText id="textfieldprivkeyusageperiodlength" value="#{certProfileBean.privateKeyUsagePeriodLength}" size="20" maxlength="255"
 				disabled="#{!certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotAfter or certProfilesBean.viewOnly}" 
 				validatorMessage="#{web.text.INVALIDPRIVKEYPERIOD}">
-				<f:validator validatorId="simpleTimeSecondsValidator" />
+				<f:validator validatorId="simpleTimeValidator" />
+				<f:attribute name="precision" value="seconds"/>
+				<f:attribute name="minimumValue" value="1" />
 			</h:inputText>
 			<h:outputText styleClass="help" value="#{web.text.FORMAT_TIME_YMODHMS}"/>
 		</h:panelGrid>
@@ -1273,7 +1280,7 @@
 		</h:panelGroup>
 		<h:panelGroup>
 			<h:commandButton value="#{web.text.SAVE}" action="#{certProfileBean.save}" rendered="#{certProfilesBean.authorizedToEdit and not certProfilesBean.viewOnly}"/>
-			<h:commandButton value="#{web.text.CANCEL}" action="#{certProfileBean.cancel}"/>
+			<h:commandButton value="#{web.text.CANCEL}" action="#{certProfileBean.cancel}" immediate="true"/>
 		</h:panelGroup>
 
 	</h:panelGrid>

@@ -185,8 +185,8 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
     }
 
     /** See that privateKeyUsage period is set correctly when certificate validity override is allowed and used.
-     * If we use a custom startDate (allowed through "allowValidityOverride" there will be no CertificateValidity.SETBACKTIME
-     * in the cert.getNotBefore, and hence PrivateKeyUsagePeriod must be exactly same as in the cert and can not use the default certificate
+     * If we use a custom startDate (allowed through "allowValidityOverride" there will be no CertificateValidity.getValidityOffset()
+     * in the cert.getNotBefore, and hence PrivateKeyUsagePeriod must be exactly same as in the certificate and can not use the default certificate
      * validity.
      */
     @Test

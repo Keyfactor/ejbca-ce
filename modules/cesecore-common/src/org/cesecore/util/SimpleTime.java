@@ -15,6 +15,7 @@ package org.cesecore.util;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -43,6 +44,13 @@ public class SimpleTime {
 	public static final String TYPE_MINUTES = "m";
 	public static final String TYPE_SECONDS = "s";
 	public static final String TYPE_MILLISECONDS = "ms";
+	
+    public static final String PRECISION_MILLISECONDS = "milliseconds";
+    public static final String PRECISION_SECONDS = "seconds";
+    public static final String PRECISION_DAYS = "days";
+    
+    public static final List<String> AVAILABLE_PRECISIONS = Arrays.asList( new String[] { 
+            PRECISION_MILLISECONDS, PRECISION_SECONDS, PRECISION_DAYS });
 	    
 	private static final Map<String, Long> MILLISECONDS_FACTOR = new LinkedHashMap<String, Long>();
 	static {
@@ -63,7 +71,7 @@ public class SimpleTime {
     private static final TimeUnitFormat SECONDS_FORMAT_INSTANCE = new TimeUnitFormat(
             Arrays.asList(new String[] { TYPE_YEARS, TYPE_MONTHS, TYPE_DAYS, TYPE_HOURS, TYPE_MINUTES, TYPE_SECONDS }), MILLISECONDS_FACTOR);
 
-    // ANJAKOBS: Limitation 'ms' (or 'mo') MUST NOT be configured after units containing one of their characters 'm', 's' or 'o'!
+    // Limitation 'ms' (or 'mo') MUST NOT be configured after units containing one of their characters 'm', 's' or 'o'!
     private static final TimeUnitFormat MILLISECONDS_FORMAT_INSTANCE = new TimeUnitFormat(
             Arrays.asList(new String[] { TYPE_MILLISECONDS, TYPE_YEARS, TYPE_MONTHS, TYPE_DAYS, TYPE_HOURS, TYPE_MINUTES, TYPE_SECONDS}), MILLISECONDS_FACTOR);
     
@@ -173,6 +181,33 @@ public class SimpleTime {
      */
     public static final TimeUnitFormat getMilliSecondsFormat() {
         return MILLISECONDS_FORMAT_INSTANCE;
+    }
+    
+    /**
+     * Gets the TimeUnitFormat by precision.
+     * @param precision
+     * @return the TimeUnitFormat with the desired precision if existent.
+     * @see SimpleTime#AVAILABLE_PRECISIONS
+     */
+    public static final TimeUnitFormat getTimeUnitFormatOrThrow(final String precision) throws IllegalArgumentException {
+        TimeUnitFormat result = null;
+        if (!AVAILABLE_PRECISIONS.contains(precision)) {
+            throw new IllegalArgumentException("Could not get TimeUnitForm for precision: " + precision);
+        }
+        switch (precision) {
+            case SimpleTime.PRECISION_MILLISECONDS: 
+                result = SimpleTime.getMilliSecondsFormat();
+                break;
+            case SimpleTime.PRECISION_SECONDS: 
+                result = SimpleTime.getSecondsFormat();
+                break;
+            case SimpleTime.PRECISION_DAYS: 
+                result = SimpleTime.getDaysFormat();
+                break;
+            default:
+                result = SimpleTime.getSecondsFormat();
+        }
+        return result;
     }
     
     public static final String toString(final long millis, final String zeroType) {

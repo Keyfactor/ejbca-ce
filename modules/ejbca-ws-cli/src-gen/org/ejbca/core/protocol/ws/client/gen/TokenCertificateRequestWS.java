@@ -110,7 +110,6 @@ public class TokenCertificateRequestWS {
 		this.type = type;
 	}
 	
-	// ANJAKOBS: Name change? AND is returned as relative time with seconds precision '*y *mo *d *h *m *s' now. Communicate it!
 	public String getValidityIdDays() {
 		return validityIdDays;
 	}

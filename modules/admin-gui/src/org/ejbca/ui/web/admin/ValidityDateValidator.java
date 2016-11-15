@@ -24,6 +24,7 @@ import javax.faces.validator.ValidatorException;
 import org.apache.log4j.Logger;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.TimeUnitFormat;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
@@ -39,20 +40,29 @@ public class ValidityDateValidator implements Validator {
     @Override
     public void validate(FacesContext facesContext, UIComponent component, Object object) throws ValidatorException {
         final String value = (String) object;
+        final TimeUnitFormat format = SimpleTime.getTimeUnitFormatOrThrow( (String) component.getAttributes().get("precision"));
+        long minimumValue = Long.MIN_VALUE;
+        if (null != component.getAttributes().get("minimumValue")) {
+            minimumValue = Long.parseLong((String) component.getAttributes().get("minimumValue")); 
+        }
+        long maximumValue = Long.MAX_VALUE;
+        if (null != component.getAttributes().get("maximumValue")) {
+            maximumValue = Long.parseLong((String) component.getAttributes().get("maximumValue")); 
+        }
         boolean failed = true;
         if (!StringTools.hasSqlStripChars(value)) {
-            // parse ISO8601
+            // Parse ISO8601 date.
             try {
-                // ANJAKOBS: before 6.6.1 range was a little more than epoch to 9999-12-31 23:59:59+01:00, now min value is '0001-01-01 00:00:00'
                 ValidityDate.parseAsIso8601(value);
                 failed = false;
             } catch (ParseException e) {
                 // NOOP
             }
             if (failed) {
-                // parse time unit format
+                // Parse time unit format.
                 try {
-                    if (SimpleTime.getSecondsFormat().parseMillis(value) > -1) {
+                    final long millis = format.parseMillis(value);
+                    if (minimumValue <= millis && millis <= maximumValue) {
                         failed = false;
                     }
                 } catch (NumberFormatException e) {
