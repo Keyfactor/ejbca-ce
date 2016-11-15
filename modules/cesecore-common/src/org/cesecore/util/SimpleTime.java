@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Helper class for handling user friendly format of time intervals.
  * 
- * The format is in the form '*d *h *m *s *ms' where * is a decimal number and
+ * The format is in the form 'y* mo* *d *h *m *s *ms' where * is a decimal number and
  * d=days, h=hours, m=minutes, s=seconds, ms=milliseconds. Spaces are optional.
  *  
  * @version $Id$

@@ -26,7 +26,7 @@ import org.apache.commons.lang.StringUtils;
 /** 
  * Class to parse and format relative time values, i.e. '1y-2mo+3d-4h+5m-6s7ms'.
  *  
- * @version $Id: TimeUnitFormat.java 22133 2016-10-01 10:20:32Z anjakobs $
+ * @version $Id$
  */
 public final class TimeUnitFormat {
     
