@@ -76,6 +76,10 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
         return data.clone();
     }
 
+    public LinkedHashMap<Object, Object> getRawData() {
+        return data;
+    }
+
     /**
      * @see IUpgradeableData#loadData(Object)
      */

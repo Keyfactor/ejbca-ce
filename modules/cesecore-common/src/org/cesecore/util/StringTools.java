@@ -15,6 +15,7 @@ package org.cesecore.util;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -389,16 +390,8 @@ public final class StringTools {
         if (dontEncodeAsciiPrintable && StringUtils.isAsciiPrintable(s)) {
         	return s;
         }
-        String n = null;
-        try {
-            // Since we used getBytes(s, "UTF-8") in this method, we must use UTF-8 when doing the reverse in another method
-            n = "B64:" + new String(Base64.encode(s.getBytes("UTF-8"), false));
-        } catch (UnsupportedEncodingException e) {
-            // Do nothing
-            n = s;
-        }
-        return n;
-
+        // Since we used getBytes(s, "UTF-8") in this method, we must use UTF-8 when doing the reverse in another method
+        return "B64:" + new String(Base64.encode(s.getBytes(StandardCharsets.UTF_8), false));
     }
 
     /**
