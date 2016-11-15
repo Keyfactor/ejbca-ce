@@ -265,7 +265,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             throw new IllegalStateException("Attempted to set single value from a dynamic property with multiple values.");
         }
         if (objects == null || objects.isEmpty()) {
-            this.values.set(0, defaultValue);
+            this.values = new ArrayList<>(Arrays.asList(defaultValue));
         } else {
             if (possibleValues != null && !possibleValues.isEmpty()) {
                 final List<T> values = new ArrayList<>();
