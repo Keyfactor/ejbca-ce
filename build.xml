@@ -776,7 +776,8 @@
 	<scriptdef name="convertdot" language="javascript">
 	    <![CDATA[
           ver = project.getProperty("app.version.number");
-		  relstring = ver.replace(/\./g,'_');
+		  // We have to "cast" ver to a javascript string to avoid errors in JDK about "is ambiguous"
+		  relstring = (ver+"").replace(/\./g,'_');
 	      //self.log(ver);
 	      //self.log(relstring);
 		  project.setProperty("ejbca.zipversion", relstring);
