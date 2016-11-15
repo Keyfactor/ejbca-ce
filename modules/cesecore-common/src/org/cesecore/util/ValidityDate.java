@@ -217,7 +217,7 @@ public class ValidityDate {
 	/**
 	 * Rolls the given date one day forward or backward, until a date with a day not included in the restrictions (list of weekdays) is reached.
 	 * @param date the date to change.
-	 * @param restrictionsForWeekdays an array, TODO { Calendar.SUNDAY, Calendar.MONDAY, }
+	 * @param restrictionsForWeekdays an array, { Calendar.SUNDAY, Calendar.MONDAY, etc}
 	 * @param before roll back (or forward if false)
 	 * @return the new date instance applied to the restrictions
 	 * @throws IllegalArgumentException if given date or weekday restriction are null or all weekdays shall be excluded!
