@@ -44,28 +44,4 @@ public class Base64PutHashMap extends LinkedHashMap<Object, Object> {
         }
         return super.put(key, value);
     }
-    
-    /**
-     * Return an instance of Base64PutHashMap that behaves as if it was created using the put(..) method.
-     * 
-     * @param rawDataMap the data to wrap
-     * @return an instance of Base64PutHashMap
-     */
-    public static Base64PutHashMap getAsBase64PutHashMapWrapper(final Map<Object, Object> rawDataMap) {
-        final Base64PutHashMap ret = new Base64PutHashMap() {
-            
-            private static final long serialVersionUID = Base64PutHashMap.serialVersionUID;
-
-            @Override
-            public Object get(Object key) {
-                final Object value = rawDataMap.get(key);
-                if (value!=null && value instanceof String) {
-                    return StringTools.putBase64String((String) value, true);
-                }
-                return value;
-            }  
-        };
-        return ret;
-    }
-
 }

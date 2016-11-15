@@ -307,7 +307,8 @@ public class EndEntityInformation implements Serializable {
     	String ret = null;
     	if (extendedinformation != null){
             // We must base64 encode string for UTF safety
-            final HashMap<Object, Object> b64DataMap = Base64PutHashMap.getAsBase64PutHashMapWrapper(extendedinformation.getRawData());
+            final HashMap<Object, Object> b64DataMap = new Base64PutHashMap();
+            b64DataMap.putAll(extendedinformation.getRawData());
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
     		try (final java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);) {
     		    encoder.writeObject(b64DataMap);
