@@ -20,7 +20,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.lang.reflect.Field;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.PublicKey;
