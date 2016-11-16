@@ -36,6 +36,11 @@ The upgrade to EJBCA 6.6.1 enables seconds precision for CA and user certificate
 To achieve this, for the CA and the certificate profile a new field for the validity is implemented. This field is populated when a CA and 
 certificate profile is loaded from data object for the first time.
 
+Furthermore, the handling of leap years was changed. Previously, EJBCA would take leap years into account when creating a CA or certificate
+profile when a validity was specified in terms of years (with "10y" syntax), and add extra days accordingly. Since 6.6.1, EJBCA always counts
+a year as 365 days, so if you need to account for leap years, then you need to specify them manually, for example as "10y 2d". CAs and
+certificate profiles from earlier versions will keep their existing validity times unchanged.
+
 100% Upgrade Uptime Notes: 
 After the upgrade of the first node of an EJBCA cluster, the validity of a CA or certificate profile MUST NOT be changed by the user until 
 the upgrade of the last node to EJBCA version 6.6.1 has completed. In mixed cluster environments, running nodes with EJBCA version 6.6.1 and 
