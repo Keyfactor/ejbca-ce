@@ -39,23 +39,23 @@ public class SimpleTimeTest {
         failHelper("10s*10ms", null);
         failHelper("10s-10ms0", null);
         // Test parsing full format
-        simpeTimeHelper("0y0d0h0m0s0ms", null, false, 0, 0, 0, 0, 0, 0, 0);
-        simpeTimeHelper("1d1h1m1s1ms", null, false, 90061001, 0, 1, 1, 1, 1, 1);
-        simpeTimeHelper("1d2h3m4s5ms", null, false, 93784005, 0, 1, 2, 3, 4, 5);
-        simpeTimeHelper("10d10h10m10s10ms", null, false, 900610010, 0, 10, 10, 10, 10, 10);
+        simpeTimeHelper("0y0d0h0m0s0ms", null, false, 0, 0, 0, 0, 0, 0, 0, 0);
+        simpeTimeHelper("1d1h1m1s1ms", null, false, 90061001, 0, 0, 1, 1, 1, 1, 1);
+        simpeTimeHelper("1d2h3m4s5ms", null, false, 93784005, 0, 0, 1, 2, 3, 4, 5);
+        simpeTimeHelper("10d10h10m10s10ms", null, false, 900610010, 0, 0, 10, 10, 10, 10, 10);
         // Test parsing one value at the time
-        simpeTimeHelper("10d", null, false, 864000000, 0, 10, 0, 0, 0, 0);
-        simpeTimeHelper("10h", null, false, 36000000, 0, 0, 10, 0, 0, 0);
-        simpeTimeHelper("10m", null, false, 600000, 0, 0, 0, 10, 0, 0);
-        simpeTimeHelper("10s", null, false, 10000, 0, 0, 0, 0, 10, 0);
-        simpeTimeHelper("10ms", null, false, 10, 0, 0, 0, 0, 0, 10);
+        simpeTimeHelper("10d", null, false, 864000000, 0, 0, 10, 0, 0, 0, 0);
+        simpeTimeHelper("10h", null, false, 36000000, 0, 0, 0, 10, 0, 0, 0);
+        simpeTimeHelper("10m", null, false, 600000, 0, 0, 0, 0, 10, 0, 0);
+        simpeTimeHelper("10s", null, false, 10000, 0, 0, 0, 0, 0, 10, 0);
+        simpeTimeHelper("10ms", null, false, 10, 0, 0, 0, 0, 0, 0, 10);
         // Test parsing of capital letters
-        simpeTimeHelper("1D2H3M4S5MS", null, false, 93784005, 0, 1, 2, 3, 4, 5);
-        simpeTimeHelper("5mS", null, false, 5, 0, 0, 0, 0, 0, 5);
-        simpeTimeHelper("5Ms", null, false, 5, 0, 0, 0, 0, 0, 5);
+        simpeTimeHelper("1D2H3M4S5MS", null, false, 93784005, 0, 0, 1, 2, 3, 4, 5);
+        simpeTimeHelper("5mS", null, false, 5, 0, 0, 0, 0, 0, 0, 5);
+        simpeTimeHelper("5Ms", null, false, 5, 0, 0, 0, 0, 0, 0, 5);
         // Test with spaces
-        simpeTimeHelper(" 1d2h3m4s5ms ", null, false, 93784005, 0, 1, 2, 3, 4, 5);
-        simpeTimeHelper("1d 2h 3m 4s 5ms", null, false, 93784005, 0, 1, 2, 3, 4, 5);
+        simpeTimeHelper(" 1d2h3m4s5ms ", null, false, 93784005, 0, 0, 1, 2, 3, 4, 5);
+        simpeTimeHelper("1d 2h 3m 4s 5ms", null, false, 93784005, 0, 0, 1, 2, 3, 4, 5);
     }
     
     /**
@@ -69,23 +69,24 @@ public class SimpleTimeTest {
         failHelper("0", "");
         // Test empty input with ok default
         // Test parsing full format
-        simpeTimeHelper("", "0d0h0m0s0ms", false, 0, 0, 0, 0, 0, 0, 0);
-        simpeTimeHelper(null, "1d1h1m1s1ms", false, 90061001, 0, 1, 1, 1, 1, 1);
-        simpeTimeHelper("", "1d2h3m4s5ms", false, 93784005, 0, 1, 2, 3, 4, 5);
-        simpeTimeHelper(null, "10d10h10m10s10ms", false, 900610010, 0, 10, 10, 10, 10, 10);
+        simpeTimeHelper("", "0d0h0m0s0ms", false, 0, 0, 0, 0, 0, 0, 0, 0);
+        simpeTimeHelper(null, "1d1h1m1s1ms", false, 90061001, 0, 0, 1, 1, 1, 1, 1);
+        simpeTimeHelper("", "1d2h3m4s5ms", false, 93784005, 0, 0, 1, 2, 3, 4, 5);
+        simpeTimeHelper(null, "10d10h10m10s10ms", false, 900610010, 0, 0, 10, 10, 10, 10, 10);
+        simpeTimeHelper(null, "10y10mo10d10h10m10s10ms", false, 342180610010L, 10, 10, 10, 10, 10, 10, 10);
         // Test parsing one value at the time
-        simpeTimeHelper("", "10d", false, 864000000, 0, 10, 0, 0, 0, 0);
-        simpeTimeHelper(null, "10h", false, 36000000, 0, 0, 10, 0, 0, 0);
-        simpeTimeHelper("", "10m", false, 600000, 0, 0, 0, 10, 0, 0);
-        simpeTimeHelper(null, "10s", false, 10000, 0, 0, 0, 0, 10, 0);
-        simpeTimeHelper("", "10ms", false, 10, 0, 0, 0, 0, 0, 10);
+        simpeTimeHelper("", "10d", false, 864000000, 0, 0, 10, 0, 0, 0, 0);
+        simpeTimeHelper(null, "10h", false, 36000000, 0, 0, 0, 10, 0, 0, 0);
+        simpeTimeHelper("", "10m", false, 600000, 0, 0, 0, 0, 10, 0, 0);
+        simpeTimeHelper(null, "10s", false, 10000, 0, 0, 0, 0, 0, 10, 0);
+        simpeTimeHelper("", "10ms", false, 10, 0, 0, 0, 0, 0, 0, 10);
         // Test parsing of capital letters
-        simpeTimeHelper("", "1D2H3M4S5MS", false, 93784005, 0, 1, 2, 3, 4, 5);
-        simpeTimeHelper("", "5mS", false, 5, 0, 0, 0, 0, 0, 5);
-        simpeTimeHelper("", "5Ms", false, 5, 0, 0, 0, 0, 0, 5);
+        simpeTimeHelper("", "1D2H3M4S5MS", false, 93784005, 0, 0, 1, 2, 3, 4, 5);
+        simpeTimeHelper("", "5mS", false, 5, 0, 0, 0, 0, 0, 0, 5);
+        simpeTimeHelper("", "5Ms", false, 5, 0, 0, 0, 0, 0, 0, 5);
         // Test with spaces
-        simpeTimeHelper("", " 1d2h3m4s5ms ", false, 93784005, 0, 1, 2, 3, 4, 5);
-        simpeTimeHelper("", "1d 2h 3m 4s 5ms", false, 93784005, 0, 1, 2, 3, 4, 5);
+        simpeTimeHelper("", " 1d2h3m4s5ms ", false, 93784005, 0, 0, 1, 2, 3, 4, 5);
+        simpeTimeHelper("", "1d 2h 3m 4s 5ms", false, 93784005, 0, 0, 1, 2, 3, 4, 5);
     }
     
     /**
@@ -114,13 +115,13 @@ public class SimpleTimeTest {
      * Helper for tests that we expect to fail.
      */
     private void failHelper(String time, String defaultTime) {
-        simpeTimeHelper(time, defaultTime, true, 0, 0, 0, 0, 0, 0, 0);
+        simpeTimeHelper(time, defaultTime, true, 0, 0, 0, 0, 0, 0, 0, 0);
     }
     
     /**
      * Get a new SimpleTime object and verify that it was created correctly.
      */
-    private void simpeTimeHelper(String time, String defaultTime, boolean fail, long longTime, long years, long days, long hours, long minutes, long seconds, long milliSeconds) {
+    private void simpeTimeHelper(String time, String defaultTime, boolean fail, long longTime, long years, long months, long days, long hours, long minutes, long seconds, long milliSeconds) {
         SimpleTime simpleTime;
         if (defaultTime == null) {
             simpleTime = SimpleTime.getInstance(time);
@@ -135,6 +136,7 @@ public class SimpleTimeTest {
         }
         assertEquals("'"+time+"' input.", longTime, simpleTime.getLong());
         assertEquals("'"+time+"' input.", years, simpleTime.getYears());
+        assertEquals("'"+time+"' input.", months, simpleTime.getMonths());
         assertEquals("'"+time+"' input.", days, simpleTime.getDays());
         assertEquals("'"+time+"' input.", hours, simpleTime.getHours());
         assertEquals("'"+time+"' input.", minutes, simpleTime.getMinutes());
