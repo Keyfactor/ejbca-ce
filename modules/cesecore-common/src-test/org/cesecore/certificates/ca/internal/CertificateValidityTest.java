@@ -187,19 +187,7 @@ public class CertificateValidityTest {
         catch(IllegalValidityException e) {
             // NOOP
         }
-       
-        // B: Test against CA certificate time nesting (which is applied after start and end date was determined!).
-        // 7. Time nest certificate start and end date
-        // Enter the CA certificate again to enable time nesting.
-//        profile.setAllowValidityOverride(false);
-//        profile.setUseCertificateValidityOffset(false);
-//        profile.setUseExpirationRestrictionForWeekdays(false);
-//        validity = new CertificateValidity(now, subject, profile, null, exceededEndDate, shortLivingCaCertificate, false);
-//        notBefore = shortLivingCaFrom;
-//        notAfter = shortLivingCaTo;
-//        assertTrue("7. NotBefore '"+validity.getNotBefore()+"'matches CA notBefore'"+notBefore+"'.", equals( validity.getNotBefore(), notBefore));
-//        assertTrue("7. NotAfter '"+validity.getNotAfter()+"' matches CA notAfter'"+notAfter+"'.", equals(validity.getNotAfter(), notAfter));
-//        LOG.trace("<test04TestAbsoluteValidityWithSecondsPrecision");
+        LOG.trace("<test04TestAbsoluteValidityWithSecondsPrecision");
     }
 	
 	@Test
