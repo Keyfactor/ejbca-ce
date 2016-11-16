@@ -35,8 +35,6 @@ public final class TimeUnitFormat {
     private static final String ZERO = "0";
     private static final String SPACE = " ";
     private static final String OR = "|";
-    private static final String OPENING_BRAKET = "[";
-    private static final String CLOSING_BRAKET = "]";
 
     private static final String EXCEPTION_MESSAGE_ILLEGAL_CHARACTERS = "Illegal characters.";
     private static final String EXCEPTION_MESSAGE_BLANK_STRING = "Cannot parse a blank string.";
@@ -61,9 +59,8 @@ public final class TimeUnitFormat {
             if (index++ > 0) {
                 builder.append(OR);
             }
-            for (char c : unit.toCharArray()) {
-                builder.append(OPENING_BRAKET).append(Character.toLowerCase(c)).append(CLOSING_BRAKET);
-            }
+            // allows the characters passed in as units. the regexp is compiled with Pattern.CASE_INSENSITIVE below.
+            builder.append(Pattern.quote(unit));
         }
         builder.append(PATTERN_SUFFIX);
         pattern = Pattern.compile(builder.toString(), Pattern.CASE_INSENSITIVE);
