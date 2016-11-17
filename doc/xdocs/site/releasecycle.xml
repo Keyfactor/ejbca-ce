@@ -14,9 +14,9 @@
 	  <li>Major Release (x): The first number indicates a major paradigm shift. Examples are moving from one EJB standard to the next (ejb3 -> ejb3 etc) or making the shift from 
 	  a single CA per installation to multiple CAs, something that changes how you work with EJBCA. These shift are very rare with many years between them. A major release probably requires major upgrade activities.</li>
 	  <li>Feature Release (y): The second number corresponds to major enhancements in terms of functionality, or of significant upgrade of embedded component versions. 
-	  These releases may occur once or twice a year, or it may also be longer between them. A major release may require (but not always) database upgrades, where upgrade scripts are provided.</li>
+	  These releases may occur once or twice a year, or it may also be longer between them. A major feature may require database upgrades, where upgrade scripts are provided.</li>
 	  <li>Minor Release (z): The third number corresponds to minor upgrades with regards to bugfixes and functionality enhancements.
-	  A minor release should not require database upgrades, except in extreme cases. Minor releases are usually plug-in upgrades and occurs frequently, several times each year.</li>
+	  A minor release should not require database upgrades. Minor releases are usually plug-in upgrades and occurs frequently, several times each year.</li>
 	  <li>Maintenance Release (w): The fourth number corresponds to a maintenance release that contains important bugfixes, or other cherry picked changes, to a stable release branch.
 	  Maintenance releases are plug-in upgrades and only occur when needed.</li>
 	  </ul>
