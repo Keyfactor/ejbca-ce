@@ -103,6 +103,25 @@ public class JDBCUtil {
     }
 
     /**
+     * Return the requested datasource name. It assumes that the dsName returns a reference (java.lang.String)
+     * to the real datasource instance, otherwise you're likely to get a ClassCastException.
+     *
+     * @param dsName the name of the requested datasource
+     * @return the requested datasource or null if it could not be located
+     */
+    public static DataSource getDataSourceOrNull() {
+        final String dataSourceName = DatabaseConfiguration.getFullDataSourceJndiName();
+        try {
+            return ServiceLocator.getInstance().getDataSource(dataSourceName);
+        } catch (ServiceLocatorException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Unable to get the DataSource '" + dataSourceName + "'.", e);
+            }
+        }
+        return null;
+    }
+
+    /**
      * return a requested database connection
      *
      * @param dsName the name of the datasource

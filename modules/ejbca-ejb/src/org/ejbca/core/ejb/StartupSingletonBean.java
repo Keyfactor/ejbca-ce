@@ -18,7 +18,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.security.Security;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -264,15 +263,13 @@ public class StartupSingletonBean {
         log.trace(">init SignSession to check for unique issuerDN,serialNumber index");
         // Call the check for unique index, since first invocation will perform the database
         // operation and avoid a performance hit for the first request where this is checked.
-        try {
-            final boolean unique = DatabaseIndexUtil.isIndexPresentOverColumns(JDBCUtil.getDataSource(), "CertificateData", Arrays.asList("serialNumber", "issuerDN"), true);
-            certificateStoreSession.setUniqueCertificateSerialNumberIndex(Boolean.valueOf(unique));
-        } catch (ServiceLocatorException | SQLException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Unable to read the index meta data from the database. Will detect presence of unique index using conflicting inserts.", e);
-            }
+        final Boolean unique = DatabaseIndexUtil.isIndexPresentOverColumns(JDBCUtil.getDataSourceOrNull(), "CertificateData", Arrays.asList("serialNumber", "issuerDN"), true);
+        if (unique==null) {
+            log.debug("Unable to read the index meta data from the database. Will detect presence of unique index using conflicting inserts to CertificateData.");
             // Fall-back to testing for a unique index on CertificateData using conflicting INSERTs
             certCreateSession.isUniqueCertificateSerialNumberIndex();
+        } else {
+            certificateStoreSession.setUniqueCertificateSerialNumberIndex(unique);
         }
         
         /*
