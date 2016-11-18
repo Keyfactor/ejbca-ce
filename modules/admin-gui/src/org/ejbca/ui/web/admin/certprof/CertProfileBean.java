@@ -762,6 +762,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final List<PKIDisclosureStatement> pdsList = getQCEtsiPdsList();
         if (pdsList.size() == 1) {
             // Note that when we reach zero items, there will be a blank placeholder where the user can fill in an URL.
+            if (pdsList.get(0) == null || pdsList.get(0).getUrl() == null) {
+            	// can't delete the placeholder itself
+                return false;
+            }
             return !pdsList.get(0).getUrl().isEmpty(); // can't delete the placeholder itself
         } else {
             return true;
