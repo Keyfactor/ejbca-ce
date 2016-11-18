@@ -810,6 +810,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         ctLogs = new ListDataModel<>(ctlogs);
         
         saveCurrentConfig();
+        // Saved and well, clear field for next input
+        currentCTLogURL = null;
     }
 
     private byte[] getCTPubKeyUploadBytes(final UploadedFile upload) {
