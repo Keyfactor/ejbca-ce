@@ -97,15 +97,30 @@ public abstract class DatabaseIndexUtil {
         }
     }
 
-    /** @return true if there exists an index on the specified table exactly matches the requested columns and optionally is unique */
-    public static boolean isIndexPresentOverColumns(final DataSource dataSource, final String tableName, final List<String> columnNames, final boolean requireUnique) throws SQLException {
-        final List<DatabaseIndex> databaseIndexes = getDatabaseIndexFromTable(dataSource, tableName, requireUnique);
-        for (final DatabaseIndex databaseIndex : databaseIndexes) {
-            if (databaseIndex.isExactlyOverColumns(columnNames)) {
-                return true;
+    /** @return true if there exists an index on the specified table exactly matches the requested columns and optionally is unique. null if the check was inconclusive. */
+    public static Boolean isIndexPresentOverColumns(final DataSource dataSource, final String tableName, final List<String> columnNames, final boolean requireUnique) {
+        if (dataSource!=null) {
+            try {
+                final List<DatabaseIndex> databaseIndexes = getDatabaseIndexFromTable(dataSource, tableName, requireUnique);
+                if (databaseIndexes.isEmpty()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Failed to read any index meta data from the database for table '" + tableName + "'. At least a primary key index was expected.");
+                    }
+                } else {
+                    for (final DatabaseIndex databaseIndex : databaseIndexes) {
+                        if (databaseIndex.isExactlyOverColumns(columnNames)) {
+                            return Boolean.TRUE;
+                        }
+                    }
+                    return Boolean.FALSE;
+                }
+            } catch (SQLException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Failed to read index meta data from the database for table '" + tableName + "'.", e);
+                }
             }
         }
-        return false;
+        return null;
     }
 
     /** @return a list of representations of each database index present for a table */

@@ -142,7 +142,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * Required by multiple entry unit tests since isUniqueCertificateSerialNumberIndex is a static variable. */
     void resetUniqueCertificateSerialNumberIndex();
 
-    /** ONLY use in Unit tests.
+    /** ONLY use in Unit tests or during controlled startup.
      * Sets the check for present certificate serial number unique index to specified value. Can be used to override safety check that the 
      * index exists. */
     void setUniqueCertificateSerialNumberIndex(final Boolean value);
