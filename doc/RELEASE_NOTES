@@ -1,3 +1,31 @@
+EJBCA 6.6.1
+-----------
+The first patch release in the 6.6 branch, EJBCA 6.6.1 brings a few bugfixes and several improvements, both in functionality and in performance.
+
+The most notable changes are.
+
+Features:
+- New features related to Validity. You can now configure certificate validity down to minutes and seconds, and certificate start offset which was
+  previously default to -10 minutes is now configurable. There are many new options related to validity, check the documentation.
+- Certificate expiration can now be configured to prevent expiration on specific week days.
+- Added an option to keep expired certificates on the CRL instead of removing them, which is the default and still recommended behavior.
+- Added a new CLI command to change crypto token for a CA.
+ 
+Improvement:
+- When CA certificates are revoked, OCSP responder will respond revoked for leaf certificates only if CA revocation reason indicates a CA compromise (from EJBCA 6.5.4).
+- Several performance optimizations has been done to boost issuing speed.
+- You can now add multiple PDS URIs in the Admin GUI, for Qualified Certificate statement
+- EJB timers are now non-persistent, no need to clean JBoss timer directory on restart anymore.
+
+Bugfixes:
+- CT log timeout are configurable again
+- Legacy OCSP signer renewal is now prevented from from processing the same entry twice
+- Prevent change, triggered by changing hostname while running, of audit log node id once sequence is initialized
+- Updates to imported CA certificates is now persisted properly in the CertificateData table.
+
+Documentation:
+- Updated quick start documentation
+
 EJBCA 6.6.0
 -----------
 PrimeKey Solutions is very pleased to release EJBCA 6.6.0. Being the release with the most number of issue fixed ever, 
