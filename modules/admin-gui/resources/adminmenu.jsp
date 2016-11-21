@@ -57,6 +57,7 @@ org.cesecore.keybind.InternalKeyBindingRules
        final String SCEPCONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/scepconfiguration.jsf";
        
 	   final String PUBLICWEB_LINK          = ejbcawebbean.getBaseUrl();
+	   final String RAWEB_LINK          = ejbcawebbean.getBaseUrl() + "/ra/";
        
        final String MYPREFERENCES_LINK     =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "mypreferences.jsp";
        final String HELP_LINK                =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getHelpPath() 
@@ -396,6 +397,9 @@ if(configheaderprinted){
 <%   }
    }catch(AuthorizationDeniedException e){}
 %>
+
+		<li id="cat9"><a href="<%= RAWEB_LINK %>" target="_ejbcapublicweb"><%=ejbcawebbean.getText("RAWEB") %></a>
+		</li>
 
 		<li id="cat9"><a href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb"><%=ejbcawebbean.getText("PUBLICWEB") %></a>
 		</li>
