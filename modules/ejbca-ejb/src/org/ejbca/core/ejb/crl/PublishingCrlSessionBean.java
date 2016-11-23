@@ -333,8 +333,12 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 }
                                 if (lastDeltaCrlInfo == null || (now.getTime() + crloverlaptime) >= lastDeltaCrlInfo.getExpireDate().getTime()){
                                     final CRLInfo lastBaseCrlInfo = crlSession.getLastCRLInfo(certSubjectDN, false);
-                                    if (internalCreateDeltaCRL(admin, ca, lastBaseCrlInfo) != null) {
-                                        ret = true;
+                                    if (lastBaseCrlInfo != null) {
+                                        if (internalCreateDeltaCRL(admin, ca, lastBaseCrlInfo) != null) {
+                                            ret = true;
+                                        }
+                                    } else {
+                                        log.info("No full CRL exists when trying to generate delta CRL for caid "+caid);
                                     }
                                 }
                             }
@@ -377,7 +381,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 ret = (crl != null);    
             }
         } else {
-            log.info("No full CRL exists when trying to generate delta CRL for caid "+caid);
+            log.info("No full CRL exists when trying to generate (force) delta CRL for caid "+caid);
         }
         return ret;
     }
@@ -536,13 +540,11 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
      * 
      * @param admin administrator performing the task
      * @param ca the CA this operation regards
-     * @param baseCrlNumber
+     * @param lastBaseCrlInfo
      *            base crl number to be put in the delta CRL, this is the CRL
      *            number of the previous complete CRL. If value is -1 the value
      *            is fetched by querying the database looking for the last
-     *            complete CRL.
-     * @param baseCrlCreateTime
-     *            the time the base CRL was issued. If value is -1 the value is
+     *            complete CRL. And the time the base CRL was issued. If value is -1 the value is
      *            fetched by querying the database looking for the last complete
      *            CRL.
      * @return the bytes of the Delta CRL generated or null of no delta CRL was
