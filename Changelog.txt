@@ -1,3 +1,51 @@
+EJBCA 6.6.1, 2016-11-23
+---
+Master Ticket
+    [ECA-5509] - Performance optimizations
+
+Bug
+    [ECA-3554] - CVC certificate validity should not be backdated 10 minutes
+    [ECA-5253] - NPE should be avoided when not receiving an OCSP response in CmpProxyServlet
+    [ECA-5387] - Issuer Alternative Name not included in Root CA until it's renewed
+    [ECA-5479] - NPE when trying to view list of CMP configurations with missing profile
+    [ECA-5489] - Incorrect regex breaks "view certificate" page from Internal Key Bindings page for some CA DNs
+    [ECA-5495] - Update of imported CA certificate is not persisted to the CertificateData table
+    [ECA-5502] - Prevent legacy OCSP signer renewal from processing the same entry twice
+    [ECA-5514] - Make DynamicUiProperty.values thread safe
+
+New Feature
+    [ECA-1628] - Add option to keep revoked expired certificates on CRLs.
+    [ECA-5141] - Specify hours, minutes and seconds in certificate profile
+    [ECA-5330] - Certificate expiration period specific to certain days
+    [ECA-5419] - Make CT Log timeout editable again, as well as the other fields
+    [ECA-5470] - Document trailing space in RDN value behavior in test
+    [ECA-5491] - Add CLI command to change crypto token for a CA
+    [ECA-5492] - Update Ubuntu quick start guide to 16.04 and Java 8
+
+Task
+    [ECA-5428] - Get DB2 job on Jenkins running again
+    [ECA-5507] - Use available helper method for ContentVerifier creation
+
+Improvement
+    [ECA-4447] - Make EJB timers non-persistent
+    [ECA-5451] - Prevent change of audit log node id once sequence is initialized
+    [ECA-5459] - Only regard revocation reasons *Compromise and unspecified as CA private key compromise in VA
+    [ECA-5460] - Update RHEL quick start in installation doc
+    [ECA-5469] - Document that WS certificateRequest method overwrites the end entity
+    [ECA-5478] - Ability to add multiple PDS URIs
+    [ECA-5486] - Document Java version requirements when running JBoss 7.1.1.GA or JBoss EAP 6
+    [ECA-5490] - Add new recommended database index for CRL generation
+    [ECA-5493] - Excessive logging when editing Certificate Profile
+    [ECA-5496] - IKB certificate import should not use the current CA certificate if public key does not match
+    [ECA-5501] - Don't initialize classes in ServiceManifestBuilder
+    [ECA-5517] - javascript for convertdot during ziprelease only works on JDK8
+
+Sub-task
+    [ECA-5511] - Remove extra call to getDataMap() from ProfileData.getProfile()
+    [ECA-5512] - Remove some unneded calls to EndEntityInformation.extendedInformationToStringData()
+    [ECA-5513] - Make assertSerialNumberForIssuerOk() more light weight
+    [ECA-5516] - Investigate efficiency of ExtendedInformation persistence conversion
+
 EJBCA 6.6.0, 2016-10-19
 ---
 Bug
