@@ -531,8 +531,8 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
        
     @SuppressWarnings("unchecked")
     public LinkedHashMap<Integer,CTLogInfo> getCTLogs() {
-        final LinkedHashMap<Integer,CTLogInfo> ret = new LinkedHashMap<>((Map<Integer,CTLogInfo>)data.get(CTLOGS));
-        return (ret == null ? CTLOGS_DEFAULT : ret);
+        final Map<Integer,CTLogInfo> ret = (Map<Integer,CTLogInfo>)data.get(CTLOGS);
+        return (ret == null ? CTLOGS_DEFAULT : new LinkedHashMap<>(ret));
     }
     
     /** Sets the available CT logs. NOTE: The order of the is important, so this MUST be called with a LinkedHashMap! */
