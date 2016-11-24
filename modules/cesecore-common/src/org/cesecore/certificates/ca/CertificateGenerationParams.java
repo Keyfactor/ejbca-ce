@@ -13,7 +13,7 @@
 package org.cesecore.certificates.ca;
 
 import java.io.Serializable;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 import org.cesecore.certificates.certificatetransparency.CTAuditLogCallback;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
@@ -41,13 +41,13 @@ public final class CertificateGenerationParams implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    private Map<Integer,CTLogInfo> configuredCTLogs;
+    private LinkedHashMap<Integer,CTLogInfo> configuredCTLogs;
     private CTAuditLogCallback ctAuditLogCallback;
     
     /**
      * Set the CT logs from the system configuration.
      */
-    public void setConfiguredCTLogs(Map<Integer,CTLogInfo> configuredCTLogs) {
+    public void setConfiguredCTLogs(LinkedHashMap<Integer,CTLogInfo> configuredCTLogs) {
         this.configuredCTLogs = configuredCTLogs;
     }
     
@@ -62,7 +62,7 @@ public final class CertificateGenerationParams implements Serializable {
     
     /* Package internal methods are called from X509CA */
     
-    Map<Integer,CTLogInfo> getConfiguredCTLogs() {
+    LinkedHashMap<Integer,CTLogInfo> getConfiguredCTLogs() {
         return configuredCTLogs;
     }
     

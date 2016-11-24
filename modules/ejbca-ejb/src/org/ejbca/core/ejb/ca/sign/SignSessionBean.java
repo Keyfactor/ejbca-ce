@@ -229,7 +229,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (returnval!=null) {
             // Audit log that we used the CA's signing key to create a CMS signature
             final String detailsMsg = intres.getLocalizedMessage("caadmin.signedcms", ca.getName());
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             if (cert!=null) {
                 details.put("leafSubject", CertTools.getSubjectDN(cert));
                 details.put("leafFingerprint", CertTools.getFingerprintAsString(cert));
@@ -930,7 +930,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // Supply extra info to X509CA for Certificate Transparency
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final Map<Integer, CTLogInfo> configuredCTLogs = globalConfiguration.getCTLogs();
+        final LinkedHashMap<Integer, CTLogInfo> configuredCTLogs = globalConfiguration.getCTLogs();
         
         final CertificateGenerationParams certGenParams = new CertificateGenerationParams();
         certGenParams.setConfiguredCTLogs(configuredCTLogs);

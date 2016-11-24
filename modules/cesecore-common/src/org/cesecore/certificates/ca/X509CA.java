@@ -238,7 +238,7 @@ public class X509CA extends CA implements Serializable {
         super(data);
         setExpireTime(expireTime); // Make sure the internal state is synched with the database column. Required for upgrades from EJBCA 3.5.6 or
                                    // EJBCA 3.6.1 and earlier.
-        final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
+        final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<>();
         for (final Integer type : getExternalCAServiceTypes()) {
             //Type was removed in 6.0.0. It is removed from the database in the upgrade method in this class, but it needs to be ignored 
             //for instantiation. 
@@ -483,6 +483,7 @@ public class X509CA extends CA implements Serializable {
         return (v == null) ? false : v.booleanValue();
     }
 
+    @Override
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
         super.updateCA(cryptoToken, cainfo, cceConfig);
         X509CAInfo info = (X509CAInfo) cainfo;
@@ -546,7 +547,7 @@ public class X509CA extends CA implements Serializable {
                 throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?", e);
             }
         }
-        final List<X509Certificate> x509Chain = new ArrayList<X509Certificate>();
+        final List<X509Certificate> x509Chain = new ArrayList<>();
         if (cert!=null) {
             x509Chain.add(cert);
         }
@@ -577,7 +578,7 @@ public class X509CA extends CA implements Serializable {
             } catch (OperatorCreationException e) {
                 throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
             }            
-            gen.addCertificates(new CollectionStore<JcaX509CertificateHolder>(certList));
+            gen.addCertificates(new CollectionStore<>(certList));
             CMSSignedData s = null;
             CAToken catoken = getCAToken();
             if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {
@@ -608,7 +609,7 @@ public class X509CA extends CA implements Serializable {
             log.warn("next chain exists but is empty");
         }
         
-        ArrayList<X509CertificateHolder> certList = new ArrayList<X509CertificateHolder>();
+        ArrayList<X509CertificateHolder> certList = new ArrayList<>();
         try {
             for (Certificate certificate : nextChain) {
                 certList.add(new JcaX509CertificateHolder((X509Certificate) certificate));
@@ -640,7 +641,7 @@ public class X509CA extends CA implements Serializable {
             } catch (CertificateEncodingException e) {
                 throw new IllegalStateException(e);
             }
-            gen.addCertificates(new CollectionStore<X509CertificateHolder>(certList));
+            gen.addCertificates(new CollectionStore<>(certList));
             CMSSignedData s = null;
             CAToken catoken = getCAToken();
             if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {
@@ -1021,7 +1022,7 @@ public class X509CA extends CA implements Serializable {
         
         
         // Check that the certificate fulfills name constraints
-        if (cacert instanceof X509Certificate) {
+        if (cacert != null) {
             GeneralNames altNameGNs = null;
             String altName = subject.getSubjectAltName(); 
             if(certProfile.getUseSubjectAltNameSubSet()){
@@ -1030,7 +1031,7 @@ public class X509CA extends CA implements Serializable {
             if (altName != null && altName.length() > 0) {
                 altNameGNs = CertTools.getGeneralNamesFromAltName(altName);
             }
-            CertTools.checkNameConstraints((X509Certificate)cacert, subjectDNName, altNameGNs);
+            CertTools.checkNameConstraints(cacert, subjectDNName, altNameGNs);
         }
         
         // If the subject has Name Constraints, then name constraints must be enabled in the certificate profile!
@@ -1209,7 +1210,7 @@ public class X509CA extends CA implements Serializable {
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
 
                 // Get certificate chain
-                final List<Certificate> chain = new ArrayList<Certificate>();
+                final List<Certificate> chain = new ArrayList<>();
                 chain.add(cert);
                 chain.addAll(getCertificateChain());
 
