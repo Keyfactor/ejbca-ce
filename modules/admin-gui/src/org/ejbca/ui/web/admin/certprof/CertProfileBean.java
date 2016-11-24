@@ -836,7 +836,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
     public void setEnabledCTLogs(final List<String> in) throws AuthorizationDeniedException {
-        final Set<Integer> out = new LinkedHashSet<>();
+        final LinkedHashSet<Integer> out = new LinkedHashSet<>();
         for (String current : in) {
             out.add(Integer.parseInt(current));
         }
