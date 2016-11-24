@@ -15,7 +15,6 @@ package org.ejbca.config;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -98,7 +97,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final boolean DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST = true;
     
     // Default CT Logs
-    private static final Map<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
+    private static final LinkedHashMap<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
     /* By default the list is empty but it is possible to add logs here. 
     static {
         try {
@@ -531,23 +530,24 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     }
        
     @SuppressWarnings("unchecked")
-    public Map<Integer,CTLogInfo> getCTLogs() {
-        final Map<Integer,CTLogInfo> ret = (Map<Integer,CTLogInfo>)data.get(CTLOGS);
+    public LinkedHashMap<Integer,CTLogInfo> getCTLogs() {
+        final LinkedHashMap<Integer,CTLogInfo> ret = new LinkedHashMap<>((Map<Integer,CTLogInfo>)data.get(CTLOGS));
         return (ret == null ? CTLOGS_DEFAULT : ret);
     }
     
-    public void setCTLogs(Map<Integer,CTLogInfo> ctlogs) {
+    /** Sets the available CT logs. NOTE: The order of the is important, so this MUST be called with a LinkedHashMap! */
+    public void setCTLogs(LinkedHashMap<Integer,CTLogInfo> ctlogs) {
         data.put(CTLOGS, ctlogs);
     }
        
     public void addCTLog(CTLogInfo ctlog) {
-        HashMap<Integer,CTLogInfo> logs = new LinkedHashMap<>(getCTLogs());
+        LinkedHashMap<Integer,CTLogInfo> logs = new LinkedHashMap<>(getCTLogs());
         logs.put(ctlog.getLogId(), ctlog);
         setCTLogs(logs);
     }
     
     public void removeCTLog(int ctlogId) {
-        HashMap<Integer,CTLogInfo> logs = new LinkedHashMap<>(getCTLogs());
+        LinkedHashMap<Integer,CTLogInfo> logs = new LinkedHashMap<>(getCTLogs());
         logs.remove(ctlogId);
         setCTLogs(logs);
     }

@@ -2391,7 +2391,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return (Set<Integer>)data.get(CTLOGS);
     }
     
-    public void setEnabledCTLogs(Set<Integer> logIds) {
+    /** Sets the enabled CT logs. NOTE: The argument must be a LinkedHashSet, since order is important */
+    public void setEnabledCTLogs(LinkedHashSet<Integer> logIds) {
         data.put(CTLOGS, new LinkedHashSet<>(logIds));
     }
     
