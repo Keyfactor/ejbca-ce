@@ -2299,6 +2299,8 @@ It is also a good idea to specify a short timeout value and/or enable the "ct.fa
 <p>Regarding performance, EJBCA will connect to the logs in the order they have been added and in parallel, with the number of concurrent connections controlled by the "Maximum SCTs" value.
 It will also keep fetching SCTs until this number is reached (the "Minimum SCTs" value is currently only a limit for when EJBCA will consider the request failed).
 If you have more logs than the "Maximum SCTs" value, it's recommended to put slow (e.g. geographically distant) or unreliable logs at the end of the list, so they are only contacted as a last resort.</p>
+
+<p>You may change the order the logs are contacted by moving them up or down in the configuration page. The changed log ordering will not take effect until you edit and save your Certificate Profiles that use the moved CT logs.</p>
 </subsection>
 <subsection name="EJBCA audit logging">
 <p>The submission of pre-certificates is logged to the EJBCA audit log. When a pre-certificate
