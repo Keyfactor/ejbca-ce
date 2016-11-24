@@ -858,6 +858,41 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         saveCurrentConfig();
     }
     
+    public boolean isFirstCTLog() {
+        final int index = ctLogs.getRowIndex();
+        return index == 0;
+    }
+    
+    public boolean isLastCTLog() {
+        final int index = ctLogs.getRowIndex();
+        final int last = ctLogs.getRowCount() - 1;
+        return index == last;
+    }
+    
+    public void moveCTLogUp() {
+        moveCTLog(-1);
+    }
+    
+    public void moveCTLogDown() {
+        moveCTLog(1);
+    }
+    
+    public void moveCTLog(final int direction) {
+        final CTLogInfo ctlogToMove = ctLogs.getRowData();
+        final int index = ctLogs.getRowIndex();
+        
+        final List<CTLogInfo> ctlogs = currentConfig.getCtLogs();
+        final CTLogInfo swapWith = ctlogs.get(index + direction);
+        ctlogs.set(index + direction, ctlogToMove);
+        ctlogs.set(index, swapWith);
+        
+        currentConfig.setCtLogs(ctlogs);
+        ctLogs = new ListDataModel<>(ctlogs);
+        saveCurrentConfig();
+        
+        addInfoMessage("CTLOGTAB_MOVEDCTLOGS");
+    }
+    
     public String editCTLog() {
         editedCTLog = ctLogs.getRowData();
         editedCTLogURL = editedCTLog.getUrl();
