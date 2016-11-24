@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -879,13 +878,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     public void moveCTLog(final int direction) {
-        final CTLogInfo ctlogToMove = ctLogs.getRowData();
         final int index = ctLogs.getRowIndex();
-        
         final List<CTLogInfo> ctlogs = currentConfig.getCtLogs();
-        final CTLogInfo swapWith = ctlogs.get(index + direction);
-        ctlogs.set(index + direction, ctlogToMove);
-        ctlogs.set(index, swapWith);
+        Collections.swap(ctlogs, index, index + direction);
         
         currentConfig.setCtLogs(ctlogs);
         ctLogs = new ListDataModel<>(ctlogs);
