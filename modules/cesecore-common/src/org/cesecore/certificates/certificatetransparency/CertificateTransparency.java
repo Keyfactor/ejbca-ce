@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificatetransparency;
 
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +55,7 @@ public interface CertificateTransparency {
      *
      * @see CertificateTransparency#fetchSCTList(List, CertificateProfile, Map, boolean)
      */
-    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, Map<Integer,CTLogInfo> configuredCTLogs) throws CTLogException;
+    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, LinkedHashMap<Integer,CTLogInfo> configuredCTLogs) throws CTLogException;
     
     /**
      * Tries to add a certificate to CT logs and obtain SCTs (Signed Certificate Timestamps).
@@ -67,7 +68,7 @@ public interface CertificateTransparency {
      * @return A "SCT List" structure, for inclusion in e.g. the CT certificate extension, or null if no logs have been configured.
      * @throws CTLogException If too many servers are down to satisfy the certificate profile.
      */
-    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, Map<Integer,CTLogInfo> configuredCTLogs, UsageMode usageMode) throws CTLogException;
+    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, LinkedHashMap<Integer,CTLogInfo> configuredCTLogs, UsageMode usageMode) throws CTLogException;
     
     /**
      * Tries to add a certificate to CT logs and obtain SCTs (Signed Certificate Timestamps).

@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -641,7 +642,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setEnableCommandLineInterfaceDefaultUser(currentConfig.getEnableCommandLineDefaultUser());
                 globalConfig.setPublicWebCertChainOrderRootFirst(currentConfig.getPublicWebCertChainOrderRootFirst());
                 globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
-                Map<Integer, CTLogInfo> ctlogsMap = new HashMap<Integer, CTLogInfo>();
+                LinkedHashMap<Integer, CTLogInfo> ctlogsMap = new LinkedHashMap<>();
                 for(CTLogInfo ctlog : currentConfig.getCtLogs()) {
                     ctlogsMap.put(ctlog.getLogId(), ctlog);
                 }
