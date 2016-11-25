@@ -145,13 +145,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.enableCommandLineDefaultUser = globalConfig.getEnableCommandLineInterfaceDefaultUser();
                 this.publicWebCertChainOrderRootFirst = globalConfig.getPublicWebCertChainOrderRootFirst();
                 this.setEnableIcaoCANameChange(globalConfig.getEnableIcaoCANameChange());
-                
-                ArrayList<CTLogInfo> ctlogs = new ArrayList<CTLogInfo>();
-                Map<Integer, CTLogInfo> availableCTLogs = globalConfig.getCTLogs();
-                for(int logid : availableCTLogs.keySet()) {
-                    ctlogs.add(availableCTLogs.get(logid));
-                }
-                this.ctLogs = ctlogs;
+                this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
                 
                 // Admin Preferences
                 if(adminPreference == null) {
