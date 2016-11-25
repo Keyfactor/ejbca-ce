@@ -23,4 +23,7 @@ public interface CryptoTokenSession {
     
     /** @return the full class name (including package names) for a CryptoToken type */
     public String getClassNameForType(String tokenType);
+
+    /** @return the name of the given crypto token, or null if it doesn't exist */
+    String getCryptoTokenName(int cryptoTokenId);
 }

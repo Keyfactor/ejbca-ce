@@ -111,6 +111,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
         return CryptoTokenCache.INSTANCE.getEntry(cryptoTokenId);
     }
 
+    @Override
     public String getClassNameForType(String tokenType) {
         String inClassname = null;
         for (final AvailableCryptoToken act : CryptoTokenFactory.instance().getAvailableCryptoTokens()) {
@@ -179,6 +180,11 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     @Override
     public Map<String,Integer> getCachedNameToIdMap() {
         return CryptoTokenCache.INSTANCE.getNameToIdMap();
+    }
+    
+    @Override
+    public String getCryptoTokenName(final int cryptoTokenId) {
+        return CryptoTokenCache.INSTANCE.getName(cryptoTokenId);
     }
     
     @Override
