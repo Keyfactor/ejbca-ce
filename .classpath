@@ -113,7 +113,7 @@
 	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15on-154.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-154.jar" sourcepath="/bc-java"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-154.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-entitymanager-4.1.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-4.1.1.Final.jar"/>
@@ -134,10 +134,10 @@
 	<classpathentry kind="lib" path="conf"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
-	<classpathentry kind="lib" path="lib/ct/ctlog-jdk6-git20140205.jar"/>
+	<classpathentry kind="lib" path="lib/ct/ctlog-jdk7-git20161128-pk1.jar"/>
 	<classpathentry kind="lib" path="lib/ct/httpclient-4.3.6.jar"/>
 	<classpathentry kind="lib" path="lib/ct/httpcore-4.3.3.jar"/>
-	<classpathentry kind="lib" path="lib/ct/protobuf-2.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/ct/json-simple-1.1.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
