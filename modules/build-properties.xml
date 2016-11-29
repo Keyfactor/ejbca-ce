@@ -326,8 +326,8 @@
 	    <path refid="lib.commons-codec.classpath"/>
 		<path refid="lib.json.classpath"/>
 	    <fileset dir="${ejbca.home}/lib/ct">
-	        <include name="ctlog-jdk6-*.jar"/>
-	        <include name="protobuf-*.jar"/>
+	        <include name="ctlog-jdk7-*.jar"/>
+	        <include name="protobuf-java-*.jar"/>
             <include name="guava-*.jar" />
 	        
 	        <!-- TODO should update the files in lib/ and use them instead -->
