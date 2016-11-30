@@ -4389,7 +4389,13 @@ to protect your RSA and ECC keys.
 <li><a href="http://www.smartcard-hsm.com/2015/10/10/Shared_Control_over_Key_Usage.html" target="_smartcardhsm">Shared control over key usage</a></li>
 </ul>
 </subsection>
-
+<subsection name="SoftHSM">
+<p>SoftHSM2 works very well with EJBCA, and after initializing a slot you can use it nicely by creating a new Crypto Token in the Admin GUI.</p>
+<source>
+sudo apt-get install softhsm2
+softhsm2-util  --init-token --slot 1 --label slot1 --pin foo123 --so-pin foo123
+</source>
+</subsection>
 <subsection name="Support for new HSMs">
 <p>
 EJBCA uses PKCS#11 so in theory can support any HSMs that provide a decent PKCS#11 implementation.
