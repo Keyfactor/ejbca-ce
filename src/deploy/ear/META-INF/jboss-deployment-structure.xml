@@ -2,6 +2,15 @@
     <ear-subdeployments-isolated>true</ear-subdeployments-isolated>
   
     <deployment>
+        <!-- Make sun/security/pkcs11/wrapper exported, so we don't need to edit 
+        modules/system/layers/base/sun/jdk/main/module.xml -->
+        <dependencies>
+            <system export="true">
+                <paths>
+                    <path name="sun/security/pkcs11/wrapper"/>
+                </paths>
+            </system>
+        </dependencies> 
         <!-- Using Oracle JDK and JBoss 7 signature verification on crypto providers do not work unless we specify to use-physical-code-source. 
         See https://issues.jboss.org/browse/WFLY-5 -->
         <resources>
