@@ -55,6 +55,13 @@ Certificate Profiles, but not for existing profiles.
 The CertificateData table has three new columns "notBefore", "endEntityProfileId" and "subjectAltName". A CA upgrade using direct database
 publishing to VA also requires schema changes on the connected VAs. Please see the UPGRADE document for details.
 
+EJBCA 6.5.5
+-----------
+EJBCA 6.5.5 is a patch release fixing one bug and making one improvement. These fixes mostly facilitates OCSP operations under certain circumstances.
+
+- Update of imported CA certificate is not persisted to the CertificateData table
+- Internal Key Binding: certificate import should not use the current CA certificate if public key does not match
+
 EJBCA 6.5.4
 -----------
 An autumn patch release to the so far stable EJBCA 6.5 branch, EJBCA 6.5.4 adds a few fixes to issues that showed up during production, 

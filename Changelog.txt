@@ -399,6 +399,15 @@ Sub-task
     [ECA-5316] - KaRA Usability: rename the word Partition for appoval parts
     [ECA-5340] - KaRA Usability: Shorten auto-generated username to 32 chars
 
+EJBCA 6.5.5, 2016-11-30
+---
+Bug
+    [ECA-5495] - Update of imported CA certificate is not persisted to the CertificateData table
+
+Improvement
+    [ECA-5496] - IKB certificate import should not use the current CA certificate if public key does not match
+    [ECA-5501] - Don't initialize classes in ServiceManifestBuilder
+
 EJBCA 6.5.4, 2016-10-27
 ---
 Bug
