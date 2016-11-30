@@ -573,24 +573,9 @@ Logging can be configured using the CLI:
 
 <subsubsection name="JBoss 7/EAP 6 PKCS11">
 <p>
-JBoss 7/EAP 6 isolates away most sun classes. That means you will not be able to send certificates through remote EJB calls, and will not be able to use the Sun PKCS#11 provider.
-These classes can be made available by editing the file
-<i>modules/sun/jdk/main/module.xml (JBoss 7.1/EAP6.0)</i> and adding the following packages to the list of system export paths:
+JBoss 7/EAP 6 by default isolates away most sun classes. EJBCA configures JBoss to expose these classes (sun/security/pkcs11/wrapper)by using a <i>jboss-deployment-structure.xml</i>. This makes configuration in  
+<i>modules/sun/jdk/main/module.xml</i> (JBoss 7.1/EAP6.0) or <i>modules/system/layers/base/sun/jdk/main/module.xml</i> (JBoss EAP 6.1 and later and WildFly) not needed.
 </p>
-<source>
-&lt;path name="sun/security/x509"/&gt;
-&lt;path name="sun/security/pkcs11"/&gt;
-&lt;path name="sun/security/pkcs11/wrapper"/&gt;
-</source>
-<p>
-This will allow an application to use these internal Sun/Oracle/OpenJDK classes.
-</p>
-<p>This is not needed in JBoss EAP 6.1/JBoss 7.2, because the two first packages are exported by default since <a href="https://issues.jboss.org/browse/JBPAPP6-1748">JBPAPP6-1748</a>.
-One package is however needed still. In JBoss EAP 6.1 the file is located in <i>modules/system/layers/base/sun/jdk/main/module.xml</i>.
-</p>
-<source>
-&lt;path name="sun/security/pkcs11/wrapper"/&gt;
-</source>
 </subsubsection>
 
 <subsubsection name="JBoss 7/EAP 6 CMP TCP">
@@ -855,10 +840,10 @@ ant deploy-keystore
 </subsubsection>
 
 <subsubsection name="Optional: Add support for PKCS#11 (HSMs)">
-<p>If you need support for PKCS#11 (HSMs), you need to modify modules/system/layers/base/sun/jdk/main/module.xml and add:</p>
-<source>
-&lt;path name="sun/security/pkcs11/wrapper"/&gt;
-</source>
+<p>
+WildFly by default isolates away most sun classes. EJBCA configures JBoss/WildFly to expose these classes (sun/security/pkcs11/wrapper) by using a <i>jboss-deployment-structure.xml</i>. This makes configuration in  
+ <i>modules/system/layers/base/sun/jdk/main/module.xml</i> not needed.
+</p>
 </subsubsection>
 
 <subsubsection name="Optional: Add support for sending email">
@@ -1012,10 +997,10 @@ ant deploy-keystore
 </subsubsection>
 
 <subsubsection name="Optional: Add support for PKCS#11 (HSMs)">
-<p>If you need support for PKCS#11 (HSMs), you need to modify modules/system/layers/base/sun/jdk/main/module.xml and add:</p>
-<source>
-&lt;path name="sun/security/pkcs11/wrapper"/&gt;
-</source>
+<p>
+WildFly by default isolates away most sun classes. EJBCA configures JBoss/WildFly to expose these classes (sun/security/pkcs11/wrapper) by using a <i>jboss-deployment-structure.xml</i>. This makes configuration in  
+ <i>modules/system/layers/base/sun/jdk/main/module.xml</i> not needed.
+</p>
 </subsubsection>
 
 </subsection>
