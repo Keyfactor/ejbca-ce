@@ -235,7 +235,7 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 			fis.close();
 			retval = new String(contents);
 		} catch (FileNotFoundException e) {
-			getPrintStream().println("Error : PKCS10 file couln't be found.");
+			getPrintStream().println("Error : PKCS10 file could not found.");
 			System.exit(-1); // NOPMD, it's not a JEE app		
 		} catch (IOException e) {
 			getPrintStream().println("Error reading content of PKCS10 file.");
