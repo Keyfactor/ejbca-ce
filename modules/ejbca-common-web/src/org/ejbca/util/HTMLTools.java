@@ -220,8 +220,8 @@ public class HTMLTools {
     
     public static String javascriptEscape(String str) {
     	String ret = str;
-    	// In Javascript strings we need to escape the backslash and apostrophe characters
-    	ret = ret.replaceAll("\\\\", "\\\\\\\\").replaceAll("'", "\\\\'");
+    	// In Javascript strings we need to escape the backslash and apostrophe/quote characters
+    	ret = ret.replaceAll("\\\\", "\\\\\\\\").replaceAll("'", "\\\\'").replaceAll("\"", "\\\\\"").replaceAll("<", "\\\\x3c").replaceAll(">", "\\\\x3e");
     	return ret;
     }
 }
