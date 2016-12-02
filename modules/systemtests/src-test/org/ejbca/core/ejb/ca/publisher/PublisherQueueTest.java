@@ -171,6 +171,7 @@ public class PublisherQueueTest {
 
         // Add data
         publisherQueueSession.addQueueData(456789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
+        log.debug("Added data at: "+System.currentTimeMillis());
 
         // One entry in the queue
         assertEquals(1, publisherQueueSession.getPendingEntriesCountForPublisher(456789));
