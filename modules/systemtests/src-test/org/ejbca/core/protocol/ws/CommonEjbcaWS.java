@@ -2400,7 +2400,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             if(cert2 != null) {
                 internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert2));
             }
-            caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, testCaName).getCAId());
+            try {
+                caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, testCaName).getCAId());
+            } catch (CADoesntExistsException e) {
+                log.debug("Clean up failed: " + e.getMessage());
+            }
             endEntityProfileSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
             certificateProfileSession.removeCertificateProfile(intAdmin, WS_CERTPROF_EI);
         }
