@@ -25,6 +25,7 @@ import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -537,7 +538,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         userData.setPassword(PASSWORD);
         endEntityManagementSession.addUser(intadmin, userData, true);
 
-        fileHandles.addAll(BatchCreateTool.createAllNew(intadmin, new File(P12_FOLDER_NAME)));
+        File f = BatchCreateTool.createUser(intadmin, new File(P12_FOLDER_NAME), adminusername1);
+        fileHandles.addAll(Arrays.asList(f));
         adminEntities = new ArrayList<AccessUserAspectData>();
         adminEntities.add(new AccessUserAspectData(getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminusername1));  
         roleManagementSession.addSubjectsToRole(intadmin, roleAccessSession.findRole(getRoleName()), adminEntities);
