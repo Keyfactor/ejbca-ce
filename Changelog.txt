@@ -1,3 +1,8 @@
+EJBCA 6.6.2, 2016-12-04
+---
+Bug
+    [ECA-5549] - CT Log submission can fail in certain circumstances when it shouldn't
+
 EJBCA 6.6.1, 2016-11-23
 ---
 Master Ticket
