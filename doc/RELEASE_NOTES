@@ -1,3 +1,11 @@
+EJBCA 6.6.2
+-----------
+This release of EJBCA fixes one single issue to improve stability of submissions for Certificate Transparency logs. 
+This feature is only related to issuance of publicly trusted TLS certificates.
+ 
+Bugfixes:
+- CT Log submission could fail in certain circumstances when it should not
+
 EJBCA 6.6.1
 -----------
 The first patch release in the 6.6 branch, EJBCA 6.6.1 brings a few bugfixes and several improvements, both in functionality and in performance.
