@@ -441,7 +441,6 @@ public class CertificateProfileTest {
         assertEquals(clonemap2.size(), profmap.size()-1);
     }
     
-    @SuppressWarnings("deprecation")
     @Test
     public void test09ManyValues() {
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
