@@ -428,7 +428,7 @@ public class RAInterfaceBean implements Serializable {
     	        }
     	        if (userlist.isEmpty()) {
     	            // Perhaps it's such an old installation that we don't have username in the CertificateData table (has it even ever been like that?, I don't think so)
-    	            final List<EndEntityInformation> users = endEntityAccessSession.findUserBySubjectAndIssuerDN(administrator, certdata.getSubjectDN(), certdata.getIssuerDN());
+    	            final List<EndEntityInformation> users = endEntityAccessSession.findUserBySubjectAndIssuerDN(administrator, certdata.getSubjectDnNeverNull(), certdata.getIssuerDN());
     	            userlist.addAll(users);
     	        }
     	    } catch(AuthorizationDeniedException e) {}

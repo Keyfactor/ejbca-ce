@@ -85,7 +85,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
            	final int status = data.getStatus();
             if ( (status == EndEntityConstants.STATUS_NEW) || (status == EndEntityConstants.STATUS_FAILED) || (status == EndEntityConstants.STATUS_INPROCESS) || (status == EndEntityConstants.STATUS_KEYRECOVERY)) {
             	if (log.isDebugEnabled()) {
-            		log.debug("Trying to authenticate user: username="+username+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+status+", type="+data.getType());
+            		log.debug("Trying to authenticate user: username="+username+", dn="+data.getSubjectDnNeverNull()+", email="+data.getSubjectEmail()+", status="+status+", type="+data.getType());
             	}
                 if (!data.comparePassword(password)) {
                 	final String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
