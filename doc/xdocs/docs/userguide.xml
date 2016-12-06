@@ -2356,9 +2356,10 @@ Default (when this value and value of "Non existing is good" are false) is
 to treat it as "unknown".
 If both "Non existing is good" and "Non existing is revoked", the responder will answer "ok".
 </li>
-<li>Max-Age HTTP header (seconds): A hint to caching proxies when using HTTP GET for how long to retain a response. A value of 0 means no caching.</li>
+<li>Max-Age HTTP header (seconds): A hint to caching proxies when using HTTP GET for how long to retain a response, and should be set to a value 
+greater than the response validity. A value of 0 means no caching.</li>
 <li>Request must be signed with a trusted certificate: When true, request signatures will be checked against the list of trusted certificates or trust anchors.</li>
-<li>Response validity (seconds): How long the OCSP response is valid and may be used. A value of 0 means that it is valid indefinitely.</li>
+<li>Response validity (seconds): How long the OCSP response is valid and may be used. A value of 0 means the there is always a newer response available.</li>
 <li>ResponderID: Defines the ResponderID type included in the response.
 The ResponderID is either a Name (SubjectDN of the signing certificate used for response) or
 Keyhash (SHA-1 digest of the public key of the signing certificate used for response).</li>
