@@ -65,7 +65,6 @@
   String username                 = null;         
   String tokensn                  = null;
   String message                  = null;
-  String fingerprint              = null;
   int numberofcertificates        = 0;
   int currentindex                = 0;
   int caid                        = 0;
@@ -610,9 +609,16 @@ function confirmrepublish(){
          <td  align="right" width="<%=columnwidth%>"> 
            <%= ejbcawebbean.getText("FINGERPRINT_SHA256") %>
          </td>
-         <% fingerprint = certificatedata.getSHA256Fingerprint(); %>
-         <td ><code class="fingerprint"><%= fingerprint.substring(0,32) %><br />
-         		<%= fingerprint.substring(32) %></code></td>
+         <td>
+           <code class="fingerprint">
+           <% final String fingerprint = certificatedata.getSHA256Fingerprint();
+              if (fingerprint.length()>32) { %>
+             <%= fingerprint.substring(0,32) %><br/><%= fingerprint.substring(32) %>
+           <% } else { %>
+             <%= fingerprint %>
+           <% } %>
+           </code>
+         </td>
        </tr>
        <tr  id="Row<%=(row++)%2%>"> 
          <td  align="right" width="<%=columnwidth%>"> 
