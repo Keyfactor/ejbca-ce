@@ -46,6 +46,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 
+import javax.ejb.RemoveException;
+
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
@@ -1643,6 +1645,76 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         log.trace("<test74GetExpiredCert()");
     }
 
+    /**
+     * Tests that the provided cardnumber is stored in the EndEntityInformation 
+     * and that when querying for EndEntityInformation the cardnumber is 
+     * returned.
+     * @throws Exception in case of error
+     */
+    @Test
+    public void test75CertificateRequestWithOnlyAltNames() throws Exception {
+        final String username = "wsRequestOnlyAltNames" + new SecureRandom().nextLong();
+        final String eepName = username;
+        // Generate a CSR
+        final KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        final PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.stringToBcX500Name("CN=NOUSED"),
+                keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
+        final String b64csr = new String(Base64.encode(pkcs10.toASN1Structure().getEncoded()));
+        String fingerprint = null;
+        try {
+            // Setup an End Entity Profile that don't require any Subject DN and has a DNSName field
+            final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
+            endEntityProfile.setRequired(DnComponents.COMMONNAME, 0, false);
+            endEntityProfileSession.addEndEntityProfile(intAdmin, eepName, endEntityProfile);
+            // Set some user data
+            final String SUBJECT_DN = "";
+            final String SUBJECT_AN = "dNSName="+username+".primekey.se";
+            final UserDataVOWS userDataVOWS = new UserDataVOWS();
+            userDataVOWS.setUsername(username);
+            userDataVOWS.setPassword(PASSWORD);
+            userDataVOWS.setClearPwd(true);
+            userDataVOWS.setSubjectDN(SUBJECT_DN);
+            userDataVOWS.setCaName(getAdminCAName());
+            userDataVOWS.setEmail(null);
+            userDataVOWS.setSubjectAltName(SUBJECT_AN);
+            userDataVOWS.setStatus(UserDataVOWS.STATUS_NEW);
+            userDataVOWS.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+            userDataVOWS.setEndEntityProfileName(eepName);
+            userDataVOWS.setCertificateProfileName("ENDUSER");
+            // Issue a certificate
+            final CertificateResponse certificateResponse = ejbcaraws.certificateRequest(userDataVOWS, b64csr, CertificateHelper.CERT_REQ_TYPE_PKCS10, null,
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            assertNotNull("CertificateResponse was null.", certificateResponse);
+            // Check that the Subject DN and AN was stored correctly in the certificate
+            final X509Certificate x509Certificate = certificateResponse.getCertificate();
+            fingerprint = CertTools.getFingerprintAsString(x509Certificate);
+            log.debug(" Certificte SDN: " + CertTools.getSubjectDN(x509Certificate));
+            log.debug(" Certificte SAN: " + CertTools.getSubjectAlternativeName(x509Certificate));
+            assertEquals("Unexpected Subject DN stored in certificate.", SUBJECT_DN, CertTools.getSubjectDN(x509Certificate));
+            assertEquals("Unexpected Subject AN stored in certificate.", SUBJECT_AN, CertTools.getSubjectAlternativeName(x509Certificate));
+            // Check that the Subject DN and AN was stored correctly in the EE
+            final EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(intAdmin, username);
+            log.debug(" End entity SDN: " + endEntityInformation.getDN());
+            log.debug(" End entity SAN: " + endEntityInformation.getSubjectAltName());
+            assertEquals("Unexpected Subject DN stored in end entity.", SUBJECT_DN, endEntityInformation.getDN());
+            assertEquals("Unexpected Subject AN stored in end entity.", SUBJECT_AN, endEntityInformation.getSubjectAltName());
+        } finally {
+            if (fingerprint!=null) {
+                // Make sure to delete the certificate since the default AdminCA wont have "Enforce unique DN: false", so next round works
+                internalCertificateStoreSession.removeCertificate(fingerprint);
+            }
+            try {
+                endEntityManagementSession.deleteUser(intAdmin, username);
+            } catch (AuthorizationDeniedException | NotFoundException | RemoveException e) {
+                log.debug("Error during cleanup: " + e.getMessage());
+            }
+            try {
+                endEntityProfileSession.removeEndEntityProfile(intAdmin, eepName);
+            } catch (AuthorizationDeniedException e) {
+                log.debug("Error during cleanup: " + e.getMessage());
+            }
+        }
+    }
     
     private void testCertificateRequestWithEeiDnOverride(boolean allowDNOverrideByEndEntityInformation, boolean useCsr, String requestedSubjectDN, String expectedSubjectDN) throws Exception {
         if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
