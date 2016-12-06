@@ -138,6 +138,8 @@ public class ApprovalSessionTest extends CaTestCase {
 
     private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private ApprovalSessionRemote approvalSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
+    private ApprovalSessionProxyRemote approvalSessionProxyRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionProxyRemote.class,
+            EjbRemoteHelper.MODULE_TEST);
     private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = EjbRemoteHelper.INSTANCE
             .getRemoteSession(ApprovalExecutionSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
@@ -705,21 +707,21 @@ public class ApprovalSessionTest extends CaTestCase {
             Query q1 = new Query(Query.TYPE_APPROVALQUERY);
             q1.add(ApprovalMatch.MATCH_WITH_APPROVALTYPE, BasicMatch.MATCH_TYPE_EQUALS, "" + req1.getApprovalType());
 
-            List<ApprovalDataVO> result = approvalSessionRemote.query(q1, 0, 3, "cAId=" + caid,
+            List<ApprovalDataVO> result = approvalSessionProxyRemote.query(q1, 0, 3, "cAId=" + caid,
                     "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
             assertTrue("Result size " + result.size(), result.size() >= 2 && result.size() <= 3);
 
-            result = approvalSessionRemote.query(q1, 1, 3, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
+            result = approvalSessionProxyRemote.query(q1, 1, 3, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
             assertTrue("Result size " + result.size(), result.size() >= 1 && result.size() <= 3);
 
-            result = approvalSessionRemote.query(q1, 0, 1, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
+            result = approvalSessionProxyRemote.query(q1, 0, 1, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
             assertTrue("Result size " + result.size(), result.size() == 1);
 
             Query q2 = new Query(Query.TYPE_APPROVALQUERY);
             q2.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, "" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, Query.CONNECTOR_AND);
             q2.add(ApprovalMatch.MATCH_WITH_REQUESTADMINCERTSERIALNUMBER, BasicMatch.MATCH_TYPE_EQUALS, reqadmincert.getSerialNumber().toString(16));
 
-            result = approvalSessionRemote.query(q1, 1, 3, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
+            result = approvalSessionProxyRemote.query(q1, 1, 3, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
             assertTrue("Result size " + result.size(), result.size() >= 1 && result.size() <= 3);           
         } finally {
             // Remove the requests
@@ -746,7 +748,8 @@ public class ApprovalSessionTest extends CaTestCase {
             Query expiredQuery = new Query(Query.TYPE_APPROVALQUERY);
             expiredQuery.add(ApprovalMatch.MATCH_WITH_APPROVALTYPE, BasicMatch.MATCH_TYPE_EQUALS, "" + expiredRequest.getApprovalType(), Query.CONNECTOR_AND);
             expiredQuery.add(TimeMatch.MATCH_WITH_EXPIRETIME, null, new Date());
-            List<ApprovalDataVO> result = approvalSessionRemote.query(expiredQuery, 0, 3, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
+            List<ApprovalDataVO> result = approvalSessionProxyRemote.query(expiredQuery, 0, 3, "cAId=" + caid,
+                    "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
             assertTrue("At least one expired query was not returned.", result.size() > 0);
         } finally {
             // Remove the requests
