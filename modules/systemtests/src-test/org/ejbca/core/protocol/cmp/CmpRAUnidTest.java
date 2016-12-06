@@ -238,7 +238,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             pw.println("These properties must the also be defined for the jboss data source. The name of the DS (suggested UnidDS) must be set in cmp.properties. Note that the datasource must be a 'no-tx-datasource', like OcspDS.");
             pw.println("You also have to set the path to the 'mysql.jar' as the 'mysql.lib' system property for the test (or add it to the classpath in Eclipse).");
             pw.println("Example how to the test with this property:");
-            pw.println("ant -Dmysql.lib=/usr/share/java/mysql.jar test:run");
+            pw.println("ant test:runone -Dtest.runone=CmpRAUnidTest -Dmysql.lib=/usr/share/java/mysql-connector-java.jar");
             log.error(sw, e);
             throw new TestAssertionFailedException(sw.toString());
         }

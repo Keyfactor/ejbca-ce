@@ -812,6 +812,7 @@ public abstract class CmpTestCase extends CaTestCase {
     protected static String getProperty(String key, String defaultValue) {
         //If being run from command line
         String result = System.getProperty(key);
+        log.debug("System.getProperty("+key+"): " + result);
         if (result == null) {
             //If being run from Eclipse
             final String testProperties = System.getProperty("sun.java.command");
@@ -821,7 +822,7 @@ public abstract class CmpTestCase extends CaTestCase {
                 result = testProperties.substring(cutFrom + key.length() + 1, (to >= 0 ? to : testProperties.length())).trim();
             }
         }
-        if (result == null) {
+        if (StringUtils.isEmpty(result)) {
             return defaultValue;
         } else {
             return result;
