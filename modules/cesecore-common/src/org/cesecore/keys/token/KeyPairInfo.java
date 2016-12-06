@@ -19,7 +19,7 @@ import java.io.Serializable;
  * 
  * @version $Id$
  */
-public class KeyPairInfo implements Serializable {
+public class KeyPairInfo implements Serializable, Comparable<KeyPairInfo> {
 
     private static final long serialVersionUID = 1L;
 
@@ -43,4 +43,20 @@ public class KeyPairInfo implements Serializable {
     public void setKeySpecification(String keySpecification) { this.keySpecification = keySpecification; }
     public String getSubjectKeyID() { return subjectKeyID; }
     public void setSubjectKeyID(String subjectKeyID) { this.subjectKeyID = subjectKeyID; }
+
+    @Override
+    public int compareTo(final KeyPairInfo o) {
+        int c;
+        
+        c = alias.compareTo(o.alias);
+        if (c != 0) { return c; }
+        
+        // There shouldn't be multiple aliases with the same name, but we compare the other fields just to be sure.
+        c = keyAlgorithm.compareTo(o.keyAlgorithm);
+        if (c != 0) { return c; }
+        c = keySpecification.compareTo(o.keySpecification);
+        if (c != 0) { return c; }
+        
+        return 0;
+    }
 }
