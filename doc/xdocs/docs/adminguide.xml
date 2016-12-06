@@ -1427,10 +1427,6 @@ passed as 'otherData'.
 In the Admin GUI under "CMP Configuration", set "Certificate Request Handler Class" to the name of the plug-in class to enable it. You may then add 
 additional properties that you can use in your implementation.
 </p>
-<note>
-<p>Please note that setting up CMP to use Unid was only possible prior to EJBCA 6.0.0, and after that only legacy setups were supported. As of 6.5.1,
- legacy aliases set up using the below method are no longer supported, but this will be reimplemented in the future.</p>
-</note>
 <p>
 In EJBCA there is already an implementation included. This implementation writes to the unid-fnr DB (see separate <a href="unid.html">unid document</a>). 
 To activate this plug-in just set the following configurations:
@@ -1439,6 +1435,12 @@ To activate this plug-in just set the following configurations:
 Certificate Request Handler Class : org.ejbca.core.protocol.unid.UnidFnrHandler
 Unid Data Source : java:/UnidDS
 </source>
+<p>Note that you have to set this using the CLI as it is not possible in the Admin GUI:</p>
+<source>
+bin/ejbca.sh config cmp updatealias --alias cmpalias --key certreqhandler.class --value org.ejbca.core.protocol.unid.UnidFnrHandler
+bin/ejbca.sh config cmp updatealias --alias cmpalias --key uniddatasource --value java:/UnidDS
+</source>
+<p>You also have to set the </p>
 </subsection>
 <subsection name="CMP Error Messages">
 <p>When an error occurs during CMP processing some different CMP error messages, or HTTP error codes can occur. Depending on at which stage the error is encountered and its type, different error messages are returned.
