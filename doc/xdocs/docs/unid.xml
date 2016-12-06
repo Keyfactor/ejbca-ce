@@ -127,10 +127,6 @@ If these conditions are not met, no Fnr is returned.
   </section>
 
 <section name="Unid CMP configuration">
-<note>
-<p>Please note that setting up CMP to use Unid using the below method was only possible prior to EJBCA 6.0.0, and after that only legacy setups were supported. As of 6.5.1,
- legacy aliases are no longer supported, but this will be reimplemented in the future.</p>
-</note>
 <p>
 You can configure EJBCA to generate Unids when an RA is using the CMP protocol. The generated Unids are stored in a mapping database that can be read by the OCSP responder.</p>
 <p>
@@ -139,11 +135,8 @@ Requirements:
 <ol>
 <li>The database table is assumed to be identical to that of the OCSP UNID/FNR implementation (probably the same database).</li>
 <li>The certificate request is assumed to be performed with CMP.</li>
-<li>The UNID feature is activated through the following settings in "cmp.properties":<br/>
-  cmp.ra.certificateprofile=KeyId<br/>
-  cmp.uniddatasource=[as in OCSP (for example java:/UnidDS)]
-</li>
-<li>A Unid datasource is configured in the application server. Note that this must be a 'no-tx-datasource', just like the an OCSP publisher datasource
+<li>The UNID feature is activated as described in the Admin Guide, 'Custom handling of certificate request'</li>
+<li>A Unid datasource called java:/UnidDS is configured in the application server. Note that this must be a 'no-tx-datasource', just like the an OCSP publisher datasource
  (see <a href="installation.html#JBoss">Installation</a> for instruction how to create this manually if needed).</li>
 </ol>
 <p>
