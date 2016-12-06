@@ -75,7 +75,7 @@ public class CertificateView implements Serializable {
         revokedinfo = new RevokedInfoView(CertificateStatusHelper.getCertificateStatus(certificateData), getSerialNumberBigInt(certificate, certificateData));
         certificate = cdw.getCertificate();
         username = certificateData.getUsername();
-        subjectDnFieldExtractor = new DNFieldExtractor(certificateData.getSubjectDN(), DNFieldExtractor.TYPE_SUBJECTDN);
+        subjectDnFieldExtractor = new DNFieldExtractor(certificateData.getSubjectDnNeverNull(), DNFieldExtractor.TYPE_SUBJECTDN);
         issuerDnFieldExtractor = new DNFieldExtractor(certificateData.getIssuerDN(), DNFieldExtractor.TYPE_SUBJECTDN);
     }
 
@@ -151,7 +151,7 @@ public class CertificateView implements Serializable {
 
     public String getSubjectDN() {
         if (certificate==null) {
-            return HTMLTools.htmlescape(certificateData.getSubjectDN());
+            return HTMLTools.htmlescape(certificateData.getSubjectDnNeverNull());
         }
     	return HTMLTools.htmlescape(CertTools.getSubjectDN(certificate));
     }

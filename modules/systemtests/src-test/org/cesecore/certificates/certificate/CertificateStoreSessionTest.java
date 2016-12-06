@@ -779,7 +779,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             final Collection<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(username, false, null);
             assertEquals("Should get list of 1 certificate data wrapper", 1, cdws.size());
             final CertificateDataWrapper cdw = cdws.iterator().next();
-            assertEquals("Should get the certificate.", subjectDn, cdw.getCertificateData().getSubjectDN());
+            assertEquals("Should get the certificate.", subjectDn, cdw.getCertificateData().getSubjectDnNeverNull());
             final Collection<CertificateDataWrapper> cdws2 = certificateStoreSession.getCertificateDataByUsername(username, true, null);
             assertEquals("Should get list of 1 certificate data wrapper (since we have no expire date for limited entires, excluding expired cert should not matter)", 1, cdws2.size());
             

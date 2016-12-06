@@ -157,7 +157,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             final int id = publ.getPublisherId();
             final String name = getPublisherName(id);
             if (!(publisherResult instanceof PublisherException)) {
-                final String msg = intres.getLocalizedMessage("publisher.store", certificateData.getSubjectDN(), name);
+                final String msg = intres.getLocalizedMessage("publisher.store", certificateData.getSubjectDnNeverNull(), name);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,

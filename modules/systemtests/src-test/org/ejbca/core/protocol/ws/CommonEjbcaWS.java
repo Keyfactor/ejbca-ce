@@ -521,7 +521,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(!userdata.isClearPwd());
         assertTrue(userdata.getSubjectDN().equals("CN=" + userName));
         assertTrue(userdata.getCaName().equals(caName));
-        assertTrue(userdata.getSubjectAltName() == null);
+        assertEquals("", userdata.getSubjectAltName());
         assertTrue(userdata.getEmail() == null);
         assertTrue(userdata.getCertificateProfileName().equals(WS_CERTPROF_EI));
         assertTrue(userdata.getEndEntityProfileName().equals(WS_EEPROF_EI));
@@ -2311,17 +2311,14 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             log.debug("Found " + certs.size() + " certificates that will expire within one day");
             assertTrue(certs.size() > 0);
             boolean certfound = false;
-            Iterator<Certificate> itr = certs.iterator();
-            while(itr.hasNext()) {
-            	Certificate expirewscert = (Certificate) itr.next();
-                java.security.cert.Certificate expirecert = 
-                                (java.security.cert.Certificate) CertificateHelper.getCertificate(expirewscert.getCertificateData());
-                if(StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert))) {
+            for (final Certificate expirewscert : certs) {
+                java.security.cert.Certificate expirecert = CertificateHelper.getCertificate(expirewscert.getCertificateData());
+                if (StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert))) {
                     certfound = true;
                     break;
                 }
             }
-            assertTrue(certfound);
+            assertTrue("Test certificate was not returned by WS call for expired certificates.", certfound);
             
             
             // ---------------------------------------------------------------------------------------- //
