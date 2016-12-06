@@ -126,7 +126,7 @@ public class GeneralPurposeCustomPublisherTest {
         // platforms
         boolean ret = false;
         try {
-            props.setProperty(GeneralPurposeCustomPublisher.crlExternalCommandPropertyName, command);
+            props.setProperty(GeneralPurposeCustomPublisher.CRL_EXTERNAL_COMMAND_PROPERTY_NAME, command);
             gpcPublisher.init(props);
             ret = gpcPublisher.storeCRL(admin, TEST_CRL, null, 1, null);
         } catch (PublisherException e) {
@@ -145,7 +145,7 @@ public class GeneralPurposeCustomPublisherTest {
         Properties props = new Properties();
         // Test function by calling a command that is available on most platforms
         boolean ret = false;
-        props.setProperty(GeneralPurposeCustomPublisher.certExternalCommandPropertyName, commandFailsafe);
+        props.setProperty(GeneralPurposeCustomPublisher.CERT_EXTERNAL_COMMAND_PROPERTY_NAME, commandFailsafe);
         gpcPublisher.init(props);
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         String certificateDn = "CN=Foo Bar, OU=Xyz Abc";
@@ -161,8 +161,8 @@ public class GeneralPurposeCustomPublisherTest {
     @Test
     public void testStoreCRLwithDeltaCrl() {
         Properties props = new Properties();
-        props.setProperty(GeneralPurposeCustomPublisher.crlExternalCommandPropertyName, commandFailsafe);
-        props.setProperty(GeneralPurposeCustomPublisher.calclulateDeltaCrlLocallyPropertyName, "true");
+        props.setProperty(GeneralPurposeCustomPublisher.CRL_EXTERNAL_COMMAND_PROPERTY_NAME, commandFailsafe);
+        props.setProperty(GeneralPurposeCustomPublisher.CALCULATE_DELTA_CRL_LOCALLY_PROPERTY_NAME, "true");
         gpcPublisher.init(props);
         boolean ret = false;
         try {
@@ -177,8 +177,8 @@ public class GeneralPurposeCustomPublisherTest {
     @Test
     public void testStoreCRLwithoutDeltaCrl() {
         Properties props = new Properties();
-        props.setProperty(GeneralPurposeCustomPublisher.crlExternalCommandPropertyName, commandFailsafe);
-        props.setProperty(GeneralPurposeCustomPublisher.calclulateDeltaCrlLocallyPropertyName, "true");
+        props.setProperty(GeneralPurposeCustomPublisher.CRL_EXTERNAL_COMMAND_PROPERTY_NAME, commandFailsafe);
+        props.setProperty(GeneralPurposeCustomPublisher.CALCULATE_DELTA_CRL_LOCALLY_PROPERTY_NAME, "true");
         gpcPublisher.init(props);
         boolean ret = false;
         try {
@@ -196,7 +196,7 @@ public class GeneralPurposeCustomPublisherTest {
 
         // Make sure it fails without a given external command
         boolean ret = false;
-        props.setProperty(GeneralPurposeCustomPublisher.crlExternalCommandPropertyName, "");
+        props.setProperty(GeneralPurposeCustomPublisher.CRL_EXTERNAL_COMMAND_PROPERTY_NAME, "");
         gpcPublisher.init(props);
         try {
             ret = gpcPublisher.storeCRL(admin, TEST_CRL, null, 1, null);
@@ -221,9 +221,9 @@ public class GeneralPurposeCustomPublisherTest {
         // platforms with invalid option
         boolean ret = false;
         try {
-            props.setProperty(GeneralPurposeCustomPublisher.crlExternalCommandPropertyName, command + invalidOption);
-            props.setProperty(GeneralPurposeCustomPublisher.crlFailOnErrorCodePropertyName, "true");
-            props.setProperty(GeneralPurposeCustomPublisher.crlFailOnStandardErrorPropertyName, "false");
+            props.setProperty(GeneralPurposeCustomPublisher.CRL_EXTERNAL_COMMAND_PROPERTY_NAME, command + invalidOption);
+            props.setProperty(GeneralPurposeCustomPublisher.CRL_FAIL_ON_ERRORCODE_PROPERTY_NAME, "true");
+            props.setProperty(GeneralPurposeCustomPublisher.CRL_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, "false");
             gpcPublisher.init(props);
             ret = gpcPublisher.storeCRL(admin, TEST_CRL, null, 1, null);
         } catch (PublisherException e) {
@@ -231,9 +231,9 @@ public class GeneralPurposeCustomPublisherTest {
         assertFalse("Store CRL with GeneralPurposeCustomPublisher did not fail on errorcode.", ret);
         ret = false;
         try {
-            props.setProperty(GeneralPurposeCustomPublisher.certExternalCommandPropertyName, command + invalidOption);
-            props.setProperty(GeneralPurposeCustomPublisher.certFailOnErrorCodePropertyName, "true");
-            props.setProperty(GeneralPurposeCustomPublisher.certFailOnStandardErrorPropertyName, "false");
+            props.setProperty(GeneralPurposeCustomPublisher.CERT_EXTERNAL_COMMAND_PROPERTY_NAME, command + invalidOption);
+            props.setProperty(GeneralPurposeCustomPublisher.CERT_FAIL_ON_ERRORCODE_PROPERTY_NAME, "true");
+            props.setProperty(GeneralPurposeCustomPublisher.CERT_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, "false");
             gpcPublisher.init(props);
             ret = gpcPublisher.storeCRL(admin, TEST_CRL, null, 1, null);
         } catch (PublisherException e) {
@@ -241,9 +241,9 @@ public class GeneralPurposeCustomPublisherTest {
         assertFalse("Store cert with GeneralPurposeCustomPublisher did not fail on errorcode.", ret);
         ret = false;
         try {
-            props.setProperty(GeneralPurposeCustomPublisher.revokeExternalCommandPropertyName, command + invalidOption);
-            props.setProperty(GeneralPurposeCustomPublisher.revokeFailOnErrorCodePropertyName, "true");
-            props.setProperty(GeneralPurposeCustomPublisher.revokeFailOnStandardErrorPropertyName, "false");
+            props.setProperty(GeneralPurposeCustomPublisher.REVOKE_EXTERNAL_COMMAND_PROPERTY_NAME, command + invalidOption);
+            props.setProperty(GeneralPurposeCustomPublisher.REVOKE_FAIL_ON_ERRORCODE_PROPERTY_NAME, "true");
+            props.setProperty(GeneralPurposeCustomPublisher.REVOKE_FAIL_ON_STANDAR_DERROR_PROPERTY_NAME, "false");
             gpcPublisher.init(props);
             ret = gpcPublisher.storeCRL(admin, TEST_CRL, null, 1, null);
         } catch (PublisherException e) {
@@ -266,9 +266,9 @@ public class GeneralPurposeCustomPublisherTest {
         // platforms with invalid option
         boolean ret = false;
         try {
-            props.setProperty(GeneralPurposeCustomPublisher.crlExternalCommandPropertyName, command + invalidOption);
-            props.setProperty(GeneralPurposeCustomPublisher.crlFailOnErrorCodePropertyName, "false");
-            props.setProperty(GeneralPurposeCustomPublisher.crlFailOnStandardErrorPropertyName, "true");
+            props.setProperty(GeneralPurposeCustomPublisher.CRL_EXTERNAL_COMMAND_PROPERTY_NAME, command + invalidOption);
+            props.setProperty(GeneralPurposeCustomPublisher.CRL_FAIL_ON_ERRORCODE_PROPERTY_NAME, "false");
+            props.setProperty(GeneralPurposeCustomPublisher.CRL_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, "true");
             gpcPublisher.init(props);
             ret = gpcPublisher.storeCRL(admin, TEST_CRL, null, 1, null);
         } catch (PublisherException e) {
@@ -276,9 +276,9 @@ public class GeneralPurposeCustomPublisherTest {
         assertFalse("Store CRL with GeneralPurposeCustomPublisher did not fail on standard error.", ret);
         ret = false;
         try {
-            props.setProperty(GeneralPurposeCustomPublisher.certExternalCommandPropertyName, command + invalidOption);
-            props.setProperty(GeneralPurposeCustomPublisher.certFailOnErrorCodePropertyName, "false");
-            props.setProperty(GeneralPurposeCustomPublisher.certFailOnStandardErrorPropertyName, "true");
+            props.setProperty(GeneralPurposeCustomPublisher.CERT_EXTERNAL_COMMAND_PROPERTY_NAME, command + invalidOption);
+            props.setProperty(GeneralPurposeCustomPublisher.CERT_FAIL_ON_ERRORCODE_PROPERTY_NAME, "false");
+            props.setProperty(GeneralPurposeCustomPublisher.CERT_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, "true");
             gpcPublisher.init(props);
             ret = gpcPublisher.storeCRL(admin, TEST_CRL, null, 1, null);
         } catch (PublisherException e) {
@@ -286,9 +286,9 @@ public class GeneralPurposeCustomPublisherTest {
         assertFalse("Store cert with GeneralPurposeCustomPublisher did not fail on standard error.", ret);
         ret = false;
         try {
-            props.setProperty(GeneralPurposeCustomPublisher.revokeExternalCommandPropertyName, command + invalidOption);
-            props.setProperty(GeneralPurposeCustomPublisher.revokeFailOnErrorCodePropertyName, "false");
-            props.setProperty(GeneralPurposeCustomPublisher.revokeFailOnStandardErrorPropertyName, "true");
+            props.setProperty(GeneralPurposeCustomPublisher.REVOKE_EXTERNAL_COMMAND_PROPERTY_NAME, command + invalidOption);
+            props.setProperty(GeneralPurposeCustomPublisher.REVOKE_FAIL_ON_ERRORCODE_PROPERTY_NAME, "false");
+            props.setProperty(GeneralPurposeCustomPublisher.REVOKE_FAIL_ON_STANDAR_DERROR_PROPERTY_NAME, "true");
             gpcPublisher.init(props);
             ret = gpcPublisher.storeCRL(admin, TEST_CRL, null, 1, null);
         } catch (PublisherException e) {
@@ -309,7 +309,7 @@ public class GeneralPurposeCustomPublisherTest {
         // Test connection separately for all publishers with invalid filename
         boolean ret = false;
         try {
-            props.setProperty(GeneralPurposeCustomPublisher.crlExternalCommandPropertyName, "randomfilenamethatdoesnotexistandneverwill8998752");
+            props.setProperty(GeneralPurposeCustomPublisher.CRL_EXTERNAL_COMMAND_PROPERTY_NAME, "randomfilenamethatdoesnotexistandneverwill8998752");
             gpcPublisher.init(props);
             gpcPublisher.testConnection();
             ret = true;
@@ -318,7 +318,7 @@ public class GeneralPurposeCustomPublisherTest {
         assertFalse("testConnection reported all ok, but commandfile does not exist!", ret);
         ret = false;
         try {
-            props.setProperty(GeneralPurposeCustomPublisher.certExternalCommandPropertyName, "randomfilenamethatdoesnotexistandneverwill8998752");
+            props.setProperty(GeneralPurposeCustomPublisher.CERT_EXTERNAL_COMMAND_PROPERTY_NAME, "randomfilenamethatdoesnotexistandneverwill8998752");
             gpcPublisher.init(props);
             gpcPublisher.testConnection();
             ret = true;
@@ -327,7 +327,7 @@ public class GeneralPurposeCustomPublisherTest {
         assertFalse("testConnection reported all ok, but commandfile does not exist!", ret);
         ret = false;
         try {
-            props.setProperty(GeneralPurposeCustomPublisher.revokeExternalCommandPropertyName, "randomfilenamethatdoesnotexistandneverwill8998752");
+            props.setProperty(GeneralPurposeCustomPublisher.REVOKE_EXTERNAL_COMMAND_PROPERTY_NAME, "randomfilenamethatdoesnotexistandneverwill8998752");
             gpcPublisher.init(props);
             gpcPublisher.testConnection();
             ret = true;
