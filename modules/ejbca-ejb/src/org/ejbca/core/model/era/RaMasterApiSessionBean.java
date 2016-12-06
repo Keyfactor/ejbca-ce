@@ -219,16 +219,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
     }
     
-    private ApprovalDataVO getApprovalDataNoAuth(AuthenticationToken authenticationToken, final int id) {
+    private ApprovalDataVO getApprovalDataNoAuth(final int id) {
         final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
         query.add(ApprovalMatch.MATCH_WITH_UNIQUEID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(id));
         
         final List<ApprovalDataVO> approvals;
         try {
-            approvals = approvalSession.query(authenticationToken, query, 0, 100, "", ""); // authorization checks are performed afterwards
-        } catch (AuthorizationDeniedException e) {
-            // Not currently ever thrown by query()
-            throw new IllegalStateException(e);
+            approvals = approvalSession.query(query, 0, 100, "", ""); // authorization checks are performed afterwards
         } catch (IllegalQueryException e) {
             throw new IllegalStateException("Query for approval request failed: " + e.getMessage(), e);
         }
@@ -290,7 +287,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final int id) {
-        final ApprovalDataVO advo = getApprovalDataNoAuth(authenticationToken, id);
+        final ApprovalDataVO advo = getApprovalDataNoAuth(id);
         if (advo == null) {
             return null;
         }
@@ -356,7 +353,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (log.isDebugEnabled()) {
             log.debug("Editing approval request " + id + ". Administrator: " + authenticationToken);
         }
-        final ApprovalDataVO advo = getApprovalDataNoAuth(authenticationToken, id);
+        final ApprovalDataVO advo = getApprovalDataNoAuth(id);
         if (advo == null) {
             if (log.isDebugEnabled()) {
                 log.debug("Approval Request with ID " + id + " not found in editApprovalRequest");
@@ -441,7 +438,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException,
             AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException {
-        final ApprovalDataVO advo = getApprovalDataNoAuth(authenticationToken, requestResponse.getId());
+        final ApprovalDataVO advo = getApprovalDataNoAuth(requestResponse.getId());
         if (advo == null) {
             // Return false so the next master api backend can see if it can handle the approval
             return false;
@@ -497,7 +494,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             RAAuthorization raAuthorization = new RAAuthorization(authenticationToken, globalConfigurationSession,
                     accessControlSession, null, caSession, endEntityProfileSession,  
                     approvalProfileSession);
-            approvals = approvalSession.queryByStatus(authenticationToken, request.isSearchingWaitingForMe() || request.isSearchingPending(), request.isSearchingHistorical(),
+            approvals = approvalSession.queryByStatus(request.isSearchingWaitingForMe() || request.isSearchingPending(), request.isSearchingHistorical(),
                     0, 100, raAuthorization.getCAAuthorizationString(), endEntityProfileAuthorizationString);
         } catch (AuthorizationDeniedException e) {
             // Not currently ever thrown by query()

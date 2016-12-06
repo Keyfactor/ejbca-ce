@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.approval;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
@@ -141,7 +140,6 @@ public interface ApprovalSession {
     /**
      * Method returning a list of approvals from the give query
      * 
-     * @param admin
      * @param query should be a Query object containing ApprovalMatch and
      *            TimeMatch
      * @param index where the ResultSet should start
@@ -153,15 +151,13 @@ public interface ApprovalSession {
      *            '(endEntityProfileId=... OR endEntityProfileId=...) objects
      *            only
      * @return a List of ApprovalDataVO, never null
-     * @throws AuthorizationDeniedException
      * @throws IllegalQueryException
      */
-    List<ApprovalDataVO> query(AuthenticationToken admin, Query query, int index, int numberofrows, String caAuthorizationString,
-            String endEntityProfileAuthorizationString) throws AuthorizationDeniedException, IllegalQueryException;
+    List<ApprovalDataVO> query(final Query query, int index, int numberofrows, String caAuthorizationString,
+            String endEntityProfileAuthorizationString) throws IllegalQueryException;
     
     /**
      * Returns a list of non-expired approvals with the given statuses.
-     * @param admin
      * @param includeUnfinished Includes requests that haven't been executed or rejected yet.
      * @param includeProcessed Includes requests that have been approved and executed, or rejected.
      * @param index where the ResultSet should start
@@ -173,8 +169,7 @@ public interface ApprovalSession {
      *            '(endEntityProfileId=... OR endEntityProfileId=...) objects
      *            only
      * @return a List of ApprovalDataVO, never null
-     * @throws AuthorizationDeniedException
      */
-    List<ApprovalDataVO> queryByStatus(final AuthenticationToken admin, final boolean includeUnfinished, final boolean includeProcessed, int index, int numberofrows, String caAuthorizationString,
-            String endEntityProfileAuthorizationString) throws AuthorizationDeniedException;
+    List<ApprovalDataVO> queryByStatus(final boolean includeUnfinished, final boolean includeProcessed, int index, int numberofrows, String caAuthorizationString,
+            String endEntityProfileAuthorizationString);
 }

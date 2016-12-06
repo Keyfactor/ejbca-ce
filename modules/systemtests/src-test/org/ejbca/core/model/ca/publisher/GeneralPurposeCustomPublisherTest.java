@@ -243,7 +243,7 @@ public class GeneralPurposeCustomPublisherTest {
         try {
             props.setProperty(GeneralPurposeCustomPublisher.REVOKE_EXTERNAL_COMMAND_PROPERTY_NAME, command + invalidOption);
             props.setProperty(GeneralPurposeCustomPublisher.REVOKE_FAIL_ON_ERRORCODE_PROPERTY_NAME, "true");
-            props.setProperty(GeneralPurposeCustomPublisher.REVOKE_FAIL_ON_STANDAR_DERROR_PROPERTY_NAME, "false");
+            props.setProperty(GeneralPurposeCustomPublisher.REVOKE_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, "false");
             gpcPublisher.init(props);
             ret = gpcPublisher.storeCRL(admin, TEST_CRL, null, 1, null);
         } catch (PublisherException e) {
@@ -288,7 +288,7 @@ public class GeneralPurposeCustomPublisherTest {
         try {
             props.setProperty(GeneralPurposeCustomPublisher.REVOKE_EXTERNAL_COMMAND_PROPERTY_NAME, command + invalidOption);
             props.setProperty(GeneralPurposeCustomPublisher.REVOKE_FAIL_ON_ERRORCODE_PROPERTY_NAME, "false");
-            props.setProperty(GeneralPurposeCustomPublisher.REVOKE_FAIL_ON_STANDAR_DERROR_PROPERTY_NAME, "true");
+            props.setProperty(GeneralPurposeCustomPublisher.REVOKE_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, "true");
             gpcPublisher.init(props);
             ret = gpcPublisher.storeCRL(admin, TEST_CRL, null, 1, null);
         } catch (PublisherException e) {

@@ -43,7 +43,6 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -376,23 +375,23 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public List<ApprovalDataVO> query(AuthenticationToken admin, Query query, int index, int numberofrows, String caAuthorizationString,
-            String endEntityProfileAuthorizationString) throws AuthorizationDeniedException, IllegalQueryException {
+    public List<ApprovalDataVO> query(final Query query, int index, int numberofrows, String caAuthorizationString,
+            String endEntityProfileAuthorizationString) throws IllegalQueryException {
         log.trace(">query()");
         // Check if query is legal.
         if (query != null && !query.isLegalQuery()) {
             throw new IllegalQueryException();
         }
         final String queryString = (query != null ? query.getQueryString() : "1 = 1");
-        final List<ApprovalDataVO> ret = queryInternal(admin, queryString, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString, null);
+        final List<ApprovalDataVO> ret = queryInternal(queryString, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString, null);
         log.trace("<query()");
         return ret;
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public List<ApprovalDataVO> queryByStatus(final AuthenticationToken admin, final boolean includeUnfinished, final boolean includeProcessed, int index, int numberofrows, String caAuthorizationString,
-            String endEntityProfileAuthorizationString) throws AuthorizationDeniedException {
+    public List<ApprovalDataVO> queryByStatus(final boolean includeUnfinished, final boolean includeProcessed, int index, int numberofrows, String caAuthorizationString,
+            String endEntityProfileAuthorizationString) {
         log.trace(">queryByStatus()");
         
         if (!includeUnfinished && !includeProcessed) {
@@ -423,7 +422,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         }
         sb.append(')');
         
-        final List<ApprovalDataVO> ret = queryInternal(admin, sb.toString(), index, numberofrows,
+        final List<ApprovalDataVO> ret = queryInternal(sb.toString(), index, numberofrows,
                 caAuthorizationString, endEntityProfileAuthorizationString,
                 orderByString);
         log.trace("<queryByStatus()");
@@ -431,7 +430,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
     
     @SuppressWarnings("deprecation")
-    private List<ApprovalDataVO> queryInternal(AuthenticationToken admin, final String query, int index, int numberofrows, String caAuthorizationString,
+    private List<ApprovalDataVO> queryInternal(final String query, int index, int numberofrows, String caAuthorizationString,
             String endEntityProfileAuthorizationString, final String orderByString) {
         log.trace(">queryInternal()");
         String customQuery = "(" + query + ")";

@@ -604,7 +604,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
                 }
                 Query q = new Query(Query.TYPE_APPROVALQUERY);
                 q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
-                ApprovalDataVO approvalData = (approvalSession.query(admin, q, 0, 1, "cAId=" + approvalCAID,
+                ApprovalDataVO approvalData = (approvalSession.query(q, 0, 1, "cAId=" + approvalCAID,
                         "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")").get(0));
                 Approval approval = new Approval("Approved during testing.", sequenceId, partitionId);
                 approvalExecutionSession.approve(approvingAdmin, approvalID, approval);
