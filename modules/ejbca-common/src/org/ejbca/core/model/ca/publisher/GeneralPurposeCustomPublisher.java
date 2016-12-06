@@ -54,7 +54,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
     public static final String REVOKE_FAIL_ON_ERRORCODE_PROPERTY_NAME = "revoke.failOnErrorCode";
     public static final String CRL_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME = "crl.failOnStandardError";
     public static final String CERT_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME = "cert.failOnStandardError";
-    public static final String REVOKE_FAIL_ON_STANDAR_DERROR_PROPERTY_NAME = "revoke.failOnStandardError";
+    public static final String REVOKE_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME = "revoke.failOnStandardError";
 
     private String crlExternalCommandFileName = null;
     private String certExternalCommandFileName = null;
@@ -94,7 +94,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
         certFailOnStandardError = properties.getProperty(CERT_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, "true").equalsIgnoreCase("true");
         certExternalCommandFileName = properties.getProperty(CERT_EXTERNAL_COMMAND_PROPERTY_NAME);
         revokeFailOnErrorCode = properties.getProperty(REVOKE_FAIL_ON_ERRORCODE_PROPERTY_NAME, "true").equalsIgnoreCase("true");
-        revokeFailOnStandardError = properties.getProperty(REVOKE_FAIL_ON_STANDAR_DERROR_PROPERTY_NAME, "true").equalsIgnoreCase("true");
+        revokeFailOnStandardError = properties.getProperty(REVOKE_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, "true").equalsIgnoreCase("true");
         revokeExternalCommandFileName = properties.getProperty(REVOKE_EXTERNAL_COMMAND_PROPERTY_NAME);
         calclulateDeltaCrlLocally = properties.getProperty(CALCULATE_DELTA_CRL_LOCALLY_PROPERTY_NAME, "false").equalsIgnoreCase("true");
     } // init
@@ -109,7 +109,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
         ret.add(new CustomPublisherProperty(CERT_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, CustomPublisherProperty.UI_BOOLEAN, String.valueOf(certFailOnStandardError)));
         ret.add(new CustomPublisherProperty(CERT_EXTERNAL_COMMAND_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, certExternalCommandFileName));
         ret.add(new CustomPublisherProperty(REVOKE_FAIL_ON_ERRORCODE_PROPERTY_NAME, CustomPublisherProperty.UI_BOOLEAN, String.valueOf(revokeFailOnErrorCode)));
-        ret.add(new CustomPublisherProperty(REVOKE_FAIL_ON_STANDAR_DERROR_PROPERTY_NAME, CustomPublisherProperty.UI_BOOLEAN, String.valueOf(revokeFailOnStandardError)));
+        ret.add(new CustomPublisherProperty(REVOKE_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, CustomPublisherProperty.UI_BOOLEAN, String.valueOf(revokeFailOnStandardError)));
         ret.add(new CustomPublisherProperty(REVOKE_EXTERNAL_COMMAND_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, revokeExternalCommandFileName));
         ret.add(new CustomPublisherProperty(CALCULATE_DELTA_CRL_LOCALLY_PROPERTY_NAME, CustomPublisherProperty.UI_BOOLEAN, String.valueOf(calclulateDeltaCrlLocally)));
         return ret;
