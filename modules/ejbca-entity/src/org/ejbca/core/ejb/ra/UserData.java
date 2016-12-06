@@ -144,7 +144,19 @@ public class UserData extends ProtectedData implements Serializable {
         this.username = StringTools.stripUsername(username);
     }
 
-    // @Column
+    /** @return the current Subject DN of the EE, never null */
+    @Transient
+    public String getSubjectDnNeverNull() {
+        final String subjectDn = getSubjectDN();
+        return subjectDn == null ? "" : subjectDn;
+    }
+
+    /** 
+     * Use getSubjectDnNeverNull() for consistent access, since Oracle will treat empty Strings as NULL.
+     * 
+     * @return value as it is stored in the database
+     */
+    // @Column(length=400)
     public String getSubjectDN() {
         return subjectDN;
     }
@@ -162,7 +174,19 @@ public class UserData extends ProtectedData implements Serializable {
         this.caId = caId;
     }
 
-    // @Column
+    /** @return the current Subject AN of the EE, never null */
+    @Transient
+    public String getSubjectAltNameNeverNull() {
+        final String subjectAltName = getSubjectAltName();
+        return subjectAltName == null ? "" : subjectAltName;
+    }
+
+    /**
+     * Use getSubjectAltNameNeverNull() for consistent access, since Oracle will treat empty Strings as null.
+     * 
+     * @return value as it is stored in the database
+     */
+    // @Column(length=2000)
     public String getSubjectAltName() {
         return subjectAltName;
     }
@@ -498,14 +522,14 @@ public class UserData extends ProtectedData implements Serializable {
         data.setUsername(getUsername());
         data.setCAId(getCaId());
         data.setCertificateProfileId(getCertificateProfileId());
-        data.setDN(getSubjectDN());
+        data.setDN(getSubjectDnNeverNull());
         data.setEmail(getSubjectEmail());
         data.setEndEntityProfileId(getEndEntityProfileId());
         data.setExtendedinformation(getExtendedInformation());
         data.setHardTokenIssuerId(getHardTokenIssuerId());
         data.setPassword(getClearPassword());
         data.setStatus(getStatus());
-        data.setSubjectAltName(getSubjectAltName());
+        data.setSubjectAltName(getSubjectAltNameNeverNull());
         data.setTimeCreated(new Date(getTimeCreated()));
         data.setTimeModified(new Date(getTimeModified()));
         data.setTokenType(getTokenType());
@@ -523,7 +547,21 @@ public class UserData extends ProtectedData implements Serializable {
     protected String getProtectString(final int version) {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getUsername()).append(getSubjectDN()).append(getCardNumber()).append(getCaId()).append(getSubjectAltName()).append(getCardNumber());
+        build.append(getUsername());
+        if (version>=2) {
+            // From version 2 we always use empty String here to allow future migration between databases when this value is unset
+            build.append(getSubjectDnNeverNull());
+        } else {
+            build.append(getSubjectDN());
+        }
+        build.append(getCardNumber()).append(getCaId());
+        if (version>=2) {
+            // From version 2 we always use empty String here to allow future migration between databases when this value is unset
+            build.append(getSubjectAltNameNeverNull());
+        } else {
+            build.append(getSubjectAltName());
+        }
+        build.append(getCardNumber());
         build.append(getSubjectEmail()).append(getStatus()).append(getType()).append(getClearPassword()).append(getPasswordHash()).append(getTimeCreated()).append(getTimeModified());
         build.append(getEndEntityProfileId()).append(getCertificateProfileId()).append(getTokenType()).append(getHardTokenIssuerId()).append(getExtendedInformationData());
         return build.toString();
@@ -532,7 +570,7 @@ public class UserData extends ProtectedData implements Serializable {
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 1;
+        return 2;
     }
 
     @PrePersist

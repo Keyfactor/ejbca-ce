@@ -143,7 +143,7 @@ public class CertificateData extends ProtectedData implements Serializable {
                 setSubjectAltName(CertTools.getSubjectAlternativeName(certificate));
             }
             if (log.isDebugEnabled()) {
-                log.debug("Creating CertificateData, subjectDN=" + getSubjectDN() + ", subjectAltName=" + getSubjectAltName() + ", issuer=" + getIssuerDN() + ", fingerprint=" + fp);
+                log.debug("Creating CertificateData, subjectDN=" + getSubjectDnNeverNull() + ", subjectAltName=" + getSubjectAltNameNeverNull() + ", issuer=" + getIssuerDN() + ", fingerprint=" + fp);
             }
             setSerialNumber(CertTools.getSerialNumber(certificate).toString());
 
@@ -257,9 +257,20 @@ public class CertificateData extends ProtectedData implements Serializable {
     /**
      * DN of subject in certificate
      * 
-     * @return subject dn
+     * @return subject dn, never null
      */
-    // @Column
+    @Transient
+    public String getSubjectDnNeverNull() {
+        final String subjectDn = getSubjectDN();
+        return subjectDn == null ? "" : subjectDn;
+    }
+
+    /** 
+     * Use getSubjectDnNeverNull() for consistent access, since Oracle will treat empty Strings as NULL.
+     * 
+     * @return value as it is stored in the database
+     */
+    // @Column(length=400)
     public String getSubjectDN() {
         return subjectDN;
     }
@@ -275,6 +286,17 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @return Subject Alternative Name from the certificate if it was saved at the time of issuance. */
+    @Transient
+    public String getSubjectAltNameNeverNull() {
+        final String subjectAltName = getSubjectAltName();
+        return subjectAltName == null ? "" : subjectAltName;
+    }
+
+    /** 
+     * Use getSubjectAltNameNeverNull() for consistent access, since Oracle will treat empty Strings as null.
+     * 
+     * @return value as it is stored in the database
+     */
     //@Column(length=2000)
     public String getSubjectAltName() {
         return subjectAltName;
@@ -1386,13 +1408,26 @@ public class CertificateData extends ProtectedData implements Serializable {
     	final ProtectionStringBuilder build = new ProtectionStringBuilder(3000);
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getFingerprint()).append(getIssuerDN()).append(getSubjectDN()).append(getCaFingerprint()).append(getStatus()).append(getType())
+        build.append(getFingerprint()).append(getIssuerDN());
+        if (version>=3) {
+            // From version 3 for EJBCA 6.7 we always use empty String here to allow future migration between databases when this value is unset
+            build.append(getSubjectDnNeverNull());
+        } else {
+            build.append(getSubjectDN());
+        }
+        build.append(getCaFingerprint()).append(getStatus()).append(getType())
                 .append(getSerialNumber()).append(getExpireDate()).append(getRevocationDate()).append(getRevocationReason()).append(getBase64Cert())
                 .append(getUsername()).append(getTag()).append(getCertificateProfileId()).append(getUpdateTime()).append(getSubjectKeyId());
-        if (version>1) {
+        if (version>=2) {
+            // In version 2 for EJBCA 6.6 the following columns where added
             build.append(String.valueOf(getNotBefore()));
             build.append(String.valueOf(getEndEntityProfileId()));
-            build.append(String.valueOf(getSubjectAltName()));
+            if (version>=3) {
+                // From version 3 for EJBCA 6.7 we always use empty String here to allow future migration between databases when this value is unset
+                build.append(getSubjectAltNameNeverNull());
+            } else {
+                build.append(String.valueOf(getSubjectAltName()));
+            }
         }
         if (log.isDebugEnabled()) {
             // Some profiling
@@ -1406,7 +1441,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 2;
+        return 3;
     }
 
     @PrePersist

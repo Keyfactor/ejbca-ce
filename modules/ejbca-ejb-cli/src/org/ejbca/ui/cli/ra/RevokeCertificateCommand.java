@@ -94,7 +94,7 @@ public class RevokeCertificateCommand extends BaseRaCommand {
                     issuerDN, serno);
             if (certWrapper != null) {
                 getLogger().info("Found certificate:");
-                getLogger().info("Subject DN=" + certWrapper.getCertificateData().getSubjectDN());
+                getLogger().info("Subject DN=" + certWrapper.getCertificateData().getSubjectDnNeverNull());
                 // We need the user this cert is connected with
                 // Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
                 // that was permanently revoked

@@ -211,7 +211,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         entityManager.persist(certificateData);
         if (doAuditLog) {
             final String serialNo = CertTools.getSerialNumberAsString(incert);
-            final String msg = INTRES.getLocalizedMessage("store.storecert", username, certificateData.getFingerprint(), certificateData.getSubjectDN(), certificateData.getIssuerDN(), serialNo);
+            final String msg = INTRES.getLocalizedMessage("store.storecert", username, certificateData.getFingerprint(), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNo);
             final String caId = String.valueOf(CertTools.getIssuerDN(incert).hashCode());
             logSession.log(EventTypes.CERT_STORED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, adminForLogging.toString(), caId,
                     serialNo, username, msg);
@@ -303,7 +303,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
         final String username = certificateData.getUsername();
         final String serialNo = CertTools.getSerialNumberAsString(certificate);
-        final String msg = INTRES.getLocalizedMessage("store.storecert", username, fingerprint, certificateData.getSubjectDN(),
+        final String msg = INTRES.getLocalizedMessage("store.storecert", username, fingerprint, certificateData.getSubjectDnNeverNull(),
                 certificateData.getIssuerDN(), serialNo);
         Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
@@ -548,17 +548,25 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">findCertificatesByExpireTimeWithLimit(), time=" + expireTime);
         }
         // First make expiretime in well know format
-        log.debug("Looking for certs that expire before: " + expireTime);
-        List<CertificateData> coll = CertificateData.findByExpireDateWithLimit(entityManager, expireTime.getTime(),
+        if (log.isDebugEnabled()) {
+            log.debug("Looking for certs that expire before: " + expireTime);
+        }
+        final List<CertificateData> certificateDatas = CertificateData.findByExpireDateWithLimit(entityManager, expireTime.getTime(),
                 getGlobalCesecoreConfiguration().getMaximumQueryCount());
         if (log.isDebugEnabled()) {
-            log.debug("Found " + coll.size() + " certificates that expire before " + expireTime);
+            log.debug("Found " + certificateDatas.size() + " certificates that expire before " + expireTime);
         }
-        List<Certificate> ret = new ArrayList<Certificate>();
-        for(CertificateData certData : coll) {
-            ret.add(certData.getCertificate(entityManager));
+        final List<Certificate> ret = new ArrayList<Certificate>();
+        for (final CertificateData certificateData : certificateDatas) {
+            final Certificate certificate = certificateData.getCertificate(entityManager);
+            if (certificate==null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Skipping CertificateData with fingerprint '" + certificateData.getFingerprint() + "' since it has no stored certificate.");
+                }
+            } else {
+                ret.add(certificate);
+            }
         }
-        
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesByExpireTimeWithLimit(), time=" + expireTime);
         }
@@ -570,18 +578,24 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesByExpireTimeWithLimit(), time=" + expireTime + " - maxNumberOfResults=" + maxNumberOfResults);
         }
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("Looking for certs that expire before: " + expireTime);
         }
-        List<CertificateData> coll = CertificateData.findByExpireDateWithLimit(entityManager, expireTime.getTime(), maxNumberOfResults);
+        List<CertificateData> certificateDatas = CertificateData.findByExpireDateWithLimit(entityManager, expireTime.getTime(), maxNumberOfResults);
         if (log.isDebugEnabled()) {
-            log.debug("Found " + coll.size() + " certificates that expire before " + expireTime);
+            log.debug("Found " + certificateDatas.size() + " certificates that expire before " + expireTime);
         }
-        List<Certificate> ret = new ArrayList<Certificate>();
-        for(CertificateData certData : coll) {
-            ret.add(certData.getCertificate(entityManager));
+        final List<Certificate> ret = new ArrayList<Certificate>();
+        for (final CertificateData certificateData : certificateDatas) {
+            final Certificate certificate = certificateData.getCertificate(entityManager);
+            if (certificate==null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Skipping CertificateData with fingerprint '" + certificateData.getFingerprint() + "' since it has no stored certificate.");
+                }
+            } else {
+                ret.add(certificate);
+            }
         }
-        
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesByExpireTimeWithLimit(), time=" + expireTime + " - maxNumberOfResults=" + maxNumberOfResults);
         }
@@ -1061,7 +1075,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             certificateData.setUpdateTime(now.getTime());
             certificateData.setRevocationReason(reason);
             
-            final String msg = INTRES.getLocalizedMessage("store.revokedcert", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDN(), certificateData.getIssuerDN(), serialNumber);
+            final String msg = INTRES.getLocalizedMessage("store.revokedcert", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
@@ -1076,7 +1090,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             certificateData.setUpdateTime(now.getTime());
             certificateData.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             
-            final String msg = INTRES.getLocalizedMessage("store.unrevokedcert", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDN(), certificateData.getIssuerDN(), serialNumber);
+            final String msg = INTRES.getLocalizedMessage("store.unrevokedcert", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);            
@@ -1257,7 +1271,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         } else {
             serialNo = CertTools.getSerialNumberAsString(certificate);
         }
-        final String msg = INTRES.getLocalizedMessage("store.setstatus", certificateData.getUsername(), certificateData.getFingerprint(), status, certificateData.getSubjectDN(), certificateData.getIssuerDN(), serialNo);
+        final String msg = INTRES.getLocalizedMessage("store.setstatus", certificateData.getUsername(), certificateData.getFingerprint(), status, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNo);
         Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
         logSession.log(EventTypes.CERT_CHANGEDSTATUS, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNo, certificateData.getUsername(), details);

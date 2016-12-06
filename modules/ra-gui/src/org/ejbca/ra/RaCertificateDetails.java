@@ -144,7 +144,7 @@ public class RaCertificateDetails {
             }
         }
         this.username = certificateData.getUsername()==null ? "" : certificateData.getUsername();
-        this.subjectDn = certificateData.getSubjectDN();
+        this.subjectDn = certificateData.getSubjectDnNeverNull();
         final Certificate certificate = cdw.getCertificate();
         byte[] certificateEncoded = null;
         if (certificate!=null) {

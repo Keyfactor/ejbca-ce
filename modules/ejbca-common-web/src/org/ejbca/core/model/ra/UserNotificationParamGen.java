@@ -110,7 +110,7 @@ public class UserNotificationParamGen extends NotificationParamGen {
 	        if (certificateData != null) {
 	            paramPut("revokedCertificate.CERTSERIAL", certificateData.getSerialNumberHex());
 	            paramPut("revokedCertificate.EXPIREDATE", fastDateFormat(new Date(certificateData.getExpireDate())));
-	            paramPut("revokedCertificate.CERTSUBJECTDN", certificateData.getSubjectDN());
+	            paramPut("revokedCertificate.CERTSUBJECTDN", certificateData.getSubjectDnNeverNull());
 	            paramPut("revokedCertificate.CERTISSUERDN", certificateData.getIssuerDN());
 	            String newStatus = "Unknown";
 	            switch (certificateData.getStatus()) {
