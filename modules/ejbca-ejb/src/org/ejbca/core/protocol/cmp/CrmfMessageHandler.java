@@ -61,6 +61,7 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
@@ -309,14 +310,19 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         final String keyId = CmpMessageHelper.getStringFromOctets(crmfreq.getHeader().getSenderKID());
         int caId = 0; // The CA to user when adding users in RA mode
         try {
-            eeProfileId = Integer.parseInt(this.cmpConfiguration.getRAEEProfile(this.confAlias));
+            final String eeProfile = this.cmpConfiguration.getRAEEProfile(this.confAlias);
+            if (StringUtils.equals("KeyId", eeProfile)) {
+                eeProfileId = endEntityProfileSession.getEndEntityProfileId(keyId);
+            } else {
+                eeProfileId = Integer.parseInt(eeProfile);
+            }
             caId = getUsedCaId(keyId, eeProfileId);
             certProfileName = getUsedCertProfileName(keyId, eeProfileId);
             certProfileId = getUsedCertProfileId(certProfileName);
         } catch (CADoesntExistsException e) {
             LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
             return CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, null, keyId, this.responseProt);
-        }  catch (NotFoundException e) {
+        }  catch (NotFoundException | EndEntityProfileNotFoundException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);
             // In case an EE profile or a cert profiles, or a CA can not be found, this is a bad configuration or database is down. 
