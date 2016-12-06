@@ -473,7 +473,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 }
                 Query q = new Query(Query.TYPE_APPROVALQUERY);
                 q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
-                List<ApprovalDataVO> queryResults = approvalSession.query(internalAdmin, q, 0, 1, "cAId=" + approvalCAID,
+                List<ApprovalDataVO> queryResults = approvalSession.query(q, 0, 1, "cAId=" + approvalCAID,
                         "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
                 if (queryResults.size() > 0) {
                     ApprovalDataVO approvalData = queryResults.get(0);
