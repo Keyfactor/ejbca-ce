@@ -2421,7 +2421,7 @@ The actual recovery would then happen when you make a call to i.e. pkcs12Req in 
 The keys are stored in the database in the table KeyRecoveryData. The data is stored encrypted in a CMS message, as a serialized Java KeyPair. 
 The certificate is not stored in KeyRecoveryData, but only in CertificateData. The encryption key used for the CMS message encryption
 is the issuing CAs 'keyEncryptKey', and can thus be a key on the HSM. The actual CMS data encryption (RFC ??) is performed with AES256_CBC, using a random generated 
-AES key (for this specific CM message). The AES key is wrpped using the RSA key in 'keyEncryptKey'. This is fully according to the best practices, open, stable, CMS standard.
+AES key (for this specific CM message). The AES key is wrapped using the RSA key in 'keyEncryptKey'. This is fully according to the best practices, open, stable, CMS standard.
 </p>
 <p>There are additional columns in the KeyRecoveryData table enabling change of the 'keyEncryptKey' of the issuing CA. The columns cryptoTokenId and keyAlias gives an exact pointer 
 to the Crypto Token, and specific key, used to encrypt the data. When decrypting data this specific key, with this alias, on the CAs Crypto Token, is first tried, and only if that fails
