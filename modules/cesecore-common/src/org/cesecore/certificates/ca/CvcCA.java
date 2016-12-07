@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -31,7 +30,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.util.ValidityDate;
 
 
 /**
