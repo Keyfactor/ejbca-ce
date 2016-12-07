@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -42,6 +43,9 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
+import org.ejbca.util.DatabaseIndexUtil;
+import org.ejbca.util.DatabaseIndexUtil.DatabaseIndex;
+import org.ejbca.util.JDBCUtil;
 
 /**
  * @version $Id$
@@ -289,5 +293,17 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
             throw new CertificateRevokeException(msg);
         }
         return certStore.setRevokeStatusNoAuth(admin, certificateData, revokedDate, reason);
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public List<DatabaseIndex> getDatabaseIndexFromTable(final String tableName, final boolean requireUnique) {
+        try {
+            return DatabaseIndexUtil.getDatabaseIndexFromTable(JDBCUtil.getDataSourceOrNull(), tableName, requireUnique);
+        } catch (SQLException e) {
+            log.info("getDatabaseIndexFromTable failed: " + e.getMessage());
+            log.debug("getDatabaseIndexFromTable failed: " + e.getMessage(), e);
+            return null;
+        }
     }
 }

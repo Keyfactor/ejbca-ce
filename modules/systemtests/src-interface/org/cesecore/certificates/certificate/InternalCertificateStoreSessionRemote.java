@@ -22,6 +22,7 @@ import javax.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.util.DatabaseIndexUtil.DatabaseIndex;
 
 /**
  * This session bean should under no circumstances be included in the release version of CESeCore.
@@ -151,4 +152,7 @@ public interface InternalCertificateStoreSessionRemote {
 
     /** @see org.cesecore.certificates.certificate.CertificateStoreSessionLocal#storeCertificateNoAuth(AuthenticationToken, Certificate, String, String, int, int, int, int, String, long) */
     CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type, int certificateProfileId, int endEntityProfileId, String tag, long updateTime);
+
+    /** Access to DatabaseIndexUtil.getDatabaseIndexFromTable() using the default EJBCA DataSource. */
+    List<DatabaseIndex> getDatabaseIndexFromTable(String tableName, boolean requireUnique);
 }
