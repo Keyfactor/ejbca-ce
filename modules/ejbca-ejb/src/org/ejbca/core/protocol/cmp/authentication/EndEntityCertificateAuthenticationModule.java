@@ -609,7 +609,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      */
     private int getRaCaId(final DEROctetString keyId) {
         String caname = this.cmpConfiguration.getRACAName(this.confAlias);
-        if (StringUtils.equals(caname, "KeyId") && (keyId != null)) {
+        if (StringUtils.equals(caname, CmpConfiguration.PROFILE_USE_KEYID) && (keyId != null)) {
             caname = CmpMessageHelper.getStringFromOctets(keyId);
             if (log.isDebugEnabled()) {
                 log.debug("Using CA with same name as KeyId in request: "+caname);

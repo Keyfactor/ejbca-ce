@@ -1661,7 +1661,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setRAMode(ALIAS, true);
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123hmac");
-        this.cmpConfiguration.setRAEEProfile(ALIAS, "KeyId");
+        this.cmpConfiguration.setRAEEProfile(ALIAS, CmpConfiguration.PROFILE_USE_KEYID);
         this.cmpConfiguration.setRACertProfile(ALIAS, "ProfileDefault");
         this.cmpConfiguration.setRACAName(ALIAS, "TestCA");
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);

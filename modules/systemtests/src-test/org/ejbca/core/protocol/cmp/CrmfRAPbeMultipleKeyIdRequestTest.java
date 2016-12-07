@@ -201,8 +201,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(configAlias, "password");
         this.cmpConfiguration.setRANameGenScheme(configAlias, "DN");
-        //this.cmpConfiguration.setRAEEProfile(configAlias, "KeyId");
-        this.cmpConfiguration.setRACertProfile(configAlias, "KeyId");
+        //this.cmpConfiguration.setRAEEProfile(configAlias, CmpConfiguration.PROFILE_USE_KEYID);
+        this.cmpConfiguration.setRACertProfile(configAlias, CmpConfiguration.PROFILE_USE_KEYID);
         this.cmpConfiguration.setRACAName(configAlias, "ProfileDefault");
         updatePropertyOnServer("cmp.tcp.portno", "5587");
         this.globalConfigSession.saveConfiguration(ADMIN, this.cmpConfiguration);
