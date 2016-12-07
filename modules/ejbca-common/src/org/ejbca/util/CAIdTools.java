@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.util;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,14 +28,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
-import org.cesecore.roles.RoleInformation;
-import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.model.approval.profile.ApprovalPartition;
-import org.ejbca.core.model.approval.profile.ApprovalProfile;
-import org.ejbca.core.model.approval.profile.ApprovalStep;
-import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
@@ -126,47 +119,6 @@ public final class CAIdTools {
         return changed;
     }
     
-    /**
-     * Updates any references to a CA's CAId and Subject DN. Approval Profiles can contain CA Id references in the list of allowed roles of the steps.
-     * @param approvalProfile Profile object to modify.
-     * @param fromId Old CA Id to replace.
-     * @param toId New CA Id to replace with.
-     * @param toSubjectDN New CA Subject DN.
-     * @return True if the approval profile was changed. If so it should be persisted to the database.
-     */
-    @SuppressWarnings("unchecked")
-    public static boolean updateCAIds(final ApprovalProfile approvalProfile, final int fromId, final int toId, final String toSubjectDN) {
-        boolean changed = false;
-        
-        final Map<Integer,ApprovalStep> steps = approvalProfile.getSteps();
-        for (final ApprovalStep step : new ArrayList<>(steps.values())) {
-            final Map<Integer,ApprovalPartition> partitions = step.getPartitions();
-            for (final ApprovalPartition partition : new ArrayList<>(partitions.values())) {
-                // Check if the role user aspect datas need updating
-                final DynamicUiProperty<? extends Serializable> prop = partition.getProperty(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS);
-                if (prop != null) {
-                    final List<RoleInformation> values = (List<RoleInformation>)prop.getValues();
-                    boolean propertyChanged = false;
-                    for (final RoleInformation role : values) {
-                        final List<AccessUserAspectData> userAspects = role.getAccessUserAspects();
-                        for (final AccessUserAspectData userAspect : userAspects) {
-                            if (userAspect.getCaId() == fromId) {
-                                userAspect.setCaId(toId);
-                                propertyChanged = true;
-                            }
-                        }
-                    }
-                    if (propertyChanged) {
-                        // Update the property
-                        approvalProfile.addPropertyToPartition(step.getStepIdentifier(), partition.getPartitionIdentifier(), prop);
-                        changed = true;
-                    }
-                }
-            }
-        }
-        return changed;
-    }
-
     /**
      * Updates any references to a CA's CAId and Subject DN.
      * @param dataSource Data source object to modify.

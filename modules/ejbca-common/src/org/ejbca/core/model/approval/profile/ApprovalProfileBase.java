@@ -27,6 +27,8 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.roles.RoleInformation;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;
@@ -543,5 +545,38 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
             setFirstStep(secondStepIdentifier);
         }
         saveTransientObjects();
+    }
+    
+    @Override
+    public boolean updateCAIds(final int fromId, final int toId, final String toSubjectDN) {
+        boolean changed = false;    
+        final Map<Integer,ApprovalStep> steps = getSteps();
+        for (final ApprovalStep step : new ArrayList<>(steps.values())) {
+            final Map<Integer,ApprovalPartition> partitions = step.getPartitions();
+            for (final ApprovalPartition partition : new ArrayList<>(partitions.values())) {
+                // Check if the role user aspect datas need updating
+                final DynamicUiProperty<? extends Serializable> prop = partition.getProperty(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS);
+                if (prop != null) {
+                    @SuppressWarnings("unchecked")
+                    final List<RoleInformation> values = (List<RoleInformation>)prop.getValues();
+                    boolean propertyChanged = false;
+                    for (final RoleInformation role : values) {
+                        final List<AccessUserAspectData> userAspects = role.getAccessUserAspects();
+                        for (final AccessUserAspectData userAspect : userAspects) {
+                            if (userAspect.getCaId() == fromId) {
+                                userAspect.setCaId(toId);
+                                propertyChanged = true;
+                            }
+                        }
+                    }
+                    if (propertyChanged) {
+                        // Update the property
+                        addPropertyToPartition(step.getStepIdentifier(), partition.getPartitionIdentifier(), prop);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        return changed;
     }
 }
