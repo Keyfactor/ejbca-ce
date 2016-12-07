@@ -655,6 +655,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @See {@link org.cesecore.util.ValidityDate ValidityDate}
      * @See {@link org.cesecore.util.SimpleTime SimpleTime}
      */
+    @SuppressWarnings("deprecation")
     public String getEncodedValidity() {
         String result = (String) data.get(ENCODED_VALIDITY);
         if (StringUtils.isBlank(result)) {
@@ -2541,6 +2542,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Implementation of UpgradableDataHashMap function upgrade.
      */
+    @SuppressWarnings("deprecation")
     @Override
     public void upgrade() {
         if (log.isTraceEnabled()) {
