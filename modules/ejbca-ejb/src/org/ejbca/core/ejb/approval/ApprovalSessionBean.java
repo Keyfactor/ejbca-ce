@@ -139,12 +139,12 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
     
     @Override
-    public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException {
+    public int addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException {
     	if (log.isTraceEnabled()) {
     		log.trace(">addApprovalRequest: hash="+approvalRequest.generateApprovalId());
     	}
         int approvalId = approvalRequest.generateApprovalId();
-        Integer id = 0;
+        Integer requestId = 0;
         ApprovalDataVO data = findNonExpiredApprovalRequest(admin, approvalId);
         if (data != null) {
             String msg = intres.getLocalizedMessage("approval.alreadyexists", approvalId);
@@ -153,13 +153,13 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         } else {
             // There exists no approval request with status waiting. Add a new one
             try {
-                id = findFreeApprovalId();
-                final ApprovalData approvalData = new ApprovalData(id);
+                requestId = findFreeApprovalId();
+                final ApprovalData approvalData = new ApprovalData(requestId);
                 updateApprovalData(approvalData, approvalRequest);
                 entityManager.persist(approvalData);
                 final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
                 sendApprovalNotifications(admin, approvalRequest, approvalProfile, approvalData.getApprovals(), false);
-                String msg = intres.getLocalizedMessage("approval.addedwaiting", id);
+                String msg = intres.getLocalizedMessage("approval.addedwaiting", requestId);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 List<ApprovalDataText> texts = approvalRequest.getNewRequestDataAsText(admin);
@@ -169,7 +169,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                         admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
             } catch (Exception e1) {
-                String msg = intres.getLocalizedMessage("approval.erroradding", id);
+                String msg = intres.getLocalizedMessage("approval.erroradding", requestId);
                 log.error(msg, e1);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -179,8 +179,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             }
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<addApprovalRequest: hash="+approvalRequest.generateApprovalId()+", id="+id);
+        	log.trace("<addApprovalRequest: hash="+approvalRequest.generateApprovalId()+", id="+requestId);
         }
+        return requestId;
     }
     
     @Override
