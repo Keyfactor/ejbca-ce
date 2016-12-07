@@ -36,10 +36,12 @@ public interface ApprovalSession {
      * If the approvalId already exists, with a non expired approval, a new approval
      * request is added to the database. An approvalException is thrown otherwise
      * 
+     * @return the request ID of the created request
+     * 
      * @throws ApprovalException
      *             if an approval already exists for this request.
      */
-     void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException;
+     int addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException;
 
     /**
      * Method that goes through exists approvals in database to see if there

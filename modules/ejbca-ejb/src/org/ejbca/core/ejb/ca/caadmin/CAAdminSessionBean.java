@@ -2938,8 +2938,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(), "", admin, caid,
                 ApprovalDataVO.ANY_ENDENTITYPROFILE, approvalProfile, cainfo.getCertificateProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {
-            approvalSession.addApprovalRequest(admin, ar);
-            throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalcaactivation"), approvalSession.getIdFromApprovalId(ar.generateApprovalId()));
+            int requestId = approvalSession.addApprovalRequest(admin, ar);
+            throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalcaactivation"), requestId);
         }
         if (cainfo.getStatus() == CAConstants.CA_OFFLINE) {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.activated", caid);
