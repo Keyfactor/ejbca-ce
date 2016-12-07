@@ -233,7 +233,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             pw.println("mysql> grant all on " + name + ".* to " + user + "@'" + host + "' identified by '" + pass + "';");
             pw.println("And then test access to the DB:");
             pw.println("$ mysql -u " + user + " -p " + name);
-            pw.println("These properties must the also be defined for the jboss data source. The name of the DS must be java:/UnidDS. Note that the datasource must be a 'no-tx-datasource', like OcspDS.");
+            pw.println("These properties must the also be defined for the jboss data source. The name of the DS must be java:/UnidDS. Note that the datasource must be a 'no-tx-datasource', like OcspDSn (<datasource ... jta=\"false\">).");
             pw.println("You also have to set the path to the 'mysql.jar' as the 'mysql.lib' system property for the test (or add it to the classpath in Eclipse).");
             pw.println("Example how to the test with this property:");
             pw.println("ant test:runone -Dtest.runone=CmpRAUnidTest -Dmysql.lib=/usr/share/java/mysql-connector-java.jar");
