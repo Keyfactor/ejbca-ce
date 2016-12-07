@@ -86,7 +86,16 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
 
 /**
- * Managed bean that backs up the enrollingmakenewrequest.xhtml page
+ * Managed bean that backs up the enrollingmakenewrequest.xhtml page.
+ * 
+ * DEVELOP NOTE:
+ * Since the page this bean backs up has pretty advanced dependencies for what should be rendered when,
+ * an unconventional pattern is used where getters will calculate their current value based on the
+ * current state of their dependencies.
+ * 
+ * (The normal pattern would be that changes/actions should calculate and modify everything that is
+ * effected by this change. This would be harder to code and maintain since you have to think about
+ * all permutations that could potentially be affected down the line.)
  * 
  * @version $Id$
  */
@@ -160,8 +169,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private UIComponent userCredentialsMessagesComponent;
     private UIComponent confirmPasswordComponent;
 
-
-
     @PostConstruct
     private void postContruct() {
         this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
@@ -195,6 +202,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 getEndEntityProfile().isRequired(EndEntityProfile.EMAIL, 0);
     }
 
+    /** @return true if keystore download options in JKS format should be provided (e.g. keystore generation was used and no approvals are required) */
     public boolean isGenerateJksButtonRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile == null) {
@@ -206,6 +214,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 && !isApprovalRequired();
     }
 
+    /** @return true if keystore download options in PKCS#12 format should be provided (e.g. keystore generation was used and no approvals are required) */
     public boolean isGenerateP12ButtonRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile == null) {
@@ -217,6 +226,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 && !isApprovalRequired();
     }
     
+    /** @return true if keystore download options in PEM format should be provided (e.g. keystore generation was used and no approvals are required) */
     public boolean isGeneratePemButtonRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile == null) {
@@ -228,6 +238,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 && !isApprovalRequired();
     }
 
+    /** @return true if certificate download options should be provided (e.g. a CSR was used and no approvals are required) */
     public boolean isGenerateFromCsrButtonRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile == null) {
@@ -239,11 +250,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 && !isApprovalRequired();
     }
     
+    /** @return true if the current selection will require approvals */
     public boolean isConfirmRequestButtonRendered(){
         return isApprovalRequired();
     }
     
+    /** @return true if approvals are required as determined by state of dependencies by checking the RA API. */
     private boolean isApprovalRequired(){
+        // TODO: ECA-5240 will remove the need for making this API call
         try {
             return raMasterApiProxyBean.getApprovalProfileForAction(raAuthenticationBean.getAuthenticationToken(), 1, getCAInfo().getCAId(), getAuthorizedCertificateProfiles().get(Integer.parseInt(getSelectedCertificateProfile())).getId()) != null;
         } catch (AuthorizationDeniedException e) {
@@ -251,6 +265,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
     
+    /** @return true if when the certificate preview box should be rendered */
     public boolean isUpdateRequestPreviewButtonRendered() {
         return isKeyAlgorithmAvailable();
     }
@@ -259,18 +274,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean isSelectRequestTemplateRendered() {
         return isSelectEndEntityProfileRendered() || isSelectCertificateProfileRendered() || isSelectCertificateAuthorityRendered() || isSelectKeyPairGenerationRendered();
     }
+    /** @return true if the selection of end entity profile ("certificate type") should be rendered */
     public boolean isSelectEndEntityProfileRendered() {
         return getAvailableEndEntityProfiles().size()>1 ||
                 (getAvailableEndEntityProfiles().size()==1 && isRenderNonModifiableTemplates());
     }
+    /** @return true if the selection of certificate profile ("certificate sub-type") should be rendered */
     public boolean isSelectCertificateProfileRendered() {
         return StringUtils.isNotEmpty(getSelectedEndEntityProfile()) && (getAvailableCertificateProfiles().size()>1 ||
                 (getAvailableCertificateProfiles().size()==1 && isRenderNonModifiableTemplates()));
     }
+    /** @return true if the selection of certificate authority should be rendered */
     public boolean isSelectCertificateAuthorityRendered() {
         return StringUtils.isNotEmpty(getSelectedCertificateProfile()) && (getAvailableCertificateAuthorities().size()>1 ||
                 (getAvailableCertificateAuthorities().size()==1 && isRenderNonModifiableTemplates()));
     }
+    /** @return true if the selection of key generation type should be rendered */
     public boolean isSelectKeyPairGenerationRendered() {
         return StringUtils.isNotEmpty(getSelectedCertificateAuthority()) && (getAvailableKeyPairGenerations().size()>1 ||
                 (getAvailableKeyPairGenerations().size()==1 && isRenderNonModifiableTemplates()));
@@ -289,12 +308,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 (getAvailableAlgorithmSelectItems().size()==1 && isRenderNonModifiableTemplates()));
     }
 
-    /** @return true if the the CSR upload form should be rendered */
+    /** @return true if the CSR upload form should be rendered */
     public boolean isUploadCsrRendered() {
         return getEndEntityProfile()!=null && getCertificateProfile()!=null && getCAInfo()!=null &&
                 KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum());
     }
 
+    /** @return true if the the CSR has been uploaded */
     public boolean isUploadCsrDoneRendered() {
         return algorithmFromCsr!=null;
     }
@@ -304,7 +324,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return isKeyAlgorithmAvailable();
     }
     
-    /** @return true if not all fields are rendered by default */
+    /** @return true if not all fields (e.g. non-modifiable) are rendered by default */
     public boolean isRenderNonModifiableFieldsRendered() {
         if (renderNonModifiableFields) {
             return true;
@@ -409,6 +429,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         algorithmFromCsr = null;
     }
 
+    /** Populate the state of modifiable fields with the CSR that was saved during file upload validation */
     public void uploadCsr() {
         //If PROVIDED BY USER key generation is selected, try fill Subject DN fields from CSR (Overwrite the fields set by previous CSR upload if any)
         if (getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum()) && algorithmFromCsr!=null) {
@@ -426,6 +447,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
     
+    /** Populate the fieldInstances parameter with values from the CSR when the instances are modifiable */
     private void populateRequestFields(final boolean isSubjectAlternativeName, final String subject, final Collection<FieldInstance> fieldInstances) {
         final List<String> subjectFieldsFromParsedCsr = CertTools.getX500NameComponents(subject);
         bothLoops: for (final String subjectField : subjectFieldsFromParsedCsr) {
@@ -476,7 +498,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
     
-    public void confirmRequest(){
+    /** Proceed with request that will require approval */
+    public void confirmRequest() {
         if(KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())){
             addEndEntityAndGenerateP12();
         }else{
@@ -484,6 +507,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
+    /** Calculate the summary of holders from the current state for the certificate Subjects */
     public void updateRequestPreview() {
         getSubjectDn().update();
         getSubjectAlternativeName().update();
@@ -727,6 +751,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
     
+    /** Send a file to the client if token parameter is not set to null */
     private void downloadToken(byte[] token, String responseContentType, String fileExtension) {
         if (token == null) {
             return;
@@ -772,11 +797,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
     //-----------------------------------------------------------------------------------------------
     //Validators
     
+    /** Check if the currently set username exists and that the state of subject DN is valid via 2 calls to the RA API. */
     public final void checkRequestPreview(){
         checkUserCredentials();
         checkSubjectDn();
     }
     
+    /** Check if the currently set username exists via the RA API and render an error message if it does. */
     public final void checkUserCredentials() {
         final String username = getEndEntityInformation().getUsername();
         if (username != null && !username.isEmpty() && raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username) != null) {
@@ -785,6 +812,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
     
+    /** Update the current state of the EE-holder and validate the subject DN via the RA API. */
     public final void checkSubjectDn() {
         try {
             final EndEntityInformation endEntityInformation = getEndEntityInformation();
@@ -806,26 +834,28 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
     }
-    
+
+    /** Validate that password and password confirm entries match and render error messages otherwise. */
     public final void validatePassword(ComponentSystemEvent event) {
-        if(isPasswordRendered()){
+        if (isPasswordRendered()){
             FacesContext fc = FacesContext.getCurrentInstance();
             UIComponent components = event.getComponent();
             UIInput uiInputPassword = (UIInput) components.findComponent("passwordField");
             String password = uiInputPassword.getLocalValue() == null ? "" : uiInputPassword.getLocalValue().toString();
             UIInput uiInputConfirmPassword = (UIInput) components.findComponent("passwordConfirmField");
             String confirmPassword = uiInputConfirmPassword.getLocalValue() == null ? "" : uiInputConfirmPassword.getLocalValue().toString();
-            if(password.isEmpty()){
-                FacesContext.getCurrentInstance().addMessage(confirmPasswordComponent.getClientId(fc), raLocaleBean.getFacesMessage("enroll_password_can_not_be_empty"));
+            if (password.isEmpty()){
+                fc.addMessage(confirmPasswordComponent.getClientId(fc), raLocaleBean.getFacesMessage("enroll_password_can_not_be_empty"));
                 fc.renderResponse();
             }
             if (!password.equals(confirmPassword)) {
-                FacesContext.getCurrentInstance().addMessage(confirmPasswordComponent.getClientId(fc), raLocaleBean.getFacesMessage("enroll_passwords_are_not_equal"));
+                fc.addMessage(confirmPasswordComponent.getClientId(fc), raLocaleBean.getFacesMessage("enroll_passwords_are_not_equal"));
                 fc.renderResponse();
             }
         }
     }
     
+    /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
     public final void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         algorithmFromCsr = null;
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(value.toString());
@@ -876,6 +906,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.renderNonModifiableFields = renderNonModifiableFields;
     }
 
+    /** @return the current EndEntityProfile as determined by state of dependencies */
     public EndEntityProfile getEndEntityProfile() {
         if (getSelectedEndEntityProfile() != null) {
             final KeyToValueHolder<EndEntityProfile> temp = authorizedEndEntityProfiles.get(Integer.parseInt(getSelectedEndEntityProfile()));
@@ -886,6 +917,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return null;
     }
 
+    /** @return the current CertificateProfile as determined by state of dependencies */
     private CertificateProfile getCertificateProfile() {
         if (getSelectedCertificateProfile() != null) {
             KeyToValueHolder<CertificateProfile> temp = authorizedCertificateProfiles.get(Integer.parseInt(getSelectedCertificateProfile()));
@@ -896,6 +928,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return null;
     }
 
+    /** @return the current CAInfo as determined by state of dependencies */
     private CAInfo getCAInfo() {
         if (getSelectedCertificateAuthority() != null) {
             KeyToValueHolder<CAInfo> temp = authorizedCAInfos.get(Integer.parseInt(getSelectedCertificateAuthority()));
@@ -906,6 +939,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return null;
     }
     
+    /** @return the current key algorithm as determined by state of dependencies */
     public String getAlgorithm(){
         if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
             return getSelectedAlgorithm();
@@ -914,7 +948,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
-    /** @return the selectedEndEntityProfile */
+    /** @return the current lazy initialized selectedEndEntityProfile */
     public String getSelectedEndEntityProfile() {
         final List<Integer> availableEndEntityProfiles = getAvailableEndEntityProfiles();
         if (availableEndEntityProfiles.size()==1) {
@@ -937,12 +971,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.selectedEndEntityProfile = selectedEndEntityProfile;
     }
 
-    /** @return the selectedKeyPairGeneration */
+    /** @return the current key generation type as determined by state of dependencies as String */
     public String getSelectedKeyPairGeneration() {
         return getSelectedKeyPairGenerationEnum()==null ? null : getSelectedKeyPairGenerationEnum().name();
     }
 
-    /** @return the selectedKeyPairGeneration as enum */
+    /** @return the current key generation type as determined by state of dependencies as enum */
     private KeyPairGeneration getSelectedKeyPairGenerationEnum() {
         if (getAvailableKeyPairGenerationSelectItems().size() == 1) {
             setSelectedKeyPairGeneration(getAvailableKeyPairGenerations().get(0).name());
@@ -963,6 +997,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
+    /** @return the current available key generation types as determined by state of dependencies for UI rendering */
     public List<SelectItem> getAvailableKeyPairGenerationSelectItems() {
         final List<SelectItem> ret = new ArrayList<>();
         for (final KeyPairGeneration keyPairGeneration : getAvailableKeyPairGenerations()) {
@@ -972,6 +1007,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return ret;
     }
 
+    /** @return the current available key generation types as determined by state of dependencies */
     private List<KeyPairGeneration> getAvailableKeyPairGenerations() {
         final List<KeyPairGeneration> ret = new ArrayList<>();
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
@@ -989,6 +1025,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return ret;
     }
 
+    /** @return a List of available end entity profiles for UI rendering */
     public List<SelectItem> getAvailableEndEntityProfileSelectItems() {
         final List<SelectItem> ret = new ArrayList<>();
         for (final Integer id : getAvailableEndEntityProfiles()) {
@@ -1001,12 +1038,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return ret;
     }
 
-    /** @return a List end entity profile identifiers */
+    /** @return a List of available end entity profile identifiers */
     private List<Integer> getAvailableEndEntityProfiles() {
         return new ArrayList<>(authorizedEndEntityProfiles.idKeySet());
     }
 
-    /** @return a List certificate profile identifiers for UI rendering */
+    /** @return the current List of available certificate profiles as determined by state of dependencies for UI rendering */
     public List<SelectItem> getAvailableCertificateProfileSelectItems() {
         final List<SelectItem> ret = new ArrayList<>();
         final String defaultId = getEndEntityProfile().getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
@@ -1025,7 +1062,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return ret;
     }
 
-    /** @return a List certificate profile identifiers */
+    /** @return the current List of available certificate profile identifiers as determined by state of dependencies */
     private List<Integer> getAvailableCertificateProfiles() {
         final List<Integer> ret = new ArrayList<>();
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
@@ -1041,6 +1078,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return ret;
     }
 
+    /** @return the current List of available CAs as determined by state of dependencies */
     public List<SelectItem> getAvailableCertificateAuthoritySelectItems() {
         final List<SelectItem> ret = new ArrayList<>();
         final String defaultId = getEndEntityProfile().getValue(EndEntityProfile.DEFAULTCA, 0);
@@ -1059,7 +1097,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return ret;
     }
 
-    /** @return a List of CA identifiers */
+    /** @return the current List of available CA identifiers as determined by state of dependencies */
     private List<Integer> getAvailableCertificateAuthorities() {
         final List<Integer> ret = new ArrayList<>();
         // Get all available CAs from the selected EEP
@@ -1083,7 +1121,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return ret;
     }
 
-    /** @return the selectedCertificateProfile */
+    /** @return the current selectedCertificateProfile as determined by state of dependencies */
     public String getSelectedCertificateProfile() {
         final List<Integer> availableCertificateProfiles = getAvailableCertificateProfiles();
         if (availableCertificateProfiles.size()==1) {
@@ -1108,7 +1146,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.selectedCertificateProfile = selectedCertificateProfile;
     }
 
-    /** @return the availableAlgorithms */
+    /** @return the current availableAlgorithms as determined by state of dependencies */
     public List<SelectItem> getAvailableAlgorithmSelectItems() {
         if (this.availableAlgorithmSelectItems == null) {
             final List<SelectItem> availableAlgorithmSelectItems = new ArrayList<>();
@@ -1200,12 +1238,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         });
     }
 
-    /** @return the selectedAlgorithm */
+    /** @return the current selectedAlgorithm as determined by state of dependencies */
     public String getSelectedAlgorithm() {
         return getSelectedAlgorithm(getAvailableAlgorithmSelectItems());
     }
 
-    /** @return the selectedAlgorithm */
+    /** @return the current selectedAlgorithm as determined by state of dependencies */
     private String getSelectedAlgorithm(final List<SelectItem> availableAlgorithmSelectItems) {
         if (availableAlgorithmSelectItems.size()==1) {
             selectedAlgorithm = String.valueOf(availableAlgorithmSelectItems.get(0).getValue());
@@ -1263,7 +1301,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.requestPreviewMoreDetails = requestPreviewMoreDetails;
     }
 
-    /** @return the selectedCertificateAuthority */
+    /** @return the current selectedCertificateAuthority as determined by state of dependencies */
     public String getSelectedCertificateAuthority() {
         final List<Integer> availableCertificateAuthorities = getAvailableCertificateAuthorities();
         if (availableCertificateAuthorities.size()==1) {
@@ -1284,16 +1322,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
-    public IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles() {
+    /** @return the cached authorized certificate profiles */
+    private IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles() {
         return authorizedCertificateProfiles;
     }
 
-    /** @return the authorizedCAInfos */
-    public IdNameHashMap<CAInfo> getAuthorizedCAInfos() {
-        return authorizedCAInfos;
-    }
-
-    /** @return the if there is at least one field in subject dn that should be rendered */
+    /** @return the if there is at least one field in subject dn that should be rendered as determined by state of dependencies */
     public boolean isSubjectDnRendered() {
         if (getSubjectDn()!=null) {
             for (final FieldInstance fieldInstance : getSubjectDn().getFieldInstances()) {
@@ -1305,7 +1339,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return false;
     }
     
-    /** @return the subjectDN */
+    /** @return the current Subject DN as determined by state of dependencies */
     public SubjectDn getSubjectDn() {
         if (subjectDn == null) {
             final EndEntityProfile endEntityProfile = getEndEntityProfile();
@@ -1320,7 +1354,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return subjectDn;
     }
 
-    /** @return the if there is at least one field in subjectAlternativeName that should be rendered */
+    /** @return the if there is at least one field in subjectAlternativeName that should be rendered as determined by state of dependencies */
     public boolean isSubjectAlternativeNameRendered() {
         if (getSubjectAlternativeName()!=null) {
             for (final FieldInstance fieldInstance : getSubjectAlternativeName().getFieldInstances()) {
@@ -1332,7 +1366,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return false;
     }
     
-    /** @return the subjectAlternativeName */
+    /** @return the current Subject Alternative Name as determined by state of dependencies */
     public SubjectAlternativeName getSubjectAlternativeName() {
         if (subjectAlternativeName == null) {
             final EndEntityProfile endEntityProfile = getEndEntityProfile();
@@ -1356,7 +1390,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return false;
     }
     
-    /** @return the subjectDirectoryAttributes */
+    /** @return the current Subject Directory Attributes as determined by state of dependencies */
     public SubjectDirectoryAttributes getSubjectDirectoryAttributes() {
         if (subjectDirectoryAttributes == null) {
             final EndEntityProfile endEntityProfile = getEndEntityProfile();
@@ -1385,7 +1419,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return false;
     }
 
-    /** @return the certificateRequest */
+    /** @return the current certificateRequest if available */
     public String getCertificateRequest() {
         if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
             certificateRequest = null;
@@ -1413,6 +1447,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.requestId = requestId;
     }
 
+    /** @return the current state of the request preview as determined by state of dependencies */
     public RaRequestPreview getRequestPreview() {
         RaRequestPreview requestPreview = new RaRequestPreview();
         requestPreview.updateSubjectDn(getSubjectDn());
@@ -1425,11 +1460,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return requestPreview;
     }
     
+    /** @return name of HTTP GET request parameter for checking approval status */
     public final String getParamRequestId(){
         return PARAM_REQUESTID;
     }
-    
-    
+
     public UIComponent getUserCredentialsMessagesComponent() {
         return userCredentialsMessagesComponent;
     }
