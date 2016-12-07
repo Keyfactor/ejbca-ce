@@ -61,7 +61,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.TestAssertionFailedException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.unid.UnidFnrHandler;
@@ -212,13 +211,12 @@ public class CmpRAUnidTest extends CmpTestCase {
 
     @Test
     public void test01() throws Exception {
-        final Connection connection;
         final String host = "localhost";
         final String user = "uniduser";
         final String pass = "unidpass";
         final String name = "unid";
-        try {
-            connection = DriverManager.getConnection("jdbc:mysql://" + host + ":3306/" + name, user, pass);
+        try (Connection connection = DriverManager.getConnection("jdbc:mysql://" + host + ":3306/" + name, user, pass)) {
+            doTest(connection);
         } catch (SQLException e) {
             final StringWriter sw = new StringWriter();
             final PrintWriter pw = new PrintWriter(sw);
@@ -238,12 +236,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             pw.println("Example how to the test with this property:");
             pw.println("ant test:runone -Dtest.runone=CmpRAUnidTest -Dmysql.lib=/usr/share/java/mysql-connector-java.jar");
             log.error(sw, e);
-            throw new TestAssertionFailedException(sw.toString());
-        }
-        try {
-            doTest(connection);
-        } finally {
-            connection.close();
+            org.junit.Assume.assumeTrue("Running the Unid test without a Unid database does not make sense, ignoring: "+sw.toString(), false);
         }
     }
 
