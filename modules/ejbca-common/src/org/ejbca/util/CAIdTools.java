@@ -132,7 +132,7 @@ public final class CAIdTools {
      * @param fromId Old CA Id to replace.
      * @param toId New CA Id to replace with.
      * @param toSubjectDN New CA Subject DN.
-     * @return True if the certificate profile was changed. If so it should be persisted to the database.
+     * @return True if the approval profile was changed. If so it should be persisted to the database.
      */
     @SuppressWarnings("unchecked")
     public static boolean updateCAIds(final ApprovalProfile approvalProfile, final int fromId, final int toId, final String toSubjectDN) {
