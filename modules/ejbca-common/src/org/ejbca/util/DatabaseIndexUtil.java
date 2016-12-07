@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.util;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -53,9 +54,10 @@ public abstract class DatabaseIndexUtil {
     }
     
     /** Database index representation. */
-    public static class DatabaseIndex {
+    public static class DatabaseIndex implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final String indexName;
-        private final List<OrdinalColumn> ordinalColumns = new ArrayList<>();
+        private final transient List<OrdinalColumn> ordinalColumns = new ArrayList<>();
         private List<String> columnNames = new ArrayList<>();
         private final boolean nonUnique;
 
