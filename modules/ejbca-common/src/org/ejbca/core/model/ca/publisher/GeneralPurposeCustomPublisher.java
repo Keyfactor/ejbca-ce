@@ -251,7 +251,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
     } // revokeCertificate
 
     /**
-     * Check if the specified external excutable file(s) exist.
+     * Check if the specified external executable file(s) exist.
      * 
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#testConnection()
      */

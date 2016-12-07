@@ -41,7 +41,6 @@ import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.management.RoleManagementSession;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
-import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
