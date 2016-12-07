@@ -1795,7 +1795,7 @@ public class EjbcaWS implements IEjbcaWS {
 		        ar = new GenerateTokenApprovalRequest(userDataWS.getUsername(), userDataWS.getSubjectDN(), hardTokenDataWS.getLabel(), admin,
 		                null, significantcAInfo.getCAId(), endEntityProfileId, approvalProfile);
 		        int status = ApprovalDataVO.STATUS_REJECTED;
-		        final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
+		        int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
 		        try{
 		            status = approvalSession.isApproved(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_1_GENERATETOKEN);
 		            approvalSuccessfullStep1 = (status == ApprovalDataVO.STATUS_APPROVED);
@@ -1813,7 +1813,7 @@ public class EjbcaWS implements IEjbcaWS {
 		            }
 		        } catch (ApprovalException e) {
 		            // Request didn't exist
-		            approvalSession.addApprovalRequest(admin, ar);
+		            requestId = approvalSession.addApprovalRequest(admin, ar);
 		            throw new WaitingForApprovalException("Approval request with approvalID (hash) " + ar.generateApprovalId() + " and ID " + requestId + " has been added for approval.", requestId);
 		        }
 			} else {
@@ -2204,8 +2204,7 @@ public class EjbcaWS implements IEjbcaWS {
                             }
                             //  Add approval Request
                             try{
-                                approvalSession.addApprovalRequest(admin, ar);
-                                final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
+                                final int requestId = approvalSession.addApprovalRequest(admin, ar);
                                 throw new WaitingForApprovalException("Adding approval request to view hard token data with ID " + requestId, requestId);
                             }catch(ApprovalException e4){
                                 throw EjbcaWSHelper.getEjbcaException(e4, logger, ErrorCode.APPROVAL_ALREADY_EXISTS, null);

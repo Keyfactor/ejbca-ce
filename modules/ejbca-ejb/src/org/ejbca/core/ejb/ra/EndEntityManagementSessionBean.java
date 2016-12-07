@@ -388,8 +388,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // When the approval request is finally executed, it is executed through AddEndEntityApprovalRequest.execute, which is
                 // the NONAPPROVABLECLASSNAMES_ADDUSER below.
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ADDUSER)) {
-                    approvalSession.addApprovalRequest(admin, ar);
-                    final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
+                    final int requestId = approvalSession.addApprovalRequest(admin, ar);
                     sendNotification(admin, endEntity, EndEntityConstants.STATUS_WAITINGFORADDAPPROVAL, requestId, lastApprovingAdmin, null);
                     throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalad"), requestId);
                 }
@@ -783,9 +782,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(endEntityInformation, clearpwd, orguserdata, admin, null,
                      caid, endEntityProfileId, approvalProfile);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)) {
-                approvalSession.addApprovalRequest(admin, ar);
-                final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
-                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"), requestId);
+                final int requestId =approvalSession.addApprovalRequest(admin, ar);
+                 throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"), requestId);
             }
         }
         // Check if the subjectDN serialnumber already exists.
@@ -1275,10 +1273,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status, admin,
                     null, data1.getCaId(), endEntityProfileId, approvalProfile);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)) {
-                approvalSession.addApprovalRequest(admin, ar);
-                String msg = intres.getLocalizedMessage("ra.approvaledit");
-                
-                final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
+                final int requestId = approvalSession.addApprovalRequest(admin, ar);
+                String msg = intres.getLocalizedMessage("ra.approvaledit");                
                 throw new WaitingForApprovalException(msg, requestId);
             }
         }
@@ -1510,8 +1506,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     final RevocationApprovalRequest ar = new RevocationApprovalRequest(true, username, reason, admin, caid,
                             data.getEndEntityProfileId(), approvalProfile);
                     if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER)) {
-                        approvalSession.addApprovalRequest(admin, ar);
-                        final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
+                        final int requestId = approvalSession.addApprovalRequest(admin, ar);
                         throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), requestId);
                     }
                 }
@@ -1580,8 +1575,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final RevocationApprovalRequest ar = new RevocationApprovalRequest(false, username, reason, admin, caid, userData.getEndEntityProfileId(),
                     approvalProfile);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEUSER)) {
-                approvalSession.addApprovalRequest(admin, ar);
-                final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
+                final int requestId = approvalSession.addApprovalRequest(admin, ar);
                 throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), requestId);
             }
         }
@@ -1770,8 +1764,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 final RevocationApprovalRequest ar = new RevocationApprovalRequest(certserno, issuerdn, username, reason, admin, caid,
                         endEntityProfileId, approvalProfile);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
-                    approvalSession.addApprovalRequest(admin, ar);
-                    final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
+                    final int requestId = approvalSession.addApprovalRequest(admin, ar);
                     throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), requestId);
                 }
             }
