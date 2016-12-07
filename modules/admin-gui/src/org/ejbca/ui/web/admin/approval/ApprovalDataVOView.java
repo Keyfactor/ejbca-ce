@@ -29,6 +29,7 @@ import javax.faces.context.FacesContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -179,8 +180,12 @@ public class ApprovalDataVOView implements Serializable {
             retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("CLITOOL", true); // Assume CLI if not match
             if (reqAdmin != null) {
                 for (Principal principal : reqAdmin.getPrincipals()) {
-                    if (principal instanceof PublicWebPrincipal) {
-                        // Mostly self-registration
+                    if (principal instanceof PublicAccessAuthenticationToken.PublicAccessPrincipal) {
+                        // Unauthenticated users accessing the RA
+                        retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("RAWEB", true);
+                        break;
+                    } else if (principal instanceof PublicWebPrincipal) {
+                        // Mostly self-registration in the Public Web
                         final String ipAddress = ((PublicWebPrincipal) principal).getClientIPAddress();
                         retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PUBLICWEB", true) + ": " + ipAddress;
                         break;
