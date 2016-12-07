@@ -134,7 +134,7 @@
 	<classpathentry kind="lib" path="conf"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
-	<classpathentry kind="lib" path="lib/ct/ctlog-jdk7-git20161128-pk1.jar"/>
+	<classpathentry kind="lib" path="lib/ct/ctlog-jdk7-git20161207.jar"/>
 	<classpathentry kind="lib" path="lib/ct/httpclient-4.3.6.jar"/>
 	<classpathentry kind="lib" path="lib/ct/httpcore-4.3.3.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.1.0.jar"/>
