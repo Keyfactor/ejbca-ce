@@ -13,7 +13,7 @@
 package org.cesecore.authentication.tokens;
 
 /**
- * Represents a public web user.  
+ * Represents a public web user. Compare to PublicAccessPrincipal which serves the same purpose, but is used in the RA
  * 
  * @version $Id$
  */
