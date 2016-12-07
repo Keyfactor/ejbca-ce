@@ -132,8 +132,8 @@ public class CmpRAUnidTest extends CmpTestCase {
         this.cmpConfiguration.setRAMode(configAlias, true);
         this.cmpConfiguration.setAllowRAVerifyPOPO(configAlias, true);
         this.cmpConfiguration.setResponseProtection(configAlias, "pbe");
-        this.cmpConfiguration.setRACertProfile(configAlias, "KeyId");
-        this.cmpConfiguration.setRAEEProfile(configAlias, "KeyId");
+        this.cmpConfiguration.setRACertProfile(configAlias, CmpConfiguration.PROFILE_USE_KEYID);
+        this.cmpConfiguration.setRAEEProfile(configAlias, CmpConfiguration.PROFILE_USE_KEYID);
         this.cmpConfiguration.setRACAName(configAlias, this.testx509ca.getName());
         this.cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBEPASSWORD);
@@ -210,8 +210,6 @@ public class CmpRAUnidTest extends CmpTestCase {
         }
     }
 
-    // TODO Setting KeyId as the RA end entity profile is no longer supported, however, it will be supported later in a different format 
-    // specifically for the Unid users/customers. This test should be modified then    
     @Test
     public void test01() throws Exception {
         final Connection connection;
@@ -235,7 +233,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             pw.println("mysql> grant all on " + name + ".* to " + user + "@'" + host + "' identified by '" + pass + "';");
             pw.println("And then test access to the DB:");
             pw.println("$ mysql -u " + user + " -p " + name);
-            pw.println("These properties must the also be defined for the jboss data source. The name of the DS (suggested UnidDS) must be set in cmp.properties. Note that the datasource must be a 'no-tx-datasource', like OcspDS.");
+            pw.println("These properties must the also be defined for the jboss data source. The name of the DS must be java:/UnidDS. Note that the datasource must be a 'no-tx-datasource', like OcspDS.");
             pw.println("You also have to set the path to the 'mysql.jar' as the 'mysql.lib' system property for the test (or add it to the classpath in Eclipse).");
             pw.println("Example how to the test with this property:");
             pw.println("ant test:runone -Dtest.runone=CmpRAUnidTest -Dmysql.lib=/usr/share/java/mysql-connector-java.jar");

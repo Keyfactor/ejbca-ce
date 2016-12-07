@@ -77,6 +77,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.junit.Before;
@@ -350,7 +351,7 @@ public class CrmfRequestMessageTest {
             PKIHeader head = msg.getHeader();
             final ASN1OctetString os = head.getSenderKID();
             String keyId = CmpMessageHelper.getStringFromOctets(os);
-            assertEquals("KeyId", keyId);
+            assertEquals(CmpConfiguration.PROFILE_USE_KEYID, keyId);
             final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
             assertTrue(verifyer.verify("password"));
             assertFalse(verifyer.verify("foo123"));

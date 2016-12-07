@@ -940,12 +940,6 @@ After the user has been created in EJBCA, a certificate is generated as usual an
 If the same username is constructed (for example UID) as an already existing user, 
 the existing user will be modified with new values for profile etc, and a new certificate will be issued for that user.
 </p>
-<note>
-<p>
-Please note that the possibility to allow requests to specify the CAs and profiles to be used by setting the CA and profiles configuration values to 
-"KeyId" has been deprecated since EJBCA 6.0.0, and is no longer supported since EJBCA 6.5.1
-</p>
-</note>
 <subsubsection name="Multiprotection support">
 <p>
 In RA mode, it is also possible to send a CMP request with multiple signatures. Ejbca implements this feature following the specifications 
@@ -1440,7 +1434,7 @@ Unid Data Source : java:/UnidDS
 bin/ejbca.sh config cmp updatealias --alias cmpalias --key certreqhandler.class --value org.ejbca.core.protocol.unid.UnidFnrHandler
 bin/ejbca.sh config cmp updatealias --alias cmpalias --key uniddatasource --value java:/UnidDS
 </source>
-<p>You also have to set the </p>
+<p>You also have to create the Unid mapping database, see the separate unid document referenced above.</p>
 </subsection>
 <subsection name="CMP Error Messages">
 <p>When an error occurs during CMP processing some different CMP error messages, or HTTP error codes can occur. Depending on at which stage the error is encountered and its type, different error messages are returned.

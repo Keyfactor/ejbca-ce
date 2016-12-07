@@ -105,7 +105,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         this.cmpConfiguration.setResponseProtection(this.configAlias, "pbe");
         this.cmpConfiguration.setRAEEProfile(this.configAlias, String.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
         this.cmpConfiguration.setRACertProfile(this.configAlias, "ENDUSER");
-        this.cmpConfiguration.setRACAName(this.configAlias, "KeyId");
+        this.cmpConfiguration.setRACAName(this.configAlias, CmpConfiguration.PROFILE_USE_KEYID);
         this.cmpConfiguration.setAuthenticationModule(this.configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(this.configAlias, "-;-");
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
