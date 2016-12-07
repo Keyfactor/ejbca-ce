@@ -31,7 +31,8 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookup
  */
 public class PublicAccessAuthenticationToken extends NestableAuthenticationToken {
 
-    private static class PublicAccessPrincipal implements Principal, Serializable {
+    /** Public access to the RA. Compare to PublicWebPrincipal which serves the same purpose, but is used in the PublicWeb */
+    public static class PublicAccessPrincipal implements Principal, Serializable {
         private static final long serialVersionUID = 1L;
         private final String principal;
 
