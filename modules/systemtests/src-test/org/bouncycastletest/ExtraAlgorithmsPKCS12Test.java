@@ -29,9 +29,9 @@ import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
@@ -190,21 +190,21 @@ public class ExtraAlgorithmsPKCS12Test {
         
         // Basic constraints is always critical and MUST be present at least in CA-certificates.
         BasicConstraints bc = new BasicConstraints(true);
-        certbuild.addExtension(X509Extension.basicConstraints, true, bc);
+        certbuild.addExtension(Extension.basicConstraints, true, bc);
         
         // Put critical KeyUsage in CA-certificates
         X509KeyUsage ku = new X509KeyUsage(6);
-        certbuild.addExtension(X509Extension.keyUsage, true, ku);
+        certbuild.addExtension(Extension.keyUsage, true, ku);
         
         // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Firefox.
         SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki.getEncoded());
         AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(spki.getEncoded());
-        certbuild.addExtension(X509Extension.subjectKeyIdentifier, false, ski);
-        certbuild.addExtension(X509Extension.authorityKeyIdentifier, false, aki);
+        certbuild.addExtension(Extension.subjectKeyIdentifier, false, ski);
+        certbuild.addExtension(Extension.authorityKeyIdentifier, false, aki);
         
         ContentSigner sigGen = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(privKey), 20480);
         
-        return new JcaX509CertificateConverter().setProvider("BC")
+        return new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME)
                 .getCertificate(certbuild.build(sigGen));
     }
 
