@@ -262,8 +262,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEQCETSITYPE = "useqcetsitype";
     protected static final String QCETSITYPE = "qcetsitype";
     protected static final String QCETSIPDS = "qcetsipds";
+    /** @deprecated since EJBCA 6.6.1. It was only used in 6.6.0, and is needed to handle upgrades from that version */
     @Deprecated
     protected static final String QCETSIPDSURL = "qcetsipdsurl";
+    /** @deprecated since EJBCA 6.6.1. It was only used in 6.6.0, and is needed to handle upgrades from that version */
     @Deprecated
     protected static final String QCETSIPDSLANG = "qcetsipdslang";
     protected static final String USEQCCUSTOMSTRING = "useqccustomstring";
