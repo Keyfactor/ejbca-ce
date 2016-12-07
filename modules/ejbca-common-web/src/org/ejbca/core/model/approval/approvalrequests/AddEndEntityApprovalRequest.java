@@ -161,6 +161,14 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(new ApprovalDataText("CA", caname, true, false));
 		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(userdata.getEndEntityProfileId()),true,false));		
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()),true,false));
+		final ExtendedInformation eei = userdata.getExtendedinformation();
+        if (eei != null && eei.getKeyStoreAlgorithmType() != null) {
+            String keyTypeString = eei.getKeyStoreAlgorithmType();
+            if (eei.getKeyStoreAlgorithmSubType() != null) {
+                keyTypeString += " " + eei.getKeyStoreAlgorithmSubType();
+            }
+            retval.add(new ApprovalDataText("KEYALGORITHM", keyTypeString, true, false));
+        }
 		retval.add(ApprovalRequestHelper.getTokenName(hardTokenSession, userdata.getTokenType()));
 		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS", hardTokenSession.getHardTokenIssuerAlias(userdata.getHardTokenIssuerId())));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE",userdata.getKeyRecoverable() ? "YES" : "NO",true,true));

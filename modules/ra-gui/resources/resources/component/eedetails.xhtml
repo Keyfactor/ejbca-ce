@@ -89,6 +89,12 @@
             <h:outputText id="tokentype"
                 value="#{cc.attrs.raEndEntityDetails.tokenType} #{msg['component_eedetails_field_keyrecoverable_'.concat(cc.attrs.raEndEntityDetails.keyRecoverable)]}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="keytype" value="#{msg.component_eedetails_field_keyalgorithm}"
+                rendered="#{cc.attrs.raEndEntityDetails.keyType != null}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="keytype" value="#{cc.attrs.raEndEntityDetails.keyType}"
+                rendered="#{cc.attrs.raEndEntityDetails.keyType != null}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
