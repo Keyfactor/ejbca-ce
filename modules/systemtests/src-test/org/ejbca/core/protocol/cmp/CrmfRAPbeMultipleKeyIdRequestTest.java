@@ -66,6 +66,10 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 
 /**
+ * This test is ignored for normal Jenkins test runs. It can be enabled manually and run if needed.
+ * CmpRAPbeRequestTest.test02KeyIdProfiles and test03UseKeyID does a rudimentary test of this functionality.
+ * 
+ *  
  * This test requires:
  * cmp.operationmode=ra, cmp.allowraverifypopo=true, cmp.responseProtection=pbe
  * cmp.ra.authenticationsecret=password, cmp.ra.namegenerationscheme=DN
@@ -100,11 +104,8 @@ import org.junit.Ignore;
  * EE Profile with name KeyId4 should be the same as KeyId3, but use certProfile KeyId4
  * (use entity profile KeyId3 as template for KeyId4)
  * 
- * @author Tomas Gustavsson
  * @version $Id$
  */
-// TODO Setting KeyId as the RA end entity profile is no longer supported, however, it will be supported later in a different format 
-// specifically for the Unid users/customers. This test should be modified then
 @Ignore
 public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 	
