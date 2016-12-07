@@ -15,10 +15,8 @@ package org.ejbca.ra;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.util.ValidityDate;
 
 /** 
  * UI representation of a certificate preview to be confirmed before enrollment.

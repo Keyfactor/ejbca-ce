@@ -16,8 +16,6 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.cesecore.internal.UpgradeableDataHashMap;
-
 /**
  * Base interface for all Profile objects. 
  * 
