@@ -300,16 +300,13 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
      * KeyId means that the certificate profile used to issue the certificate is the same as the KeyId sent in the request.
      * ProfileDefault means that the certificate profile used is taken from the default certificate profile in the end entity profile.
      */
-    // TODO Setting KeyId as the RA end entity profile is no longer supported, however, it will be supported later in a different format 
-    // specifically for the Unid users/customers. This test should be modified then
-    //
-    @Ignore
+    @Test
     public void test02KeyIdProfiles() throws Exception {
         final String keyId = "CmpTestKeyIdProfileName";
         final String keyIdDefault = "CmpTestKeyIdProfileNameDefault";
         
-        this.cmpConfiguration.setRACertProfile(ALIAS, "KeyId");
-        this.cmpConfiguration.setRAEEProfile(ALIAS, "KeyId");
+        this.cmpConfiguration.setRACertProfile(ALIAS, CmpConfiguration.PROFILE_USE_KEYID);
+        this.cmpConfiguration.setRAEEProfile(ALIAS, CmpConfiguration.PROFILE_USE_KEYID);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         try {

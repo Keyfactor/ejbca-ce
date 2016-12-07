@@ -77,6 +77,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_CERTREQHANDLER_CLASS    = "certreqhandler.class";
     public static final String CONFIG_UNIDDATASOURCE          = "uniddatasource";
     
+    public static final String PROFILE_USE_KEYID = "KeyId";
     
     // This List is used in the command line handling of updating a config value to insure a correct value.
     public static final List<String> CMP_BOOLEAN_KEYS = Arrays.asList(CONFIG_VENDORCERTIFICATEMODE, CONFIG_ALLOWRAVERIFYPOPO, CONFIG_RA_ALLOWCUSTOMCERTSERNO,
@@ -461,7 +462,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public void setRAEEProfile(String alias, String eep) throws NumberFormatException {
         
         // Check the the value actually is an int. Throws NumberFormatException
-        if (!StringUtils.equals("KeyId", eep)) {
+        if (!StringUtils.equals(CmpConfiguration.PROFILE_USE_KEYID, eep)) {
             Integer.parseInt(eep);
         }
         

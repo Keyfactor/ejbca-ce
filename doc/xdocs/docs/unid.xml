@@ -138,6 +138,7 @@ Requirements:
 <li>The UNID feature is activated as described in the Admin Guide, 'Custom handling of certificate request'</li>
 <li>A Unid datasource called java:/UnidDS is configured in the application server. Note that this must be a 'no-tx-datasource', just like the an OCSP publisher datasource
  (see <a href="installation.html#JBoss">Installation</a> for instruction how to create this manually if needed).</li>
+<li>A Unid database must be created, see above for details on the Unid database.</li>
 </ol>
 <p>
 Detailed operation:
@@ -152,7 +153,6 @@ Detailed operation:
 </li>
 <li>In the database FNR is set to "fffffffffff" and UNID to "pppp-pppp-lllllrrrrrr". UNID is a primary key in the DB to guarantee that it is unique.</li>
 </ul>
-
 </section>
   
 </body>

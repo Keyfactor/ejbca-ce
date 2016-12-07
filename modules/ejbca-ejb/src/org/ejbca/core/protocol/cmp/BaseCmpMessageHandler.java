@@ -91,7 +91,7 @@ public class BaseCmpMessageHandler {
 					LOG.debug("Using CA with id: "+ret);
 				}
 			}
-		} else if (StringUtils.equals(caName, "KeyId")) {
+		} else if (StringUtils.equals(caName, CmpConfiguration.PROFILE_USE_KEYID)) {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Using keyId as CA name when adding users in RA mode: "+keyId);
 			}
@@ -135,7 +135,7 @@ public class BaseCmpMessageHandler {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Using default certificate profile from End Entity Profile: " + certificateProfile);
             }
-		} else if (StringUtils.equals(certificateProfile, "KeyId")) {
+		} else if (StringUtils.equals(certificateProfile, CmpConfiguration.PROFILE_USE_KEYID)) {
 		    if(keyId != null) {
 		        if (LOG.isDebugEnabled()) {
 		            LOG.debug("Using Certificate Profile with same name as KeyId in request: " + keyId);
