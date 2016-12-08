@@ -66,7 +66,7 @@
 			<h:outputText value="#{web.text.VIEWADMINS}" rendered="#{!rolesManagedBean.authorizedToEdit}"/>
 		</h:outputLink>
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editbasicaccessrules.jsf?currentRole=#{rolesManagedBean.currentRole}"
-			rendered="#{not empty rolesManagedBean.currentRole && !rolesManagedBean.basicRuleSet.forceAdvanced}"
+			rendered="#{not empty rolesManagedBean.currentRole}"
 			title="#{web.text.BASICMODE}">
 			<h:outputText value="#{web.text.BASICMODE}"/>
 		</h:outputLink>
