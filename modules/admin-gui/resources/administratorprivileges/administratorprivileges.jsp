@@ -69,11 +69,7 @@
 				<h:outputText value="#{web.text.ADMINS}"/>
 			</h:outputLink>
 			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editbasicaccessrules.jsf?currentRole=#{role.roleName}"
-				styleClass="commandLink" title="#{web.text.EDITACCESSRULES}" rendered="#{!rolesManagedBean.basicRuleSetForEach.forceAdvanced}">
-				<h:outputText value="#{web.text.ACCESSRULES}"/>
-			</h:outputLink>
-			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadvancedaccessrules.jsf?currentRole=#{role.roleName}"
-				styleClass="commandLink" title="#{web.text.EDITACCESSRULES}" rendered="#{rolesManagedBean.basicRuleSetForEach.forceAdvanced}">
+				styleClass="commandLink" title="#{web.text.EDITACCESSRULES}">
 				<h:outputText value="#{web.text.ACCESSRULES}"/>
 			</h:outputLink>
 		</h:column>

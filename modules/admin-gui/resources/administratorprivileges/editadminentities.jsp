@@ -57,14 +57,9 @@
 			<h:outputText value="#{web.text.BACKTOROLES}"/>
 		</h:outputLink>
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editbasicaccessrules.jsf?currentRole=#{rolesManagedBean.currentRole}"
-			title="#{web.text.EDITACCESSRULES}" rendered="#{not empty rolesManagedBean.currentRole && not rolesManagedBean.basicRuleSet.forceAdvanced}">
+			title="#{web.text.EDITACCESSRULES}" rendered="#{not empty rolesManagedBean.currentRole}">
 			<h:outputText value="#{web.text.EDITACCESSRULES}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
 			<h:outputText value="#{web.text.VIEWACCESSRULES}" rendered="#{!rolesManagedBean.authorizedToEdit}"/>
-		</h:outputLink>
-		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadvancedaccessrules.jsf?currentRole=#{rolesManagedBean.currentRole}"
-			title="#{web.text.EDITACCESSRULES}" rendered="#{not empty rolesManagedBean.currentRole && rolesManagedBean.basicRuleSet.forceAdvanced}">
-			<h:outputText value="#{web.text.EDITACCESSRULES}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
-			<h:outputText value="#{web.text.VIEWACCESSRULES}" rendered="#{!rolesManagedBean.authorizedToEdit}"/>			
 		</h:outputLink>
 	</h:panelGrid>
   
