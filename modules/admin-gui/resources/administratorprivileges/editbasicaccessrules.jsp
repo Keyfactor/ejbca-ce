@@ -183,10 +183,9 @@ function checkallfields() {
 </div>
 	
 	<h:panelGroup>
-	<div><h:outputText styleClass="alert" value="#{web.text.ADVANCEDMODEREQUIRED}" rendered="#{rolesManagedBean.basicRuleSet.forceAdvanced}" /></div>
 	<h:messages layout="table" errorClass="alert"/>
   
-	<h:panelGroup rendered="#{!rolesManagedBean.basicRuleSet.forceAdvanced}">
+	<h:panelGroup>
  
  	<h:form id="basicRules">
 	<h:inputHidden id="currentRole" value="#{rolesManagedBean.currentRole}" />
