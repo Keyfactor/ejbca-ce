@@ -130,37 +130,83 @@ public abstract class DatabaseIndexUtil {
         final List<DatabaseIndex> ret = new ArrayList<>();
         try (final Connection connection = dataSource.getConnection();) {
             final DatabaseMetaData databaseMetaData = connection.getMetaData();
+            /*
+             * Table names are case sensitive on at least Oracle XE (upper case) and MySQL 5.5 (camel case).
+             * 
+             * On MySQL the "catalog" is the database.
+             * On Oracle XE the username used to access the db is the schema.
+             * 
+             * This is an attempt at a very defensive version where we assume as little as possible about the database and it's configuration.
+             */
             final Map<String,DatabaseIndex> tableIndexMap = new HashMap<>();
-            // http://docs.oracle.com/javase/7/docs/api/java/sql/DatabaseMetaData.html#getIndexInfo(java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean,%20boolean)
-            try (final ResultSet resultSet = databaseMetaData.getIndexInfo(/*catalog=*/null, /*schema=*/null, tableName, /*unique=*/requireUnique, /*approximate=*/false);) {
-                while (resultSet.next()) {
-                    final String indexName = resultSet.getString("INDEX_NAME");
-                    final boolean nonUnique = resultSet.getBoolean("NON_UNIQUE");
-                    if (!tableIndexMap.containsKey(indexName)) {
-                        tableIndexMap.put(indexName, new DatabaseIndex(indexName, nonUnique));
-                    }
-                    final DatabaseIndex databaseIndex = tableIndexMap.get(indexName);
-                    final String columnName = resultSet.getString("COLUMN_NAME");
-                    final short ordinalPosition = resultSet.getShort("ORDINAL_POSITION");
-                    databaseIndex.appendOrdinalColumn(new OrdinalColumn(ordinalPosition, columnName));
-                    if (log.isDebugEnabled()) {
-                        // Extract additional info if we are debug logging
-                        final short type = resultSet.getShort("TYPE");
-                        final String typeString;
-                        switch (type) {
-                        case DatabaseMetaData.tableIndexStatistic: typeString = "tableIndexStatistic"; break;
-                        case DatabaseMetaData.tableIndexClustered: typeString = "tableIndexClustered"; break;
-                        case DatabaseMetaData.tableIndexHashed: typeString = "tableIndexHashed"; break;
-                        case DatabaseMetaData.tableIndexOther: typeString = "tableIndexOther"; break;
-                        default: typeString = "unknown";
+            if (tableIndexMap.isEmpty()) {
+                log.trace("Looking up all available tables available in the datasource to find a matching table.");
+                try (final ResultSet resultSetSchemas = databaseMetaData.getTables(null, null, null, null)) {
+                    while (resultSetSchemas.next()) {
+                        final String tableCatalog = resultSetSchemas.getString("TABLE_CAT");
+                        final String tableSchema = resultSetSchemas.getString("TABLE_SCHEM");
+                        final String tableName2 = resultSetSchemas.getString("TABLE_NAME");
+                        final String tableType = resultSetSchemas.getString("TABLE_TYPE");
+                        if (log.isTraceEnabled()) {
+                            log.trace(" catalog: " + tableCatalog + " tableSchema: " + tableSchema + " tableName: " + tableName2 + " tableType: " + tableType);
                         }
-                        log.debug("Detected part of index on table '" + tableName + "' indexName: " + indexName + " column["+ordinalPosition+"]: " + columnName +
-                                " unique: " + !nonUnique + " type: " + typeString + " current columns: " + Arrays.toString(databaseIndex.getColumnNames().toArray()));
+                        if ("TABLE".equalsIgnoreCase(tableType) && tableName.toUpperCase().equals(tableName2.toUpperCase())) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Will perform index detection on "+tableType+" in catalog " + null + " schema " + null + " table '" + tableName2 + "'.");
+                            }
+                            tableIndexMap.putAll(getDatabaseIndexMap(databaseMetaData, null, null, tableName2, requireUnique));
+                            if (tableIndexMap.isEmpty()) {
+                                // Fall-back since null arguments apparently did not match the table and assume that this will find the correct one
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Will perform index detection on "+tableType+" in catalog '" + tableCatalog + "' schema '" + tableSchema + "' table '" + tableName2 + "'.");
+                                }
+                                tableIndexMap.putAll(getDatabaseIndexMap(databaseMetaData, tableCatalog, tableSchema, tableName2, requireUnique));
+                            }
+                            break;
+                        }
                     }
                 }
             }
             ret.addAll(tableIndexMap.values());
         }
         return ret;
+    }
+
+    /** @return a Map of index name and the index representations of each database index present for a schema and table */
+    private static Map<String, DatabaseIndex> getDatabaseIndexMap(final DatabaseMetaData databaseMetaData, final String catalog, final String schemaName, final String tableName, final boolean requireUnique) throws SQLException {
+        final Map<String,DatabaseIndex> tableIndexMap = new HashMap<>();
+        // http://docs.oracle.com/javase/7/docs/api/java/sql/DatabaseMetaData.html#getIndexInfo(java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean,%20boolean)
+        try (final ResultSet resultSet = databaseMetaData.getIndexInfo(catalog, schemaName, tableName, requireUnique, /*approximate=*/false);) {
+            while (resultSet.next()) {
+                final String indexName = resultSet.getString("INDEX_NAME");
+                if (indexName==null) {
+                    log.trace("Ignoring index of type tableIndexStatistic.");
+                    continue;
+                }
+                final boolean nonUnique = resultSet.getBoolean("NON_UNIQUE");
+                if (!tableIndexMap.containsKey(indexName)) {
+                    tableIndexMap.put(indexName, new DatabaseIndex(indexName, nonUnique));
+                }
+                final DatabaseIndex databaseIndex = tableIndexMap.get(indexName);
+                final String columnName = resultSet.getString("COLUMN_NAME");
+                final short ordinalPosition = resultSet.getShort("ORDINAL_POSITION");
+                databaseIndex.appendOrdinalColumn(new OrdinalColumn(ordinalPosition, columnName));
+                if (log.isDebugEnabled()) {
+                    // Extract additional info if we are debug logging
+                    final short type = resultSet.getShort("TYPE");
+                    final String typeString;
+                    switch (type) {
+                    case DatabaseMetaData.tableIndexStatistic: typeString = "tableIndexStatistic"; break;
+                    case DatabaseMetaData.tableIndexClustered: typeString = "tableIndexClustered"; break;
+                    case DatabaseMetaData.tableIndexHashed: typeString = "tableIndexHashed"; break;
+                    case DatabaseMetaData.tableIndexOther: typeString = "tableIndexOther"; break;
+                    default: typeString = "unknown";
+                    }
+                    log.debug("Detected part of index on table '" + tableName + "' indexName: " + indexName + " column["+ordinalPosition+"]: " + columnName +
+                            " unique: " + !nonUnique + " type: " + typeString + " current columns: " + Arrays.toString(databaseIndex.getColumnNames().toArray()));
+                }
+            }
+        }
+        return tableIndexMap;
     }
 }
