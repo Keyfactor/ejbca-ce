@@ -986,9 +986,15 @@ will be overridden including the criticality flag.
 This option should only be used when you know that the request comes from a very trusted source. Such a trusted source is  
 normally an RA through CMP or WebService.
 </p>
-<p>
-Currently this works for extensions in CRMF (CMP) requests and extensions embedded as a pkcs_9_at_extensionRequest in PKCS#10 requests.
+<p>To control in detail which extensions can be overridden and which can not the optional text fields 'Overridable extension OID list' and 'Non-overridable extension OID list' can be used.
+These fields contain comma separated lists of OIDs, for example '2.5.29.17, 2.5.29.32'. This is commonly used in order to give RAs some control of the contents, but still enforcing policy 
+for critical parts so the RA can not (accidentally) issue invalid certificates. For example you may with that the RA can control the SubjectAlternativeName field, but the KeyUsage of CertificatePolicies fields.  
 </p>
+<ul>
+<li>If 'Overridable extension OID list' is used, and OID on this list can be overridden, but all other OIDs can not be overridden.</li>
+<li>If 'Non-overridable extension OID list' is used, any OID on this list is not allowed to be overridden, but all other OIDs can be overridden.</li>
+<li>Using both lists does not make any sense, since nothing will be allowed.</li>
+</ul>
 </subsubsection>
 <subsubsection name="Allow subject DN override by CSR">
 <p>

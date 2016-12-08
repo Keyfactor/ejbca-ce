@@ -28,16 +28,20 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -49,6 +53,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -1179,70 +1184,152 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, profile);
+        List<String> issuedFingerprints = new ArrayList<String>();
         try {
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(profileName);
-        int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
-        EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
-        user.setPassword("foo123");
-        user.setStatus(EndEntityConstants.STATUS_NEW);
-        // Change a user that we know...
-        endEntityManagementSession.changeUser(internalAdmin, user, false);
-        // Create a P10 with extensions, in this case altNames with a lot of DNS
-        // names
-        ASN1EncodableVector extensionattr = new ASN1EncodableVector();
-        extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-        GeneralNames san = CertTools.getGeneralNamesFromAltName(altnames);
-        ExtensionsGenerator extgen = new ExtensionsGenerator();
-        extgen.addExtension(Extension.subjectAlternativeName, false, san);
-        Extensions exts = extgen.generate();        
-        extensionattr.add(new DERSet(exts));
-        // Complete the Attribute section of the request, the set (Attributes)
-        // contains one sequence (Attribute)
-        ASN1EncodableVector v = new ASN1EncodableVector();
-        v.add(new DERSequence(extensionattr));
-        DERSet attributes = new DERSet(v);
-        // Create PKCS#10 certificate request
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes,
-                rsakeys.getPrivate(), null);
-        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        DEROutputStream dOut = new DEROutputStream(bOut);
-        dOut.writeObject(req.toASN1Structure());
-        dOut.close();
-        byte[] p10bytes = bOut.toByteArray();
-        PKCS10RequestMessage p10 = new PKCS10RequestMessage(p10bytes);
-        p10.setUsername(RSA_USERNAME);
-        p10.setPassword("foo123");
-        // See if the request message works...
-        Extensions p10exts = p10.getRequestExtensions();
-        assertNotNull(p10exts);
-        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
-        assertNotNull("Failed to create certificate", cert);
-        assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
-        // check altNames, should be none
-        Collection<List<?>> c = cert.getSubjectAlternativeNames();
-        assertNull(c);
-        // Change so that we allow override of validity time
-        CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
-        prof.setAllowExtensionOverride(true);
-        certificateProfileSession.changeCertificateProfile(internalAdmin, profileName, prof);
-        endEntityManagementSession.changeUser(internalAdmin, user, false);
-        resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
-        assertNotNull("Failed to create certificate", cert);
-        assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
-        // check altNames, should be one altName
-        c = cert.getSubjectAlternativeNames();
-        assertNotNull(c);
-        assertEquals(21, c.size());
-        String retAltNames = CertTools.getSubjectAlternativeName(cert);
-        List<String> originalNames = Arrays.asList(altnames.split(","));
-        List<String> returnNames = Arrays.asList(retAltNames.split(", "));
-        assertTrue(originalNames.containsAll(returnNames));
+            int eeprofile = endEntityProfileSession.getEndEntityProfileId(profileName);
+            int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
+            EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile,
+                    SecConst.TOKEN_SOFT_PEM, 0, null);
+            user.setPassword("foo123");
+            user.setStatus(EndEntityConstants.STATUS_NEW);
+            // Change a user that we know...
+            endEntityManagementSession.changeUser(internalAdmin, user, false);
+            // Create a P10 with extensions, in this case altNames with a lot of DNS names
+            ASN1EncodableVector extensionattr = new ASN1EncodableVector();
+            extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            GeneralNames san = CertTools.getGeneralNamesFromAltName(altnames);
+            ExtensionsGenerator extgen = new ExtensionsGenerator();
+            extgen.addExtension(Extension.subjectAlternativeName, false, san);
+            // Add a second extension, CertificatePolicies
+            PolicyInformation pi1 = new PolicyInformation(new ASN1ObjectIdentifier("1.1.1.1"), null);
+            final ASN1EncodableVector policyseq = new ASN1EncodableVector();
+            policyseq.add(pi1);
+            extgen.addExtension(Extension.certificatePolicies, false, new DERSequence(policyseq));
+            
+            Extensions exts = extgen.generate();        
+            extensionattr.add(new DERSet(exts));
+            // Complete the Attribute section of the request, the set (Attributes)
+            // contains one sequence (Attribute)
+            ASN1EncodableVector v = new ASN1EncodableVector();
+            v.add(new DERSequence(extensionattr));
+            DERSet attributes = new DERSet(v);
+            // Create PKCS#10 certificate request
+            PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes,
+                    rsakeys.getPrivate(), null);
+            ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+            DEROutputStream dOut = new DEROutputStream(bOut);
+            dOut.writeObject(req.toASN1Structure());
+            dOut.close();
+            byte[] p10bytes = bOut.toByteArray();
+            PKCS10RequestMessage p10 = new PKCS10RequestMessage(p10bytes);
+            p10.setUsername(RSA_USERNAME);
+            p10.setPassword("foo123");
+            // See if the request message works...
+            Extensions p10exts = p10.getRequestExtensions();
+            assertNotNull(p10exts);
+            ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
+            X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
+            issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
+            assertNotNull("Failed to create certificate", cert);
+            assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
+            // check altNames, should be none
+            Collection<List<?>> c = cert.getSubjectAlternativeNames();
+            assertNull(c);
+            // check cert policies, should be none
+            assertNull(cert.getExtensionValue(Extension.certificatePolicies.getId()));
+            
+            // Change so that we allow override of subject alt names (allow all extensions) 
+            CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
+            prof.setAllowExtensionOverride(true);
+            certificateProfileSession.changeCertificateProfile(internalAdmin, profileName, prof);
+            endEntityManagementSession.changeUser(internalAdmin, user, false);
+            resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
+            cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
+            issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
+            assertNotNull("Failed to create certificate", cert);
+            assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
+            // check altNames, should be one altName
+            c = cert.getSubjectAlternativeNames();
+            assertNotNull(c);
+            assertEquals(21, c.size());
+            String retAltNames = CertTools.getSubjectAlternativeName(cert);
+            List<String> originalNames = Arrays.asList(altnames.split(","));
+            List<String> returnNames = Arrays.asList(retAltNames.split(", "));
+            assertTrue(originalNames.containsAll(returnNames));
+            // check cert policies, should be there
+            assertNotNull(cert.getExtensionValue(Extension.certificatePolicies.getId()));
+
+            // Now test when we allow or disallow certain extensions
+            Set<String> allowed = new HashSet<String>(Arrays.asList(Extension.subjectAlternativeName.getId()));
+            prof.setNonOverridableExtensionOIDs(allowed);
+            certificateProfileSession.changeCertificateProfile(internalAdmin, profileName, prof);
+            endEntityManagementSession.changeUser(internalAdmin, user, false);
+            resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
+            cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
+            issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
+            assertNotNull("Failed to create certificate", cert);
+            // check altNames, should be none
+            c = cert.getSubjectAlternativeNames();
+            assertNull(c);
+            // check cert policies, should be there
+            assertNotNull(cert.getExtensionValue(Extension.certificatePolicies.getId()));
+            // Allow altNames, should not work, because non-allowed has precedence
+            prof.setOverridableExtensionOIDs(allowed);
+            certificateProfileSession.changeCertificateProfile(internalAdmin, profileName, prof);
+            endEntityManagementSession.changeUser(internalAdmin, user, false);
+            resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
+            cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
+            issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
+            assertNotNull("Failed to create certificate", cert);
+            // check altNames, should be none
+            c = cert.getSubjectAlternativeNames();
+            assertNull(c);
+            // check cert policies, should not be there, since it's not one of the allowed ones
+            assertNull(cert.getExtensionValue(Extension.certificatePolicies.getId()));
+            // Remove Non-allowed, should work again
+            prof.setNonOverridableExtensionOIDs(new HashSet<String>());
+            certificateProfileSession.changeCertificateProfile(internalAdmin, profileName, prof);
+            endEntityManagementSession.changeUser(internalAdmin, user, false);
+            resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
+            cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
+            issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
+            assertNotNull("Failed to create certificate", cert);
+            // check altNames, should be one altName
+            c = cert.getSubjectAlternativeNames();
+            assertNotNull(c);
+            assertEquals(21, c.size());
+            retAltNames = CertTools.getSubjectAlternativeName(cert);
+            originalNames = Arrays.asList(altnames.split(","));
+            returnNames = Arrays.asList(retAltNames.split(", "));
+            assertTrue(originalNames.containsAll(returnNames));
+            // check cert policies, should not be there, since it's not one of the allowed ones
+            assertNull(cert.getExtensionValue(Extension.certificatePolicies.getId()));
+
+            // Add cert policies to allowed ones, it should also be there then
+            allowed.add(Extension.certificatePolicies.getId());
+            prof.setOverridableExtensionOIDs(allowed);
+            certificateProfileSession.changeCertificateProfile(internalAdmin, profileName, prof);
+            endEntityManagementSession.changeUser(internalAdmin, user, false);
+            resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
+            cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
+            issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
+            assertNotNull("Failed to create certificate", cert);
+            // check altNames, should be one altName
+            c = cert.getSubjectAlternativeNames();
+            assertNotNull(c);
+            assertEquals(21, c.size());
+            retAltNames = CertTools.getSubjectAlternativeName(cert);
+            originalNames = Arrays.asList(altnames.split(","));
+            returnNames = Arrays.asList(retAltNames.split(", "));
+            assertTrue(originalNames.containsAll(returnNames));
+            // check cert policies, should be there
+            assertNotNull(cert.getExtensionValue(Extension.certificatePolicies.getId()));            
         } finally {
             certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
+            for (String fingerprint : issuedFingerprints) {
+                internalCertStoreSession.removeCertificate(fingerprint);                
+            }
         }
     } 
     
