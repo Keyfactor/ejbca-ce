@@ -14,17 +14,22 @@
 package org.ejbca.core.protocol.cmp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERIA5String;
@@ -37,19 +42,27 @@ import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.PolicyInformation;
+import org.bouncycastle.asn1.x509.PolicyQualifierId;
+import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
 import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.asn1.x509.UserNotice;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
@@ -730,6 +743,443 @@ public class CrmfRARequestTest extends CmpTestCase {
             }
         }
     } 
+
+    @Test
+    public void test08KeyUsageAndExtendedKeyUsageOverride() throws Exception {
+        
+        final String username = "overidetestuser";
+        final String sUserDN = "CN=" + username + ", C=SE";
+        final X500Name userDN = new X500Name(sUserDN);
+
+        final byte[] nonce = CmpMessageHelper.createSenderNonce();
+        final byte[] transid = CmpMessageHelper.createSenderNonce();
+        final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        
+        try {
+            
+            {
+                // Certificate Profile customizing
+                // Step 1 ->  Checking the default behavior. Extensions may not be overrideden if Allow Extension Override is setted to false. 
+                final CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);
+                cp.setAllowExtensionOverride(false);
+                cp.setUseExtendedKeyUsage(true);
+                cp.setUseKeyUsage(true);
+                cp.setKeyUsage(new boolean[9]);
+                // Setting key usage to digitalsignature, nonrepudiation and keyencipherment
+                cp.setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
+                cp.setKeyUsage(CertificateConstants.NONREPUDIATION, true);
+                cp.setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
+                cp.setKeyUsageCritical(true);
+                cp.setUseExtendedKeyUsage(true);
+                ArrayList<String> eku = new ArrayList<>();
+                // Setting Extended key usage to clientAuth and emailProtection
+                eku.add(KeyPurposeId.id_kp_clientAuth.getId());
+                eku.add(KeyPurposeId.id_kp_emailProtection.getId());
+                cp.setExtendedKeyUsage(eku);
+                cp.setExtendedKeyUsageCritical(false);
+                
+                this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
+                
+            }
+            // CRMF customizing
+            int reqId;
+            ExtensionsGenerator extgen = new ExtensionsGenerator();
+            // KeyUsage
+            int bcku = 0;
+            bcku = X509KeyUsage.decipherOnly;
+            X509KeyUsage ku = new X509KeyUsage(bcku);
+            extgen.addExtension(Extension.keyUsage, false, ku);
+            // Extended Key Usage
+            List<KeyPurposeId> usage = new ArrayList<KeyPurposeId>();
+            usage.add(KeyPurposeId.id_kp_codeSigning);
+            ExtendedKeyUsage eku = new ExtendedKeyUsage(KeyPurposeId.id_kp_codeSigning);
+            extgen.addExtension(Extension.extendedKeyUsage, false, eku);
+            // Make the complete extension package
+            Extensions exts = extgen.generate();
+            
+            PKIMessage one = genCertReq(ISSUER_DN, userDN, keys, this.cacert, nonce, transid, true, exts, null, null, null, null, null);
+            PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            assertNotNull(req);
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(req);
+            byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
+            checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            X509Certificate cert = checkCmpCertRepMessage(new X500Name(StringTools.strip(sUserDN)), this.cacert, resp, reqId);
+            
+            // Checking key usage are digitalsignature, nonrepudiation and keyencipherment the values was not changed by CRMF.
+            boolean[] kubits = cert.getKeyUsage();
+            assertTrue(kubits[0]);
+            assertTrue(kubits[1]);
+            assertTrue(kubits[2]);
+            assertFalse(kubits[3]);
+            assertFalse(kubits[4]);
+            assertFalse(kubits[5]);
+            assertFalse(kubits[6]);
+            assertFalse(kubits[7]);
+            assertFalse(kubits[8]);
+            // Checking Extended key usage are clientAuth and emailProtection the values was not changed by CRMF.
+            List<String> l = cert.getExtendedKeyUsage();
+            assertEquals(2, l.size());
+            String s = l.get(0);
+            assertEquals(KeyPurposeId.id_kp_clientAuth.getId(), s);
+            s = l.get(1);
+            assertEquals(KeyPurposeId.id_kp_emailProtection.getId(), s);
+            
+            {
+             // Step 2 ->  If Allow Extension Override is setted to true but the OIDs for these extensions were added in the lists OverridableExtensionOIDs and NonOverridableExtensionOIDs these extensions will not be overridden.
+                CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);             
+                cp.setAllowExtensionOverride(true);
+                cp.getOverridableExtensionOIDs().add("2.5.29.15"); // <- keyUsage
+                cp.getOverridableExtensionOIDs().add("2.5.29.37"); // <- extendedKeyUsage
+                cp.getNonOverridableExtensionOIDs().add("2.5.29.15"); // <- keyUsage
+                cp.getNonOverridableExtensionOIDs().add("2.5.29.37"); // <- extendedKeyUsage
+                this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
+                
+            }
+            
+            one = genCertReq(ISSUER_DN, userDN, keys, this.cacert, nonce, transid, true, exts, null, null, null, null, null);
+            req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+
+            ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            assertNotNull(req);
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(req);
+            ba = bao.toByteArray();
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, cmpAlias);
+            checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            cert = checkCmpCertRepMessage(new X500Name(StringTools.strip(sUserDN)), this.cacert, resp, reqId);
+            
+            // Checking key usage are digitalsignature, nonrepudiation and keyencipherment the values was not changed by CRMF.
+            kubits = cert.getKeyUsage();
+            assertTrue(kubits[0]);
+            assertTrue(kubits[1]);
+            assertTrue(kubits[2]);
+            assertFalse(kubits[3]);
+            assertFalse(kubits[4]);
+            assertFalse(kubits[5]);
+            assertFalse(kubits[6]);
+            assertFalse(kubits[7]);
+            assertFalse(kubits[8]);
+            // Checking Extended key usage are clientAuth and emailProtection the values was not changed by CRMF.
+            l = cert.getExtendedKeyUsage();
+            assertEquals(2, l.size());
+            s = l.get(0);
+            assertEquals(KeyPurposeId.id_kp_clientAuth.getId(), s);
+            s = l.get(1);
+            assertEquals(KeyPurposeId.id_kp_emailProtection.getId(), s);
+            
+            {
+               // Step 3 ->  Allow Extension Override is setted to true.
+               //            Testing Key Usage as non overridable extension and
+               //            Extended Key Usage as overridable extension.
+               CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);             
+               cp.setAllowExtensionOverride(true);               
+               cp.getNonOverridableExtensionOIDs().remove("2.5.29.37"); // <- extendedKeyUsage
+               this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
+               
+           }
+           
+           one = genCertReq(ISSUER_DN, userDN, keys, this.cacert, nonce, transid, true, exts, null, null, null, null, null);
+           req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+
+           ir = (CertReqMessages) req.getBody().getContent();
+           reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+           assertNotNull(req);
+           bao = new ByteArrayOutputStream();
+           out = new DEROutputStream(bao);
+           out.writeObject(req);
+           ba = bao.toByteArray();
+           // Send request and receive response
+           resp = sendCmpHttp(ba, 200, cmpAlias);
+           checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+           cert = checkCmpCertRepMessage(new X500Name(StringTools.strip(sUserDN)), this.cacert, resp, reqId);
+           
+           // Checking key usage are digitalsignature, nonrepudiation and keyencipherment the values was not changed by CRMF. 
+           kubits = cert.getKeyUsage();
+           assertTrue(kubits[0]);
+           assertTrue(kubits[1]);
+           assertTrue(kubits[2]);
+           assertFalse(kubits[3]);
+           assertFalse(kubits[4]);
+           assertFalse(kubits[5]);
+           assertFalse(kubits[6]);
+           assertFalse(kubits[7]);
+           assertFalse(kubits[8]);
+           // Checking Extended key usage is codeSigning the value was changed by CRMF.
+           l = cert.getExtendedKeyUsage();
+           assertEquals(1, l.size());
+           s = l.get(0);
+           assertEquals(KeyPurposeId.id_kp_codeSigning.getId(), s);
+           
+           {
+              // Step 4 ->  Allow Extension Override is setted to true.
+              //            Testing Key Usage as overridable extension and
+              //            Extended Key Usage as overridable extension.
+              CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);             
+              cp.setAllowExtensionOverride(true);               
+              cp.getNonOverridableExtensionOIDs().remove("2.5.29.15"); // <- keyUsage
+              this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
+              
+          }
+          
+          one = genCertReq(ISSUER_DN, userDN, keys, this.cacert, nonce, transid, true, exts, null, null, null, null, null);
+          req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+
+          ir = (CertReqMessages) req.getBody().getContent();
+          reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+          assertNotNull(req);
+          bao = new ByteArrayOutputStream();
+          out = new DEROutputStream(bao);
+          out.writeObject(req);
+          ba = bao.toByteArray();
+          // Send request and receive response
+          resp = sendCmpHttp(ba, 200, cmpAlias);
+          checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+          cert = checkCmpCertRepMessage(new X500Name(StringTools.strip(sUserDN)), this.cacert, resp, reqId);
+          
+          // Checking key usage is decipherOnly the value was changed by CRMF.
+          kubits = cert.getKeyUsage();
+          assertFalse(kubits[0]);
+          assertFalse(kubits[1]);
+          assertFalse(kubits[2]);
+          assertFalse(kubits[3]);
+          assertFalse(kubits[4]);
+          assertFalse(kubits[5]);
+          assertFalse(kubits[6]);
+          assertFalse(kubits[7]);
+          assertTrue(kubits[8]);          
+          // Checking Extended key usage is codeSigning the value was changed by CRMF.
+          l = cert.getExtendedKeyUsage();
+          assertEquals(1, l.size());
+          s = l.get(0);
+          assertEquals(KeyPurposeId.id_kp_codeSigning.getId(), s);
+            
+        } finally {
+            try {
+                this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            } catch (NotFoundException e) {
+                log.debug("Failed to delete user: " + username);
+            }
+        }
+            
+    }
+    
+    @Test
+    public void test09CertificatePoliceOverwrite() throws Exception {
+        final String username = "overidetestuser";
+        final String sUserDN = "CN=" + username + ", C=SE";
+        final X500Name userDN = new X500Name(sUserDN);
+
+        final byte[] nonce = CmpMessageHelper.createSenderNonce();
+        final byte[] transid = CmpMessageHelper.createSenderNonce();
+        final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        
+        try {
+        {
+            // Certificate Profile customizing
+            // Step 1 ->  Checking the default behavior. Extensions may not be overrideden if Allow Extension Override is setted to false. 
+            final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            cp.setAllowExtensionOverride(false);
+            cp.setUseCertificatePolicies(true);
+            List<CertificatePolicy> l = cp.getCertificatePolicies();
+            assertEquals(0, l.size());
+            cp.addCertificatePolicy(new CertificatePolicy("1.1.1.1", "1.3.6.1.5.5.7.2.1", "https://ejbca.org/1"));
+            cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", "1.3.6.1.5.5.7.2.2", "My User Notice Text"));
+            cp.addCertificatePolicy(new CertificatePolicy("1.1.1.3", "1.3.6.1.5.5.7.2.1", "https://ejbca.org/3"));
+            l = cp.getCertificatePolicies();
+            assertEquals(3, l.size());
+            CertificatePolicy policy1 = l.get(0);
+            assertEquals("1.1.1.1", policy1.getPolicyID());
+            assertEquals("1.3.6.1.5.5.7.2.1", policy1.getQualifierId());
+            assertEquals("https://ejbca.org/1", policy1.getQualifier());
+            CertificatePolicy policy2 = l.get(1);
+            assertEquals("1.1.1.2", policy2.getPolicyID());
+            assertEquals("1.3.6.1.5.5.7.2.2", policy2.getQualifierId());
+            assertEquals("My User Notice Text", policy2.getQualifier());
+            CertificatePolicy policy3= l.get(2);
+            assertEquals("1.1.1.3", policy3.getPolicyID());
+            assertEquals("1.3.6.1.5.5.7.2.1", policy3.getQualifierId());
+            assertEquals("https://ejbca.org/3", policy3.getQualifier());
+            this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
+        }
+        // CRMF customizing
+        int reqId;
+        ExtensionsGenerator extgen = new ExtensionsGenerator();
+        
+        final ASN1EncodableVector policyqualifyseq1 = new ASN1EncodableVector();
+        PolicyQualifierInfo policyQualifierInfo1 = new PolicyQualifierInfo("https://ejbca.org/x1");
+        policyqualifyseq1.add(policyQualifierInfo1);
+        PolicyInformation pi1 = new PolicyInformation(new ASN1ObjectIdentifier("1.1.1.1"), new DERSequence(policyqualifyseq1));
+        final ASN1EncodableVector policyseq = new ASN1EncodableVector();
+        policyseq.add(pi1);
+        
+        final ASN1EncodableVector qualifyseq = new ASN1EncodableVector();
+        qualifyseq.add(new DERIA5String("My User X Notice Text"));
+        PolicyQualifierInfo policyQualifierInfo2 = new PolicyQualifierInfo(new ASN1ObjectIdentifier("1.3.6.1.5.5.7.2.2"), new DERSequence(qualifyseq));
+        final ASN1EncodableVector policyqualifyseq2 = new ASN1EncodableVector();
+        policyqualifyseq2.add(policyQualifierInfo2);
+        PolicyInformation pi2 = new PolicyInformation(new ASN1ObjectIdentifier("1.1.1.2"), new DERSequence(policyqualifyseq2));
+        policyseq.add(pi2);
+        
+        final ASN1EncodableVector policyqualifyseq3 = new ASN1EncodableVector();
+        PolicyQualifierInfo policyQualifierInfo3 = new PolicyQualifierInfo("https://ejbca.org/x3");
+        policyqualifyseq3.add(policyQualifierInfo3);
+        PolicyInformation pi3 = new PolicyInformation(new ASN1ObjectIdentifier("1.1.1.3"), new DERSequence(policyqualifyseq3));
+        policyseq.add(pi3);
+        extgen.addExtension(Extension.certificatePolicies, false, new DERSequence(policyseq));
+                
+        // Make the complete extension package
+        Extensions exts = extgen.generate();
+        
+        PKIMessage one = genCertReq(ISSUER_DN, userDN, keys, this.cacert, nonce, transid, true, exts, null, null, null, null, null);
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+        assertNotNull(req);
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        DEROutputStream out = new DEROutputStream(bao);
+        out.writeObject(req);
+        byte[] ba = bao.toByteArray();
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
+
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        X509Certificate cert = checkCmpCertRepMessage(new X500Name(StringTools.strip(sUserDN)), this.cacert, resp, reqId);
+                        
+        List<PolicyInformation> piList = CertTools.getCertificatePolicies(cert);
+        assertEquals("Should be 3 Cert Policies", 3, piList.size());
+        assertEquals("1.1.1.1", piList.get(0).getPolicyIdentifier().getId());
+        assertEquals("1.1.1.2", piList.get(1).getPolicyIdentifier().getId());
+        assertEquals("1.1.1.3", piList.get(2).getPolicyIdentifier().getId());
+        
+        //The first Policy object has a CPS URI
+        ASN1Encodable qualifier = piList.get(0).getPolicyQualifiers().getObjectAt(0);
+        //System.out.println(ASN1Dump.dumpAsString(qualifier));
+        PolicyQualifierInfo pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
+        assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
+        DERIA5String str = DERIA5String.getInstance(pqi.getQualifier());
+        assertEquals("https://ejbca.org/1", str.getString());
+        
+        // The second Policy object has a User Notice
+        qualifier = piList.get(1).getPolicyQualifiers().getObjectAt(0);
+        //System.out.println(ASN1Dump.dumpAsString(qualifier));
+        pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_unotice = 1.3.6.1.5.5.7.2.2
+        assertEquals(PolicyQualifierId.id_qt_unotice.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_unutice, we know this is a UserNotice
+        UserNotice un = UserNotice.getInstance(pqi.getQualifier());
+        assertEquals("My User Notice Text", un.getExplicitText().getString());
+        
+        // The third Policy object has both a CPS URI and a User Notice
+        qualifier = piList.get(2).getPolicyQualifiers().getObjectAt(0);
+        //System.out.println(ASN1Dump.dumpAsString(qualifier));
+        pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
+        assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
+        str = DERIA5String.getInstance(pqi.getQualifier());
+        assertEquals("https://ejbca.org/3", str.getString());
+        
+        {
+            final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            cp.setAllowExtensionOverride(true);
+            cp.getOverridableExtensionOIDs().add("2.5.29.32"); // <- certificatePolicies
+            cp.setUseCertificatePolicies(true);
+            List<CertificatePolicy> l = cp.getCertificatePolicies();
+            assertEquals(0, l.size());
+            cp.addCertificatePolicy(new CertificatePolicy("1.1.1.1", "1.3.6.1.5.5.7.2.1", "https://ejbca.org/1"));
+            cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", "1.3.6.1.5.5.7.2.2", "My User Notice Text"));
+            cp.addCertificatePolicy(new CertificatePolicy("1.1.1.3", "1.3.6.1.5.5.7.2.1", "https://ejbca.org/3"));
+            l = cp.getCertificatePolicies();
+            assertEquals(3, l.size());
+            CertificatePolicy policy1 = l.get(0);
+            assertEquals("1.1.1.1", policy1.getPolicyID());
+            assertEquals("1.3.6.1.5.5.7.2.1", policy1.getQualifierId());
+            assertEquals("https://ejbca.org/1", policy1.getQualifier());
+            CertificatePolicy policy2 = l.get(1);
+            assertEquals("1.1.1.2", policy2.getPolicyID());
+            assertEquals("1.3.6.1.5.5.7.2.2", policy2.getQualifierId());
+            assertEquals("My User Notice Text", policy2.getQualifier());
+            CertificatePolicy policy3= l.get(2);
+            assertEquals("1.1.1.3", policy3.getPolicyID());
+            assertEquals("1.3.6.1.5.5.7.2.1", policy3.getQualifierId());
+            assertEquals("https://ejbca.org/3", policy3.getQualifier());
+            this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
+        }
+        
+        // Make the complete extension package
+        one = genCertReq(ISSUER_DN, userDN, keys, this.cacert, nonce, transid, true, exts, null, null, null, null, null);
+        req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+
+        ir = (CertReqMessages) req.getBody().getContent();
+        reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+        assertNotNull(req);
+        bao = new ByteArrayOutputStream();
+        out = new DEROutputStream(bao);
+        out.writeObject(req);
+        ba = bao.toByteArray();
+        resp = sendCmpHttp(ba, 200, cmpAlias);
+
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        cert = checkCmpCertRepMessage(new X500Name(StringTools.strip(sUserDN)), this.cacert, resp, reqId);
+                        
+        piList = CertTools.getCertificatePolicies(cert);
+        assertEquals("Should be 3 Cert Policies", 3, piList.size());
+        assertEquals("1.1.1.1", piList.get(0).getPolicyIdentifier().getId());
+        assertEquals("1.1.1.2", piList.get(1).getPolicyIdentifier().getId());
+        assertEquals("1.1.1.3", piList.get(2).getPolicyIdentifier().getId());
+        
+        //The first Policy object has a CPS URI
+        qualifier = piList.get(0).getPolicyQualifiers().getObjectAt(0);
+        //System.out.println(ASN1Dump.dumpAsString(qualifier));
+        pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
+        assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
+        str = DERIA5String.getInstance(pqi.getQualifier());
+        assertEquals("https://ejbca.org/x1", str.getString());
+        
+        // The secound Policy object has a User Notice
+        qualifier = piList.get(1).getPolicyQualifiers().getObjectAt(0);
+        //System.out.println(ASN1Dump.dumpAsString(qualifier));
+        pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_unotice = 1.3.6.1.5.5.7.2.2
+        assertEquals(PolicyQualifierId.id_qt_unotice.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_unutice, we know this is a UserNotice
+        un = UserNotice.getInstance(pqi.getQualifier());
+        assertEquals("My User X Notice Text", un.getExplicitText().getString());
+        
+        // The third Policy object has both a CPS URI and a User Notice
+        qualifier = piList.get(2).getPolicyQualifiers().getObjectAt(0);
+        //System.out.println(ASN1Dump.dumpAsString(qualifier));
+        pqi = PolicyQualifierInfo.getInstance(qualifier);
+        // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
+        assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
+        // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
+        str = DERIA5String.getInstance(pqi.getQualifier());
+        assertEquals("https://ejbca.org/x3", str.getString());        
+        //The first Policy object has a CPS URI
+        
+        } finally {
+            try {
+                this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            } catch (NotFoundException e) {
+                log.debug("Failed to delete user: " + username);
+            }
+        }
+            
+    }
 
     @Override
     @After

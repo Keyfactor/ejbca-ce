@@ -41,6 +41,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.SimpleTimeZone;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -1058,17 +1059,37 @@ public class X509CA extends CA implements Serializable {
         // First we check if there is general extension override, and add all extensions from
         // the request in that case
         if (certProfile.getAllowExtensionOverride() && extensions != null) {
+            Set<String> overridableExtensionOIDs = certProfile.getOverridableExtensionOIDs();
+            Set<String> nonOverridableExtensionOIDs = certProfile.getNonOverridableExtensionOIDs();
             ASN1ObjectIdentifier[] oids = extensions.getExtensionOIDs();
             for(ASN1ObjectIdentifier oid : oids ) {
-                final Extension ext = extensions.getExtension(oid);
-                if (log.isDebugEnabled()) {
-                    log.debug("Overriding extension with oid: " + oid);
+                // Start by excluding non overridable extensions
+                // If there are no nonOverridableExtensionOIDs set, or if the set does not contain our oid, we allow it so move on
+                // (nonOverridableExtensionOIDs can never by null)
+                if (!nonOverridableExtensionOIDs.contains(oid.getId())) {
+                    // Now check if we have specified which ones are allowed, if this is not set we allow everything
+                    // (overridableExtensionOIDs can never by null)
+                    if (overridableExtensionOIDs.size() == 0 || overridableExtensionOIDs.contains(oid.getId())) {
+                        final Extension ext = extensions.getExtension(oid);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Overriding extension with oid: " + oid.getId());
+                        }
+                        try {
+                            extgen.addExtension(oid, ext.isCritical(), ext.getParsedValue());
+                        } catch (IOException e) {
+                            throw new IllegalStateException("Caught unexpected IOException.", e);
+                        }
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Extension is not among overridable extensions, ignoring extension from request with oid "+oid.getId());
+                        }
+                    }
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Extension is among non-overridable extensions, ignoring extension from request with oid "+oid.getId());
+                    }
                 }
-                try {
-                    extgen.addExtension(oid, ext.isCritical(), ext.getParsedValue());
-                } catch (IOException e) {
-                    throw new IllegalStateException("Caught unexpected IOException.", e);
-                }
+                
             }
         }
 
