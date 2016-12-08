@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -150,7 +151,7 @@ public abstract class DatabaseIndexUtil {
                         if (log.isTraceEnabled()) {
                             log.trace(" catalog: " + tableCatalog + " tableSchema: " + tableSchema + " tableName: " + tableName2 + " tableType: " + tableType);
                         }
-                        if ("TABLE".equalsIgnoreCase(tableType) && tableName.toUpperCase().equals(tableName2.toUpperCase())) {
+                        if ("TABLE".equals(tableType.toUpperCase(Locale.ENGLISH)) && tableName.toUpperCase(Locale.ENGLISH).equals(tableName2.toUpperCase(Locale.ENGLISH))) {
                             if (log.isDebugEnabled()) {
                                 log.debug("Will perform index detection on "+tableType+" in catalog " + null + " schema " + null + " table '" + tableName2 + "'.");
                             }
