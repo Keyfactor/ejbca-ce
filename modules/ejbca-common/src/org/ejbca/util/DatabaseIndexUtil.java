@@ -140,6 +140,9 @@ public abstract class DatabaseIndexUtil {
              * This is an attempt at a very defensive version where we assume as little as possible about the database and it's configuration.
              */
             final Map<String,DatabaseIndex> tableIndexMap = new HashMap<>();
+            // First try the simple case that has been shown to work on MariaDB 5.5 (but where the returned table name apparently does not work)
+            tableIndexMap.putAll(getDatabaseIndexMap(databaseMetaData, null, null, tableName, requireUnique));
+            // If this failed, try the searching for the table as returned by the database meta data
             if (tableIndexMap.isEmpty()) {
                 log.trace("Looking up all available tables available in the datasource to find a matching table.");
                 try (final ResultSet resultSetSchemas = databaseMetaData.getTables(null, null, null, null)) {
