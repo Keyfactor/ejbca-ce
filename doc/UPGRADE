@@ -28,6 +28,14 @@ $ ant web-configure
 All database upgrades require CREATE and ALTER TABLE privileges besides the regular SELECT, UPDATE, INSERT and DELETE. The SQL executed by 
 database upgrades code is available in "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 6.6.1 to EJBCA 6.7.0
+-------------------------------
+
+EJBCA 6.7.0 removes the value ocsp.responderidtype as read from ocsp.properties. The responder ID type (default keyhash) has, since the introduction 
+of Internal Key Bindings back in EJBCA 6.0.0, been set for each OCSP  keybinding individually, and thus the value from ocsp.properties has only been 
+used for CAs acting as their own responders. From EJBCA 6.7.0 this value will be set from the OCSP Keybindings tab instead of in ocsp.properties. 
+
+
 From EJBCA 6.6.0 to EJBCA 6.6.1
 -------------------------------
 

@@ -158,9 +158,23 @@ org.cesecore.keybind.InternalKeyBindingRules
 		</h3>
 		<h:panelGrid columns="3">
 			<h:selectOneMenu id="defaultResponderTarget" value="#{internalKeyBindingMBean.defaultResponderTarget}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" >
-				<f:selectItems value="#{internalKeyBindingMBean.defaultResponerTargets}"/>
+				<f:selectItems value="#{internalKeyBindingMBean.defaultResponderTargets}"/>
 			</h:selectOneMenu>
 			<h:commandButton action="#{internalKeyBindingMBean.saveDefaultResponder}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
+		</h:panelGrid>
+	</h:form>
+	
+	<h:form id="responderId" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
+		<h3>
+			<h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULT_RESPONDERIDTYPE}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
+			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULT_RESPONDERIDTYPE}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>			
+			<%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Responder%20ID%20Type%20for%20CAs") %>
+		</h3>
+		<h:panelGrid columns="3">
+			<h:selectOneMenu id="defaultResponderId" value="#{internalKeyBindingMBean.responderIdType}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" >
+				<f:selectItems value="#{internalKeyBindingMBean.responderIdTargets}"/>
+			</h:selectOneMenu>
+			<h:commandButton action="#{internalKeyBindingMBean.saveResponderIdType}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
 		</h:panelGrid>
 	</h:form>
 	<%	// Include Footer 

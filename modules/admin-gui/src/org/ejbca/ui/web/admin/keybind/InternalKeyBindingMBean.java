@@ -72,6 +72,8 @@ import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
+import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -234,6 +236,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private Integer uploadTarget = null;
     private UploadedFile uploadToTargetFile;
     private String defaultResponderTarget;
+    private OcspKeyBinding.ResponderIdType responderIdType;
 
     public String getSelectedInternalKeyBindingType() {
         final String typeHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("type");
@@ -301,7 +304,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
     
     @SuppressWarnings("unchecked")
-    public List<SelectItem/*<String,String>*/> getDefaultResponerTargets() {
+    public List<SelectItem/*<String,String>*/> getDefaultResponderTargets() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         ret.add(new SelectItem("", super.getEjbcaWebBean().getText("INTERNALKEYBINDING_OCSPKEYBINDING_NODEFAULTRESPONDER")));
         //Create a map so that we can exclude bounded CAs. 
@@ -336,12 +339,33 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
         return ret;
     }
+    
+    public List<SelectItem> getResponderIdTargets() {
+        List<SelectItem> selectItemList = new ArrayList<>();
+        for(ResponderIdType responderIdType : ResponderIdType.values()) {
+            selectItemList.add(new SelectItem(responderIdType, responderIdType.getLabel()));
+        }
+        return selectItemList;
+    }
 
     public void saveDefaultResponder() {
         GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         if (!defaultResponderTarget.equals(globalConfiguration.getOcspDefaultResponderReference())) {
             globalConfiguration.setOcspDefaultResponderReference(defaultResponderTarget);
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            }
+        }
+    }
+    
+    public void saveResponderIdType() {
+        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        if (!responderIdType.equals(globalConfiguration.getOcspResponderIdType())) {
+            globalConfiguration.setOcspResponderIdType(responderIdType);
             try {
                 globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
             } catch (AuthorizationDeniedException e) {
@@ -365,6 +389,16 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     
     public void setDefaultResponderTarget(String defaultResponderTarget) {
         this.defaultResponderTarget = defaultResponderTarget;
+    }
+    
+    public OcspKeyBinding.ResponderIdType getResponderIdType() {
+        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);  
+        responderIdType = configuration.getOcspResponderIdType();
+        return responderIdType;
+    }
+    
+    public void setResponderIdType(final OcspKeyBinding.ResponderIdType responderIdType) {
+        this.responderIdType = responderIdType;
     }
     
     /** Invoked when the user is trying to import a new certificate for an InternalKeyBinding */

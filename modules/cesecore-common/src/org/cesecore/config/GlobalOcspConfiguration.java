@@ -13,6 +13,8 @@
 package org.cesecore.config;
 
 import org.cesecore.configuration.ConfigurationBase;
+import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.util.CertTools;
 
 /**
@@ -26,6 +28,7 @@ public class GlobalOcspConfiguration extends ConfigurationBase {
     private static final long serialVersionUID = 1L;
 
     private static final String DEFAULT_OCSP_RESPONDER_REFERENCE = "defaultOcspResponderReference";
+    private static final String OCSP_RESPONDER_ID_TYPE_REFERENCE = "ocspResponderIdType";
     
     public String getOcspDefaultResponderReference() {
         return CertTools.stringToBCDNString((String) data.get(DEFAULT_OCSP_RESPONDER_REFERENCE));
@@ -35,6 +38,20 @@ public class GlobalOcspConfiguration extends ConfigurationBase {
         data.put(DEFAULT_OCSP_RESPONDER_REFERENCE, reference);
     }
     
+    @SuppressWarnings("deprecation")
+    public OcspKeyBinding.ResponderIdType getOcspResponderIdType() {
+        OcspKeyBinding.ResponderIdType ocspResponderIdType = (ResponderIdType) data.get(OCSP_RESPONDER_ID_TYPE_REFERENCE);
+        if(ocspResponderIdType == null) {
+            //Lazy upgrade if running from versions prior to 6.7.0
+            ocspResponderIdType = OcspKeyBinding.ResponderIdType.getFromNumericValue(OcspConfiguration.getResponderIdType());
+            setOcspResponderIdType(ocspResponderIdType);
+        }
+        return ocspResponderIdType;
+    }
+    
+    public void setOcspResponderIdType(OcspKeyBinding.ResponderIdType ocspResponderIdType) {
+        data.put(OCSP_RESPONDER_ID_TYPE_REFERENCE, ocspResponderIdType);
+    }
     
     @Override
     public void upgrade() {
