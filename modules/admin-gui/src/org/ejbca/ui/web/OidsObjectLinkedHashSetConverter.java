@@ -31,7 +31,7 @@ import javax.faces.convert.FacesConverter;
  * To Use:
  * <h:inputText ... converter="org.ejbca.OidsObjectLinkedHashSetConverter"/>
  *  
- * @version $Id: OidsObjectLinkedHashSetConverter.java 22095 2015-10-26 14:22:41Z anatom $
+ * @version $Id$
  */
 @FacesConverter(value="org.ejbca.OidsObjectLinkedHashSetConverter")
 public class OidsObjectLinkedHashSetConverter implements Converter {
