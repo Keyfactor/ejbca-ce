@@ -50,14 +50,14 @@ public class OcspSigningCacheEntry {
     private final X509Certificate issuerCaCertificate;
     private final CertificateStatus issuerCaCertificateStatus;
     private boolean responseSignatureVerified = false;
-    private final int responderIdType;
+    private final OcspKeyBinding.ResponderIdType responderIdType;
     private RespID respId;
     private final X509Certificate[] responseCertChain;
     private final boolean signingCertificateForOcspSigning;
 
     public OcspSigningCacheEntry(X509Certificate issuerCaCertificate, CertificateStatus issuerCaCertificateStatus,
             List<X509Certificate> signingCaCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
-            String signatureProviderName, OcspKeyBinding ocspKeyBinding, int responderIdType) {
+            String signatureProviderName, OcspKeyBinding ocspKeyBinding, OcspKeyBinding.ResponderIdType responderIdType) {
         this.caCertificateChain = signingCaCertificateChain;
         this.ocspSigningCertificate = ocspSigningCertificate;
         if (ocspSigningCertificate == null) {
@@ -91,7 +91,7 @@ public class OcspSigningCacheEntry {
             signingCertificateIssuerDnRaw = null;
         } else {
             // Pre-calculate the Responder ID
-            if (responderIdType == OcspConfiguration.RESPONDERIDTYPE_NAME) {
+            if (OcspKeyBinding.ResponderIdType.NAME.equals(responderIdType)) {
                 respId = new JcaRespID(signingCertificate.getSubjectX500Principal());
             } else {
                 try {
@@ -153,7 +153,7 @@ public class OcspSigningCacheEntry {
     public OcspKeyBinding getOcspKeyBinding() { return ocspKeyBinding; }
 
     /** @return one of the OcspConfiguration.RESPONDERIDTYPE_* values used by this cache entry */
-    public int getResponderIdType() { return responderIdType; }
+    public OcspKeyBinding.ResponderIdType getResponderIdType() { return responderIdType; }
 
     /** @return the actual responder type ASN1 object used by this cache entry */
     public RespID getRespId() { return respId; }

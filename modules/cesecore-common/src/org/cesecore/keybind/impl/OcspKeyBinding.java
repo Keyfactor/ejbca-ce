@@ -16,6 +16,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
@@ -36,7 +38,36 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     private static final Logger log = Logger.getLogger(OcspKeyBinding.class);
     
     public enum ResponderIdType {
-        KEYHASH, NAME;
+        KEYHASH(2, "KeyHash"), NAME(1, "Name");
+        
+        private final int numericValue;
+        private final String label;
+        private static Map<Integer, ResponderIdType> numericValueLookupMap;
+        
+        static {
+            numericValueLookupMap = new HashMap<>();
+            for(ResponderIdType responderIdType : ResponderIdType.values()) {
+                numericValueLookupMap.put(responderIdType.getNumericValue(), responderIdType);
+            }
+        }
+        
+        private ResponderIdType(int numericValue, String label) {
+            this.numericValue = numericValue;
+            this.label = label;
+        }
+        
+        public int getNumericValue() {
+            return numericValue;
+        }
+        
+        public String getLabel() {
+            return label;
+        }
+        
+        public static ResponderIdType getFromNumericValue(int numericValue) {
+            return numericValueLookupMap.get(Integer.valueOf(numericValue));
+        }
+
     }
 
     public static final String IMPLEMENTATION_ALIAS = "OcspKeyBinding"; // This should not change, even if we rename the class in EJBCA 5.3+..

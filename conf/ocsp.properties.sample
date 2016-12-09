@@ -33,11 +33,6 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # Default true 
 #ocsp.includesignercert=true
 
-# Defines the ResponderID type as defined in RFC2560. Set to name for the Name type and keyhash for the KeyHash type.
-# Possible values: name, keyhash
-# Default: keyhash 
-#ocsp.responderidtype=keyhash
-
 # Specifies which signature algorithms should be used on OCSP responses. You can specify several algorithm
 # separated by ';'. If RSA keys are used in the OCSP signing certificate, the algorithm with RSA will be used, and
 # if ECDSA keys are used in the OCSP signing certificate, the algorithm with ECDSA will be used and if 

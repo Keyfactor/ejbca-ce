@@ -60,6 +60,8 @@ public class OcspConfiguration {
     public static final String REVOKED_MAX_AGE = "ocsp.revoked.maxAge";
     public static final String INCLUDE_SIGNING_CERT = "ocsp.includesignercert";
     public static final String INCLUDE_CERT_CHAIN = "ocsp.includecertchain";
+    
+    @Deprecated //Remove this value once upgrading to 6.7.0 has been dropped
     public static final String RESPONDER_ID_TYPE = "ocsp.responderidtype";
     
     @Deprecated //Remove this value once upgrading VAs to EJBCA 6 has been dropped
@@ -67,7 +69,9 @@ public class OcspConfiguration {
     @Deprecated //Remove this value once upgrading VAs to EJBCA 6 has been dropped
     public static final int RESTRICTONSIGNER = 1;
 
+    @Deprecated //Remove this value once upgrading to 6.7.0 has been dropped
     public static final int RESPONDERIDTYPE_NAME = 1;
+    @Deprecated //Remove this value once upgrading to 6.7.0 has been dropped
     public static final int RESPONDERIDTYPE_KEYHASH = 2;
 
     public static Set<String> acceptedSignatureAlgorithms = new HashSet<String>();
@@ -202,7 +206,10 @@ public class OcspConfiguration {
      * If set to name the OCSP responses will use the Name ResponseId type, if set to keyhash the KeyHash type will be used.
      * 
      * @returns one of OCSPUtil.RESPONDERIDTYPE_NAME and OCSPUtil.RESPONDERIDTYPE_KEYHASH
+     * 
+     * @deprecated no longer used, as responder ID type is instead set individually for each keybinding and CA
      */
+    @Deprecated
     public static int getResponderIdType() {
         if ("name".equalsIgnoreCase(ConfigurationHolder.getString(RESPONDER_ID_TYPE))) {
             return RESPONDERIDTYPE_NAME;
