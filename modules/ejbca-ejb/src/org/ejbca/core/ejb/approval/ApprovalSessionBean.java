@@ -391,12 +391,13 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public List<ApprovalDataVO> queryByStatus(final boolean includeUnfinished, final boolean includeProcessed, int index, int numberofrows, String caAuthorizationString,
+    public List<ApprovalDataVO> queryByStatus(final boolean includeUnfinished, final boolean includeProcessed, final boolean includeExpired,
+            final Date startDate, final Date endDate, int index, int numberofrows, String caAuthorizationString,
             String endEntityProfileAuthorizationString) {
         log.trace(">queryByStatus()");
         
-        if (!includeUnfinished && !includeProcessed) {
-            throw new IllegalArgumentException("At least one of includeUnfinished or includeProcessed must be true");
+        if (!includeUnfinished && !includeProcessed && !includeExpired) {
+            throw new IllegalArgumentException("At least one of includeUnfinished, includeProcessed or includeExpired must be true");
         }
         
         final StringBuilder sb = new StringBuilder();
@@ -404,13 +405,23 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         String orderByString = null;
         sb.append('(');
         boolean first = true;
-        if (includeUnfinished) {
-            // Do not include expired requests
-            sb.append("(expireDate >= ");
-            sb.append(new Date().getTime());
-            sb.append(" AND ");
+        if (includeUnfinished || includeExpired) {
+            sb.append('(');
+            if (includeUnfinished && includeExpired) {
+                // No additional filtering
+            } else if (includeExpired) {
+                // Only include expired requests
+                sb.append("expireDate < ");
+                sb.append(new Date().getTime());
+                sb.append(" AND ");
+            } else {
+                // Do not include expired requests
+                sb.append("expireDate >= ");
+                sb.append(new Date().getTime());
+                sb.append(" AND ");
+            }
             // "STATUS_APPROVED" means that the request is still waiting to be executed by the requester
-            sb.append("status IN (" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL + ", " + ApprovalDataVO.STATUS_APPROVED + "))");
+            sb.append("status IN (" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL + ", " + ApprovalDataVO.STATUS_APPROVED + (includeExpired ? ", " + ApprovalDataVO.STATUS_EXPIRED + ", " + ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED : "") + "))");
             orderByString = "ORDER BY requestDate ASC"; // oldest first
             first = false;
         }
@@ -422,6 +433,13 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             first = false;
         }
         sb.append(')');
+        
+        if (startDate != null) {
+            sb.append(" AND requestDate >= " + startDate.getTime());
+        }
+        if (endDate != null) {
+            sb.append(" AND requestDate < " + (endDate.getTime() + 24*60*60*1000)); 
+        }
         
         final List<ApprovalDataVO> ret = queryInternal(sb.toString(), index, numberofrows,
                 caAuthorizationString, endEntityProfileAuthorizationString,

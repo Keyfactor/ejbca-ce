@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -311,9 +312,15 @@ public class RaApprovalRequestInfo implements Serializable {
         return !isWaitingForMe(admin) && !isProcessed();
     }
     
+    public boolean isExpired(final Date now) {
+        return approvalData.getExpireDate().before(now) && !isProcessed();
+    }
+    
     public boolean isProcessed() {
         return status != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && 
-               status != ApprovalDataVO.STATUS_APPROVED;
+               status != ApprovalDataVO.STATUS_APPROVED &&
+               status != ApprovalDataVO.STATUS_EXPIRED &&
+               status != ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED;
     }
     
     public boolean isRequestedByMe() {
