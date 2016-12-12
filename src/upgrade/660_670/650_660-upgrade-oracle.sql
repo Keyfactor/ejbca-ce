@@ -1,0 +1,7 @@
+-- To allow issuance of certificates with only Subject Alternative names, writing certificates with
+-- and empty Subject DN must be allowed.
+--
+-- Since Oracle treats an empty string ('') as NULL, the current NOT NULL constraint must be
+-- if such certificates should be issued relaxed.
+--
+-- ALTER TABLE CertificateData MODIFY subjectDN NULL;

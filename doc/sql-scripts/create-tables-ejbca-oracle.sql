@@ -147,7 +147,7 @@ CREATE TABLE CertificateData (
     serialNumber VARCHAR2(255 byte) NOT NULL,
     status NUMBER(10) NOT NULL,
     subjectAltName VARCHAR2(2000 byte),
-    subjectDN VARCHAR2(400 byte) NOT NULL,
+    subjectDN VARCHAR2(400 byte) NULL,
     subjectKeyId VARCHAR2(255 byte),
     tag VARCHAR2(255 byte),
     type NUMBER(10) NOT NULL,
