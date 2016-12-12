@@ -326,8 +326,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         final ApprovalRequest approvalRequest = advo.getApprovalRequest();
-        final String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(advo.getEndEntityProfileiId());
-        final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(advo.getEndEntityProfileiId());
+        final String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(advo.getEndEntityProfileId());
+        final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(advo.getEndEntityProfileId());
         final String certificateProfileName;
         if (approvalRequest instanceof AddEndEntityApprovalRequest) {
             certificateProfileName = certificateProfileSession.getCertificateProfileName(((AddEndEntityApprovalRequest)approvalRequest).getEndEntityInformation().getCertificateProfileId());

@@ -135,10 +135,10 @@ public class ApprovalDataVOView implements Serializable {
             return "TestProfile";
         }
         EjbcaJSFHelper helpBean = EjbcaJSFHelper.getBean();
-        if (data.getEndEntityProfileiId() == ApprovalDataVO.ANY_ENDENTITYPROFILE) {
+        if (data.getEndEntityProfileId() == ApprovalDataVO.ANY_ENDENTITYPROFILE) {
             return helpBean.getEjbcaWebBean().getText("ANYENDENTITYPROFILE", true);
         }
-        return ejbLocalHelper.getEndEntityProfileSession().getEndEntityProfileName(data.getEndEntityProfileiId());
+        return ejbLocalHelper.getEndEntityProfileSession().getEndEntityProfileName(data.getEndEntityProfileId());
     }
 
     public String getRemainingApprovals() {

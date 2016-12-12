@@ -342,7 +342,7 @@ public class ApprovalSessionTest extends CaTestCase {
             cleanUpList.add(next.getId());
             assertEquals("Status was expired and not waiting.", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, next.getStatus());
             assertEquals(caid, next.getCAId());
-            assertEquals(SecConst.EMPTY_ENDENTITYPROFILE, next.getEndEntityProfileiId());
+            assertEquals(SecConst.EMPTY_ENDENTITYPROFILE, next.getEndEntityProfileId());
             assertEquals(CertTools.getIssuerDN(reqadmincert), next.getReqadmincertissuerdn());
             assertEquals(CertTools.getSerialNumberAsString(reqadmincert), next.getReqadmincertsn());
             assertEquals(nonExecutableRequest.generateApprovalId(), next.getApprovalId());
