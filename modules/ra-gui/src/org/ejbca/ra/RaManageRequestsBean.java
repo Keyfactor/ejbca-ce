@@ -13,6 +13,8 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,6 +27,7 @@ import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -65,6 +68,12 @@ public class RaManageRequestsBean implements Serializable {
     
     private enum ViewTab { NEEDS_APPROVAL, PENDING_APPROVAL, PROCESSED, CUSTOM_SEARCH };
     private ViewTab viewTab;
+    private boolean customSearchingWaiting;
+    private boolean customSearchingPending;
+    private boolean customSearchingProcessed;
+    private boolean customSearchingExpired;
+    private String customSearchStartDate;
+    private String customSearchEndDate;
     
     private enum SortBy { ID, REQUEST_DATE, CA, TYPE, DISPLAY_NAME, REQUESTER_NAME, STATUS };
     private SortBy sortBy = SortBy.REQUEST_DATE;
@@ -133,14 +142,27 @@ public class RaManageRequestsBean implements Serializable {
     }
     
     
-    private void searchAndFilter() {
+    public void searchAndFilter() {
         final RaRequestsSearchRequest searchRequest = new RaRequestsSearchRequest();
         switch (viewTab) {
         case CUSTOM_SEARCH:
             // TODO implement custom search (needed for ECA-5124)
-            searchRequest.setSearchingWaitingForMe(true);
-            searchRequest.setSearchingPending(true);
-            searchRequest.setSearchingHistorical(true);
+            searchRequest.setSearchingWaitingForMe(customSearchingWaiting);
+            searchRequest.setSearchingPending(customSearchingPending);
+            searchRequest.setSearchingHistorical(customSearchingProcessed);
+            searchRequest.setSearchingExpired(customSearchingExpired);
+            try {
+                // TODO timezone?
+                if (!StringUtils.isBlank(customSearchStartDate)) {
+                    searchRequest.setStartDate(new SimpleDateFormat("yyyy-MM-dd").parse(customSearchStartDate.trim()));
+                }
+                if (!StringUtils.isBlank(customSearchEndDate)) {
+                    searchRequest.setEndDate(new SimpleDateFormat("yyyy-MM-dd").parse(customSearchEndDate.trim()));
+                }
+            } catch (ParseException e) {
+                // Text field is validated by f:validateRegex, so shouldn't happen
+                throw new IllegalStateException("Invalid date value", e);
+            }
             break;
         case NEEDS_APPROVAL:
             searchRequest.setSearchingWaitingForMe(true);
@@ -161,6 +183,19 @@ public class RaManageRequestsBean implements Serializable {
         resultsFiltered = guiInfos;
         sort();
     }
+    
+    public boolean isCustomSearchingWaiting() { return customSearchingWaiting; }
+    public void setCustomSearchingWaiting(final boolean customSearchingWaiting) { this.customSearchingWaiting = customSearchingWaiting; }
+    public boolean isCustomSearchingPending() { return customSearchingPending; }
+    public void setCustomSearchingPending(final boolean customSearchingPending) { this.customSearchingPending = customSearchingPending; }
+    public boolean isCustomSearchingProcessed() { return customSearchingProcessed; }
+    public void setCustomSearchingProcessed(final boolean customSearchingProcessed) { this.customSearchingProcessed = customSearchingProcessed; }
+    public boolean isCustomSearchingExpired() { return customSearchingExpired; }
+    public void setCustomSearchingExpired(final boolean customSearchingExpired) { this.customSearchingExpired = customSearchingExpired; }
+    public String getCustomSearchStartDate() { return customSearchStartDate; }
+    public void setCustomSearchStartDate(final String startDate) { this.customSearchStartDate = StringUtils.trim(startDate); }
+    public String getCustomSearchEndDate() { return customSearchEndDate; }
+    public void setCustomSearchEndDate(final String endDate) { this.customSearchEndDate = StringUtils.trim(endDate); }
     
     public List<ApprovalRequestGUIInfo> getFilteredResults() {
         getViewedTab(); // make sure we have all data

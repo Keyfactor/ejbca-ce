@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.approval;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.ejb.EJB;
@@ -44,9 +45,9 @@ public class ApprovalSessionProxyBean implements ApprovalSessionProxyRemote {
     }
 
     @Override
-    public List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, int index, int numberofrows,
-            String caAuthorizationString, String endEntityProfileAuthorizationString) {
-        return approvalSession.queryByStatus(includeUnfinished, includeProcessed, index, numberofrows, caAuthorizationString,
+    public List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, boolean includeExpired, Date startDate, Date endDate,
+            int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString) {
+        return approvalSession.queryByStatus(includeUnfinished, includeProcessed, includeExpired, startDate, endDate, index, numberofrows, caAuthorizationString,
                 endEntityProfileAuthorizationString);
     }
 

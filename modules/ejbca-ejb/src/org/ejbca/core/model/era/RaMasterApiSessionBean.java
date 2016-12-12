@@ -26,6 +26,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -484,7 +485,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             caIdToNameMap.put(cainfo.getCAId(), cainfo.getName());
         }
         
-        if (!request.isSearchingWaitingForMe() && !request.isSearchingPending() && !request.isSearchingHistorical()) {
+        if (!request.isSearchingWaitingForMe() && !request.isSearchingPending() && !request.isSearchingHistorical() && !request.isSearchingExpired()) {
             return response; // not searching for anything. return empty response
         }
         
@@ -495,11 +496,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     accessControlSession, null, caSession, endEntityProfileSession,  
                     approvalProfileSession);
             approvals = approvalSession.queryByStatus(request.isSearchingWaitingForMe() || request.isSearchingPending(), request.isSearchingHistorical(),
-                    0, 100, raAuthorization.getCAAuthorizationString(), endEntityProfileAuthorizationString);
+                    request.isSearchingExpired(), request.getStartDate(), request.getEndDate(), 0, 100, raAuthorization.getCAAuthorizationString(), endEntityProfileAuthorizationString);
         } catch (AuthorizationDeniedException e) {
             // Not currently ever thrown by query()
             throw new IllegalStateException(e);
         }
+        final Date now = new Date();
         
         if (log.isDebugEnabled()) {
             log.debug("Got " + approvals.size() + " approvals from Master API");
@@ -516,9 +518,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // That information is only needed when viewing the details or editing a request.
             final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, caIdToNameMap.get(advo.getCAId()), null, null, null, advo, requestDataLite, editableData);
             
+            // TODO ability to search for stuff from all admins
             if ((request.isSearchingWaitingForMe() && ari.isWaitingForMe(authenticationToken)) ||
                     (request.isSearchingPending() && ari.isPending(authenticationToken)) ||
-                    (request.isSearchingHistorical() && ari.isProcessed())) {
+                    (request.isSearchingHistorical() && ari.isProcessed()) ||
+                    (request.isSearchingExpired() && ari.isExpired(now))) {
                 // This approval should be included in the search results
                 response.getApprovalRequests().add(ari);
             }
