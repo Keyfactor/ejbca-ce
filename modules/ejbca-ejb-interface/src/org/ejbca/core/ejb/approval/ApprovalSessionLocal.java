@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.approval;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import javax.ejb.Local;
@@ -101,6 +102,9 @@ public interface ApprovalSessionLocal extends ApprovalSession {
       * Returns a list of non-expired approvals with the given statuses.
       * @param includeUnfinished Includes requests that haven't been executed or rejected yet.
       * @param includeProcessed Includes requests that have been approved and executed, or rejected.
+      * @param includeExpired Includes requests that have expired.
+      * @param startDate Include requests from this date and later, or null for no limit.
+      * @param endDate Include requests up to this date, or null for no limit.
       * @param index where the ResultSet should start
       * @param numberofrows maximum number of rows
       * @param caAuthorizationString
@@ -111,6 +115,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
       *            only
       * @return a List of ApprovalDataVO, never null
       */
-     List<ApprovalDataVO> queryByStatus(final boolean includeUnfinished, final boolean includeProcessed, int index, int numberofrows, String caAuthorizationString,
+     List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, boolean includeExpired,
+             final Date startDate, final Date endDate, int index, int numberofrows, String caAuthorizationString,
              String endEntityProfileAuthorizationString);
 }
