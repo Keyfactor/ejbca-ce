@@ -59,6 +59,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.ProfileID;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -129,6 +130,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     // Additional dependencies from the services we executeServiceInTransaction
     @EJB
     private ApprovalSessionLocal approvalSession;
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private EndEntityAuthenticationSessionLocal authenticationSession;
     @EJB
@@ -633,6 +636,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             // we have circular dependencies!
             Map<Class<?>, Object> ejbs = new HashMap<Class<?>, Object>();
             ejbs.put(ApprovalSessionLocal.class, approvalSession);
+            ejbs.put(ApprovalProfileSessionLocal.class, approvalProfileSession);
             ejbs.put(EndEntityAuthenticationSessionLocal.class, authenticationSession);
             ejbs.put(AccessControlSessionLocal.class, authorizationSession);
             ejbs.put(CAAdminSessionLocal.class, caAdminSession);
