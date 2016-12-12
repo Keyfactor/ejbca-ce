@@ -67,7 +67,7 @@ public class ApprovalDataVO implements Serializable {
     private int id = 0;
     private int approvalId = 0;
     private int approvalType = 0;
-    private int endEntityProfileiId = 0;
+    private int endEntityProfileId = 0;
     private int cAId = 0;
     private String reqadmincertissuerdn = null;
     private String reqadmincertsn = null;
@@ -104,7 +104,7 @@ public class ApprovalDataVO implements Serializable {
 		this.id = id;
 		this.approvalId = approvalId;
 		this.approvalType = approvalType;
-		this.endEntityProfileiId = endEntityProfileiId;
+		this.endEntityProfileId = endEntityProfileiId;
 		this.cAId = cAId;
 		this.reqadmincertissuerdn = reqadmincertissuerdn;
 		this.reqadmincertsn = reqadmincertsn;
@@ -169,10 +169,10 @@ public class ApprovalDataVO implements Serializable {
 	 *  For RA specific approval requests should the related end entity profile id be specified
      *  for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE
      *                       
-	 * @return Returns the endEntityProfileiId.
+	 * @return Returns the endEntityProfileId.
 	 */
-	public int getEndEntityProfileiId() {
-		return endEntityProfileiId;
+	public int getEndEntityProfileId() {
+		return endEntityProfileId;
 	}
 	
 	/**
