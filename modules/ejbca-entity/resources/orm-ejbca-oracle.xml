@@ -42,7 +42,8 @@
         <attributes>
             <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR2(255 byte)"/></id>
             <basic fetch="EAGER" name="issuerDN"><column name="issuerDN" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR2(400 byte)" nullable="false"/></basic>
+            <!-- The subjectDN-field is nullable on Oracle to allow insert of empty Strings. There is special handling in the code for this use-case. -->
+            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR2(400 byte)" nullable="true"/></basic>
             <basic fetch="EAGER" name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="type"><column name="type" column-definition="NUMBER(10)" nullable="false"/></basic>
