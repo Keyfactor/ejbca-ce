@@ -10,7 +10,7 @@ EJBCA 6.6.1
 -----------
 The first patch release in the 6.6 branch, EJBCA 6.6.1 brings a few bugfixes and several improvements, both in functionality and in performance.
 
-The most notable changes are.
+The most notable changes are:
 
 Features:
 - New features related to Validity. You can now configure certificate validity down to minutes and seconds, and certificate start offset which was
