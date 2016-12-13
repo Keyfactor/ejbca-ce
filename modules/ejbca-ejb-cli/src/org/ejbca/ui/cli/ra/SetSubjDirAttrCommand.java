@@ -17,12 +17,14 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -80,13 +82,9 @@ public class SetSubjDirAttrCommand extends BaseRaCommand {
             getLogger().error("Not authorized to change end entity.");
         } catch (UserDoesntFullfillEndEntityProfile e) {
             getLogger().error("Given end entity doesn't fullfill end entity profile. : " + e.getMessage());
-        } catch (CADoesntExistsException e) {
+        } catch (CADoesntExistsException | WaitingForApprovalException| ApprovalException | CertificateSerialNumberException | IllegalNameException e) {
             getLogger().error("ERROR: " + e.getMessage());
-        } catch (WaitingForApprovalException e) {
-            getLogger().error("ERROR: " + e.getMessage());
-        } catch (EjbcaException e) {
-            getLogger().error("ERROR: " + e.getMessage());
-        }
+        } 
         return CommandResult.FUNCTIONAL_FAILURE;
     }
 

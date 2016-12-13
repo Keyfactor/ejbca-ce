@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
-import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -124,7 +123,6 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.UserDoesntFullfillEndEntityProfileRaException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -1161,7 +1159,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public void deleteUser(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException{
         try {
             endEntityManagementSessionLocal.deleteUser(admin, username);
-        } catch (NotFoundException | RemoveException e) {
+        } catch (NoSuchEndEntityException | RemoveException e) {
             log.error(e);
         }
     }
@@ -1184,7 +1182,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 | CertificateCreateException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException
                 | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException | InvalidAlgorithmException
                 | CustomCertificateSerialNumberException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException
-                | UserDoesntFullfillEndEntityProfile | FinderException | CertificateSignatureException e) {
+                | UserDoesntFullfillEndEntityProfile | CertificateSignatureException | NoSuchEndEntityException e) {
             throw new KeyStoreGeneralRaException(e);
         }
       
@@ -1248,7 +1246,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 return true;
             } catch (AuthorizationDeniedException e) {
                 log.info("Client '"+authenticationToken+"' requested status change of certificate '"+fingerprint+"' but is not authorized to revoke certificates.");
-            } catch (FinderException e) {
+            } catch (NoSuchEndEntityException e) {
                 // The certificate did exist a few lines ago, but must have been removed since then. Treat this like it never existed
                 log.info("Client '"+authenticationToken+"' requested status change of certificate '"+fingerprint+"' that does not exist.");
             }

@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
 
-import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
@@ -83,13 +82,13 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.GenerateToken;
@@ -291,7 +290,7 @@ public class KeyRecoveryTest extends CaTestCase {
      */
     @Test
     public void testAuthorizationForKeyRecovery()
-            throws ApprovalException, WaitingForApprovalException, AuthorizationDeniedException, NotFoundException, RemoveException, CADoesntExistsException {
+            throws ApprovalException, WaitingForApprovalException, AuthorizationDeniedException, NoSuchEndEntityException, RemoveException, CADoesntExistsException {
         X509Certificate cert1 = null;
         String fp1 = null;
         KeyPair keypair1 = null;
@@ -311,7 +310,7 @@ public class KeyRecoveryTest extends CaTestCase {
                             AccessRuleState.RULE_ACCEPT, false));
                     roleManagementSession.addAccessRulesToRole(internalAdmin, roleAccessSession.findRole(KEYRECOVERY_ROLE), accessRules);
                 } catch (InvalidAlgorithmParameterException | CADoesntExistsException | EndEntityExistsException | AuthorizationDeniedException
-                        | UserDoesntFullfillEndEntityProfile | EjbcaException | ObjectNotFoundException | IllegalKeyException
+                        | UserDoesntFullfillEndEntityProfile | EjbcaException | NoSuchEndEntityException | IllegalKeyException
                         | CertificateCreateException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException
                         | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException | InvalidAlgorithmException
                         | CustomCertificateSerialNumberException | RoleNotFoundException e) {

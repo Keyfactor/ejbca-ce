@@ -17,7 +17,6 @@ import java.security.cert.Certificate;
 import java.util.Date;
 
 import javax.ejb.Local;
-import javax.ejb.ObjectNotFoundException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -105,7 +104,6 @@ public interface SignSessionLocal extends SignSession {
      * @param pk       the public key to be put in the created certificate.
      * @return The newly created certificate or null.
      * 
-     * @throws ObjectNotFoundException if the user does not exist.
      * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
      * @throws CADoesntExistsException if the CA defined by caId doesn't exist.
      * @throws AuthStatusException     If the users status is incorrect.
@@ -121,11 +119,12 @@ public interface SignSessionLocal extends SignSession {
      * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile.
      * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
      *             missing unique index in database, or certificate profile does not allow it
+     * @throws NoSuchEndEntityException if the end entity was not found
      */
-    Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk) throws ObjectNotFoundException,
+    Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk) throws
             CADoesntExistsException, AuthorizationDeniedException, IllegalKeyException, CertificateCreateException, IllegalNameException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
-            InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException;
+            InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, NoSuchEndEntityException;
     
     /**
      * Requests for a certificate to be created for the passed public key with the passed key
@@ -145,7 +144,7 @@ public interface SignSessionLocal extends SignSession {
      * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
      * @return The newly created certificate or null.
      * 
-     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws NoSuchEndEntityException if the user does not exist.
      * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
      * @throws CADoesntExistsException if the CA defined by caId doesn't exist.
      * @throws AuthStatusException     If the users status is incorrect.
@@ -164,10 +163,10 @@ public interface SignSessionLocal extends SignSession {
      *             
      */
     Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore,
-            Date notAfter) throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, AuthStatusException,
+            Date notAfter) throws CADoesntExistsException, AuthorizationDeniedException, AuthStatusException,
             AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            CustomCertificateSerialNumberException;
+            CustomCertificateSerialNumberException, NoSuchEndEntityException;
     
     /**
      * Requests for a certificate to be created for the passed public key with the passed key
@@ -196,7 +195,6 @@ public interface SignSessionLocal extends SignSession {
      * 
      * @return The newly created certificate or null.
      * 
-     * @throws ObjectNotFoundException if the user does not exist.
      * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
      * @throws CADoesntExistsException if the CA defined by caId doesn't exist.
      * @throws AuthStatusException     If the users status is incorrect.
@@ -212,13 +210,14 @@ public interface SignSessionLocal extends SignSession {
      * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile.
      * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
      *             missing unique index in database, or certificate profile does not allow it
+     * @throws NoSuchEndEntityException if the user does not exist.
      * 
      */
      Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore,
-            Date notAfter, int certificateprofileid, int caid) throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException,
+            Date notAfter, int certificateprofileid, int caid) throws CADoesntExistsException, AuthorizationDeniedException,
             AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
-            InvalidAlgorithmException, CustomCertificateSerialNumberException;
+            InvalidAlgorithmException, CustomCertificateSerialNumberException, NoSuchEndEntityException;
 
 
 }

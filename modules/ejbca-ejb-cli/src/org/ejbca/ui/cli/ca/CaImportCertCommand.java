@@ -23,16 +23,16 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.ejb.FinderException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevocationReasons;
@@ -45,16 +45,17 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -277,8 +278,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                         endEntityManagementSession.setUserStatus(getAuthenticationToken(),
                                 username, EndEntityConstants.STATUS_REVOKED);
                     }
-                } catch (FinderException e) {
-                    // FIXME: Is this really the right exception to toss?
+                } catch (NoSuchEndEntityException e) {
                     throw new IllegalStateException("Newly added end entity could not be located", e);
                 }
 
@@ -310,8 +310,18 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         } catch (WaitingForApprovalException e) {
             log.error("Approval is required to add End Entity.");
             return CommandResult.FUNCTIONAL_FAILURE;
-        } catch (EjbcaException e) {
-            throw new IllegalStateException("Unknown error was caught", e);
+        } catch (CertificateSerialNumberException e) {
+            log.error(e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (IllegalNameException e) {
+            log.error(e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (ApprovalException e) {
+            log.error(e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (CustomFieldException e) {
+            log.error(e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
 
         int certificateType = CertificateConstants.CERTTYPE_ENDENTITY;
@@ -331,7 +341,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                 } catch (RevokeBackDateNotAllowedForProfileException e) {
                     log.error(e.getMessage());
                     return CommandResult.FUNCTIONAL_FAILURE;
-                } catch (FinderException e) {
+                } catch (NoSuchEndEntityException e) {
                     log.error(e.getMessage());
                     return CommandResult.FUNCTIONAL_FAILURE;
                 } catch (WaitingForApprovalException e) {

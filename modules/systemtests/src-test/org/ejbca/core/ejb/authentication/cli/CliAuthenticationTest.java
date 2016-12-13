@@ -51,9 +51,9 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.crypto.CryptoTools;
 import org.junit.After;
@@ -112,7 +112,7 @@ public class CliAuthenticationTest {
     public void tearDown() throws Exception {
         try {
             endEntityManagementSession.deleteUser(internalToken, CliAuthenticationTestHelperSessionRemote.USERNAME);
-        } catch (NotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             // NOPMD
         }
         try {

@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.ejb.EJB;
-import javax.ejb.FinderException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -47,6 +46,7 @@ import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -140,7 +140,7 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
                         endentityManagementSession.revokeCert(authenticationToken, serialNumber, crlEntry.getRevocationDate(), issuerDn, reasonCode, false);
                     } catch (AlreadyRevokedException e) {
                         log.warn("Failed to revoke '" + serialHex + "'. (Status might be 'Archived'.) Error message was: " + e.getMessage());
-                    } catch (ApprovalException | RevokeBackDateNotAllowedForProfileException | FinderException | WaitingForApprovalException e) {
+                    } catch (ApprovalException | RevokeBackDateNotAllowedForProfileException | NoSuchEndEntityException | WaitingForApprovalException e) {
                         throw new CrlImportException("Failed to revoke certificate with serial number " + serialHex, e);
                     }
                     

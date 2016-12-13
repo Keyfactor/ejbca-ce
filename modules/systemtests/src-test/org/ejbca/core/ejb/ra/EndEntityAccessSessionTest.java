@@ -21,6 +21,8 @@ import javax.ejb.RemoveException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -31,7 +33,9 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
@@ -69,9 +73,15 @@ public class EndEntityAccessSessionTest extends CaTestCase {
      * @throws UserDoesntFullfillEndEntityProfile 
      * @throws EndEntityExistsException 
      * @throws RemoveException 
+     * @throws CertificateSerialNumberException 
+     * @throws IllegalNameException 
+     * @throws ApprovalException 
+     * @throws CustomFieldException 
      */
     @Test
-    public void testFindUserBySubjectAndIssuerDnWithMultipleUsers() throws CADoesntExistsException, AuthorizationDeniedException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, RemoveException {
+    public void testFindUserBySubjectAndIssuerDnWithMultipleUsers() throws CADoesntExistsException, AuthorizationDeniedException,
+            EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, NoSuchEndEntityException, RemoveException,
+            IllegalNameException, CertificateSerialNumberException, CustomFieldException, ApprovalException {
         String commonDn = "CN=foo";
         String firstUsername = "alpha";
         String secondUsername = "beta";

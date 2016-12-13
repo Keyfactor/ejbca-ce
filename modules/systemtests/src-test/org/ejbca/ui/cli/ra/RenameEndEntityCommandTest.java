@@ -26,19 +26,22 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
@@ -80,7 +83,8 @@ public class RenameEndEntityCommandTest {
     }
 
     @Test
-    public void testExecuteHappyPath() throws AuthorizationDeniedException, RemoveException, CADoesntExistsException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
+    public void testExecuteHappyPath() throws AuthorizationDeniedException, RemoveException, CADoesntExistsException, EndEntityExistsException,
+            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, IllegalNameException, CertificateSerialNumberException, CustomFieldException, ApprovalException {
         endEntityManagementSession.addUser(admin, USER_NAME1, "foo123", "CN=" + USER_NAME1, null, null, true, SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, testx509ca.getCAId());
         try {
@@ -92,10 +96,10 @@ public class RenameEndEntityCommandTest {
         } finally {
             try {
                 endEntityManagementSession.deleteUser(admin, USER_NAME1);
-            } catch (NotFoundException e) {} // NOPMD: user does not exist, some error failed above           
+            } catch (NoSuchEndEntityException e) {} // NOPMD: user does not exist, some error failed above           
             try {
                 endEntityManagementSession.deleteUser(admin, USER_NAME2);
-            } catch (NotFoundException e) {} // NOPMD: user does not exist, some error failed above           
+            } catch (NoSuchEndEntityException e) {} // NOPMD: user does not exist, some error failed above           
         }  
     }
 }

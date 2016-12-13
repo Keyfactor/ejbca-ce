@@ -59,10 +59,10 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
@@ -154,7 +154,7 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
             internalCertStoreSession.removeCertificate(fingerprint);
             try {
                 eeSession.deleteUser(admin, USER_NAME);
-            } catch (NotFoundException e) {} // NOPMD: user does not exist, some error failed above           
+            } catch (NoSuchEndEntityException e) {} // NOPMD: user does not exist, some error failed above           
         }  
     }
 

@@ -120,6 +120,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -127,7 +128,6 @@ import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
@@ -1705,7 +1705,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             }
             try {
                 endEntityManagementSession.deleteUser(intAdmin, username);
-            } catch (AuthorizationDeniedException | NotFoundException | RemoveException e) {
+            } catch (AuthorizationDeniedException | NoSuchEndEntityException | RemoveException e) {
                 log.debug("Error during cleanup: " + e.getMessage());
             }
             try {
@@ -1769,7 +1769,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             assertEquals("Unexpected transformation.", expectedSubjectDN, resultingSubjectDN);
             try {
                 endEntityManagementSession.deleteUser(intAdmin, userName);
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 // Ignore
             }
         } finally {
@@ -1810,7 +1810,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 resultingSubjectDN);
         try {
             endEntityManagementSession.deleteUser(intAdmin, userName);
-        } catch (NotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             // Ignore
         }
     }

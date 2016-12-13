@@ -16,12 +16,11 @@ package org.ejbca.ui.cli.ra;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.ejb.FinderException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -90,7 +89,7 @@ public class SetEndEntityStatusCommand extends BaseRaCommand {
             getLogger().error("Not authorized to change end entity.");
         }  catch (WaitingForApprovalException e) {
             getLogger().info("Status change request has been sent for approval.");
-        } catch (FinderException e) {
+        } catch (NoSuchEndEntityException e) {
             log.error("ERROR: " + e.getMessage());
         } catch (ApprovalException e) {
             getLogger().error("Status change already requested.");

@@ -44,7 +44,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -237,7 +237,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     	} finally {
     		try {
     			this.endEntityManagementSession.deleteUser(ADMIN, userName1);
-    		} catch (NotFoundException e) {/* do nothing */}
+    		} catch (NoSuchEndEntityException e) {/* do nothing */}
     	}
     }
 

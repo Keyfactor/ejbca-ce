@@ -29,13 +29,16 @@ import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
@@ -88,9 +91,21 @@ public interface CertificateRequestSession {
      * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA
      * @param createJKS true to create a JKS, false to create a PKCS12
      * @return an encoded keystore of the type specified in responseType 
+	 * @throws UserDoesntFullfillEndEntityProfile 
+	 * @throws AuthorizationDeniedException 
+	 * @throws CustomFieldException 
+	 * @throws CADoesntExistsException 
+	 * @throws EndEntityExistsException 
+	 * @throws ApprovalException 
+	 * @throws IllegalNameException if the Subject DN failed constraints
+	 * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeySpecException 
+	 * @throws CertificateException 
+	 * @throws InvalidAlgorithmParameterException 
+	 * @throws KeyStoreException 
      */
     public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg,
-            boolean createJKS) throws ApprovalException, EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, EjbcaException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, CertificateException,
-            InvalidAlgorithmParameterException, KeyStoreException;
+            boolean createJKS) throws ApprovalException, EndEntityExistsException, CADoesntExistsException, CertificateSerialNumberException,
+            IllegalNameException, CustomFieldException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NoSuchAlgorithmException, InvalidKeySpecException, CertificateException, InvalidAlgorithmParameterException, KeyStoreException;
 }

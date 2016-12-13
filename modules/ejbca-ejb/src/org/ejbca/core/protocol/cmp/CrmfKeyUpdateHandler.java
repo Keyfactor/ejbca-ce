@@ -20,8 +20,6 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import javax.ejb.FinderException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
@@ -305,9 +303,9 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
             }
 
         } catch (AuthorizationDeniedException | CADoesntExistsException | UserDoesntFullfillEndEntityProfile | InvalidAlgorithmException | CAOfflineException | IllegalValidityException | CertificateSerialNumberException
-                | NoSuchEndEntityException | CustomCertificateSerialNumberException | CryptoTokenOfflineException | IllegalKeyException
+                |  CustomCertificateSerialNumberException | CryptoTokenOfflineException | IllegalKeyException
                 | SignRequestException | SignRequestSignatureException | IllegalNameException | CertificateCreateException
-                | CertificateRevokeException | FinderException | EjbcaException | CertificateExtensionException | WaitingForApprovalException e) {
+                | CertificateRevokeException | NoSuchEndEntityException | EjbcaException | CertificateExtensionException | WaitingForApprovalException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);
             resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage());

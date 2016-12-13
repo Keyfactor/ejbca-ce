@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.AppenderSkeleton;
@@ -40,8 +39,8 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.util.query.BasicMatch;
@@ -97,7 +96,7 @@ public class AddEndEntityCommandTest {
 
     @Test
     public void testExecuteHappyPath() throws IllegalQueryException, UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,
-            FinderException, RemoveException  {
+            NoSuchEndEntityException, RemoveException {
 
         try {
             assertEquals(CommandResult.SUCCESS, command0.execute(HAPPY_PATH_ADD_ARGS));
@@ -132,13 +131,13 @@ public class AddEndEntityCommandTest {
         } finally {
             try {
                 eeSession.deleteUser(admin, USER_NAME);
-            } catch (NotFoundException e) {} // NOPMD: user does not exist, some error failed above           
+            } catch (NoSuchEndEntityException e) {} // NOPMD: user does not exist, some error failed above           
         }  
     }
 
 
     @Test
-    public void testSetPwdInvalidUser() throws IllegalQueryException, AuthorizationDeniedException, RemoveException, UserDoesntFullfillEndEntityProfile, FinderException {
+    public void testSetPwdInvalidUser() throws IllegalQueryException, AuthorizationDeniedException, RemoveException, UserDoesntFullfillEndEntityProfile, NoSuchEndEntityException {
 
         try {
 
@@ -192,7 +191,7 @@ public class AddEndEntityCommandTest {
         } finally {
             try {
                 eeSession.deleteUser(admin, USER_NAME);
-            } catch (NotFoundException e) {} // NOPMD: user does not exist, some error failed above           
+            } catch (NoSuchEndEntityException e) {} // NOPMD: user does not exist, some error failed above           
         }    
     }
     

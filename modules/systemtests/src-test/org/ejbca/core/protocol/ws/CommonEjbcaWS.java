@@ -181,7 +181,6 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -2389,7 +2388,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         } finally {
             try {
                 endEntityManagementSession.revokeAndDeleteUser(intAdmin, testUsername, RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN);
-            } catch (NotFoundException e) { /* The test probably failed before creating the end entity */ }
+            } catch (NoSuchEndEntityException e) { /* The test probably failed before creating the end entity */ }
             
             if(cert1 != null) {
                 internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert1));

@@ -20,8 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.FinderException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -34,6 +32,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -142,7 +141,7 @@ public class UnRevokeEndEntityCommand extends BaseRaCommand {
         } catch (AuthorizationDeniedException e) {
             getLogger().error("Not authorized to reactivate end entity.");
             return CommandResult.AUTHORIZATION_FAILURE;
-        } catch (FinderException e) {
+        } catch (NoSuchEndEntityException e) {
             getLogger().error("ERROR: " + e.getMessage());
         }
         return CommandResult.SUCCESS;

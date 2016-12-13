@@ -27,12 +27,13 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -104,11 +105,13 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
             throw new EJBException("This should never happen", e);
         } catch (WaitingForApprovalException e) {
             throw new EJBException("This should never happen", e);
-        } catch (EjbcaException e) {
-            throw new ApprovalRequestExecutionException("Error with the SubjectDN serialnumber :" + e.getErrorCode() + e.getMessage(), e);
         } catch (CADoesntExistsException e) {
             throw new ApprovalRequestExecutionException("CA does not exist:" + e.getMessage(), e);
-		}
+		} catch (CertificateSerialNumberException e) {
+		    throw new ApprovalRequestExecutionException("Error with the SubjectDN serialnumber :" + e.getErrorCode() + e.getMessage(), e);
+        } catch (IllegalNameException e) {
+            throw new ApprovalRequestExecutionException("The Subject DN failed constraints. " + e.getErrorCode() + e.getMessage(), e);
+        }
     }
 
     /**

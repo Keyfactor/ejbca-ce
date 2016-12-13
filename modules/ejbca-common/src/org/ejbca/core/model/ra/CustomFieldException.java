@@ -13,12 +13,14 @@
 
 package org.ejbca.core.model.ra;
 
+import org.ejbca.core.EjbcaException;
+
 /**
  * Exception is cast when values of an end entity field does not match a specific rule in the function FieldValidator.validate()
  *  
  * @version $Id$ 
  */
-public class CustomFieldException extends Exception {
+public class CustomFieldException extends EjbcaException {
 
 	private static final long serialVersionUID = -4270699717178908309L;
 
@@ -30,7 +32,7 @@ public class CustomFieldException extends Exception {
 		super(message);
 	}
 	
-	public CustomFieldException(Throwable cause){
+	public CustomFieldException(Exception cause){
 		super(cause);
 	}
 	

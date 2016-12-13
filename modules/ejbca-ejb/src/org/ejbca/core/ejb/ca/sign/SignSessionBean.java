@@ -35,8 +35,6 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.ObjectNotFoundException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -265,7 +263,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk)
-            throws ObjectNotFoundException, AuthorizationDeniedException, CADoesntExistsException, AuthStatusException, AuthLoginException,
+            throws NoSuchEndEntityException, AuthorizationDeniedException, CADoesntExistsException, AuthStatusException, AuthLoginException,
             IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException {
@@ -276,7 +274,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     
     @Override
     public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKeyWrapper pk)
-            throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, IllegalKeyException, CertificateCreateException,
+            throws NoSuchEndEntityException, CADoesntExistsException, AuthorizationDeniedException, IllegalKeyException, CertificateCreateException,
             IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
             IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException,
             AuthLoginException {
@@ -285,7 +283,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk,
-            final int keyusage, final Date notBefore, final Date notAfter) throws ObjectNotFoundException, AuthorizationDeniedException,
+            final int keyusage, final Date notBefore, final Date notAfter) throws NoSuchEndEntityException, AuthorizationDeniedException,
             CADoesntExistsException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException {
@@ -295,7 +293,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKeyWrapper pk,
-            final int keyusage, final Date notBefore, final Date notAfter) throws ObjectNotFoundException, AuthorizationDeniedException,
+            final int keyusage, final Date notBefore, final Date notAfter) throws NoSuchEndEntityException, AuthorizationDeniedException,
             CADoesntExistsException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException {
@@ -305,7 +303,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final Certificate incert)
-            throws ObjectNotFoundException, AuthorizationDeniedException, SignRequestSignatureException, CADoesntExistsException,
+            throws NoSuchEndEntityException, AuthorizationDeniedException, SignRequestSignatureException, CADoesntExistsException,
             AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException {
@@ -355,51 +353,24 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CertificateCreateException, CertificateRevokeException, InvalidAlgorithmException, ApprovalException, WaitingForApprovalException {
         final String username = req.getUsername();
         EndEntityInformation retrievedUser = endEntityAccessSession.findUser(admin, username);
-        try {
-            if (retrievedUser.getStatus() == EndEntityConstants.STATUS_GENERATED) {
-
-                endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
-
-            }
-            if (ignorePassword) {
-                
-                try {
-                    endEntityManagementSession.setPassword(admin, username, req.getPassword());
-                } catch (UserDoesntFullfillEndEntityProfile e) {
-                    //Can be ignored in this case, shouldn't happen.
-                    throw new IllegalStateException(e);
-                }
-            }
-        } catch (FinderException e) {
-            throw new NoSuchEndEntityException("End entity with username " + username + " not found.", e);
+        if (retrievedUser.getStatus() == EndEntityConstants.STATUS_GENERATED) {
+            endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
         }
+        if (ignorePassword) {
+
+            try {
+                endEntityManagementSession.setPassword(admin, username, req.getPassword());
+            } catch (UserDoesntFullfillEndEntityProfile e) {
+                //Can be ignored in this case, shouldn't happen.
+                throw new IllegalStateException(e);
+            }
+        }
+        
         try {
             return createCertificate(admin, req, responseClass, null);
-        } catch (CryptoTokenOfflineException e) {
-            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
-        } catch (IllegalKeyException e) {
-            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
-        } catch (CADoesntExistsException e) {
-            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
-        } catch (SignRequestException e) {
-            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
-        } catch (SignRequestSignatureException e) {
-            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
-        } catch (AuthStatusException e) {
-            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
-        } catch (AuthLoginException e) {
-            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
-        } catch (CertificateExtensionException e) {
-            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
-        } catch (CustomCertificateSerialNumberException e) {
-            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
-        } catch (IllegalNameException e) {
-            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
-        } catch (CertificateSerialNumberException e) {
-            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
-        } catch (IllegalValidityException e) {
-            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
-        } catch (CAOfflineException e) {
+        } catch (CryptoTokenOfflineException | IllegalKeyException | CADoesntExistsException | SignRequestException | SignRequestSignatureException
+                | AuthStatusException | AuthLoginException | CertificateExtensionException | CustomCertificateSerialNumberException
+                | IllegalNameException | CertificateSerialNumberException | IllegalValidityException | CAOfflineException e) {
             throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
         }
 
@@ -464,7 +435,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         ret = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, req, responseClass, fetchCertGenParams(), updateTime);
                         postCreateCertificate(admin, endEntityInformation, ca, new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()));
                     }
-                } catch (ObjectNotFoundException e) {
+                } catch (NoSuchEndEntityException e) {
                     // If we didn't find the entity return error message
                     final String failText = intres.getLocalizedMessage("signsession.nosuchuser", req.getUsername());
                     log.info(failText, e);
@@ -507,7 +478,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKeyWrapper pk,
             final int keyusage, final Date notBefore, final Date notAfter, final int certificateprofileid, final int caid)
-            throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, AuthStatusException, AuthLoginException,
+            throws NoSuchEndEntityException, CADoesntExistsException, AuthorizationDeniedException, AuthStatusException, AuthLoginException,
             IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException {
             return createCertificate(admin, username, password, pk.getPublicKey(), keyusage, notBefore, notAfter, certificateprofileid, caid);
@@ -516,9 +487,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk,
             final int keyusage, final Date notBefore, final Date notAfter, final int certificateprofileid, final int caid)
-            throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, AuthStatusException, AuthLoginException,
+            throws CADoesntExistsException, AuthorizationDeniedException, AuthStatusException, AuthLoginException,
             IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
-            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException {
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, NoSuchEndEntityException {
        if (log.isTraceEnabled()) {
             log.trace(">createCertificate(pk, ku, date)");
         }
@@ -811,7 +782,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     private EndEntityInformation authUser(final AuthenticationToken admin, final String username, final String password)
-            throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+            throws NoSuchEndEntityException, AuthStatusException, AuthLoginException {
         // Authorize user and get DN
         return endEntityAuthenticationSession.authenticateUser(admin, username, password);
     }
@@ -828,7 +799,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         try {
             endEntityAuthenticationSession.finishUser(data);
-        } catch (ObjectNotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             final String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
             log.info(msg);
         }
@@ -844,7 +815,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         try {
             endEntityManagementSession.cleanUserCertDataSN(data);
-        } catch (ObjectNotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             final String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
             log.info(msg);
         }

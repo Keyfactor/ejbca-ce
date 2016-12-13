@@ -30,7 +30,6 @@ import javax.annotation.Resource;
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.EJB;
-import javax.ejb.FinderException;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.TransactionManagement;
@@ -73,6 +72,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
@@ -305,7 +305,7 @@ public class StartupSingletonBean {
                     endEntityManagementSession.setUserStatus(authenticationToken, cliUsername, EndEntityConstants.STATUS_GENERATED);
                 } catch (ApprovalException e) {
                     log.warn("The EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please correct the status manually. Failed with: " + e.getMessage());
-                } catch (FinderException e) {
+                } catch (NoSuchEndEntityException e) {
                     log.warn("The EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please correct the status manually. Failed with: " + e.getMessage());
                 } catch (WaitingForApprovalException e) {
                     log.warn("The EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please correct the status manually. Failed with: " + e.getMessage());

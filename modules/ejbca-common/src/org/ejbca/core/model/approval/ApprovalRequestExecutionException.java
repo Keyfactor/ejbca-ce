@@ -19,7 +19,6 @@ import javax.xml.ws.WebFault;
  * request have been executed and something went wrong that the approval
  * administrator should be notified of.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 @WebFault

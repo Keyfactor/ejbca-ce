@@ -21,8 +21,6 @@ import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.util.Date;
 
-import javax.ejb.FinderException;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -64,6 +62,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -149,7 +148,11 @@ public class UnRevokeEndEntityCommandTest {
     }
 
     @Test
-    public void testUnrevokeEndEntity() throws AuthorizationDeniedException, CertificateRevokeException, ApprovalException, AlreadyRevokedException, FinderException, WaitingForApprovalException, InvalidAlgorithmParameterException, CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException, CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
+    public void testUnrevokeEndEntity()
+            throws AuthorizationDeniedException, CertificateRevokeException, ApprovalException, AlreadyRevokedException, NoSuchEndEntityException,
+            WaitingForApprovalException, InvalidAlgorithmParameterException, CustomCertificateSerialNumberException, IllegalKeyException,
+            CADoesntExistsException, CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException,
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), userdata.getUsername(), userdata.getPassword());
         certificate = certificateCreateSession.createCertificate(authenticationToken, userdata, req, X509ResponseMessage.class,
@@ -168,7 +171,11 @@ public class UnRevokeEndEntityCommandTest {
     
     //Test unrevoking an end entity with a reason other than hold
     @Test
-    public void testUnrevokeEndEntityNotSetToHold() throws AuthorizationDeniedException, CertificateRevokeException, ApprovalException, AlreadyRevokedException, FinderException, WaitingForApprovalException, InvalidAlgorithmParameterException, CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException, CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
+    public void testUnrevokeEndEntityNotSetToHold()
+            throws AuthorizationDeniedException, CertificateRevokeException, ApprovalException, AlreadyRevokedException, NoSuchEndEntityException,
+            WaitingForApprovalException, InvalidAlgorithmParameterException, CustomCertificateSerialNumberException, IllegalKeyException,
+            CADoesntExistsException, CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException,
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), userdata.getUsername(), userdata.getPassword());
         certificate = certificateCreateSession.createCertificate(authenticationToken, userdata, req, X509ResponseMessage.class,

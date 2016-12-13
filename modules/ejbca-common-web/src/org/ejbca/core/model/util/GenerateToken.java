@@ -25,8 +25,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 
-import javax.ejb.FinderException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -56,6 +54,7 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -121,7 +120,7 @@ public class GenerateToken {
      * @throws IllegalNameException if the certificate request contained an illegal name 
      * @throws CertificateCreateException (rollback) if certificate couldn't be created. 
      * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile. 
-     * @throws FinderException if the end entity was not found
+     * @throws NoSuchEndEntityException if the end entity was not found
      * @throws UserDoesntFullfillEndEntityProfile if the password doesn't fulfill the demands set by the EE profile
      * @throws CertificateSignatureException if verification of the CA certificate failed
      * @throws InvalidKeySpecException if the key specification defined in keys couldn't be found
@@ -134,7 +133,7 @@ public class GenerateToken {
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, UserDoesntFullfillEndEntityProfile, FinderException,
+            CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, UserDoesntFullfillEndEntityProfile, NoSuchEndEntityException,
             CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (log.isTraceEnabled()) {
             log.trace(">generateOrKeyRecoverToken");

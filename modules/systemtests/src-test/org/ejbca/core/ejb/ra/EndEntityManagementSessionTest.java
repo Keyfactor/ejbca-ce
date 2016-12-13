@@ -91,7 +91,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.query.BasicMatch;
@@ -533,7 +532,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         boolean removed = false;
         try {
             endEntityManagementSession.deleteUser(admin, username);
-        } catch (NotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             removed = true;
         }
         assertTrue("User does not exist does not throw NotFoundException", removed);

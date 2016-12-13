@@ -64,6 +64,7 @@ import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -112,7 +113,7 @@ public class CertRequestHttpTest extends CaTestCase {
         super.tearDown();
     	try {
     		endEntityManagementSession.deleteUser(admin, TEST_USERNAME);
-    	} catch (NotFoundException e) {
+    	} catch (NoSuchEndEntityException e) {
     		// NOPMD:ignore if the user was not created
     	}
     }

@@ -34,7 +34,6 @@ import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -51,9 +50,11 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -66,13 +67,13 @@ import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -81,7 +82,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -175,15 +176,19 @@ public class RAInterfaceBean implements Serializable {
     }
     
     /** Adds a user to the database, the string array must be in format defined in class UserView. 
-     * @throws EjbcaException 
      * @throws WaitingForApprovalException 
      * @throws UserDoesntFullfillEndEntityProfile 
      * @throws AuthorizationDeniedException 
      * @throws CADoesntExistsException 
      * @throws EndEntityExistsException 
-     * @return added user as EndEntityInformation*/
+     * @return added user as EndEntityInformation
+     * @throws CertificateSerialNumberException  if SubjectDN serial number already exists.
+     * @throws ApprovalException  if an approval already exists for this request.
+     * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
+     * @throws IllegalNameException  if the Subject DN failed constraints
+     */
     public EndEntityInformation addUser(UserView userdata) throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
+            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, IllegalNameException, CustomFieldException, ApprovalException, CertificateSerialNumberException {
         log.trace(">addUser()");
         if (userdata.getEndEntityProfileId() != 0) {
             EndEntityInformation uservo = new EndEntityInformation(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(), 
@@ -212,7 +217,7 @@ public class RAInterfaceBean implements Serializable {
      * @param usernames an array of usernames to delete.
      * @return false if administrator wasn't authorized to delete all of given users.
      * */
-    public boolean deleteUsers(String[] usernames) throws NotFoundException, RemoveException {
+    public boolean deleteUsers(String[] usernames) throws NoSuchEndEntityException, RemoveException {
       log.trace(">deleteUsers()");
       boolean success = true;
       for (String username : usernames) {
@@ -233,7 +238,7 @@ public class RAInterfaceBean implements Serializable {
      * @param status gives the status to apply to users, should be one of UserDataRemote.STATUS constants.
      * @return false if administrator wasn't authorized to change all of the given users.
      * */
-    public boolean setUserStatuses(String[] usernames, String status) throws ApprovalException, FinderException, WaitingForApprovalException {
+    public boolean setUserStatuses(String[] usernames, String status) throws ApprovalException, NoSuchEndEntityException, WaitingForApprovalException {
     	log.trace(">setUserStatuses()");
     	boolean success = true;
     	int intstatus = 0;
@@ -258,14 +263,14 @@ public class RAInterfaceBean implements Serializable {
      * @return false if administrator wasn't authorized to revoke all of the given users.
      */
     public void revokeUser(String username, int reason) throws AuthorizationDeniedException,
-    		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
+        NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         log.trace(">revokeUser()");
         endEntityManagementSession.revokeUser(administrator, username, reason);
         log.trace("<revokeUser()");
     }
 
     public void revokeAndDeleteUser(String username, int reason) throws AuthorizationDeniedException,
-    		ApprovalException, WaitingForApprovalException, RemoveException, NotFoundException {
+    		ApprovalException, WaitingForApprovalException, RemoveException, NoSuchEndEntityException {
 		log.trace(">revokeUser()");
 		endEntityManagementSession.revokeAndDeleteUser(administrator, username, reason);
 		log.trace("<revokeUser()");
@@ -287,7 +292,7 @@ public class RAInterfaceBean implements Serializable {
     		endEntityManagementSession.revokeCert(administrator, serno, issuerdn, reason);
     		success = true;
     	} catch (AuthorizationDeniedException e) {
-    	} catch (FinderException e) {
+    	} catch (NoSuchEndEntityException e) {
     	} catch (AlreadyRevokedException e) {
 		}
     	if (log.isTraceEnabled()) {
@@ -313,20 +318,25 @@ public class RAInterfaceBean implements Serializable {
         return endEntityManagementSession.renameEndEntity(administrator, currentUsername, newUsername);
     }
 
-    /** Changes the userdata  */
-    public void changeUserData(UserView userdata) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
+    /** Changes the userdata  
+     * @throws IllegalNameException  if the Subject DN failed constraints
+     * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
+     * @throws ApprovalException if an approval already is waiting for specified action
+     */
+    public void changeUserData(UserView userdata) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            WaitingForApprovalException, ApprovalException, CertificateSerialNumberException, IllegalNameException {
         log.trace(">changeUserData()");
         addedusermemory.changeUser(userdata);
-        if(userdata.getPassword() != null && userdata.getPassword().trim().equals("")) {
-        	userdata.setPassword(null);
+        if (userdata.getPassword() != null && userdata.getPassword().trim().equals("")) {
+            userdata.setPassword(null);
         }
-        EndEntityInformation uservo = new EndEntityInformation(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(), 
-    			userdata.getEmail(), userdata.getStatus(), userdata.getType(), userdata.getEndEntityProfileId(), userdata.getCertificateProfileId(),
-    			null,null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);
-    	uservo.setPassword(userdata.getPassword());
-    	uservo.setExtendedinformation(userdata.getExtendedInformation());
-    	uservo.setCardNumber(userdata.getCardNumber());
-    	endEntityManagementSession.changeUser(administrator, uservo, userdata.getClearTextPassword());
+        EndEntityInformation uservo = new EndEntityInformation(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(),
+                userdata.getSubjectAltName(), userdata.getEmail(), userdata.getStatus(), userdata.getType(), userdata.getEndEntityProfileId(),
+                userdata.getCertificateProfileId(), null, null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);
+        uservo.setPassword(userdata.getPassword());
+        uservo.setExtendedinformation(userdata.getExtendedInformation());
+        uservo.setCardNumber(userdata.getCardNumber());
+        endEntityManagementSession.changeUser(administrator, uservo, userdata.getClearTextPassword());
         log.trace("<changeUserData()");
     }
 
@@ -386,7 +396,7 @@ public class RAInterfaceBean implements Serializable {
     }
 
     /** Method to find all users in database */
-    public UserView[] findAllUsers(int index, int size) throws FinderException {
+    public UserView[] findAllUsers(int index, int size) {
        usersView.setUsers(endEntityManagementSession.findAllUsersWithLimit(administrator), informationmemory.getCAIdToNameMap());
        return usersView.getUsers(index,size);
     }
@@ -657,7 +667,7 @@ public class RAInterfaceBean implements Serializable {
         	   lastRevokedException = e;
            } catch (AuthorizationDeniedException e) {
         	   success = false;
-           } catch (FinderException e) {
+           } catch (NoSuchEndEntityException e) {
         	   success = false;
            }
        }

@@ -19,13 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -161,7 +161,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 			endEntityManagementSession.setUserStatusAfterApproval(getRequestAdmin(), username, newstatus, approvalRequestID, lastApprovingAdmin);
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
-		} catch (FinderException e) {
+		} catch (NoSuchEndEntityException e) {
 			throw new ApprovalRequestExecutionException("User with username + " + username  + " doesn't exist.", e);
 		} catch (ApprovalException e) {
 			throw new EJBException("This should never happen",e);

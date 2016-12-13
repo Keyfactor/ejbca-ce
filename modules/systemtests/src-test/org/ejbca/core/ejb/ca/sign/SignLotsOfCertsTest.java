@@ -43,8 +43,8 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -137,7 +137,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
         try {
             endEntityManagementSession.deleteUser(admin, "performancefoo" + post);
             log.debug("deleted user: performancefoo" + post);
-        } catch (NotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             log.debug("Delete operation failed.. User probably did not exist, which is fine so do nothing." + e.getMessage());
         } catch (EJBException e) {
         	log.debug("Delete operation failed.. User probably did not exist, which is fine so do nothing." + e.getMessage());

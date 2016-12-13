@@ -43,7 +43,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.security.auth.x500.X500Principal;
 
@@ -120,11 +119,11 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -1823,9 +1822,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
         try {
             certificate = (X509Certificate) this.signSession.createCertificate(ADMIN, adminName, "foo123", new PublicKeyWrapper(keys.getPublic()));
-        } catch (ObjectNotFoundException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (CADoesntExistsException e) {
+        }  catch (CADoesntExistsException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (EjbcaException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
@@ -1843,7 +1840,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     private void removeAuthenticationToken(AuthenticationToken authToken, Certificate cert, String adminName) throws RoleNotFoundException,
-            AuthorizationDeniedException, ApprovalException, NotFoundException, WaitingForApprovalException, RemoveException {
+            AuthorizationDeniedException, ApprovalException, NoSuchEndEntityException, WaitingForApprovalException, RemoveException {
         String rolename = "Super Administrator Role";
 
         RoleData roledata = this.roleAccessSessionRemote.findRole(rolename);

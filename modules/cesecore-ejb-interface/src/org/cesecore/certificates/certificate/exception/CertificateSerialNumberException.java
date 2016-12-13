@@ -13,6 +13,7 @@
 package org.cesecore.certificates.certificate.exception;
 
 import org.cesecore.CesecoreException;
+import org.cesecore.ErrorCode;
 
 /**
  * Exception used in order to catch the error that we're trying to create a certificate that already exists.
@@ -29,5 +30,9 @@ public class CertificateSerialNumberException extends CesecoreException {
 
     public CertificateSerialNumberException(Exception e) {
         super(e);
+    }
+
+    public CertificateSerialNumberException(ErrorCode errorCode, String message) {
+        super(errorCode, message);
     }
 }

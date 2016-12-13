@@ -27,11 +27,12 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
@@ -44,6 +45,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestHelper;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
@@ -101,11 +103,13 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 			throw new EJBException("This WaitingForApprovalException should never happen", e);
 		} catch (CADoesntExistsException e) {
 			throw new ApprovalRequestExecutionException("CA does not exist:" + e.getMessage(), e);
-		} catch (EjbcaException e){
-			throw new ApprovalRequestExecutionException("Failed adding user:" + e.getErrorCode() + e.getMessage(), e);
 		} catch (PersistenceException e) {
 		  throw new ApprovalRequestExecutionException("Database error", e);
-		}
+		} catch (IllegalNameException | CertificateSerialNumberException e) {
+		    throw new ApprovalRequestExecutionException("Failed adding user:" + e.getErrorCode() + e.getMessage(), e);
+        } catch (CustomFieldException e) {
+            throw new ApprovalRequestExecutionException("Failed adding user:" + e.getErrorCode() + e.getMessage(), e);
+        }
 	}
 
     /**

@@ -18,8 +18,6 @@ import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.ObjectNotFoundException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -38,6 +36,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -70,7 +69,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     
     @Override
     public EndEntityInformation authenticateUser(final AuthenticationToken admin, final String username, final String password)
-        throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+        throws AuthStatusException, AuthLoginException, NoSuchEndEntityException {
     	if (log.isTraceEnabled()) {
             log.trace(">authenticateUser(" + username + ", hiddenpwd)");
     	}
@@ -78,7 +77,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             // Find the user with username username, or throw ObjectNotFoundException
             final UserData data = UserData.findByUsername(entityManager, username);
             if (data == null) {
-            	throw new ObjectNotFoundException("Could not find username " + username);
+            	throw new NoSuchEndEntityException("Could not find username " + username);
             }
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
            	endEntityManagementSession.decRemainingLoginAttempts(username);
@@ -108,7 +107,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
         	final String msg = intres.getLocalizedMessage("authentication.wrongstatus", EndEntityConstants.getStatusText(status), Integer.valueOf(status), username);
         	log.info(msg);
             throw new AuthStatusException(msg);
-        } catch (ObjectNotFoundException oe) {
+        } catch (NoSuchEndEntityException oe) {
         	final String msg = intres.getLocalizedMessage("authentication.usernotfound", username);
         	log.info(msg);
             throw oe;
@@ -123,7 +122,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     }
 
     @Override
-	public void finishUser(final EndEntityInformation data) throws ObjectNotFoundException {
+	public void finishUser(final EndEntityInformation data) throws NoSuchEndEntityException {
 		if (log.isTraceEnabled()) {
 			log.trace(">finishUser(" + data.getUsername() + ", hiddenpwd)");
 		}
@@ -137,10 +136,10 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
 			if (log.isTraceEnabled()) {
 				log.trace("<finishUser("+data.getUsername()+", hiddenpwd)");
 			}
-		} catch (FinderException e) {
+		} catch (NoSuchEndEntityException e) {
 			final String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
 			log.info(msg);
-			throw new ObjectNotFoundException(e.getMessage());
+			throw new NoSuchEndEntityException(e.getMessage());
 		} catch (ApprovalException e) {
 			// Should never happen
 		    log.error("ApprovalException: ", e);

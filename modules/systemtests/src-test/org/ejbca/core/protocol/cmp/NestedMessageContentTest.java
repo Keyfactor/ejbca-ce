@@ -41,7 +41,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 import javax.security.auth.x500.X500Principal;
 
@@ -81,7 +80,6 @@ import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
-import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -126,11 +124,13 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -398,8 +398,13 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
     
     @Test
-    public void test03RevReq() throws NoSuchAlgorithmException, AuthorizationDeniedException, EjbcaException, IOException, InvalidAlgorithmParameterException, RoleNotFoundException, InvalidKeyException, NoSuchProviderException, SecurityException,
-            SignatureException, ObjectNotFoundException, CertificateException, CADoesntExistsException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, UserDoesntFullfillEndEntityProfile, RemoveException, WaitingForApprovalException, FinderException {
+    public void test03RevReq()
+            throws NoSuchAlgorithmException, AuthorizationDeniedException, EjbcaException, IOException, InvalidAlgorithmParameterException,
+            RoleNotFoundException, InvalidKeyException, NoSuchProviderException, SecurityException, SignatureException, NoSuchEndEntityException,
+            CertificateException, CADoesntExistsException, IllegalKeyException, CertificateCreateException, IllegalNameException,
+            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
+            InvalidAlgorithmException, CustomCertificateSerialNumberException, UserDoesntFullfillEndEntityProfile, RemoveException,
+            WaitingForApprovalException, NoSuchEndEntityException, ObjectNotFoundException, javax.ejb.ObjectNotFoundException {
         Collection<Certificate> certs = this.certificateStoreSession.findCertificatesBySubjectAndIssuer(SUBJECT_DN.toString(), this.issuerDN);
         log.debug("Found " + certs.size() + " certificates for userDN \"" + SUBJECT_DN + "\"");
         Certificate cert = null;
@@ -1029,27 +1034,24 @@ public class NestedMessageContentTest extends CmpTestCase {
             throw new IllegalStateException("Error encountered when creating this.admin user", e1);
         }
 
+        
         try {
-            certificate = (X509Certificate) this.signSession.createCertificate(this.admin, adminName, "foo123", new PublicKeyWrapper(keys.getPublic()));
-        } catch (ObjectNotFoundException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (CADoesntExistsException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (EjbcaException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (CesecoreException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (javax.ejb.ObjectNotFoundException e) {
+            certificate = (X509Certificate) this.signSession.createCertificate(this.admin, adminName, "foo123",
+                    new PublicKeyWrapper(keys.getPublic()));
+        } catch (IllegalKeyException | CertificateCreateException | IllegalNameException | CertificateRevokeException
+                | CertificateSerialNumberException | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException
+                | InvalidAlgorithmException | CustomCertificateSerialNumberException | CADoesntExistsException | AuthorizationDeniedException
+                | NoSuchEndEntityException | AuthStatusException | AuthLoginException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         }
+
         // We cannot use the X509CertificateAuthenticationToken here, since it can only be used internally in a JVM.
         AuthenticationToken result = new TestX509CertificateAuthenticationToken(certificate);
         return result;
     }
     
-    private void removeAuthenticationToken(AuthenticationToken authToken, Certificate cert, String adminName) throws RoleNotFoundException, AuthorizationDeniedException, ApprovalException, NotFoundException, WaitingForApprovalException, RemoveException {
+    private void removeAuthenticationToken(AuthenticationToken authToken, Certificate cert, String adminName) throws RoleNotFoundException,
+            AuthorizationDeniedException, ApprovalException, NoSuchEndEntityException, WaitingForApprovalException, RemoveException {
         String rolename = "Super Administrator Role";
         
         RoleData roledata = this.roleAccessSessionRemote.findRole("Super Administrator Role");

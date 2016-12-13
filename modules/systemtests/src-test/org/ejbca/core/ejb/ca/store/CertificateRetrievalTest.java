@@ -51,8 +51,8 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminTestSessionRemote;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -454,7 +454,7 @@ public class CertificateRetrievalTest {
             while (true) {
                 try {
                     endEntityMgmtSession.deleteUser(admin, username);
-                } catch (NotFoundException e) { break; }
+                } catch (NoSuchEndEntityException e) { break; }
             }
         }
         log.trace("<test09FindWithMissingCertData()");

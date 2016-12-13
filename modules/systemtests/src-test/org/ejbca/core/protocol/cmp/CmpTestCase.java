@@ -55,7 +55,6 @@ import java.util.List;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.commons.lang.StringUtils;
@@ -156,16 +155,19 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -1158,15 +1160,15 @@ public abstract class CmpTestCase extends CaTestCase {
                 EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).updateProperty(property, value));
     }
 
-    protected EndEntityInformation createUser(String username, String subjectDN, String password, int caid) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, FinderException, CADoesntExistsException, EjbcaException {
+    protected EndEntityInformation createUser(String username, String subjectDN, String password, int caid)
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, NoSuchEndEntityException,
+            CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, ApprovalException {
 
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, caid, null, username+"@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword(password);
         try {
             this.endEntityManagementSession.addUser(ADMIN, user, false);
-            // usersession.addUser(ADMIN,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,EndEntityTypes.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: " + username);
         } catch (Exception e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");
@@ -1177,8 +1179,9 @@ public abstract class CmpTestCase extends CaTestCase {
         return user;
     }
     
-    protected X500Name createCmpUser(String username, String dn, boolean useDnOverride, int caid) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, FinderException, CADoesntExistsException {
+    protected X500Name createCmpUser(String username, String dn, boolean useDnOverride, int caid)
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException,
+            CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, ApprovalException {
         // Make USER that we know...
         boolean userExists = false;
         final int cpID;
@@ -1215,10 +1218,11 @@ public abstract class CmpTestCase extends CaTestCase {
     protected Certificate createRACertificate(String username, String password, String raCertsPath, String cmpAlias, KeyPair keys, Date notBefore,
             Date notAfter, String certProfile, int caid) throws AuthorizationDeniedException, CertificateException, FileNotFoundException,
             IOException, UserDoesntFullfillEndEntityProfile, ObjectNotFoundException, RemoveException, CADoesntExistsException,
-            WaitingForApprovalException, FinderException, EjbcaException, IllegalKeyException, CertificateCreateException, IllegalNameException,
-            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
-            InvalidAlgorithmException, CustomCertificateSerialNumberException {
-               
+            WaitingForApprovalException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
+            CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, NoSuchEndEntityException, ApprovalException,
+            NoSuchEndEntityException, javax.ejb.ObjectNotFoundException {
+           
         createUser(username, "CN="+username, password, caid);
         Certificate racert = this.signSession.createCertificate(ADMIN, username, password, new PublicKeyWrapper(keys.getPublic()),
                 X509KeyUsage.digitalSignature | X509KeyUsage.keyCertSign, notBefore, notAfter,
