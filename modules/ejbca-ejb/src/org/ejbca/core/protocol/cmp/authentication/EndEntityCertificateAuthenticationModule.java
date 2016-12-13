@@ -45,18 +45,20 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -360,32 +362,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                         user.setPassword(password);
                         eeManagementSession.changeUser(admin, user, false);
                     }
-                } catch (AuthorizationDeniedException e) {
-                    if(log.isDebugEnabled()) {
-                        log.debug(e.getLocalizedMessage());
-                    }
-                    this.errorMessage = e.getLocalizedMessage();
-                    return false;
-                } catch (CADoesntExistsException e) {
-                    if(log.isDebugEnabled()) {
-                        log.debug(e.getLocalizedMessage());
-                    }
-                    this.errorMessage = e.getLocalizedMessage();
-                    return false;
-                } catch (UserDoesntFullfillEndEntityProfile e) {
-                    if(log.isDebugEnabled()) {
-                        log.debug(e.getLocalizedMessage());
-                    }
-                    this.errorMessage = e.getLocalizedMessage();
-                    return false;
-                } catch (WaitingForApprovalException e) {
-                    if(log.isDebugEnabled()) {
-                        log.debug(e.getLocalizedMessage());
-                    }
-                    this.errorMessage = e.getLocalizedMessage();
-                    return false;
-                } catch (EjbcaException e) {
-                    if(log.isDebugEnabled()) {
+                } catch (AuthorizationDeniedException | IllegalNameException | CADoesntExistsException | UserDoesntFullfillEndEntityProfile
+                        | WaitingForApprovalException | CertificateSerialNumberException | ApprovalException e) {
+                    if (log.isDebugEnabled()) {
                         log.debug(e.getLocalizedMessage());
                     }
                     this.errorMessage = e.getLocalizedMessage();

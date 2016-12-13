@@ -44,8 +44,10 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
@@ -69,6 +71,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.WrongTokenTypeException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -204,10 +207,13 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 
     /**
      * @throws CADoesntExistsException if userdata.caId is not a valid caid. This is checked in editUser or addUserFromWS
+     * @throws IllegalNameException  if the Subject DN failed constraints
+     * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
+     * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
      */
     private void addOrEditUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, boolean fromwebservice)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, EndEntityExistsException,
-            CADoesntExistsException, EjbcaException {
+            CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, CustomFieldException {
 
         int caid = userdata.getCAId();
         if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid)) {
@@ -283,9 +289,9 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 
     @Override
     public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg,
-            boolean createJKS) throws ApprovalException, EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, EjbcaException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, CertificateException,
-            InvalidAlgorithmParameterException, KeyStoreException {
+            boolean createJKS) throws ApprovalException, EndEntityExistsException, CADoesntExistsException, CertificateSerialNumberException,
+            IllegalNameException, CustomFieldException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NoSuchAlgorithmException,
+            InvalidKeySpecException, CertificateException, InvalidAlgorithmParameterException, KeyStoreException {
 
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
         addOrEditUser(admin, userdata, true, true);
@@ -336,11 +342,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw e;
         } catch (IOException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
+            throw new IllegalStateException(e);
         } catch (CertificateException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (EjbcaException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (InvalidAlgorithmParameterException e) {

@@ -20,8 +20,6 @@ import java.security.NoSuchProviderException;
 import java.security.cert.CRLException;
 import java.security.cert.CertificateEncodingException;
 
-import javax.ejb.FinderException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Enumerated;
@@ -62,6 +60,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -218,7 +217,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		        final String errMsg = INTRES.getLocalizedMessage("cmp.errornotauthrevoke", issuer.toString(), serno.getValue().toString(16));
 		        failText = errMsg; 
 		        LOG.info(failText);
-		    } catch (FinderException e) {
+		    } catch (NoSuchEndEntityException e) {
 		        failInfo = FailInfo.BAD_CERTIFICATE_ID;
 		        final String errMsg = INTRES.getLocalizedMessage("cmp.errorcertnofound", issuer.toString(), serno.getValue().toString(16));
 		        failText = errMsg; 

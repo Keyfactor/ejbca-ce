@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ra;
 import java.util.Collection;
 
 import javax.ejb.EJB;
-import javax.ejb.FinderException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -41,7 +40,7 @@ public class EndEntityManagementProxySessionBean implements EndEntityManagementP
     private EndEntityManagementSessionLocal endEntityManagementSession;
     
     @Override
-    public int decRequestCounter(String username) throws AuthorizationDeniedException, FinderException, ApprovalException,
+    public int decRequestCounter(String username) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException,
             WaitingForApprovalException {
         return endEntityManagementSession.decRequestCounter(username);
     }

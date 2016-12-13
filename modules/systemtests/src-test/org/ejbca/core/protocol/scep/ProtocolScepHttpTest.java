@@ -97,6 +97,7 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -107,6 +108,7 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -133,7 +135,6 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
@@ -225,7 +226,6 @@ public class ProtocolScepHttpTest {
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
     private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @ClassRule
     public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
@@ -900,11 +900,15 @@ public class ProtocolScepHttpTest {
         return data;
     }
 
-    private void createScepUser(String userName, String userDN) throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
+    private void createScepUser(String userName, String userDN)
+            throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            WaitingForApprovalException, EjbcaException, IllegalNameException, CertificateSerialNumberException {
         createScepUser(userName, userDN, x509ca.getCAId());
     }
     
-    private void createScepUser(String userName, String userDN, int caId) throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
+    private void createScepUser(String userName, String userDN, int caId)
+            throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            WaitingForApprovalException, EjbcaException, IllegalNameException, CertificateSerialNumberException {
         if(!endEntityManagementSession.existsUser(userName)) {
             endEntityManagementSession.addUser(admin, getEndEntityInformation(userName, userDN, caId), false);
         } else {
@@ -912,11 +916,13 @@ public class ProtocolScepHttpTest {
         }
     }
 
-    private void changeScepUser(String userName, String userDN) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException  {
+    private void changeScepUser(String userName, String userDN) throws CADoesntExistsException, AuthorizationDeniedException,
+            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, CertificateSerialNumberException, IllegalNameException {
         changeScepUser(userName, userDN, x509ca.getCAId());
     }
     
-    private void changeScepUser(String userName, String userDN, int caId) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException  {
+    private void changeScepUser(String userName, String userDN, int caId) throws CADoesntExistsException, AuthorizationDeniedException,
+            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, CertificateSerialNumberException, IllegalNameException {
         endEntityManagementSession.changeUser(admin, getEndEntityInformation(userName, userDN, caId), false);
         log.debug("changing user: " + userName + ", foo123, " + userDN);
     }
@@ -978,29 +984,6 @@ public class ProtocolScepHttpTest {
         return msgBytes;
     }
     
-    /** Makes a request to the Rollover CA, signed with the given CA certificate (current or next/rollover). */
-    private byte[] genScepRolloverCARequestWithClientCert(X509Certificate caRolloverCert, String digestoid, String userDN, X509Certificate userCert) throws InvalidKeyException,
-            NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException,
-            IOException, CMSException, OperatorCreationException, CertificateException {
-        assertNotNull(keyTestRollover);
-        assertNotNull(caRolloverCert);
-        
-        ScepRequestGenerator gen = new ScepRequestGenerator();
-        gen.setKeys(keyTestRollover, BouncyCastleProvider.PROVIDER_NAME);
-        gen.setDigestOid(digestoid);
-        // Create a transactionId
-        byte[] randBytes = new byte[16];
-        this.rand.nextBytes(randBytes);
-        byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
-        transId = new String(Base64.encode(digest));
-        final byte[] msgBytes = gen.generateCertReq(userDN, "", transId, caRolloverCert, userCert, keyTestRollover.getPrivate());
-        assertNotNull(msgBytes);
-        senderNonce = gen.getSenderNonce();
-        byte[] nonceBytes = Base64.decode(senderNonce.getBytes());
-        assertTrue(nonceBytes.length == 16);
-        return msgBytes;
-    }
-
     private void checkScepResponse(byte[] retMsg, String userDN, String _senderNonce, String _transId, boolean crlRep, String digestOid, boolean noca)
             throws CMSException, OperatorCreationException, NoSuchProviderException, CRLException, InvalidKeyException, NoSuchAlgorithmException,
             SignatureException, CertificateException {
@@ -1089,6 +1072,7 @@ public class ProtocolScepHttpTest {
             final byte[] content = (byte[]) sp.getContent();
             final CMSEnvelopedData ed = new CMSEnvelopedData(content);
             final RecipientInformationStore recipients = ed.getRecipientInfos();
+            @SuppressWarnings("rawtypes")
             Store certstore;
 
             Collection<RecipientInformation> c = recipients.getRecipients();

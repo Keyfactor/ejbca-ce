@@ -16,14 +16,13 @@ package org.ejbca.ui.cli.ra;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.ejb.FinderException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -122,7 +121,7 @@ public class RevokeEndEntityCommand extends BaseRaCommand {
                 getLogger().info("Revocation request has been sent for approval.");
             } catch (AlreadyRevokedException e) {
                 log.error("ERROR: " + e.getMessage());
-            } catch (FinderException e) {
+            } catch (NoSuchEndEntityException e) {
                 log.error("ERROR: " + e.getMessage());
             }
         }

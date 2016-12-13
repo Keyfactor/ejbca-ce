@@ -21,8 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
-import javax.ejb.FinderException;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -37,6 +35,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -50,6 +50,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -326,7 +327,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     // Private helper methods
     //
     private void createCmpUser(String username, String dn) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            ApprovalException, WaitingForApprovalException, EjbcaException, FinderException, CADoesntExistsException {
+            ApprovalException, WaitingForApprovalException, EjbcaException, NoSuchEndEntityException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException {
         // Make user that we know...
         boolean userExists = false;
         try {

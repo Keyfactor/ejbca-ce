@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
@@ -29,6 +28,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -38,7 +38,6 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.NotFoundException;
 
 /**
  * 
@@ -131,9 +130,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 			throw new EJBException("This should never happen",e);
 		} catch (AlreadyRevokedException e) {
 			throw new ApprovalRequestExecutionException("End entity " + username + " was already revoked at execution time.");
-		} catch (FinderException e) {
-			throw new ApprovalRequestExecutionException("Could not find object.",e);
-		} catch (NotFoundException e) {
+		} catch (NoSuchEndEntityException e) {
 			throw new ApprovalRequestExecutionException("Could not find object.",e);
 		} catch (RemoveException e) {
 			throw new ApprovalRequestExecutionException("Could not remove object.",e);

@@ -22,7 +22,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -31,7 +33,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -40,6 +41,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -269,12 +271,16 @@ public class AddEndEntityCommand extends BaseRaCommand {
                 getLogger().error("\nOperation pending, waiting for approval: " + e.getMessage());
             } catch (ApprovalException e) {
                 getLogger().error("\nApproval exception: " + e.getMessage());
-            } catch (EjbcaException e) {
-                getLogger().error(e.getMessage());
-            } catch (EndEntityExistsException e) {
+            }  catch (EndEntityExistsException e) {
                 log.error("ERROR: End entity already exists.");
             } catch (CADoesntExistsException e) {
                 throw new IllegalStateException("Should not happen, CA has already been checked.", e);
+            } catch (CustomFieldException e) {
+                getLogger().error(e.getMessage());
+            } catch (IllegalNameException e) {
+                getLogger().error(e.getMessage());
+            } catch (CertificateSerialNumberException e) {
+                getLogger().error(e.getMessage());
             }
         }
         return CommandResult.FUNCTIONAL_FAILURE;

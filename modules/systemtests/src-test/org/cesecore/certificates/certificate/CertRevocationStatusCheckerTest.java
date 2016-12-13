@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.ejb.FinderException;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.cert.ocsp.SingleResp;
@@ -41,8 +39,10 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
@@ -61,12 +61,13 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.PKIXCertRevocationStatusChecker;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -700,8 +701,9 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
 
 
     
-    private void createUser(final String username, final String dn, final int caid, final int eepid, final int cpid) throws AuthorizationDeniedException,
-                        UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, FinderException, CADoesntExistsException {
+    private void createUser(final String username, final String dn, final int caid, final int eepid, final int cpid)
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, NoSuchEndEntityException,
+            CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException {
         final EndEntityInformation user = new EndEntityInformation(username, dn, caid, null, username + "@primekey.se",
                 new EndEntityType(EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");

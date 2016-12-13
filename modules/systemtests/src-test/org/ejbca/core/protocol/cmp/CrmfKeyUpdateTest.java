@@ -35,7 +35,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.security.auth.x500.X500Principal;
 
@@ -99,10 +98,10 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
@@ -237,7 +236,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final Certificate certificate;
         try {
             certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
-        } catch (ObjectNotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
@@ -317,7 +316,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final Certificate certificate;
         try {
             certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
-        } catch (ObjectNotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
@@ -408,7 +407,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final Certificate certificate;
         try {
             certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
-        } catch (ObjectNotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
@@ -1368,7 +1367,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final Certificate certificate;
         try {
             certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
-        } catch (ObjectNotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
@@ -1445,7 +1444,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final Certificate certificate;
         try {
             certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
-        } catch (ObjectNotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
@@ -1663,7 +1662,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
         try {
             certificate = (X509Certificate) this.signSession.createCertificate(ADMIN, adminName, "foo123", new PublicKeyWrapper(keys.getPublic()));
-        } catch (ObjectNotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
@@ -1680,7 +1679,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     }
 
     private void removeAuthenticationToken(AuthenticationToken authToken, Certificate cert, String adminName) throws RoleNotFoundException,
-            AuthorizationDeniedException, ApprovalException, NotFoundException, WaitingForApprovalException, RemoveException {
+            AuthorizationDeniedException, ApprovalException, NoSuchEndEntityException, WaitingForApprovalException, RemoveException {
         String rolename = "Super Administrator Role";
 
         RoleData roledata = this.roleAccessSessionRemote.findRole("Super Administrator Role");

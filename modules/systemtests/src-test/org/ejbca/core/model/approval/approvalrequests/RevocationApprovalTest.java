@@ -76,6 +76,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -83,7 +84,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.ws.BatchCreateTool;
 import org.junit.After;
 import org.junit.Before;
@@ -360,7 +360,7 @@ public class RevocationApprovalTest extends CaTestCase {
         } finally {
             try {
                 endEntityManagementSession.deleteUser(internalAdmin, username);
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 // This is what we expect if everything went ok
             }
         }

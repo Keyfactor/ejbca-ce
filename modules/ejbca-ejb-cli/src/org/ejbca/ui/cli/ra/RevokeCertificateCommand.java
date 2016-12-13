@@ -15,8 +15,6 @@ package org.ejbca.ui.cli.ra;
 
 import java.math.BigInteger;
 
-import javax.ejb.FinderException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -24,6 +22,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -108,7 +107,7 @@ public class RevokeCertificateCommand extends BaseRaCommand {
                     } catch (AuthorizationDeniedException e) {
                        log.error("ERROR: CLI user not authorized to revoke certificate.");
                        return CommandResult.FUNCTIONAL_FAILURE;
-                    } catch (FinderException e) {
+                    } catch (NoSuchEndEntityException e) {
                         log.error("ERROR: " + e.getMessage());
                         return CommandResult.FUNCTIONAL_FAILURE;
                     } catch (WaitingForApprovalException e) {

@@ -14,7 +14,6 @@ package org.ejbca.core.ejb.ra;
 
 import java.util.Collection;
 
-import javax.ejb.FinderException;
 import javax.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -42,9 +41,9 @@ public interface EndEntityManagementProxySessionRemote {
      * 
      * @param username the unique username.
      * @param status the new status, from 'UserData'.
-     * @throws FinderException if user does not exist
+     * @throws NoSuchEndEntityException if user does not exist
      */
-    public int decRequestCounter(String username) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException;
+    public int decRequestCounter(String username) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, NoSuchEndEntityException;
     
     /**
      * Method to execute a customized query on the ra user data. The parameter

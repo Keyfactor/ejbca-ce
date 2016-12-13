@@ -33,7 +33,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.ObjectNotFoundException;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
@@ -94,6 +93,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -838,7 +838,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
 
         try {
             certificate = (X509Certificate) signSession.createCertificate(ADMIN, adminName, "foo123", new PublicKeyWrapper(keys.getPublic()));
-        } catch (ObjectNotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException(e.getLocalizedMessage(), e);
         } catch (CADoesntExistsException e) {
             throw new IllegalStateException(e.getLocalizedMessage(), e);

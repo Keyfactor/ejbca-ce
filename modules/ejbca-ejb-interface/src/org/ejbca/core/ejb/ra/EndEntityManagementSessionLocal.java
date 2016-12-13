@@ -17,7 +17,6 @@ import java.util.List;
 
 import javax.ejb.FinderException;
 import javax.ejb.Local;
-import javax.ejb.ObjectNotFoundException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -37,7 +36,7 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
      * 
      * @return Collection of EndEntityInformation
      */
-    Collection<EndEntityInformation> findAllUsersWithLimit(AuthenticationToken admin) throws FinderException;
+    Collection<EndEntityInformation> findAllUsersWithLimit(AuthenticationToken admin);
 
     /**
      * Methods that checks if a user exists in the database having the given
@@ -82,16 +81,17 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
     /**
      * Cleans the certificate serial number from the user data. Should be called
      * after the data has been used.
+     * @throws NoSuchEndEntityException if no end entity was found
      * 
-     * @throws ObjectNotFoundException if the user does not exist.
      */
-    void cleanUserCertDataSN(EndEntityInformation data) throws ObjectNotFoundException;
+    void cleanUserCertDataSN(EndEntityInformation data) throws NoSuchEndEntityException;
 
     /**
      * Removes the certificate serial number from the user data.
      * @param username the unique username.
+     * @throws NoSuchEndEntityException if the end entity was not found
      */
-    void cleanUserCertDataSN(String username) throws FinderException, ApprovalException, WaitingForApprovalException;
+    void cleanUserCertDataSN(String username) throws ApprovalException, WaitingForApprovalException, NoSuchEndEntityException;
 
     /**
      * Decrements the remaining failed login attempts counter. If the counter
@@ -101,9 +101,9 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
      * 
      * @param admin the administrator performing the action
      * @param username the unique username of the user
-     * @throws FinderException if the entity does not exist
+     * @throws NoSuchEndEntityException if the entity does not exist
      */
-    void decRemainingLoginAttempts(String username) throws FinderException;
+    void decRemainingLoginAttempts(String username) throws NoSuchEndEntityException;
 
     /**
      * Decreases (the optional) request counter by 1, until it reaches 0.
@@ -113,9 +113,9 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
      * 
      * @param username the unique username.
      * @param status the new status, from 'UserData'.
-     * @throws FinderException if user does not exist
+     * @throws NoSuchEndEntityException if user does not exist
      */
-    int decRequestCounter(String username) throws FinderException, ApprovalException, WaitingForApprovalException;
+    int decRequestCounter(String username) throws NoSuchEndEntityException, ApprovalException, WaitingForApprovalException;
     
     /**
      * Resets the remaining failed login attempts counter to the user's max login attempts value.

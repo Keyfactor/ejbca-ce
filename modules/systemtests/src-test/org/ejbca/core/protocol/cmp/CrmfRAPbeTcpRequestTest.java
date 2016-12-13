@@ -40,7 +40,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -128,7 +128,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         boolean cleanUpOk = true;
         try {
             this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
-        } catch (NotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             // A test probably failed before creating the entity
             log.error("Failed to delete user \"cmptest\".");
             cleanUpOk = false;
