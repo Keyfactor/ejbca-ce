@@ -527,9 +527,17 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                     } catch (CertPathValidatorException e) {
                         // NOPMD
                     }
-                    boolean isRollover = signedByRolloverCAKey &&
-                            x509Certificate.getNotBefore().equals(CertTools.getNotBefore(rolloverCA));
+                    // Check that the EE roll-over certificate validity starts equal to or after the roll-over CA certificates validity
+                    final Date notBeforeX509Certificate = CertTools.getNotBefore(x509Certificate);
+                    final Date notBeforeRolloverCA = CertTools.getNotBefore(rolloverCA);
+                    final boolean eeCertValidUnderCaValidity = !notBeforeX509Certificate.before(notBeforeRolloverCA);
+                    final boolean isRollover = signedByRolloverCAKey && eeCertValidUnderCaValidity;
                     if (isRollover != findRollover) {
+                        if (log.isTraceEnabled()) {
+                            final String fingerprint = CertTools.getFingerprintAsString(x509Certificate);
+                            log.trace("Certificate with fingerprint '"+fingerprint+"' is not considered a rollover certificate. signedByRolloverCAKey: " +
+                                    signedByRolloverCAKey + " leaf not before: " + notBeforeX509Certificate + " CA not before: " + notBeforeRolloverCA);
+                        }
                         continue;
                     }
                 }
