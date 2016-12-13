@@ -74,6 +74,7 @@ import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionProxyRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -81,7 +82,6 @@ import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.ws.BatchCreateTool;
@@ -91,7 +91,6 @@ import org.ejbca.util.query.Query;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -287,7 +286,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         } finally {
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 // NOPMD: ignore
             }
         }
@@ -405,7 +404,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         } finally {
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 // NOPMD: ignore
             }
             this.endEntityProfileSession.removeEndEntityProfile(ADMIN, keyId);
@@ -572,7 +571,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         } finally {
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 // NOPMD: ignore
             }
         }

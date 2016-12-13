@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -102,7 +102,7 @@ public class DeleteEndEntityCommand extends BaseRaCommand {
                                 + username + "'.");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
-        } catch (NotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             getLogger().error("ERROR: No such end entity.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }

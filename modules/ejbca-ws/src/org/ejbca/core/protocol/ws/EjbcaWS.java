@@ -86,6 +86,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -93,6 +94,7 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
@@ -142,6 +144,7 @@ import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -337,6 +340,10 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_ALREADY_EXISTS, Level.INFO);
         } catch (RuntimeException e) {  // ClassCastException, EJBException, ...
             throw EjbcaWSHelper.getInternalException(e, logger);
+        } catch (IllegalNameException e) {
+            throw new EjbcaException(e);
+        } catch (CertificateSerialNumberException e) {
+            throw new EjbcaException(e);
         } finally {
             logger.writeln();
             logger.flush();
@@ -1014,7 +1021,7 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (ServiceLocatorException e) {
 			ejbhelper.resetUserPasswordAndStatus(admin, username, olduserStatus);
 		    throw EjbcaWSHelper.getInternalException(e, logger);
-		} catch (FinderException e) {
+		} catch (NoSuchEndEntityException e) {
 			ejbhelper.resetUserPasswordAndStatus(admin, username, olduserStatus);
 		    throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (ParseException e) {
@@ -1342,7 +1349,7 @@ public class EjbcaWS implements IEjbcaWS {
 			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
 			// that was permanently revoked
 			endEntityManagementSession.revokeCert(admin, serno, date, issuerDN, reason, true);
-		} catch (FinderException e) {
+		} catch (NoSuchEndEntityException e) {
 			throw new NotFoundException(e.getMessage());
 		} catch (RuntimeException e) {	// EJBException, ClassCastException, ...
 			throw EjbcaWSHelper.getInternalException(e, logger);
@@ -1420,7 +1427,7 @@ public class EjbcaWS implements IEjbcaWS {
 			} else {
 				endEntityManagementSession.revokeUser(admin,username,reason);
 			}
-		}  catch (FinderException e) {
+		}  catch (NoSuchEndEntityException e) {
 			throw new NotFoundException(e.getMessage());
 		} catch (RemoveException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
@@ -1606,7 +1613,7 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (AlreadyRevokedException e) {
             throw EjbcaWSHelper.getEjbcaException(e.getMessage(), logger, ErrorCode.CERT_WRONG_STATUS, null);
-		} catch (FinderException e) {
+		} catch (NoSuchEndEntityException e) {
 			throw new NotFoundException(e.getMessage());
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
             throw EjbcaWSHelper.getInternalException(e, logger);
@@ -1873,7 +1880,7 @@ public class EjbcaWS implements IEjbcaWS {
 							endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(nextCert), CertTools.getIssuerDN(nextCert), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
 						} catch (AlreadyRevokedException e) {
 							// Ignore previously revoked certificates
-						} catch (FinderException e) {
+						} catch (NoSuchEndEntityException e) {
                             throw EjbcaWSHelper.getEjbcaException("Error revoking old certificate, the user : " + currentHardToken.getUsername() + " of the old certificate couldn't be found in database.",
                                                     logger, ErrorCode.USER_NOT_FOUND, null);
 						} 
@@ -1906,7 +1913,7 @@ public class EjbcaWS implements IEjbcaWS {
 										}
 									}catch(CertificateParsingException e){
 										log.error(e);
-									} catch (FinderException e) {
+									} catch (NoSuchEndEntityException e) {
 										log.error(e);
 									}	
 								}
@@ -2080,7 +2087,7 @@ public class EjbcaWS implements IEjbcaWS {
 			    // after a call to genTokenCertificates this affect a follow up call to getHardTokenData
 				approvalSession.markAsStepDone(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_1_GENERATETOKEN);
 			}
-        } catch (FinderException e) {
+        } catch (NoSuchEndEntityException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
             throw EjbcaWSHelper.getInternalException(e, logger);
@@ -2840,8 +2847,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
 		} catch (AuthLoginException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
-		} catch (InvalidKeySpecException e) {
-            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.INVALID_KEY_SPEC, Level.ERROR);
 		} catch (NoSuchAlgorithmException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (NoSuchProviderException e) {
@@ -2852,12 +2857,18 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (IOException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		} catch (InvalidAlgorithmParameterException e) {
-           throw EjbcaWSHelper.getInternalException(e, logger);
-        } catch (RuntimeException e) {	// EJBException, ...
-            throw EjbcaWSHelper.getInternalException(e, logger);
-		} catch (EndEntityExistsException e) {
+		}  catch (EndEntityExistsException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_ALREADY_EXISTS, Level.INFO);
+        } catch (CertificateSerialNumberException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
+        } catch (IllegalNameException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
+        } catch (InvalidKeySpecException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
+        } catch (InvalidAlgorithmParameterException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
+        } catch (RuntimeException e) {  // EJBException, ...
+            throw EjbcaWSHelper.getInternalException(e, logger);
         } finally {
             logger.writeln();
             logger.flush();

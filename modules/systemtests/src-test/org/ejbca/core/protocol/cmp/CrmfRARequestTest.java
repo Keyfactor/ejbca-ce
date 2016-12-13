@@ -86,8 +86,8 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.junit.After;
@@ -280,19 +280,19 @@ public class CrmfRARequestTest extends CmpTestCase {
         } finally {
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, userName1);
-            } catch (NotFoundException e) {// Do nothing.
+            } catch (NoSuchEndEntityException e) {// Do nothing.
             }
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, userName2);
-            } catch (NotFoundException e) {// Do nothing.
+            } catch (NoSuchEndEntityException e) {// Do nothing.
             }
             try {
                 this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, "SameDNUser", ReasonFlags.unused);
-            } catch (NotFoundException e) {// Do nothing.
+            } catch (NoSuchEndEntityException e) {// Do nothing.
             }
             try {
                 this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, "samednuser1", ReasonFlags.unused);
-            } catch (NotFoundException e) {// Do nothing.
+            } catch (NoSuchEndEntityException e) {// Do nothing.
             }
         }
     }
@@ -345,7 +345,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         } finally {
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, "keyIDTestUser");
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 // NOPMD
             }
         }
@@ -408,12 +408,12 @@ public class CrmfRARequestTest extends CmpTestCase {
 
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, "keyIDTestUser");
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 // NOPMD
             }
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, "keyidtest2");
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 // NOPMD
             }
 
@@ -499,12 +499,12 @@ public class CrmfRARequestTest extends CmpTestCase {
             } finally {
                 try {
                     this.endEntityManagementSession.deleteUser(ADMIN, "keyIDTestUser");
-                } catch (NotFoundException e) {
+                } catch (NoSuchEndEntityException e) {
                     // NOPMD
                 }
                 try {
                     this.endEntityManagementSession.deleteUser(ADMIN, "keyidtest2");
-                } catch (NotFoundException e) {
+                } catch (NoSuchEndEntityException e) {
                     // NOPMD
                 }
             }      
@@ -572,7 +572,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         } finally {
             try {
                 this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, "TestAltNameUser", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-            } catch (NotFoundException e) {/*Do nothing*/}
+            } catch (NoSuchEndEntityException e) {/*Do nothing*/}
             
             try{
                 this.internalCertStoreSession.removeCertificate(fingerprint);
@@ -685,7 +685,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             } finally {
                 try {
                     this.endEntityManagementSession.deleteUser(ADMIN, userName1);
-                } catch (NotFoundException e) {// Do nothing
+                } catch (NoSuchEndEntityException e) {// Do nothing
                 }
             }
         } finally {
@@ -738,7 +738,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             String escapedName = "another/nullguy/00\\<do\\>";
             try {
                 this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, escapedName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 log.debug("Failed to delete user: " + escapedName);
             }
         }
@@ -966,7 +966,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         } finally {
             try {
                 this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 log.debug("Failed to delete user: " + username);
             }
         }
@@ -1174,7 +1174,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         } finally {
             try {
                 this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 log.debug("Failed to delete user: " + username);
             }
         }

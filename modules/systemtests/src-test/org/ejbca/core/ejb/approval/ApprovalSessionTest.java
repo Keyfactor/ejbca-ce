@@ -74,6 +74,7 @@ import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRem
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -87,7 +88,6 @@ import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.ws.BatchCreateTool;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
@@ -517,7 +517,7 @@ public class ApprovalSessionTest extends CaTestCase {
         } finally {
             try {
                 EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).deleteUser(intadmin, username);
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 // NOPMD: ignore if the user does not exist
             }
         }

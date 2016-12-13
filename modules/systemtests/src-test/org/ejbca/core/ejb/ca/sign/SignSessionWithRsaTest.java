@@ -125,7 +125,6 @@ import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -784,7 +783,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             publisherSession.removePublisher(internalAdmin, publisherName);
             try {
                 endEntityManagementSession.deleteUser(internalAdmin, username);
-            } catch (RemoveException | NotFoundException e) {
+            } catch (RemoveException | NoSuchEndEntityException e) {
                 //NOPMD Ignore...
             }
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);

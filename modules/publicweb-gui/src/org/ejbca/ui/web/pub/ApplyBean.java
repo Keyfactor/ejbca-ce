@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.FinderException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -41,6 +40,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -264,7 +264,7 @@ public class ApplyBean implements Serializable {
         if(!username.equals(this.username) || this.endEntityInformation == null){
             try {
                 this.userOk = ejbLocalHelper.getEndEntityManagementSession().verifyPassword(administrator, username, password);
-            } catch (FinderException e) {
+            } catch (NoSuchEndEntityException e) {
                 // Username does not exist
                 this.userOk = false;
             }

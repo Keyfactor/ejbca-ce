@@ -13,12 +13,11 @@
 
 package org.ejbca.ui.cli.ra;
 
-import javax.ejb.FinderException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -69,7 +68,7 @@ public class SetPasswordCommand extends BaseRaCommand {
             getLogger().error("Not authorized to change userdata.");
         } catch (UserDoesntFullfillEndEntityProfile e) {
             getLogger().error("Given end entity doesn't fullfill profile.");
-        } catch (FinderException e) {
+        } catch (NoSuchEndEntityException e) {
             getLogger().error("End entity with username '" + username + "' does not exist.");
         }
         return CommandResult.FUNCTIONAL_FAILURE;

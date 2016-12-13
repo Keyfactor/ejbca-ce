@@ -4271,7 +4271,7 @@ public abstract class CertTools {
      * @param issuer Issuing CA.
      * @param subjectDNName Subject DN to check. Optional.
      * @param subjectAltName Subject Alternative Name to check. Optional.
-     * @throws CertificateExtensionException
+     * @throws IllegalNameException
      */
     public static void checkNameConstraints(X509Certificate issuer, X500Name subjectDNName, GeneralNames subjectAltName) throws IllegalNameException {
         final byte[] ncbytes = issuer.getExtensionValue(Extension.nameConstraints.getId());

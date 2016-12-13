@@ -76,9 +76,9 @@ import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -160,7 +160,7 @@ public class CrmfRequestTest extends CmpTestCase {
         
         try {
             this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
-        } catch (NotFoundException e) {
+        } catch (NoSuchEndEntityException e) {
             // A test probably failed before creating the entity
             log.debug("Failed to delete USER \"cmptest\".");
         }
@@ -488,7 +488,7 @@ public class CrmfRequestTest extends CmpTestCase {
             String escapedName = StringTools.stripUsername(sRequestName);
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, escapedName);
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 // A test probably failed before creating the entity
                 log.debug("Failed to delete USER: " + escapedName);
             }
@@ -537,7 +537,7 @@ public class CrmfRequestTest extends CmpTestCase {
             String escapedName = StringTools.strip(username);
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, escapedName);
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 // A test probably failed before creating the entity
                 log.debug("Failed to delete USER: " + escapedName);
             }
@@ -639,7 +639,7 @@ public class CrmfRequestTest extends CmpTestCase {
         } finally {
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, username);
-            } catch (NotFoundException e) {
+            } catch (NoSuchEndEntityException e) {
                 // A test probably failed before creating the entity
                 log.debug("Failed to delete user: " + username);
             }
