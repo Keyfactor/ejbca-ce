@@ -546,7 +546,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         boolean authorizedToAudit = accessControlSession.isAuthorizedNoLogging(authenticationToken, AuditLogRules.VIEW.resource());
         
         if (!authorizedToApproveCAActions && !authorizedToApproveRAActions && !authorizedToAudit) {
-            throw new AuthorizationDeniedException("Not authorized to query apporvals");
+            throw new AuthorizationDeniedException("Not authorized to query approvals");
         }
 
         String endentityauth = null;
