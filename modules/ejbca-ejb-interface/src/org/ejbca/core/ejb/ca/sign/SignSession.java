@@ -148,7 +148,7 @@ public interface SignSession {
      * @throws ObjectNotFoundException if the user does not exist.
      * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
      * @throws CADoesntExistsException if the CA defined by caId doesn't exist.
-     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthStatusException     If the end entity's status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
      * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
      * @throws CAOfflineException if the CA was offline

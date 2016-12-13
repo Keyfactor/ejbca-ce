@@ -2835,15 +2835,11 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( NotFoundException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
-		} catch (InvalidKeyException e) {
-            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.INVALID_KEY, Level.ERROR);
 		} catch (AuthStatusException e) {
 			// Don't log a bad error for this (user wrong status)
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
 		} catch (AuthLoginException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
-		} catch (SignatureException e) {
-            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.SIGNATURE_ERROR, Level.ERROR);
 		} catch (InvalidKeySpecException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.INVALID_KEY_SPEC, Level.ERROR);
 		} catch (NoSuchAlgorithmException e) {
@@ -2854,13 +2850,9 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (CertificateException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		} catch (CreateException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (IOException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		} catch (FinderException e) {
-			throw new NotFoundException(e.getMessage());
-        } catch (InvalidAlgorithmParameterException e) {
+		} catch (InvalidAlgorithmParameterException e) {
            throw EjbcaWSHelper.getInternalException(e, logger);
         } catch (RuntimeException e) {	// EJBException, ...
             throw EjbcaWSHelper.getInternalException(e, logger);

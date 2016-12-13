@@ -133,10 +133,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
     @Override
     public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final CA ca,
-            final RequestMessage requestMessage, final Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams, final long updateTime) throws CryptoTokenOfflineException,
-            SignRequestSignatureException, IllegalKeyException, IllegalNameException, CustomCertificateSerialNumberException,
-            CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, AuthorizationDeniedException,
-            IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
+            final RequestMessage requestMessage, final Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams,
+            final long updateTime) throws CryptoTokenOfflineException, SignRequestSignatureException, IllegalKeyException, IllegalNameException,
+            CustomCertificateSerialNumberException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException,
+            AuthorizationDeniedException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(IRequestMessage, CA)");
         }
@@ -306,11 +306,12 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     }
     
     @Override
-    public CertificateDataWrapper createCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final CA ca, final RequestMessage request,
-            final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence,
-            CertificateGenerationParams certGenParams, final long updateTime) throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException,
-            CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
-            IllegalKeyException, CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
+    public CertificateDataWrapper createCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final CA ca,
+            final RequestMessage request, final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter,
+            final Extensions extensions, final String sequence, CertificateGenerationParams certGenParams, final long updateTime)
+            throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException,
+            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
+            CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)");
         }

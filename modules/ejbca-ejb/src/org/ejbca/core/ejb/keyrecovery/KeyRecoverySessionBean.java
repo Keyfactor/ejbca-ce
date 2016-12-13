@@ -303,11 +303,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
 
     @Override
-    public KeyRecoveryInformation keyRecovery(AuthenticationToken admin, String username, int endEntityProfileId) throws AuthorizationDeniedException {
-        return recoverKeys(admin, username, endEntityProfileId);
-    }
-    
-    @Override
     public KeyRecoveryInformation recoverKeys(AuthenticationToken admin, String username, int endEntityProfileId) throws AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
             log.trace(">keyRecovery(user: " + username + ")");

@@ -131,7 +131,7 @@ public class CertificateValidity {
 			log.debug("Certificate profile expiration restrictions for weekdays before: "+certProfile.getExpirationRestrictionForWeekdaysExpireBefore());
 		}
 		if ( TOO_LATE_EXPIRE_DATE==null ) {
-		    throw new IllegalValidityException("ca.toolateexpiredate in ejbca.properties is not a valid date.");
+		    throw new IllegalStateException("ca.toolateexpiredate in cesecore.properties is not a valid date.");
 		}
         
 		// ECA-3554 add the offset
@@ -248,7 +248,8 @@ public class CertificateValidity {
      * @param firstDate the start time.
      * @return the encoded validity.
      */
-	private long getCertificateProfileValidtyEndDate(CertificateProfile profile, Date firstDate) {
+	@SuppressWarnings("deprecation")
+    private long getCertificateProfileValidtyEndDate(CertificateProfile profile, Date firstDate) {
         final String encodedValidity = profile.getEncodedValidity();
         Date date = null;
         if (StringUtils.isNotBlank(encodedValidity)) {

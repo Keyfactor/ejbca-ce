@@ -15,6 +15,7 @@ package org.ejbca.core.model.era;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -23,6 +24,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -104,6 +106,7 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -1172,11 +1175,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public byte[] generateKeyStore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException{
         GenerateToken tgen = new GenerateToken(endEntityAuthenticationSessionLocal, endEntityAccessSession, endEntityManagementSessionLocal, caSession, keyRecoverySessionLocal, signSessionLocal);
         KeyStore keyStore;
+
         try {
-            keyStore = tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(), endEntity.getExtendedinformation().getKeyStoreAlgorithmSubType(), endEntity.getExtendedinformation().getKeyStoreAlgorithmType(), endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
-        } catch (Exception e1) {
-            throw new KeyStoreGeneralRaException(e1);
+            keyStore = tgen.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(),
+                    endEntity.getExtendedinformation().getKeyStoreAlgorithmSubType(), endEntity.getExtendedinformation().getKeyStoreAlgorithmType(),
+                    endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
+        } catch (KeyStoreException | InvalidAlgorithmParameterException | CADoesntExistsException | IllegalKeyException
+                | CertificateCreateException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException
+                | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException | InvalidAlgorithmException
+                | CustomCertificateSerialNumberException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException
+                | UserDoesntFullfillEndEntityProfile | FinderException | CertificateSignatureException e) {
+            throw new KeyStoreGeneralRaException(e);
         }
+      
         if(endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM){
             try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
                 outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
