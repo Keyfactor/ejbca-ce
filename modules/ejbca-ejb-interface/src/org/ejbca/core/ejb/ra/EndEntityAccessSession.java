@@ -31,6 +31,8 @@ public interface EndEntityAccessSession {
      * 
      * @param admin the administrator performing the action
      * @return EndEntityInformation or null if the user is not found.
+     * 
+     * @throws AuthorizationDeniedException if the admin was not authorized to the end entity profile or issuing CA
      */
     EndEntityInformation findUser(AuthenticationToken admin, String username) throws AuthorizationDeniedException;
 

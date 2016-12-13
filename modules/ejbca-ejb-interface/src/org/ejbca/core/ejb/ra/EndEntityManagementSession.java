@@ -338,6 +338,8 @@ public interface EndEntityManagementSession {
      * 
      * @throws ApprovalException if an approval already is waiting for specified action
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
+     * @throws FinderException if the end entity was not found
+     * 
      */
     void setUserStatusAfterApproval(AuthenticationToken admin, String username, int status, int approvalRequestID, AuthenticationToken lastApprovingAdmin) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException;
     
@@ -347,6 +349,8 @@ public interface EndEntityManagementSession {
      * @param admin the administrator performing the action
      * @param username the unique username.
      * @param password the new password for the user, NOT null.
+     * 
+     * @throws FinderException if the end entity was not found
      */
     void setPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException;
 
@@ -358,6 +362,8 @@ public interface EndEntityManagementSession {
      * @param password the new password to be stored in clear text. Setting
      *            password to 'null' effectively deletes any previous clear
      *            text password.
+     * 
+     * @throws FinderException if the end entity was not found
      */
     void setClearTextPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException;
 
@@ -368,6 +374,8 @@ public interface EndEntityManagementSession {
      * @param username the unique username.
      * @param password the password to be verified.
      * @return true if password was correct, false otherwise
+     * 
+     * @throws FinderException if the end entity was not found
      */
     boolean verifyPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException;
 

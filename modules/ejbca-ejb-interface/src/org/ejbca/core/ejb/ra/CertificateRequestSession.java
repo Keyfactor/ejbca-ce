@@ -89,8 +89,8 @@ public interface CertificateRequestSession {
      * @param createJKS true to create a JKS, false to create a PKCS12
      * @return an encoded keystore of the type specified in responseType 
      */
-    public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg, boolean createJKS) throws CADoesntExistsException,
-            AuthorizationDeniedException, NotFoundException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException,
-            ObjectNotFoundException, CreateException, CertificateException, UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException,
-            KeyStoreException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, EndEntityExistsException;
+    public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg,
+            boolean createJKS) throws ApprovalException, EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException,
+            UserDoesntFullfillEndEntityProfile, EjbcaException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, CertificateException,
+            InvalidAlgorithmParameterException, KeyStoreException;
 }

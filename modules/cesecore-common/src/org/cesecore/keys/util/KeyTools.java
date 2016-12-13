@@ -148,7 +148,7 @@ public final class KeyTools {
      * @see org.bouncycastle.asn1.sec.SECNamedCurves
      * 
      * @return KeyPair the generated keypair
-     * @throws InvalidAlgorithmParameterException
+     * @throws InvalidAlgorithmParameterException  if the given parameters are inappropriate for this key pair generator.
      * @see org.cesecore.certificates.util.AlgorithmConstants#KEYALGORITHM_RSA
      */
     public static KeyPair genKeys(final String keySpec, final AlgorithmParameterSpec algSpec, final String keyAlg) throws InvalidAlgorithmParameterException {
@@ -170,7 +170,7 @@ public final class KeyTools {
                 // We have EC keys
                 ECGenParameterSpec bcSpec = new ECGenParameterSpec(keySpec);
                 keygen.initialize(bcSpec, new SecureRandom());
-                // The old code should work in BC v1.50b6 and later, but in vesions prior to that the below produces a key with explicit parameter encoding instead of named curves.
+                // The old code should work in BC v1.50b6 and later, but in versions prior to that the below produces a key with explicit parameter encoding instead of named curves.
                 // There is a test for this in KeyToolsTest.testGenKeysECDSAx9
                 //                ecSpec = ECNamedCurveTable.getParameterSpec(keySpec);
                 //                if (ecSpec == null) {
@@ -240,6 +240,8 @@ public final class KeyTools {
 
     /**
      * @see KeyTools#genKeys(String,AlgorithmParameterSpec,String)
+     * 
+     * @throws InvalidAlgorithmParameterException  if the given parameters are inappropriate for this key pair generator.
      */
     public static KeyPair genKeys(final String keySpec, final String keyAlg) throws InvalidAlgorithmParameterException {
        return genKeys(keySpec, null, keyAlg);
@@ -504,11 +506,14 @@ public final class KeyTools {
      * @param cachain
      *            CA-certificate chain or null if only one cert in chain, in that case use 'cert'.
      * @return KeyStore containing PKCS12-keystore
-     * @exception Exception
-     *                if input parameters are not OK or certificate generation fails
+     * @throws CertificateException if the certificate couldn't be parsed
+     * @throws CertificateEncodingException if the encoded bytestream of the certificate couldn't be retrieved
+     * @throws NoSuchAlgorithmException if the algorithm defined in privKey couldn't be found
+     * @throws InvalidKeySpecException if the key specification defined in privKey couldn't be found
+
      */
     public static KeyStore createP12(final String alias, final PrivateKey privKey, final Certificate cert, final Certificate[] cachain)
-            throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+            throws CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (log.isTraceEnabled()) {
             log.trace(">createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length="
                     + ((cachain == null) ? 0 : cachain.length));
@@ -595,6 +600,10 @@ public final class KeyTools {
             return store;
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException("BouncyCastle provider was not found.", e);
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("PKCS12 keystore type could not be instanced.", e);
+        } catch (IOException e) {
+            throw new IllegalStateException("IOException should not be thrown when instancing an empty keystore.", e);
         }
     } // createP12
 

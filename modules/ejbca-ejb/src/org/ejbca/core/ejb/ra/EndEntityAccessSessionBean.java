@@ -192,7 +192,11 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         return returnval;
     }
 
-    /** @return the userdata value object if admin is authorized. Does not leak username if auth fails. */
+    /** 
+     * @return the userdata value object if admin is authorized. Does not leak username if auth fails. 
+     * 
+     * @throws AuthorizationDeniedException if the admin was not authorized to the end entity profile or issuing CA
+     */
     private EndEntityInformation convertUserDataToEndEntityInformation(final AuthenticationToken admin, final UserData data, final String requestedUsername)
             throws AuthorizationDeniedException {
         if (data != null) {

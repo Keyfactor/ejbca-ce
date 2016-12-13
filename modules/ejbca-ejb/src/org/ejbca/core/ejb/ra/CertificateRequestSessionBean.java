@@ -283,10 +283,9 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 
     @Override
     public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg,
-            boolean createJKS) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, InvalidKeyException,
-            InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException, ObjectNotFoundException, CertificateException,
-            UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, KeyStoreException, NoSuchAlgorithmException,
-            InvalidAlgorithmParameterException, EndEntityExistsException {
+            boolean createJKS) throws ApprovalException, EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException,
+            UserDoesntFullfillEndEntityProfile, EjbcaException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, CertificateException,
+            InvalidAlgorithmParameterException, KeyStoreException {
 
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
         addOrEditUser(admin, userdata, true, true);
@@ -329,22 +328,10 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             keyStore.store(baos, password.toCharArray());
             ret = baos.toByteArray();
-        } catch (NotFoundException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (InvalidKeyException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
         } catch (NoSuchAlgorithmException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (InvalidKeySpecException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (NoSuchProviderException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (SignatureException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (IOException e) {
