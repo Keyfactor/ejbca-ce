@@ -103,7 +103,7 @@ public class RAAuthorization implements Serializable {
         authorizedToApproveRAActions = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
 
         if (!authorizedToApproveCAActions && !authorizedToApproveRAActions) {
-            throw new AuthorizationDeniedException("Not authorized to query approvals");
+            throw new AuthorizationDeniedException("Not authorized to query for approvals: "+authorizedToApproveCAActions+", "+authorizedToApproveRAActions);
         }
 
     	String endentityauth = null;
