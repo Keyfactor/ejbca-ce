@@ -1,0 +1,9 @@
+-- To allow issuance of certificates with only Subject Alternative names, writing certificates with
+-- and empty Subject DN must be allowed.
+--
+-- If DB2 is running in Oracle compatability mode, it will (just like Oracle) treat an empty string
+-- ('') as NULL, so the current NOT NULL constraint must be relaxed if such certificates should be
+-- issued.
+--
+-- ALTER TABLE CertificateData ALTER COLUMN subjectDN DROP NOT NULL
+-- CALL SYSPROC.ADMIN_CMD('REORG TABLE CertificateData');

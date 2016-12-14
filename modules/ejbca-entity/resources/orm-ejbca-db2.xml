@@ -36,12 +36,14 @@
          
          Notes:
          - VARCHAR was limited to 4000 bytes before version 7. 32672 bytes after.
+         - DB2 considers NULL and empty Strings to be the same when running in Oracle compatibility mode.
     -->
     <entity class="org.cesecore.certificates.certificate.CertificateData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(254)"/></id>
             <basic fetch="EAGER" name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(254)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(400)" nullable="false"/></basic>
+            <!-- The subjectDN-field is nullable due to DB2's Oracle-compatability mode to allow insert of empty Strings. There is special handling in the code for this use-case. -->
+            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(400)" nullable="true"/></basic>
             <basic fetch="EAGER" name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR(254)"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="type"><column name="type" column-definition="INTEGER" nullable="false"/></basic>
