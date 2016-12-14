@@ -105,6 +105,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
       * @param includeExpired Includes requests that have expired.
       * @param startDate Include requests from this date and later, or null for no limit.
       * @param endDate Include requests up to this date, or null for no limit.
+      * @param expiresBefore When searching unfinished requests, include only those that expire before this date. Set to null to include all.
       * @param index where the ResultSet should start
       * @param numberofrows maximum number of rows
       * @param caAuthorizationString
@@ -116,6 +117,6 @@ public interface ApprovalSessionLocal extends ApprovalSession {
       * @return a List of ApprovalDataVO, never null
       */
      List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, boolean includeExpired,
-             final Date startDate, final Date endDate, int index, int numberofrows, String caAuthorizationString,
+             final Date startDate, final Date endDate, final Date expiresBefore, int index, int numberofrows, String caAuthorizationString,
              String endEntityProfileAuthorizationString);
 }
