@@ -61,7 +61,9 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
         setId(id);
         setCertificateProfileName(profilename);
         setCertificateProfile(profile);
-        log.debug("Created certificateprofile " + profilename);
+        if (log.isDebugEnabled()) {
+            log.debug("Created certificateprofile " + profilename+", "+id);
+        }
     }
 
     // @Id @Column
