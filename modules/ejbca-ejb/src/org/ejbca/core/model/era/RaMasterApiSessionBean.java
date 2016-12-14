@@ -519,12 +519,21 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // That information is only needed when viewing the details or editing a request.
             final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, caIdToNameMap.get(advo.getCAId()), null, null, null, advo, requestDataLite, editableData);
             
-            // TODO ability to search for stuff from all admins
-            if ((request.isSearchingWaitingForMe() && ari.isWaitingForMe(authenticationToken)) ||
+            // Check if this approval should be included in the search results
+            boolean include = false;
+            if (request.getIncludeOtherAdmins()) {
+                include = (request.isSearchingWaitingForMe() && ari.isWaitingForFirstApproval(now)) ||
+                        (request.isSearchingPending() && ari.isInProgress(now)) ||
+                        (request.isSearchingHistorical() && ari.isProcessed()) ||
+                        (request.isSearchingExpired() && ari.isExpired(now));
+            } else {
+                include = (request.isSearchingWaitingForMe() && ari.isWaitingForMe(authenticationToken)) ||
                     (request.isSearchingPending() && ari.isPending(authenticationToken)) ||
                     (request.isSearchingHistorical() && ari.isProcessed()) ||
-                    (request.isSearchingExpired() && ari.isExpired(now))) {
-                // This approval should be included in the search results
+                    (request.isSearchingExpired() && ari.isExpired(now));
+            }
+            
+            if (include) {
                 response.getApprovalRequests().add(ari);
             }
         }

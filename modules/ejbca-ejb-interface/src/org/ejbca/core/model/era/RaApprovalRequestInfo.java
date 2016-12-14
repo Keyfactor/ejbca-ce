@@ -323,6 +323,14 @@ public class RaApprovalRequestInfo implements Serializable {
                status != ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED;
     }
     
+    public boolean isWaitingForFirstApproval(final Date now) {
+        return !isProcessed() && !isExpired(now) && approvalData.getApprovals().isEmpty();
+    }
+    
+    public boolean isInProgress(final Date now) {
+        return !isProcessed() && !isExpired(now) && !approvalData.getApprovals().isEmpty();
+    }
+    
     public boolean isRequestedByMe() {
         return requestedByMe;
     }
