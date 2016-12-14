@@ -220,6 +220,14 @@ public class RaManageRequestsBean implements Serializable {
     public boolean getCustomSearchIncludeOtherAdmins() { return customSearchIncludeOtherAdmins; }
     public void setCustomSearchIncludeOtherAdmins(final boolean customSearchIncludeOtherAdmins) { this.customSearchIncludeOtherAdmins = customSearchIncludeOtherAdmins; }
     
+    public String getCustomSearchWaitingCheckboxLabel() {
+        return raLocaleBean.getMessage(customSearchIncludeOtherAdmins ? "manage_requests_page_search_waiting_for_first" : "manage_requests_page_search_waiting");
+    }
+    
+    public String getCustomSearchPendingCheckboxLabel() {
+        return raLocaleBean.getMessage(customSearchIncludeOtherAdmins ? "manage_requests_page_search_in_progress" : "manage_requests_page_search_pending");
+    }
+    
     public List<ApprovalRequestGUIInfo> getFilteredResults() {
         getViewedTab(); // make sure we have all data
         return resultsFiltered;
