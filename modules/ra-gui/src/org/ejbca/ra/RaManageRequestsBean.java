@@ -77,6 +77,7 @@ public class RaManageRequestsBean implements Serializable {
     private String customSearchStartDate;
     private String customSearchEndDate;
     private String customSearchExpiresDays;
+    private boolean customSearchIncludeOtherAdmins;
     
     private enum SortBy { ID, REQUEST_DATE, CA, TYPE, DISPLAY_NAME, REQUESTER_NAME, STATUS };
     private SortBy sortBy = SortBy.REQUEST_DATE;
@@ -169,13 +170,14 @@ public class RaManageRequestsBean implements Serializable {
                         // This combination makes no sense, so show unfinished requests also
                         customSearchingWaiting = true;
                         customSearchingPending = true;
-                        // TODO should search for all admins in this case, when that is implemented
+                        customSearchIncludeOtherAdmins = true;
                     }
                 }
                 searchRequest.setSearchingWaitingForMe(customSearchingWaiting);
                 searchRequest.setSearchingPending(customSearchingPending);
                 searchRequest.setSearchingHistorical(customSearchingProcessed);
                 searchRequest.setSearchingExpired(customSearchingExpired);
+                searchRequest.setIncludeOtherAdmins(customSearchIncludeOtherAdmins);
             } catch (ParseException e) {
                 // Text field is validated by f:validateRegex, so shouldn't happen
                 throw new IllegalStateException("Invalid date value", e);
@@ -215,6 +217,8 @@ public class RaManageRequestsBean implements Serializable {
     public void setCustomSearchEndDate(final String endDate) { this.customSearchEndDate = StringUtils.trim(endDate); }
     public String getCustomSearchExpiresDays() { return customSearchExpiresDays; }
     public void setCustomSearchExpiresDays(final String customSearchExpiresDays) { this.customSearchExpiresDays = StringUtils.trim(customSearchExpiresDays); }
+    public boolean getCustomSearchIncludeOtherAdmins() { return customSearchIncludeOtherAdmins; }
+    public void setCustomSearchIncludeOtherAdmins(final boolean customSearchIncludeOtherAdmins) { this.customSearchIncludeOtherAdmins = customSearchIncludeOtherAdmins; }
     
     public List<ApprovalRequestGUIInfo> getFilteredResults() {
         getViewedTab(); // make sure we have all data

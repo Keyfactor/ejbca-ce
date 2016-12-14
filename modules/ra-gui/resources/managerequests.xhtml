@@ -58,6 +58,11 @@
                 </h:panelGroup>
                 
                 <h:panelGroup layout="block" rendered="#{raManageRequestsBean.viewingCustom}">
+                    <h:selectBooleanCheckbox id="includeOtherAdmins" value="#{raManageRequestsBean.customSearchIncludeOtherAdmins}"/>
+                    <h:outputText value="TODO: style this page ;) "/>
+                    <h:outputLabel for="includeOtherAdmins" value="#{msg.manage_requests_page_search_include_other_admins}"/>
+
+                    <h:outputText value="(Note that the waiting and pending checkboxes change meaning depending on the 'not related to me' checkbox. These checkboxes will change text later using some Javascript)"/>
                     <h:selectBooleanCheckbox id="searchWaiting" value="#{raManageRequestsBean.customSearchingWaiting}"/>
                     <h:outputLabel for="searchWaiting" value="#{msg.manage_requests_page_search_waiting}"/>
                     
@@ -88,6 +93,7 @@
                         <f:validateRegex pattern="\s*([0-9]+\s*)?"/>
                     </h:inputText>
                     <h:message for="searchExpiresDays" id="searchExpiresDaysMessage" styleClass="showErrorMessage"/>
+                    
                     
                     <h:commandButton id="customSearchCommand" action="#{raManageRequestsBean.searchAndFilter}"
                         value="#{msg.manage_requests_page_custom_search_command}" styleClass="pure-button ra-button"/>
