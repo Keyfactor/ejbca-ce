@@ -636,7 +636,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200, cmpAlias);
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpFailMessage(resp, "Error: SubjectDN Serialnumber already exists.", CmpPKIBodyConstants.ERRORMESSAGE, reqId,
+            checkCmpFailMessage(resp, "Error: SubjectDN serial number already exists.", CmpPKIBodyConstants.ERRORMESSAGE, reqId,
                     PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
 
             // Revoke the created certificate
