@@ -58,41 +58,47 @@
                 </h:panelGroup>
                 
                 <h:panelGroup layout="block" rendered="#{raManageRequestsBean.viewingCustom}">
-                    <h:selectBooleanCheckbox id="includeOtherAdmins" value="#{raManageRequestsBean.customSearchIncludeOtherAdmins}"/>
                     <h:outputText value="TODO: style this page ;) "/>
-                    <h:outputLabel for="includeOtherAdmins" value="#{msg.manage_requests_page_search_include_other_admins}"/>
+                    <h:panelGroup layout="block" styleClass="internal-frame">
+                        <h:selectBooleanCheckbox id="includeOtherAdmins" value="#{raManageRequestsBean.customSearchIncludeOtherAdmins}" onchange="this.form.submit()"/>
+                        <h:outputLabel for="includeOtherAdmins" value="#{msg.manage_requests_page_search_include_other_admins}"/>
+                    </h:panelGroup>
 
-                    <h:outputText value="(Note that the waiting and pending checkboxes change meaning depending on the 'not related to me' checkbox. These checkboxes will change text later using some Javascript)"/>
-                    <h:selectBooleanCheckbox id="searchWaiting" value="#{raManageRequestsBean.customSearchingWaiting}"/>
-                    <h:outputLabel for="searchWaiting" value="#{msg.manage_requests_page_search_waiting}"/>
+                    <h:panelGroup layout="block" styleClass="internal-frame">
+                        <h:selectBooleanCheckbox id="searchWaiting" value="#{raManageRequestsBean.customSearchingWaiting}"/>
+                        <h:outputLabel for="searchWaiting" value="#{raManageRequestsBean.customSearchWaitingCheckboxLabel}"/>
+                        
+                        <h:selectBooleanCheckbox id="searchPending" value="#{raManageRequestsBean.customSearchingPending}"/>
+                        <h:outputLabel for="searchPending" value="#{raManageRequestsBean.customSearchPendingCheckboxLabel}"/>
+                        
+                        <h:selectBooleanCheckbox id="searchProcessed" value="#{raManageRequestsBean.customSearchingProcessed}"/>
+                        <h:outputLabel for="searchProcessed" value="#{msg.manage_requests_page_search_processed}"/>
+                        
+                        <h:selectBooleanCheckbox id="searchExpired" value="#{raManageRequestsBean.customSearchingExpired}"/>
+                        <h:outputLabel for="searchExpired" value="#{msg.manage_requests_page_search_expired}"/>
+                    </h:panelGroup>
                     
-                    <h:selectBooleanCheckbox id="searchPending" value="#{raManageRequestsBean.customSearchingPending}"/>
-                    <h:outputLabel for="searchPending" value="#{msg.manage_requests_page_search_pending}"/>
+                    <h:panelGroup layout="block" styleClass="internal-frame">
+                        <h:outputLabel for="searchStartDate" value="#{msg.manage_requests_page_search_start_date}"/>
+                        <h:inputText id="searchStartDate" value="#{raManageRequestsBean.customSearchStartDate}" size="10">
+                            <f:validateRegex pattern="\s*([0-9]{4,4}-[0-9][0-9]-[0-9][0-9]\s*)?"/>
+                        </h:inputText>
+                        <h:message for="searchStartDate" id="searchStartDateMessage" styleClass="showErrorMessage"/>
+                        
+                        <h:outputLabel for="searchEndDate" value="#{msg.manage_requests_page_search_end_date}"/>
+                        <h:inputText id="searchEndDate" value="#{raManageRequestsBean.customSearchEndDate}" size="10">
+                            <f:validateRegex pattern="\s*([0-9]{4,4}-[0-9][0-9]-[0-9][0-9]\s*)?"/>
+                        </h:inputText>
+                        <h:message for="searchEndDate" id="searchEndDateMessage" styleClass="showErrorMessage"/>
+                    </h:panelGroup>
                     
-                    <h:selectBooleanCheckbox id="searchProcessed" value="#{raManageRequestsBean.customSearchingProcessed}"/>
-                    <h:outputLabel for="searchProcessed" value="#{msg.manage_requests_page_search_processed}"/>
-                    
-                    <h:selectBooleanCheckbox id="searchExpired" value="#{raManageRequestsBean.customSearchingExpired}"/>
-                    <h:outputLabel for="searchExpired" value="#{msg.manage_requests_page_search_expired}"/>
-                    
-                    
-                    <h:outputLabel for="searchStartDate" value="#{msg.manage_requests_page_search_start_date}"/>
-                    <h:inputText id="searchStartDate" value="#{raManageRequestsBean.customSearchStartDate}" size="10">
-                        <f:validateRegex pattern="\s*([0-9]{4,4}-[0-9][0-9]-[0-9][0-9]\s*)?"/>
-                    </h:inputText>
-                    <h:message for="searchStartDate" id="searchStartDateMessage" styleClass="showErrorMessage"/>
-                    
-                    <h:outputLabel for="searchEndDate" value="#{msg.manage_requests_page_search_end_date}"/>
-                    <h:inputText id="searchEndDate" value="#{raManageRequestsBean.customSearchEndDate}" size="10">
-                        <f:validateRegex pattern="\s*([0-9]{4,4}-[0-9][0-9]-[0-9][0-9]\s*)?"/>
-                    </h:inputText>
-                    <h:message for="searchEndDate" id="searchEndDateMessage" styleClass="showErrorMessage"/>
-                    
-                    <h:outputLabel for="searchExpiresDays" value="#{msg.manage_requests_page_search_expires_days}"/>
-                    <h:inputText id="searchExpiresDays" value="#{raManageRequestsBean.customSearchExpiresDays}" size="3">
-                        <f:validateRegex pattern="\s*([0-9]+\s*)?"/>
-                    </h:inputText>
-                    <h:message for="searchExpiresDays" id="searchExpiresDaysMessage" styleClass="showErrorMessage"/>
+                    <h:panelGroup layout="block" styleClass="internal-frame">
+                        <h:outputLabel for="searchExpiresDays" value="#{msg.manage_requests_page_search_expires_days}"/>
+                        <h:inputText id="searchExpiresDays" value="#{raManageRequestsBean.customSearchExpiresDays}" size="3">
+                            <f:validateRegex pattern="\s*([0-9]+\s*)?"/>
+                        </h:inputText>
+                        <h:message for="searchExpiresDays" id="searchExpiresDaysMessage" styleClass="showErrorMessage"/>
+                    </h:panelGroup>
                     
                     
                     <h:commandButton id="customSearchCommand" action="#{raManageRequestsBean.searchAndFilter}"
