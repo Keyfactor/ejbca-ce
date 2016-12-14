@@ -71,18 +71,23 @@
                     <h:outputLabel for="searchExpired" value="#{msg.manage_requests_page_search_expired}"/>
                     
                     
-                    <h:outputLabel id="searchStartDate" value="#{msg.manage_requests_page_search_start_date}"/>
-                    <h:inputText for="searchStartDate" value="#{raManageRequestsBean.customSearchStartDate}" size="10">
+                    <h:outputLabel for="searchStartDate" value="#{msg.manage_requests_page_search_start_date}"/>
+                    <h:inputText id="searchStartDate" value="#{raManageRequestsBean.customSearchStartDate}" size="10">
                         <f:validateRegex pattern="\s*([0-9]{4,4}-[0-9][0-9]-[0-9][0-9]\s*)?"/>
                     </h:inputText>
                     <h:message for="searchStartDate" id="searchStartDateMessage" styleClass="showErrorMessage"/>
                     
-                    <h:outputLabel id="searchEndDate" value="#{msg.manage_requests_page_search_end_date}"/>
-                    <h:inputText for="searchEndDate" value="#{raManageRequestsBean.customSearchEndDate}" size="10">
+                    <h:outputLabel for="searchEndDate" value="#{msg.manage_requests_page_search_end_date}"/>
+                    <h:inputText id="searchEndDate" value="#{raManageRequestsBean.customSearchEndDate}" size="10">
                         <f:validateRegex pattern="\s*([0-9]{4,4}-[0-9][0-9]-[0-9][0-9]\s*)?"/>
                     </h:inputText>
                     <h:message for="searchEndDate" id="searchEndDateMessage" styleClass="showErrorMessage"/>
                     
+                    <h:outputLabel for="searchExpiresDays" value="#{msg.manage_requests_page_search_expires_days}"/>
+                    <h:inputText id="searchExpiresDays" value="#{raManageRequestsBean.customSearchExpiresDays}" size="3">
+                        <f:validateRegex pattern="\s*([0-9]+\s*)?"/>
+                    </h:inputText>
+                    <h:message for="searchExpiresDays" id="searchExpiresDaysMessage" styleClass="showErrorMessage"/>
                     
                     <h:commandButton id="customSearchCommand" action="#{raManageRequestsBean.searchAndFilter}"
                         value="#{msg.manage_requests_page_custom_search_command}" styleClass="pure-button ra-button"/>

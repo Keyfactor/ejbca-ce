@@ -48,8 +48,8 @@ public interface ApprovalSessionProxyRemote {
             String endEntityProfileAuthorizationString) throws IllegalQueryException;
     
     /**
-     * @see ApprovalSessionBean#queryByStatus(boolean, boolean, boolean, java.util.Date, java.util.Date, int, int, String, String)
+     * @see ApprovalSessionBean#queryByStatus(boolean, boolean, boolean, java.util.Date, java.util.Date, java.util.Date, int, int, String, String)
      */
-    List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, boolean includeExpired, Date startDate, Date endDate, int index, int numberofrows, String caAuthorizationString,
-            String endEntityProfileAuthorizationString);
+    List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, boolean includeExpired, Date startDate, Date endDate, Date expiresBefore,
+            int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString);
 }
