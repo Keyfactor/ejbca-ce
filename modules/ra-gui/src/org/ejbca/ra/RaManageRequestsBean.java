@@ -16,8 +16,10 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import javax.ejb.EJB;
@@ -74,6 +76,7 @@ public class RaManageRequestsBean implements Serializable {
     private boolean customSearchingExpired;
     private String customSearchStartDate;
     private String customSearchEndDate;
+    private String customSearchExpiresDays;
     
     private enum SortBy { ID, REQUEST_DATE, CA, TYPE, DISPLAY_NAME, REQUESTER_NAME, STATUS };
     private SortBy sortBy = SortBy.REQUEST_DATE;
@@ -146,19 +149,33 @@ public class RaManageRequestsBean implements Serializable {
         final RaRequestsSearchRequest searchRequest = new RaRequestsSearchRequest();
         switch (viewTab) {
         case CUSTOM_SEARCH:
-            // TODO implement custom search (needed for ECA-5124)
-            searchRequest.setSearchingWaitingForMe(customSearchingWaiting);
-            searchRequest.setSearchingPending(customSearchingPending);
-            searchRequest.setSearchingHistorical(customSearchingProcessed);
-            searchRequest.setSearchingExpired(customSearchingExpired);
             try {
                 // TODO timezone?
                 if (!StringUtils.isBlank(customSearchStartDate)) {
                     searchRequest.setStartDate(new SimpleDateFormat("yyyy-MM-dd").parse(customSearchStartDate.trim()));
                 }
                 if (!StringUtils.isBlank(customSearchEndDate)) {
-                    searchRequest.setEndDate(new SimpleDateFormat("yyyy-MM-dd").parse(customSearchEndDate.trim()));
+                    final Calendar cal = Calendar.getInstance();
+                    cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse(customSearchEndDate.trim()));
+                    cal.add(Calendar.DAY_OF_MONTH, 1);
+                    searchRequest.setEndDate(cal.getTime());
                 }
+                if (!StringUtils.isBlank(customSearchExpiresDays)) {
+                    final Calendar cal = Calendar.getInstance();
+                    cal.setTime(new Date());
+                    cal.add(Calendar.DAY_OF_MONTH, Integer.parseInt(customSearchExpiresDays.trim()));
+                    searchRequest.setExpiresBefore(cal.getTime());
+                    if (!customSearchingWaiting && !customSearchingPending) {
+                        // This combination makes no sense, so show unfinished requests also
+                        customSearchingWaiting = true;
+                        customSearchingPending = true;
+                        // TODO should search for all admins in this case, when that is implemented
+                    }
+                }
+                searchRequest.setSearchingWaitingForMe(customSearchingWaiting);
+                searchRequest.setSearchingPending(customSearchingPending);
+                searchRequest.setSearchingHistorical(customSearchingProcessed);
+                searchRequest.setSearchingExpired(customSearchingExpired);
             } catch (ParseException e) {
                 // Text field is validated by f:validateRegex, so shouldn't happen
                 throw new IllegalStateException("Invalid date value", e);
@@ -196,6 +213,8 @@ public class RaManageRequestsBean implements Serializable {
     public void setCustomSearchStartDate(final String startDate) { this.customSearchStartDate = StringUtils.trim(startDate); }
     public String getCustomSearchEndDate() { return customSearchEndDate; }
     public void setCustomSearchEndDate(final String endDate) { this.customSearchEndDate = StringUtils.trim(endDate); }
+    public String getCustomSearchExpiresDays() { return customSearchExpiresDays; }
+    public void setCustomSearchExpiresDays(final String customSearchExpiresDays) { this.customSearchExpiresDays = StringUtils.trim(customSearchExpiresDays); }
     
     public List<ApprovalRequestGUIInfo> getFilteredResults() {
         getViewedTab(); // make sure we have all data

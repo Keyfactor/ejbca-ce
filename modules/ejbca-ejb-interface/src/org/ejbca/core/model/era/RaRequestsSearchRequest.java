@@ -30,6 +30,7 @@ public class RaRequestsSearchRequest implements Serializable {
     private boolean searchingExpired;
     private Date startDate;
     private Date endDate;
+    private Date expiresBefore;
     
     
     public boolean isSearchingWaitingForMe() {
@@ -78,6 +79,14 @@ public class RaRequestsSearchRequest implements Serializable {
 
     public void setEndDate(final Date endDate) {
         this.endDate = endDate;
+    }
+
+    public Date getExpiresBefore() {
+        return expiresBefore;
+    }
+    
+    public void setExpiresBefore(final Date expiresBefore) {
+        this.expiresBefore = expiresBefore;
     }
 
     // TODO extend with more stuff for custom search (e.g. ECA-5124)

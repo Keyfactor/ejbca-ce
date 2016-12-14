@@ -392,7 +392,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<ApprovalDataVO> queryByStatus(final boolean includeUnfinished, final boolean includeProcessed, final boolean includeExpired,
-            final Date startDate, final Date endDate, int index, int numberofrows, String caAuthorizationString,
+            final Date startDate, final Date endDate, final Date expiresBefore, int index, int numberofrows, String caAuthorizationString,
             String endEntityProfileAuthorizationString) {
         log.trace(">queryByStatus()");
         
@@ -409,15 +409,20 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             sb.append('(');
             if (includeUnfinished && includeExpired) {
                 // No additional filtering
-            } else if (includeExpired) {
+            } else if (!includeExpired) {
+                // Do not include expired requests
+                sb.append("expireDate >= ");
+                sb.append(new Date().getTime());
+                sb.append(" AND ");
+            } else if (expiresBefore != null) {
                 // Only include expired requests
                 sb.append("expireDate < ");
                 sb.append(new Date().getTime());
                 sb.append(" AND ");
-            } else {
-                // Do not include expired requests
-                sb.append("expireDate >= ");
-                sb.append(new Date().getTime());
+            }
+            if (expiresBefore != null) {
+                sb.append("expireDate < ");
+                sb.append(expiresBefore.getTime());
                 sb.append(" AND ");
             }
             // "STATUS_APPROVED" means that the request is still waiting to be executed by the requester
@@ -438,7 +443,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             sb.append(" AND requestDate >= " + startDate.getTime());
         }
         if (endDate != null) {
-            sb.append(" AND requestDate < " + (endDate.getTime() + 24*60*60*1000)); 
+            sb.append(" AND requestDate < " + endDate.getTime()); 
         }
         
         final List<ApprovalDataVO> ret = queryInternal(sb.toString(), index, numberofrows,

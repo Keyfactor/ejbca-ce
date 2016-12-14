@@ -46,9 +46,9 @@ public class ApprovalSessionProxyBean implements ApprovalSessionProxyRemote {
 
     @Override
     public List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, boolean includeExpired, Date startDate, Date endDate,
-            int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString) {
-        return approvalSession.queryByStatus(includeUnfinished, includeProcessed, includeExpired, startDate, endDate, index, numberofrows, caAuthorizationString,
-                endEntityProfileAuthorizationString);
+            Date expiresBefore, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString) {
+        return approvalSession.queryByStatus(includeUnfinished, includeProcessed, includeExpired, startDate, endDate, expiresBefore,
+                index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString);
     }
 
 }
