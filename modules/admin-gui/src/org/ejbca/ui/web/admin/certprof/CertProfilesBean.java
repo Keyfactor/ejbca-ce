@@ -562,8 +562,12 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
                 continue;
             }
-
-            getEjbcaWebBean().getEjb().getCertificateProfileSession().addCertificateProfile(getAdmin(), profilename, certificateProfile);
+            
+            if (profileid == -1) {
+                getEjbcaWebBean().getEjb().getCertificateProfileSession().addCertificateProfile(getAdmin(), profilename, certificateProfile);
+            } else {
+                getEjbcaWebBean().getEjb().getCertificateProfileSession().addCertificateProfile(getAdmin(), profileid, profilename, certificateProfile);                
+            }
             getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
             importedFiles += filename + ", ";
             log.info("Added Certificate profile: " + profilename);
