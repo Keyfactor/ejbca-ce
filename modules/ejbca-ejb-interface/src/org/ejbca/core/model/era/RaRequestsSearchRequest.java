@@ -31,6 +31,7 @@ public class RaRequestsSearchRequest implements Serializable {
     private Date startDate;
     private Date endDate;
     private Date expiresBefore;
+    private boolean includeOtherAdmins;
     
     
     public boolean isSearchingWaitingForMe() {
@@ -89,7 +90,12 @@ public class RaRequestsSearchRequest implements Serializable {
         this.expiresBefore = expiresBefore;
     }
 
-    // TODO extend with more stuff for custom search (e.g. ECA-5124)
+    public boolean getIncludeOtherAdmins() {
+        return includeOtherAdmins;
+    }
 
-    
+    public void setIncludeOtherAdmins(final boolean includeOtherAdmins) {
+        this.includeOtherAdmins = includeOtherAdmins;
+    }
+
 }
