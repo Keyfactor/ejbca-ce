@@ -177,7 +177,7 @@
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"><equals arg1="${database.name}" arg2="h2"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.InformixDialect"><equals arg1="${database.name}" arg2="informix"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.IngresDialect"><equals arg1="${database.name}" arg2="ingres"/></condition>
-	<condition property="hibernate.dialect" value="org.hibernate.dialect.SQLServerDialect"><equals arg1="${database.name}" arg2="mssql"/></condition>
+	<condition property="hibernate.dialect" value="org.hibernate.dialect.SQLServer2008Dialect"><equals arg1="${database.name}" arg2="mssql"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"><equals arg1="${database.name}" arg2="mysql"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.Oracle10gDialect"><equals arg1="${database.name}" arg2="oracle"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"><equals arg1="${database.name}" arg2="postgres"/></condition>
