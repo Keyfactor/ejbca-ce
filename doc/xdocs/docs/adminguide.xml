@@ -4407,7 +4407,7 @@ PrimeKey has made a patch which is waiting for approval in the OpenJDK.
 You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="https://www.primekey.se/">PrimeKey</a>. 
 </p>
 <p>This issue is registered in the EJBCA issue tracker as <a href="http://jira.primekey.se/browse/ECA-2014">ECA-2014</a>.</p>
-<p>The patch should work on all HSMs that have support for SHA56WithRSAandMGF1.
+<p>The patch should work on all HSMs that have support for SHA256WithRSAandMGF1.
 </p><p>With the patch applied you can create CAs using HSMs with the SHA256WithRSAandMGF1 (and SHA384 and SHA512) algorithm.
 </p>
 </subsection>
