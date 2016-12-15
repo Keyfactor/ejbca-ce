@@ -176,6 +176,19 @@ public class ApprovalDataVO implements Serializable {
 	}
 	
 	/**
+     *  For RA specific approval requests should the related end entity profile id be specified
+     *  for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE
+     *                       
+     * @return Returns the endEntityProfileiId.
+     * 
+     * @deprecated since 6.7.0, use getEndEntityProfileId(). This method can be removed once upgrading from 6.6.0 is no longer supported. 
+     */
+    @Deprecated
+	public int getEndEntityProfileiId() {
+        return getEndEntityProfileId();
+    }
+	
+	/**
 	 * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
      * means that the request/approval never expires
      * 
