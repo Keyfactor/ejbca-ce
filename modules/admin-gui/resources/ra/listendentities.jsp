@@ -1,3 +1,4 @@
+<%@page import="org.ejbca.core.ejb.ra.NoSuchEndEntityException"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
@@ -274,7 +275,7 @@
              	rabean.revokeUser(usernames[i], Integer.parseInt(reason));
              } catch (AuthorizationDeniedException e) {
              	notauthorizedrevokeall = true;
-             } catch (javax.ejb.FinderException e) {
+             } catch (NoSuchEndEntityException e) {
              	notfoundall = true;
              } catch (org.ejbca.core.model.approval.ApprovalException e) {
              	notapprovedall = true;
@@ -315,7 +316,7 @@
              } catch (AuthorizationDeniedException e) {
              	notauthorizedrevokeall = true;
              	notauthorizeddeleteall = true;
-             } catch (org.ejbca.core.model.ra.NotFoundException e) {
+             } catch (NoSuchEndEntityException e) {
              	notfoundall = true;
              } catch (javax.ejb.RemoveException e) {
              	notremoveall = true;
