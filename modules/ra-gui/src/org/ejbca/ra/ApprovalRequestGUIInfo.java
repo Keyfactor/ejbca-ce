@@ -243,6 +243,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private final ApprovalDataVO approvalData;
     
     private final String requestDate;
+    private final String requestExpireDate;
     private final String caName;
     private final String type;
     private final String requesterName;
@@ -307,7 +308,9 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
         
         requestDate = ValidityDate.formatAsISO8601ServerTZ(approvalData.getRequestDate().getTime(), TimeZone.getDefault());
+        requestExpireDate = ValidityDate.formatAsISO8601ServerTZ(approvalData.getExpireDate().getTime(), TimeZone.getDefault());
         requestData.add(new RequestDataRow(raLocaleBean, new ApprovalDataText("REQUESTDATE", getRequestDate(), true, false), false, null));
+        requestData.add(new RequestDataRow(raLocaleBean, new ApprovalDataText("REQUESTEXPIRATIONDATE", getRequestExpireDate(), true, false), false, null));
         
         if (approvalData.getCAId() == ApprovalDataVO.ANY_CA) {
             caName = raLocaleBean.getMessage("manage_requests_no_ca");
@@ -420,6 +423,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     public String getId() { return String.valueOf(request.getId()); }
     public String getRequestDate() { return requestDate; }
+    public String getRequestExpireDate() { return requestExpireDate; }
     public String getCa() { return caName; }
     public String getType() { return type; }
     public String getRequesterName() { return requesterName; }
