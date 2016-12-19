@@ -77,6 +77,15 @@ public interface RaMasterApi {
      */
     RaApprovalRequestInfo editApprovalRequest(AuthenticationToken authenticationToken, RaApprovalEditRequest edit) throws AuthorizationDeniedException;
     
+    /**
+     * Extends the validity of an approval request for the given amount of time. The status is set to Waiting for Approval if it was expired.
+     * @param authenticationToken Admin
+     * @param id Id of approval request
+     * @param unexpireForMillis Milliseconds to extend the validity for
+     * @throws IllegalStateException if the request is in approval or rejected state already.
+     */
+    void unexpireApprovalRequest(AuthenticationToken authenticationToken, int id, long unexpireForMillis) throws AuthorizationDeniedException;
+    
     /** Approves, rejects or saves (not yet implemented) a step of an approval request. The action is determined by the "action" value in the given RaApprovalResponseRequest.
      * @return true if the approval request exists on this node, false if not.
      * @throws SelfApprovalException if trying to approve one's own action.

@@ -309,6 +309,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         
         requestDate = ValidityDate.formatAsISO8601ServerTZ(approvalData.getRequestDate().getTime(), TimeZone.getDefault());
         requestExpireDate = ValidityDate.formatAsISO8601ServerTZ(approvalData.getExpireDate().getTime(), TimeZone.getDefault());
+        // These must be added last, so the "Unexpire" button appears under the Expiration Date field.
         requestData.add(new RequestDataRow(raLocaleBean, new ApprovalDataText("REQUESTDATE", getRequestDate(), true, false), false, null));
         requestData.add(new RequestDataRow(raLocaleBean, new ApprovalDataText("REQUESTEXPIRATIONDATE", getRequestExpireDate(), true, false), false, null));
         
