@@ -86,6 +86,7 @@ public class RaManageRequestBean implements Serializable {
     private ApprovalRequestGUIInfo requestInfo;
     private RaApprovalRequestInfo requestData;
     private boolean editing = false;
+    private String unexpireDays;
     private Map<Integer, List<DynamicUiProperty<? extends Serializable>> > currentPartitionsProperties = null;
     List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
     Set<Integer> partitionsAuthorizedToApprove = null;
@@ -117,6 +118,11 @@ public class RaManageRequestBean implements Serializable {
                 final int approvalId = Integer.parseInt(aidHttpParam);
                 loadRequestByApprovalId(approvalId);
             }
+            if (requestData.getApprovalProfile() != null) {
+                unexpireDays = String.valueOf((requestData.getApprovalProfile().getApprovalExpirationPeriod() + 24*60*60*1000 - 1) / (24*60*60*1000));
+            } else {
+                unexpireDays = "1";
+            }
             fromTab = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("fromTab");
         }
     }
@@ -146,6 +152,9 @@ public class RaManageRequestBean implements Serializable {
     public boolean isStatusVisible() { return !editing; }
     public boolean isPreviousStepsVisible() { return !editing && !getRequest().getPreviousSteps().isEmpty(); }
     public boolean isApprovalVisible() { return !editing; } // even if approval is not possible, we still show a message explaining why it's not.
+    
+    public String getUnexpireDays() { return unexpireDays; }
+    public void setUnexpireDays(final String unexpireDays) { this.unexpireDays = unexpireDays; }
     
     public String getPartitionName(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
         if (guiPartition == null) {
@@ -497,6 +506,12 @@ public class RaManageRequestBean implements Serializable {
         requestData = raMasterApiProxyBean.getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), requestData.getId());
         requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
         editing = false;
+    }
+    
+    public void unexpireRequest() throws AuthorizationDeniedException {
+        final long unexpireForMillis = Long.valueOf(unexpireDays) * 24*60*60*1000;
+        raMasterApiProxyBean.unexpireApprovalRequest(raAuthenticationBean.getAuthenticationToken(), requestData.getId(), unexpireForMillis);
+        reloadRequest();
     }
     
     public String getDN(final RequestDataRow dataRow) {

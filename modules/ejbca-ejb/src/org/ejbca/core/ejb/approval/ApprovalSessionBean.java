@@ -43,6 +43,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -815,6 +816,27 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             log.error("Error building approvals.", e);
             throw new IllegalStateException(e);
         }
+    }
+    
+    @Override
+    public void unexpireApprovalRequestNoAuth(final AuthenticationToken authenticationToken, final int approvalDataId, final long unexpireForMillis)
+            throws AuthorizationDeniedException {
+        ApprovalData approvalData = findById(approvalDataId);
+        final long status = approvalData.getStatus();
+        if (status != ApprovalDataVO.STATUS_EXPIRED &&
+                status != ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED &&
+                status != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
+            throw new IllegalStateException("Can't unapprove approval request in this state (" + status + ")");
+        }
+        approvalData.setExpiredate(new Date().getTime() + unexpireForMillis);
+        approvalData.setStatus(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
+        entityManager.merge(approvalData);
+        
+        String msg = intres.getLocalizedMessage("approval.unexpired", approvalData.getId(), unexpireForMillis);
+        final Map<String, Object> details = new LinkedHashMap<>();
+        details.put("msg", msg);
+        auditSession.log(EjbcaEventTypes.APPROVAL_UNEXPIRE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
+                authenticationToken.toString(), String.valueOf(approvalData.getCaid()), null, null, details);
     }
        
     /** @return the found entity instance or null if the entity does not exist */
