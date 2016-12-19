@@ -437,7 +437,20 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse)
+    public void unexpireApprovalRequest(final AuthenticationToken authenticationToken, final int id, final long unexpireForMillis) throws AuthorizationDeniedException {
+        final ApprovalDataVO advo = getApprovalDataNoAuth(id);
+        // FIXME should require more access than just read access
+        if (getApprovalRequest(authenticationToken, advo) == null) { // Authorization check
+            if (log.isDebugEnabled()) {
+                log.debug("Authorization denied to approval request ID " + id + " for " + authenticationToken);
+            }
+            throw new AuthorizationDeniedException("You are not authorized to the Request with ID " + id + " at this point");
+        }
+        approvalSession.unexpireApprovalRequestNoAuth(authenticationToken, id, unexpireForMillis);
+    }
+    
+    @Override
+    public boolean addRequestResponse(final AuthenticationToken authenticationToken, final RaApprovalResponseRequest requestResponse)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException,
             AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException {
         final ApprovalDataVO advo = getApprovalDataNoAuth(requestResponse.getId());

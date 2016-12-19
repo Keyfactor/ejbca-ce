@@ -78,8 +78,16 @@
                     <h:outputText value="#{row.data}" styleClass="pure-u-lg-2-3 ra-outputText"/>
                 </ui:repeat>
                 
-                <h:panelGroup layout="block" styleClass="editButtons">
-                    <h:commandButton id="commandEditData" styleClass="pure-button ra-button" action="#{raManageRequestBean.editRequestData}" value="#{msg.view_request_page_edit_data_command}" rendered="#{raManageRequestBean.request.canEdit}"/>
+                <h:panelGroup layout="block" styleClass="editButtons" rendered="#{raManageRequestBean.request.canEdit}">
+                    <h:commandButton id="commandEditData" styleClass="pure-button ra-button" action="#{raManageRequestBean.editRequestData}" value="#{msg.view_request_page_edit_data_command}"/>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="unexpireButtons" rendered="#{raManageRequestBean.request.expired}">
+                    <h:outputLabel value="#{msg.view_request_page_unexpire_days_1}" styleClass="pure-u-lg-1-3"/>
+                    <h:inputText value="#{raManageRequestBean.unexpireDays}" styleClass="pure-input-1-6" size="3"/>
+                    <h:outputText value="#{msg.view_request_page_unexpire_days_2}"/>
+                    <br />
+                    <h:outputText value="" styleClass="pure-u-lg-1-3"/>
+                    <h:commandButton id="commandUnexpireRequest" styleClass="pure-button ra-button" action="#{raManageRequestBean.unexpireRequest}" value="#{msg.view_request_page_unexpire_command}"/>
                 </h:panelGroup>
             </h:panelGroup>
             <ui:repeat value="#{raManageRequestBean.request.editLogEntries}" var="entryText" rendered="#{raManageRequestBean.viewDataVisible}">
