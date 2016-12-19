@@ -85,11 +85,7 @@ public class EjbcaException extends Exception {
      */
     public EjbcaException(Exception exception) {
         super(exception);
-        if (exception instanceof EjbcaException) {
-        	errorCode = ((EjbcaException) exception).getErrorCode();
-        }else if(exception instanceof CesecoreException){
-            errorCode = ((CesecoreException) exception).getErrorCode();
-        }
+        errorCode = EjbcaException.getErrorCode(exception);
     }
 
     /**
@@ -145,9 +141,9 @@ public class EjbcaException extends Exception {
         if(exception == null){
             return null;
         }
-        if(exception instanceof EjbcaException){
+        if(exception instanceof EjbcaException && ((EjbcaException)exception).getErrorCode() != null){
             return ((EjbcaException)exception).getErrorCode();
-        }else if(exception instanceof CesecoreException){
+        }else if(exception instanceof CesecoreException && ((CesecoreException)exception).getErrorCode() != null){
             return ((CesecoreException)exception).getErrorCode();
         }else{
             return getErrorCode(exception.getCause());
