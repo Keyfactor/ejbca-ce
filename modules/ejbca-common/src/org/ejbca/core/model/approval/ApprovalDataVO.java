@@ -67,7 +67,7 @@ public class ApprovalDataVO implements Serializable {
     private int id = 0;
     private int approvalId = 0;
     private int approvalType = 0;
-    private int endEntityProfileId = 0;
+    private int endEntityProfileiId = 0;
     private int cAId = 0;
     private String reqadmincertissuerdn = null;
     private String reqadmincertsn = null;
@@ -104,7 +104,7 @@ public class ApprovalDataVO implements Serializable {
 		this.id = id;
 		this.approvalId = approvalId;
 		this.approvalType = approvalType;
-		this.endEntityProfileId = endEntityProfileiId;
+		this.endEntityProfileiId = endEntityProfileiId;
 		this.cAId = cAId;
 		this.reqadmincertissuerdn = reqadmincertissuerdn;
 		this.reqadmincertsn = reqadmincertsn;
@@ -172,7 +172,7 @@ public class ApprovalDataVO implements Serializable {
 	 * @return Returns the endEntityProfileId.
 	 */
 	public int getEndEntityProfileId() {
-		return endEntityProfileId;
+		return endEntityProfileiId;
 	}
 	
 	/**
