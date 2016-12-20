@@ -16,8 +16,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.util.Base64PutHashMap;
@@ -70,29 +74,53 @@ public class EndEntityInformation implements Serializable {
     /** Creates new empty EndEntityInformation */
     public EndEntityInformation() {
     }
+    
+    /**
+     * Copy constructor for {@link EndEntityInformation}
+     * 
+     * @param endEntityInformation an end entity to copy
+     */
+    public EndEntityInformation(final EndEntityInformation endEntityInformation) {
+        this.username = endEntityInformation.getUsername();
+        this.subjectDN = endEntityInformation.getDN();
+        this.caid = endEntityInformation.getCAId();
+        this.subjectAltName = endEntityInformation.getSubjectAltName();
+        this.subjectEmail = endEntityInformation.getEmail();
+        this.password = endEntityInformation.getPassword();
+        this.cardNumber = endEntityInformation.getCardNumber();
+        this.status = endEntityInformation.getStatus();
+        this.type = endEntityInformation.getTokenType();
+        this.endentityprofileid = endEntityInformation.getEndEntityProfileId();
+        this.certificateprofileid = endEntityInformation.getCertificateProfileId();
+        this.timecreated = endEntityInformation.getTimeCreated();
+        this.timemodified = endEntityInformation.getTimeModified();
+        this.tokentype = endEntityInformation.getTokenType();
+        this.extendedinformation = new ExtendedInformation(endEntityInformation.getExtendedinformation());
+    }
 
     /**
      * Creates new EndEntityInformation. All fields are almost required in this constructor. Password must
      * be set manually though. This is so you should be sure what you do with the password.
      *
-     * @param user DOCUMENT ME!
-     * @param dn DOCUMENT ME!
+     * @param username the unique username.
+     * @param dn the DN the subject is given in his certificate.
      * @param caid CA id of the CA that the user is registered with
-     * @param subjectaltname DOCUMENT ME!
-     * @param email DOCUMENT ME!
+     * @param subjectaltname the Subject Alternative Name to be used.
+     * @param email the email of the subject (may be null).
      * @param status Status of user, from {@link EndEntityConstants#STATUS_NEW} etc
-     * @param type Type of user, from {@link EndEntityConstants#ENDUSER} etc, can be "ored" together, i.e. EndEntityConstants#USER_ENDUSER | {@link EndEntityConstants#SENDNOTIFICATION}
-     * @param endentityprofileid DOCUMENT ME!
-     * @param certificateprofileid DOCUMENT ME!
+     * @param type Type of user, from {@link EndEntityConstants#ENDUSER} etc, can be "or:ed" together, i.e. EndEntityConstants#USER_ENDUSER | {@link EndEntityConstants#SENDNOTIFICATION}
+     * @param endentityprofileid the id number of the end entity profile bound to this user.
+     * @param certificateprofileid the id number of the certificate profile that should be generated for the user.
      * @param timecreated DOCUMENT ME!
      * @param timemodified DOCUMENT ME!
-     * @param tokentype Type of token, from {@link EndEntityConstants#TOKEN_USERGEN} etc
-     * @param hardtokenissuerid DOCUMENT ME!
+     * @param tokentype the type of token, from {@link EndEntityConstants#TOKEN_USERGEN} etc
+     * @param hardtokenissuerid if token should be hard, the id of the hard token issuer, else 0.
 
      */
-    public EndEntityInformation(String user, String dn, int caid, String subjectaltname, String email, int status, EndEntityType type, int endentityprofileid, int certificateprofileid,
-                         Date timecreated, Date timemodified, int tokentype, int hardtokenissuerid, ExtendedInformation extendedinfo) {
-        setUsername(user);
+    public EndEntityInformation(final String username, final String dn, final int caid, final String subjectaltname, final String email,
+            final int status, final EndEntityType type, final int endentityprofileid, final int certificateprofileid, final Date timecreated,
+            final Date timemodified, final int tokentype, final int hardtokenissuerid, final ExtendedInformation extendedinfo) {
+        setUsername(username);
         setPassword(null);
         setCardNumber(null);
         setDN(dn);
@@ -123,12 +151,13 @@ public class EndEntityInformation implements Serializable {
      * @param type one of EndEntityTypes.USER_ENDUSER || ...
      * @param endentityprofileid the id number of the end entity profile bound to this user.
      * @param certificateprofileid the id number of the certificate profile that should be generated for the user.
-     * @param tokentype the type of token to be generated, one of SecConst.TOKEN constants
+     * @param tokentype the type of token, from {@link EndEntityConstants#TOKEN_USERGEN} etc
      * @param hardtokenissuerid if token should be hard, the id of the hard token issuer, else 0.
      * @param extendedinfo
      */
-    public EndEntityInformation(String username, String dn, int caid, String subjectaltname, String email, EndEntityType type, int endentityprofileid, int certificateprofileid,
-                          int tokentype, int hardtokenissuerid, ExtendedInformation extendedinfo) {
+    public EndEntityInformation(final String username, final String dn, final int caid, final String subjectaltname, final String email,
+            final EndEntityType type, final int endentityprofileid, final int certificateprofileid, final int tokentype, final int hardtokenissuerid,
+            final ExtendedInformation extendedinfo) {
         setUsername(username);
         setPassword(null);
         setDN(dn);
@@ -332,5 +361,73 @@ public class EndEntityInformation implements Serializable {
     	} else {
             return StringTools.getBase64String(subjectDNClean);
     	}
+    }
+    
+    /**
+     * @return an information map about this end entity, listing all general fields.
+     */
+    public Map<String, String> getDetailMap() {
+        Map<String, String> details = new LinkedHashMap<>();
+        details.put("caid", Integer.toString(caid));
+        details.put("cardnumber", cardNumber);
+        details.put("certificateprofileid", Integer.toString(certificateprofileid));
+        details.put("endentityprofileid", Integer.toString(endentityprofileid));
+        if (extendedinformation != null) {
+            StringBuilder extendedInformationDump = new StringBuilder("{");
+            LinkedHashMap<Object, Object> rawData = extendedinformation.getRawData();
+            for (Object key : rawData.keySet()) {
+                if (rawData.get(key) != null) {
+                    extendedInformationDump.append(", [" + (String) key + ":" + rawData.get(key).toString() + "]");
+                }
+            }
+            extendedInformationDump.append("}");
+            details.put("extendedInformation", extendedInformationDump.substring(2));
+        }
+        details.put("hardtokenissuerid", Integer.toString(hardtokenissuerid));
+        details.put("status", Integer.toString(status));
+        details.put("subjectAltName", subjectAltName);
+        details.put("subjectDN", subjectDN);
+        details.put("subjectEmail", subjectEmail);
+        if (timecreated != null) {
+            details.put("timecreated", timecreated.toString());
+        }
+        if (timemodified != null) {
+            details.put("timemodified", timemodified.toString());
+        }
+        details.put("tokentype", Integer.toString(tokentype));
+        details.put("type", Integer.toString(type));
+        details.put("username", username);
+        return details;
+    }
+    
+    /**
+     * 
+     * 
+     * @param other another {@link EndEntityInformation}
+     * @return the differences between this map and the parameter, as <key, [thisValue, otherValue]>
+     */
+    public Map<String, String[]> getDiff(EndEntityInformation other) {
+        Map<String, String[]> changedValues = new HashMap<>();
+        Map<String, String> thisValues = getDetailMap();
+        Map<String, String> otherValues = other.getDetailMap();
+        List<String> thisKeySet = new ArrayList<>(thisValues.keySet());
+        for (String key : thisKeySet) {
+            String thisValue = thisValues.get(key);
+            String otherValue = otherValues.get(key);
+            if (thisValue == null) {
+                if (otherValue != null) {
+                    changedValues.put(key, new String[] { "<null>", otherValue });
+                }
+            } else if (!thisValue.equals(otherValue)) {
+                changedValues.put(key, new String[] { thisValue, otherValue });
+            }
+            thisValues.remove(key);
+            otherValues.remove(key);
+        }
+        //Add in any values that may have been in otherValues but not here
+        for (String otherKey : otherValues.keySet()) {
+            changedValues.put(otherKey, new String[] { "<null>", otherValues.get(otherKey) });
+        }
+        return changedValues;
     }
 }

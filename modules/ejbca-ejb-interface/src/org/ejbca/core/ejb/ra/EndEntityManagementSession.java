@@ -169,16 +169,7 @@ public interface EndEntityManagementSession {
     void addUserAfterApproval(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, AuthenticationToken lastApprovingAdmin)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EndEntityExistsException, WaitingForApprovalException,
             CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException;
-    
-    /**
-     * Validates the name and DN in an end entity and canonicalizes/strips
-     * the attributes. This method is called by addUser.
-     * 
-     * @throws CustomFieldException if if the end entity was not validated by a locally defined field validator
-     * 
-     */
-     void canonicalizeUser(final EndEntityInformation endEntity) throws CustomFieldException;
-    
+        
     /**
      * Change user information.
      * 
@@ -200,10 +191,11 @@ public interface EndEntityManagementSession {
      *             if the caid of the user does not exist
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
+     * @throws NoSuchEndEntityException if the end entity was not found
      */
     void changeUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException;
+            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException;
 
     /**
      * Change user information.
@@ -225,10 +217,11 @@ public interface EndEntityManagementSession {
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
      * @throws ApprovalException if an approval already exists for this request.
+     * @throws NoSuchEndEntityException if the end entity was not found
      */
     void changeUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, boolean fromWebService)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException;
+            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException;
 
     /**
      * Change user information after an EditEndEntityApprovalRequest has been approved
@@ -253,17 +246,19 @@ public interface EndEntityManagementSession {
      *             if the caid of the user does not exist
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
+     * @throws NoSuchEndEntityException NoSuchEndEntityException if the user does not exist
      */
     void changeUserAfterApproval(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, 
             int approvalRequestId, AuthenticationToken lastApprovingAdmin)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException;
+            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException;
     
     /**
      * Deletes a user from the database. The users certificates must be revoked
      * BEFORE this method is called.
      * 
      * @param username the unique username.
+     * @throws AuthorizationDeniedException if admin was not authorized to remove end entities
      * @throws NoSuchEndEntityException if the user does not exist
      * @throws RemoveException if the user could not be removed
      */

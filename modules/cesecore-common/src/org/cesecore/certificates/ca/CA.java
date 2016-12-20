@@ -276,6 +276,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @return the validity as ISO8601 date or relative time.
      * @See {@link org.cesecore.util.ValidityDate ValidityDate}
      */
+    @SuppressWarnings("deprecation")
     public String getEncodedValidity() {
         String result = (String) data.get(ENCODED_VALIDITY);
         if (StringUtils.isBlank(result)) {

@@ -322,9 +322,10 @@ public class RAInterfaceBean implements Serializable {
      * @throws IllegalNameException  if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
      * @throws ApprovalException if an approval already is waiting for specified action
+     * @throws NoSuchEndEntityException if the end entity could not be found. 
      */
     public void changeUserData(UserView userdata) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            WaitingForApprovalException, ApprovalException, CertificateSerialNumberException, IllegalNameException {
+            WaitingForApprovalException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException {
         log.trace(">changeUserData()");
         addedusermemory.changeUser(userdata);
         if (userdata.getPassword() != null && userdata.getPassword().trim().equals("")) {

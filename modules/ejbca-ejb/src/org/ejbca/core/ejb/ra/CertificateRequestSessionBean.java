@@ -210,10 +210,11 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
      * @throws IllegalNameException  if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
      * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
+     * @throws NoSuchEndEntityException if the end entity was not found
      */
     private void addOrEditUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, boolean fromwebservice)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, EndEntityExistsException,
-            CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, CustomFieldException {
+            CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, CustomFieldException, NoSuchEndEntityException {
 
         int caid = userdata.getCAId();
         if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid)) {
@@ -291,7 +292,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg,
             boolean createJKS) throws ApprovalException, EndEntityExistsException, CADoesntExistsException, CertificateSerialNumberException,
             IllegalNameException, CustomFieldException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NoSuchAlgorithmException,
-            InvalidKeySpecException, CertificateException, InvalidAlgorithmParameterException, KeyStoreException {
+            InvalidKeySpecException, CertificateException, InvalidAlgorithmParameterException, KeyStoreException, NoSuchEndEntityException {
 
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
         addOrEditUser(admin, userdata, true, true);

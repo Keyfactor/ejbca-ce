@@ -104,8 +104,9 @@ public interface CertificateRequestSession {
 	 * @throws CertificateException 
 	 * @throws InvalidAlgorithmParameterException 
 	 * @throws KeyStoreException 
+	 * @throws NoSuchEndEntityException if the end entity was not found
      */
     public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg,
             boolean createJKS) throws ApprovalException, EndEntityExistsException, CADoesntExistsException, CertificateSerialNumberException,
-            IllegalNameException, CustomFieldException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NoSuchAlgorithmException, InvalidKeySpecException, CertificateException, InvalidAlgorithmParameterException, KeyStoreException;
+            IllegalNameException, CustomFieldException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NoSuchAlgorithmException, InvalidKeySpecException, CertificateException, InvalidAlgorithmParameterException, KeyStoreException, NoSuchEndEntityException;
 }

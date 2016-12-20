@@ -248,14 +248,15 @@ public abstract class BatchCreateTool {
      * @throws InvalidAlgorithmParameterException 
      * @throws UnrecoverableKeyException 
      * @throws NoSuchEndEntityException 
+     * @throws FileNotFoundException 
      */
     public static File createUser(AuthenticationToken authenticationToken, File mainStoreDir, String username) throws AuthorizationDeniedException,
-            ApprovalException, FinderException, WaitingForApprovalException, UnrecoverableKeyException, InvalidAlgorithmParameterException,
+            ApprovalException, WaitingForApprovalException, UnrecoverableKeyException, InvalidAlgorithmParameterException,
             CADoesntExistsException, OperatorCreationException, CertificateException, SignRequestSignatureException, AuthStatusException,
             AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException,
-            UserDoesntFullfillEndEntityProfile, IOException, NoSuchEndEntityException {
+            UserDoesntFullfillEndEntityProfile, NoSuchEndEntityException, FileNotFoundException {
       if (log.isTraceEnabled()) {
             log.trace(">createUser(" + username + ")");
         }
@@ -287,7 +288,7 @@ public abstract class BatchCreateTool {
             SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException,
             IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
             IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, KeyStoreException,
-            NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, ObjectNotFoundException {
+            NoSuchAlgorithmException, InvalidKeySpecException, FileNotFoundException {
         File ret = null;
         // get users Token Type.
         int tokentype = data.getTokenType();
@@ -342,17 +343,40 @@ public abstract class BatchCreateTool {
      * @param createPEM
      *            if pem files should be created
      * @param keyrecoverflag
-     *            if we should try to revoer already existing keys
+     *            if we should try to recover already existing keys
+     * @throws AuthorizationDeniedException 
+     * @throws InvalidAlgorithmParameterException 
+     * @throws FileNotFoundException 
+     * @throws KeyStoreException 
+     * @throws InvalidKeySpecException 
+     * @throws NoSuchAlgorithmException 
+     * @throws CustomCertificateSerialNumberException 
+     * @throws InvalidAlgorithmException 
+     * @throws CAOfflineException 
+     * @throws IllegalValidityException 
+     * @throws CryptoTokenOfflineException 
+     * @throws CertificateSerialNumberException 
+     * @throws CertificateRevokeException 
+     * @throws IllegalNameException 
+     * @throws CertificateCreateException 
+     * @throws IllegalKeyException 
+     * @throws AuthLoginException 
+     * @throws AuthStatusException 
+     * @throws SignRequestSignatureException 
+     * @throws CertificateException 
+     * @throws OperatorCreationException 
      * @throws NoSuchEndEntityException 
+     * @throws CADoesntExistsException 
+     * @throws UnrecoverableKeyException 
      */
     private static File processUser(AuthenticationToken authenticationToken, File mainStoreDir, EndEntityInformation data, boolean createJKS,
-            boolean createPEM, boolean keyrecoverflag) throws AuthorizationDeniedException, UnrecoverableKeyException, CADoesntExistsException,
-            ObjectNotFoundException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalKeyException,
-            CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
-            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            CustomCertificateSerialNumberException, OperatorCreationException, CertificateException, NoSuchAlgorithmException, KeyStoreException,
-            InvalidKeySpecException, IOException, InvalidAlgorithmParameterException, NoSuchEndEntityException {
-      KeyPair rsaKeys;
+            boolean createPEM, boolean keyrecoverflag)
+            throws AuthorizationDeniedException, InvalidAlgorithmParameterException, UnrecoverableKeyException, CADoesntExistsException,
+            NoSuchEndEntityException, OperatorCreationException, CertificateException, SignRequestSignatureException, AuthStatusException,
+            AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
+            CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException, NoSuchAlgorithmException, InvalidKeySpecException, KeyStoreException, FileNotFoundException {
+        KeyPair rsaKeys;
         X509Certificate orgCert = null;
         if (useKeyRecovery && keyrecoverflag) {
             boolean reusecertificate = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
@@ -407,6 +431,7 @@ public abstract class BatchCreateTool {
      * @return a file handle to the created keystore file
      * @throws AuthorizationDeniedException 
      * @throws CADoesntExistsException 
+     * @throws NoSuchEndEntityException 
      * @throws ObjectNotFoundException 
      * @throws CustomCertificateSerialNumberException 
      * @throws InvalidAlgorithmException 
@@ -426,17 +451,17 @@ public abstract class BatchCreateTool {
      * @throws KeyStoreException 
      * @throws NoSuchAlgorithmException 
      * @throws UnrecoverableKeyException 
-     * @throws IOException 
      * @throws InvalidKeySpecException 
+     * @throws FileNotFoundException 
      */
 
     private static File createUser(AuthenticationToken authenticationToken, File mainStoreDir, String username, String password, int caid,
-            KeyPair rsaKeys, boolean createJKS, boolean createPEM, boolean savekeys, X509Certificate orgCert) throws CADoesntExistsException,
-            AuthorizationDeniedException, NoSuchEndEntityException, SignRequestSignatureException, AuthStatusException, AuthLoginException,
-            IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
-            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            CustomCertificateSerialNumberException, OperatorCreationException, CertificateException, UnrecoverableKeyException,
-            NoSuchAlgorithmException, KeyStoreException, InvalidKeySpecException, IOException {
+            KeyPair rsaKeys, boolean createJKS, boolean createPEM, boolean savekeys, X509Certificate orgCert)
+            throws CADoesntExistsException, AuthorizationDeniedException, NoSuchEndEntityException, OperatorCreationException, CertificateException,
+            SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException,
+            IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException,
+            CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, NoSuchAlgorithmException, InvalidKeySpecException,
+            KeyStoreException, UnrecoverableKeyException, FileNotFoundException {
         if (log.isTraceEnabled()) {
             log.trace(">createUser: username=" + username);
         }

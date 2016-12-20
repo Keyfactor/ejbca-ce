@@ -93,7 +93,8 @@ public abstract class CvcCA extends CA implements Serializable {
     }
 
 	/** Constructor used when retrieving existing CVCCA from database. */
-	public void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
+	@SuppressWarnings("deprecation")
+    public void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
 		super.init(data);
 		final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
         for (final Integer externalCAServiceType : getExternalCAServiceTypes()) {
@@ -154,6 +155,7 @@ public abstract class CvcCA extends CA implements Serializable {
 
 	/** Implementation of UpgradableDataHashMap function upgrade. 
 	 */
+    @SuppressWarnings("deprecation")
     @Override
 	public void upgrade(){
 		if(Float.compare(LATEST_VERSION, getVersion()) != 0) {

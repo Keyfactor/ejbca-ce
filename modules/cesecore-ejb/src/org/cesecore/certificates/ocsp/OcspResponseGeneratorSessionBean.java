@@ -2064,6 +2064,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     /** @return OcspKeyBinding properties set to the current file-based configuration (per cert profile config is ignored here) */
+    @SuppressWarnings("deprecation")
     private Map<String, Serializable> getOcspKeyBindingDefaultProperties() {
         // Use global config as defaults for each new OcspKeyBinding
         final Map<String, Serializable> dataMap = new HashMap<String, Serializable>();

@@ -62,7 +62,6 @@ public class LookAheadObjectInputStreamTest {
             this.data = data;
         }
 
-        @SuppressWarnings("unused")
         public int getData() {
             return data;
         }

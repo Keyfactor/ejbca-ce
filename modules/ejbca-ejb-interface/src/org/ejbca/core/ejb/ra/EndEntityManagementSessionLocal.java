@@ -24,6 +24,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.CustomFieldException;
 
 /**
  * Local interface for EndEntityManagementSession.
@@ -31,6 +32,17 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 @Local
 public interface EndEntityManagementSessionLocal extends EndEntityManagementSession {
 
+    /**
+     * Validates the name and DN in an end entity and canonicalizes/strips
+     * the attributes. This method is called by addUser.
+     * 
+     * @return a copy of endEntity with the canonicalized changes. Does not modify its parameter.
+     * 
+     * @throws CustomFieldException if if the end entity was not validated by a locally defined field validator
+     * 
+     */
+    EndEntityInformation canonicalizeUser(final EndEntityInformation endEntity) throws CustomFieldException;
+    
     /**
      * Finds all users, limited by the maximum query count defined in the global configuration.
      * 

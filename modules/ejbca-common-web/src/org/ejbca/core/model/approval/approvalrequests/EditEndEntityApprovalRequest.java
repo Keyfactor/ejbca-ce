@@ -36,6 +36,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -111,6 +112,8 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		    throw new ApprovalRequestExecutionException("Error with the SubjectDN serialnumber :" + e.getErrorCode() + e.getMessage(), e);
         } catch (IllegalNameException e) {
             throw new ApprovalRequestExecutionException("The Subject DN failed constraints. " + e.getErrorCode() + e.getMessage(), e);
+        } catch (NoSuchEndEntityException e) {
+            throw new ApprovalRequestExecutionException("End entity not found.", e);
         }
     }
 
