@@ -181,6 +181,15 @@ span .approvalStep,
 #contentForm\:currentStep .internal-frame {
   padding: 1% 0 1% 2%; }
 
+#manageRequestsForm\:customSearchOptions .bodyText,
+#manageRequestsForm\:customSearchOptions label {
+    padding-right: 2%;
+    display: inline-block;
+}
+#manageRequestsForm\:customSearchOptions label.endDate {
+    padding-left: 2%;
+}
+
 #manageRequestForm\:editRequestDataTable {
   word-break: break-all; }
   #manageRequestForm\:editRequestDataTable label {
@@ -424,7 +433,10 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #enrollMakeNewRequestForm\:updateRequestPreview,
 #requestInfoForm\:generateKeyStorePem,
 #requestInfoForm\:generateP12,
-#requestInfoForm\:generateJks {
+#requestInfoForm\:generateJks,
+#manageRequestForm\:commandApprove,
+#manageRequestForm\:commandReject,
+#manageRequestForm\:commandSaveData {
   background: #e9af13;
   color: #fff; }
 
@@ -466,6 +478,12 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #requestInfoForm\:generatePemFullChain:focus,
 #requestInfoForm\:generatePem:hover,
 #requestInfoForm\:generatePem:focus,
+#manageRequestForm\:commandApprove:hover,
+#manageRequestForm\:commandApprove:focus,
+#manageRequestForm\:commandReject:hover,
+#manageRequestForm\:commandReject:focus,
+#manageRequestForm\:commandSaveData:hover,
+#manageRequestForm\:commandSaveData:focus,
 #enrollWithRequestIdForm\:checkButton:hover,
 #enrollWithRequestIdForm\:checkButton:focus,
 #requestInfoForm\:confirmRequestButton:hover,
