@@ -344,6 +344,8 @@ public class EjbcaWS implements IEjbcaWS {
             throw new EjbcaException(e);
         } catch (CertificateSerialNumberException e) {
             throw new EjbcaException(e);
+        } catch (NoSuchEndEntityException e) {
+            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_NOT_FOUND, Level.INFO);
         } finally {
             logger.writeln();
             logger.flush();
@@ -2839,15 +2841,14 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( AuthorizationDeniedException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
-        } catch( NotFoundException t ) {
-            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
-            throw t;
-		} catch (AuthStatusException e) {
+        } catch (AuthStatusException e) {
 			// Don't log a bad error for this (user wrong status)
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
 		} catch (AuthLoginException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
-		} catch (NoSuchAlgorithmException e) {
+		} catch (NoSuchEndEntityException e) {
+            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_NOT_FOUND, Level.INFO);
+        }catch (NoSuchAlgorithmException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (NoSuchProviderException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);

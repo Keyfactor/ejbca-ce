@@ -525,7 +525,7 @@ public class RegisterReqBean {
         
         final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new PublicWebPrincipal(remoteAddress));
         
-        final EndEntityInformation endEntity = new EndEntityInformation(username, subjectDN, caid, subjectAltName, 
+        EndEntityInformation endEntity = new EndEntityInformation(username, subjectDN, caid, subjectAltName, 
                 null, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId,
                 null,null, tokenType, 0, null);
         if (eeprofile.getUse(EndEntityProfile.SENDNOTIFICATION, 0)) {
@@ -537,7 +537,7 @@ public class RegisterReqBean {
         }
         
         try {
-            endEntityManagementSession.canonicalizeUser(endEntity);
+            endEntity = endEntityManagementSession.canonicalizeUser(endEntity);
             if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
                 eeprofile.doesUserFullfillEndEntityProfile(endEntity, false);
                 

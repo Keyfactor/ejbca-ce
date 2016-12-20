@@ -1700,6 +1700,7 @@ public class X509CA extends CA implements Serializable {
     /**
      * Implementation of UpgradableDataHashMap function upgrade.
      */
+    @SuppressWarnings("deprecation")
     public void upgrade() {
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade

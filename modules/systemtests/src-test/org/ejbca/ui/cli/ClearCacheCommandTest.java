@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
-import org.apache.log4j.Logger;
 import org.junit.Test;
 
 /**
@@ -23,8 +22,6 @@ import org.junit.Test;
  */
 public class ClearCacheCommandTest {
 
-    private static final Logger log = Logger.getLogger(ClearCacheCommandTest.class);
-    
     private ClearCacheCommand command = new ClearCacheCommand();
 
     @Test
