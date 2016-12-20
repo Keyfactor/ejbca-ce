@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -13,7 +13,6 @@
 
 package org.cesecore.util;
 
-import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,12 +71,9 @@ public final class TimeUnitFormat {
      * @param formatted
      *            time string, i.e '1y-2mo10d'.
      * @return the milliseconds as long value from 0.
-     * @throws ParseException
-     *             if the string cannot be parsed, i.e. it contains units not
-     *             listed or other illegal characters or forms.
+     * @throws NumberFormatException  if the string cannot be parsed, i.e. it contains units not listed or other illegal characters or forms.
      */
     public long parseMillis(String formattedString) throws NumberFormatException {
-        NumberFormatException exception = null;
         long result = 0;
         if (StringUtils.isNotBlank(formattedString)) {
             formattedString = formattedString.trim();
@@ -88,8 +84,7 @@ public final class TimeUnitFormat {
             while (matcher.find()) {
                 start = matcher.start();
                 if (start != end) {
-                    exception = new NumberFormatException(EXCEPTION_MESSAGE_ILLEGAL_CHARACTERS);
-                    break;
+                    throw new NumberFormatException(EXCEPTION_MESSAGE_ILLEGAL_CHARACTERS);
                 }
                 end = matcher.end();
                 for (int i = 0; i < matcher.groupCount(); i = i + 3) {
@@ -99,15 +94,13 @@ public final class TimeUnitFormat {
                 }
             }
             if (end != formattedString.length()) {
-                exception = new NumberFormatException(EXCEPTION_MESSAGE_ILLEGAL_CHARACTERS);
+                throw new NumberFormatException(EXCEPTION_MESSAGE_ILLEGAL_CHARACTERS);
             }
 
         } else {
-            exception = new NumberFormatException(EXCEPTION_MESSAGE_BLANK_STRING);
+            throw new NumberFormatException(EXCEPTION_MESSAGE_BLANK_STRING);
         }
-        if (null != exception) {
-            throw exception;
-        }
+
         return result;
     }
 

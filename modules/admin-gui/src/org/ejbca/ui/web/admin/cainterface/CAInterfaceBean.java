@@ -314,9 +314,9 @@ public class CAInterfaceBean implements Serializable {
         try {
             publishingCrlSession.forceCRL(authenticationToken, caid);
         } catch (CADoesntExistsException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         } catch (AuthorizationDeniedException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
 		}
     }
 
@@ -324,9 +324,9 @@ public class CAInterfaceBean implements Serializable {
         try {
             publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
         } catch (CADoesntExistsException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         } catch (AuthorizationDeniedException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
 		}
     }
 
@@ -689,18 +689,13 @@ public class CAInterfaceBean implements Serializable {
 	    // If 'buttonMakeRequest' set encodedValidity to zero days, otherwise perform validation if it's an absolute date or a relative time.
 	    if (buttonMakeRequest) {
 	        validityString = "0d"; // not applicable
-	    } else {
-	        // Fixed end dates are not limited.
-	        try {
-	            ValidityDate.parseAsIso8601(validityString);
-	        } catch(ParseException e ) {
-	            // Only positive relative times allowed.
-	            final long millis = SimpleTime.parseMillies(validityString);
-                if (millis <= 0) {
-                    throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
-                }
-	        }
-	    }
+        } else {
+            String errorMessage = isValidityTimeValid(validityString);
+            if(!StringUtils.isEmpty(errorMessage)) {
+                throw new ParameterException(errorMessage);
+            }
+
+        }
 
 	    if (catoken != null && catype != 0 && subjectdn != null && caName != null && signedby != 0) {
 	        // Approvals is generic for all types of CAs
@@ -896,6 +891,33 @@ public class CAInterfaceBean implements Serializable {
             throw new ParameterException(MessageFormat.format(ejbcawebbean.getText("INVALIDNAMECONSTRAINT"), e.getMessage()));
         }
     }
+	
+    public String isValidityTimeValid(String validityString) {
+        // Fixed end dates are not limited
+        if (ValidityDate.isValidIso8601Date(validityString)) {
+            //We have a valid date, let's just check that it's in the future as well. 
+            Date validityDate;
+            try {
+                validityDate = ValidityDate.parseAsIso8601(validityString);
+            } catch (ParseException e) {
+               throw new IllegalStateException(validityString + " was an invalid date, but this should already have been checked.");
+            }
+            if (validityDate.before(new Date())) {
+                return ejbcawebbean.getText("INVALIDVALIDITY_PAST");
+            }
+        } else {
+            //Only positive relative times allowed.
+            try {
+                if (SimpleTime.parseMillies(validityString) <= 0) {
+                    return ejbcawebbean.getText("INVALIDVALIDITYORCERTEND");
+                }
+            } catch (NumberFormatException e) {
+                return ejbcawebbean.getText("INVALIDVALIDITYORCERTEND") + ": " + e.getMessage();
+            }
+        }
+        return "";
+    }
+	
     
     private boolean isNameConstraintAllowedInProfile(int certProfileId) {
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
@@ -1046,38 +1068,15 @@ public class CAInterfaceBean implements Serializable {
                extendedcaservices.add(new CmsCAServiceInfo(cmsactive, false)); 
                // No need to add the HardTokenEncrypt or Keyrecovery extended service here, because they are only "updated" in EditCA, and there
                // is not need to update them.
-               cainfo = new X509CAInfo(caid, validityString,
-                       catoken, description, 
-                       crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
-                       useauthoritykeyidentifier, 
-                       authoritykeyidentifiercritical,
-                       usecrlnumber, 
-                       crlnumbercritical, 
-                       defaultcrldistpoint,
-                       defaultcrlissuer,
-                       defaultocsplocator, 
-                       authorityInformationAccess,
-                       certificateAiaDefaultCaIssuerUri,
-                       parseNameConstraintsInput(nameConstraintsPermittedString), parseNameConstraintsInput(nameConstraintsExcludedString),
-                       cadefinedfreshestcrl,
-                       finishUser,extendedcaservices,
-                       useutf8policytext,
-                       approvalsettings,
-                       approvalProfileID,
-                       useprintablestringsubjectdn,
-                       useldapdnorder,
-                       usecrldistpointoncrl,
-                       crldistpointoncrlcritical,
-                       includeInHealthCheck,
-                       isDoEnforceUniquePublicKeys,
-                       isDoEnforceUniqueDistinguishedName,
-                       isDoEnforceUniqueSubjectDNSerialnumber,
-                       useCertReqHistory,
-                       useUserStorage,
-                       useCertificateStorage,
-                       sharedCmpRaSecret,
-                       keepExpiredCertsOnCRL);
-           }
+                cainfo = new X509CAInfo(caid, validityString, catoken, description, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod,
+                        crlpublishers, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber, crlnumbercritical,
+                        defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccess, certificateAiaDefaultCaIssuerUri,
+                        parseNameConstraintsInput(nameConstraintsPermittedString), parseNameConstraintsInput(nameConstraintsExcludedString),
+                        cadefinedfreshestcrl, finishUser, extendedcaservices, useutf8policytext, approvalsettings, approvalProfileID,
+                        useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck,
+                        isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory,
+                        useUserStorage, useCertificateStorage, sharedCmpRaSecret, keepExpiredCertsOnCRL);
+            }
            // Info specific for CVC CA
            if (catype == CAInfo.CATYPE_CVC) {
                // Edit CVC CA data                            

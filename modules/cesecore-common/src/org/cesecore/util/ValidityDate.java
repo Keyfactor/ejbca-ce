@@ -19,6 +19,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
@@ -62,6 +63,24 @@ public class ValidityDate {
 	        // Try again with timezone. In DateUtils, the default timezone seems to be the server
 	        // timezone and not UTC, so we can't have date formats without "ZZ".
 	        return DateUtils.parseDateStrictly(dateString+"+00:00", ISO8601_PATTERNS);
+	    }
+	}
+	
+	/**
+	 * 
+	 * @param dateString a string describing a date
+	 * @return true if dateString i sin the format "yyyy-MM-dd HH:mm:ssZZ"
+	 */
+	public static boolean isValidIso8601Date(final String dateString) {
+	    try {
+	        if(StringUtils.isEmpty(dateString)) { 
+	            return false;
+	        } else {
+	            parseAsIso8601(dateString);
+	        }
+	        return true;
+	    } catch(ParseException e) {
+	        return false;
 	    }
 	}
 

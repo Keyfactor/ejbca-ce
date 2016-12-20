@@ -13,7 +13,7 @@
  package org.ejbca.ui.web;
 
 /**
- * Used for parameter errors on web pageges.
+ * Used for parameter errors on web pages.
  * 
  * @version $Id$
  *
