@@ -124,7 +124,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
         Map<Object, Object> newmap = (Map<Object, Object>)newobj.saveData();
     	return diffMaps(data, newmap);
     }
-
+    
     /** Create a Map with the differences between the two input objects.
      * Puts the result in a new Map with keys:
      * <pre>

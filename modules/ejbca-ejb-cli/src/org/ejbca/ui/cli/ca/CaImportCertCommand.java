@@ -267,9 +267,14 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         try {
             if (userdata == null) {
 
+                try {
                 endEntityManagementSession.addUser(getAuthenticationToken(), username,
                         password, CertTools.getSubjectDN(certificate), subjectAltName, email, false, endentityprofileid, certificateprofileid,
                         endEntityType, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, cainfo.getCAId());
+                } catch (EndEntityExistsException e) {
+                    log.error("End entity with username " + username + " already exists.");
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                } 
                 try {
                     if (status == CertificateConstants.CERT_ACTIVE) {
                         endEntityManagementSession.setUserStatus(getAuthenticationToken(),
@@ -289,17 +294,17 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                                 : EndEntityConstants.STATUS_REVOKED), endEntityType, endentityprofileid, certificateprofileid, null, null,
                         SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
                 endEntityInformation.setPassword(password);
-
-                endEntityManagementSession.changeUser(getAuthenticationToken(),
-                        endEntityInformation, false);
+                try {
+                    endEntityManagementSession.changeUser(getAuthenticationToken(), endEntityInformation, false);
+                } catch (NoSuchEndEntityException e) {
+                    log.error("No such end entity.");
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                }
 
                 log.info("User '" + username + "' has been updated.");
             }
         } catch (CADoesntExistsException e) {
             log.error("No such CA " + caname);
-            return CommandResult.FUNCTIONAL_FAILURE;
-        } catch (EndEntityExistsException e) {
-            log.error("End entity with username " + username + " already exists.");
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (AuthorizationDeniedException e) {
             log.error("CLI user not authorized to create end entity.");

@@ -267,8 +267,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     @Override
-    public void canonicalizeUser(final EndEntityInformation endEntity) throws CustomFieldException {
-        final int endEntityProfileId = endEntity.getEndEntityProfileId();
+    public EndEntityInformation canonicalizeUser(final EndEntityInformation endEntity) throws CustomFieldException {
+        //Make a deep copy
+        EndEntityInformation endEntityInformationCopy = new EndEntityInformation(endEntity);      
+        final int endEntityProfileId = endEntityInformationCopy.getEndEntityProfileId();
         final String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(endEntityProfileId);
         try {
             FieldValidator.validate(endEntity, endEntityProfileId, endEntityProfileName);
@@ -276,11 +278,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             e.setErrorCode(ErrorCode.FIELD_VALUE_NOT_VALID);
             throw e;
         }
-        
-        final String dn = CertTools.stringToBCDNString(StringTools.strip(endEntity.getDN()));
-        endEntity.setDN(dn);
-        endEntity.setSubjectAltName(StringTools.strip(endEntity.getSubjectAltName()));
-        endEntity.setEmail(StringTools.strip(endEntity.getEmail()));
+        final String dn = CertTools.stringToBCDNString(StringTools.strip(endEntityInformationCopy.getDN()));
+        endEntityInformationCopy.setDN(dn);
+        endEntityInformationCopy.setSubjectAltName(StringTools.strip(endEntityInformationCopy.getSubjectAltName()));
+        endEntityInformationCopy.setEmail(StringTools.strip(endEntityInformationCopy.getEmail()));
+        return endEntityInformationCopy;
     }
     
     @Override
@@ -300,14 +302,22 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     /**
      * 
      *
-     * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
-     * @throws IllegalNameException if the Subject DN failed constraints
+     * 
      * @throws ApprovalException if an approval already exists for this request.
+     * @throws AuthorizationDeniedException if the admin is not authorized to the CA, or lacks rights to add end entities. 
+     * @throws CADoesntExistsException if the CA specified does not exist
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
+     * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
+     * @throws EndEntityExistsException if the end entity already exists
+     * @throws IllegalNameException if the Subject DN failed constraints
+     * @throws UserDoesntFullfillEndEntityProfile if the end entity fails constrains set by the end entity profile
+     * @throws WaitingForApprovalException to mark that a request has been created and is awaiting approval
+
      */
-    private void addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd,
-            final AuthenticationToken lastApprovingAdmin) throws AuthorizationDeniedException, EndEntityExistsException,
-            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
+    private void addUser(final AuthenticationToken admin, EndEntityInformation endEntity, final boolean clearpwd,
+            final AuthenticationToken lastApprovingAdmin)
+            throws AuthorizationDeniedException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
+            CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
         final int endEntityProfileId = endEntity.getEndEntityProfileId();
         final int caid = endEntity.getCAId();
         // Check if administrator is authorized to add user to CA.
@@ -482,6 +492,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", intres.getLocalizedMessage("ra.addedentity", username));
+                details.putAll(endEntity.getDetailMap());
                 auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, username, details);
             } catch (EndEntityExistsException e) {
@@ -650,21 +661,22 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @Override
     public void changeUserAfterApproval(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final boolean clearpwd,
             final int approvalRequestId, final AuthenticationToken lastApprovingAdmin) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
-            CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException {
+            CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException {
         changeUser(admin, endEntityInformation, clearpwd, false, approvalRequestId, lastApprovingAdmin);
         
     }
     
     @Override
-    public void changeUser(final AuthenticationToken admin, final EndEntityInformation userdata, final boolean clearpwd) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException {
+    public void changeUser(final AuthenticationToken admin, final EndEntityInformation userdata, final boolean clearpwd)
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException,
+            ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException {
         changeUser(admin, userdata, clearpwd, false);
     }
 
     @Override
     public void changeUser(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final boolean clearpwd,
             final boolean fromWebService) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
-            CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException {
+            CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException {
         changeUser(admin, endEntityInformation, clearpwd, fromWebService, 0, null);
     }
 
@@ -672,7 +684,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private void changeUser(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final boolean clearpwd,
             final boolean fromWebService, final int approvalRequestId, final AuthenticationToken lastApprovingAdmin) 
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
-            CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException {
+            CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException {
         final int endEntityProfileId = endEntityInformation.getEndEntityProfileId();
         final int caid = endEntityInformation.getCAId();
         final String username = endEntityInformation.getUsername();
@@ -697,8 +709,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (userData == null) {
             final String msg = intres.getLocalizedMessage("ra.erroreditentity", username);
             log.info(msg);
-            throw new EJBException(msg);
+            throw new NoSuchEndEntityException(msg);
         }
+        final EndEntityInformation originalCopy = userData.toEndEntityInformation();
+        
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
         // if required, we merge the existing user dn into the dn provided by the web service.
         if (fromWebService && profile.getAllowMergeDnWebServices()) {
@@ -888,6 +902,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
             // Send notification if it should be sent.
             sendNotification(admin, notificationEndEntityInformation, newstatus, approvalRequestId, lastApprovingAdmin, null);
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            Map<String, String[]> diff = originalCopy.getDiff(endEntityInformation);
+            for(String key : diff.keySet()) {
+                details.put(key, diff.get(key)[0] + " -> " + diff.get(key)[1]);
+            }
             if (newstatus != oldstatus) {
                 // Only print stuff on a printer on the same conditions as for
                 // notifications, we also only print if the status changes, not for
@@ -897,13 +916,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     print(profile, endEntityInformation);
                 }
                 final String msg = intres.getLocalizedMessage("ra.editedentitystatus", username, Integer.valueOf(newstatus));
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, username, details);
             } else {
                 final String msg = intres.getLocalizedMessage("ra.editedentity", username);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, username, details);

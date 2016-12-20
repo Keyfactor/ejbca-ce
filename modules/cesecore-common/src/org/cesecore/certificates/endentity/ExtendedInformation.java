@@ -117,13 +117,22 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static String CERTIFICATE_REQUEST = "CERTIFICATE_REQUEST";
 
 
-    /** Creates a new instance of EndEntity Profile */
+    /** Creates a new instance of ExtendedInformation */
     public ExtendedInformation() {
         setType(TYPE_BASIC);
         data.put(SUBJECTDIRATTRIBUTES, "");
         setMaxLoginAttempts(DEFAULT_MAXLOGINATTEMPTS);
         setRemainingLoginAttempts(DEFAULT_REMAININGLOGINATTEMPTS);
         setCertificateRequest(null);
+    }
+    
+    /**
+     * Copy constructor
+     * 
+     * @param extendedInformation the ExtendedInformation map top copy
+     */
+    public ExtendedInformation(final ExtendedInformation extendedInformation) {
+        this.data = extendedInformation.getClonedData();
     }
     
     /** @return The keystore algorithm subtype is the key length for RSA/DSA ('2046', '4096',...) or curve specification for ECDSA
@@ -492,31 +501,35 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     }
     
     public List<Integer> getEditEndEntityApprovalRequestIds() {
-        Object ids = data.get(EDIT_EE_APPROVAL_REQUEST_IDS);
+        @SuppressWarnings("unchecked")
+        ArrayList<Integer> ids = (ArrayList<Integer>) data.get(EDIT_EE_APPROVAL_REQUEST_IDS);
         if(ids != null) {
-            return (ArrayList<Integer>) ids;
+            return ids;
         }
         return new ArrayList<Integer>();
     }
     
     public void addEditEndEntityApprovalRequestId(Integer requestId) {
         Object obj = data.get(EDIT_EE_APPROVAL_REQUEST_IDS);
+        @SuppressWarnings("unchecked")
         ArrayList<Integer> ids = obj==null? new ArrayList<Integer>() : (ArrayList<Integer>) obj;
         ids.add(requestId);
         data.put(EDIT_EE_APPROVAL_REQUEST_IDS, ids);
     }
     
     public List<Integer> getRevokeEndEntityApprovalRequestIds() {
-        Object ids = data.get(REVOKE_EE_APPROVAL_REQUEST_IDS);
+        @SuppressWarnings("unchecked")
+        ArrayList<Integer> ids = (ArrayList<Integer>) data.get(REVOKE_EE_APPROVAL_REQUEST_IDS);
         if(ids != null) {
-            return (ArrayList<Integer>) ids;
+            return ids;
         }
         return new ArrayList<Integer>();
     }
     
     public void addRevokeEndEntityApprovalRequestId(Integer requestId) {
-        Object obj = data.get(REVOKE_EE_APPROVAL_REQUEST_IDS);
-        ArrayList<Integer> ids = obj==null? new ArrayList<Integer>() : (ArrayList<Integer>) obj;
+        @SuppressWarnings("unchecked")
+        List<Integer> obj = (List<Integer>) data.get(REVOKE_EE_APPROVAL_REQUEST_IDS);
+        List<Integer> ids = obj==null? new ArrayList<Integer>() : obj;
         ids.add(requestId);
         data.put(REVOKE_EE_APPROVAL_REQUEST_IDS, ids);
     }
