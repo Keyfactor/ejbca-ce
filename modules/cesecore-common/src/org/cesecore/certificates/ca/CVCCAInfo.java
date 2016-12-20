@@ -83,7 +83,7 @@ public class CVCCAInfo extends CAInfo {
 		this.name = name;
 		this.status = status;
 		this.updatetime = updateTime;
-		this.encodedValidity = encodedValidity;
+		setEncodedValidity(encodedValidity);
 		this.expiretime = expiretime;
 		this.catype = catype;
 		this.signedby = signedby;
@@ -124,7 +124,7 @@ public class CVCCAInfo extends CAInfo {
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
 			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {        
 		this.caid = caid;
-		this.encodedValidity=encodedValidity;
+		setEncodedValidity(encodedValidity);
 		this.catoken = catoken;
 		this.description = description;    
 		this.crlperiod = crlperiod;

@@ -270,12 +270,13 @@ function checkusefield(usefield, criticalfield){
 function checkallfields(){
     var illegalfields = 0;
 	var jumpTo = '';
-    <% if(!editca || (editca && cainfo.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA)){ %>
-    if((document.ca.<%= TEXTFIELD_VALIDITY %>.value == "") && document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value != <%= CAInfo.SIGNEDBYEXTERNALCA %>){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CERT_VALIDITY", true)%>");
-      illegalfields++;
-      if(jumpTo == '') { jumpTo = '<%=TEXTFIELD_VALIDITY%>'; }
-    }   
+    <% 
+    if(!editca || (editca && cainfo.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA)){ %>
+	    if((document.ca.<%= TEXTFIELD_VALIDITY %>.value == "") && document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value != <%= CAInfo.SIGNEDBYEXTERNALCA %>){
+	      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CERT_CORRECT_VALIDITY", true)%>");
+	      illegalfields++;
+	      if(jumpTo == '') { jumpTo = '<%=TEXTFIELD_VALIDITY%>'; }
+	    }   
     <% } %>
     
     <% if(!editca){ %>
