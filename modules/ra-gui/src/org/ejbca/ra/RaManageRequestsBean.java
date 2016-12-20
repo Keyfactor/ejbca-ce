@@ -224,8 +224,16 @@ public class RaManageRequestsBean implements Serializable {
         return raLocaleBean.getMessage(customSearchIncludeOtherAdmins ? "manage_requests_page_search_waiting_for_first" : "manage_requests_page_search_waiting");
     }
     
+    public String getCustomSearchWaitingCheckboxTitle() {
+        return customSearchIncludeOtherAdmins ? "" : raLocaleBean.getMessage("manage_requests_page_search_waiting_explanation");
+    }
+    
     public String getCustomSearchPendingCheckboxLabel() {
         return raLocaleBean.getMessage(customSearchIncludeOtherAdmins ? "manage_requests_page_search_in_progress" : "manage_requests_page_search_pending");
+    }
+    
+    public String getCustomSearchPendingCheckboxTitle() {
+        return customSearchIncludeOtherAdmins ? "" : raLocaleBean.getMessage("manage_requests_page_search_pending_explanation");
     }
     
     public List<ApprovalRequestGUIInfo> getFilteredResults() {
