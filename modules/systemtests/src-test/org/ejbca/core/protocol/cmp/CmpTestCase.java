@@ -170,7 +170,7 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.hibernate.ObjectNotFoundException;
 import org.junit.internal.ArrayComparisonFailure;
 
@@ -1161,7 +1161,7 @@ public abstract class CmpTestCase extends CaTestCase {
     }
 
     protected EndEntityInformation createUser(String username, String subjectDN, String password, int caid)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, NoSuchEndEntityException,
+            throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, NoSuchEndEntityException,
             CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, ApprovalException {
 
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, caid, null, username+"@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
@@ -1180,7 +1180,7 @@ public abstract class CmpTestCase extends CaTestCase {
     }
     
     protected X500Name createCmpUser(String username, String dn, boolean useDnOverride, int caid)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException,
+            throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, CADoesntExistsException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, ApprovalException {
         // Make USER that we know...
         boolean userExists = false;
@@ -1217,7 +1217,7 @@ public abstract class CmpTestCase extends CaTestCase {
 
     protected Certificate createRACertificate(String username, String password, String raCertsPath, String cmpAlias, KeyPair keys, Date notBefore,
             Date notAfter, String certProfile, int caid) throws AuthorizationDeniedException, CertificateException, FileNotFoundException,
-            IOException, UserDoesntFullfillEndEntityProfile, ObjectNotFoundException, RemoveException, CADoesntExistsException,
+            IOException, EndEntityProfileValidationException, ObjectNotFoundException, RemoveException, CADoesntExistsException,
             WaitingForApprovalException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, NoSuchEndEntityException, ApprovalException,

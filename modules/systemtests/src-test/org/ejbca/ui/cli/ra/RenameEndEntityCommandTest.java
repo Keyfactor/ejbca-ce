@@ -42,7 +42,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.CustomFieldException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
@@ -84,7 +84,7 @@ public class RenameEndEntityCommandTest {
 
     @Test
     public void testExecuteHappyPath() throws AuthorizationDeniedException, RemoveException, CADoesntExistsException, EndEntityExistsException,
-            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, IllegalNameException, CertificateSerialNumberException, CustomFieldException, ApprovalException {
+            EndEntityProfileValidationException, WaitingForApprovalException, IllegalNameException, CertificateSerialNumberException, CustomFieldException, ApprovalException {
         endEntityManagementSession.addUser(admin, USER_NAME1, "foo123", "CN=" + USER_NAME1, null, null, true, SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, testx509ca.getCAId());
         try {

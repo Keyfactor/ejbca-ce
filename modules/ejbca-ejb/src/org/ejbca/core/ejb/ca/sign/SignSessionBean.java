@@ -110,7 +110,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
  * Creates and signs certificates.
@@ -360,7 +360,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
             try {
                 endEntityManagementSession.setPassword(admin, username, req.getPassword());
-            } catch (UserDoesntFullfillEndEntityProfile e) {
+            } catch (EndEntityProfileValidationException e) {
                 //Can be ignored in this case, shouldn't happen.
                 throw new IllegalStateException(e);
             }

@@ -40,7 +40,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
  * @version $Id$
@@ -62,7 +62,7 @@ public interface CertificateRequestSession {
 	 */
     public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, String hardTokenSN, int responseType) throws CADoesntExistsException,
             AuthorizationDeniedException, NotFoundException, InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException,
-            SignatureException, IOException, ObjectNotFoundException, CreateException, CertificateException, UserDoesntFullfillEndEntityProfile,
+            SignatureException, IOException, ObjectNotFoundException, CreateException, CertificateException, EndEntityProfileValidationException,
             ApprovalException, EjbcaException, CesecoreException, CertificateExtensionException;
 
 	/**
@@ -78,7 +78,7 @@ public interface CertificateRequestSession {
 	 * @throws CertificateExtensionException (rollback) if an error exists in the exensions specified in the request
 	 */
     public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends CertificateResponseMessage> responseClass) throws EndEntityExistsException,
-            AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException, CertificateExtensionException;
+            AuthorizationDeniedException, EndEntityProfileValidationException, EjbcaException, CesecoreException, CertificateExtensionException;
 
 	/**
 	 * Edits or adds a user and generates a keystore for that user in a single transaction.
@@ -91,7 +91,7 @@ public interface CertificateRequestSession {
      * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA
      * @param createJKS true to create a JKS, false to create a PKCS12
      * @return an encoded keystore of the type specified in responseType 
-	 * @throws UserDoesntFullfillEndEntityProfile 
+	 * @throws EndEntityProfileValidationException 
 	 * @throws AuthorizationDeniedException 
 	 * @throws CustomFieldException 
 	 * @throws CADoesntExistsException 
@@ -108,5 +108,5 @@ public interface CertificateRequestSession {
      */
     public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg,
             boolean createJKS) throws ApprovalException, EndEntityExistsException, CADoesntExistsException, CertificateSerialNumberException,
-            IllegalNameException, CustomFieldException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NoSuchAlgorithmException, InvalidKeySpecException, CertificateException, InvalidAlgorithmParameterException, KeyStoreException, NoSuchEndEntityException;
+            IllegalNameException, CustomFieldException, AuthorizationDeniedException, EndEntityProfileValidationException, NoSuchAlgorithmException, InvalidKeySpecException, CertificateException, InvalidAlgorithmParameterException, KeyStoreException, NoSuchEndEntityException;
 }

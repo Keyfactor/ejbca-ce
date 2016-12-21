@@ -41,7 +41,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
@@ -95,7 +95,7 @@ public class AddEndEntityCommandTest {
     }
 
     @Test
-    public void testExecuteHappyPath() throws IllegalQueryException, UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,
+    public void testExecuteHappyPath() throws IllegalQueryException, EndEntityProfileValidationException, AuthorizationDeniedException,
             NoSuchEndEntityException, RemoveException {
 
         try {
@@ -137,7 +137,7 @@ public class AddEndEntityCommandTest {
 
 
     @Test
-    public void testSetPwdInvalidUser() throws IllegalQueryException, AuthorizationDeniedException, RemoveException, UserDoesntFullfillEndEntityProfile, NoSuchEndEntityException {
+    public void testSetPwdInvalidUser() throws IllegalQueryException, AuthorizationDeniedException, RemoveException, EndEntityProfileValidationException, NoSuchEndEntityException {
 
         try {
 

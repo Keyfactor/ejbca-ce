@@ -77,7 +77,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -213,7 +213,7 @@ public class CertificateRequestThrowAwayTest {
             boolean useCertificateStorage, boolean raw) throws AuthorizationDeniedException, RemoveException, CertificateParsingException,
             InvalidKeyException, InvalidAlgorithmParameterException, OperatorCreationException, NoSuchAlgorithmException, InvalidKeySpecException,
             NoSuchProviderException, SignatureException, ObjectNotFoundException, CertificateException, ApprovalException, IOException,
-            CreateException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException, CertificateExtensionException,
+            CreateException, EndEntityProfileValidationException, EjbcaException, CesecoreException, CertificateExtensionException,
             EndEntityProfileNotFoundException {
         LOG.trace(">generateCertificatePkcs10");
         LOG.info("useCertReqHistory=" + useCertReqHistory + " useUserStorage=" + useUserStorage + " useCertificateStorage=" + useCertificateStorage);
@@ -291,7 +291,7 @@ public class CertificateRequestThrowAwayTest {
     private X509Certificate doPkcs10Request(EndEntityInformation userData, boolean raw) throws InvalidAlgorithmParameterException,
             OperatorCreationException, IOException, CertificateParsingException, InvalidKeyException, CADoesntExistsException, NotFoundException,
             NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, SignatureException, ObjectNotFoundException,
-            CertificateException, ApprovalException, AuthorizationDeniedException, CreateException, UserDoesntFullfillEndEntityProfile,
+            CertificateException, ApprovalException, AuthorizationDeniedException, CreateException, EndEntityProfileValidationException,
             EjbcaException, CesecoreException, CertificateExtensionException {
         X509Certificate ret;
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); // Use short keys, since this will be done many times

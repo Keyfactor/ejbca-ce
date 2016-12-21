@@ -78,7 +78,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.cli.batch.BatchToolProperties;
 import org.ejbca.util.keystore.P12toPEM;
 
@@ -224,7 +224,6 @@ public abstract class BatchCreateTool {
      * @throws FinderException 
      * @throws ApprovalException 
      * @throws IOException 
-     * @throws UserDoesntFullfillEndEntityProfile 
      * @throws InvalidKeySpecException 
      * @throws NoSuchAlgorithmException 
      * @throws NoSuchProviderException 
@@ -256,7 +255,7 @@ public abstract class BatchCreateTool {
             AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException,
-            UserDoesntFullfillEndEntityProfile, NoSuchEndEntityException, FileNotFoundException {
+            EndEntityProfileValidationException, NoSuchEndEntityException, FileNotFoundException {
       if (log.isTraceEnabled()) {
             log.trace(">createUser(" + username + ")");
         }
@@ -283,7 +282,7 @@ public abstract class BatchCreateTool {
     }
 
     private static File doCreate(AuthenticationToken authenticationToken, File mainStoreDir, EndEntityInformation data, int status)
-            throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, NoSuchEndEntityException, UnrecoverableKeyException,
+            throws EndEntityProfileValidationException, AuthorizationDeniedException, NoSuchEndEntityException, UnrecoverableKeyException,
             InvalidAlgorithmParameterException, CADoesntExistsException, OperatorCreationException, CertificateException,
             SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException,
             IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,

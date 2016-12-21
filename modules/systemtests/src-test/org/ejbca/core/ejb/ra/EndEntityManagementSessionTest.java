@@ -92,7 +92,7 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 import org.ejbca.util.query.UserMatch;
@@ -249,7 +249,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                         profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
                 usernames.add(thisusername);
                 fail("User " + thisusername + " was added to the database although it should not have been.");
-            } catch (UserDoesntFullfillEndEntityProfile e) {
+            } catch (EndEntityProfileValidationException e) {
                 assertTrue("Error message should be about password", e.getMessage().contains("Password cannot be empty or null"));
             }
             try {
@@ -257,7 +257,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                         profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
                 usernames.add(thisusername);
                 fail("User " + thisusername + " was added to the database although it should not have been.");
-            } catch (UserDoesntFullfillEndEntityProfile e) {
+            } catch (EndEntityProfileValidationException e) {
                 assertTrue("Error message should be about password", e.getMessage().contains("Password cannot be empty or null"));
             }
             // Set required = false for password, then an empty password should be allowed
@@ -267,7 +267,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 endEntityManagementSession.addUser(admin, thisusername, "", "C=SE, CN=" + thisusername, null, email, false,
                         profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
                 usernames.add(thisusername);
-            } catch (UserDoesntFullfillEndEntityProfile e) {
+            } catch (EndEntityProfileValidationException e) {
                 fail("User " + thisusername + " was not added to the database although it should have been.");
             }
             thisusername = genRandomUserName();
@@ -276,7 +276,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 endEntityManagementSession.addUser(admin, thisusername, null, "C=SE, CN=" + thisusername, null, email, false,
                         profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
                 usernames.add(thisusername);
-            } catch (UserDoesntFullfillEndEntityProfile e) {
+            } catch (EndEntityProfileValidationException e) {
                 fail("User " + thisusername + " was not added to the database although it should have been.");
             }
         } finally {
@@ -611,7 +611,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 try {
                     endEntityManagementSession.addUserFromWS(admin, addUser, false);
                     fail("Should not be allowed since we have altNames that are not allowed in the profile.");
-                } catch (UserDoesntFullfillEndEntityProfile e) {
+                } catch (EndEntityProfileValidationException e) {
                 } // NOPMD
                 // Add the required end entity profile fields
                 profile.addField(DnComponents.DNSNAME);

@@ -182,6 +182,7 @@ import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
@@ -225,6 +226,7 @@ import org.ejbca.cvc.CertificateParser;
  * 
  * @version $Id$
  */
+@SuppressWarnings("deprecation")
 public abstract class CommonEjbcaWS extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CommonEjbcaWS.class);
@@ -366,12 +368,16 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         user1.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
 
-        if (!endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
-            log.info("Adding new user: "+user1.getUsername());
-            endEntityManagementSession.addUser(intAdmin, user1, true);
-        } else {
-            log.info("Changing user: "+user1.getUsername());
-            endEntityManagementSession.changeUser(intAdmin, user1, true);
+        try {
+            if (!endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
+                log.info("Adding new user: " + user1.getUsername());
+                endEntityManagementSession.addUser(intAdmin, user1, true);
+            } else {
+                log.info("Changing user: " + user1.getUsername());
+                endEntityManagementSession.changeUser(intAdmin, user1, true);
+            }
+        } catch (EndEntityProfileValidationException e) {
+            throw new UserDoesntFullfillEndEntityProfile(e);
         }
         boolean adminExists = false;
         RoleData role = roleAccessSession.findRole(wsadminRoleName);
@@ -408,12 +414,16 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user2.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         user2.setType(EndEntityTypes.ENDUSER.toEndEntityType());
 
-        if (!endEntityManagementSession.existsUser(TEST_NONADMIN_USERNAME)) {
-            log.debug("Adding new user: "+user2.getUsername());
-            endEntityManagementSession.addUser(intAdmin, user2, true);
-        } else {
-            log.debug("Changing user: "+user2.getUsername());
-            endEntityManagementSession.changeUser(intAdmin, user2, true);
+        try {
+            if (!endEntityManagementSession.existsUser(TEST_NONADMIN_USERNAME)) {
+                log.debug("Adding new user: " + user2.getUsername());
+                endEntityManagementSession.addUser(intAdmin, user2, true);
+            } else {
+                log.debug("Changing user: " + user2.getUsername());
+                endEntityManagementSession.changeUser(intAdmin, user2, true);
+            }
+        } catch (EndEntityProfileValidationException e) {
+            throw new UserDoesntFullfillEndEntityProfile(e);
         }
         List<File> fileHandles = new ArrayList<File>();
         File p12Directory = new File(P12_FOLDER_NAME);
@@ -422,6 +432,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             fileHandles.add(BatchCreateTool.createUser(intAdmin, p12Directory, user2.getUsername()));
         } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException("End entity not created.", e);
+        } catch (EndEntityProfileValidationException e) {
+            throw new UserDoesntFullfillEndEntityProfile(e);
         }
         return fileHandles;
     }

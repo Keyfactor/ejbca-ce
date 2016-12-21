@@ -52,7 +52,7 @@ import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalReques
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.DNFieldDescriber;
 import org.ietf.ldap.LDAPDN;
@@ -539,13 +539,13 @@ public class RegisterReqBean {
         try {
             endEntity = endEntityManagementSession.canonicalizeUser(endEntity);
             if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
-                eeprofile.doesUserFullfillEndEntityProfile(endEntity, false);
+                eeprofile.doesUserFulfillEndEntityProfile(endEntity, false);
                 
             }
         } catch (EjbcaException e) {
             errors.add("Validation error: "+e.getMessage());
             return;
-        } catch (UserDoesntFullfillEndEntityProfile e) {
+        } catch (EndEntityProfileValidationException e) {
             errors.add("User information does not fulfill requirements: "+e.getMessage());
             return;
         }

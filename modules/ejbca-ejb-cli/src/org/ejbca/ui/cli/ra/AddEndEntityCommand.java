@@ -43,7 +43,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -265,8 +265,8 @@ public class AddEndEntityCommand extends BaseRaCommand {
             } catch (AuthorizationDeniedException e) {
                 getLogger().error(e.getMessage());
                 return CommandResult.AUTHORIZATION_FAILURE;
-            } catch (UserDoesntFullfillEndEntityProfile e) {
-                getLogger().error("Given userdata doesn't fullfill end entity profile. : " + e.getMessage());
+            } catch (EndEntityProfileValidationException e) {
+                getLogger().error("Given userdata doesn't fulfill end entity profile. : " + e.getMessage());
             } catch (WaitingForApprovalException e) {
                 getLogger().error("\nOperation pending, waiting for approval: " + e.getMessage());
             } catch (ApprovalException e) {

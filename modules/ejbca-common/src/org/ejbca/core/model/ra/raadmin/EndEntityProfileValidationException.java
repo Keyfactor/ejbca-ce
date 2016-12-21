@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
 package org.ejbca.core.model.ra.raadmin;
 
 import javax.xml.ws.WebFault;
@@ -18,34 +17,40 @@ import javax.xml.ws.WebFault;
 /**
  * An exception thrown when someone tries to add or edit a profile that doesn't match its end entity
  * profile.
- *
- * @version $Id$
  * 
- * @deprecated since EJBCA 6.7.0 but kept for legacy support. EndEntityProfileValidationException should be used instead. 
+ * @version $Id$
+ *
  */
 @WebFault
-@Deprecated
-public class UserDoesntFullfillEndEntityProfile extends Exception {
-    private static final long serialVersionUID = 777317800935352658L;
+public class EndEntityProfileValidationException extends Exception {
 
-    /**
-     * Creates a new instance of <code>UserDoesntFullfillProfile</code> without detail message.
-     */
-    public UserDoesntFullfillEndEntityProfile() {
-        super();
+    private static final long serialVersionUID = 1L;
+
+
+    public EndEntityProfileValidationException() {
     }
 
     /**
-     * Constructs an instance of <code>UserDoesntFullfillProfile</code> with the specified detail
-     * message.
-     *
-     * @param msg the detail message.
+     * @param message a detail message
      */
-    public UserDoesntFullfillEndEntityProfile(String msg) {
-        super(msg);
+    public EndEntityProfileValidationException(String message) {
+        super(message);
     }
-    
-    public UserDoesntFullfillEndEntityProfile(Throwable e) {
-        super(e);
+
+    /**
+     * @param cause an underlying exception
+     */
+    public EndEntityProfileValidationException(Throwable cause) {
+        super(cause);
     }
+
+    /**
+     * @param message a detail message
+     * @param cause an underlying exception
+     */
+    public EndEntityProfileValidationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+
 }

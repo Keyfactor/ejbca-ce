@@ -46,7 +46,7 @@ import org.ejbca.core.model.approval.ApprovalRequestHelper;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.CustomFieldException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
  * Approval Request created when trying to add an end entity.
@@ -95,7 +95,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 			throw new ApprovalRequestExecutionException("Error, user already exist", e);		
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization denied :" + e.getMessage(), e);
-		} catch (UserDoesntFullfillEndEntityProfile e) {
+		} catch (EndEntityProfileValidationException e) {
 			throw new ApprovalRequestExecutionException("User doesn't fullfil end entity profile:" + e.getMessage()  + e.getMessage(), e);			
 		} catch (ApprovalException e) {
 			throw new EJBException("This ApprovalException should never happen", e);

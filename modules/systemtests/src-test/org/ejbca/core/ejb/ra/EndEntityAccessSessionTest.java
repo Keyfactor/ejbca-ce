@@ -36,7 +36,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.CustomFieldException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +70,7 @@ public class EndEntityAccessSessionTest extends CaTestCase {
      * @throws CADoesntExistsException 
      * @throws EjbcaException 
      * @throws WaitingForApprovalException 
-     * @throws UserDoesntFullfillEndEntityProfile 
+     * @throws EndEntityProfileValidationException 
      * @throws EndEntityExistsException 
      * @throws RemoveException 
      * @throws CertificateSerialNumberException 
@@ -80,7 +80,7 @@ public class EndEntityAccessSessionTest extends CaTestCase {
      */
     @Test
     public void testFindUserBySubjectAndIssuerDnWithMultipleUsers() throws CADoesntExistsException, AuthorizationDeniedException,
-            EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, NoSuchEndEntityException, RemoveException,
+            EndEntityExistsException, EndEntityProfileValidationException, WaitingForApprovalException, NoSuchEndEntityException, RemoveException,
             IllegalNameException, CertificateSerialNumberException, CustomFieldException, ApprovalException {
         String commonDn = "CN=foo";
         String firstUsername = "alpha";
