@@ -1,3 +1,12 @@
+EJBCA 6.6.3
+-----------
+
+PrimeKey Solutions are very proud to present the final EJBCA release for 2016: EJBCA 6.6.3. This release fixes nine minor issues which we were dying 
+to make live before our next feature release due for Q1, and primarily fixes issues which cropped up when using ExternalRA since 6.6.0, a bug in the
+upgrade script for Oracle databases and a bug which caused an inability to create CRLs on MSSQL. 
+
+As with all minor releases, no upgrade steps are required. 
+
 EJBCA 6.6.2
 -----------
 This release of EJBCA fixes one single issue to improve stability of submissions for Certificate Transparency logs. 
