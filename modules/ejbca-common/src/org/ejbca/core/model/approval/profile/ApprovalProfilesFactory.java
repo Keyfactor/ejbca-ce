@@ -32,7 +32,7 @@ public enum ApprovalProfilesFactory {
         ServiceLoader<ApprovalProfile> svcloader = ServiceLoader.load(ApprovalProfile.class);
         for(ApprovalProfile type : svcloader) {
             type.initialize();
-            identifierToImplementationMap.put(type.getApprovalProfileIdentifier(), type);
+            identifierToImplementationMap.put(type.getApprovalProfileTypeIdentifier(), type);
         }
     }
     
