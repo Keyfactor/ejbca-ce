@@ -95,7 +95,7 @@ public class EndEntityInformation implements Serializable {
         this.timecreated = endEntityInformation.getTimeCreated();
         this.timemodified = endEntityInformation.getTimeModified();
         this.tokentype = endEntityInformation.getTokenType();
-        this.extendedinformation = new ExtendedInformation(endEntityInformation.getExtendedinformation());
+        this.extendedinformation = (endEntityInformation.getExtendedinformation() != null ? new ExtendedInformation(endEntityInformation.getExtendedinformation()) : null);
     }
 
     /**
