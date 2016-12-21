@@ -368,12 +368,12 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public String getCurrentApprovalProfileTypeName() {
-        return getApprovalProfile().getApprovalProfileIdentifier();
+        return getApprovalProfile().getApprovalProfileTypeIdentifier();
     }
 
     public void setCurrentApprovalProfileTypeName(String typeName) {
         // Re-instantiate approval profile if we've changed type
-        if (!getApprovalProfile().getApprovalProfileIdentifier().equals(typeName)) {
+        if (!getApprovalProfile().getApprovalProfileTypeIdentifier().equals(typeName)) {
             final ApprovalProfile newApprovalProfile = ApprovalProfilesFactory.INSTANCE.getArcheType(typeName);
             newApprovalProfile.setProfileId(getSelectedApprovalProfileId());
             newApprovalProfile.setProfileName(getSelectedApprovalProfileName());
@@ -385,7 +385,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public List<SelectItem> getApprovalProfileTypesAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         for (final ApprovalProfile type : ApprovalProfilesFactory.INSTANCE.getAllImplementations()) {
-            ret.add(new SelectItem(type.getApprovalProfileIdentifier(), type.getApprovalProfileLabel()));
+            ret.add(new SelectItem(type.getApprovalProfileTypeIdentifier(), type.getApprovalProfileLabel()));
         }
         return ret;
     }
@@ -407,11 +407,11 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         //Use the internal ordering for sequences, if one is predefined
         ApprovalStep step = approvalProfile.getFirstStep();
         Map<Integer, List<DynamicUiProperty<? extends Serializable>>> partitionProperties = getPartitionProperties(step);
-        steps.add(new ApprovalStepGuiObject(step, approvalProfile.getApprovalProfileIdentifier(), ordinal, partitionProperties));
+        steps.add(new ApprovalStepGuiObject(step, approvalProfile.getApprovalProfileTypeIdentifier(), ordinal, partitionProperties));
         while (step.getNextStep() != null) {
             step = approvalProfile.getStep(step.getNextStep());
             partitionProperties = getPartitionProperties(step);
-            steps.add(new ApprovalStepGuiObject(step, approvalProfile.getApprovalProfileIdentifier(), ++ordinal, partitionProperties));
+            steps.add(new ApprovalStepGuiObject(step, approvalProfile.getApprovalProfileTypeIdentifier(), ++ordinal, partitionProperties));
         }
         return new ListDataModel<>(steps);
     }
