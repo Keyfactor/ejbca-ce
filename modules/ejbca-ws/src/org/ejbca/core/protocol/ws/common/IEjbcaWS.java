@@ -61,6 +61,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * 
  * @version $Id$
  */
+@SuppressWarnings("deprecation")
 public interface IEjbcaWS {
 	
 	public static final int CUSTOMLOG_LEVEL_INFO  = 1;
@@ -749,7 +750,7 @@ public interface IEjbcaWS {
 	 * @throws UserDoesntFullfillEndEntityProfile
 	 * @throws EjbcaException
 	 */
-	List<TokenCertificateResponseWS> genTokenCertificates(
+    List<TokenCertificateResponseWS> genTokenCertificates(
 			UserDataVOWS userData,
 			List<TokenCertificateRequestWS> tokenRequests,
 			HardTokenDataWS hardTokenData,

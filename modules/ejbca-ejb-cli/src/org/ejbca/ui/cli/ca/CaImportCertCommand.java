@@ -58,7 +58,7 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -309,7 +309,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         } catch (AuthorizationDeniedException e) {
             log.error("CLI user not authorized to create end entity.");
             return CommandResult.FUNCTIONAL_FAILURE;
-        } catch (UserDoesntFullfillEndEntityProfile e) {
+        } catch (EndEntityProfileValidationException e) {
             log.error("User doesn't fulfill End Entity Profile ");
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (WaitingForApprovalException e) {

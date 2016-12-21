@@ -122,11 +122,11 @@ import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalReque
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.EndEntityProfileValidationRaException;
 import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
 import org.ejbca.core.model.ra.RAAuthorization;
-import org.ejbca.core.model.ra.UserDoesntFullfillEndEntityProfileRaException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.util.GenerateToken;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
@@ -1170,9 +1170,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (CesecoreException e) {
             //Wrapping the CesecoreException.errorCode
             throw new EjbcaException(e);
-        } catch (UserDoesntFullfillEndEntityProfile e) {
+        } catch (EndEntityProfileValidationException e) {
             //Wraps @WebFault Exception based with @NonSensitive EjbcaException based
-            throw new UserDoesntFullfillEndEntityProfileRaException(e); 
+            throw new EndEntityProfileValidationRaException(e); 
         }
         return endEntityAccessSession.findUser(endEntity.getUsername()) != null;
     }
@@ -1204,7 +1204,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 | CertificateCreateException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException
                 | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException | InvalidAlgorithmException
                 | CustomCertificateSerialNumberException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException
-                | UserDoesntFullfillEndEntityProfile | CertificateSignatureException | NoSuchEndEntityException e) {
+                | EndEntityProfileValidationException | CertificateSignatureException | NoSuchEndEntityException e) {
             throw new KeyStoreGeneralRaException(e);
         }
       

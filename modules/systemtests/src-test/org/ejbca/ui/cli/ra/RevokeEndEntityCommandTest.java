@@ -63,7 +63,7 @@ import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -110,7 +110,7 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
     }
 
     @Test
-    public void testExecuteHappyPath() throws EndEntityExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+    public void testExecuteHappyPath() throws EndEntityExistsException, AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, EjbcaException, IllegalQueryException, RemoveException, NoSuchAlgorithmException, NoSuchProviderException,
             InvalidAlgorithmParameterException, CustomCertificateSerialNumberException, IllegalKeyException, CertificateCreateException,
             CesecoreException, CertificateExtensionException {

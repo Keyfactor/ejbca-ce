@@ -158,7 +158,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServ
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.junit.After;
@@ -1797,7 +1797,7 @@ Content-Type: text/html; charset=iso-8859-1
         createUserCert(caid);
     }
 
-    private KeyPair createUserCert(int caid) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
+    private KeyPair createUserCert(int caid) throws AuthorizationDeniedException, EndEntityProfileValidationException, ApprovalException,
             WaitingForApprovalException, Exception, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException,
             CADoesntExistsException {
         final String USERNAME = "ocsptest";

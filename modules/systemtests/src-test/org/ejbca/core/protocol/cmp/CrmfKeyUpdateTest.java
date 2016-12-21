@@ -102,7 +102,7 @@ import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -1496,7 +1496,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         return res;
     }
 
-    private EndEntityInformation createUser(String userName, String subjectDN, String password) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, 
+    private EndEntityInformation createUser(String userName, String subjectDN, String password) throws AuthorizationDeniedException, EndEntityProfileValidationException, 
                 WaitingForApprovalException, EjbcaException, Exception {
 
         EndEntityInformation user = new EndEntityInformation(userName, subjectDN, this.caid, null, userName+"@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
@@ -1650,7 +1650,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             createUser(adminName, dn, "foo123");
         } catch (AuthorizationDeniedException e1) {
             throw new IllegalStateException("Error encountered when creating admin user", e1);
-        } catch (UserDoesntFullfillEndEntityProfile e1) {
+        } catch (EndEntityProfileValidationException e1) {
             throw new IllegalStateException("Error encountered when creating admin user", e1);
         } catch (WaitingForApprovalException e1) {
             throw new IllegalStateException("Error encountered when creating admin user", e1);

@@ -90,7 +90,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.util.GenerateToken;
 import org.junit.After;
 import org.junit.Before;
@@ -310,7 +310,7 @@ public class KeyRecoveryTest extends CaTestCase {
                             AccessRuleState.RULE_ACCEPT, false));
                     roleManagementSession.addAccessRulesToRole(internalAdmin, roleAccessSession.findRole(KEYRECOVERY_ROLE), accessRules);
                 } catch (InvalidAlgorithmParameterException | CADoesntExistsException | EndEntityExistsException | AuthorizationDeniedException
-                        | UserDoesntFullfillEndEntityProfile | EjbcaException | NoSuchEndEntityException | IllegalKeyException
+                        | EndEntityProfileValidationException | EjbcaException | NoSuchEndEntityException | IllegalKeyException
                         | CertificateCreateException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException
                         | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException | InvalidAlgorithmException
                         | CustomCertificateSerialNumberException | RoleNotFoundException e) {

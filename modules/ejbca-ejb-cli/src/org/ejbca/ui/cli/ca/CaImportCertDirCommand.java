@@ -47,7 +47,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -283,7 +283,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                 try {
                     performImportStatus = performImport(certificate, status, endEntityProfileId, certificateProfileId, cacert, caInfo, filename,
                             issuer, username, revocationReason, revocationTime);
-                } catch (UserDoesntFullfillEndEntityProfile e) {
+                } catch (EndEntityProfileValidationException e) {
                     log.error("ERROR: End entity profile constraints were violated by the certificate, file: " + filename);
                     performImportStatus = STATUS_CONSTRAINTVIOLATION;
                     if (!resumeOnError) {

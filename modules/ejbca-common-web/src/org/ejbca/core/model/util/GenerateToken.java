@@ -59,7 +59,7 @@ import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /** Class that has helper methods to generate tokens for users in ejbca. 
  * Generating tokens can often depend on the ejb services (local interfaces), for example for key recovery.
@@ -121,7 +121,7 @@ public class GenerateToken {
      * @throws CertificateCreateException (rollback) if certificate couldn't be created. 
      * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile. 
      * @throws NoSuchEndEntityException if the end entity was not found
-     * @throws UserDoesntFullfillEndEntityProfile if the password doesn't fulfill the demands set by the EE profile
+     * @throws EndEntityProfileValidationException if the password doesn't fulfill the demands set by the EE profile
      * @throws CertificateSignatureException if verification of the CA certificate failed
      * @throws InvalidKeySpecException if the key specification defined in keys couldn't be found
      * @throws NoSuchAlgorithmException if the algorithm defined in the keys couldn't be found
@@ -133,7 +133,7 @@ public class GenerateToken {
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, UserDoesntFullfillEndEntityProfile, NoSuchEndEntityException,
+            CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
             CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (log.isTraceEnabled()) {
             log.trace(">generateOrKeyRecoverToken");

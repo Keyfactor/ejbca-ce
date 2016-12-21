@@ -51,7 +51,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -110,7 +110,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     }
 
     private void createUser(AuthenticationToken admin, String username, String password, int caID, int endEntityProfileId, int certProfileId, int maxFailedLogins)
-            throws EndEntityExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
+            throws EndEntityExistsException, AuthorizationDeniedException, EndEntityProfileValidationException, ApprovalException,
             WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,

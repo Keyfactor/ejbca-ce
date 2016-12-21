@@ -175,6 +175,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
@@ -308,7 +309,8 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @throws IllegalQueryException 
      * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#editUser(org.ejbca.core.protocol.ws.objects.UserDataVOWS)
 	 */
-	public void editUser(final UserDataVOWS userdata)
+	@SuppressWarnings("deprecation")
+    public void editUser(final UserDataVOWS userdata)
 			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ApprovalException, WaitingForApprovalException {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try {
@@ -327,10 +329,10 @@ public class EjbcaWS implements IEjbcaWS {
                 }
                 endEntityManagementSession.addUserFromWS(admin,endEntityInformation,userdata.isClearPwd());
             }
-        } catch (UserDoesntFullfillEndEntityProfile e) {
+        } catch (EndEntityProfileValidationException e) {
             log.debug(e.toString());
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
-            throw e;
+            throw new UserDoesntFullfillEndEntityProfile(e);
         } catch (AuthorizationDeniedException e) {
             final String errorMessage = "AuthorizationDeniedException when editing user "+userdata.getUsername()+": "+e.getMessage();
             log.info(errorMessage);
@@ -811,7 +813,8 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#cvcRequest
 	 */
-	public List<Certificate> cvcRequest(String username, String password, String cvcreq)
+	@SuppressWarnings("deprecation")
+    public List<Certificate> cvcRequest(String username, String password, String cvcreq)
 			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
 			EjbcaException, CesecoreException, ApprovalException, WaitingForApprovalException, SignRequestException, CertificateExpiredException {
 		log.trace(">cvcRequest");
@@ -875,9 +878,7 @@ public class EjbcaWS implements IEjbcaWS {
 						// if 2 certificates are issued the same day.
 						if (certs != null) {
 							log.debug("Found "+certs.size()+" old certificates for user "+username);
-							Iterator<java.security.cert.Certificate> iterator = certs.iterator(); 
-							while (iterator.hasNext()) {
-								java.security.cert.Certificate cert = iterator.next();
+                            for (java.security.cert.Certificate cert : certs) {
 								try {
 									// Only allow renewal if the old certificate is valid
 									PublicKey pk = getCVPublicKey(admin, cert);
@@ -888,10 +889,14 @@ public class EjbcaWS implements IEjbcaWS {
 									log.debug("Verified outer signature");
 									// Yes we did it, we can move on to the next step because the outer signature was actually created with some old certificate
 									verifiedOuter = true; 
-									if (ejbhelper.checkValidityAndSetUserPassword(admin, cert, username, password)) {
-										// If we managed to verify the certificate we will break out of the loop									
-										break;
-									}
+									try {
+                                        if (ejbhelper.checkValidityAndSetUserPassword(admin, cert, username, password)) {
+                                        	// If we managed to verify the certificate we will break out of the loop									
+                                        	break;
+                                        }
+                                    } catch (EndEntityProfileValidationException e) {
+                                        throw new UserDoesntFullfillEndEntityProfile(e);
+                                    }
 									
 									// If verification of outer signature fails because the signature is invalid we will break and deny the request...with a message
 								} catch (InvalidKeyException e) {
@@ -951,12 +956,16 @@ public class EjbcaWS implements IEjbcaWS {
 						                log.debug("Verified outer signature");
 						                verifiedOuter = true; 
 						                // Yes we did it, we can move on to the next step because the outer signature was actually created with some old certificate
-						                if (!ejbhelper.checkValidityAndSetUserPassword(admin, cert, username, password)) {
-						                    // If the CA certificate was not valid, we are not happy									
-						                    String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), "CA certificate not valid for CA: "+info.getCAId());            	
-						                    log.info(msg);
-						                    throw new AuthorizationDeniedException(msg);
-						                }							
+						                try {
+                                            if (!ejbhelper.checkValidityAndSetUserPassword(admin, cert, username, password)) {
+                                                // If the CA certificate was not valid, we are not happy									
+                                                String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), "CA certificate not valid for CA: "+info.getCAId());            	
+                                                log.info(msg);
+                                                throw new AuthorizationDeniedException(msg);
+                                            }
+                                        } catch (EndEntityProfileValidationException e) {
+                                            throw new UserDoesntFullfillEndEntityProfile(e);
+                                        }							
 						            } catch (InvalidKeyException e) {
 						                String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
 						                log.warn(msg, e);
@@ -2722,6 +2731,7 @@ public class EjbcaWS implements IEjbcaWS {
     	userdata.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
 	public CertificateResponse certificateRequest(final UserDataVOWS userdata, final String requestData, final int requestType, final String hardTokenSN, final String responseType)
 	throws AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
@@ -2795,6 +2805,8 @@ public class EjbcaWS implements IEjbcaWS {
 			throw new NotFoundException(e.getMessage());
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
             throw EjbcaWSHelper.getInternalException(e, logger);
+        } catch (EndEntityProfileValidationException e) {
+           throw new UserDoesntFullfillEndEntityProfile(e);
         } finally {
             logger.writeln();
             logger.flush();
@@ -2809,6 +2821,7 @@ public class EjbcaWS implements IEjbcaWS {
         userdata.getExtendedInformation().add(new ExtendedInformationWS(ExtendedInformation.RAWSUBJECTDN, userdata.getSubjectDN()));
     }
 
+    @SuppressWarnings("deprecation")
     @Override
 	public KeyStore softTokenRequest(UserDataVOWS userdata, String hardTokenSN, String keyspec, String keyalg)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
@@ -2870,6 +2883,8 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
         } catch (RuntimeException e) {  // EJBException, ...
             throw EjbcaWSHelper.getInternalException(e, logger);
+        } catch (EndEntityProfileValidationException e) {
+            throw new UserDoesntFullfillEndEntityProfile(e);
         } finally {
             logger.writeln();
             logger.flush();

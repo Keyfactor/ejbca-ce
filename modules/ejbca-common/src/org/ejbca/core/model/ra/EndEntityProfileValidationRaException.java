@@ -14,23 +14,23 @@
 package org.ejbca.core.model.ra;
 
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.cesecore.ErrorCode;
 import org.cesecore.NonSensitiveException;
 
 /**
  * Wraps the original UserDoesntFullfillEndEntityProfile. Unlike original it doesn't
- * extends Exception and it's not marked with @WebFault.
+ * extend Exception and it's not marked with @WebFault.
  *
  * @version $Id$
  * @see UserDoesntFullfillEndEntityProfile
  */
 @NonSensitiveException
-public class UserDoesntFullfillEndEntityProfileRaException extends EjbcaException {
+public class EndEntityProfileValidationRaException extends EjbcaException {
     private static final long serialVersionUID = 777317800935352658L;
 
-    public UserDoesntFullfillEndEntityProfileRaException(UserDoesntFullfillEndEntityProfile exception){
+    public EndEntityProfileValidationRaException(EndEntityProfileValidationException exception){
         super(exception);
-        setErrorCode(ErrorCode.USER_DOESNT_FULLFILL_END_ENTITY_PROFILE);
+        setErrorCode(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE);
     }
 }
