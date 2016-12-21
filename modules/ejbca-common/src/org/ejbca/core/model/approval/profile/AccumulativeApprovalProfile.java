@@ -73,7 +73,7 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
 
 
     @Override
-    public String getApprovalProfileIdentifier() {
+    public String getApprovalProfileTypeIdentifier() {
         return TYPE_IDENTIFIER;
     }
 

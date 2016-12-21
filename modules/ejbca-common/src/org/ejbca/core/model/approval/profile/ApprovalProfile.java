@@ -58,7 +58,7 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
      * Returns an identifier for the type of the approval profile.
      * @return type of approval, e.g. "PARTITIONED_APPROVAL"
      */
-    String getApprovalProfileIdentifier();
+    String getApprovalProfileTypeIdentifier();
 
     long getRequestExpirationPeriod();
     
