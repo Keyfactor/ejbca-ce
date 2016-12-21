@@ -127,9 +127,9 @@
                             <f:facet name="header">
                                 <h:outputLabel for="sortID" value="#{msg.manage_requests_page_colhead_id} #{raManageRequestsBean.sortedByID}"/>
                                 <h:commandButton id="sortID" action="#{raManageRequestsBean.sortByID}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
-                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    <f:ajax execute="@this" render=":manageRequestsForm:filteredResults"
+                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'manageRequestsForm:filteredResults');}"
+                                        onerror="function(data){ejbca.ra.onAjaxError(data,'manageRequestsForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
                             <h:outputText value="#{raRequest.id}" style="white-space: nowrap"/>
@@ -138,9 +138,9 @@
                             <f:facet name="header">
                                 <h:outputLabel for="sortRequestDate" value="#{msg.manage_requests_page_colhead_request_date} #{raManageRequestsBean.sortedByRequestDate}"/>
                                 <h:commandButton id="sortRequestDate" action="#{raManageRequestsBean.sortByRequestDate}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
-                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    <f:ajax execute="@this" render=":manageRequestsForm:filteredResults"
+                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'manageRequestsForm:filteredResults');}"
+                                        onerror="function(data){ejbca.ra.onAjaxError(data,'manageRequestsForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
                             <h:outputText value="#{raRequest.requestDate}" title="${msg.generic_timeformat_iso}"/>
@@ -149,9 +149,9 @@
                             <f:facet name="header">
                                 <h:outputLabel for="sortCA" value="#{msg.manage_requests_page_colhead_ca} #{raManageRequestsBean.sortedByCA}"/>
                                 <h:commandButton id="sortCA" action="#{raManageRequestsBean.sortByCA}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
-                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    <f:ajax execute="@this" render=":manageRequestsForm:filteredResults"
+                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'manageRequestsForm:filteredResults');}"
+                                        onerror="function(data){ejbca.ra.onAjaxError(data,'manageRequestsForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
                             <h:outputText value="#{raRequest.ca}" />
@@ -160,9 +160,9 @@
                             <f:facet name="header">
                                 <h:outputLabel for="sortType" value="#{msg.manage_requests_page_colhead_type} #{raManageRequestsBean.sortedByType}"/>
                                 <h:commandButton id="sortType" action="#{raManageRequestsBean.sortByType}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
-                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    <f:ajax execute="@this" render=":manageRequestsForm:filteredResults"
+                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'manageRequestsForm:filteredResults');}"
+                                        onerror="function(data){ejbca.ra.onAjaxError(data,'manageRequestsForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
                             <h:outputText value="#{raRequest.type}" />
@@ -171,9 +171,9 @@
                             <f:facet name="header">
                                 <h:outputLabel for="sortDisplayName" value="#{msg.manage_requests_page_colhead_name} #{raManageRequestsBean.sortedByDisplayName}"/>
                                 <h:commandButton id="sortDisplayName" action="#{raManageRequestsBean.sortByDisplayName}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
-                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    <f:ajax execute="@this" render=":manageRequestsForm:filteredResults"
+                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'manageRequestsForm:filteredResults');}"
+                                        onerror="function(data){ejbca.ra.onAjaxError(data,'manageRequestsForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
                             <h:outputText value="#{raRequest.displayName}" title="#{raRequest.detail}" />
@@ -182,9 +182,9 @@
                             <f:facet name="header">
                                 <h:outputLabel for="sortRequesterName" value="#{msg.manage_requests_page_colhead_requester_name} #{raManageRequestsBean.sortedByRequesterName}"/>
                                 <h:commandButton id="sortRequesterName" action="#{raManageRequestsBean.sortByRequesterName}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
-                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    <f:ajax execute="@this" render=":manageRequestsForm:filteredResults"
+                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'manageRequestsForm:filteredResults');}"
+                                        onerror="function(data){ejbca.ra.onAjaxError(data,'manageRequestsForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
                             <h:outputText value="#{raRequest.requesterName}" title="#{raRequest.detail}" />
@@ -193,9 +193,9 @@
                             <f:facet name="header">
                                 <h:outputLabel for="sortStatus" value="#{msg.manage_requests_page_colhead_request_status} #{raManageRequestsBean.sortedByStatus}"/>
                                 <h:commandButton id="sortStatus" action="#{raManageRequestsBean.sortByStatus}" value="#{msg.manage_requests_page_sort_command}" style="display: none;">
-                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                    <f:ajax execute="@this" render=":manageRequestsForm:filteredResults"
+                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'manageRequestsForm:filteredResults');}"
+                                        onerror="function(data){ejbca.ra.onAjaxError(data,'manageRequestsForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
                             <h:outputText value="#{raRequest.status}" />
