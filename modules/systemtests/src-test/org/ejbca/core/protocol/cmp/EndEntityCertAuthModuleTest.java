@@ -100,7 +100,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -747,7 +747,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
     }
 
     private EndEntityInformation createUser(String username, String subjectDN, String password, boolean clearpassword, int _caid, int eepid, int cpid)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, Exception {
+            throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, EjbcaException, Exception {
 
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, _caid, null, username + "@primekey.se", new EndEntityType(
                 EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -826,7 +826,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             createUser(adminName, dn, "foo123", true, _caid, eepid, cpid);
         } catch (AuthorizationDeniedException e1) {
             throw new IllegalStateException(e1.getLocalizedMessage(), e1);
-        } catch (UserDoesntFullfillEndEntityProfile e1) {
+        } catch (EndEntityProfileValidationException e1) {
             throw new IllegalStateException(e1.getLocalizedMessage(), e1);
         } catch (WaitingForApprovalException e1) {
             throw new IllegalStateException(e1.getLocalizedMessage(), e1);

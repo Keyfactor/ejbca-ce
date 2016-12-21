@@ -126,7 +126,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
@@ -836,7 +836,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
     @Test
     public void test14HMACModuleInClientMode() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException,
-            IOException, InvalidAlgorithmParameterException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            IOException, InvalidAlgorithmParameterException, AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, EjbcaException, java.lang.Exception {
 
         this.cmpConfiguration.setRAMode(ALIAS, false);
@@ -1719,7 +1719,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     private EndEntityInformation createUser(String username, String subjectDN, String password, boolean clearpassword, int _caid, int eepid, int cpid)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, Exception {
+            throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, EjbcaException, Exception {
 
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, _caid, null, username + "@primekey.se", new EndEntityType(
                 EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -1810,7 +1810,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             createUser(adminName, dn, "foo123", true, _caid, eepid, cpid);
         } catch (AuthorizationDeniedException e1) {
             throw new IllegalStateException("Error encountered when creating admin user", e1);
-        } catch (UserDoesntFullfillEndEntityProfile e1) {
+        } catch (EndEntityProfileValidationException e1) {
             throw new IllegalStateException("Error encountered when creating admin user", e1);
         } catch (WaitingForApprovalException e1) {
             throw new IllegalStateException("Error encountered when creating admin user", e1);

@@ -46,7 +46,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestHelper;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
  * Approval Request created when trying to edit an end entity.
@@ -100,7 +100,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
         	endEntityManagementSession.changeUserAfterApproval(getRequestAdmin(), newuserdata, clearpwd, approvalRequestID, lastApprovingAdmin);
         } catch (AuthorizationDeniedException e) {
             throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
-        } catch (UserDoesntFullfillEndEntityProfile e) {
+        } catch (EndEntityProfileValidationException e) {
             throw new ApprovalRequestExecutionException("User Doesn't fullfil end entity profile :" + e.getMessage() + e.getMessage(), e);
         } catch (ApprovalException e) {
             throw new EJBException("This should never happen", e);

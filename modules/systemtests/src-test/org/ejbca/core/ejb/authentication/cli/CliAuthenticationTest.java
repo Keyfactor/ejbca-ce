@@ -54,7 +54,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.util.crypto.CryptoTools;
 import org.junit.After;
 import org.junit.Before;
@@ -125,7 +125,7 @@ public class CliAuthenticationTest {
 
     @Test
     public void testInstallCliAuthenticationWithBCrypt() throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, RemoveException {
+            EndEntityProfileValidationException, WaitingForApprovalException, EjbcaException, RemoveException {
         cliAuthenticationTestHelperSession.createUser(CliAuthenticationTestHelperSessionRemote.USERNAME, CliAuthenticationTestHelperSessionRemote.PASSWORD);
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(new UsernamePrincipal(CliAuthenticationTestHelperSessionRemote.USERNAME));

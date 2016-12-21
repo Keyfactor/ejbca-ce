@@ -128,7 +128,7 @@ import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.util.cert.SeisCardNumberExtension;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -725,7 +725,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             InvalidAlgorithmParameterException, CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException,
             CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException,
-            PublisherExistsException, NoSuchEndEntityException, SignRequestException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile,
+            PublisherExistsException, NoSuchEndEntityException, SignRequestException, EndEntityExistsException, EndEntityProfileValidationException,
             WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, EndEntityProfileNotFoundException {
         final String profileName = "testSingleActiveCertificateConstraintPublishing";
         final String publisherName = "testSingleActiveCertificateConstraintPublishing";

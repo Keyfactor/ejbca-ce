@@ -201,7 +201,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			}catch(AuthorizationDeniedException_Exception e){
 				getPrintStream().println("Error : " + e.getMessage());
 			}catch(UserDoesntFullfillEndEntityProfile_Exception e){
-				getPrintStream().println("Error : Given userdata doesn't fullfill end entity profile. : " +  e.getMessage());
+				getPrintStream().println("Error : Given userdata doesn't fulfill end entity profile. : " +  e.getMessage());
 			}
 
 		} catch (Exception e) {

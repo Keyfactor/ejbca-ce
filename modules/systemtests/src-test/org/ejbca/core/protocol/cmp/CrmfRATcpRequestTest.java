@@ -54,7 +54,7 @@ import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -326,7 +326,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     //
     // Private helper methods
     //
-    private void createCmpUser(String username, String dn) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+    private void createCmpUser(String username, String dn) throws AuthorizationDeniedException, EndEntityProfileValidationException,
             ApprovalException, WaitingForApprovalException, EjbcaException, NoSuchEndEntityException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException {
         // Make user that we know...
         boolean userExists = false;

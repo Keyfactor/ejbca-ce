@@ -376,19 +376,19 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
                     SecConst.TOKEN_SOFT_PEM, 0, null);
             userdata.setPassword("foo123");
     	    try {
-    	        profile.doesUserFullfillEndEntityProfile(userdata, false);
-    	    } catch (UserDoesntFullfillEndEntityProfile e) {
+    	        profile.doesUserFulfillEndEntityProfile(userdata, false);
+    	    } catch (EndEntityProfileValidationException e) {
     	        log.debug(e.getMessage());
     	        ret = true;
     	    }
-    	    assertTrue("User fullfilled the End Entity Profile even though the cardnumber was not sett", ret);
+    	    assertTrue("User fulfilled the End Entity Profile even though the cardnumber was not sett", ret);
 
     	    ret = false;
     	    userdata.setCardNumber(cardnumber);
     	    try {
-    	        profile.doesUserFullfillEndEntityProfile(userdata, false);
+    	        profile.doesUserFulfillEndEntityProfile(userdata, false);
     	        ret = true;
-    	    } catch (UserDoesntFullfillEndEntityProfile e) {
+    	    } catch (EndEntityProfileValidationException e) {
     	        log.debug(e.getMessage());
     	        ret = false;
     	    }

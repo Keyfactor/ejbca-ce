@@ -77,7 +77,7 @@ import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ws.BatchCreateTool;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -512,7 +512,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     }
 
     private void createUser(AuthenticationToken admin, String username, int caID, int endEntityProfileId, int certProfileId)
-            throws EndEntityExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
+            throws EndEntityExistsException, AuthorizationDeniedException, EndEntityProfileValidationException, ApprovalException,
             WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId,
@@ -523,7 +523,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     }
 
     private void createUser(String cliUserName, String cliPassword, EndEntityInformation userdata) throws EndEntityExistsException, AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
+            EndEntityProfileValidationException, ApprovalException, WaitingForApprovalException, Exception {
         endEntityManagementSession.addUser(admin1, userdata, true);
         fileHandles.addAll(BatchCreateTool.createAllNew(admin1, new File(P12_FOLDER_NAME)));
         EndEntityInformation userdata2 = endEntityAccessSession.findUser(admin1, userdata.getUsername());
@@ -533,7 +533,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     }
 
     private void changeUserDN(AuthenticationToken admin, String username, String newDN) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
+            EndEntityProfileValidationException, ApprovalException, WaitingForApprovalException, Exception {
 
         EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
         assertNotNull(userdata);
@@ -544,7 +544,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     }
 
     private void changeUserCertProfile(AuthenticationToken admin, String username, int newCertProfileId) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
+            EndEntityProfileValidationException, ApprovalException, WaitingForApprovalException, Exception {
         EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
         assertNotNull("findUser: " + username, userdata);
         userdata.setCertificateProfileId(newCertProfileId);

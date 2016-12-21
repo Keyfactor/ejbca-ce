@@ -62,7 +62,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
@@ -447,7 +447,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					// Try again
 					resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
 				}
-			} catch (UserDoesntFullfillEndEntityProfile e) {
+			} catch (EndEntityProfileValidationException e) {
 				LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
 				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
 			} catch (ApprovalException e) {
