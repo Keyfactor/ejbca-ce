@@ -1,3 +1,19 @@
+EJBCA 6.6.3, 2016-12-22
+---
+Bug
+    [ECA-5527] - PeerRaMasterServiceBean delays shutdown
+    [ECA-5554] - View certificate throws StringIndexOutOfBoundsException when certificate cannot be read
+    [ECA-5568] - Incorrect column type used in Oracle upgrade script
+    [ECA-5571] - ApprovalProfileSession is not sent to Workers, leading to an NPE
+    [ECA-5575] - Error generating CRL on MSSQL, update dialect to SQLServer2008Dialect 
+    [ECA-5577] - Import certificate profiles in Admin GUI ignores profileId
+    [ECA-5578] - ExternalRA fails if no approval profile has been set
+
+Improvement
+    [ECA-5079] - Make sun classes for PKCS#11 available using jboss-deployment-structure.xml
+    [ECA-5526] - Add new RA Web to Admin GUI menu
+
+
 EJBCA 6.6.2, 2016-12-04
 ---
 Bug
