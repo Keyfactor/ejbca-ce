@@ -18,5 +18,4 @@ commons-httpclient-3.1.jar
 
 Dependencies required to run some ExternalRA Tests
 geronimo-osgi-locator-1.1.jar (Apache 2.0)
-hibernate-validator-4.1.0.Final.jar (Apache 2.0)
 slf4j-api-1.7.22.jar (Apache/MIT/BSD/CDDL)
