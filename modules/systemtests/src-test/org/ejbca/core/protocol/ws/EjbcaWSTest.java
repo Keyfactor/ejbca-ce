@@ -1073,8 +1073,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test42CertificateRequestWithSpecialChars02() throws Exception {
         long rnd = secureRandom.nextLong();
         testCertificateRequestWithSpecialChars(
-                "CN=test" + rnd + ",O=foo/bar\\;123, C=SE",
-                "CN=test" + rnd + ",O=foo/bar/123,C=SE");
+                "CN=test42CertificateRequestWithSpecialChars02" + rnd + ",O=foo/bar\\;123, C=SE",
+                "CN=test42CertificateRequestWithSpecialChars02" + rnd + ",O=foo/bar/123,C=SE");
     }
 
     /**
@@ -1085,8 +1085,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test43CertificateRequestWithSpecialChars03() throws Exception {
         long rnd = secureRandom.nextLong();
         testCertificateRequestWithSpecialChars(
-                "CN=test" + rnd + ", O=foo+bar\\+123, C=SE",
-                "CN=test" + rnd + ",O=foo\\+bar\\+123,C=SE");
+                "CN=test43CertificateRequestWithSpecialChars03" + rnd + ", O=foo+bar\\+123, C=SE",
+                "CN=test43CertificateRequestWithSpecialChars03" + rnd + ",O=foo\\+bar\\+123,C=SE");
     }
 
     /**
@@ -1109,8 +1109,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test45CertificateRequestWithSpecialChars05() throws Exception {
         long rnd = secureRandom.nextLong();
         testCertificateRequestWithSpecialChars(
-                "CN=test" + rnd + ", O=\"foo=bar, C=SE\"",
-                "CN=test" + rnd + ",O=foo\\=bar\\, C\\=SE");
+                "CN=test45CertificateRequestWithSpecialChars05" + rnd + ", O=\"foo=bar, C=SE\"",
+                "CN=test45CertificateRequestWithSpecialChars05" + rnd + ",O=foo\\=bar\\, C\\=SE");
     }
 
     /**
@@ -1121,8 +1121,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test46CertificateRequestWithSpecialChars06() throws Exception {
         long rnd = secureRandom.nextLong();
         testCertificateRequestWithSpecialChars(
-                "CN=test" + rnd + ", O=\"foo+b\\+ar, C=SE\"",
-                "CN=test" + rnd + ",O=foo\\+b\\+ar\\, C\\=SE");
+                "CN=test46CertificateRequestWithSpecialChars06" + rnd + ", O=\"foo+b\\+ar, C=SE\"",
+                "CN=test46CertificateRequestWithSpecialChars06" + rnd + ",O=foo\\+b\\+ar\\, C\\=SE");
     }
 
     /**
@@ -1133,8 +1133,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test47CertificateRequestWithSpecialChars07() throws Exception {
         long rnd = secureRandom.nextLong();
         testCertificateRequestWithSpecialChars(
-                "CN=test" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"",
-                "CN=test" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
+                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"",
+                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
     }
 
     /**
@@ -1148,8 +1148,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         long rnd = secureRandom.nextLong();
         cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, null);
         testCertificateRequestWithSpecialChars(
-                "CN=test" + rnd + ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
-                "CN=test" + rnd +   ",O=|/|/|/|A|/|/|/|/|/|,C=SE");
+                "CN=test48CertificateRequestWithForbiddenCharsDefault" + rnd + ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
+                "CN=test48CertificateRequestWithForbiddenCharsDefault" + rnd +   ",O=|/|/|/|A|/|/|/|/|/|,C=SE");
     }
 
     /**
@@ -1161,8 +1161,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         long rnd = secureRandom.nextLong();
         cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "\n\r;!\u0000%`?$~");
         testCertificateRequestWithSpecialChars(
-                "CN=test" + rnd + ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
-                "CN=test" + rnd +   ",O=|/|/|/|A|/|/|/|/|/|,C=SE");
+                "CN=test49CertificateRequestWithForbiddenCharsDefinedAsDefault" + rnd + ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
+                "CN=test49CertificateRequestWithForbiddenCharsDefinedAsDefault" + rnd +   ",O=|/|/|/|A|/|/|/|/|/|,C=SE");
     }
 
     /**
@@ -1190,8 +1190,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         long rnd = secureRandom.nextLong();
         cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "");
         testCertificateRequestWithSpecialChars(
-                "CN=test" + rnd +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
-                "CN=test" + rnd + ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
+                "CN=test51CertificateRequestWithNoForbiddenChars" + rnd +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
+                "CN=test51CertificateRequestWithNoForbiddenChars" + rnd + ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
     }
 
 
