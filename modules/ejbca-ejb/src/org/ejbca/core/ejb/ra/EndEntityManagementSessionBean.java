@@ -329,7 +329,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         
         final String originalDN = endEntity.getDN();
-        canonicalizeUser(endEntity);
+        endEntity = canonicalizeUser(endEntity);
         if (log.isTraceEnabled()) {
             log.trace(">addUser(" + endEntity.getUsername() + ", password, " + endEntity.getDN() + ", " + originalDN + ", " + endEntity.getSubjectAltName()
                     + ", " + endEntity.getEmail() + ", profileId: " + endEntityProfileId + ")");
