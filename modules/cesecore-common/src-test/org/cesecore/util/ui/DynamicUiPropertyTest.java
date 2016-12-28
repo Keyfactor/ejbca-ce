@@ -28,7 +28,7 @@ import org.junit.Test;
 public class DynamicUiPropertyTest {
 
     @Test
-    public void testEncodingAndDecodingOfComplexType() {
+    public void testEncodingAndDecodingOfComplexType() throws PropertyValidationException {
         RoleData anybody = new RoleData(-1, "anybody");
         DynamicUiProperty<RoleData> roleProperty = new DynamicUiProperty<RoleData>("test",
                 anybody, new HashSet<RoleData>(Arrays.asList(anybody)));

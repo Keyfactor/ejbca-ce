@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.profiles;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.junit.Test;
@@ -29,9 +30,10 @@ public class ProfileDataTest {
 
     /**
      * This test creates a ProfileData object using an ApprovalProfile, then extracts the profile back out in order to verify integrity. 
+     * @throws PropertyValidationException 
      */
     @Test
-    public void testApprovalProfile() {
+    public void testApprovalProfile() throws PropertyValidationException {
         final int numberOfApprovalsRequired = 4711;
         final String profileName = "testApprovalProfile";
         AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile(profileName);

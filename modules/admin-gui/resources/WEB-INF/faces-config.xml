@@ -148,6 +148,10 @@
         <validator-class>org.ejbca.ui.web.admin.OptionalHexSerialNumberValidator</validator-class>
   </validator>
   <validator>
+        <validator-id>positiveIntegerValidator</validator-id>
+        <validator-class>org.ejbca.ui.web.PositiveIntegerValidator</validator-class>
+  </validator>
+  <validator>
         <validator-id>simpleTimeValidator</validator-id>
         <validator-class>org.ejbca.ui.web.admin.SimpleTimeValidator</validator-class>
   </validator>
