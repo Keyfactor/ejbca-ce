@@ -25,6 +25,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.junit.Test;
 
@@ -65,7 +66,7 @@ public class ApprovalProfileSessionTest {
      * Test the changeApprovalProfile method in ApprovalProfileSession
      */
     @Test
-    public void testChangeApprovalProfile() throws ApprovalProfileExistsException, AuthorizationDeniedException {
+    public void testChangeApprovalProfile() throws ApprovalProfileExistsException, AuthorizationDeniedException, PropertyValidationException {
         int originalValue = 1337;
         String profileName = "testChangeApprovalProfile";
         AccumulativeApprovalProfile accumulativeApprovalProfile = new AccumulativeApprovalProfile(profileName);

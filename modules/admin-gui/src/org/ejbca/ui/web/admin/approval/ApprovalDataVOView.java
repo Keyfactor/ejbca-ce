@@ -37,6 +37,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -217,7 +218,11 @@ public class ApprovalDataVOView implements Serializable {
             	X509Certificate certificate = CertTools.getCertfromByteArray(ApprovalDataVOView.dummycert, X509Certificate.class);
                 AuthenticationToken token = new X509CertificateAuthenticationToken(certificate);
                 AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile("DummyApprovalProfile");
-                approvalProfile.setNumberOfApprovalsRequired(2);
+                try {
+                    approvalProfile.setNumberOfApprovalsRequired(2);
+                } catch (PropertyValidationException e) {
+                    throw new IllegalStateException("AccumulativeApprovalProfile shouldn't have failed with a known good value (2).", e);
+                }
                 DummyApprovalRequest req = new DummyApprovalRequest(token, null, ApprovalDataVO.ANY_ENDENTITYPROFILE, ApprovalDataVO.ANY_CA, false, approvalProfile);
                 return new ApprovalDataVO(1, 1, ApprovalDataVO.APPROVALTYPE_DUMMY, 0, 0, "", "", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,
                         new ArrayList<Approval>(), req, new Date(), new Date());
