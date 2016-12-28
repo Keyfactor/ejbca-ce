@@ -93,6 +93,7 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.JBossUnmarshaller;
+import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -1368,7 +1369,16 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                             //None found! Let's create one!
                             String name = "Require " + numberOfRequiredApprovals + " Approval" + (numberOfRequiredApprovals > 1 ? "s" : "");
                             AccumulativeApprovalProfile newProfile = new AccumulativeApprovalProfile(name);
-                            newProfile.setNumberOfApprovalsRequired(numberOfRequiredApprovals);
+                            try {
+                                newProfile.setNumberOfApprovalsRequired(numberOfRequiredApprovals);
+                            } catch (PropertyValidationException e1) {
+                                log.info("Attempted to upgrade an approval profile with negative value (" + numberOfRequiredApprovals + "). Setting 0 instead.");
+                                try {
+                                    newProfile.setNumberOfApprovalsRequired(0);
+                                } catch (PropertyValidationException e) {
+                                    throw new IllegalStateException(e);
+                                }
+                            }
                             addApprovalNotification(newProfile);
                             try {
                                 int newProfileId = approvalProfileSession.addApprovalProfile(authenticationToken, newProfile);
@@ -1403,7 +1413,16 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         //None found! Let's create one!
                         String name = "Require " + numberOfRequiredApprovals + " approval" + (numberOfRequiredApprovals > 1 ? "s" : "");
                         AccumulativeApprovalProfile newProfile = new AccumulativeApprovalProfile(name);
-                        newProfile.setNumberOfApprovalsRequired(numberOfRequiredApprovals);
+                        try {
+                            newProfile.setNumberOfApprovalsRequired(numberOfRequiredApprovals);
+                        } catch (PropertyValidationException e1) {
+                            log.info("Attempted to upgrade an approval profile with negative value (" + numberOfRequiredApprovals + "). Setting 0 instead.");
+                            try {
+                                newProfile.setNumberOfApprovalsRequired(0);
+                            } catch (PropertyValidationException e) {
+                                throw new IllegalStateException(e);
+                            }
+                        }
                         addApprovalNotification(newProfile);
                         try {
                             int newProfileId = approvalProfileSession.addApprovalProfile(authenticationToken, newProfile);

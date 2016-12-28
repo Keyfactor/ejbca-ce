@@ -21,6 +21,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
@@ -40,7 +41,7 @@ public class ApprovalExecutorUtilTest {
 	}
 
     @Test
-	public void testNoOfApprovals() {
+	public void testNoOfApprovals() throws PropertyValidationException {
 		int numOfApprovalsRequired = 1;
 		AccumulativeApprovalProfile nrOfApprovalsApprovalProfile = new AccumulativeApprovalProfile("nrOfApprovalApprovalProfile");
 		nrOfApprovalsApprovalProfile.initialize();
@@ -58,7 +59,7 @@ public class ApprovalExecutorUtilTest {
 	}
 	
     @Test
-	public void testGloballyExcludedClasses() {
+	public void testGloballyExcludedClasses() throws PropertyValidationException {
 		int numOfApprovalsRequired = 1;
 		AccumulativeApprovalProfile nrOfApprovalsApprovalProfile = new AccumulativeApprovalProfile("testGloballyExcludedClasses");
 	    nrOfApprovalsApprovalProfile.initialize();
@@ -79,7 +80,7 @@ public class ApprovalExecutorUtilTest {
 	}
 	
     @Test
-	public void testOverridableClassNames() {
+	public void testOverridableClassNames() throws PropertyValidationException {
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS = {
 			new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeUser"),
 			new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeCert"),
@@ -137,7 +138,7 @@ public class ApprovalExecutorUtilTest {
 	}
 	
     @Test
-	public void testAllowedTransitions() {
+	public void testAllowedTransitions() throws PropertyValidationException {
 		int numOfApprovalsRequired = 1;
 		AccumulativeApprovalProfile nrOfApprovalsApprovalProfile = new AccumulativeApprovalProfile("nrOfApprovalApprovalProfile");
 		nrOfApprovalsApprovalProfile.initialize();

@@ -23,6 +23,8 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.ui.DynamicUiProperty;
+import org.cesecore.util.ui.PositiveIntegerValidator;
+import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.profiles.Profile;
@@ -82,7 +84,7 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
         return intres.getLocalizedMessage("approval.profile.implementation.accumulative.approval.name");
     }
 
-    public void setNumberOfApprovalsRequired(int approvalsRequired) {
+    public void setNumberOfApprovalsRequired(int approvalsRequired) throws PropertyValidationException {
         final int partitionIdentifier = getSinglePartitionIdentifier(FIXED_STEP_ID);
         DynamicUiProperty<? extends Serializable> approvalsRequiredProperty = getSteps().get(FIXED_STEP_ID).getPartition(partitionIdentifier)
                 .getProperty(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS);
@@ -144,7 +146,9 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     
     @Override
     protected ApprovalPartition addConstantProperties(ApprovalPartition approvalPartition) {
-        approvalPartition.addProperty(new DynamicUiProperty<Integer>(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS, 1));
+        DynamicUiProperty<Integer> numberOfRequiredApprovals = new DynamicUiProperty<>(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS, 1);
+        numberOfRequiredApprovals.setValidator(new PositiveIntegerValidator());
+        approvalPartition.addProperty(numberOfRequiredApprovals);
         return approvalPartition;
     }
 

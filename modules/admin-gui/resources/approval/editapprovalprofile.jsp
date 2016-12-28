@@ -148,28 +148,34 @@
 																							
 					   			<h:panelGroup rendered="#{!property.multiValued}">
 						   			<h:inputText  disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'String'}" 
-						   				value="#{property.value}" style="width: 100%">
+						   				value="#{property.value}" style="width: 100%" >
 						   				<f:converter converterId="stringConverter"/>
+						   				<f:validator validatorId="#{property.validatorType}"/>
 						   			</h:inputText>
                                     <h:inputTextarea disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'MultiLineString'}" 
-                                        value="#{property.value.value}" style="width: 100%">
+                                        value="#{property.value.value}" style="width: 100%" >
                                         <f:converter converterId="stringConverter"/>
+                                        <f:validator validatorId="#{property.validatorType}"/>
                                     </h:inputTextarea>
 						   			<h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" 
 						   				style="text-align: right;" >
 					                   <f:converter converterId="javax.faces.Long"/>
+					                   <f:validator validatorId="#{property.validatorType}"/>
 						   			</h:inputText>
 						   			<h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" 	
-						   				style="text-align: right;" size="6">
+						   				style="text-align: right;" size="6" >
 					                   <f:converter converterId="javax.faces.Integer"/>
+					                   <f:validator validatorId="#{property.validatorType}"/>
 						   			</h:inputText>
-					   				<h:selectBooleanCheckbox disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
+					   				<h:selectBooleanCheckbox disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"
+					   					/>
 					   			</h:panelGroup>
 								<h:selectOneMenu disabled="#{approvalProfilesMBean.viewOnly}" 
 									rendered="#{property.multiValued 
 												&& !property.hasMultipleValues 
 												&& property.type.simpleName != 'RadioButton'}" 
-									value="#{property.encodedValue}">
+									value="#{property.encodedValue}"
+									>
 									<f:selectItems value="#{partition.propertyPossibleValues}"/>
 								</h:selectOneMenu>
 								<h:selectManyListbox disabled="#{approvalProfilesMBean.viewOnly}" 

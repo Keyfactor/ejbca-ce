@@ -59,7 +59,7 @@ public class ApprovalPartition implements Serializable {
         final LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> ret = new LinkedHashMap<String, DynamicUiProperty<? extends Serializable>>();
         for (String key : properties.keySet()) {
             DynamicUiProperty<? extends Serializable> current = properties.get(key);
-            final DynamicUiProperty<? extends Serializable> clone = current.clone();
+            final DynamicUiProperty<? extends Serializable> clone = current.clone();          
             if (clone.getHasMultipleValues()) {
                 clone.setValuesGeneric(getProperty(clone.getName()).getValues());
             } else {

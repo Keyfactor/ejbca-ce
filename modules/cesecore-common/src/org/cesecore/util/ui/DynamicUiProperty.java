@@ -42,6 +42,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     private Collection<T> possibleValues;
     private DynamicUiPropertyCallback propertyCallback = DynamicUiPropertyCallback.NONE;
     private Class<? extends Serializable> type;
+    private DynamicUiPropertyValidator<T> validator = null;
     
     /**
      * Denotes whether this property can have multiple values. 
@@ -89,18 +90,23 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         this.name = original.getName();
         this.defaultValue = original.getDefaultValue();
         this.setHasMultipleValues(original.getHasMultipleValues());
-        if (!original.hasMultipleValues) {           
-            setValue((T) SerializationUtils.clone(original.getValue()));
-        } else {
-            List<T> clonedValues = new ArrayList<>();
-            for(T value : original.getValues()) {
-                clonedValues.add((T) SerializationUtils.clone(value));
+        try {
+            if (!original.hasMultipleValues) {
+                setValue((T) SerializationUtils.clone(original.getValue()));
+            } else {
+                List<T> clonedValues = new ArrayList<>();
+                for (T value : original.getValues()) {
+                    clonedValues.add((T) SerializationUtils.clone(value));
+                }
+                setValues(clonedValues);
             }
-            setValues(clonedValues);
+        } catch (PropertyValidationException e) {
+            throw new IllegalArgumentException("Invalid value was intercepted in copy constructor, which should not happen.", e);
         }
         this.possibleValues = original.getPossibleValues();
         this.propertyCallback = original.getPropertyCallback();
         this.type = original.getType();
+        this.validator = original.validator;
     }
 
     /**
@@ -239,16 +245,24 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         return possibleValues != null;
     }
 
-    public void setValue(T object) {
+    /**
+     * 
+     * @param object a value for this property
+     * @throws PropertyValidationException if the value failed validation 
+     */
+    public void setValue(T object) throws PropertyValidationException {
         if (hasMultipleValues) {
             throw new IllegalStateException("Attempted to set multiple values from a dynamic property with single value.");
         }
         if (object == null) {
             this.values = new ArrayList<>(Arrays.asList(defaultValue));
         } else {
+            if(validator != null) {
+                validator.validate(object);
+            }
             if (possibleValues != null) {
                 for (final T possibleValue : possibleValues) {
-                    if (possibleValue.equals(object)) {
+                    if (possibleValue.equals(object)) {                
                         this.values = new ArrayList<>(Arrays.asList(object));
                         return;
                     }
@@ -260,7 +274,12 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         }
     }
 
-    public void setValues(List<T> objects) {
+    /**
+     * 
+     * @param objects a list of values to set
+     * @throws PropertyValidationException if any one of the values didn't pass validation
+     */
+    public void setValues(List<T> objects) throws PropertyValidationException {
         if (!hasMultipleValues) {
             throw new IllegalStateException("Attempted to set single value from a dynamic property with multiple values.");
         }
@@ -270,6 +289,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             if (possibleValues != null && !possibleValues.isEmpty()) {
                 final List<T> values = new ArrayList<>();
                 OBJECT_LOOP: for (final T object : objects) {
+                    if(validator != null) {
+                        validator.validate(object);
+                    }
                     for (final T possibleValue : possibleValues) {
                         if (possibleValue.equals(object)) {
                             values.add(object);
@@ -284,6 +306,8 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             }
         }
     }
+    
+
 
     public String getEncodedValue() {
         return getAsEncodedValue(getValue());
@@ -307,11 +331,20 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
 
     @SuppressWarnings("unchecked")
     public void setEncodedValue(String encodedValue) {
-        setValue((T) getAsObject(Base64.decode(encodedValue.getBytes())));
+        try {
+            setValue((T) getAsObject(Base64.decode(encodedValue.getBytes())));
+        } catch (PropertyValidationException e) {
+            throw new IllegalArgumentException("Invalid value was intercepted from an encoded source, which should not happen.", e);
+        }
     }
 
     @SuppressWarnings("unchecked")
-    public void setEncodedValues(List<String> encodedValues) {
+    /**
+     * 
+     * @param encodedValues a list of encoded values
+     * @throws PropertyValidationException if any one of the values doesn't pass validation
+     */
+    public void setEncodedValues(List<String> encodedValues) throws PropertyValidationException {
         List<T> decodedValues = new ArrayList<>();
         for (String encodedValue : encodedValues) {
             decodedValues.add((T) getAsObject(Base64.decode(encodedValue.getBytes())));
@@ -320,21 +353,44 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     }
 
     @SuppressWarnings("unchecked")
+    /**
+     * @param object the value to set
+     * 
+     */
     public void setValueGeneric(Serializable object) {
         if (object == null) {
             this.values = new ArrayList<>(Arrays.asList(defaultValue));
         } else {
+            if(validator != null) {
+                try {
+                    validator.validate((T) object);
+                } catch (PropertyValidationException e) {
+                    throw new IllegalStateException("Generic setter is normally only used internally, so an incorrect value should not be passed.", e);
+                }
+            }
             this.values = new ArrayList<>(Arrays.asList((T) object));
         }
     }
 
     @SuppressWarnings("unchecked")
+    /**
+     * 
+     * @param list a list of objects
+     * 
+     */
     public void setValuesGeneric(List<? extends Serializable> list) {
         if (list == null || list.isEmpty()) {
             this.values = new ArrayList<>(Arrays.asList(defaultValue));
         } else {
             final List<T> values = new ArrayList<>();
             for (final Serializable object : list) {
+                if(validator != null) {
+                    try {
+                        validator.validate((T) object);
+                    } catch (PropertyValidationException e) {
+                        throw new IllegalStateException("Generic setter is normally only used internally, so an incorrect value should not be passed.", e);
+                    }
+                }
                 values.add((T) object);
             }
             this.values = values;
@@ -400,8 +456,22 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         }
     }
     
-    /** Sets the value, by calling setValue. Needed for the getJsfBooleanValue workaround */
-    public void setJsfBooleanValue(final T newValue) {
+    /** Sets the value, by calling setValue. Needed for the getJsfBooleanValue workaround 
+     * @throws PropertyValidationException if the value failed validation
+     */
+    public void setJsfBooleanValue(final T newValue) throws PropertyValidationException {
         setValue(newValue);
+    }
+    
+    public void setValidator(DynamicUiPropertyValidator<T> validator) {
+        this.validator = validator;
+    }
+    
+    public String getValidatorType() {
+        if (validator != null) {
+            return validator.getValidatorType();
+        } else {
+            return "";
+        }
     }
 }
