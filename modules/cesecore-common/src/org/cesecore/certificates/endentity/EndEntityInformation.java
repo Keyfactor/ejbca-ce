@@ -89,7 +89,8 @@ public class EndEntityInformation implements Serializable {
         this.password = endEntityInformation.getPassword();
         this.cardNumber = endEntityInformation.getCardNumber();
         this.status = endEntityInformation.getStatus();
-        this.type = endEntityInformation.getTokenType();
+        this.type = endEntityInformation.getType().getHexValue();
+        this.tokentype = endEntityInformation.getTokenType();
         this.endentityprofileid = endEntityInformation.getEndEntityProfileId();
         this.certificateprofileid = endEntityInformation.getCertificateProfileId();
         this.timecreated = endEntityInformation.getTimeCreated();
