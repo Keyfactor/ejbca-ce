@@ -1,7 +1,7 @@
 <%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
 <%
    java.util.Map<String, Integer> canames = ejbcawebbean.getInformationMemory().getCANames();
-   java.util.TreeMap<String, Integer> externalcas = ejbcawebbean.getInformationMemory().getExternalCAs();
+   java.util.TreeMap<String, Integer> vendorcas = ejbcawebbean.getVendorCAOptions();
    int row = 0;
    
    ramode = cmpConfigClone.getRAMode(alias);
@@ -525,7 +525,7 @@ function checkallfields() {
 		<p class="help"><c:out value="<%= cmpConfigClone.getVendorCA(alias) %>"/></p>
         <select name="<%=LIST_VENDORCA%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %> >
            <% 
-            for(String vca : externalcas.keySet()) {
+            for(String vca : vendorcas.keySet()) {
            %>     <option value='<c:out value="<%= vca%>"/>'><c:out value="<%= vca %>"/></option> 
            <% } %>
         </select>
