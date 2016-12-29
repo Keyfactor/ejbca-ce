@@ -122,6 +122,8 @@ public class AuthenticationSessionTest extends CaTestCase {
         userdata.setPassword(password);
         endEntityManagementSession.addUser(admin, userdata, true);
         EndEntityInformation userdata2 = endEntityAccessSession.findUser(admin, userdata.getUsername());
+        assertTrue("Type is wrong", userdata.getType().contains(EndEntityTypes.ENDUSER));
+        assertTrue("Type is wrong", userdata2.getType().contains(EndEntityTypes.ENDUSER));
         assertNotNull("findUser: " + userdata.getUsername(), userdata2);
     }
 
@@ -147,17 +149,17 @@ public class AuthenticationSessionTest extends CaTestCase {
         log.trace(">test02AuthenticateUser()");
         // user that we know exists...
         log.debug("Username:" + username1 + "\npwd:" + pwd1);
-        EndEntityInformation data = authenticationSessionRemote.authenticateUser(internalAdmin, username1, pwd1);
+        EndEntityInformation endEntityInformation = authenticationSessionRemote.authenticateUser(internalAdmin, username1, pwd1);
 
-        log.debug("DN: " + data.getDN());
-        assertTrue("DN is wrong", data.getDN().indexOf(username1) != -1);
+        log.debug("DN: " + endEntityInformation.getDN());
+        assertTrue("DN is wrong", endEntityInformation.getDN().indexOf(username1) != -1);
 
-        log.debug("Email: " + data.getEmail());
-        assertNotNull("Email should not be null", data.getEmail());
-        assertTrue("Email is wrong", data.getEmail().equals(username1 + "@anatom.se"));
+        log.debug("Email: " + endEntityInformation.getEmail());
+        assertNotNull("Email should not be null", endEntityInformation.getEmail());
+        assertTrue("Email is wrong", endEntityInformation.getEmail().equals(username1 + "@anatom.se"));
 
-        log.debug("Type: " + data.getType());
-        assertTrue("Type is wrong", data.getType().contains(EndEntityTypes.ENDUSER));
+        log.debug("Type: " + endEntityInformation.getType());
+        assertTrue("Type is wrong", endEntityInformation.getType().contains(EndEntityTypes.ENDUSER));
         log.trace("<test02AuthenticateUser()");
     }
 
