@@ -1216,7 +1216,7 @@ public class EjbcaWebBean implements Serializable {
         return cps;
     }
     
-    public TreeMap<String, Integer> getVendorCAOptions() throws CADoesntExistsException {
+    public TreeMap<String, Integer> getVendorCAOptions() {
         if(EjbcaConfiguration.getIsInProductionMode()) {
             return informationmemory.getExternalCAs();
         } else {
