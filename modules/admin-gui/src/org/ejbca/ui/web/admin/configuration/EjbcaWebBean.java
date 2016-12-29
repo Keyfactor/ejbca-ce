@@ -76,6 +76,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -1213,6 +1214,14 @@ public class EjbcaWebBean implements Serializable {
             cps.add(cpname);
         }
         return cps;
+    }
+    
+    public TreeMap<String, Integer> getVendorCAOptions() throws CADoesntExistsException {
+        if(EjbcaConfiguration.getIsInProductionMode()) {
+            return informationmemory.getExternalCAs();
+        } else {
+            return (TreeMap<String, Integer>) informationmemory.getCANames();
+        }
     }
 
     //*************************************************
