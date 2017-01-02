@@ -67,6 +67,10 @@ public class ApprovalDataVO implements Serializable {
     private int id = 0;
     private int approvalId = 0;
     private int approvalType = 0;
+    /**
+     * Note:    It's known that this field has a typo in it, but renaming it would break serialization and thus compromise EJBCA's 100% uptime 
+     *          requirements. For that reason, leave it be. 
+     */
     private int endEntityProfileiId = 0;
     private int cAId = 0;
     private String reqadmincertissuerdn = null;
