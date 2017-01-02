@@ -40,7 +40,7 @@ public class PositiveIntegerValidator implements DynamicUiPropertyValidator<Inte
     }
     
     public static void validateInteger(Integer value) throws PropertyValidationException{
-        if(value.intValue() <= 0) {
+        if(value.intValue() < 0) {
             throw new PropertyValidationException(intres.getLocalizedMessage("dynamic.property.validation.positiveinteger.failure", value.toString()));
         }
     }
