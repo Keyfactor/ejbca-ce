@@ -392,7 +392,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
             editLogEntries.add(raLocaleBean.getMessage("view_request_page_edit_log_entry", editDate, adminName));
         }
         
-        if (endEntityInformation != null) {
+        if (endEntityInformation != null || approvalData.getApprovalType() == ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE) {
             authorizedToRequestType = raAccessBean.isAuthorizedToApproveEndEntityRequests();
         } else {
             authorizedToRequestType = raAccessBean.isAuthorizedToApproveCARequests();
