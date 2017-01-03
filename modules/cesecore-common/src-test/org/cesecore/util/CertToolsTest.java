@@ -1962,7 +1962,7 @@ public class CertToolsTest {
      */
     @Test
     public void testNameConstraints() throws Exception {
-        final String permitted = "C=SE,CN=example.com\n" +
+        final String permitted = "C=SE,O=PrimeKey,CN=example.com\n" +
                                  "example.com\n" +
                                  "@mail.example\n" +
                                  "user@host.com\n" +
@@ -1985,10 +1985,21 @@ public class CertToolsTest {
                 X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, "BC", true, extensions);
         
         // Allowed subject DNs
-        final X500Name validDN = new X500Name("C=SE,CN=example.com"); // re-used below
+        final X500Name validDN = new X500Name("C=SE,O=PrimeKey,CN=example.com"); // re-used below
         CertTools.checkNameConstraints(cacert, validDN, null);
         CertTools.checkNameConstraints(cacert, new X500Name("C=SE,CN=spacing"), null);
-        
+        // When importing certificates issued by Name Constrained CAs we may run into issues with DN encoding and DN order
+        // In EndEntityManagementSessionBean.addUser we use something like:
+        // X500Name subjectDNName1 = CertTools.stringToBcX500Name(CertTools.getSubjectDN(subjectCert), nameStyle, useLdapDnOrder);
+        // Where nameStyle and dnOrder can have different values
+        X500Name validDN2 = CertTools.stringToBcX500Name("C=SE,O=PrimeKey,CN=example.com", CeSecoreNameStyle.INSTANCE, false);
+        CertTools.checkNameConstraints(cacert, validDN2, null);
+        X500Name invalidDN1 = CertTools.stringToBcX500Name("C=SE,O=PrimeKey,CN=example.com", CeSecoreNameStyle.INSTANCE, true);
+        checkNCException(cacert, invalidDN1, null, "ldapDnOrder true was accepted");
+        X500Name invalidDN2 = CertTools.stringToBcX500Name("C=SE,O=PrimeKey,CN=example.com", PrintableStringNameStyle.INSTANCE, false);
+        checkNCException(cacert, invalidDN2, null, "PrintableStringNameStyle was accepted");
+
+
         // Allowed subject alternative names
         CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.dNSName, "example.com")));
         CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.dNSName, "x.sub.example.com")));

@@ -469,6 +469,13 @@ C=US,ST=MA,L=Boston,O=Example LLC
 0.0.0.0/0
 ::/0
 </source>
+<p>If you have been issued a name constrained Sub CA certificate from another Root CA, you may want to import certificates issued by this CA into other EJBCA instances.
+You then import the Sub CA certificate as an 'External CA' in the new EJBCA instance. When you import end entity certificates you may run into two settings that you need to tune, 'useLdapDnOrder' and 'usePrintableStringSubjectDN'.
+These settings are not possible to edit normally for an 'External CA', but you can edit them using the CLI.</p>
+<source>
+bin/ejbca.sh ca editca --caname "Name Constrained CA Name" --field useLdapDnOrder --value false
+bin/ejbca.sh ca editca --caname "Name Constrained CA Name" --field usePrintableStringSubjectDN --value false
+</source>
 </subsubsection>
 
 <subsubsection name="Issuing Distribution Point on CRLs">
