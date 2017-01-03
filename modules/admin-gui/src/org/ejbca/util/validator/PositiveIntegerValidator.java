@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web;
+package org.ejbca.util.validator;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
