@@ -74,6 +74,19 @@ public final class EjbcaConfiguration {
         }
         return value * 1000L;
     }
+    
+    /**
+     * How long time an administrator can unexpire an approval request for, or 0 to forbid unexpiration of requests.
+     */
+    public static long getApprovalDefaultMaxUnexpirationPeriod() {
+        long value = 0L;
+        try {
+            value = Long.parseLong(EjbcaConfigurationHolder.getString("approval.defaultmaxunexpirationperiod"));
+        } catch (NumberFormatException e) {
+            log.warn("\"approval.defaultmaxunexpirationperiod\" is not a decimal number. Using default value: " + value);
+        }
+        return value * 1000L;
+    }
 
     /**
      * Excluded classes from approval.

@@ -179,6 +179,17 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         getApprovalProfile().setApprovalExpirationPeriod(time.getLong());
     }
     
+    public String getMaxUnexpirationPeriod() {
+        final long millis = getApprovalProfile().getMaxUnexpirationPeriod();
+        final SimpleTime time = SimpleTime.getInstance(millis);
+        return time.toString(SimpleTime.TYPE_DAYS);
+    }
+    
+    public void setMaxUnexpirationPeriod(final String maxUnexpirationPeriod) {
+        final SimpleTime time = SimpleTime.getInstance(maxUnexpirationPeriod);
+        getApprovalProfile().setMaxUnexpirationPeriod(time.getLong());
+    }
+    
     @SuppressWarnings("unchecked")
     public String save() {
         try {
