@@ -165,7 +165,7 @@
 						   			<h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" 	
 						   				style="text-align: right;" size="6" >
 					                   <f:converter converterId="javax.faces.Integer"/>
-					                   <f:validator validatorId="#{property.validatorType}"/>
+					                   <f:validator validatorId="#{property.validatorType}" />
 						   			</h:inputText>
 					   				<h:selectBooleanCheckbox disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"
 					   					/>

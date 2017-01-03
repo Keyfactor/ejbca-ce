@@ -471,7 +471,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         if (validator != null) {
             return validator.getValidatorType();
         } else {
-            return "";
+            return "dummyValidator";
         }
     }
 }
