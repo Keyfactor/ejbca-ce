@@ -2526,7 +2526,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // import sign keys.
             final Certificate[] certchain = new Certificate[1];
-            certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, privatekey, publickey, signatureAlgorithm, true);
+            certchain[0] = CertTools.genSelfCert("CN=SignatureKeyHolder", 36500, null, privatekey, publickey, signatureAlgorithm, true);
 
             keystore.setKeyEntry(CAToken.SOFTPRIVATESIGNKEYALIAS, privatekey, null, certchain);
 
@@ -2542,7 +2542,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 enckeys = new KeyPair(publicEncryptionKey, privateEncryptionKey);
             }
             // generate dummy certificate
-            certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), encryptionAlgorithm, true);
+            certchain[0] = CertTools.genSelfCert("CN=EncryptionKeyHolder", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), encryptionAlgorithm, true);
             keystore.setKeyEntry(CAToken.SOFTPRIVATEDECKEYALIAS, enckeys.getPrivate(), null, certchain);
 
             // Set the token properties
@@ -2857,7 +2857,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 Certificate[] certificateChainEncryption = new Certificate[1];
                 // certificateChainSignature[0].getSigAlgName(),
                 // generate dummy certificate for encryption key.
-                certificateChainEncryption[0] = CertTools.genSelfCertForPurpose("CN=dummy2", 36500, null, p12PrivateEncryptionKey,
+                certificateChainEncryption[0] = CertTools.genSelfCertForPurpose("CN=EncryptionKeyHolder", 36500, null, p12PrivateEncryptionKey,
                         p12PublicEncryptionKey, thisCAToken.getEncryptionAlgorithm(), true, X509KeyUsage.keyEncipherment, true);
                 log.debug("Exporting with sigAlgorithm " + AlgorithmTools.getSignatureAlgorithm(certificateChainSignature[0]) + "encAlgorithm="
                         + thisCAToken.getEncryptionAlgorithm());
