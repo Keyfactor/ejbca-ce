@@ -62,6 +62,7 @@ import org.cesecore.util.ProfileID;
 import org.cesecore.util.ValueExtractor;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -819,15 +820,30 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
     
     @Override
-    public void unexpireApprovalRequestNoAuth(final AuthenticationToken authenticationToken, final int approvalDataId, final long unexpireForMillis)
+    public void unexpireApprovalRequestNoAuth(final AuthenticationToken authenticationToken, final int approvalDataId, final long unexpireForMillisParam)
             throws AuthorizationDeniedException {
         ApprovalData approvalData = findById(approvalDataId);
+        
+        // Check status
         final long status = approvalData.getStatus();
         if (status != ApprovalDataVO.STATUS_EXPIRED &&
                 status != ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED &&
                 status != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
             throw new IllegalStateException("Can't unapprove approval request in this state (" + status + ")");
         }
+        
+        // Check maximum unexpiration period
+        long maxUnexpire = getMaxUnexpirationPeriod(approvalData.getApprovalDataVO());
+        if (maxUnexpire <= 0) {
+            throw new IllegalStateException("Approval profile (or configured default value) does not allow request unexpiration");
+        }
+        long unexpireForMillis = unexpireForMillisParam;
+        if (unexpireForMillis > maxUnexpire) {
+            log.info("Tried to unexpire approval request ID " + approvalData + " for " + unexpireForMillisParam + " ms, " +
+                    "which is more than the maximum for the approval profile, " + maxUnexpire + " ms");
+            unexpireForMillis = maxUnexpire;
+        }
+        
         approvalData.setExpiredate(new Date().getTime() + unexpireForMillis);
         approvalData.setStatus(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
         entityManager.merge(approvalData);
@@ -837,6 +853,16 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         details.put("msg", msg);
         auditSession.log(EjbcaEventTypes.APPROVAL_UNEXPIRE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                 authenticationToken.toString(), String.valueOf(approvalData.getCaid()), null, null, details);
+    }
+    
+    private long getMaxUnexpirationPeriod(final ApprovalDataVO advo) {
+        ApprovalProfile prof = advo.getApprovalProfile();
+        if (prof != null) {
+            final Integer approvalProfileId = advo.getApprovalProfile().getProfileId();
+            prof = approvalProfileSession.getApprovalProfile(approvalProfileId);
+            return prof.getMaxUnexpirationPeriod();
+        }
+        return EjbcaConfiguration.getApprovalDefaultMaxUnexpirationPeriod();
     }
        
     /** @return the found entity instance or null if the entity does not exist */

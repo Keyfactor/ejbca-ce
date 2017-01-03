@@ -49,6 +49,9 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     final String PROPERTY_REQUEST_EXPIRATION_PERIOD = "request_expiration_period";
     final String PROPERTY_APPROVAL_EXPIRATION_PERIOD = "approval_expiration_period";
     
+    /** @see #getMaxUnexpirationPeriod */
+    final String PROPERTY_MAX_UNEXPIRATION_PERIOD = "max_unexpiration_period";
+    
     /**
      * @return the type as a human readable name.
      */
@@ -67,6 +70,11 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     long getApprovalExpirationPeriod();
     
     void setApprovalExpirationPeriod(long approvalExpirationPeriod);
+    
+    /** Maximum time which an administrator can unexpire a request for, or 0 to forbid unexpiration */
+    long getMaxUnexpirationPeriod();
+    /** @see #getMaxUnexpirationPeriod */
+    void setMaxUnexpirationPeriod(long maxUnexpirePeriod); 
 
 
     /**
