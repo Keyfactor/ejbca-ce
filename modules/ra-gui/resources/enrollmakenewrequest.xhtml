@@ -361,7 +361,7 @@
 							<h:panelGroup layout="block" styleClass="pure-control-group"
 								rendered="#{enrollMakeNewRequestBean.passwordRendered}">
 								<h:outputLabel for="passwordField" value="#{msg.enroll_password}" />
-								<h:inputSecret id="passwordField" value="#{enrollMakeNewRequestBean.endEntityInformation.password}" styleClass="#{component.valid?'':'jsAutoFocusError'}">
+								<h:inputSecret id="passwordField" value="#{enrollMakeNewRequestBean.endEntityInformation.password}" styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
 									<f:validator validatorId="extendedRequiredValidator"/>
 									<f:attribute name="_required" value="true"/>
 								</h:inputSecret>
@@ -369,7 +369,7 @@
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.passwordRendered}">
 								<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password}" />
-								<h:inputSecret id="passwordConfirmField" binding="#{enrollMakeNewRequestBean.confirmPasswordComponent}" value="#{enrollMakeNewRequestBean.confirmPassword}" styleClass="#{component.valid?'':'jsAutoFocusError'}">
+								<h:inputSecret id="passwordConfirmField" binding="#{enrollMakeNewRequestBean.confirmPasswordComponent}" value="#{enrollMakeNewRequestBean.confirmPassword}" styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
 									<f:validator validatorId="extendedRequiredValidator"/>
 									<f:attribute name="_required" value="true"/>
 								</h:inputSecret>
