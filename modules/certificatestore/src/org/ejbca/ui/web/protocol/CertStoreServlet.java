@@ -34,8 +34,6 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-import org.ejbca.ui.web.protocol.RFC4387URL;
-import org.ejbca.ui.web.protocol.StoreServletBase;
 import org.ejbca.util.HTMLTools;
 
 /** 
@@ -83,7 +81,8 @@ public class CertStoreServlet extends StoreServletBase {
 
 	@Override
 	public void printInfo(X509Certificate cert, String indent, PrintWriter pw, String url) {
-		pw.println(indent+cert.getSubjectX500Principal());
+	    // Important to escape output that have an even small chance of coming from untrusted source
+		pw.println(indent+HTMLTools.htmlescape(cert.getSubjectX500Principal().toString()));
 		pw.println(indent+" "+RFC4387URL.sHash.getRef(url, HashID.getFromSubjectDN(cert)));
 		pw.println(indent+" "+RFC4387URL.iHash.getRef(url, HashID.getFromSubjectDN(cert)));
 		pw.println(indent+" "+RFC4387URL.sKIDHash.getRef(url, HashID.getFromKeyID(cert)));
