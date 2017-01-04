@@ -72,7 +72,8 @@ public class CRLStoreServlet extends StoreServletBase {
 
 	@Override
 	public void printInfo(X509Certificate cert, String indent, PrintWriter pw, String url) {
-		pw.println(indent+cert.getSubjectX500Principal());
+        // Important to escape output that have an even small chance of coming from untrusted source
+		pw.println(indent+HTMLTools.htmlescape(cert.getSubjectX500Principal().toString()));
 		pw.println(indent+" "+RFC4387URL.iHash.getRef(url, HashID.getFromSubjectDN(cert)));
 		pw.println(indent+" "+RFC4387URL.sKIDHash.getRef(url, HashID.getFromKeyID(cert)));
 		pw.println(indent+" "+RFC4387URL.iHash.getRef(url, HashID.getFromSubjectDN(cert), true));
