@@ -605,7 +605,7 @@ public class ProtocolScepHttpTest {
             String currentDirectory = System.getProperty("user.dir");
             throw new Error("Test can't continue, can't find language resource files. Current directory is " + currentDirectory);
         }
-        assertTrue(returnMessageString.indexOf(localizedMessage) >= 0);
+        assertTrue(returnMessageString+": should contain: "+localizedMessage, returnMessageString.indexOf(localizedMessage) >= 0);
      }
 
     @Test
@@ -630,7 +630,7 @@ public class ProtocolScepHttpTest {
             String currentDirectory = System.getProperty("user.dir");
             throw new Error("Test can't continue, can't find language resource files. Current directory is " + currentDirectory);
         }
-        assertTrue(returnMessageString.indexOf(localizedMessage) >= 0);
+        assertTrue(returnMessageString+": should contain: "+localizedMessage, returnMessageString.indexOf(localizedMessage) >= 0);
     }
     
     /**
