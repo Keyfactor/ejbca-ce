@@ -139,7 +139,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 if (publishingCrlSession.createCRLNewTransactionConditioned(admin, caid, addtocrloverlaptime)) {
                     createdcrls++;
                 }
-            } catch (CesecoreException e) {
+            } catch (CryptoTokenOfflineException | CAOfflineException | CADoesntExistsException e) {
                 // Don't fail all generation just because one of the CAs had token offline or similar. 
                 // Continue working with the others, but log an error message in system logs, use error logging 
                 // since it might be something that should call for attention of the operators, CRL generation is important.

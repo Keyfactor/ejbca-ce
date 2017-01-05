@@ -1296,23 +1296,6 @@ public class CertificateData extends ProtectedData implements Serializable {
         }
         return ret;
     }
-
-    /**
-     * @return the certificates that have CertificateConstants.CERT_REVOKED.
-     * @param firstResult pagination variable, 0 for the first call, insrease by maxRows for further calls if return value is == maxRows
-     * @param maxRows pagination variable max number of rows that should be returned, used in order to make it somewhat efficient on large data
-     *            volumes
-     * */
-    @SuppressWarnings("unchecked")
-    public static List<CertificateData> findAllNonRevokedCertificates(EntityManager entityManager, String issuerDN, int firstResult, int maxRows) {
-        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.status <> :status");
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("status", CertificateConstants.CERT_REVOKED);
-        query.setFirstResult(firstResult);
-        query.setMaxResults(maxRows);
-        return query.getResultList();
-    }
-
     /**
      * @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types. */
     @SuppressWarnings("unchecked")
