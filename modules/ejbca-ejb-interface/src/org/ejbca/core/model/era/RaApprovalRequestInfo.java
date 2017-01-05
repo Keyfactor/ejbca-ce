@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -54,6 +55,7 @@ public class RaApprovalRequestInfo implements Serializable {
     private final int status;
     private final ApprovalDataVO approvalData;
     private final ApprovalProfile approvalProfile;
+    private final long maxUnexpirationPeriod;
     private final String endEntityProfileName;
     private final EndEntityProfile endEntityProfile;
     private final String certificateProfileName;
@@ -102,7 +104,7 @@ public class RaApprovalRequestInfo implements Serializable {
     }
     
     public RaApprovalRequestInfo(final AuthenticationToken authenticationToken, final String caName,
-            final String endEntityProfileName, final EndEntityProfile endEntityProfile, final String certificateProfileName,
+            final String endEntityProfileName, final EndEntityProfile endEntityProfile, final String certificateProfileName, final ApprovalProfile approvalProfileParam,
             final ApprovalDataVO approval, final List<ApprovalDataText> requestData, final RaEditableRequestData editableData) {
         id = approval.getId();
         this.caName = caName;
@@ -138,7 +140,13 @@ public class RaApprovalRequestInfo implements Serializable {
         editable = (status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && approval.getApprovals().isEmpty());
         
         // The profile contains information about the approval steps
-        approvalProfile = approval.getApprovalProfile();
+        approvalProfile = approvalProfileParam != null ? approvalProfileParam : approval.getApprovalProfile();
+        if (approvalProfile != null) {
+            maxUnexpirationPeriod = approvalProfile.getMaxUnexpirationPeriod();
+        } else {
+            maxUnexpirationPeriod = EjbcaConfiguration.getApprovalDefaultMaxUnexpirationPeriod();
+        }
+        
         
         // Next steps
         final ApprovalStep nextStep;
@@ -257,6 +265,11 @@ public class RaApprovalRequestInfo implements Serializable {
     
     public ApprovalProfile getApprovalProfile() {
         return approvalProfile;
+    }
+    
+    /** @since EJBCA 6.7.0. If the response comes from an earlier version, it will return 0 (=unexpiration not allowed) */
+    public long getMaxUnexpirationPeriod() {
+        return maxUnexpirationPeriod;
     }
     
     public ApprovalStep getNextApprovalStep() {

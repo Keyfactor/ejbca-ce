@@ -469,4 +469,12 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean hasNextApprovalStep() { return request.getNextApprovalStep() != null; }
     public boolean isAuthorizedToApprovalType() { return authorizedToRequestType; }
     
+    public boolean getCanUnexpire() {
+        if (log.isDebugEnabled()) {
+            log.debug("Checking if unexpiration is possible: Authorized=" + isAuthorizedToApprovalType() + ", expired=" + isExpired() + ", max unexpiration period=" + request.getMaxUnexpirationPeriod());
+        }
+        return isAuthorizedToApprovalType() && isExpired() &&
+                request.getMaxUnexpirationPeriod() != 0;
+    }
+    
 }

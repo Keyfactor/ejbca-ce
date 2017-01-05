@@ -81,10 +81,10 @@
                 <h:panelGroup layout="block" styleClass="editButtons" rendered="#{raManageRequestBean.request.canEdit}">
                     <h:commandButton id="commandEditData" styleClass="pure-button ra-button" action="#{raManageRequestBean.editRequestData}" value="#{msg.view_request_page_edit_data_command}"/>
                 </h:panelGroup>
-                <h:panelGroup layout="block" styleClass="unexpireButtons" rendered="#{raManageRequestBean.request.expired and raManageRequestBean.request.authorizedToApprovalType}">
+                <h:panelGroup layout="block" styleClass="unexpireButtons" rendered="#{raManageRequestBean.request.canUnexpire}">
                     <h:outputLabel value="#{msg.view_request_page_unexpire_days_1}" styleClass="pure-u-lg-1-3"/>
                     <h:inputText value="#{raManageRequestBean.unexpireDays}" styleClass="pure-input-1-6" size="3"/>
-                    <h:outputText value=" #{msg.view_request_page_unexpire_days_2}" styleClass="bodyText"/>
+                    <h:outputText value=" #{raManageRequestBean.unexpireDaysPart2Text}" styleClass="bodyText"/>
                     <br />
                     <h:outputText value="" styleClass="pure-u-lg-1-3"/>
                     <h:commandButton id="commandUnexpireRequest" styleClass="pure-button ra-button" action="#{raManageRequestBean.unexpireRequest}" value="#{msg.view_request_page_unexpire_command}"/>
