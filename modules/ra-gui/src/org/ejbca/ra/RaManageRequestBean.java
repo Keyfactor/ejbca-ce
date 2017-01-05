@@ -119,7 +119,9 @@ public class RaManageRequestBean implements Serializable {
                 loadRequestByApprovalId(approvalId);
             }
             if (requestData.getApprovalProfile() != null) {
-                unexpireDays = String.valueOf((requestData.getApprovalProfile().getApprovalExpirationPeriod() + 24*60*60*1000 - 1) / (24*60*60*1000));
+                long defaultUnexpireMillis = Math.min(requestData.getApprovalProfile().getApprovalExpirationPeriod(),
+                        requestData.getMaxUnexpirationPeriod());
+                unexpireDays = String.valueOf((defaultUnexpireMillis + 24*60*60*1000 - 1) / (24*60*60*1000));
             } else {
                 unexpireDays = "1";
             }
@@ -510,8 +512,22 @@ public class RaManageRequestBean implements Serializable {
     
     public void unexpireRequest() throws AuthorizationDeniedException {
         final long unexpireForMillis = Long.valueOf(unexpireDays) * 24*60*60*1000;
+        final long maxUnexpire = getRequest().request.getMaxUnexpirationPeriod();
+        if (unexpireForMillis > maxUnexpire) {
+            raLocaleBean.addMessageError("view_request_page_error_unexpire_too_long", getMaxUnexpireDays());
+            return;
+        }
         raMasterApiProxyBean.unexpireApprovalRequest(raAuthenticationBean.getAuthenticationToken(), requestData.getId(), unexpireForMillis);
         reloadRequest();
+    }
+    
+    public int getMaxUnexpireDays() {
+        long days = getRequest().request.getMaxUnexpirationPeriod() / (24*60*60*1000);
+        return (int) days;
+    }
+    
+    public String getUnexpireDaysPart2Text() {
+        return raLocaleBean.getMessage("view_request_page_unexpire_days_2", getUnexpireDays());
     }
     
     public String getDN(final RequestDataRow dataRow) {
