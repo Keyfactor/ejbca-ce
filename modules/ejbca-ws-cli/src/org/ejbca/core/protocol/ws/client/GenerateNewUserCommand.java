@@ -36,10 +36,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 
-
-
-
-
 /**
  * Adds a user to the database.
  *

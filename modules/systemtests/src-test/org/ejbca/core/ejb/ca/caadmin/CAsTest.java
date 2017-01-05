@@ -25,8 +25,10 @@ import java.lang.reflect.Field;
 import java.security.KeyPair;
 import java.security.Principal;
 import java.security.PublicKey;
+import java.security.cert.CRLException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -57,6 +59,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -74,12 +77,15 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
@@ -115,12 +121,17 @@ public class CAsTest extends CaTestCase {
 
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    
+    private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CertificateStoreSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CertificateProfileSessionRemote.class);
+    private final CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
+    private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
     // private AuthenticationToken adminTokenNoAuth;
 
@@ -876,8 +887,40 @@ public class CAsTest extends CaTestCase {
         }
     } // test13RenewCA
 
+    /**
+     * Revoking a CA will automatically create a final CRL for that CA's issued certificates. According to CAO Doc-9303-12, this CRL should contain 
+     * a self signed certificate as well. 
+
+     */
     @Test
-    public void test14RevokeCA() throws Exception {
+    public void testRevokeCaWithCrl() throws AuthorizationDeniedException, CADoesntExistsException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, CRLException {
+        final String caName = "testRevokeCaWithCrl";
+        createTestCA(caName);
+        CAInfo caInfo = caSession.getCAInfo(admin, caName);
+        Certificate caCertificate = caInfo.getCertificateChain().iterator().next();
+        try {
+            caAdminSession.revokeCA(admin, caInfo.getCAId(), RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
+            //Some basic checks that revocation was fine
+            caInfo = caSession.getCAInfo(admin, caName);
+            assertEquals(CAConstants.CA_REVOKED, caInfo.getStatus());
+            assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, caInfo.getRevocationReason());
+            byte[] crlData = crlStoreSession.getLastCRL(caInfo.getSubjectDN(), false);
+            assertNotNull("No CRL was produced at CA revocation.", crlData);
+            X509CRL crl = CertTools.getCRLfromByteArray(crlData);
+            assertTrue(
+                    "CRL does not contain CA certificate."
+                            + " Since we just revoked the CA, the last CRL should contain the CA's self signed certificate as well.",
+                    crl.isRevoked(caCertificate));
+        } finally {
+            removeTestCA(caName);
+            internalCertStoreSession.removeCertificate(caCertificate);
+            internalCertStoreSession.removeCRLs(admin, caInfo.getSubjectDN());
+        }
+    }
+    
+    @Test
+    public void testRevokeCA() throws Exception {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
         final String caname = "TestRevokeCA";
         removeTestCA(caname);
@@ -902,7 +945,7 @@ public class CAsTest extends CaTestCase {
             final String fp = CertTools.getFingerprintAsString(certs.iterator().next());
             CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(fp);
             assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());
-            // Renew the CA, twice, we have to "unrevoke it first though
+            // Renew the CA, twice, we have to unrevoke it first though
             info.setStatus(CAConstants.CA_ACTIVE);
             caSession.editCA(admin, info);
             caAdminSession.renewCA(admin, info.getCAId(), false, null, false);
@@ -941,7 +984,7 @@ public class CAsTest extends CaTestCase {
                 internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));                
             }
         }
-    } // test14RevokeCA
+    } 
 
     @Test
     public void test15ExternalExpiredCA() throws Exception {

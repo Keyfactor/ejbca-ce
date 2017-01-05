@@ -330,6 +330,8 @@ public interface CAAdminSession {
      * Method that revokes the CA. After this is all certificates created by
      * this CA revoked and a final CRL is created.
      * 
+     * @param admin the administrator requesting the revocation
+     * @param caid the ID of the CA
      * @param reason one of RevokedCertInfo.REVOCATION_REASON values.
      */
     void revokeCA(AuthenticationToken admin, int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException;

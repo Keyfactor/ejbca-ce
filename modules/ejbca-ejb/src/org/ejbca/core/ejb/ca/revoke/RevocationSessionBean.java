@@ -88,10 +88,19 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
             throw new CertificateRevokeException(msg);
         }
     }
+ 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void revokeCertificateInNewTransaction(final AuthenticationToken admin, final CertificateDataWrapper cdw,
+            final Collection<Integer> publishers, Date revocationDate, final int reason, final String userDataDN)
+            throws CertificateRevokeException, AuthorizationDeniedException {
+        revokeCertificate(admin, cdw, publishers, revocationDate, reason, userDataDN);
+    }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void revokeCertificate(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Collection<Integer> publishers, Date revocationDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
+    public void revokeCertificate(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Collection<Integer> publishers,
+            Date revocationDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
     	final boolean waschanged = certificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(cdw, revocationDate, reason), reason);
     	// Only publish the revocation if it was actually performed
     	if (waschanged) {

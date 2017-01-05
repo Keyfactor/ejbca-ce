@@ -199,7 +199,7 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.CAIdTools;
 
 /**
- * Administrates and manages CAs in EJBCA system.
+ * Manages CAs in EJBCA.
  * 
  * @version $Id$
  */
@@ -2226,15 +2226,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final List<CertificateDataWrapper> cacerts = certificateStoreSession.getCertificateDatasBySubject(ca.getSubjectDN());
             final Date now = new Date();
             for (final CertificateDataWrapper cdw : cacerts) {
-                revocationSession.revokeCertificate(admin, cdw, ca.getCRLPublishers(), now, reason, ca.getSubjectDN());
+                revocationSession.revokeCertificateInNewTransaction(admin, cdw, ca.getCRLPublishers(), now, reason, ca.getSubjectDN());
             }
             // Revoke all certificates issued by this CA. If this is a root CA the CA certificates will be included in this batch as well
             // but if this is a subCA these are only the "entity" certificates issued by this CA
             if (ca.getStatus() != CAConstants.CA_EXTERNAL) {
                 certificateStoreSession.revokeAllCertByCA(admin, ca.getSubjectDN(), reason);
-                Collection<Integer> caids = new ArrayList<Integer>();
-                caids.add(Integer.valueOf(ca.getCAId()));
-                publishingCrlSession.createCRLs(admin, caids, 0);
+                publishingCrlSession.forceCRL(admin, ca.getCAId());
             }
             ca.setRevocationReason(reason);
             ca.setRevocationDate(new Date());
@@ -2246,7 +2244,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final String detailsMsg = intres.getLocalizedMessage("caadmin.revokedca", ca.getName(), Integer.valueOf(reason));
             auditSession.log(EjbcaEventTypes.CA_REVOKED, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
                     String.valueOf(caid), null, null, detailsMsg);
-        } catch (Exception e) {
+        } catch (CADoesntExistsException | CertificateRevokeException | CryptoTokenOfflineException | CAOfflineException e) {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.errorrevoke", ca.getName());
             auditSession.log(EjbcaEventTypes.CA_REVOKED, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
                     String.valueOf(caid), null, null, detailsMsg);

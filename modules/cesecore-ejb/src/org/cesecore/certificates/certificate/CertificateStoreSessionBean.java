@@ -1126,8 +1126,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         // Must be authorized to CA in order to change status is certificates issued by the CA
         String bcdn = CertTools.stringToBCDNString(issuerdn);
     	int caid = bcdn.hashCode();
-        authorizedToCA(admin, caid);
-
+        authorizedToCA(admin, caid);        
         try {
             final int maxRows = 10000;
             int firstResult = 0;
@@ -1135,7 +1134,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             
             // Update 10000 records at a time
             firstResult = 0;
-            List<CertificateData> list = CertificateData.findAllNonRevokedCertificates(entityManager, bcdn, firstResult, maxRows);
+            List<CertificateData> list = findAllNonRevokedCertificates(bcdn, firstResult, maxRows);
             while (list.size() > 0) {
             	for (int i = 0; i<list.size(); i++) {
                 	CertificateData d = list.get(i);
@@ -1145,7 +1144,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 	revoked++;
             	}
             	firstResult += maxRows;
-            	list = CertificateData.findAllNonRevokedCertificates(entityManager, bcdn, firstResult, maxRows);
+            	list = findAllNonRevokedCertificates(bcdn, firstResult, maxRows);
             }
             final String msg = INTRES.getLocalizedMessage("store.revokedallbyca", issuerdn, Integer.valueOf(revoked), Integer.valueOf(reason));
     		Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -1157,6 +1156,23 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             throw new EJBException(e);
         }
     }
+    
+    /**
+     * @return the certificates that have CertificateConstants.CERT_REVOKED.
+     * @param firstResult pagination variable, 0 for the first call, insrease by maxRows for further calls if return value is == maxRows
+     * @param maxRows pagination variable max number of rows that should be returned, used in order to make it somewhat efficient on large data
+     *            volumes
+     * */
+    @SuppressWarnings("unchecked")
+    private List<CertificateData> findAllNonRevokedCertificates(String issuerDN, int firstResult, int maxRows) {
+        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.status <> :status");
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("status", CertificateConstants.CERT_REVOKED);
+        query.setFirstResult(firstResult);
+        query.setMaxResults(maxRows);
+        return query.getResultList();
+    }
+
 
     @Override
     public boolean isRevoked(String issuerDN, BigInteger serno) {
