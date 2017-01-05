@@ -44,16 +44,15 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
  *   user.setExtendedInformation(ei);
  *</pre>
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class UserDataVOWS implements Serializable{
 	
 	private static final long serialVersionUID = 7557071186257332026L;
-    public static final java.lang.String TOKEN_TYPE_USERGENERATED = "USERGENERATED"; 
-	public static final java.lang.String TOKEN_TYPE_JKS           = "JKS";
-	public static final java.lang.String TOKEN_TYPE_PEM           = "PEM";
-	public static final java.lang.String TOKEN_TYPE_P12           = "P12";
+    public static final String TOKEN_TYPE_USERGENERATED = "USERGENERATED"; 
+	public static final String TOKEN_TYPE_JKS           = "JKS";
+	public static final String TOKEN_TYPE_PEM           = "PEM";
+	public static final String TOKEN_TYPE_P12           = "P12";
 	
     public static final int STATUS_NEW = EndEntityConstants.STATUS_NEW;        // New user
     public static final int STATUS_FAILED = EndEntityConstants.STATUS_FAILED;     // Generation of user certificate failed
@@ -64,22 +63,22 @@ public class UserDataVOWS implements Serializable{
     public static final int STATUS_HISTORICAL = EndEntityConstants.STATUS_HISTORICAL; // The user is old and archived
     public static final int STATUS_KEYRECOVERY  = EndEntityConstants.STATUS_KEYRECOVERY; // The user is should use key recovery functions in next certificate generation.
 	
-    private java.lang.String username = null;
-    private java.lang.String password = null;
+    private String username = null;
+    private String password = null;
     private boolean clearPwd = false;
-    private java.lang.String subjectDN = null;
-    private java.lang.String caName = null;
-    private java.lang.String subjectAltName = null;
-    private java.lang.String email = null;
+    private String subjectDN = null;
+    private String caName = null;
+    private String subjectAltName = null;
+    private String email = null;
     private int status = 0;
-    private java.lang.String tokenType = null;
+    private String tokenType = null;
     private boolean sendNotification = false;
     private boolean keyRecoverable = false;
-    private java.lang.String endEntityProfileName = null;
-    private java.lang.String certificateProfileName = null;
-    private java.lang.String hardTokenIssuerName = null;
-    private java.lang.String startTime = null;
-    private java.lang.String endTime = null;
+    private String endEntityProfileName = null;
+    private String certificateProfileName = null;
+    private String hardTokenIssuerName = null;
+    private String startTime = null;
+    private String endTime = null;
     private BigInteger certificateSerialNumber;
     private List<ExtendedInformationWS> extendedInformation = null;
     private String cardNumber;
