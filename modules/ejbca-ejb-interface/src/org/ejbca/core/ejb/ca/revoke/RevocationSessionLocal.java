@@ -53,6 +53,9 @@ public interface RevocationSessionLocal extends RevocationSession {
     /**
      * Revokes a certificate, in the database and in publishers, but does so in a new transaction. Also handles re-activation of suspended certificates.
      * Will do so in a new transaction. 
+     * 
+     * This method only needs to be used in cases where further actions rely on a certificate already being revoked, such as when producing a CRL as 
+     * a result of CA revocation. 
      *
      * Re-activating (unrevoking) a certificate have two limitations.
      * 1. A password (for for example AD) will not be restored if deleted, only the certificate and certificate status and associated info will be restored
