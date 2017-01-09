@@ -256,6 +256,12 @@ mysql> alter table CertificateData modify subjectDN varchar(2048);
 mysql> alter table UserData modify subjectDN varchar(2048);
 mysql> alter table UserData modify subjectAltName varchar(2048);
       </source>
+      <p>With the new size of columns you can get problems applying indexes in some versions of databases, for example:
+      <br/><i>""Specified key was too long; max key length is 767 bytes"</i></p>
+      <p>You can circumvent this by creating the index over a subset of the column:</p>
+      <source>
+mysql> create index certificatedata_idx4 ON CertificateData (subjectDN(250));      
+      </source>
 	  </answer>  
 	</faq>
 
