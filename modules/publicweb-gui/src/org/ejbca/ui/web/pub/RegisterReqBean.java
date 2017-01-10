@@ -584,6 +584,7 @@ public class RegisterReqBean {
         if (approvalProfileId > -1) {
             return approvalProfileSession.getApprovalProfile(approvalProfileId);
         }
+        log.error("Could not find a suitable approval profile for certificate profile "+certProfileId+" or CA "+cainfo.getCAId());
         return null;
 
     }
