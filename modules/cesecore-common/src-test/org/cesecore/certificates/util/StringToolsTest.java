@@ -156,6 +156,11 @@ public class StringToolsTest {
         String obf = StringTools.obfuscate("foo123");
         String deobf = StringTools.deobfuscate(obf);
         assertEquals("foo123", deobf);
+        String obfif = StringTools.obfuscate("foo123qw");
+        String deobfif = StringTools.deobfuscate(obfif);
+        assertEquals("foo123qw", deobfif);
+        assertEquals("foo123qwe", StringTools.deobfuscateIf("foo123qwe"));
+        System.out.println(StringTools.deobfuscateIf("OBF:1jg21l181ku51kqp1kxu1jd8"));
     }
 
     @Test

@@ -77,7 +77,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="password" autocomplete="off" name="<%=EditPublisherJSPHelper.PASSWORD_LDAPLOGINPASSWORD%>" size="20" maxlength="255" 
-               value='<c:out value="<%= ldappublisher.getLoginPassword() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> > 
+               value='<%=EditPublisherJSPHelper.PASSWORD_LDAPLOGINPASSWORDPLACEHOLDER%>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> > 
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -86,7 +86,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="password" autocomplete="off" name="<%=EditPublisherJSPHelper.PASSWORD_LDAPCONFIRMLOGINPWD%>" size="20" maxlength="255" 
-               value='<c:out value="<%= ldappublisher.getLoginPassword() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>> 
+               value='<%=EditPublisherJSPHelper.PASSWORD_LDAPLOGINPASSWORDPLACEHOLDER%>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>> 
       </td>
     </tr>
     <tr id="Row<%=row%2%>"> 
