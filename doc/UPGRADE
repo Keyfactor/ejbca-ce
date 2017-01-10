@@ -100,6 +100,10 @@ available, but performing approvals on nodes running EJBCA versions prior to 6.6
 As part of this change, approval notifications are now configured per approval partition instead of globally. Check your Approval Profile after
 deploying the new code.
 
+   		2a. Public Web Self Registration
+If you have been using the Self Registration in the old Public Web you need to create an Approval Profile, and select to use this for "Add/Edit End Entity"
+actions either in the CA configuration or in the Certificate Profile configuration.
+
 ***		3. Changes to WebService Approvals
     
 If you have been using Approvals with the WebService API you have configured approval settings in jaxws.properties (only related to calls to genTokenCertificates and/or viewHardToken). 
