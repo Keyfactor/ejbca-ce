@@ -109,6 +109,7 @@ public class EditPublisherJSPHelper {
     public static final String TEXTFIELD_LDAPSTORETIMEOUT      = "textfieldldapstoretimeout";
     public static final String TEXTFIELD_VA_DATASOURCE         = "textfieldvadatasource";
     public static final String PASSWORD_LDAPLOGINPASSWORD      = "textfieldldaploginpassword";
+    public static final String PASSWORD_LDAPLOGINPASSWORDPLACEHOLDER = "placeholder";    
     public static final String PASSWORD_LDAPCONFIRMLOGINPWD    = "textfieldldaploginconfirmpwd";
     public static final String RADIO_LDAPCONNECTIONSECURITY    = "radioldapconnectionsecurity";
     public static final String CHECKBOX_LDAPCREATENONEXISTING  = "checkboxldapcreatenonexisting";
@@ -364,7 +365,12 @@ public class EditPublisherJSPHelper {
                                 value = request.getParameter(PASSWORD_LDAPLOGINPASSWORD);
                                 if(value != null){
                                     value = value.trim();
-                                    ldappublisher.setLoginPassword(value);
+                                    // If we have a password that wasn't shown in the html page, and this wasn't changed by the user
+                                    // we will not edit the old password. This is a "security" feature so we don't send the actual password
+                                    // to be available in clear text in the users web browser
+                                    if (!PASSWORD_LDAPLOGINPASSWORDPLACEHOLDER.equals(value)) {
+                                        ldappublisher.setLoginPassword(value);
+                                    }
                                 }
                                 value = request.getParameter(TEXTFIELD_LDAPTIMEOUT);
                                 if(value != null){

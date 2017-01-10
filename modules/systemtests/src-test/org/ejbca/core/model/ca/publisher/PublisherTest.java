@@ -13,6 +13,7 @@
 
 package org.ejbca.core.model.ca.publisher;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.security.Principal;
@@ -170,6 +171,9 @@ public class PublisherTest {
 			LdapPublisher publisher = new LdapPublisher();
 			publisher.setHostnames("localhost");
 			publisher.setDescription("Used in Junit Test, Remove this one");
+			// Make sure password obfuscation and de-obfuscation works
+			publisher.setLoginPassword("password");
+			assertEquals("We can not get the password we just set", "password", publisher.getLoginPassword());
 			final String publisherName = "TESTLDAP";
 			publisherNames.add(publisherName);
 			this.publisherProxySession.addPublisher(internalAdmin, publisherName, publisher);
