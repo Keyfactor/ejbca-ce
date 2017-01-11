@@ -176,15 +176,13 @@
 					                   <f:converter converterId="javax.faces.Integer"/>
 					                   <f:validator validatorId="#{property.validatorType}" />
 						   			</h:inputText>
-					   				<h:selectBooleanCheckbox disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"
-					   					/>
+					   				<h:selectBooleanCheckbox disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
 					   			</h:panelGroup>
 								<h:selectOneMenu disabled="#{approvalProfilesMBean.viewOnly}" 
 									rendered="#{property.multiValued 
 												&& !property.hasMultipleValues 
 												&& property.type.simpleName != 'RadioButton'}" 
-									value="#{property.encodedValue}"
-									>
+									value="#{property.encodedValue}">
 									<f:selectItems value="#{partition.propertyPossibleValues}"/>
 								</h:selectOneMenu>
 								<h:selectManyListbox disabled="#{approvalProfilesMBean.viewOnly}" 
