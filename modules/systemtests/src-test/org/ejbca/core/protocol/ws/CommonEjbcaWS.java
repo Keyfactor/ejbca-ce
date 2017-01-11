@@ -346,7 +346,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             CertificateException, SignRequestSignatureException, IllegalKeyException, CertificateCreateException, IllegalNameException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException,
-            InvalidKeySpecException, IOException, NoSuchEndEntityException {
+            InvalidKeySpecException, IOException, NoSuchEndEntityException, EndEntityProfileValidationException {
         AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
@@ -368,17 +368,15 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         user1.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
 
-        try {
-            if (!endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
-                log.info("Adding new user: " + user1.getUsername());
-                endEntityManagementSession.addUser(intAdmin, user1, true);
-            } else {
-                log.info("Changing user: " + user1.getUsername());
-                endEntityManagementSession.changeUser(intAdmin, user1, true);
-            }
-        } catch (EndEntityProfileValidationException e) {
-            throw new UserDoesntFullfillEndEntityProfile(e);
+
+        if (!endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
+            log.info("Adding new user: " + user1.getUsername());
+            endEntityManagementSession.addUser(intAdmin, user1, true);
+        } else {
+            log.info("Changing user: " + user1.getUsername());
+            endEntityManagementSession.changeUser(intAdmin, user1, true);
         }
+
         boolean adminExists = false;
         RoleData role = roleAccessSession.findRole(wsadminRoleName);
         if (role == null) {

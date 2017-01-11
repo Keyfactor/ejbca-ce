@@ -21,7 +21,8 @@ import javax.xml.ws.WebFault;
  *
  * @version $Id$
  * 
- * @deprecated since EJBCA 6.7.0 but kept for legacy support. EndEntityProfileValidationException should be used instead. 
+ * @deprecated since EJBCA 6.7.0 but kept for legacy support of WS interface, where we can't modify methods. For all other cases, 
+ *             EndEntityProfileValidationException should be used instead. 
  */
 @WebFault
 @Deprecated
