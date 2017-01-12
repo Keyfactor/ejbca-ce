@@ -117,7 +117,7 @@ public class LdapPublisher extends BasePublisher {
 	protected static final String PORT                     = "port";
 	protected static final String BASEDN                   = "baswdn";
 	protected static final String LOGINDN                  = "logindn";
-	protected static final String LOGINPASSWORD            = "loginpassword";
+	public static final String LOGINPASSWORD            = "loginpassword";
 	protected static final String TIMEOUT                  = "timeout";
 	protected static final String READTIMEOUT              = "readtimeout";
 	protected static final String STORETIMEOUT             = "storetimeout";

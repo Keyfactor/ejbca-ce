@@ -23,6 +23,7 @@ import java.util.ServiceLoader;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -816,4 +817,16 @@ public class EditPublisherJSPHelper {
         this.publisherdata = publisherdata;
     }
     
+    /** 
+     * @return password placeholder instead of real password in order to not send clear text password to browser, or empty string in case there is no ldap password (i.e. new publisher).
+     */
+    public String getPasswordPlaceholder() {
+       if (this.publisherdata != null) {
+           final String str = (String)this.publisherdata.getRawData().get(LdapPublisher.LOGINPASSWORD);
+           if (StringUtils.isNotEmpty(str)) {
+               return EditPublisherJSPHelper.PASSWORD_LDAPLOGINPASSWORDPLACEHOLDER;
+           }
+       }
+       return "";
+    }
 }

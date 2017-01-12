@@ -438,9 +438,13 @@ public final class StringTools {
      * content don't accidentally stumble upon information they should not have.
      * 
      * @param s string to obfuscate
-     * @return an obfuscated string
+     * @return an obfuscated string, or same as input if null or empty
      */
     public static String obfuscate(final String s) {
+        // Don't try to obfuscate null or empty strings
+        if (StringUtils.isEmpty(s)) {
+            return s;
+        }
         final StringBuilder buf = new StringBuilder("OBF:");
         final byte[] b = s.getBytes();
 
@@ -473,7 +477,7 @@ public final class StringTools {
      * @return a deobfuscated string, or the original if it does not start with OBF:
      */
     public static String deobfuscateIf(final String s) {
-        if (s.startsWith("OBF:")) {
+        if (s != null && s.startsWith("OBF:")) {
             return deobfuscate(s);
         }
         return s;
@@ -482,12 +486,15 @@ public final class StringTools {
      * Retrieves the clear text from a string obfuscated with the obfuscate methods
      * 
      * @param s obfuscated string, usually (but not necessarily) starts with OBF:
-     * @return plain text string
+     * @return plain text string, or original if it was empty
      */
     public static String deobfuscate(final String in) {
         String s = in;
-        if (s.startsWith("OBF:")) {
+        if (s != null && s.startsWith("OBF:")) {
             s = s.substring(4);
+        }
+        if (StringUtils.isEmpty(s)) {
+            return s;
         }
         byte[] b = new byte[s.length() / 2];
         int l = 0;

@@ -160,7 +160,10 @@ public class StringToolsTest {
         String deobfif = StringTools.deobfuscate(obfif);
         assertEquals("foo123qw", deobfif);
         assertEquals("foo123qwe", StringTools.deobfuscateIf("foo123qwe"));
-        System.out.println(StringTools.deobfuscateIf("OBF:1jg21l181ku51kqp1kxu1jd8"));
+        // Empty String should be handled
+        assertEquals("", StringTools.obfuscate(""));
+        assertEquals("", StringTools.deobfuscateIf("OBF:"));
+        assertEquals("", StringTools.deobfuscate("OBF:"));
     }
 
     @Test
