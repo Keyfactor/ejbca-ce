@@ -868,7 +868,7 @@ public class ProtocolScepHttpTest {
         
         // Verify PKCS7. It should be signed by the current CA
         final ContentInfo ci = ContentInfo.getInstance(respBytes);
-        System.out.println(ASN1Dump.dumpAsString(ci));
+        //System.out.println(ASN1Dump.dumpAsString(ci));
         final CMSSignedData signedData = new CMSSignedData(ci);
         // Check correct signer
         Collection<SignerInformation> signers = signedData.getSignerInfos().getSigners();
