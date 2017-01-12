@@ -69,7 +69,7 @@ public class ValidityDate {
 	/**
 	 * 
 	 * @param dateString a string describing a date
-	 * @return true if dateString i sin the format "yyyy-MM-dd HH:mm:ssZZ"
+	 * @return true if dateString is in the format "yyyy-MM-dd HH:mm:ssZZ"
 	 */
 	public static boolean isValidIso8601Date(final String dateString) {
 	    try {
