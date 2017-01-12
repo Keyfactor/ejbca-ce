@@ -903,6 +903,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             // Send notification if it should be sent.
             sendNotification(admin, notificationEndEntityInformation, newstatus, approvalRequestId, lastApprovingAdmin, null);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            // Set times so that diffing is made properly
+            endEntityInformation.setTimeModified(new Date(userData.getTimeModified()));
+            endEntityInformation.setTimeCreated(new Date(userData.getTimeCreated()));
             Map<String, String[]> diff = originalCopy.getDiff(endEntityInformation);
             for(String key : diff.keySet()) {
                 details.put(key, diff.get(key)[0] + " -> " + diff.get(key)[1]);
