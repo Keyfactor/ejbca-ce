@@ -70,14 +70,14 @@ public class RaManageRequestsBean implements Serializable {
     
     private enum ViewTab { NEEDS_APPROVAL, PENDING_APPROVAL, PROCESSED, CUSTOM_SEARCH };
     private ViewTab viewTab;
-    private boolean customSearchingWaiting;
-    private boolean customSearchingPending;
-    private boolean customSearchingProcessed;
-    private boolean customSearchingExpired;
+    private boolean customSearchingWaiting = true;
+    private boolean customSearchingPending = true;
+    private boolean customSearchingProcessed = true;
+    private boolean customSearchingExpired = true;
     private String customSearchStartDate;
     private String customSearchEndDate;
     private String customSearchExpiresDays;
-    private boolean customSearchIncludeOtherAdmins;
+    private boolean customSearchOnlyMe;
     
     private enum SortBy { ID, REQUEST_DATE, CA, TYPE, DISPLAY_NAME, REQUESTER_NAME, STATUS };
     private SortBy sortBy = SortBy.REQUEST_DATE;
@@ -170,14 +170,13 @@ public class RaManageRequestsBean implements Serializable {
                         // This combination makes no sense, so show unfinished requests also
                         customSearchingWaiting = true;
                         customSearchingPending = true;
-                        customSearchIncludeOtherAdmins = true;
                     }
                 }
                 searchRequest.setSearchingWaitingForMe(customSearchingWaiting);
                 searchRequest.setSearchingPending(customSearchingPending);
                 searchRequest.setSearchingHistorical(customSearchingProcessed);
                 searchRequest.setSearchingExpired(customSearchingExpired);
-                searchRequest.setIncludeOtherAdmins(customSearchIncludeOtherAdmins);
+                searchRequest.setIncludeOtherAdmins(!customSearchOnlyMe);
             } catch (ParseException e) {
                 // Text field is validated by f:validateRegex, so shouldn't happen
                 throw new IllegalStateException("Invalid date value", e);
@@ -217,23 +216,23 @@ public class RaManageRequestsBean implements Serializable {
     public void setCustomSearchEndDate(final String endDate) { this.customSearchEndDate = StringUtils.trim(endDate); }
     public String getCustomSearchExpiresDays() { return customSearchExpiresDays; }
     public void setCustomSearchExpiresDays(final String customSearchExpiresDays) { this.customSearchExpiresDays = StringUtils.trim(customSearchExpiresDays); }
-    public boolean getCustomSearchIncludeOtherAdmins() { return customSearchIncludeOtherAdmins; }
-    public void setCustomSearchIncludeOtherAdmins(final boolean customSearchIncludeOtherAdmins) { this.customSearchIncludeOtherAdmins = customSearchIncludeOtherAdmins; }
+    public boolean getCustomSearchOnlyMe() { return customSearchOnlyMe; }
+    public void setCustomSearchOnlyMe(final boolean customSearchOnlyMe) { this.customSearchOnlyMe = customSearchOnlyMe; }
     
     public String getCustomSearchWaitingCheckboxLabel() {
-        return raLocaleBean.getMessage(customSearchIncludeOtherAdmins ? "manage_requests_page_search_waiting_for_first" : "manage_requests_page_search_waiting");
+        return raLocaleBean.getMessage(customSearchOnlyMe ? "manage_requests_page_search_waiting" : "manage_requests_page_search_waiting_for_first");
     }
     
     public String getCustomSearchWaitingCheckboxTitle() {
-        return customSearchIncludeOtherAdmins ? "" : raLocaleBean.getMessage("manage_requests_page_search_waiting_explanation");
+        return customSearchOnlyMe ? raLocaleBean.getMessage("manage_requests_page_search_waiting_explanation") : "";
     }
     
     public String getCustomSearchPendingCheckboxLabel() {
-        return raLocaleBean.getMessage(customSearchIncludeOtherAdmins ? "manage_requests_page_search_in_progress" : "manage_requests_page_search_pending");
+        return raLocaleBean.getMessage(customSearchOnlyMe ? "manage_requests_page_search_pending" : "manage_requests_page_search_in_progress");
     }
     
     public String getCustomSearchPendingCheckboxTitle() {
-        return customSearchIncludeOtherAdmins ? "" : raLocaleBean.getMessage("manage_requests_page_search_pending_explanation");
+        return customSearchOnlyMe ? raLocaleBean.getMessage("manage_requests_page_search_pending_explanation") : "";
     }
     
     public List<ApprovalRequestGUIInfo> getFilteredResults() {
