@@ -164,6 +164,9 @@ public class StringToolsTest {
         assertEquals("", StringTools.obfuscate(""));
         assertEquals("", StringTools.deobfuscateIf("OBF:"));
         assertEquals("", StringTools.deobfuscate("OBF:"));
+        assertNull(StringTools.deobfuscate(null));
+        assertNull(StringTools.deobfuscateIf(null));
+        assertNull(StringTools.obfuscate(null));
     }
 
     @Test
