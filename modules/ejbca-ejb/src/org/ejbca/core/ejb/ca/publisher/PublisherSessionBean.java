@@ -401,7 +401,13 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
-                details.put(entry.getKey().toString(), entry.getValue().toString());
+                // Strip passwords from log
+                final String key = entry.getKey().toString();
+                String value = entry.getValue().toString();
+                if (key.contains(LdapPublisher.LOGINPASSWORD)) {
+                    value = "hidden";
+                }
+                details.put(key, value);
             }
             auditSession.log(EjbcaEventTypes.PUBLISHER_CHANGE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA,
                     admin.toString(), null, null, null, details);
