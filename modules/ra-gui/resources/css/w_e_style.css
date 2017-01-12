@@ -186,6 +186,9 @@ span .approvalStep,
     padding-right: 2%;
     display: inline-block;
 }
+#manageRequestsForm\:customSearchOptions input[type=checkbox] {
+    margin-right: 0.5em;
+}
 #manageRequestsForm\:customSearchOptions label.endDate {
     padding-left: 2%;
 }
