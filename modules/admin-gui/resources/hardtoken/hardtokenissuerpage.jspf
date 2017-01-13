@@ -28,6 +28,7 @@ function checkallfields(){
 </div>
 
 <form name="editissuer" method="post" action="<%=THIS_FILENAME %>">
+  <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ISSUER %>'>
   <input type="hidden" name='<%= HIDDEN_ALIAS %>' value="<c:out value='<%=alias %>'/>">
   <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">

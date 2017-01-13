@@ -25,6 +25,7 @@
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.tomahawk.classpath"/>
+		<path refid="lib.owaspcsrfguard.classpath"/>
 		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
@@ -48,6 +49,7 @@
     	<copy file="${resources.dir}/WEB-INF/web.xml" tofile="${build.dir}/WEB-INF/web.xml"/>
         <war destfile="${mod.admin-gui.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml">
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.14.jar"/>
+        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-3.1.0.jar"/>
         	<fileset dir="${resources.dir}" excludes="languages/*"/>
         </war>
     </target>

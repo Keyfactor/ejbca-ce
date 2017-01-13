@@ -1,5 +1,6 @@
 <!-- Version: $Id: viewcertificate.jsp 9285 2010-06-24 07:22:34Z anatom $ -->
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld" prefix="csrf" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="java.util.List, java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, org.cesecore.certificates.certificateprofile.CertificateProfile,
@@ -339,6 +340,7 @@ function confirmrepublish(){
 
 
   <form name="viewcertificate" action="<%= THIS_FILENAME %>" method="post">
+     <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
     <% if(username != null){ %>
      <input type="hidden" name='<%= USER_PARAMETER %>' value='<c:out value="<%= username %>"/>'> 
      <% } 

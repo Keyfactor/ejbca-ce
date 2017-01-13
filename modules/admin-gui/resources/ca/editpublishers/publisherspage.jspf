@@ -10,7 +10,7 @@
     <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
 
 <form name="editpublishers" method="post"  action="<%= THIS_FILENAME%>">
-
+  <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
   <input type="hidden" name='<%= publisherhelper.ACTION %>' value='<%=publisherhelper.ACTION_EDIT_PUBLISHERS %>'>
 
   <table class="list">

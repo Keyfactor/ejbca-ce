@@ -11,6 +11,7 @@
      <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
 
 <form name="editprofiles" method="post"  action="<%= THIS_FILENAME%>">
+  <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 
   <input type="hidden" name='<%= edithardtokenprofile.ACTION %>' value='<%=edithardtokenprofile.ACTION_EDIT_HARDTOKENPROFILES %>'>
 

@@ -27,7 +27,7 @@ function confirmcadeletion() {
      <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
 
 <form name="editcas" method="post"  action="<%= THIS_FILENAME%>">
-
+  <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CAS %>'>
 
   <table class="list">

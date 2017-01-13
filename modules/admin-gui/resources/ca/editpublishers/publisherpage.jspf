@@ -157,6 +157,7 @@ function checkallfields(){
       </td>
     </tr>
     <form name="publishertype" method="post" action="<%=THIS_FILENAME %>">
+      <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
       <input type="hidden" name='<%= EditPublisherJSPHelper.ACTION %>' value='<%=EditPublisherJSPHelper.ACTION_CHANGE_PUBLISHERTYPE %>'>
       <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERNAME %>' value='<c:out value="<%= publisherhelper.getPublisherName() %>"/>'>
     <tr  id="Row<%=row++%2%>"> 
@@ -187,6 +188,7 @@ function checkallfields(){
    </table>
    
    <form name="editpublisher" method="post" action="<%=THIS_FILENAME %>">
+    <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
     <input type="hidden" name='<%= EditPublisherJSPHelper.ACTION %>' value='<%=EditPublisherJSPHelper.ACTION_EDIT_PUBLISHER %>'>
     <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERNAME %>' value='<c:out value="<%= publisherhelper.getPublisherName() %>"/>'>
     <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERTYPE %>' value='<c:out value="<%= publisherhelper.getPublisherType() %>"/>'>

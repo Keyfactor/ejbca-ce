@@ -20,12 +20,15 @@ function check()
 -->
 </script>
 
+  	 <c:set var="csrf_tokenname"><csrf:tokenname/></c:set>
+  	 <c:set var="csrf_tokenvalue"><csrf:tokenvalue/></c:set>
+
 <div align="center">
    <h2><%= ejbcawebbean.getText("UPLOADUSERDATATEMP") %></h2>
    <h3><%= ejbcawebbean.getText("ENDENTITYPROFILE")+ " : "%> <c:out value="<%= profile %>"/></h3>
 </div>
 
-  <form name="uploadfile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+  <form name="uploadfile" action="<%= THIS_FILENAME %>?${csrf_tokenname}=${csrf_tokenvalue}" method="post" enctype='multipart/form-data' >
   <table class="action" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
       <td width="49%" valign="top"> 

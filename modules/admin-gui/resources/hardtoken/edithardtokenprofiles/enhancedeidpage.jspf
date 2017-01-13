@@ -90,7 +90,7 @@
                  String certprof = (String) iter.next();
                  Integer certprofid = (Integer) authorizedcertprofiles.get(certprof);%>
               <option value="<%=certprofid.intValue()%>" <% if(certprofid.intValue() == currentcert) out.write(" selected "); %>> 
-                  <%= certprof %>
+                  <c:out value="<%=certprof%>"/>
                </option>
             <%}%>
           </select>      
@@ -113,7 +113,7 @@
                  String caname = (String) iter.next();
                  Integer caid = (Integer) authorizedcas.get(caname);%>
               <option value="<%=caid.intValue()%>" <% if(caid.intValue() == currentca) out.write(" selected "); %>> 
-                  <%= caname %>
+                  <c:out value="<%=caname%>"/>
                </option>
             <%}%>
           </select>         
@@ -172,7 +172,7 @@
                  String certprof = (String) iter.next();
                  Integer certprofid = (Integer) authorizedcertprofiles.get(certprof);%>
               <option value="<%=certprofid.intValue()%>" <% if(certprofid.intValue() == currentcert) out.write(" selected "); %>> 
-                  <%= certprof %>
+                  <c:out value="<%=certprof%>"/>
                </option>
             <%}%>
           </select>      
@@ -195,7 +195,7 @@
                  String caname = (String) iter.next();
                  Integer caid = (Integer) authorizedcas.get(caname);%>
               <option value="<%=caid.intValue()%>" <% if(caid.intValue() == currentca) out.write(" selected "); %>> 
-                  <%= caname %>
+                  <c:out value="<%=caname%>"/>
                </option>
             <%}%>
           </select>         
@@ -254,7 +254,7 @@
                  String certprof = (String) iter.next();
                  Integer certprofid = (Integer) authorizedcertprofiles.get(certprof);%>
               <option value="<%=certprofid.intValue()%>" <% if(certprofid.intValue() == currentcert) out.write(" selected "); %>> 
-                  <%= certprof %>
+                  <c:out value="<%=certprof%>"/>
                </option>
             <%}%>
           </select>      
@@ -277,7 +277,7 @@
                  String caname = (String) iter.next();
                  Integer caid = (Integer) authorizedcas.get(caname);%>
               <option value="<%=caid.intValue()%>" <% if(caid.intValue() == currentca) out.write(" selected "); %>> 
-                  <%= caname %>
+                  <c:out value="<%=caname%>"/>
                </option>
             <%}%>
           </select>         

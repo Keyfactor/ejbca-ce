@@ -1,5 +1,6 @@
 <%@page import="org.cesecore.authorization.control.StandardRules"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld" prefix="csrf" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="
@@ -48,6 +49,7 @@ java.security.cert.X509Certificate
     <div class="message alert"><%=ejbcawebbean.getText(viewcainfohelper.generalerrormessage) %></div> 
     <% } else { %>
     <form name="viewcainfo" action="<%= THIS_FILENAME %>" method="post">
+        <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
         <input type="hidden" name='<%= viewcainfohelper.CA_PARAMETER %>' value='<%=viewcainfohelper.caid %>'>
         <table class="view" border="0" cellpadding="0" cellspacing="2" width="100%">
 

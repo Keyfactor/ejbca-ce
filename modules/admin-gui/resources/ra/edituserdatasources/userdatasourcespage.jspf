@@ -10,6 +10,7 @@
      <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
 
 <form name="edituserdatasources" method="post"  action="<%= THIS_FILENAME%>">
+  <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 
   <input type="hidden" name='<%= userdatasourcehelper.ACTION %>' value='<%=userdatasourcehelper.ACTION_EDIT_USERDATASOURCES %>'>
 

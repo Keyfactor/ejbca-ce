@@ -23,6 +23,21 @@
 
     <description><![CDATA[EJBCA Administration web]]></description>
 
+       <listener>
+            <listener-class>org.owasp.csrfguard.CsrfGuardServletContextListener</listener-class>
+       </listener>
+       <listener>
+            <listener-class>org.owasp.csrfguard.CsrfGuardHttpSessionListener</listener-class>
+       </listener>
+       <context-param>
+             <param-name>Owasp.CsrfGuard.Config</param-name>
+             <param-value>WEB-INF/csrfguard.properties</param-value>
+       </context-param>
+       <context-param>
+             <param-name>Owasp.CsrfGuard.Config.Print</param-name>
+             <param-value>false</param-value>
+       </context-param>
+       
     <!-- Set to "Development" for debugging.
         "Production" also implies javax.faces.FACELETS_REFRESH_PERIOD=-1 which means pages are never recompiled.
         TODO: Set automatically when ejbca.productionmode=false
@@ -32,6 +47,15 @@
         <param-value>Production</param-value>
     </context-param>
 
+	<filter>
+		<filter-name>CSRFGuard</filter-name>
+		<filter-class>org.owasp.csrfguard.CsrfGuardFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>CSRFGuard</filter-name> 
+		<url-pattern>*.jsp</url-pattern>
+	</filter-mapping>
+	
     <filter>
         <filter-name>ProxiedAuthenticationFilter</filter-name>
         <filter-class>org.ejbca.ui.web.admin.ProxiedAuthenticationFilter</filter-class>

@@ -11,6 +11,7 @@
     <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
 
 <form name="editcmpaliases" method="post"  action="<%= THIS_FILENAME%>">
+  <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ALIASES %>'>
 

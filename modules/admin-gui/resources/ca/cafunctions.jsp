@@ -13,6 +13,7 @@
  *************************************************************************/
 %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld" prefix="csrf" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="
@@ -154,6 +155,9 @@ function getPasswordAndSubmit(formname) {
 
   <h1><%= ejbcawebbean.getText("CASTRUCTUREANDCRL") %></h1>
 
+  	 <c:set var="csrf_tokenname"><csrf:tokenname/></c:set>
+  	 <c:set var="csrf_tokenvalue"><csrf:tokenvalue/></c:set>
+
 <!--  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") %>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> 
   </div> -->
@@ -171,7 +175,7 @@ function getPasswordAndSubmit(formname) {
   	 
   		 <h2>Import CRL</h2>  	 
   	 
-  		 <form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+  		 <form name="recievefile" action="<%= THIS_FILENAME %>?${csrf_tokenname}=${csrf_tokenvalue}" method="post" enctype='multipart/form-data' >
   	 		<input type="hidden" name='action' value='<%=ACTION_IMPORT_CRL %>'>
 			<table class="action" width="70%" border="0" cellspacing="3" cellpadding="3">
 				<tr> 
@@ -247,6 +251,7 @@ function getPasswordAndSubmit(formname) {
             <td>&nbsp;</td>
             <td>               
               <form name="<%= "JKSFORM"+Integer.toHexString((subjectdn+j).hashCode()) %>" method="POST" action="<%=DOWNLOADCERTIFICATE_LINK%>">
+                    <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 					<input type="hidden" name="cmd" value="jkscert"/>
 					<input type="hidden" name="level" value='<c:out value="<%= j %>" />'/>
 					<input type="hidden" name="issuer" value='<c:out value="<%= subjectdn %>" />'/>
@@ -332,6 +337,7 @@ function getPasswordAndSubmit(formname) {
       if(createcrlrights){ %>
 		<br />
 		<form name='createcrl' method=GET action='<%=THIS_FILENAME %>'>
+            <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 			<input type='hidden' name='<%=HIDDEN_NUMBEROFCAS %>' value='<%=canames.keySet().size()%>'> 
 			<input type='hidden' name='<%=HIDDEN_CAID + number %>' value='<c:out value="<%= caid %>" />'> 
 			<%=ejbcawebbean.getText("CREATENEWCRL") + " : " %>

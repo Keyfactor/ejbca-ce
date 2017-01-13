@@ -1,4 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld" prefix="csrf" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <%
     response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding());
@@ -975,6 +976,7 @@ function checkUseInBatch(){
 
 
   <form name="edituser" action="<%= THIS_FILENAME %>" method="post">   
+    <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 	<input type="hidden" name="<%= ACTION %>" value="<%=ACTION_EDITUSER %>" />   
 	<input type="hidden" name="<%= HIDDEN_PROFILE %>" value="<%=profileid %>" />    
 	<input type="hidden" name="<%= USER_PARAMETER %>" value="<c:out value="<%= username %>"/>" />
