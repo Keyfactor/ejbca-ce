@@ -399,6 +399,7 @@ function toggleCANameChange(){
             <td width="50%" valign="top">
             <% if (!editca) { %> 
             <form name="changecatype" action="<%= THIS_FILENAME %>" method="post">
+                <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
                 <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CATYPE %>'>
                 <input type="hidden" name='<%= hidden_ca_key %>' value='<c:out value="<%= hidden_ca_value %>"/>'/>
                 <select name="<%=SELECT_CATYPE %>" size="1" onchange="document.changecatype.submit()">                
@@ -491,6 +492,7 @@ function toggleCANameChange(){
             </td>
 	        <td>
 	        <form name="changecasignalgo" action="<%= THIS_FILENAME %>" method="post">
+                <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 	            <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CASIGNALGO %>'/>
                 <input type="hidden" name='<%= hidden_ca_key %>' value='<c:out value="<%= hidden_ca_value %>"/>'/>
 	            <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<c:out value="<%= catype %>"/>'/>
@@ -520,6 +522,7 @@ function toggleCANameChange(){
             <td width="50%"  align="right"><strong><%= ejbcawebbean.getText("CRYPTOTOKEN") %></strong> <%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20Crypto%20Tokens") %></td>
 	        <td>
 	        <form name="changecatokentype" action="<%= THIS_FILENAME %>" method="post">
+                <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 	            <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CATOKENTYPE %>'/>
 	            <input type="hidden" name='<%= hidden_ca_key %>' value='<c:out value="<%= hidden_ca_value %>"/>'/>
 	            <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<c:out value="<%= catype %>"/>'/>
@@ -583,7 +586,9 @@ function toggleCANameChange(){
         <% } %>
 
 <%/*was ENCTYPE="post"*/%>
-  <form name="ca" method="post" action="<%=THIS_FILENAME %>" enctype='multipart/form-data'>
+  	 <c:set var="csrf_tokenname"><csrf:tokenname/></c:set>
+  	 <c:set var="csrf_tokenvalue"><csrf:tokenvalue/></c:set>
+  <form name="ca" method="post" action="<%=THIS_FILENAME %>?${csrf_tokenname}=${csrf_tokenvalue}" enctype='multipart/form-data'>
     <input type="hidden" name='<%= HIDDEN_CACRYPTOTOKEN %>' value='<c:out value="<%= cryptoTokenIdParam %>"/>'>
     <input type="hidden" name='<%= HIDDEN_CASIGNALGO %>' value='<c:out value="<%= signatureAlgorithmParam %>"/>'/>
     <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<c:out value="<%= catype %>"/>'>
@@ -1921,6 +1926,7 @@ function toggleCANameChange(){
             <% if (cabean.isCaExportable(cainfo)) { %>
             <%= ejbcawebbean.getText("EXPORTCA_AUTHCODE") %><br/>
             <form name="exportca" action="<%= globalconfiguration.getCaPath() + "/exportca" %>" method="post">
+                <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 		        <input type="hidden" name='<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.HIDDEN_CANAME %>' value='<c:out value="<%= cainfo.getName() %>"/>'/>
                 <input type="password" autocomplete="off" name="<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.TEXTFIELD_EXPORTCA_PASSWORD %>"  value="" />
                 <input type="submit" name="<%= BUTTON_EXPORTCA %>"  value="<%= ejbcawebbean.getText("EXPORTCA")+"..." %>" />

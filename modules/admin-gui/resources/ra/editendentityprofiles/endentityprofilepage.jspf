@@ -441,6 +441,7 @@ if (!editerrors.isEmpty()) {
 %>
 
 <form name="editprofile" method="post" action="<%=THIS_FILENAME %>" >
+  <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_PROFILE %>'>
   <input type="hidden" name='<%= HIDDEN_PROFILENAME %>' value='<c:out value="<%= profile %>"/>'>
   <table class="edit" id="endentityprofile" width="100%" border="0" cellspacing="3" cellpadding="3">

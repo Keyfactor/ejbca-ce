@@ -14,11 +14,14 @@ function check()
 }
 -->
 </script>
+  	 <c:set var="csrf_tokenname"><csrf:tokenname/></c:set>
+  	 <c:set var="csrf_tokenvalue"><csrf:tokenvalue/></c:set>
+
 <div align="center">   
 	<h2><%= ejbcawebbean.getText("IMPORTCA_CERTIFICATE") %></h2>
 </div>
 
-	<form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+	<form name="recievefile" action="<%= THIS_FILENAME %>?${csrf_tokenname}=${csrf_tokenvalue}" method="post" enctype='multipart/form-data' >
 	<table class="action" width="100%" border="0" cellspacing="3" cellpadding="3">
 		<tr id="Row<%=row++%2%>"> 
 			<td width="45%" valign="top">
@@ -27,9 +30,7 @@ function check()
 			<td width="55%" valign="top" align="right"> 
        			<a href="<%=THIS_FILENAME %>"><%= ejbcawebbean.getText("BACKTOCAS") %></a>
 			</td>
-			</td>
 		</tr>
-		<form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
 		<tr id="Row<%=row++%2%>"> 
 			<td width="45%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTCA_CANAME") %></td>
 			<td width="55%" valign="top">

@@ -91,6 +91,7 @@ function checkallfields(){
     </tr>
     
     <form name="profiletype" method="post" action="<%=THIS_FILENAME %>">
+      <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
       <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.ACTION %>' value='<%=EditHardTokenProfileJSPHelper.ACTION_CHANGE_PROFILETYPE %>'>
       <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENPROFILENAME %>' value="<c:out value='<%= edithardtokenprofile.profilename %>'/>">
     <tr  id="Row<%=row%2%>"> 
@@ -101,7 +102,7 @@ function checkallfields(){
         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_HARDTOKENTYPE%>" size="1" onchange='document.profiletype.submit()'>
            <%  int currenttype = edithardtokenprofile.getProfileType(); 
                for(int i=0; i<hardtokentypes.length;i++){ %>
-           <option  value="<%= hardtokentypes[i] %>" 
+           <option  value="<c:out value="<%=hardtokentypes[i]%>"/>" 
               <% if(hardtokentypes[i] == currenttype) out.write(" selected "); %>> 
               <%= ejbcawebbean.getText(hardtokentypetexts[i]) %>
            </option>
@@ -113,6 +114,7 @@ function checkallfields(){
    
    </table>
    <form name="editprofile" method="post" action="<%=THIS_FILENAME %>">
+    <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
     <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.ACTION %>' value='<%=EditHardTokenProfileJSPHelper.ACTION_EDIT_HARDTOKENPROFILE %>'>
     <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENPROFILENAME %>' value='<c:out value="<%= edithardtokenprofile.profilename %>"/>'>
     <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENTYPE %>' value='<%=edithardtokenprofile.getProfileType() %>'>

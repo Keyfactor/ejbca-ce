@@ -64,6 +64,7 @@ function checkallfields(){
       </td>
     </tr>
     <form name="userdatasourcetype" method="post" action="<%=THIS_FILENAME %>">
+      <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
       <input type="hidden" name='<%= EditUserDataSourceJSPHelper.ACTION %>' value='<%=EditUserDataSourceJSPHelper.ACTION_CHANGE_USERDATASOURCETYPE %>'>
       <input type="hidden" name='<%= EditUserDataSourceJSPHelper.HIDDEN_USERDATASOURCENAME %>' value='<c:out value="<%= userdatasourcehelper.userdatasourcename %>"/>'>
     <tr  id="Row<%=row%2%>"> 
@@ -85,6 +86,7 @@ function checkallfields(){
    </form>
    </table>
    <form name="edituserdatasource" method="post" action="<%=THIS_FILENAME %>">
+    <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
     <input type="hidden" name='<%= EditUserDataSourceJSPHelper.ACTION %>' value='<%=EditUserDataSourceJSPHelper.ACTION_EDIT_USERDATASOURCE %>'>
     <input type="hidden" name='<%= EditUserDataSourceJSPHelper.HIDDEN_USERDATASOURCENAME %>' value='<c:out value="<%= userdatasourcehelper.userdatasourcename %>"/>'>
     <input type="hidden" name='<%= EditUserDataSourceJSPHelper.HIDDEN_USERDATASOURCETYPE %>' value='<%=userdatasourcehelper.getUserDataSourceType() %>'>

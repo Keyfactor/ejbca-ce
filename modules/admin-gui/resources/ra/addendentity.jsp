@@ -1,4 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld" prefix="csrf" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <%
     response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding());
@@ -1181,11 +1182,12 @@ function checkallfields(){
 
      <table class="edit" id="addendentity" border="0" cellpadding="0" cellspacing="2">
        <form name="changeprofile" action="<%= THIS_FILENAME %>" method="post">
+       <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
        <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHANGEPROFILE %>'>
 
      <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"ENDENTITYPROFILE\") %>"/></td>
-	 <td><select name="<%=SELECT_ENDENTITYPROFILE %>" size="1" tabindex="<%=tabindex++%>" onchange="document.changeprofile.submit()"'>
+	 <td><select name="<%=SELECT_ENDENTITYPROFILE %>" size="1" tabindex="<%=tabindex++%>" onchange="document.changeprofile.submit()">
                 <% for(int i = 0; i < profilenames.length;i++){
                       int pid = rabean.getEndEntityProfileId(profilenames[i]);
                       %>                
@@ -1201,7 +1203,8 @@ function checkallfields(){
       </tr>
       </form>
 
-       <form name="adduser" action="<%= THIS_FILENAME %>" method="post">   
+       <form name="adduser" action="<%= THIS_FILENAME %>" method="post">
+         <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
          <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_ADDUSER %>'>   
          <input type="hidden" name='<%= HIDDEN_PROFILE %>' value='<c:out value="<%=profileid %>"/>'>    
 
