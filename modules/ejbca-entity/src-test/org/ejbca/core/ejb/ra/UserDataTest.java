@@ -61,7 +61,8 @@ public class UserDataTest {
     	assertTrue(hash.startsWith("$2"));
     	assertFalse(data.comparePassword("foo123123"));
     	assertTrue(data.comparePassword("primekey"));
-    	assertEquals("primekey", data.getClearPassword());
+    	assertEquals("OBF:1z7a1vnw1v251uo71unr1v291vn61z7s", data.getClearPassword());
+        assertEquals("primekey", data.getOpenPassword());
 
     }
 
