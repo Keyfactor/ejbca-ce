@@ -1141,15 +1141,18 @@ public class EjbcaWebBean implements Serializable {
                     caNames.add(raCaName);
                 }
                 String eeProfileIdString = cmpconfiguration.getRAEEProfile(alias);
-                if (eeProfileIdString != null && endEntityProfileSession.getEndEntityProfile(Integer.valueOf(eeProfileIdString)) != null) {
-                    if (!authorizedProfileIds.contains(Integer.valueOf(eeProfileIdString))) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("CMP alias " + alias + " hidden because admin lacks access to a CA used in end entity profile with ID: "
-                                    + eeProfileIdString);
+                // If value is set to KeyId we will not hide it, because it can be any EE profile
+                if (!StringUtils.equals(CmpConfiguration.PROFILE_USE_KEYID, eeProfileIdString)) {
+                    if (eeProfileIdString != null && endEntityProfileSession.getEndEntityProfile(Integer.valueOf(eeProfileIdString)) != null) {
+                        if (!authorizedProfileIds.contains(Integer.valueOf(eeProfileIdString))) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("CMP alias " + alias + " hidden because admin lacks access to a CA used in end entity profile with ID: "
+                                        + eeProfileIdString);
+                            }
+                            returnValue.removeAlias(alias);
+                            //Profile was not in the authorized list, skip out on this alias. 
+                            continue aliasloop;
                         }
-                        returnValue.removeAlias(alias);
-                        //Profile was not in the authorized list, skip out on this alias. 
-                        continue aliasloop;
                     }
                 }
                 //Certificate Profiles are tested implicitly, since we can't choose any CP which isn't part of the EEP, and we can't choose the EEP if we don't have access to its CPs. 
