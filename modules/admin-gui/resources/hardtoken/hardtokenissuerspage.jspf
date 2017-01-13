@@ -35,6 +35,7 @@ function checkselected(){
      <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
 
 <form name="editissuers" method="post"  action="<%= THIS_FILENAME%>">
+  <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ISSUERS %>'>
 

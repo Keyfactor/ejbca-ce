@@ -86,6 +86,7 @@ function confirmrevocation(){
 <h1><c:out value="<%= ejbcawebbean.getText(\"SEARCHENDENTITIES\") %>" /></h1>
 
   <form name="changefiltermode" method="post" action="<%=THIS_FILENAME %>">
+    <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
     <div align="right">
      <% if(filtermode == AdminPreference.FILTERMODE_BASIC){ %>
       <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHANGEFILTERMODETO_ADVANCED %>'>
@@ -102,6 +103,7 @@ function confirmrevocation(){
   </form> 
 
 <form name="form" method="post" action="<%=THIS_FILENAME %>">
+  <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
   <input type="hidden" name='<%= ACTION %>' value='<c:out value="<%=ACTION_LISTUSERS %>"/>'>
   <input type="hidden" name='<%= OLD_ACTION %>' value='<c:out value="<%=oldaction %>"/>'>
   <input type="hidden" name='<%= OLD_ACTION_VALUE %>' value='<c:out value="<%=oldactionvalue %>"/>'>

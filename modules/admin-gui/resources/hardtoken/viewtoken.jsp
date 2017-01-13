@@ -1,4 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld" prefix="csrf" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="java.util.Iterator, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, 
@@ -255,6 +256,7 @@ function viewcopies(link){
   <div class="message alert"><c:out value='<%= message%>'/></div>
   <% } %>
   <form name="viewtoken" action="<%= THIS_FILENAME %>" method="post">
+     <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
      <input type="hidden" name='<%= USER_PARAMETER %>' value="<c:out value='<%=java.net.URLEncoder.encode(username,"UTF-8")%>'/>">
      <% if (tokensn != null){ %>
      <input type="hidden" name='<%= TOKENSN_PARAMETER %>' value="<c:out value='<%=token.getTokenSN() %>'/>">

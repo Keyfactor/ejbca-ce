@@ -13,6 +13,7 @@
      <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
 
 <form name="editprofiles" method="post"  action="<%= THIS_FILENAME%>">
+  <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_PROFILES %>'>
 
@@ -117,10 +118,12 @@
    <% } %>
 </form>
 
+  	 <c:set var="csrf_tokenname"><csrf:tokenname/></c:set>
+  	 <c:set var="csrf_tokenvalue"><csrf:tokenvalue/></c:set>
+
 <%int row = 0;%>
-<form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+<form name="recievefile" action="<%= THIS_FILENAME %>?${csrf_tokenname}=${csrf_tokenvalue}" method="post" enctype='multipart/form-data' >
 	<table class="action" width="70%" border="0" cellspacing="3" cellpadding="3">
-		<form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
 		<input type="hidden" name='<%= ACTION %>' value='<%=ACTION_IMPORT_EXPORT %>'>
 		 <% if(authorizedToEdit) { %>
 		<tr id="Row<%=row++%2%>"> 
