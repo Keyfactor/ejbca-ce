@@ -232,7 +232,9 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     /**
-     * Returns clear text password or null.
+     * This method is needed for Java Persistence.
+     * The preferred method for usage is setOpenPassword().
+     * Returns the clearPassword column as it is in the database (may be obfuscated) or null. 
      */
     // @Column
     public String getClearPassword() {
@@ -240,10 +242,12 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     /**
-     * Sets clear text password, the preferred method is setOpenPassword().
+     * This method is needed for Java Persistence.
+     * The preferred method for usage is setOpenPassword().
+     * Sets the clearPassword column in the database. 
      */
     public void setClearPassword(String clearPassword) {
-        this.clearPassword = clearPassword;
+    	this.clearPassword = clearPassword;
     }
 
     /**
@@ -420,12 +424,20 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     /**
-     * Sets the password in clear form in the database, needed for machine processing, also sets the hashed password to the same value
+     * Sets the password in both hashed and clear (obfuscated though) form in the database, clear is needed for machine processing
      */
     public void setOpenPassword(String password) {
         String passwordHash = CryptoTools.makePasswordHash(password);
         setPasswordHash(passwordHash);
-        setClearPassword(password);
+        setClearPassword(StringTools.obfuscate(password));
+    }
+
+    /**
+     * Returns clear text password (de-obfuscated) or null.
+     */
+    @Transient
+    public String getOpenPassword() {
+        return StringTools.deobfuscateIf(clearPassword);
     }
 
     /**
@@ -527,7 +539,7 @@ public class UserData extends ProtectedData implements Serializable {
         data.setEndEntityProfileId(getEndEntityProfileId());
         data.setExtendedinformation(getExtendedInformation());
         data.setHardTokenIssuerId(getHardTokenIssuerId());
-        data.setPassword(getClearPassword());
+        data.setPassword(getOpenPassword());
         data.setStatus(getStatus());
         data.setSubjectAltName(getSubjectAltNameNeverNull());
         data.setTimeCreated(new Date(getTimeCreated()));
