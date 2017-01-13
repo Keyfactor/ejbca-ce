@@ -138,13 +138,12 @@ public class RevokeCertificateCommand extends BaseRaCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Command used to revoke or unrevoke a certificate.\n"
-                + "Unrevocation is done using the reason removeFromCRL(8), and can only be done if the certificate is revoked with reason removeFromCRL(6).";
+        return "Command used to revoke or unrevoke a certificate.";
     }
 
     @Override
     public String getFullHelpText() {
-        return getCommandDescription();
+        return getCommandDescription()+"\nUnrevocation is done using the reason removeFromCRL(8), and can only be done if the certificate is revoked with reason removeFromCRL(6).";
     }
 
     protected Logger getLogger() {
