@@ -46,7 +46,7 @@ public class RegexFieldValidator implements EndEntityFieldValidator {
     public void validate(final String field, final Serializable validatorData, final String value) throws EndEntityFieldValidatorException {
         // The DN component name is not used by this validator.
         final String regex = (String)validatorData;
-        if (!Pattern.matches(regex, value)) {
+        if (!Pattern.matches(regex, value == null ? "":value)) {
             throw new EndEntityFieldValidatorException("Technical details: Value \""+value+"\" does not match regex "+regex);
         }
     }

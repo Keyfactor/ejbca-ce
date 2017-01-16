@@ -1,4 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld" prefix="csrf" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, org.cesecore.authorization.AuthorizationDeniedException,
@@ -212,13 +213,13 @@
   EndEntityProfile profiledata=null;
   int[] fielddata = null;
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES); 
+  final GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES); 
                                             ejbcarabean.initialize(request, ejbcawebbean);
                                             cabean.initialize(ejbcawebbean);
                                             tokenbean.initialize(request, ejbcawebbean);
-  String THIS_FILENAME            =  globalconfiguration .getRaPath()  + "/editendentityprofiles/editendentityprofiles.jsp";
+  final String THIS_FILENAME            =  globalconfiguration .getRaPath()  + "/editendentityprofiles/editendentityprofiles.jsp";
   
-  boolean accessToAllCAs = ejbcawebbean.isAuthorizedToAllCAs();
+  final boolean accessToAllCAs = ejbcawebbean.isAuthorizedToAllCAs();
 
 %>
  
@@ -420,23 +421,16 @@
                 }
                 
                 final boolean useValidation = ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_VALIDATION_SUBJECTDN + i));
-                String validationRegex = request.getParameter(TEXTFIELD_VALIDATION_SUBJECTDN + i);
                 if (useValidation) {
-                    if (validationRegex == null) {
-                        // We must accept an empty value in case the user has Javascript turned
-                        // off and has to update the page before the text field appears
-                        validationRegex = "";
-                    }
-                    final int dnId = DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]);
-                    final String fieldName = DnComponents.dnIdToProfileName(dnId);
+                    String validationRegex = request.getParameter(TEXTFIELD_VALIDATION_SUBJECTDN + i);
+                    final LinkedHashMap<String,Serializable> validation = ejbcarabean.getValidationFromRegexp(validationRegex);
                     try {
+                        final int dnId = DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]);
+                        final String fieldName = DnComponents.dnIdToProfileName(dnId);
                         EndEntityValidationHelper.checkValidator(fieldName, RegexFieldValidator.class.getName(), validationRegex);
                     } catch (EndEntityFieldValidatorException e) {
                         editerrors.put(TEXTFIELD_VALIDATION_SUBJECTDN + i, e.getMessage());
                     }
-                    
-                    LinkedHashMap<String,Serializable> validation = new LinkedHashMap<String,Serializable>();
-                    validation.put(RegexFieldValidator.class.getName(), validationRegex);
                     profiledata.setValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], validation);
                 } else {
                     profiledata.setValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], null);
@@ -458,23 +452,16 @@
                                         ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i)));
              
                 final boolean useValidation = ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_VALIDATION_SUBJECTALTNAME + i));
-                String validationRegex = request.getParameter(TEXTFIELD_VALIDATION_SUBJECTALTNAME + i);
                 if (useValidation) {
-                    if (validationRegex == null) {
-                        // We must accept an empty value in case the user has Javascript turned
-                        // off and has to update the page before the text field appears
-                        validationRegex = "";
-                    }
-                    final int dnId = DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]);
-                    final String fieldName = DnComponents.dnIdToProfileName(dnId);
+                    String validationRegex = request.getParameter(TEXTFIELD_VALIDATION_SUBJECTALTNAME + i);
+                    final LinkedHashMap<String,Serializable> validation = ejbcarabean.getValidationFromRegexp(validationRegex);
                     try {
+                        final int dnId = DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]);
+                        final String fieldName = DnComponents.dnIdToProfileName(dnId);
                         EndEntityValidationHelper.checkValidator(fieldName, RegexFieldValidator.class.getName(), validationRegex);
                     } catch (EndEntityFieldValidatorException e) {
                         editerrors.put(TEXTFIELD_VALIDATION_SUBJECTALTNAME + i, e.getMessage());
                     }
-                    
-                    LinkedHashMap<String,Serializable> validation = new LinkedHashMap<String,Serializable>();
-                    validation.put(RegexFieldValidator.class.getName(), validationRegex);
                     profiledata.setValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], validation);
                 } else {
                     profiledata.setValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], null);
@@ -549,15 +536,8 @@
              String[] values = request.getParameterValues(SELECT_AVAILABLECERTPROFILES);
  
              if(defaultcertprof != null){
-               String availablecert =defaultcertprof;
-               if(values!= null){
-                 for(int i=0; i< values.length; i++){
-                     if(!values[i].equals(defaultcertprof))
-                       availablecert += EndEntityProfile.SPLITCHAR + values[i];                      
-                 }
-               } 
-               
-               profiledata.setValue(EndEntityProfile.AVAILCERTPROFILES, 0,availablecert);
+               final String availablecertprofiles = ejbcarabean.getAvailableCasString(values, defaultcertprof);
+               profiledata.setValue(EndEntityProfile.AVAILCERTPROFILES, 0,availablecertprofiles);
                profiledata.setRequired(EndEntityProfile.AVAILCERTPROFILES, 0,true);    
              }
 
@@ -568,7 +548,7 @@
              values = request.getParameterValues(SELECT_AVAILABLECAS);
  
              if (defaultca != null) {
-               String availablecas = ejbcarabean.getAvailableCasString(values, defaultca);
+               final String availablecas = ejbcarabean.getAvailableCasString(values, defaultca);
                profiledata.setValue(EndEntityProfile.AVAILCAS, 0,availablecas);
                profiledata.setRequired(EndEntityProfile.AVAILCAS, 0,true);    
              }
@@ -581,13 +561,7 @@
              values = request.getParameterValues(SELECT_AVAILABLETOKENTYPES);
  
              if(defaulttokentype != null){
-               String availabletokentypes =defaulttokentype;
-               if(values!= null){
-                 for(int i=0; i< values.length; i++){
-                     if(!values[i].equals(defaulttokentype))
-                       availabletokentypes += EndEntityProfile.SPLITCHAR + values[i];                      
-                 }
-               } 
+               final String availabletokentypes = ejbcarabean.getAvailableTokenTypes(defaulttokentype, values);
                profiledata.setValue(EndEntityProfile.AVAILKEYSTORE, 0, availabletokentypes);
                profiledata.setRequired(EndEntityProfile.AVAILKEYSTORE, 0, true);    
              }
@@ -601,13 +575,7 @@
              values = request.getParameterValues(SELECT_AVAILABLEHARDTOKENISSUERS);
  
              if(defaulthardtokenissuer != null){
-               String availablehardtokenissuers =defaulthardtokenissuer;
-               if(values!= null){
-                 for(int i=0; i< values.length; i++){
-                     if(!values[i].equals(defaulthardtokenissuer))
-                       availablehardtokenissuers += EndEntityProfile.SPLITCHAR + values[i];                      
-                 }
-               } 
+               final String availablehardtokenissuers = ejbcarabean.getAvailableHardTokenIssuers(defaulthardtokenissuer, values);
                profiledata.setValue(EndEntityProfile.AVAILTOKENISSUER, 0, availablehardtokenissuers);
                profiledata.setRequired(EndEntityProfile.AVAILTOKENISSUER, 0, true);    
              }
@@ -795,22 +763,12 @@
                      
                 	 // First, delete the old value
                      { // hide variables
-	                     String s = request.getParameter(TEXTFIELD_NOTIFICATIONSENDER + OLDVALUE + i);
-	                     String r = request.getParameter(TEXTFIELD_NOTIFICATIONRCPT + OLDVALUE + i);
-	                     String sub = request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT + OLDVALUE + i);
-	                     String msg = request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE + OLDVALUE + i);
-	                     String[] val = request.getParameterValues(SELECT_NOTIFICATIONEVENTS + OLDVALUE + i);
-	                     String events = null;
-	                     if (val != null) {
-	                    	 for (String v : val) {
-		 			            if (events == null) {
-		 			               events = v;
-		 			            } else {
-		                           events = events + ";"+v;
-		                        }
-		                     }
-	                     }
-	                     UserNotification not = new UserNotification(s, r, sub, msg, events);
+                         UserNotification not = ejbcarabean.getNotificationForDelete(
+							request.getParameter(TEXTFIELD_NOTIFICATIONSENDER + OLDVALUE + i),
+	                        request.getParameter(TEXTFIELD_NOTIFICATIONRCPT + OLDVALUE + i),
+	                        request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT + OLDVALUE + i),
+	                        request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE + OLDVALUE + i),
+	                        request.getParameterValues(SELECT_NOTIFICATIONEVENTS + OLDVALUE + i));
 	                     profiledata.removeUserNotification(not);
                      }
                      
@@ -820,26 +778,12 @@
                     	 removed = true;
                      } else {
                     	 // Edit
-                    	 UserNotification not = new UserNotification();
-                         not.setNotificationSender(request.getParameter(TEXTFIELD_NOTIFICATIONSENDER + NEWVALUE + i));
-                         not.setNotificationSubject(request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT + NEWVALUE + i));
-                         not.setNotificationMessage(request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE + NEWVALUE + i));
-                         String rcpt = request.getParameter(TEXTFIELD_NOTIFICATIONRCPT + NEWVALUE + i);
-                         if ( (rcpt == null) || (rcpt.length() == 0) ) {
-                             // Default value if nothing is entered is users email address
-                             rcpt = UserNotification.RCPT_USER;
-                         }
-                         not.setNotificationRecipient(rcpt);
-                         String[] val = request.getParameterValues(SELECT_NOTIFICATIONEVENTS + NEWVALUE + i);
-                         String events = null;
-                         for (String v : val) {
-             			    if (events == null) {
-             			       events = v;
-             			    } else {
-                               events = events + ";"+v;
-                            }
-                         }
-                         not.setNotificationEvents(events);
+                    	 UserNotification not = ejbcarabean.getNotificationForAdd(
+                    	 	request.getParameter(TEXTFIELD_NOTIFICATIONSENDER + NEWVALUE + i),
+                    	 	request.getParameter(TEXTFIELD_NOTIFICATIONRCPT + NEWVALUE + i),
+                    	 	request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT + NEWVALUE + i),
+                    	 	request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE + NEWVALUE + i),
+                    	 	request.getParameterValues(SELECT_NOTIFICATIONEVENTS + NEWVALUE + i));
                          profiledata.addUserNotification(not);
                      }
                  }         

@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,11 +84,13 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
+import org.ejbca.core.model.ra.raadmin.EndEntityFieldValidatorException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
+import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -1095,6 +1098,88 @@ public class RAInterfaceBean implements Serializable {
         return retmsg;
     }
     
+    public String getAvailableHardTokenIssuers(final String defaulthardtokenissuer, final String[] values) {
+        String availablehardtokenissuers = defaulthardtokenissuer;
+        if (values!= null) {
+            for (int i=0; i< values.length; i++) {
+                if(!values[i].equals(defaulthardtokenissuer)) {
+                    availablehardtokenissuers += EndEntityProfile.SPLITCHAR + values[i];
+                }
+            }
+        } 
+        return availablehardtokenissuers;
+    }
+    
+    public String getAvailableTokenTypes(final String defaulttokentype, final String[] values) {
+        String availabletokentypes = defaulttokentype;
+        if (values!= null) {
+            for (int i=0; i< values.length; i++) {
+                if(!values[i].equals(defaulttokentype)) {
+                    availabletokentypes += EndEntityProfile.SPLITCHAR + values[i];
+                }
+            }
+        } 
+        return availabletokentypes;
+    }
+
+    public String getAvailableCertProfiles(final String defaultcertprof, final String[] values) {
+        String availablecertprofiles =defaultcertprof;
+        if (values!= null) {
+            for (int i=0; i< values.length; i++) {
+                if(!values[i].equals(defaultcertprof)) {
+                    availablecertprofiles += EndEntityProfile.SPLITCHAR + values[i];
+                }
+            }
+        }         
+        return availablecertprofiles;
+    }
+
+    public LinkedHashMap<String,Serializable> getValidationFromRegexp(String validationRegex) throws EndEntityFieldValidatorException {
+        if (validationRegex == null) {
+            // We must accept an empty value in case the user has Javascript turned
+            // off and has to update the page before the text field appears
+            validationRegex = "";
+        }
+        LinkedHashMap<String,Serializable> validation = new LinkedHashMap<String,Serializable>();
+        validation.put(RegexFieldValidator.class.getName(), validationRegex);
+        return validation;
+    }
+    
+    public UserNotification getNotificationForDelete(String sender, String rcpt, String subject, String msg, String[] val) {
+        String events = null;
+        if (val != null) {
+            for (String v : val) {
+               if (events == null) {
+                  events = v;
+               } else {
+                  events = events + ";"+v;
+               }
+            }
+        }
+        return new UserNotification(sender, rcpt, subject, msg, events);
+
+    }
+    public UserNotification getNotificationForAdd(String sender, String rcpt, String subject, String msg, String[] val) {
+        UserNotification not = new UserNotification();
+        not.setNotificationSender(sender);
+        not.setNotificationSubject(subject);
+        not.setNotificationMessage(msg);
+        if ( (rcpt == null) || (rcpt.length() == 0) ) {
+            // Default value if nothing is entered is users email address
+            rcpt = UserNotification.RCPT_USER;
+        }
+        not.setNotificationRecipient(rcpt);
+        String events = null;
+        for (String v : val) {
+           if (events == null) {
+              events = v;
+           } else {
+              events = events + ";"+v;
+           }
+        }
+        not.setNotificationEvents(events);
+        return not;
+    }
     private EndEntityProfile getEEProfileFromByteArray(String profilename, byte[] profileBytes) throws AuthorizationDeniedException {
         
         ByteArrayInputStream is = new ByteArrayInputStream(profileBytes);
