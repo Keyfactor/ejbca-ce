@@ -192,10 +192,11 @@ public interface EndEntityManagementSession {
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
      * @throws NoSuchEndEntityException if the end entity was not found
+     * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
      */
     void changeUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
-            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException;
+            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;
 
     /**
      * Change user information.
@@ -218,10 +219,11 @@ public interface EndEntityManagementSession {
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
      * @throws ApprovalException if an approval already exists for this request.
      * @throws NoSuchEndEntityException if the end entity was not found
+     * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
      */
     void changeUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, boolean fromWebService)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
-            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException;
+            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;
 
     /**
      * Change user information after an EditEndEntityApprovalRequest has been approved
@@ -247,11 +249,12 @@ public interface EndEntityManagementSession {
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
      * @throws NoSuchEndEntityException NoSuchEndEntityException if the user does not exist
+     * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
      */
     void changeUserAfterApproval(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, 
             int approvalRequestId, AuthenticationToken lastApprovingAdmin)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
-            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException;
+            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;
     
     /**
      * Deletes a user from the database. The users certificates must be revoked
