@@ -13,6 +13,7 @@
 
 package org.ejbca.core.model.ra;
 
+import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
 
 /**
@@ -25,18 +26,18 @@ public class CustomFieldException extends EjbcaException {
 	private static final long serialVersionUID = -4270699717178908309L;
 
 	public CustomFieldException(){
-		super();
+		super(ErrorCode.FIELD_VALUE_NOT_VALID);
 	}
 	
 	public CustomFieldException(String message){
-		super(message);
+		super(ErrorCode.FIELD_VALUE_NOT_VALID, message);
 	}
 	
 	public CustomFieldException(Exception cause){
-		super(cause);
+		super(ErrorCode.FIELD_VALUE_NOT_VALID, cause);
 	}
 	
 	public CustomFieldException(String message, Throwable cause){
-		super(message, cause);
+		super(ErrorCode.FIELD_VALUE_NOT_VALID, message, cause);
 	}
 }

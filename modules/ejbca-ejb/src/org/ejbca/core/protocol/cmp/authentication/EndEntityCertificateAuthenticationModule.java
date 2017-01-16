@@ -62,6 +62,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
@@ -364,7 +365,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                         eeManagementSession.changeUser(admin, user, false);
                     }
                 } catch (AuthorizationDeniedException | IllegalNameException | CADoesntExistsException | EndEntityProfileValidationException
-                        | WaitingForApprovalException | CertificateSerialNumberException | ApprovalException | NoSuchEndEntityException e) {
+                        | WaitingForApprovalException | CertificateSerialNumberException | ApprovalException | NoSuchEndEntityException | CustomFieldException e) {
                     if (log.isDebugEnabled()) {
                         log.debug(e.getLocalizedMessage());
                     }

@@ -168,6 +168,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -1162,7 +1163,7 @@ public abstract class CmpTestCase extends CaTestCase {
 
     protected EndEntityInformation createUser(String username, String subjectDN, String password, int caid)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, NoSuchEndEntityException,
-            CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, ApprovalException {
+            CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, ApprovalException, CustomFieldException {
 
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, caid, null, username+"@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -1181,7 +1182,7 @@ public abstract class CmpTestCase extends CaTestCase {
     
     protected X500Name createCmpUser(String username, String dn, boolean useDnOverride, int caid)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, CADoesntExistsException,
-            CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, ApprovalException {
+            CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, ApprovalException, CustomFieldException {
         // Make USER that we know...
         boolean userExists = false;
         final int cpID;
@@ -1221,7 +1222,7 @@ public abstract class CmpTestCase extends CaTestCase {
             WaitingForApprovalException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, NoSuchEndEntityException, ApprovalException,
-            NoSuchEndEntityException, javax.ejb.ObjectNotFoundException {
+            NoSuchEndEntityException, javax.ejb.ObjectNotFoundException, CustomFieldException {
            
         createUser(username, "CN="+username, password, caid);
         Certificate racert = this.signSession.createCertificate(ADMIN, username, password, new PublicKeyWrapper(keys.getPublic()),

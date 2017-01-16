@@ -25,14 +25,11 @@ public class CertificateSerialNumberException extends CesecoreException {
     private static final long serialVersionUID = -2969078756967846634L;
 
     public CertificateSerialNumberException(String message) {
-        super(message);
+        super(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, message);
     }
 
     public CertificateSerialNumberException(Exception e) {
-        super(e);
+        super(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, e);
     }
 
-    public CertificateSerialNumberException(ErrorCode errorCode, String message) {
-        super(errorCode, message);
-    }
 }

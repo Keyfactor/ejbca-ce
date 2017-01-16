@@ -69,6 +69,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -703,7 +704,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
     
     private void createUser(final String username, final String dn, final int caid, final int eepid, final int cpid)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, NoSuchEndEntityException,
-            CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException {
+            CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, CustomFieldException {
         final EndEntityInformation user = new EndEntityInformation(username, dn, caid, null, username + "@primekey.se",
                 new EndEntityType(EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");

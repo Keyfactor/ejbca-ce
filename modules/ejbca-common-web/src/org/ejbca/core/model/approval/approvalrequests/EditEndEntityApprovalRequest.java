@@ -46,6 +46,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestHelper;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
@@ -114,6 +115,8 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
             throw new ApprovalRequestExecutionException("The Subject DN failed constraints. " + e.getErrorCode() + e.getMessage(), e);
         } catch (NoSuchEndEntityException e) {
             throw new ApprovalRequestExecutionException("End entity not found.", e);
+        } catch (CustomFieldException e) {
+            throw new ApprovalRequestExecutionException("The end entity was not validated by a locally defined field validator", e);
         }
     }
 

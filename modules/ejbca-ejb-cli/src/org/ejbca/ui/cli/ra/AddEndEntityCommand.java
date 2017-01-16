@@ -275,11 +275,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
                 log.error("ERROR: End entity already exists.");
             } catch (CADoesntExistsException e) {
                 throw new IllegalStateException("Should not happen, CA has already been checked.", e);
-            } catch (CustomFieldException e) {
-                getLogger().error(e.getMessage());
-            } catch (IllegalNameException e) {
-                getLogger().error(e.getMessage());
-            } catch (CertificateSerialNumberException e) {
+            } catch (CustomFieldException | IllegalNameException | CertificateSerialNumberException e) {
                 getLogger().error(e.getMessage());
             }
         }

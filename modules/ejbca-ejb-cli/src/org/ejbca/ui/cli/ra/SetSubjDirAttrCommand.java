@@ -27,6 +27,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -83,7 +84,8 @@ public class SetSubjDirAttrCommand extends BaseRaCommand {
             getLogger().error("Not authorized to change end entity.");
         } catch (EndEntityProfileValidationException e) {
             getLogger().error("Given end entity doesn't fulfill end entity profile. : " + e.getMessage());
-        } catch (CADoesntExistsException | WaitingForApprovalException| ApprovalException | CertificateSerialNumberException | IllegalNameException e) {
+        } catch (CADoesntExistsException | WaitingForApprovalException | ApprovalException | CertificateSerialNumberException | IllegalNameException
+                | CustomFieldException e) {
             getLogger().error("ERROR: " + e.getMessage());
         } catch (NoSuchEndEntityException e) {
             getLogger().error("No such end entity.");
