@@ -26,7 +26,6 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.EJB;
@@ -34,7 +33,6 @@ import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import javax.transaction.UserTransaction;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -124,9 +122,6 @@ public class StartupSingletonBean {
     private UpgradeSessionLocal upgradeSession;
     @EJB
     private ServiceSessionLocal serviceSession;
-
-    @Resource
-    private UserTransaction tx;
 
     @PreDestroy
     private void shutdown() {
@@ -242,19 +237,14 @@ public class StartupSingletonBean {
         log.trace(">init checking if this node is in the list of nodes");
         try {
             // Requires a transaction in order to create the initial global configuration
-            tx.begin();
-            try {
-                final GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-                final Set<String> nodes = config.getNodesInCluster();
-                final String hostname = getHostName();
-                if (hostname != null && !nodes.contains(hostname)) {
-                    log.debug("Adding this node ("+hostname+") to the list of nodes");
-                    nodes.add(hostname);
-                    config.setNodesInCluster(nodes);
-                    globalConfigurationSession.saveConfiguration(authenticationToken, config);
-                }
-            } finally {
-                tx.commit();
+            final GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            final Set<String> nodes = config.getNodesInCluster();
+            final String hostname = getHostName();
+            if (hostname != null && !nodes.contains(hostname)) {
+                log.debug("Adding this node ("+hostname+") to the list of nodes");
+                nodes.add(hostname);
+                config.setNodesInCluster(nodes);
+                globalConfigurationSession.saveConfiguration(authenticationToken, config);
             }
         } catch (Exception e) {
             log.error("Error adding host to node list in global configuration: ", e);
