@@ -101,6 +101,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                     if (log.isDebugEnabled()) {
                         log.debug("No default GlobalConfiguration exists. Creating a new one.");
                     }
+                    // We create a new instance of the configuration, but we don't persist it (the first one to modify it will take care of it)
                     result = GlobalConfigurationCacheHolder.INSTANCE.getNewConfiguration(configID);
                 } else {
                     result = GlobalConfigurationCacheHolder.INSTANCE.getConfiguration(globalConfigurationData.getData(), configID);
