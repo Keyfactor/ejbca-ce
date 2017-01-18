@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
  * Filter that prevents a browser to cache everything except resources like java script, css and images.
  * It's part of JSF best practices.
  * 
- * @version $Id: NoCacheFilter.java 25035 2017-01-18 17:11:37Z anatom $
+ * @version $Id$
  */
 @WebFilter(filterName = "NoCacheFilter", urlPatterns = {"/*"})
 public class NoCacheFilter implements Filter {
