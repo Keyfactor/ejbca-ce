@@ -25,6 +25,8 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+
 /**
  * Filter that prevents a browser to cache everything except resources like java script, css and images.
  * It's part of JSF best practices.
@@ -34,11 +36,10 @@ import javax.servlet.http.HttpServletResponse;
 @WebFilter(filterName = "NoCacheFilter", urlPatterns = {"/*"})
 public class NoCacheFilter implements Filter {
 
-    //private static final Logger log = Logger.getLogger(NoCacheFilter.class);
+    private static final Logger log = Logger.getLogger(NoCacheFilter.class);
 
     @Override
     public void destroy() {
-
     }
 
     /**
@@ -69,6 +70,7 @@ public class NoCacheFilter implements Filter {
 
     @Override
     public void init(FilterConfig arg0) throws ServletException {
+        log.debug("NoCacheFilter: init");
     }
 
 }
