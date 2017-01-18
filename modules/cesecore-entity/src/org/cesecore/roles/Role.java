@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.roles;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import org.apache.commons.lang.StringUtils;
@@ -73,6 +72,10 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
         return (nameSpace.isEmpty() ? "" : nameSpace + " ") + roleName;
     }
 
+    public static String getRoleNameFullAsCacheName(final String nameSpace, final String roleName) {
+        return (nameSpace==null || nameSpace.isEmpty() ? ";" : nameSpace + ";") + roleName;
+    }
+
     @Override
     public float getLatestVersion() {
         return LATEST_VERSION;
@@ -88,12 +91,65 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
         return getRoleNameFull().compareTo(role.getRoleNameFull());
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((nameSpace == null) ? 0 : nameSpace.hashCode());
+        result = prime * result + roleId;
+        result = prime * result + ((roleName == null) ? 0 : roleName.hashCode());
+        final LinkedHashMap<String, Boolean> accessRules = getAccessRules();
+        result = prime * result + ((accessRules == null) ? 0 : accessRules.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Role)) {
+            return false;
+        }
+        Role other = (Role) obj;
+        if (nameSpace == null) {
+            if (other.nameSpace != null) {
+                return false;
+            }
+        } else if (!nameSpace.equals(other.nameSpace)) {
+            return false;
+        }
+        final LinkedHashMap<String, Boolean> accessRules = getAccessRules();
+        final LinkedHashMap<String, Boolean> accessRulesOther = other.getAccessRules();
+        if (accessRules == null) {
+            if (accessRulesOther != null) {
+                return false;
+            }
+        } else if (!accessRules.equals(accessRulesOther)) {
+            return false;
+        }
+        if (roleId != other.roleId) {
+            return false;
+        }
+        if (roleName == null) {
+            if (other.roleName != null) {
+                return false;
+            }
+        } else if (!roleName.equals(other.roleName)) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Access rules are stored as map with pairs of "/resource/subresource/subsubresource" and STATE_ALLOW/STATE_DENY.
      * 
      * Resource definitions are always recursive ("/resource/" with STATE_ALLOW implies "/resource/subresource/" with STATE_ALLOW etc.)
      */
-    public HashMap<String, Boolean> getAccessRules() {
+    public LinkedHashMap<String, Boolean> getAccessRules() {
         @SuppressWarnings("unchecked")
         LinkedHashMap<String, Boolean> ret = (LinkedHashMap<String, Boolean> ) data.get(KEY_ACCESS_RULES);
         if (ret==null) {
