@@ -466,7 +466,8 @@ public class ApproveActionManagedBean extends BaseManagedBean {
      */
     public boolean canApproveAnyPartitions() {
         ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(getAdmin(), approvalDataVOView.getApprovalId());
-        return !partitionsAuthorizedToApprove.isEmpty() && !approvalDataVO.getApprovalRequest().getRequestAdmin().equals(getAdmin());
+        //Check that there are are partitions to approve, and that the request didn't originate from the current admin. 
+        return !partitionsAuthorizedToApprove.isEmpty() && (approvalDataVO != null ? !approvalDataVO.getApprovalRequest().getRequestAdmin().equals(getAdmin()) : true);
     }
     
     /**
