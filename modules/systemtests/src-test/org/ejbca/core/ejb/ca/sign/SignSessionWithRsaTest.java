@@ -1256,7 +1256,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             List<String> returnNames = Arrays.asList(retAltNames.split(", "));
             assertTrue(originalNames.containsAll(returnNames));
             // check cert policies, should be there
-            assertNotNull(cert.getExtensionValue(Extension.certificatePolicies.getId()));
+            assertNotNull("There should be a certificate policy extension present", cert.getExtensionValue(Extension.certificatePolicies.getId()));
 
             // Now test when we allow or disallow certain extensions
             Set<String> allowed = new HashSet<String>(Arrays.asList(Extension.subjectAlternativeName.getId()));
