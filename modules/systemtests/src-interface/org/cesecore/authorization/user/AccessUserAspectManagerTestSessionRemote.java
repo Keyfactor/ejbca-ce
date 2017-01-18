@@ -17,7 +17,7 @@ import java.util.Collection;
 import javax.ejb.Remote;
 
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 
 /**
  * Local interface for AccessUserAspectSession
@@ -30,7 +30,7 @@ public interface AccessUserAspectManagerTestSessionRemote {
 
     void persistAccessUserAspect(AccessUserAspectData accessUserAspectData) throws AccessUserAspectExistsException;
     
-    public AccessUserAspectData create(final RoleData role, final int caId,
+    public AccessUserAspectData create(final AdminGroupData role, final int caId,
             final X500PrincipalAccessMatchValue matchWith, final AccessMatchType matchType, final String matchValue) throws AccessUserAspectExistsException;
 
     AccessUserAspect find(int primaryKey);

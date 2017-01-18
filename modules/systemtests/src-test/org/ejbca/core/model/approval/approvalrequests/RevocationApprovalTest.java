@@ -62,7 +62,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
@@ -162,7 +162,7 @@ public class RevocationApprovalTest extends CaTestCase {
             endEntityManagementSession.addUser(internalAdmin, userdata2, true);
             fileHandles.addAll(BatchCreateTool.createAllNew(internalAdmin, new File(P12_FOLDER_NAME)));
         }
-        RoleData role = roleAccessSession.findRole(getRoleName());
+        AdminGroupData role = roleAccessSession.findRole(getRoleName());
         if (role == null) {
             role = roleManagementSession.create(internalAdmin, getRoleName());
         }

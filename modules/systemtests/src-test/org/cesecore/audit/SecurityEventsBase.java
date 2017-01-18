@@ -26,7 +26,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -69,7 +69,7 @@ public abstract class SecurityEventsBase extends RoleUsingTestCase {
     	setUpAuthTokenAndRole("SecurityAuditTest");
 
     	// Now we have a role that can edit roles, we can edit this role to include more privileges
-    	RoleData role = roleAccessSession.findRole("SecurityAuditTest");
+    	AdminGroupData role = roleAccessSession.findRole("SecurityAuditTest");
 
         // Add rules to the role, for the resource
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();

@@ -21,7 +21,7 @@ import javax.ejb.TransactionAttributeType;
 
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 
 /**
  * Test bean giving remote access to local-only interface of AccessUserAspectManagerSessionBean
@@ -44,7 +44,7 @@ public class AccessUserAspectManagerTestSessionBean implements AccessUserAspectM
     
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public AccessUserAspectData create(final RoleData role, final int caId,
+    public AccessUserAspectData create(final AdminGroupData role, final int caId,
             final X500PrincipalAccessMatchValue matchWith, final AccessMatchType matchType, final String matchValue) throws AccessUserAspectExistsException {
     	return accessUserAspectSession.create(role, caId, matchWith, matchType, matchValue);
     }

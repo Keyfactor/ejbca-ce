@@ -40,7 +40,7 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -92,7 +92,7 @@ public class CliAuthenticationTest {
 
     @Before
     public void setUp() throws Exception {        
-        RoleData role = roleAccessSession.findRole(CLI_TEST_ROLENAME);
+        AdminGroupData role = roleAccessSession.findRole(CLI_TEST_ROLENAME);
         if(role == null) {
             role = roleManagementSession.create(internalToken, CLI_TEST_ROLENAME);
         }

@@ -26,7 +26,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSession;
@@ -51,7 +51,7 @@ public class AuthorizationDataHandler implements Serializable {
     private RoleAccessSession roleAccessSession;
     private RoleManagementSession roleManagementSession;
     private AuthenticationToken administrator;
-    private Collection<RoleData> authorizedRoles;
+    private Collection<AdminGroupData> authorizedRoles;
     private InformationMemory informationmemory;
 
     /** Creates a new instance of ProfileDataHandler */
@@ -130,7 +130,7 @@ public class AuthorizationDataHandler implements Serializable {
     /**
      * Method returning a Collection of authorized roles. Only the fields role name and CA id is filled in these objects.
      */
-    public Collection<RoleData> getRoles() {
+    public Collection<AdminGroupData> getRoles() {
         if (this.authorizedRoles == null) {
             this.authorizedRoles = roleManagementSession.getAllRolesAuthorizedToEdit(administrator);
         }
@@ -141,7 +141,7 @@ public class AuthorizationDataHandler implements Serializable {
      * @return the given role with it's authorization data
      * 
      */
-    public RoleData getRole(String roleName) {
+    public AdminGroupData getRole(String roleName) {
         return roleAccessSession.findRole(roleName);
     }
 
@@ -167,7 +167,7 @@ public class AuthorizationDataHandler implements Serializable {
      * @throws RoleNotFoundException
      */
     public void removeAccessRules(String roleName, Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
-        RoleData role = roleAccessSession.findRole(roleName);
+        AdminGroupData role = roleAccessSession.findRole(roleName);
         Collection<AccessRuleData> rulesToRemove = new ArrayList<AccessRuleData>();
         for(AccessRuleData rule : accessRules) {
             if(role.getAccessRules().containsKey(rule.getPrimaryKey())) {
@@ -225,7 +225,7 @@ public class AuthorizationDataHandler implements Serializable {
      * @throws AuthorizationDeniedException if administrator isn't authorized to edit CAs administrative privileges.
      * @throws RoleNotFoundException 
      */
-    public void addAdminEntities(RoleData role, Collection<AccessUserAspectData> subjects) throws AuthorizationDeniedException, RoleNotFoundException {
+    public void addAdminEntities(AdminGroupData role, Collection<AccessUserAspectData> subjects) throws AuthorizationDeniedException, RoleNotFoundException {
         roleManagementSession.addSubjectsToRole(administrator, role, subjects);
         informationmemory.administrativePriviledgesEdited();
     }
@@ -236,7 +236,7 @@ public class AuthorizationDataHandler implements Serializable {
      * @throws AuthorizationDeniedException if administrator isn't authorized to edit CAs administrative privileges.
      * @throws RoleNotFoundException 
      */
-    public void removeAdminEntities(RoleData role, Collection<AccessUserAspectData> subjects) throws AuthorizationDeniedException, RoleNotFoundException {
+    public void removeAdminEntities(AdminGroupData role, Collection<AccessUserAspectData> subjects) throws AuthorizationDeniedException, RoleNotFoundException {
         roleManagementSession.removeSubjectsFromRole(administrator, role, subjects);
         informationmemory.administrativePriviledgesEdited();
     }

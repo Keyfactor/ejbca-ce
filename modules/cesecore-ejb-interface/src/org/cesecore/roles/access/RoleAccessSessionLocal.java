@@ -25,6 +25,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  * @version $Id$
  *
  */
+@Deprecated
 @Local
 public interface RoleAccessSessionLocal extends RoleAccessSession {
 

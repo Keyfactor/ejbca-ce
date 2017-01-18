@@ -70,7 +70,7 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -152,7 +152,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final X509Certificate certificate = caAdmin.getCertificate();
 
         final RoleManagementSessionRemote roleManagementSession = getRoleManagementSession();
-        RoleData role = CaTestCase.getRoleAccessSession().findRole(roleName);
+        AdminGroupData role = CaTestCase.getRoleAccessSession().findRole(roleName);
         if (role == null) {
             log.error("Role should not be null here.");
             role = roleManagementSession.create(internalAdmin, roleName);
@@ -180,7 +180,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     
     protected void removeDefaultRole() throws RoleNotFoundException, AuthorizationDeniedException {
         RoleAccessSessionRemote roleAccessSession = CaTestCase.getRoleAccessSession();
-        RoleData role = roleAccessSession.findRole(getRoleName());
+        AdminGroupData role = roleAccessSession.findRole(getRoleName());
         if (role != null) {
             CaTestCase.getRoleManagementSession().remove(internalAdmin, role);
         }

@@ -27,7 +27,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.NestableAuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessUserAspect;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 
 /**
  * A cache of AccessSet objects, one for each role, so they can be fetched (and merged as needed) quickly.
@@ -43,18 +43,18 @@ public final class AccessSets {
     private static class AccessSetsState {
         /** Map from role primary key to list of all allowed access rules, including generated wildcard rules */
         final Map<Integer,Collection<String>> sets;
-        final Collection<RoleData> roles;
-        public AccessSetsState(final Map<Integer,Collection<String>> sets, final Collection<RoleData> roles) {
+        final Collection<AdminGroupData> roles;
+        public AccessSetsState(final Map<Integer,Collection<String>> sets, final Collection<AdminGroupData> roles) {
             this.sets = sets;
             this.roles = roles;
         }
     }
     private AccessSetsState state;
     
-    public void buildAccessSets(final Collection<RoleData> roles) {
+    public void buildAccessSets(final Collection<AdminGroupData> roles) {
         log.trace(">buildAccessSets");
         final Map<Integer,Collection<String>> newSets = new HashMap<>();
-        for (RoleData role : roles) {
+        for (AdminGroupData role : roles) {
             newSets.put(role.getPrimaryKey(), buildAccessSet(role));
         }
         state = new AccessSetsState(newSets, roles);
@@ -136,7 +136,7 @@ public final class AccessSets {
     private Collection<Integer> getRoleIdsForAuthToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         final AccessSetsState state = this.state; // get object atomically
         final Collection<Integer> roleIds = new ArrayList<>();
-        for (final RoleData role : state.roles) {
+        for (final AdminGroupData role : state.roles) {
             for (final AccessUserAspect accessUser : role.getAccessUsers().values()) {
                 // If aspect is of the correct token type
                 if (authenticationToken.matchTokenType(accessUser.getTokenType()) && authenticationToken.matches(accessUser)) {
@@ -162,7 +162,7 @@ public final class AccessSets {
         return set.isAuthorized(resource);
     }
 
-    private Collection<String> buildAccessSet(final RoleData role) {
+    private Collection<String> buildAccessSet(final AdminGroupData role) {
         if (log.isTraceEnabled()) {
             log.trace(">buildAccessSet(" + role.getRoleName() + ")");
         }
