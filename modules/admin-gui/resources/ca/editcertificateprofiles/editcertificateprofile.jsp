@@ -233,17 +233,11 @@
 			<h:outputLabel for="overridableextensionlist" value="#{web.text.OVERRIDABLEOIDSEXTENSIONLIST}"/>
 		</h:panelGroup>
 		<h:panelGroup id="overridableextensionlistgroup">
-			<h:inputText id="textfieldcustomoverridableextension" size="25" maxlength="500" title="#{web.text.FORMAT_STRING}" value="#{certProfileBean.certificateProfile.overridableExtensionOIDs}"
+			<h:inputText id="textfieldcustomoverridableextension" size="25" maxlength="500" title="#{web.text.FORMAT_STRING}" value="#{certProfileBean.overridableExtensionOIDs}"
 				disabled="#{certProfilesBean.viewOnly}" converter="org.ejbca.OidsObjectLinkedHashSetConverter"/>
-			<h:outputText styleClass="help" value=" #{web.text.CERT_OVERRIDABLE_EXTENSIONS_LISTS_HELP}"/>
-		</h:panelGroup>
-		<h:panelGroup>
-			<h:outputLabel for="nonoverridableextensionlist" value="#{web.text.NONOVERRIDABLEOIDSEXTENSIONLIST}"/>
-		</h:panelGroup>
-		<h:panelGroup id="nonoverridableextensionlist">
-			<h:inputText id="textfieldcustomnonoverridableextension" size="25" maxlength="500" title="#{web.text.FORMAT_STRING}" value="#{certProfileBean.certificateProfile.nonOverridableExtensionOIDs}"
-				disabled="#{certProfilesBean.viewOnly}" converter="org.ejbca.OidsObjectLinkedHashSetConverter"/>
-			<h:outputText styleClass="help" value=" #{web.text.CERT_NON_OVERRIDABLE_EXTENSIONS_LISTS_HELP}"/>
+			<h:selectBooleanCheckbox id="checkcustomnonoverridableextension" value="#{certProfileBean.nonOverridableExtensionOIDs}" disabled="#{certProfilesBean.viewOnly}"/>
+			<h:outputText styleClass="help" value=" #{web.text.NONOVERRIDABLEOIDSEXTENSIONLIST}"/>		
+			</br><h:outputText styleClass="help" value=" #{web.text.CERT_OVERRIDABLE_EXTENSIONS_LISTS_HELP}"/>
 		</h:panelGroup>
 
 		<h:panelGroup>
