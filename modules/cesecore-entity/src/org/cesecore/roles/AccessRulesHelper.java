@@ -13,7 +13,10 @@
 package org.cesecore.roles;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 /**
@@ -145,5 +148,17 @@ public abstract class AccessRulesHelper {
         }
         minimizeAccessRules(accessRules);
         return accessRules;
+    }
+
+    /** @return the map sorted by keys */
+    public static <T1, T2> List<Entry<T1, T2>> getAsListSortedByKey(final HashMap<T1, T2> accessRulesMap) {
+        final List<Entry<T1, T2>> accessRulesList = new ArrayList<>(accessRulesMap.entrySet());
+        Collections.sort(accessRulesList, new Comparator<Entry<T1, T2>>() {
+            @Override
+            public int compare(final Entry<T1, T2> entry1, final Entry<T1, T2> entry2) {
+                return String.valueOf(entry1.getKey()).compareTo(String.valueOf(entry2.getKey()));
+            }
+        });
+        return accessRulesList;
     }
 }
