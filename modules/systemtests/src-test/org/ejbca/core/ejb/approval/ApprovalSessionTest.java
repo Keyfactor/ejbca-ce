@@ -61,7 +61,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
@@ -132,7 +132,7 @@ public class ApprovalSessionTest extends CaTestCase {
     
     private static AccumulativeApprovalProfile approvalProfile = null;
     
-    private RoleData role;
+    private AdminGroupData role;
     private int caid = getTestCAId();
     private int removeApprovalId = 0;
 

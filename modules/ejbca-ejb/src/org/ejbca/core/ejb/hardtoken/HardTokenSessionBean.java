@@ -59,7 +59,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.CertTools;
@@ -557,7 +557,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias);
      
         if (htih != null) {
-            RoleData role = roleAccessSession.findRole(htih.getAdminGroupId());
+            AdminGroupData role = roleAccessSession.findRole(htih.getAdminGroupId());
             boolean adminInRole = false;
             if(role != null) {
                 for (Entry<Integer, AccessUserAspectData> entry : role.getAccessUsers().entrySet()) {

@@ -18,7 +18,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -64,7 +64,7 @@ public class ChangeRulesTest {
     public void testAddLegacyRule() {
         final String accessRuleName = "/ca";
         command.execute(new String[]{ ROLENAME, accessRuleName, "ACCEPT", "-R"});
-        RoleData role = roleAccessSession.findRole(ROLENAME);
+        AdminGroupData role = roleAccessSession.findRole(ROLENAME);
         AccessRuleData rule = role.getAccessRules().get((AccessRuleData.generatePrimaryKey(ROLENAME, accessRuleName)));
         assertNotNull("Rule " + accessRuleName + " was not added to role via CLI", rule);
     }
@@ -78,7 +78,7 @@ public class ChangeRulesTest {
     public void testAddCesecoreRule() {      
             final String accessRuleName = "/secureaudit";
             command.execute(new String[]{ ROLENAME, accessRuleName, "ACCEPT", "-R"});
-            RoleData role = roleAccessSession.findRole(ROLENAME);
+            AdminGroupData role = roleAccessSession.findRole(ROLENAME);
             AccessRuleData rule = role.getAccessRules().get((AccessRuleData.generatePrimaryKey(ROLENAME, accessRuleName)));
             assertNotNull("Rule " + accessRuleName + " was not added to role via CLI", rule);
     }

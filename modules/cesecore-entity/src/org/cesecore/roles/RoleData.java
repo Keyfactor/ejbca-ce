@@ -12,8 +12,13 @@
  *************************************************************************/
 package org.cesecore.roles;
 
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.persistence.Entity;
@@ -23,219 +28,110 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.util.Base64GetHashMap;
+import org.cesecore.util.Base64PutHashMap;
 
 /**
- * Represents a role, and is based in the AdminGroup concept from EJBCA.
+ * Represents a role.
  * 
  * @version $Id$
- * 
  */
 @Entity
 @Table(name = "RoleData")
-public class RoleData extends ProtectedData implements Serializable, Comparable<RoleData> {
+public class RoleData extends ProtectedData implements Serializable {
 
-    public static final String DEFAULT_ROLE_NAME = "DEFAULT";
-
-    private static final long serialVersionUID = -160810489638829430L;
-    private Integer primaryKey;
-    private Map<Integer, AccessRuleData> accessRules;
-    private Map<Integer, AccessUserAspectData> accessUsers;
+    private static final long serialVersionUID = 1L;
+    private int id;
+    private String nameSpace;
     private String roleName;
+    private String rawData;
     private int rowVersion = 0;
     private String rowProtection;
 
     public RoleData() {
-
     }
 
-    public RoleData(final Integer primaryKey, final String roleName) {
-        this.primaryKey = primaryKey;
-        this.roleName = roleName;
-        accessUsers = new HashMap<Integer, AccessUserAspectData>();
-        accessRules = new HashMap<Integer, AccessRuleData>();
+    public RoleData(final Role role) {
+        setRole(role);
     }
 
     // @Id @Column
-    public Integer getPrimaryKey() {
-        return primaryKey;
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    /** Use {@link #getNameSpaceNeverNull()} instead */
+    // @Column
+    public String getNameSpace() { return nameSpace; }
+    /** Use {@link #setNameSpaceNeverNull(String)} instead */
+    public void setNameSpace(String nameSpace) { this.nameSpace = nameSpace; }
+
+    // Ensure that we treat empty string as null for consistent behavior with Oracle
+    @Transient
+    public String getNameSpaceNeverNull() {
+        final String nameSpace = getNameSpace();
+        return nameSpace == null ? "" : nameSpace;
     }
 
-    public void setPrimaryKey(Integer primaryKey) {
-        this.primaryKey = primaryKey;
+    // Ensure that we treat empty string as null for consistent behavior with Oracle
+    @Transient
+    public void setNameSpaceNeverNull(final String nameSpace) {
+        setNameSpace("".equals(nameSpace) ? null : nameSpace);
     }
 
     // @Column
-    public String getRoleName() {
-        return roleName;
+    public String getRoleName() { return roleName; }
+    public void setRoleName(String roleName) { this.roleName = roleName; }
+
+
+    // @Column
+    /** Should not be invoked directly. Use getDataMap() instead. */
+    public String getRawData() { return rawData; }
+    /** Should not be invoked directly. Use setDataMap(..) instead. */
+    public void setRawData(String rawData) { this.rawData = rawData; }
+
+    @Transient
+    @SuppressWarnings("unchecked")
+    public LinkedHashMap<Object, Object> getDataMap() {
+        try (final XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(getRawData().getBytes(StandardCharsets.UTF_8)));) {
+            // Handle Base64 encoded string values
+            return new Base64GetHashMap((Map<?, ?>)decoder.readObject());
+        }
     }
 
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
+    @Transient
+    public void setDataMap(final LinkedHashMap<Object, Object> dataMap) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final XMLEncoder encoder = new XMLEncoder(baos);){
+            // We must base64 encode string for UTF safety
+            encoder.writeObject(new Base64PutHashMap(dataMap));
+        }
+        setRawData(new String(baos.toByteArray(), StandardCharsets.UTF_8));
+    }
+
+    @Transient
+    public Role getRole() {
+        return new Role(getId(), getNameSpaceNeverNull(), getRoleName(), getDataMap());
+    }
+
+    @Transient
+    public void setRole(final Role role) {
+        setId(role.getRoleId());
+        setNameSpaceNeverNull(role.getNameSpace());
+        setRoleName(role.getRoleName());
+        setDataMap(role.getRawData());
     }
 
     // @Version @Column
-    public int getRowVersion() {
-        return rowVersion;
-    }
-
-    public void setRowVersion(final int rowVersion) {
-        this.rowVersion = rowVersion;
-    }
+    public int getRowVersion() { return rowVersion; }
+    public void setRowVersion(final int rowVersion) { this.rowVersion = rowVersion; }
 
     // @Column @Lob
     @Override
-    public String getRowProtection() {
-        return rowProtection;
-    }
-
+    public String getRowProtection() { return rowProtection; }
     @Override
-    public void setRowProtection(final String rowProtection) {
-        this.rowProtection = rowProtection;
-    }
-
-    /*
-     * If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for
-     * Hibernate.
-     */
-    // @OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER) @JoinColumn(name = "RoleData_accessUsers")
-    public Map<Integer, AccessUserAspectData> getAccessUsers() {
-        return accessUsers;
-    }
-
-    public void setAccessUsers(Map<Integer, AccessUserAspectData> accessUsers) {
-        this.accessUsers = accessUsers;
-    }
-
-    /*
-     * If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for
-     * Hibernate.
-     */
-    // @OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER) @JoinColumn(name = "RoleData_accessRules")
-    public Map<Integer, AccessRuleData> getAccessRules() {
-        return accessRules;
-    }
-
-    public void setAccessRules(Map<Integer, AccessRuleData> accessRules) {
-        this.accessRules = accessRules;
-    }
-    
-    /**
-     * Utility method that makes a tree search of this Role's rules and checks for a positive match. 
-     * @param rule the rule to check
-     * @return true if this Role has access to the given rule. 
-     */
-    @Transient
-    public boolean hasAccessToRule(final String rule) {
-        return hasAccessToRule(rule, false);
-    }
-    
-    /**
-     * Utility method that makes a tree search of this Role's rules and checks for a positive match. 
-     * 
-     * @param rule the rule to check
-     * @param requireRecursive if rule has to be recursive (for an an exact match)
-     * @return true if this Role has access to the given rule. 
-     */
-    @Transient
-    public boolean hasAccessToRule(final String rule, boolean requireRecursive) {
-        if(!rule.startsWith("/")) {
-            throw new IllegalArgumentException("Rule must start with a \"/\"");
-        }
-        boolean result = false;
-        for(AccessRuleData accessRuleData : accessRules.values()) {
-            String currentRule = accessRuleData.getAccessRuleName();
-            if(rule.equals(currentRule)) {
-                if(accessRuleData.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
-                    if(requireRecursive) {
-                        result = accessRuleData.getRecursiveBool();
-                    } else {
-                        result = true;
-                    }
-                } else {
-                    result = false;
-                    break;
-                }
-            } else if (rule.startsWith(currentRule) || currentRule.startsWith(rule)) {
-                if (rule.length() > currentRule.length() && currentRule.length() > 1 && rule.charAt(currentRule.length()) != '/') {
-                    // Not a parent rule but just one with a similar name, compare /foo/bar to /foo_bar,
-                    // also ignoring the root "/" rule. 
-                    continue;
-                } else if (rule.length() < currentRule.length() && currentRule.charAt(rule.length()) != '/') {
-                    //This is not a subrule (i.e rule == /foo, currentRule == /foo/bar
-                    continue;
-                } else {
-                    if (accessRuleData.getInternalState().equals(AccessRuleState.RULE_ACCEPT) && accessRuleData.getRecursive()) {
-                        // A possible match, but there may be a contraindicator down the line
-                        result = true;
-                    } else if (accessRuleData.getInternalState().equals(AccessRuleState.RULE_DECLINE)) {
-                        // Definitely a non-match, break. 
-                        result = false;
-                        break;
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((accessRules == null) ? 0 : accessRules.hashCode());
-        result = prime * result + ((accessUsers == null) ? 0 : accessUsers.hashCode());
-        result = prime * result + ((primaryKey == null) ? 0 : primaryKey.hashCode());
-        result = prime * result + ((roleName == null) ? 0 : roleName.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        RoleData other = (RoleData) obj;
-        if (accessRules == null) {
-            if (other.accessRules != null) {
-                return false;
-            }
-        } else if (!accessRules.equals(other.accessRules)) {
-            return false;
-        }
-        if (accessUsers == null) {
-            if (other.accessUsers != null) {
-                return false;
-            }
-        } else if (!accessUsers.equals(other.accessUsers)) {
-            return false;
-        }
-        if (primaryKey == null) {
-            if (other.primaryKey != null) {
-                return false;
-            }
-        } else if (!primaryKey.equals(other.primaryKey)) {
-            return false;
-        }
-        if (roleName == null) {
-            if (other.roleName != null) {
-                return false;
-            }
-        } else if (!roleName.equals(other.roleName)) {
-            return false;
-        }
-        return true;
-    }
+    public void setRowProtection(final String rowProtection) { this.rowProtection = rowProtection; }
 
     //
     // Start Database integrity protection methods
@@ -244,10 +140,10 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
     @Transient
     @Override
     protected String getProtectString(final int version) {
-    	final ProtectionStringBuilder build = new ProtectionStringBuilder();
+        final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getPrimaryKey()).append(getRoleName());
+        build.append(getId()).append(getNameSpaceNeverNull()).append(getRoleName()).append(getRawData()).append(getRawData());
         return build.toString();
     }
 
@@ -273,23 +169,15 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
     @Override
     @Transient
     protected String getRowId() {
-        return String.valueOf(getPrimaryKey());
+        return String.valueOf(getId());
     }
 
     //
     // End Database integrity protection methods
     //
-
-    @Override
-    public int compareTo(RoleData o) {
-        return roleName.compareToIgnoreCase(o.roleName);
-    }
     
     @Override
     public String toString() {
         return roleName;
     }
-
-
-
 }

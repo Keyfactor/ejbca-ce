@@ -22,7 +22,7 @@ import java.util.Collection;
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -81,7 +81,7 @@ public class AccessTreeCacheTest {
         int authorizationTreeUpdateNumber = 0;
         // Now build the access tree, make sure that it's not null but not ripe to be updated.
         AccessTreeCache accessTreeCache = new AccessTreeCache();
-        Collection<RoleData> roles = new ArrayList<RoleData>();
+        Collection<AdminGroupData> roles = new ArrayList<AdminGroupData>();
         accessTreeCache.updateAccessTree(roles, authorizationTreeUpdateNumber++);
         
         assertTrue("getAccessTree returns null", accessTreeCache.getAccessTree() != null);

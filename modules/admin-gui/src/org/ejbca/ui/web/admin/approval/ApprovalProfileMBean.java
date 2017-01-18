@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.SimpleTime;
@@ -441,9 +441,9 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 DynamicUiProperty<? extends Serializable> propertyClone = new DynamicUiProperty<>(property);
                 switch (propertyClone.getPropertyCallback()) {
                 case ROLES:
-                    List<RoleData> allAuthorizedRoles = roleAccessSession.getAllAuthorizedRoles(getAdmin());
+                    List<AdminGroupData> allAuthorizedRoles = roleAccessSession.getAllAuthorizedRoles(getAdmin());
                     List<RoleInformation> roleRepresentations = new ArrayList<>();
-                    for(RoleData role : allAuthorizedRoles) {
+                    for(AdminGroupData role : allAuthorizedRoles) {
                         //Cull roles which would have access to performing or viewing approvals anyway
                         if (role.hasAccessToRule(AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || role.hasAccessToRule(AccessRulesConstants.REGULAR_APPROVECAACTION)) {

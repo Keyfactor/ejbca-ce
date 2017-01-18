@@ -38,7 +38,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
@@ -77,7 +77,7 @@ public class CertificateProfileSessionTest extends RoleUsingTestCase {
     	setUpAuthTokenAndRole("CertProfileSessionTest");
 
     	// Now we have a role that can edit roles, we can edit this role to include more privileges
-    	RoleData role = roleAccessSession.findRole("CertProfileSessionTest");
+    	AdminGroupData role = roleAccessSession.findRole("CertProfileSessionTest");
 
         // Add rules to the role
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();

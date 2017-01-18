@@ -78,7 +78,7 @@ import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
@@ -147,7 +147,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
     @Before
     public void setUp() throws Exception {
         // Now we have a role that can edit roles, we can edit this role to include more privileges
-        final RoleData role = roleAccessSession.findRole(this.getClass().getSimpleName());
+        final AdminGroupData role = roleAccessSession.findRole(this.getClass().getSimpleName());
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAADD.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAEDIT.resource(), AccessRuleState.RULE_ACCEPT, true));

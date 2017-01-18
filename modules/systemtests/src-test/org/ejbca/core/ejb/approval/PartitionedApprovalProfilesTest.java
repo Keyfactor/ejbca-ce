@@ -45,7 +45,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -85,7 +85,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
 
     private static final String P12_FOLDER_NAME = "p12";
 
-    private static RoleData role;
+    private static AdminGroupData role;
     private static int caid = getTestCAId();
 
     private static String reqadminusername = null;

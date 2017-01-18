@@ -62,7 +62,7 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
@@ -134,16 +134,16 @@ public class DatabaseCliCommandTest {
 
     @Test
     public void testExportTableXmlWithRoleData() throws Exception {
-        RoleData roleData = new RoleData(0, "foo");
+        AdminGroupData adminGroupData = new AdminGroupData(0, "foo");
         File exportFile = File.createTempFile("tmp", ".xml");
         long lengthBefore = exportFile.length();
-        performExport(roleData, exportFile, PERSISTENCE_UNIT, OutputFormat.XML);
+        performExport(adminGroupData, exportFile, PERSISTENCE_UNIT, OutputFormat.XML);
         long lengthAfter = exportFile.length();
         assertTrue("Nothing was written to exportfile", lengthBefore < lengthAfter);
-        List<RoleData> results = performImportWithGetNextBatch(exportFile);
+        List<AdminGroupData> results = performImportWithGetNextBatch(exportFile);
         assertEquals("Incorrect result set, should have been one", 1, results.size());
-        RoleData result = results.get(0);
-        assertEquals(roleData, result);
+        AdminGroupData result = results.get(0);
+        assertEquals(adminGroupData, result);
     }
 
     @Test

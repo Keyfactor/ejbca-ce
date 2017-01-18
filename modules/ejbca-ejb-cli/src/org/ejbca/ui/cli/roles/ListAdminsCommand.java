@@ -22,7 +22,7 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookup
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -56,7 +56,7 @@ public class ListAdminsCommand extends BaseRolesCommand {
     public CommandResult execute(ParameterContainer parameters) {
 
         String roleName = parameters.get(ROLE_NAME_KEY);
-        RoleData role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
+        AdminGroupData role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
         if (role == null) {
             getLogger().error("No such role \"" + roleName + "\".");
             return CommandResult.FUNCTIONAL_FAILURE;

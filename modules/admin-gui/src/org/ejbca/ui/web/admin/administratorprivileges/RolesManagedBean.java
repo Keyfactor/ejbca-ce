@@ -43,7 +43,7 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keys.token.CryptoTokenInfo;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
@@ -81,7 +81,7 @@ public class RolesManagedBean extends BaseManagedBean {
     
     
     private String currentRoleName = null;
-    private RoleData currentRole = null;
+    private AdminGroupData currentRole = null;
     private String matchCaId = null;
     
     private HtmlSelectOneMenu matchWithMenu;
@@ -131,7 +131,7 @@ public class RolesManagedBean extends BaseManagedBean {
     }
     
     /** @return a List of all roles, excepting ones that refer to CA's which the current role doesn't have access to. */
-    public List<RoleData> getRoles() {
+    public List<AdminGroupData> getRoles() {
         RoleAccessSessionLocal roleAccessSession = getEjbcaWebBean().getEjb().getRoleAccessSession();
         return roleAccessSession.getAllAuthorizedRoles(getAdmin());
     }
@@ -354,8 +354,8 @@ public class RolesManagedBean extends BaseManagedBean {
     }
 
     /** @return the current role for the current row in the datatable */
-    private RoleData getCurrentRoleObjectForEach() {
-        String roleName = ((RoleData) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("role")).getRoleName();
+    private AdminGroupData getCurrentRoleObjectForEach() {
+        String roleName = ((AdminGroupData) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("role")).getRoleName();
         return getAuthorizationDataHandler().getRole(roleName);
     }
 
@@ -418,7 +418,7 @@ public class RolesManagedBean extends BaseManagedBean {
 
     // Stores the value from request, but always reads the value directly from the saved data
     public String getCurrentRoleTemplate() {      
-        final RoleData currentRole = getCurrentRoleObject();
+        final AdminGroupData currentRole = getCurrentRoleObject();
         final String roleName = currentRole.getRoleName();
         //Strip out all external rules until only the template remains.
         Collection<AccessRuleTemplate> externalRules = new ArrayList<AccessRuleTemplate>();
@@ -582,7 +582,7 @@ public class RolesManagedBean extends BaseManagedBean {
         getEjbcaWebBean().getInformationMemory().administrativePriviledgesEdited();
     }
 
-    private BasicAccessRuleSetEncoder getBasicRuleSetInternal(RoleData role) {
+    private BasicAccessRuleSetEncoder getBasicRuleSetInternal(AdminGroupData role) {
         GlobalConfiguration globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
         return new BasicAccessRuleSetEncoder(role.getAccessRules().values(), getAuthorizationDataHandler().getAvailableAccessRulesUncategorized(AccessRulesConstants.CREATE_END_ENTITY),
                 globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery());
@@ -593,7 +593,7 @@ public class RolesManagedBean extends BaseManagedBean {
     private Map<String, List<AccessRuleData>> getAccessRules() {
         log.trace(">getAccessRules");
         if (allRulesViewCache == null) {
-            RoleData role = getCurrentRoleObject();      
+            AdminGroupData role = getCurrentRoleObject();      
             Map<String, Set<String>> redactedRules = getAuthorizationDataHandler()
                     .getRedactedAccessRules(AccessRulesConstants.CREATE_END_ENTITY);
             allRulesViewCache = getCategorizedRuleSet(role, redactedRules);   
@@ -609,7 +609,7 @@ public class RolesManagedBean extends BaseManagedBean {
      * @param redactedRules a list of all rules, barring unauthorized CAs, CPs, EEPs, CryptoTokens 
      * @return the sought map
      */
-    private Map<String, List<AccessRuleData>> getCategorizedRuleSet(RoleData role, Map<String, Set<String>> redactedRules) {
+    private Map<String, List<AccessRuleData>> getCategorizedRuleSet(AdminGroupData role, Map<String, Set<String>> redactedRules) {
         Map<String, List<AccessRuleData>> result = new LinkedHashMap<String, List<AccessRuleData>>();
         Map<Integer, AccessRuleData> knownRules = role.getAccessRules();
         if (redactedRules != null) {
@@ -768,7 +768,7 @@ public class RolesManagedBean extends BaseManagedBean {
     }
 
     /** @return the current role sent with POST, GET or injected through the backing value */
-    public RoleData getCurrentRoleObject() {
+    public AdminGroupData getCurrentRoleObject() {
         return getAuthorizationDataHandler().getRole(getCurrentRole());
     }
 

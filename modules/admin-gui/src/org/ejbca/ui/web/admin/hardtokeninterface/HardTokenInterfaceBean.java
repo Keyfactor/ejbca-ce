@@ -26,7 +26,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
@@ -155,7 +155,7 @@ public class HardTokenInterfaceBean implements Serializable {
     }
 
     public void addHardTokenIssuer(String alias, int roleId) throws HardTokenIssuerExistsException, AuthorizationDeniedException {
-        Iterator<RoleData> iter = this.informationmemory.getHardTokenIssuingRoles().iterator();
+        Iterator<AdminGroupData> iter = this.informationmemory.getHardTokenIssuingRoles().iterator();
         while (iter.hasNext()) {
             if (iter.next().getPrimaryKey() == roleId) {
                 if (!hardtokensession.addHardTokenIssuer(admin, alias, roleId, new HardTokenIssuer())) {

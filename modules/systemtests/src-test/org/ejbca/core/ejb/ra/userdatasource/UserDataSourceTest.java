@@ -40,7 +40,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -82,7 +82,7 @@ public class UserDataSourceTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         admin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(null, null));
-        RoleData role = roleManagementSessionRemote.create(internalAdmin, ROLENAME);
+        AdminGroupData role = roleManagementSessionRemote.create(internalAdmin, ROLENAME);
         Collection<AccessUserAspectData> subjects = new LinkedList<AccessUserAspectData>();
         subjects.add(new AccessUserAspectData(ROLENAME, CertTools.getIssuerDN(admin.getCertificate()).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
                 AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(SimpleAuthenticationProviderSessionRemote.DEFAULT_DN, "CN")));
@@ -192,7 +192,7 @@ public class UserDataSourceTest extends CaTestCase {
 
         final int caid = CertTools.getIssuerDN(admin.getCertificate()).hashCode();
         final String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
-        RoleData role = roleManagementSessionRemote.create(internalAdmin, rolename);
+        AdminGroupData role = roleManagementSessionRemote.create(internalAdmin, rolename);
         final String alias = "spacemonkeys";
         try {
             Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();

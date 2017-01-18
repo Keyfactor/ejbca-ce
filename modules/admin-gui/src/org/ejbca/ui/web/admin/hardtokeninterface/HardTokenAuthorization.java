@@ -21,7 +21,7 @@ import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -39,7 +39,7 @@ public class HardTokenAuthorization implements Serializable {
     private TreeMap<String, HardTokenIssuerInformation> hardtokenissuers = null;
     private TreeMap<String, Integer> hardtokenprofiles = null;
     private HashMap<Integer, String>  hardtokenprofilesnamemap = null;
-    private Collection<RoleData> authissueingadmgrps = null;
+    private Collection<AdminGroupData> authissueingadmgrps = null;
 
     private AuthenticationToken admin;
     private HardTokenSession hardtokensession;
@@ -64,7 +64,7 @@ public class HardTokenAuthorization implements Serializable {
         if (hardtokenissuers == null) {
             hardtokenissuers = new TreeMap<String, HardTokenIssuerInformation>();
             HashSet<Integer> authRoleIds = new HashSet<Integer>();
-            for (RoleData next : roleManagementSession.getAllRolesAuthorizedToEdit(admin)) {
+            for (AdminGroupData next : roleManagementSession.getAllRolesAuthorizedToEdit(admin)) {
                 authRoleIds.add(Integer.valueOf(next.getPrimaryKey()));
             }
             TreeMap<String, HardTokenIssuerInformation> allhardtokenissuers = this.hardtokensession.getHardTokenIssuers(admin);
@@ -123,7 +123,7 @@ public class HardTokenAuthorization implements Serializable {
      * Returns a Collection of role names authorized to issue hard tokens,
      * it also only returns the roles the administrator is authorized to edit.
      */
-    public Collection<RoleData> getHardTokenIssuingRoles() {
+    public Collection<AdminGroupData> getHardTokenIssuingRoles() {
         if (authissueingadmgrps == null) {
             authissueingadmgrps = roleManagementSession.getAuthorizedRoles(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS);
         }

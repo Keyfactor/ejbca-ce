@@ -27,6 +27,7 @@ drop table PeerData;
 drop table ProfileData;
 drop table PublisherData;
 drop table PublisherQueueData;
+drop table RoleData;
 drop table ServiceData;
 drop table UserData;
 drop table UserDataSourceData;

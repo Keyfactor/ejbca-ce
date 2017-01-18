@@ -20,7 +20,7 @@ import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.access.AccessSets;
 import org.cesecore.authorization.access.AccessTree;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 
 /**
  * Class Holding cache variable. Needed because EJB spec does not allow volatile, non-final fields in session beans.
@@ -54,7 +54,7 @@ public class AccessTreeCache {
      * @param roles A collection of RoleData objects.
      * @param authorizationTreeUpdateNumber FIXME: Document me.
      */
-    public synchronized void updateAccessTree(Collection<RoleData> roles, int authorizationTreeUpdateNumber) {
+    public synchronized void updateAccessTree(Collection<AdminGroupData> roles, int authorizationTreeUpdateNumber) {
         if (accessTree == null) {
             accessTree = new AccessTree();
             accessSets = new AccessSets();

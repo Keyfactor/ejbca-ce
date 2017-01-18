@@ -47,7 +47,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -145,7 +145,7 @@ public class PublisherTest {
 		AuthenticationSubject subject = new AuthenticationSubject(principals, credentials);
 		this.admin = this.simpleAuthenticationProvider.authenticate(subject);
 
-		RoleData role = this.roleManagementSession.create(internalAdmin, commonname);
+		AdminGroupData role = this.roleManagementSession.create(internalAdmin, commonname);
 		Collection<AccessRuleData> rules = new ArrayList<AccessRuleData>();
 		rules.add(new AccessRuleData(commonname, StandardRules.CAACCESS.resource() + caid, AccessRuleState.RULE_ACCEPT, false));
 		role = this.roleManagementSession.addAccessRulesToRole(internalAdmin, role, rules);

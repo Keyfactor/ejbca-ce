@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -39,10 +39,10 @@ public class ListRolesCommand extends BaseRolesCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-        Collection<RoleData> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(
+        Collection<AdminGroupData> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(
                 getAuthenticationToken());
-        Collections.sort((List<RoleData>) roles);
-        for (RoleData role : roles) {
+        Collections.sort((List<AdminGroupData>) roles);
+        for (AdminGroupData role : roles) {
             int numberOfAdmins = role.getAccessUsers().size();
             getLogger().info(role.getRoleName() + " (" + numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
         }

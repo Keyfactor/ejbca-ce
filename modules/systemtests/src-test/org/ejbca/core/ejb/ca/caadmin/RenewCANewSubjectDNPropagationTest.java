@@ -34,7 +34,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -202,8 +202,8 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
     }
 
     /** Helper method for getting access rule by its name */
-    private AccessRuleData getAccessRuleDataSpecificToCAID(RoleData roleData, String accessRuleName) {
-        for (AccessRuleData accessRuleData : roleData.getAccessRules().values()) {
+    private AccessRuleData getAccessRuleDataSpecificToCAID(AdminGroupData adminGroupData, String accessRuleName) {
+        for (AccessRuleData accessRuleData : adminGroupData.getAccessRules().values()) {
             if (accessRuleData.getAccessRuleName().equalsIgnoreCase(accessRuleName)) {
                 return accessRuleData;
             }
@@ -253,7 +253,7 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
         
         //Access Rules propagation has to clone any rules that had contained caid before the Name Change CA Renewal
         //e.g. /ca/12345/ has to be cloned to /ca/6789/ where "12345" and "6789" are CA IDs before and after the renewal
-        RoleData testRoleData1 = roleAccessSessionRemote.findRole(testRole1);
+        AdminGroupData testRoleData1 = roleAccessSessionRemote.findRole(testRole1);
         AccessRuleData expectedAccessDataRule1Role1 = prepareExpectedClone(testAccessDataRule1Role1, caInfoAfterNameChange.getCAId());
         AccessRuleData foundAccessDataRule1Role1 = getAccessRuleDataSpecificToCAID(testRoleData1, expectedAccessDataRule1Role1.getAccessRuleName());
         assertEqualAccessRuleData(expectedAccessDataRule1Role1, foundAccessDataRule1Role1);
@@ -266,7 +266,7 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
         AccessRuleData foundAccessDataRule3Role1 = getAccessRuleDataSpecificToCAID(testRoleData1, expectedAccessDataRule3Role1.getAccessRuleName());
         assertEqualAccessRuleData(expectedAccessDataRule3Role1, foundAccessDataRule3Role1);
         
-        RoleData testRoleData2 = roleAccessSessionRemote.findRole(testRole2);
+        AdminGroupData testRoleData2 = roleAccessSessionRemote.findRole(testRole2);
         AccessRuleData expectedAccessDataRule1Role2 = prepareExpectedClone(testAccessDataRule1Role2, caInfoAfterNameChange.getCAId());
         AccessRuleData foundAccessDataRule1Role2 = getAccessRuleDataSpecificToCAID(testRoleData2, expectedAccessDataRule1Role2.getAccessRuleName());
         assertEqualAccessRuleData(expectedAccessDataRule1Role2, foundAccessDataRule1Role2);
@@ -279,7 +279,7 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
         AccessRuleData foundAccessDataRule3Role2 = getAccessRuleDataSpecificToCAID(testRoleData2, expectedAccessDataRule3Role2.getAccessRuleName());
         assertEqualAccessRuleData(expectedAccessDataRule3Role2, foundAccessDataRule3Role2);
         
-        RoleData testRoleData3 = roleAccessSessionRemote.findRole(testRole3);
+        AdminGroupData testRoleData3 = roleAccessSessionRemote.findRole(testRole3);
         AccessRuleData expectedAccessDataRule1Role3 = prepareExpectedClone(testAccessDataRule1Role3, caInfoAfterNameChange.getCAId());
         AccessRuleData foundAccessDataRule1Role3 = getAccessRuleDataSpecificToCAID(testRoleData3, expectedAccessDataRule1Role3.getAccessRuleName());
         assertNull(expectedAccessDataRule1Role3 + " has been cloned during Name Change CA Renewal although this CA is not renewed. ", foundAccessDataRule1Role3);

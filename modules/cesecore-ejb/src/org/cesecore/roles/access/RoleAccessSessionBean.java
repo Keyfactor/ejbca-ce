@@ -33,13 +33,14 @@ import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.util.QueryResultWrapper;
 
 /**
  * @version $Id$
  *
  */
+@Deprecated
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleAccessSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccessSessionRemote {
@@ -53,35 +54,35 @@ public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccess
     @SuppressWarnings("unchecked")
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public List<RoleData> getAllRoles() {
-        final Query query = entityManager.createQuery("SELECT a FROM RoleData a");
-        return (query.getResultList() != null ? query.getResultList() : new ArrayList<RoleData>());
+    public List<AdminGroupData> getAllRoles() {
+        final Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a");
+        return (query.getResultList() != null ? query.getResultList() : new ArrayList<AdminGroupData>());
     }
 
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public RoleData findRole(final String roleName) {
-        final Query query = entityManager.createQuery("SELECT a FROM RoleData a WHERE a.roleName=:roleName");
+    public AdminGroupData findRole(final String roleName) {
+        final Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a WHERE a.roleName=:roleName");
         query.setParameter("roleName", roleName);
-        return (RoleData) QueryResultWrapper.getSingleResult(query);
+        return (AdminGroupData) QueryResultWrapper.getSingleResult(query);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public RoleData findRole(final Integer primaryKey) {
-        final Query query = entityManager.createQuery("SELECT a FROM RoleData a WHERE a.primaryKey=:primaryKey");
+    public AdminGroupData findRole(final Integer primaryKey) {
+        final Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a WHERE a.primaryKey=:primaryKey");
         query.setParameter("primaryKey", primaryKey);
 
-        return (RoleData) QueryResultWrapper.getSingleResult(query);
+        return (AdminGroupData) QueryResultWrapper.getSingleResult(query);
     }
     
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<String> getRolesMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        final List<RoleData> roleDatas = getAllRoles();
+        final List<AdminGroupData> roleDatas = getAllRoles();
         final List<String> roleNames = new ArrayList<String>();
-        for (final RoleData roleData : roleDatas) {
+        for (final AdminGroupData roleData : roleDatas) {
             for (final AccessUserAspectData a : roleData.getAccessUsers().values()) {
                 if (authenticationToken.matches(a)) {
                     roleNames.add(roleData.getRoleName());
@@ -109,9 +110,9 @@ public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccess
 
 
     @Override
-    public List<RoleData> getAllAuthorizedRoles(AuthenticationToken authenticationToken) {
-        List<RoleData> roles = new ArrayList<RoleData>();
-        roleLoop: for(RoleData role : getAllRoles()) {
+    public List<AdminGroupData> getAllAuthorizedRoles(AuthenticationToken authenticationToken) {
+        List<AdminGroupData> roles = new ArrayList<>();
+        roleLoop: for(AdminGroupData role : getAllRoles()) {
             // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
             for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
                 if (!caSession.authorizedToCANoLogging(authenticationToken, accessUserAspect.getCaId())) {

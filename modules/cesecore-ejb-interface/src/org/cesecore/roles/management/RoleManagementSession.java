@@ -19,7 +19,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 
@@ -40,6 +40,7 @@ import org.cesecore.roles.RoleNotFoundException;
  * @version $Id$
  * 
  */
+@Deprecated
 public interface RoleManagementSession {
 
     /**
@@ -48,9 +49,9 @@ public interface RoleManagementSession {
      * @param roleName Name of the role
      * @throws RoleExistsException If role by that name already exists.
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
-     * @return the {@link RoleData} that was created
+     * @return the {@link AdminGroupData} that was created
      */
-    RoleData create(AuthenticationToken authenticationToken, String roleName) throws RoleExistsException, AuthorizationDeniedException;
+    AdminGroupData create(AuthenticationToken authenticationToken, String roleName) throws RoleExistsException, AuthorizationDeniedException;
 
     /**
      * Remove a role.
@@ -70,7 +71,7 @@ public interface RoleManagementSession {
      * @throws RoleNotFoundException if role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      */
-    void remove(AuthenticationToken authenticationToken, RoleData role) throws RoleNotFoundException, AuthorizationDeniedException;
+    void remove(AuthenticationToken authenticationToken, AdminGroupData role) throws RoleNotFoundException, AuthorizationDeniedException;
 
     /**
      * Renames a role.
@@ -79,9 +80,9 @@ public interface RoleManagementSession {
      * @param newName The new name of the role.
      * @throws RoleExistsException If the new role name already exists.
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
-     * @return the new {@link RoleData} that was the result of the rename
+     * @return the new {@link AdminGroupData} that was the result of the rename
      */
-    RoleData renameRole(AuthenticationToken authenticationToken, String role, String newName) throws RoleExistsException,
+    AdminGroupData renameRole(AuthenticationToken authenticationToken, String role, String newName) throws RoleExistsException,
             AuthorizationDeniedException;
 
     /**
@@ -91,9 +92,9 @@ public interface RoleManagementSession {
      * @param newName The new name of the role.
      * @throws RoleExistsException If the new role name already exists.
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
-     * @return the new {@link RoleData} that was the result of the rename
+     * @return the new {@link AdminGroupData} that was the result of the rename
      */
-    RoleData renameRole(AuthenticationToken authenticationToken, RoleData role, String newName) throws RoleExistsException,
+    AdminGroupData renameRole(AuthenticationToken authenticationToken, AdminGroupData role, String newName) throws RoleExistsException,
             AuthorizationDeniedException;
 
     /**
@@ -104,9 +105,9 @@ public interface RoleManagementSession {
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      * 
-     * @return the merged {@link RoleData} with the new access rules
+     * @return the merged {@link AdminGroupData} with the new access rules
      */
-    RoleData addAccessRulesToRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessRuleData> accessRules)
+    AdminGroupData addAccessRulesToRole(AuthenticationToken authenticationToken, AdminGroupData role, Collection<AccessRuleData> accessRules)
             throws RoleNotFoundException, AuthorizationDeniedException;
 
     /**
@@ -116,9 +117,9 @@ public interface RoleManagementSession {
      * @param accessRules A collection of access rules. If these rules haven't been removed from persistence, they will be here.
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
-     * @return the merged {@link RoleData} with the new access rules
+     * @return the merged {@link AdminGroupData} with the new access rules
      */
-    RoleData removeAccessRulesFromRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessRuleData> accessRules)
+    AdminGroupData removeAccessRulesFromRole(AuthenticationToken authenticationToken, AdminGroupData role, Collection<AccessRuleData> accessRules)
             throws RoleNotFoundException, AuthorizationDeniedException;
     
     /**
@@ -128,9 +129,9 @@ public interface RoleManagementSession {
     * @param accessRules A collection of strings. These rules will be looked up and removed from persistence.
     * @throws RoleNotFoundException if the role does not exist
     * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
-    * @return the merged {@link RoleData} with the new access rules
+    * @return the merged {@link AdminGroupData} with the new access rules
     */
-   RoleData removeAccessRulesFromRole(AuthenticationToken authenticationToken, RoleData role, List<String> accessRuleNames)
+   AdminGroupData removeAccessRulesFromRole(AuthenticationToken authenticationToken, AdminGroupData role, List<String> accessRuleNames)
            throws RoleNotFoundException, AuthorizationDeniedException;
 
     /**
@@ -140,11 +141,11 @@ public interface RoleManagementSession {
      * @param role The role to give.
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
-     * @return the merged {@link RoleData} with the new subjects
+     * @return the merged {@link AdminGroupData} with the new subjects
      * 
      *             TODO: Rename this method AddAccessUserAspectsToRole
      */
-    RoleData addSubjectsToRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessUserAspectData> subjects)
+    AdminGroupData addSubjectsToRole(AuthenticationToken authenticationToken, AdminGroupData role, Collection<AccessUserAspectData> subjects)
             throws RoleNotFoundException, AuthorizationDeniedException;
 
     /**
@@ -154,9 +155,9 @@ public interface RoleManagementSession {
      * @param role The role to remove.
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
-     * @return the merged {@link RoleData} with the new subjects
+     * @return the merged {@link AdminGroupData} with the new subjects
      */
-    RoleData removeSubjectsFromRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessUserAspectData> subjects)
+    AdminGroupData removeSubjectsFromRole(AuthenticationToken authenticationToken, AdminGroupData role, Collection<AccessUserAspectData> subjects)
             throws RoleNotFoundException, AuthorizationDeniedException;
     
     
@@ -167,7 +168,7 @@ public interface RoleManagementSession {
      * @param authenticationToken An authentication token for the subject
      * @return a list of roles which the subject is authorized to edit.
      */
-    Collection<RoleData> getAllRolesAuthorizedToEdit(AuthenticationToken authenticationToken);
+    Collection<AdminGroupData> getAllRolesAuthorizedToEdit(AuthenticationToken authenticationToken);
     
     /**
      * Examines if the current user is authorized to edit a role. It checks all access user aspects (and checks access to the CA's issuing them), as
@@ -179,7 +180,7 @@ public interface RoleManagementSession {
      * @param role the role to check against.
      * @return true if the subject has access.
      */
-    boolean isAuthorizedToRole(AuthenticationToken authenticationToken, RoleData role);
+    boolean isAuthorizedToRole(AuthenticationToken authenticationToken, AdminGroupData role);
     
     /**
      * Checks that the given {@link AuthenticationToken} has access to all the rules it's planning use. 
@@ -196,10 +197,10 @@ public interface RoleManagementSession {
      * @param authenticationToken for authorization purposes.
      * @param role the role in question.
      * @param accessRules A Collection of access rules to replace with.
-     * @return the merged {@link RoleData} with the new rules
+     * @return the merged {@link AdminGroupData} with the new rules
      * @throws AuthorizationDeniedException if authorization was denied.
      * @throws RoleNotFoundException if the supplied role was not found in persistence. 
      */
-    RoleData replaceAccessRulesInRole(final AuthenticationToken authenticationToken, final RoleData role, final Collection<AccessRuleData> accessRules)
+    AdminGroupData replaceAccessRulesInRole(final AuthenticationToken authenticationToken, final AdminGroupData role, final Collection<AccessRuleData> accessRules)
             throws AuthorizationDeniedException, RoleNotFoundException;
 }

@@ -25,7 +25,7 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 
 /**
  * This access tree effectively maps the resources that we control. Each node corresponds to a resource level, and the leafs individual resources,
@@ -35,7 +35,7 @@ import org.cesecore.roles.RoleData;
  * Each node of an access tree contains the following:
  * <ul>
  * <li>A reference to the resource that this node represents (i.e.<i>rootnode/subnode_a/subnode_a_b/subnode_a_b_a</i>)</li>
- * <li>A list of tuplets linking {@link RoleData} objects with {@link AccessRuleData} objects.</li>
+ * <li>A list of tuplets linking {@link AdminGroupData} objects with {@link AccessRuleData} objects.</li>
  * <li>A list of leafs to this branch.</li>
  * </ul>
  * 
@@ -67,7 +67,7 @@ public class AccessTreeNode {
     private static final Logger log = Logger.getLogger(AccessTreeNode.class);
 
     private String resource;
-    private Collection<AbstractMap.SimpleEntry<RoleData, AccessRuleData>> roleRulePairs;
+    private Collection<AbstractMap.SimpleEntry<AdminGroupData, AccessRuleData>> roleRulePairs;
     private HashMap<String, AccessTreeNode> leafs;
 
     /**
@@ -75,7 +75,7 @@ public class AccessTreeNode {
      */
     public AccessTreeNode(String resource) {
         this.resource = resource;
-        this.roleRulePairs = new ArrayList<AbstractMap.SimpleEntry<RoleData, AccessRuleData>>();
+        this.roleRulePairs = new ArrayList<AbstractMap.SimpleEntry<AdminGroupData, AccessRuleData>>();
         this.leafs = new HashMap<String, AccessTreeNode>();
     }
     
@@ -190,10 +190,10 @@ public class AccessTreeNode {
      * @param role
      *            The desired Role
      */
-    public void addAccessRule(String resource, AccessRuleData accessRule, RoleData role) {
+    public void addAccessRule(String resource, AccessRuleData accessRule, AdminGroupData role) {
 
         if (resource.equals(this.resource)) {
-            roleRulePairs.add(new AbstractMap.SimpleEntry<RoleData, AccessRuleData>(role, accessRule));
+            roleRulePairs.add(new AbstractMap.SimpleEntry<AdminGroupData, AccessRuleData>(role, accessRule));
         } else {
             String nextsubresource = resource.substring(this.resource.length());
             if ((nextsubresource.toCharArray()[0]) == '/') {
@@ -230,7 +230,7 @@ public class AccessTreeNode {
         if (log.isTraceEnabled()) {
             log.trace("AccessTreeNode " + resource + " has " + roleRulePairs.size() + " roleRulePairs");
         }
-        SEARCH_ALL_ROLE_RULE_PAIRS: for (AbstractMap.SimpleEntry<RoleData, AccessRuleData> roleRulePair : roleRulePairs) {
+        SEARCH_ALL_ROLE_RULE_PAIRS: for (AbstractMap.SimpleEntry<AdminGroupData, AccessRuleData> roleRulePair : roleRulePairs) {
             final Collection<AccessUserAspectData> accessUsers = roleRulePair.getKey().getAccessUsers().values();
             if (log.isTraceEnabled()) {
                 log.trace("roleRulePair for accessRuleName " + roleRulePair.getValue().getAccessRuleName() + " has " + accessUsers.size()

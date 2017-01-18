@@ -321,6 +321,16 @@ CREATE TABLE PublisherQueueData (
     PRIMARY KEY (pk)
 );
 
+CREATE TABLE RoleData (
+    id INT4 NOT NULL,
+    roleName TEXT NOT NULL,
+    nameSpace TEXT,
+    rawData TEXT,
+    rowProtection TEXT,
+    rowVersion INT4 NOT NULL,
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE ServiceData (
     id INT4 NOT NULL,
     data TEXT,

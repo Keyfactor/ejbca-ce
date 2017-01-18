@@ -81,7 +81,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSession;
@@ -277,8 +277,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
 
 
         // Create AdminRoles for RA1 and RA2
-        RoleData ra1role = roleManagementSession.create(ADMIN, RA1_ADMIN_ROLE);
-        RoleData ra2role = roleManagementSession.create(ADMIN, RA2_ADMIN_ROLE);
+        AdminGroupData ra1role = roleManagementSession.create(ADMIN, RA1_ADMIN_ROLE);
+        AdminGroupData ra2role = roleManagementSession.create(ADMIN, RA2_ADMIN_ROLE);
         
         // Add Admins to roles RA1 and RA2
         List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();

@@ -29,7 +29,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -53,7 +53,7 @@ public class RemoveAdminCommandTest {
     private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AdminsRemoveAdminCommandTest"));
 
     private RemoveAdminCommand command = new RemoveAdminCommand();
-    private RoleData role;
+    private AdminGroupData role;
 
     @Before
     public void setUp() throws Exception {

@@ -67,7 +67,7 @@ import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -137,7 +137,7 @@ public class KeyRecoveryTest extends CaTestCase {
         super.setUp();
         admin = createCaAuthenticatedToken();
 
-        RoleData role = roleManagementSession.create(internalAdmin, KEYRECOVERY_ROLE);
+        AdminGroupData role = roleManagementSession.create(internalAdmin, KEYRECOVERY_ROLE);
         Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
         subjects.add(new AccessUserAspectData(KEYRECOVERY_ROLE, getTestCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
                 CertTools.getPartFromDN(CertTools.getSubjectDN(getTestCACert()), "CN")));

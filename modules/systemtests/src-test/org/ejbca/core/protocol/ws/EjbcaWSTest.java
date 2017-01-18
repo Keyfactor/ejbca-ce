@@ -100,7 +100,7 @@ import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -255,9 +255,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
         final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>(Arrays.asList(accessRuleDatas));
-        final RoleData roleData = roleAccessSession.findRole(WS_ADMIN_ROLENAME);
-        assertNotNull("Role " + WS_ADMIN_ROLENAME + " does not exist!", roleData);
-        roleManagementSession.replaceAccessRulesInRole(intAdmin, roleData, accessRules);
+        final AdminGroupData adminGroupData = roleAccessSession.findRole(WS_ADMIN_ROLENAME);
+        assertNotNull("Role " + WS_ADMIN_ROLENAME + " does not exist!", adminGroupData);
+        roleManagementSession.replaceAccessRulesInRole(intAdmin, adminGroupData, accessRules);
     }
 
     /** This test is not a WebService test, but for simplicity it re-uses the created administrator certificate in order to connect to the
@@ -1534,7 +1534,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         String testAdminUsername = "newWsAdminUserName";
         
      // Remove any residues from earlier test runs
-        RoleData role = roleAccessSession.findRole(rolename);
+        AdminGroupData role = roleAccessSession.findRole(rolename);
         if(role != null) {
             roleManagementSession.remove(intAdmin, role);
         }

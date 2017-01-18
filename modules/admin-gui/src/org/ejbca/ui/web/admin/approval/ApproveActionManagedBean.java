@@ -41,7 +41,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -493,9 +493,9 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                         approvalPartition.getPropertyList().get(propertyName));
                 switch (propertyClone.getPropertyCallback()) {
                 case ROLES:
-                    List<RoleData> allAuthorizedRoles = roleAccessSession.getAllAuthorizedRoles(getAdmin());
+                    List<AdminGroupData> allAuthorizedRoles = roleAccessSession.getAllAuthorizedRoles(getAdmin());
                     List<RoleInformation> roleRepresentations = new ArrayList<>();
-                    for (RoleData role : allAuthorizedRoles) {
+                    for (AdminGroupData role : allAuthorizedRoles) {
                         RoleInformation identifierNamePair = new RoleInformation(role.getPrimaryKey(), role.getRoleName(),
                                 new ArrayList<>(role.getAccessUsers().values()));
                         roleRepresentations.add(identifierNamePair);

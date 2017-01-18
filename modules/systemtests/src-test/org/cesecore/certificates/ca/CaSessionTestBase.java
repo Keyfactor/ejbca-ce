@@ -59,7 +59,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
@@ -100,7 +100,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     	setUpAuthTokenAndRole("CaSessionTest");
 
     	// Now we have a role that can edit roles, we can edit this role to include more privileges
-    	RoleData role = roleAccessSession.findRole("CaSessionTest");
+    	AdminGroupData role = roleAccessSession.findRole("CaSessionTest");
 
         // Add rules to the role
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();

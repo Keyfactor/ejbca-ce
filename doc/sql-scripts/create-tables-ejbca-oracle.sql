@@ -321,6 +321,16 @@ CREATE TABLE PublisherQueueData (
     PRIMARY KEY (pk)
 );
 
+CREATE TABLE RoleData (
+    id NUMBER(10) NOT NULL,
+    roleName VARCHAR2(255 byte) NOT NULL,
+    nameSpace VARCHAR2(255 byte),
+    rawData CLOB,
+    rowProtection CLOB,
+    rowVersion NUMBER(10) NOT NULL,
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE ServiceData (
     id NUMBER(10) NOT NULL,
     data CLOB,

@@ -112,10 +112,12 @@ public enum EventTypes implements EventType {
     /** Name change of an administrative role. */
     ROLE_RENAMING,
     /** New access rules added to administrative role. */
+    @Deprecated // Also msg key authorization.accessrulesadded
     ROLE_ACCESS_RULE_ADDITION,
     /** Modifications of existing access rules in an administrative role. */
     ROLE_ACCESS_RULE_CHANGE,
     /** Removal of existing access rules from administrative role. */
+    @Deprecated // Also msg key authorization.accessrulesremoved
     ROLE_ACCESS_RULE_DELETION,
     /** New administrator added to administrative role. */
     ROLE_ACCESS_USER_ADDITION,

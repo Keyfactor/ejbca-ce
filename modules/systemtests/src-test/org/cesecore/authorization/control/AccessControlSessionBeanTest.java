@@ -36,7 +36,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.UsernameAccessMatchValue;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -78,7 +78,7 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
         // Let's set up a role and a nice resource tree to play with.
         final String roleName = "NerfHerder";
         try {
-            RoleData nerfHerder = roleManagementSession.create(alwaysAllowAuthenticationToken, roleName);      
+            AdminGroupData nerfHerder = roleManagementSession.create(alwaysAllowAuthenticationToken, roleName);      
             String issuerDn = "CN="+roleName;
             X509CertificateAuthenticationToken authenticationToken = (X509CertificateAuthenticationToken) createAuthenticationToken(issuerDn);
             int caId = issuerDn.hashCode();
@@ -153,9 +153,9 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
         final String roleNameViaRaServer = "LonelyMountainRaServer";
         final String roleNameViaProxyServer = "MiddleEarthProxyServer";
         try {
-            final RoleData roleClients = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameClients);
-            final RoleData roleViaRaServer = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameViaRaServer);
-            final RoleData roleViaProxyServer = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameViaProxyServer);
+            final AdminGroupData roleClients = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameClients);
+            final AdminGroupData roleViaRaServer = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameViaRaServer);
+            final AdminGroupData roleViaProxyServer = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameViaProxyServer);
             final String issuerDnClients = "CN="+roleNameClients;
             final String issuerViaRaServer = "CN="+roleNameViaRaServer;
             final String issuerViaProxyServer = "CN="+roleNameViaProxyServer;
@@ -271,7 +271,7 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
         final String resourceName = "/Encom"; 
         final String tronDn = "CN=Tron";
         final String flynnDn = "CN=Flynn";
-        RoleData role = roleAccessSession.findRole(roleName);
+        AdminGroupData role = roleAccessSession.findRole(roleName);
         if (role == null) {
             role = roleManagementSession.create(alwaysAllowAuthenticationToken, roleName);
         }
@@ -317,7 +317,7 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
         final String otherRoleName = "TestAccessSetOther";
         final String unrelatedRoleName = "TestAccessSetUnrelated";
         try {
-            final RoleData role = roleManagementSession.create(alwaysAllowAuthenticationToken, roleName);
+            final AdminGroupData role = roleManagementSession.create(alwaysAllowAuthenticationToken, roleName);
             final String organization = "PrimeKey Solutions TEST";
             final String issuerDn = "CN="+roleName;//+",O="+organization;
             final X509CertificateAuthenticationToken authenticationToken = (X509CertificateAuthenticationToken) createAuthenticationToken(issuerDn);
@@ -342,7 +342,7 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
             roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, role, accessRules);
             
             // Create a less specific role
-            final RoleData otherRole = roleManagementSession.create(alwaysAllowAuthenticationToken, otherRoleName);
+            final AdminGroupData otherRole = roleManagementSession.create(alwaysAllowAuthenticationToken, otherRoleName);
             accessUsers = new ArrayList<>();
             accessUsers.add(new AccessUserAspectData(otherRole.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_ORGANIZATION,
                     AccessMatchType.TYPE_EQUALCASE, organization));
@@ -355,7 +355,7 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
             roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, otherRole, accessRules);
             
             // Create a role that shouldn't match our admin
-            final RoleData unrelatedRole = roleManagementSession.create(alwaysAllowAuthenticationToken, unrelatedRoleName);
+            final AdminGroupData unrelatedRole = roleManagementSession.create(alwaysAllowAuthenticationToken, unrelatedRoleName);
             accessUsers = new ArrayList<>();
             accessUsers.add(new AccessUserAspectData(unrelatedRole.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_ORGANIZATION,
                     AccessMatchType.TYPE_EQUALCASE, "Not matching"));

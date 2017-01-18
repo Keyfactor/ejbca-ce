@@ -80,7 +80,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.Base64;
@@ -131,7 +131,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
 
         // Now we have a role that can edit roles, we can edit this role to include more privileges
-        RoleData role = roleAccessSession.findRole("CertCreateSessionTest");
+        AdminGroupData role = roleAccessSession.findRole("CertCreateSessionTest");
 
         // Add rules to the role
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();

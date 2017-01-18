@@ -31,7 +31,7 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.CertTools;
@@ -55,7 +55,7 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
             log.trace(">initializeAccessWithCert: " + authenticationToken.toString() + ", " + roleName);
         }
         // Create a role
-        RoleData role = roleMgmg.create(authenticationToken, roleName);
+        AdminGroupData role = roleMgmg.create(authenticationToken, roleName);
 
         // Create a user aspect that matches the authentication token, and add that to the role.
         List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();

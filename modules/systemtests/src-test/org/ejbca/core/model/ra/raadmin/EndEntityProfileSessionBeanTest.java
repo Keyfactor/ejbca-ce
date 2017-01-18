@@ -47,7 +47,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
@@ -91,7 +91,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         setUpAuthTokenAndRole("EndEntityProfileSessionTest");
 
         // Now we have a role that can edit roles, we can edit this role to include more privileges
-        RoleData role = roleAccessSession.findRole("EndEntityProfileSessionTest");
+        AdminGroupData role = roleAccessSession.findRole("EndEntityProfileSessionTest");
 
         // Add rules to the role
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
@@ -533,7 +533,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             // It should work now
             endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH", profile);
             // Add a deny rule to the role
-            RoleData role = roleAccessSession.findRole("EndEntityProfileSessionTest");
+            AdminGroupData role = roleAccessSession.findRole("EndEntityProfileSessionTest");
             List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
             accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESS.resource() + caid, AccessRuleState.RULE_DECLINE, false));
             roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);

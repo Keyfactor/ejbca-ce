@@ -27,7 +27,7 @@ import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -75,7 +75,7 @@ public class ChangeRuleCommand extends BaseRolesCommand {
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         String roleName = parameters.get(NAME_KEY);
-        RoleData role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
+        AdminGroupData role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
         if (role == null) {
             getLogger().error("No such role \"" + roleName + "\".");
             return CommandResult.FUNCTIONAL_FAILURE;
@@ -158,11 +158,11 @@ public class ChangeRuleCommand extends BaseRolesCommand {
     public String getFullHelpText() {
         StringBuilder sb = new StringBuilder();
         sb.append(getCommandDescription() + "\n");
-        Collection<RoleData> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(
+        Collection<AdminGroupData> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(
                 getAuthenticationToken());
-        Collections.sort((List<RoleData>) roles);
+        Collections.sort((List<AdminGroupData>) roles);
         StringBuilder availableRoles = new StringBuilder();
-        for (RoleData role : roles) {
+        for (AdminGroupData role : roles) {
             availableRoles.append((availableRoles.length() == 0 ? "" : ", ") + "\"" + role.getRoleName() + "\"");
         }
         sb.append("Available roles: " + availableRoles + "\n");

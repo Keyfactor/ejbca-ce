@@ -24,7 +24,7 @@ import javax.persistence.Query;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ValueExtractor;
 
@@ -53,7 +53,7 @@ public class AccessUserAspectManagerSessionBean implements AccessUserAspectManag
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public AccessUserAspectData create(final RoleData role, final int caId, final AccessMatchValue matchWith, final AccessMatchType matchType,
+    public AccessUserAspectData create(final AdminGroupData role, final int caId, final AccessMatchValue matchWith, final AccessMatchType matchType,
             final String matchValue) throws AccessUserAspectExistsException {
         AccessUserAspectData result = new AccessUserAspectData(role.getRoleName(), caId, matchWith, matchType, matchValue);
         persistAccessUserAspect(result);

@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -55,7 +55,7 @@ public class ListRulesCommand extends BaseRolesCommand {
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         String groupName = parameters.get(ROLE_NAME_KEY);
-        RoleData role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(groupName);
+        AdminGroupData role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(groupName);
         if (role == null) {
             getLogger().error("ERROR: No such role \"" + groupName + "\".");
             return CommandResult.FUNCTIONAL_FAILURE;
