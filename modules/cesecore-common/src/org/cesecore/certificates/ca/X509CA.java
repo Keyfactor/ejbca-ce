@@ -1061,6 +1061,12 @@ public class X509CA extends CA implements Serializable {
         if (certProfile.getAllowExtensionOverride() && extensions != null) {
             Set<String> overridableExtensionOIDs = certProfile.getOverridableExtensionOIDs();
             Set<String> nonOverridableExtensionOIDs = certProfile.getNonOverridableExtensionOIDs();
+            if (!overridableExtensionOIDs.isEmpty() && !nonOverridableExtensionOIDs.isEmpty()) {
+                // If user have set both of these lists, user may not know what he/she has done as it doesn't make sense
+                // hence the result may not be the desired. To get attention to this, log an error
+                log.error("Both overridableExtensionOIDs and nonOverridableExtensionOIDs are set in certificate profile which "
+                        + "does not make sense. NonOverridableExtensionOIDs will take precedence, is this the desired behavior?");
+            }
             ASN1ObjectIdentifier[] oids = extensions.getExtensionOIDs();
             for(ASN1ObjectIdentifier oid : oids ) {
                 // Start by excluding non overridable extensions
