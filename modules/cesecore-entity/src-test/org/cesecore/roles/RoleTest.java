@@ -16,10 +16,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -112,24 +108,6 @@ public class RoleTest {
         assertFalse(ERRMSG_ALLOWED_TO_DENIED, role.hasAccessToResource("/1/2/3/4/5/"));
     }
     
-    private void debugLogAccessRules(final Role role) {
-        log.debug("Role: " + role.getRoleNameFull());
-        debugLogAccessRules(role.getAccessRules());
-    }
-    
-    private void debugLogAccessRules(final HashMap<String, Boolean> accessRules) {
-        List<Entry<String, Boolean>> accessRulesList = new ArrayList<>(accessRules.entrySet());
-        Collections.sort(accessRulesList, new Comparator<Entry<String, Boolean>>() {
-            @Override
-            public int compare(Entry<String, Boolean> o1, Entry<String, Boolean> o2) {
-                return o1.getKey().compareTo(o2.getKey());
-            }
-        });
-        for (final Entry<String,Boolean> entry : accessRulesList) {
-            log.debug(" " + entry.getKey() + ":" + (entry.getValue().booleanValue()?"allow":"deny"));
-        }
-    }
-    
     /** Make sure that access to root is never given by mistake. */
     @Test
     public void testNoDefaultAccessToRoot() {
@@ -140,29 +118,11 @@ public class RoleTest {
         log.trace("<testNoDefaultAccessToRoot");
     }
 
-    @Test
-    public void testMergeOfAccessRules() {
-        log.trace(">testMergeOfAccessRules");
-        final HashMap<String, Boolean> accessRules1 = new HashMap<>();
-        accessRules1.put("/a/", Role.STATE_ALLOW);
-        accessRules1.put("/a/b/", Role.STATE_DENY);
-        accessRules1.put("/b/", Role.STATE_DENY);
-        accessRules1.put("/b/a/", Role.STATE_ALLOW);
-        final HashMap<String, Boolean> accessRules2 = new HashMap<>();
-        accessRules2.put("/a/", Role.STATE_ALLOW);
-        accessRules2.put("/a/c/", Role.STATE_DENY);
-        accessRules2.put("/c/", Role.STATE_ALLOW);
-        accessRules2.put("/c/d/", Role.STATE_DENY);
-        final HashMap<String, Boolean> accessRules = AccessRulesHelper.mergeTotalAccess(accessRules1, accessRules2);
-        debugLogAccessRules(accessRules);
-        assertFalse(ERRMSG_ALLOWED_TO_DENIED, AccessRulesHelper.hasAccessToResource(accessRules, "/"));
-        assertTrue( ERRMSG_DENIED_TO_ALLOWED, AccessRulesHelper.hasAccessToResource(accessRules, "/a/"));
-        assertTrue( ERRMSG_DENIED_TO_ALLOWED, AccessRulesHelper.hasAccessToResource(accessRules, "/a/b/"));
-        assertTrue( ERRMSG_DENIED_TO_ALLOWED, AccessRulesHelper.hasAccessToResource(accessRules, "/a/c/"));
-        assertFalse(ERRMSG_ALLOWED_TO_DENIED, AccessRulesHelper.hasAccessToResource(accessRules, "/b/"));
-        assertTrue( ERRMSG_DENIED_TO_ALLOWED, AccessRulesHelper.hasAccessToResource(accessRules, "/b/a/"));
-        assertTrue( ERRMSG_DENIED_TO_ALLOWED, AccessRulesHelper.hasAccessToResource(accessRules, "/c/"));
-        assertFalse(ERRMSG_ALLOWED_TO_DENIED, AccessRulesHelper.hasAccessToResource(accessRules, "/c/d/"));
-        log.trace("<testMergeOfAccessRules");
+    private void debugLogAccessRules(final Role role) {
+        log.debug("Role: " + role.getRoleNameFull());
+        final List<Entry<String, Boolean>> accessRulesList = AccessRulesHelper.getAsListSortedByKey(role.getAccessRules());
+        for (final Entry<String,Boolean> entry : accessRulesList) {
+            log.debug(" " + entry.getKey() + ":" + (entry.getValue().booleanValue()?"allow":"deny"));
+        }
     }
 }
