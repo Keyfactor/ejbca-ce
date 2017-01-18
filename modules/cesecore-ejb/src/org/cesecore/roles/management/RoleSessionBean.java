@@ -98,9 +98,16 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Role getRole(final String nameSpace, final String roleName) {
-        // TODO: Cache lookup
+        final Integer roleId = RoleCache.INSTANCE.getNameToIdMap().get(Role.getRoleNameFullAsCacheName(nameSpace, roleName));
+        if (roleId != null) {
+            return getRole(roleId.intValue());
+        }
         final RoleData result = getRoleData(nameSpace, roleName);
-        return result == null ? null : result.getRole();
+        final Role role = result==null ? null : result.getRole();
+        if (role!=null) {
+            RoleCache.INSTANCE.updateWith(role.getRoleId(), role.hashCode(), Role.getRoleNameFullAsCacheName(role.getNameSpace(), role.getRoleName()), role);
+        }
+        return role;
     }
 
     private RoleData getRoleData(final String nameSpace, final String roleName) {
@@ -129,9 +136,29 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Role getRole(final int roleId) {
-        // TODO: Cache lookup
-        final RoleData result = getRoleData(roleId);
-        return result == null ? null : result.getRole();
+        // 1. Check cache if it is time to sync-up with database
+        if (RoleCache.INSTANCE.shouldCheckForUpdates(roleId)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Object with ID " + roleId + " will be checked for updates.");
+            }
+            // 2. If cache is expired or missing, first thread to discover this reloads item from database and sends it to the cache
+            final RoleData roleData = getRoleData(roleId);
+            if (roleData==null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Requested object did not exist in database and will be purged from cache if present: " + roleId);
+                }
+                // Ensure that it is removed from cache when the object is no longer present in the database
+                RoleCache.INSTANCE.removeEntry(roleId);
+            } else {
+                final Role role = roleData==null ? null : roleData.getRole();
+                final int digest = role.hashCode();
+                // 3. The cache compares the database data with what is in the cache
+                // 4. If database is different from cache, replace it in the cache
+                RoleCache.INSTANCE.updateWith(roleId, digest, Role.getRoleNameFullAsCacheName(role.getNameSpace(), role.getRoleName()), role);
+            }
+        }
+        // 5. Get object from cache now (or null) and be merry
+        return RoleCache.INSTANCE.getEntry(roleId);
     }
 
     private RoleData getRoleData(final int roleId) {
@@ -153,6 +180,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         assertAuthorizedToAllAccessRules(authenticationToken, role);
         assertNotMemberAndAuthorizedToNameSpace(authenticationToken, role);
         deleteRoleNoAuthorizationCheck(roleId);
+        RoleCache.INSTANCE.updateWith(roleId, 0, null, null);
         final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.roleremoved", role.getRoleNameFull());
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
@@ -268,6 +296,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         details.put("nameSpace", role.getNameSpace());
         securityEventsLoggerSession.log(EventTypes.ROLE_ACCESS_RULE_CHANGE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                 authenticationToken.toString(), null, null, null, details);
+        RoleCache.INSTANCE.updateWith(role.getRoleId(), role.hashCode(), Role.getRoleNameFullAsCacheName(role.getNameSpace(), role.getRoleName()), role);
     }
 
     /** @return a integer Id that is currently unused in the database */

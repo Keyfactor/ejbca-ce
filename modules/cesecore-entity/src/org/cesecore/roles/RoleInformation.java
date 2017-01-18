@@ -23,6 +23,7 @@ import org.cesecore.authorization.user.AccessUserAspectData;
  * @version $Id$
  *
  */
+@Deprecated
 public class RoleInformation implements Serializable {
     private static final long serialVersionUID = 1L;
     private final int identifier;
