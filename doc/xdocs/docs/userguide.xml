@@ -993,14 +993,13 @@ will be overridden including the criticality flag.
 This option should only be used when you know that the request comes from a very trusted source. Such a trusted source is  
 normally an RA through CMP or WebService.
 </p>
-<p>To control in detail which extensions can be overridden and which can not the optional text fields 'Overridable extension OID list' and 'Non-overridable extension OID list' can be used.
-These fields contain comma separated lists of OIDs, for example '2.5.29.17, 2.5.29.32'. This is commonly used in order to give RAs some control of the contents, but still enforcing policy 
-for critical parts so the RA can not (accidentally) issue invalid certificates. For example you may with that the RA can control the SubjectAlternativeName field, but the KeyUsage of CertificatePolicies fields.  
+<p>To control in detail which extensions can be overridden and which can not the optional text field 'Overridable extension OID list' and the accompanying check box 'Extension list is disallowed' can be used.
+The field contain a comma separated lists of OIDs, for example '2.5.29.17, 2.5.29.32'. This is used in order to give RAs some control of the contents, but still enforcing policy 
+for critical parts so the RA can not (accidentally) issue invalid certificates. For example you may wish that the RA can control the SubjectAlternativeName field, but not the KeyUsage of CertificatePolicies fields.  
 </p>
 <ul>
-<li>If 'Overridable extension OID list' is used, any OID on this list can be overridden, but no other OIDs can.</li>
-<li>If 'Non-overridable extension OID list' is used, no OID on this list is allowed to be overridden, but all other OIDs can be overridden.</li>
-<li>Using both these lists at the same time will cause all OIDs to non-overridable, and is not recommended.</li>
+<li>If 'Overridable extension OID list' is used and 'Extension list is disallowed' is unchecked any OID on this list can be overridden, but no other OIDs can.</li>
+<li>If 'Overridable extension OID list' is used and 'Extension list is disallowed' is checked, no OID on this list is allowed to be overridden, but all other OIDs can be overridden.</li>
 </ul>
 </subsubsection>
 <subsubsection name="Allow subject DN override by CSR">

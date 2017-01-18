@@ -457,6 +457,38 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public void setKeyUsageKeyCrlSign(final boolean enabled) throws AuthorizationDeniedException { getCertificateProfile().setKeyUsage(CertificateConstants.CRLSIGN, enabled); }
     public void setKeyUsageEncipherOnly(final boolean enabled) throws AuthorizationDeniedException { getCertificateProfile().setKeyUsage(CertificateConstants.ENCIPHERONLY, enabled); }
     public void setKeyUsageDecipherOnly(final boolean enabled) throws AuthorizationDeniedException { getCertificateProfile().setKeyUsage(CertificateConstants.DECIPHERONLY, enabled); }
+    public boolean isNonOverridableExtensionOIDs() { return !getCertificateProfile().getNonOverridableExtensionOIDs().isEmpty(); } 
+    /** Toggles which Set is populated, the one for overridable, or the one for non-overridable
+     * @param true to populate non-overridable extension list, false for overridable 
+     */ 
+    public void setNonOverridableExtensionOIDs(final boolean enabled) {
+        final CertificateProfile profile = getCertificateProfile();
+        Set<String> extensions = getOverridableExtensionOIDs();
+        if (enabled) {
+            profile.setNonOverridableExtensionOIDs(extensions);
+            profile.setOverridableExtensionOIDs(new LinkedHashSet<String>());
+        } else {
+            profile.setOverridableExtensionOIDs(extensions);
+            profile.setNonOverridableExtensionOIDs(new LinkedHashSet<String>());            
+        }
+    } 
+    public Set<String> getOverridableExtensionOIDs() {
+        final CertificateProfile profile = getCertificateProfile();
+        if (isNonOverridableExtensionOIDs()) {
+            return profile.getNonOverridableExtensionOIDs();
+        } else {
+            return profile.getOverridableExtensionOIDs();
+        }        
+    }
+    public void setOverridableExtensionOIDs(Set<String> oids) {
+        final CertificateProfile profile = getCertificateProfile();
+        if (isNonOverridableExtensionOIDs()) {
+            profile.setNonOverridableExtensionOIDs(oids);
+        } else {
+            profile.setOverridableExtensionOIDs(oids);
+        }
+            
+    }
 
     public void toggleUseExtendedKeyUsage() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseExtendedKeyUsage(!getCertificateProfile().getUseExtendedKeyUsage());

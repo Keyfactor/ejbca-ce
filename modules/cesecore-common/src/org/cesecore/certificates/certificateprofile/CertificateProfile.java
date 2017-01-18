@@ -1587,11 +1587,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     
     /**
-     * Overridable Extension OIDs is an arraylist of oid Strings.
-     * It is used to list what are the extensions that can be overrided when allow extension override is enabled in the Certificate Profile..
+     * Overridable Extension OIDs is an Set of oid Strings.
+     * It is used to list what are the extensions that can be overridden when allow extension override is enabled in the Certificate Profile.
+     * @param Set of oids (strings), or an empty set, should not be null
      */
     public void setOverridableExtensionOIDs(Set<String> overridableextensionoids) {
-        data.put(OVERRIDABLEEXTENSIONOIDS, new LinkedHashSet<>(overridableextensionoids));
+        data.put(OVERRIDABLEEXTENSIONOIDS, new LinkedHashSet<String>(overridableextensionoids));
     }
     
     /**
@@ -1608,12 +1609,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     
     /**
-     * Non Overridable Extension OIDs is an arraylist of oid Strings.
-     * It is used to list what are the extensions that can not be overrided when allow extension override is enabled in the Certificate Profile..
-     * @param Set of oids that are not allowed to be overridded, or empty set to not disallow anything, not null
+     * Non Overridable Extension OIDs is a Set of oid Strings.
+     * It is used to list what are the extensions that can not be overridden when allow extension override is enabled in the Certificate Profile..
+     * @param Set of oids (strings) that are not allowed to be overridden, or empty set to not disallow anything, not null
      */
     public void setNonOverridableExtensionOIDs(Set<String> nonoverridableextensionoids) {
-        data.put(NONOVERRIDABLEEXTENSIONOIDS, new LinkedHashSet<>(nonoverridableextensionoids));
+        data.put(NONOVERRIDABLEEXTENSIONOIDS, new LinkedHashSet<String>(nonoverridableextensionoids));
     }
     
     /**
