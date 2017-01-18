@@ -25,6 +25,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  * @version $Id$
  *
  */
+@Deprecated
 @Remote
 public interface RoleAccessSessionRemote extends RoleAccessSession {
 

@@ -54,7 +54,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
@@ -100,7 +100,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public boolean initializeAuthorizationModule() {
-        Collection<RoleData> roles = roleAccessSession.getAllRoles();
+        Collection<AdminGroupData> roles = roleAccessSession.getAllRoles();
         List<CAData> cas = CAData.findAll(entityManager);
         if ((roles.size() == 0) && (cas.size() == 0)) {
             log.info("No roles or CAs exist, intializing Super Administrator Role with default CLI user.");
@@ -116,12 +116,12 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     @Override
     public void createSuperAdministrator() {
         //Create the GUI Super Admin
-        RoleData role = roleAccessSession.findRole(SUPERADMIN_ROLE);
+        AdminGroupData role = roleAccessSession.findRole(SUPERADMIN_ROLE);
         Map<Integer, AccessUserAspectData> newUsers = new HashMap<Integer, AccessUserAspectData>();   
-        RoleData oldSuperAdminRole = roleAccessSession.findRole(TEMPORARY_SUPERADMIN_ROLE);
+        AdminGroupData oldSuperAdminRole = roleAccessSession.findRole(TEMPORARY_SUPERADMIN_ROLE);
         if (role == null) {
             log.debug("Creating new role '" + SUPERADMIN_ROLE + "'.");
-            role = new RoleData(1, SUPERADMIN_ROLE);
+            role = new AdminGroupData(1, SUPERADMIN_ROLE);
             entityManager.persist(role);
         } else {
             log.debug("'" + SUPERADMIN_ROLE + "' already exists, not creating new.");            
@@ -184,7 +184,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         // In this method we need to use the entityManager explicitly instead of the role management session bean.
         // This is because it is also used to initialize the first rule that will allow the AlwayAllowAuthenticationToken to do anything.
         // Without this role and access rule we are not authorized to use the role management session bean
-        RoleData role = roleAccessSession.findRole(SUPERADMIN_ROLE);
+        AdminGroupData role = roleAccessSession.findRole(SUPERADMIN_ROLE);
         if (role == null) {
             log.debug("Creating new role '" + SUPERADMIN_ROLE + "'.");
             roleMgmtSession.create(admin, SUPERADMIN_ROLE);

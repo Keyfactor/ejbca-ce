@@ -17,7 +17,7 @@ import java.util.Collection;
 import javax.ejb.Local;
 
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 
 /**
  * Local interface for AccessUserAspectSession
@@ -53,7 +53,7 @@ public interface AccessUserAspectManagerSessionLocal {
      * @throws AccessUserAspectExistsException
      *             if a user with this primary key already is persisted.
      */
-    public AccessUserAspectData create(final RoleData role, final int caId,
+    public AccessUserAspectData create(final AdminGroupData role, final int caId,
             final AccessMatchValue matchWith, final AccessMatchType matchType, final String matchValue) throws AccessUserAspectExistsException;
 
     /**

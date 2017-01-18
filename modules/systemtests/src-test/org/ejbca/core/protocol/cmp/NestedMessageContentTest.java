@@ -113,7 +113,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -980,7 +980,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         // Initialize the role mgmt system with this role that is allowed to edit roles
 
         String roleName = "Super Administrator Role";
-        RoleData roledata = this.roleAccessSessionRemote.findRole(roleName); 
+        AdminGroupData roledata = this.roleAccessSessionRemote.findRole(roleName); 
         // Create a user aspect that matches the authentication token, and add that to the role.
         List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
         accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
@@ -1054,7 +1054,7 @@ public class NestedMessageContentTest extends CmpTestCase {
             AuthorizationDeniedException, ApprovalException, NoSuchEndEntityException, WaitingForApprovalException, RemoveException {
         String rolename = "Super Administrator Role";
         
-        RoleData roledata = this.roleAccessSessionRemote.findRole("Super Administrator Role");
+        AdminGroupData roledata = this.roleAccessSessionRemote.findRole("Super Administrator Role");
         if (roledata != null) {            
 
             //Set<X509Certificate> credentials = (Set<X509Certificate>) authToken.getCredentials();

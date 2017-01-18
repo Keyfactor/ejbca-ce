@@ -29,7 +29,7 @@ import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -61,7 +61,7 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
         // Set up base role that can edit roles
         setUpAuthTokenAndRole(ROLE_NAME);
         // Now we have a role that can edit roles, we can edit this role to include more privileges
-        final RoleData role = roleAccessSession.findRole(ROLE_NAME);
+        final AdminGroupData role = roleAccessSession.findRole(ROLE_NAME);
         // Add rules to the role, for the resource
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(role.getRoleName(), AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true));
@@ -81,7 +81,7 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
     @Test
     public void testAuthorization() throws RoleNotFoundException, AuthorizationDeniedException {
         LOG.trace(">testAuthorization");
-        final RoleData role = roleAccessSession.findRole(ROLE_NAME);
+        final AdminGroupData role = roleAccessSession.findRole(ROLE_NAME);
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(ROLE_NAME, AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true));
         roleManagementSession.removeAccessRulesFromRole(alwaysAllowToken, role, accessRules);

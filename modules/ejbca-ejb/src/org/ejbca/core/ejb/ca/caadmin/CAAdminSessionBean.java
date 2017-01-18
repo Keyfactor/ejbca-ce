@@ -149,7 +149,7 @@ import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
@@ -516,7 +516,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         
         // Update Roles
         final Random random = new Random(System.nanoTime()); 
-        for (RoleData role : roleAccessSession.getAllRoles()) {
+        for (AdminGroupData role : roleAccessSession.getAllRoles()) {
             final String roleName = role.getRoleName();
             final Map<Integer,AccessRuleData> rules = new HashMap<>(role.getAccessRules());
             final Map<Integer,AccessUserAspectData> users = new HashMap<>(role.getAccessUsers());
@@ -529,7 +529,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     final String oldTempName = roleName + "_CAIdUpdateOld" + random.nextLong();
                     roleManagementSession.renameRole(authenticationToken, roleName, oldTempName);
                     
-                    RoleData newRole = roleManagementSession.create(authenticationToken, roleName);
+                    AdminGroupData newRole = roleManagementSession.create(authenticationToken, roleName);
                     newRole = roleManagementSession.addAccessRulesToRole(authenticationToken, newRole, rules.values());
                     newRole = roleManagementSession.addSubjectsToRole(authenticationToken, newRole, users.values());
 
@@ -2104,15 +2104,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
                 
                 //If CA has gone through Name Change, clone all this CA specific access rules with new one with replaced caid for every roles.
-                for(RoleData roleData : roleAccessSession.getAllRoles()){
+                for(AdminGroupData adminGroupData : roleAccessSession.getAllRoles()){
                     final List<AccessRuleData> accessRulesToBeAdded = new ArrayList<AccessRuleData>();
-                    for(Map.Entry<Integer, AccessRuleData > accessRuleData: roleData.getAccessRules().entrySet()){
+                    for(Map.Entry<Integer, AccessRuleData > accessRuleData: adminGroupData.getAccessRules().entrySet()){
                         String accessRuleName = accessRuleData.getValue().getAccessRuleName();
                         if(accessRuleName.contains(caidBeforeNameChange + "")){
-                          accessRulesToBeAdded.add(new AccessRuleData(roleData.getRoleName(), accessRuleName.replace(caidBeforeNameChange+"", caid+""), accessRuleData.getValue().getInternalState(), accessRuleData.getValue().getRecursiveBool())); 
+                          accessRulesToBeAdded.add(new AccessRuleData(adminGroupData.getRoleName(), accessRuleName.replace(caidBeforeNameChange+"", caid+""), accessRuleData.getValue().getInternalState(), accessRuleData.getValue().getRecursiveBool())); 
                         }
                     }
-                    roleManagementSession.addAccessRulesToRole(authenticationToken, roleData, accessRulesToBeAdded);
+                    roleManagementSession.addAccessRulesToRole(authenticationToken, adminGroupData, accessRulesToBeAdded);
                 }
             }
             

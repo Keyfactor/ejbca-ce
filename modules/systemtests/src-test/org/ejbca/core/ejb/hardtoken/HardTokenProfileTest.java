@@ -35,7 +35,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -179,7 +179,7 @@ public class HardTokenProfileTest {
         String rolename = "testGetAuthorizedToHardTokenProfile";
         final String alias = "spacemonkeys";
         try {
-            RoleData role = roleManagementSession.create(internalAdmin, rolename);
+            AdminGroupData role = roleManagementSession.create(internalAdmin, rolename);
             Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
             subjects.add(new AccessUserAspectData(rolename, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
             role = roleManagementSession.addSubjectsToRole(internalAdmin, role, subjects);

@@ -20,6 +20,7 @@ import javax.ejb.Remote;
  * @version $Id$
  *
  */
+@Deprecated
 @Remote
 public interface RoleManagementSessionRemote extends RoleManagementSession {
 

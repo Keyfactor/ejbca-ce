@@ -28,12 +28,13 @@ import org.junit.Test;
  * @version $Id$
  *
  */
-public class RoleDataTest {
+@Deprecated
+public class AdminGroupDataTest {
     
     @Test
     public void testHasAccessToRule() {
         final String roleName = "role";
-        RoleData testRole = new RoleData(1, roleName);
+        AdminGroupData testRole = new AdminGroupData(1, roleName);
         Map<Integer, AccessRuleData> accessRules = new HashMap<Integer, AccessRuleData>();
         accessRules.put(1, new AccessRuleData(roleName, "/fuu", AccessRuleState.RULE_ACCEPT, true));
         accessRules.put(2, new AccessRuleData(roleName, "/foo/bar", AccessRuleState.RULE_DECLINE, true));
@@ -67,7 +68,7 @@ public class RoleDataTest {
     @Test
     public void testHasAccessToRoot() {
         final String roleName = "role";
-        RoleData testRole = new RoleData(1, roleName);
+        AdminGroupData testRole = new AdminGroupData(1, roleName);
         Map<Integer, AccessRuleData> accessRules = new HashMap<Integer, AccessRuleData>();
         accessRules.put(1, new AccessRuleData(roleName, "/fuu", AccessRuleState.RULE_ACCEPT, true));
 

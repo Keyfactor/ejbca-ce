@@ -16,7 +16,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -40,7 +40,7 @@ public class AddRoleCommandTest {
 
     @After
     public void teardown() throws Exception {
-        RoleData role = roleAccessSession.findRole(TESTCLASS_NAME);
+        AdminGroupData role = roleAccessSession.findRole(TESTCLASS_NAME);
         if (role != null) {
             roleManagementSession.remove(authenticationToken, role);
         }

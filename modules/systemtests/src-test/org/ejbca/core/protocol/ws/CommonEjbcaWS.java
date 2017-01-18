@@ -146,7 +146,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -376,7 +376,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
 
         boolean adminExists = false;
-        RoleData role = roleAccessSession.findRole(wsadminRoleName);
+        AdminGroupData role = roleAccessSession.findRole(wsadminRoleName);
         if (role == null) {
             log.info("Creating new role: "+wsadminRoleName);
             role = roleManagementSession.create(intAdmin, wsadminRoleName);
@@ -2752,7 +2752,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         
             // Remove from role
-        RoleData role = roleAccessSession.findRole(wsadminRoleName);
+        AdminGroupData role = roleAccessSession.findRole(wsadminRoleName);
         if (role != null) {
             roleManagementSession.remove(intAdmin, role);
             accessControlSession.forceCacheExpire();

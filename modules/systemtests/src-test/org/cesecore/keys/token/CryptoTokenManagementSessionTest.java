@@ -30,7 +30,7 @@ import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
@@ -65,7 +65,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
         // Set up base role that can edit roles
         super.setUpAuthTokenAndRole(this.getClass().getSimpleName());
         // Now we have a role that can edit roles, we can edit this role to include more privileges
-        final RoleData role = roleAccessSession.findRole(this.getClass().getSimpleName());
+        final AdminGroupData role = roleAccessSession.findRole(this.getClass().getSimpleName());
         // Add rules to the role
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(role.getRoleName(), CryptoTokenRules.BASE.resource(), AccessRuleState.RULE_ACCEPT, true));

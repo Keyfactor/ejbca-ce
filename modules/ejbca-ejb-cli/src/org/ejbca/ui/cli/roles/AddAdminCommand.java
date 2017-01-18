@@ -28,7 +28,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -133,11 +133,11 @@ public class AddAdminCommand extends BaseRolesCommand {
     public String getFullHelpText() {
         StringBuilder sb = new StringBuilder();
         sb.append(getCommandDescription() + ".\n");
-        Collection<RoleData> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(
+        Collection<AdminGroupData> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(
                 getAuthenticationToken());
-        Collections.sort((List<RoleData>) roles);
+        Collections.sort((List<AdminGroupData>) roles);
         String availableRoles = "";
-        for (RoleData role : roles) {
+        for (AdminGroupData role : roles) {
             availableRoles += (availableRoles.length() == 0 ? "" : ", ") + "\"" + role.getRoleName() + "\"";
         }
         sb.append("Available Roles: " + availableRoles + "\n");

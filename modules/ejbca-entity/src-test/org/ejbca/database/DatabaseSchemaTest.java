@@ -38,6 +38,7 @@ import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.configuration.GlobalConfigurationData;
 import org.cesecore.keybind.InternalKeyBindingData;
 import org.cesecore.keys.token.CryptoTokenData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleData;
 import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.ca.publisher.PublisherData;
@@ -198,10 +199,25 @@ public class DatabaseSchemaTest {
     }
 
     @Test
+    public void testAdminGroupData() {
+        LOG.trace(">testRoleData");
+        logMemStats();
+        AdminGroupData entity = new AdminGroupData(BOGUS_INTEGER, VARCHAR_250B);
+        entity.setRowProtection(CLOB_10KiB);
+        entity.setRowVersion(0);
+        storeAndRemoveEntity(entity);
+        LOG.trace("<testRoleData");
+    }
+
+    @Test
     public void testRoleData() {
         LOG.trace(">testRoleData");
         logMemStats();
-        RoleData entity = new RoleData(BOGUS_INTEGER, VARCHAR_250B);
+        RoleData entity = new RoleData();
+        entity.setId(123);
+        entity.setNameSpaceNeverNull(VARCHAR_250B);
+        entity.setRoleName(VARCHAR_250B);
+        entity.setRawData(CLOB_1MiB);
         entity.setRowProtection(CLOB_10KiB);
         entity.setRowVersion(0);
         storeAndRemoveEntity(entity);

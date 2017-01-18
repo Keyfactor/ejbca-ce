@@ -15,7 +15,7 @@ package org.cesecore.roles.access;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 
 /**
  * Implementations of this bean give access to RoleData objects.
@@ -23,6 +23,7 @@ import org.cesecore.roles.RoleData;
  * @version $Id$
  * 
  */
+@Deprecated
 public interface RoleAccessSession {
 
     /**
@@ -30,14 +31,14 @@ public interface RoleAccessSession {
      * 
      * @return all the roles in the database.
      */
-    List<RoleData> getAllRoles();
+    List<AdminGroupData> getAllRoles();
     
     /**
      * 
      * @param authenticationToken an authentication token
      * @return a list of all roles the current user is authorized to, based on CAs and access rules. Will sort them by name. 
      */
-    List<RoleData> getAllAuthorizedRoles(AuthenticationToken authenticationToken);
+    List<AdminGroupData> getAllAuthorizedRoles(AuthenticationToken authenticationToken);
 
     /**
      * Finds a RoleData object by its primary key.
@@ -46,7 +47,7 @@ public interface RoleAccessSession {
      *            The primary key.
      * @return the found entity instance or null if the entity does not exist.
      */
-    RoleData findRole(final Integer primaryKey);
+    AdminGroupData findRole(final Integer primaryKey);
 
     /**
      * Finds a specific role by name.
@@ -55,5 +56,5 @@ public interface RoleAccessSession {
      * 
      * @return The sought roll, null if not found
      */
-    RoleData findRole(final String roleName);
+    AdminGroupData findRole(final String roleName);
 }

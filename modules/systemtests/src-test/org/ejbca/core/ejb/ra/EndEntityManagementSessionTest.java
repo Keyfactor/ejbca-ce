@@ -74,7 +74,7 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
@@ -713,7 +713,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
             // Now add the administrator to a role that has access to /ca/* but not ee profiles
-            RoleData role = roleAccessSession.findRole(testRole);
+            AdminGroupData role = roleAccessSession.findRole(testRole);
             if (role == null) {
                 role = roleManagementSession.create(roleMgmgToken, testRole);
             }
@@ -757,7 +757,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             } catch (Exception e) { // NOPMD
                 log.info("Error in finally: ", e);
             }
-            RoleData role = roleAccessSession.findRole(testRole);
+            AdminGroupData role = roleAccessSession.findRole(testRole);
             if (role != null) {
                 roleManagementSession.remove(roleMgmgToken, role);
             }

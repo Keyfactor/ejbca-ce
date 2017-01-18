@@ -19,7 +19,7 @@ import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleNotFoundException;
 
 /**
@@ -60,7 +60,7 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
      * 
      * @deprecated Remove this method once 4.0.x -> 5.0.x support has been dropped. 
      */
-	RoleData replaceAccessRulesInRoleNoAuth(final AuthenticationToken authenticationToken, final RoleData role,
+	AdminGroupData replaceAccessRulesInRoleNoAuth(final AuthenticationToken authenticationToken, final AdminGroupData role,
             final Collection<AccessRuleData> accessRules) throws RoleNotFoundException;
 
     /** For internal user from UpgradeSessionBean only! */

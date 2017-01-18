@@ -91,9 +91,9 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
     @Test
     public void testCrudOperation() throws AuthorizationDeniedException, RoleNotFoundException {
 
-        RoleData role = null;
+        AdminGroupData role = null;
         final String roleName = "Nibbler";
-        RoleData foundRole = null;
+        AdminGroupData foundRole = null;
         try {
             role = roleManagementSession.create(authenticationToken, roleName);
         } catch (RoleExistsException e) {
@@ -131,7 +131,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
     public void testRemoveByName() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
         final String roleName = "Hermes";
 
-        RoleData role = roleManagementSession.create(authenticationToken, roleName);
+        AdminGroupData role = roleManagementSession.create(authenticationToken, roleName);
         assertNotNull("Initial role was not created, can not proceed with test.",
                 roleAccessSession.findRole(role.getPrimaryKey()));
 
@@ -160,7 +160,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
         final String firstRoleName = "Bender";
         final String secondRoleName = "Leela";
 
-        Collection<RoleData> roles = roleAccessSession.getAllRoles();
+        Collection<AdminGroupData> roles = roleAccessSession.getAllRoles();
         final int roleSizeBeforeTest = roles.size();
 
         roleManagementSession.create(authenticationToken, firstRoleName);
@@ -177,7 +177,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
 
     @Test
     public void testAddAndRemoveAccessUsersToRole() throws RoleExistsException, AccessUserAspectExistsException, AuthorizationDeniedException, RoleNotFoundException {
-        RoleData role = roleManagementSession.create(authenticationToken, "Zoidberg");
+        AdminGroupData role = roleManagementSession.create(authenticationToken, "Zoidberg");
         final int caId = 1337;
         final int benderPrimaryKey = AccessUserAspectData.generatePrimaryKey(role.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_COUNTRY,
                 AccessMatchType.TYPE_EQUALCASE, "SE");
@@ -214,7 +214,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
                 Collection<AccessUserAspectData> removeSubjects = new ArrayList<AccessUserAspectData>();
                 removeSubjects.add(bender);
                 role = roleManagementSession.removeSubjectsFromRole(authenticationToken, role, removeSubjects);
-                RoleData foundRole = roleAccessSession.findRole(role.getPrimaryKey());
+                AdminGroupData foundRole = roleAccessSession.findRole(role.getPrimaryKey());
                 assertTrue(role.equals(foundRole));
                 assertTrue(foundRole.getAccessUsers().size() == 1);
                 assertTrue(role.getAccessUsers().get(zappPrimaryKey).equals(zapp));
@@ -236,7 +236,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
         AccessRuleData accessRule1 = null;
         AccessRuleData accessRule2 = null;
         try {
-            RoleData role = roleManagementSession.create(authenticationToken, ROLE_NAME);
+            AdminGroupData role = roleManagementSession.create(authenticationToken, ROLE_NAME);
             assertTrue(ROLE_NAME.equals(role.getRoleName()));
             Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
             accessRule1 = accessRuleManagementSession.createRule(RULE1, role.getRoleName(), AccessRuleState.RULE_ACCEPT, true);
@@ -248,7 +248,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             assertTrue(role.getAccessRules().size() == 1);
             assertTrue(role.getAccessRules().get(accessRule1PrimaryKey).equals(accessRule1));
 
-            RoleData foundRole = roleAccessSession.findRole(role.getPrimaryKey());
+            AdminGroupData foundRole = roleAccessSession.findRole(role.getPrimaryKey());
             // Do the same check for a role retrieved from the database,
             assertTrue(foundRole.getAccessRules().size() == 1 && foundRole.getAccessRules().get(accessRule1PrimaryKey).equals(accessRule1));
 
@@ -308,7 +308,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
         AccessRuleData accessRule1 = null;
         AccessRuleData accessRule2 = null;
         try {
-            RoleData role = roleManagementSession.create(authenticationToken, ROLE_NAME);
+            AdminGroupData role = roleManagementSession.create(authenticationToken, ROLE_NAME);
             assertTrue(ROLE_NAME.equals(role.getRoleName()));
             Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
             accessRule1 = new AccessRuleData(role.getRoleName(), RULE1, AccessRuleState.RULE_ACCEPT, true);
@@ -323,7 +323,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             assertTrue(role.getAccessRules().get(accessRule1PrimaryKey).equals(accessRule1));
             assertTrue(role.getAccessRules().get(accessRule2PrimaryKey).equals(accessRule2));
 
-            RoleData foundRole = roleAccessSession.findRole(role.getPrimaryKey());
+            AdminGroupData foundRole = roleAccessSession.findRole(role.getPrimaryKey());
             // Do the same check for a role retrieved from the database,
             assertTrue(foundRole.getAccessRules().size() == 2);
             assertTrue(foundRole.getAccessRules().get(accessRule1PrimaryKey).equals(accessRule1));
@@ -378,7 +378,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
     public void testRemoveRulesByName() throws Exception {
         String roleName = "Skippy";
         String ruleName = "/planet/mercury";
-        RoleData role = roleManagementSession.create(authenticationToken, roleName);      
+        AdminGroupData role = roleManagementSession.create(authenticationToken, roleName);      
 
         try {
             Collection<AccessRuleData> rules = new ArrayList<AccessRuleData>();
@@ -399,8 +399,8 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
 
     @Test
     public void testRenameRole() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
-        RoleData kip = roleManagementSession.create(authenticationToken, "Kip");
-        RoleData cubert = roleManagementSession.create(authenticationToken, "Cubert");
+        AdminGroupData kip = roleManagementSession.create(authenticationToken, "Kip");
+        AdminGroupData cubert = roleManagementSession.create(authenticationToken, "Cubert");
         final int caId = 1337;
         
         Collection<AccessRuleData> accessRules = new LinkedList<AccessRuleData>();
@@ -452,7 +452,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
     @Test
     public void testReplaceAccessRulesInRole() throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException,
             RoleNotFoundException {
-        RoleData ralph = roleManagementSession.create(roleMgmgToken, "Ralph");
+        AdminGroupData ralph = roleManagementSession.create(roleMgmgToken, "Ralph");
         try {
             Collection<AccessRuleData> accessRules = new LinkedList<AccessRuleData>();
             accessRules.add(new AccessRuleData(ralph.getRoleName(), "/ToBeMerged", AccessRuleState.RULE_ACCEPT, false));
@@ -484,12 +484,12 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
         final String unauthorizedRoleDn = "CN=Mom";
         final String authorizedRoleName = "Headless Body of Agnew";
 
-        RoleData unauthorizedRole = roleAccessSession.findRole(unauthorizedRoleName);
+        AdminGroupData unauthorizedRole = roleAccessSession.findRole(unauthorizedRoleName);
         if (unauthorizedRole != null) {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, unauthorizedRole);
         }
         unauthorizedRole = roleManagementSession.create(alwaysAllowAuthenticationToken, unauthorizedRoleName);
-        RoleData authorizedRole = roleAccessSession.findRole(authorizedRoleName);
+        AdminGroupData authorizedRole = roleAccessSession.findRole(authorizedRoleName);
         if (authorizedRole != null) {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);
         }
@@ -530,12 +530,12 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
         final String authorizedRoleName = "Headless Body of Agnew";
         AuthenticationToken unauthorizedRoleAuthenticationToken = createAuthenticationToken(unauthorizedRoleDn);
         int caId = CertTools.getIssuerDN(((TestX509CertificateAuthenticationToken) unauthorizedRoleAuthenticationToken).getCertificate()).hashCode();
-        RoleData unauthorizedRole = roleAccessSession.findRole(unauthorizedRoleName);
+        AdminGroupData unauthorizedRole = roleAccessSession.findRole(unauthorizedRoleName);
         if (unauthorizedRole != null) {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, unauthorizedRole);
         }
         unauthorizedRole = roleManagementSession.create(alwaysAllowAuthenticationToken, unauthorizedRoleName);
-        RoleData authorizedRole = roleAccessSession.findRole(authorizedRoleName);
+        AdminGroupData authorizedRole = roleAccessSession.findRole(authorizedRoleName);
         if (authorizedRole != null) {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);
         }
@@ -605,17 +605,17 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
         final String weakRoleName = "RoleC";
         AuthenticationToken unauthorizedRoleAuthenticationToken = createAuthenticationToken(unauthorizedRoleDn);
         int caId = CertTools.getIssuerDN(((TestX509CertificateAuthenticationToken) unauthorizedRoleAuthenticationToken).getCertificate()).hashCode();
-        RoleData unauthorizedRole = roleAccessSession.findRole(unauthorizedRoleName);
+        AdminGroupData unauthorizedRole = roleAccessSession.findRole(unauthorizedRoleName);
         if (unauthorizedRole != null) {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, unauthorizedRole);
         }
         unauthorizedRole = roleManagementSession.create(alwaysAllowAuthenticationToken, unauthorizedRoleName);
-        RoleData authorizedRole = roleAccessSession.findRole(authorizedRoleName);
+        AdminGroupData authorizedRole = roleAccessSession.findRole(authorizedRoleName);
         if (authorizedRole != null) {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);
         }
         authorizedRole = roleManagementSession.create(alwaysAllowAuthenticationToken, authorizedRoleName);
-        RoleData weakRole = roleAccessSession.findRole(weakRoleName);
+        AdminGroupData weakRole = roleAccessSession.findRole(weakRoleName);
         if (weakRole != null) {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, weakRole);
         }
@@ -683,12 +683,12 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
         final String authorizedRoleName = "Headless Body of Agnew";
         AuthenticationToken unauthorizedRoleAuthenticationToken = createAuthenticationToken(unauthorizedRoleDn);
         int caId = CertTools.getIssuerDN(((TestX509CertificateAuthenticationToken) unauthorizedRoleAuthenticationToken).getCertificate()).hashCode();
-        RoleData unauthorizedRole = roleAccessSession.findRole(unauthorizedRoleName);
+        AdminGroupData unauthorizedRole = roleAccessSession.findRole(unauthorizedRoleName);
         if (unauthorizedRole != null) {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, unauthorizedRole);
         }
         unauthorizedRole = roleManagementSession.create(alwaysAllowAuthenticationToken, unauthorizedRoleName);
-        RoleData authorizedRole = roleAccessSession.findRole(authorizedRoleName);
+        AdminGroupData authorizedRole = roleAccessSession.findRole(authorizedRoleName);
         if (authorizedRole != null) {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);
         }
@@ -745,12 +745,12 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
         final String authorizedRoleName = "Headless Body of Agnew";
         AuthenticationToken unauthorizedRoleAuthenticationToken = createAuthenticationToken(unauthorizedRoleDn);
         int caId = CertTools.getIssuerDN(((TestX509CertificateAuthenticationToken) unauthorizedRoleAuthenticationToken).getCertificate()).hashCode();
-        RoleData unauthorizedRole = roleAccessSession.findRole(unauthorizedRoleName);
+        AdminGroupData unauthorizedRole = roleAccessSession.findRole(unauthorizedRoleName);
         if (unauthorizedRole != null) {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, unauthorizedRole);
         }
         unauthorizedRole = roleManagementSession.create(alwaysAllowAuthenticationToken, unauthorizedRoleName);
-        RoleData authorizedRole = roleAccessSession.findRole(authorizedRoleName);
+        AdminGroupData authorizedRole = roleAccessSession.findRole(authorizedRoleName);
         if (authorizedRole != null) {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);
         }

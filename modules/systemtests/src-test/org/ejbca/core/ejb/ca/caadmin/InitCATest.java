@@ -59,7 +59,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -205,7 +205,7 @@ public class InitCATest extends CaTestCase {
             cmpConfig.setRACAName(CMP_ALIAS, RENAME_CA); // this one shouldn't need to be updated, but it's tested anyway
             globalConfigurationSession.saveConfiguration(admin, cmpConfig);
             
-            RoleData role = roleManagementSession.create(admin, ROLE_NAME);
+            AdminGroupData role = roleManagementSession.create(admin, ROLE_NAME);
             final List<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
             subjects.add(new AccessUserAspectData(ROLE_NAME, origCaId, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, "TestUser"));
             role = roleManagementSession.addSubjectsToRole(admin, role, subjects);

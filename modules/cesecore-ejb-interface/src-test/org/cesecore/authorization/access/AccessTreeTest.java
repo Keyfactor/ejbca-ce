@@ -20,7 +20,7 @@ import org.junit.Assert;
 
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
@@ -44,7 +44,7 @@ public class AccessTreeTest {
     @Test
     public void testBuildTree() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         AccessTree accessTree = new AccessTree();
-        Collection<RoleData> roles = new ArrayList<RoleData>();
+        Collection<AdminGroupData> roles = new ArrayList<AdminGroupData>();
         accessTree.buildTree(roles);
 
         // Extract the root node using reflection.

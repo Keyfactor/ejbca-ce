@@ -74,7 +74,7 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -167,7 +167,7 @@ public class CaAdminSessionBeanTest {
         
         //Set up a role for this test
         final String roleName = "testGetAuthorizedPublisherIds";
-        RoleData role = roleManagementSession.create(alwaysAllowToken, roleName);
+        AdminGroupData role = roleManagementSession.create(alwaysAllowToken, roleName);
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         //Give our admin access to the authorized CA. 
         accessRules.add(new AccessRuleData(roleName, StandardRules.CAACCESS.resource() +  authorizedCa.getCAId(), AccessRuleState.RULE_ACCEPT, false));

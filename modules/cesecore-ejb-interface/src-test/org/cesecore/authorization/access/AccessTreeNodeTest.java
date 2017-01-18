@@ -31,7 +31,7 @@ import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.roles.RoleData;
+import org.cesecore.roles.AdminGroupData;
 import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.Assert;
@@ -70,7 +70,7 @@ public class AccessTreeNodeTest {
     @Test
     public void testAddAccessRuleToRootNode() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         AccessRuleData accessRule = EasyMock.createMock(AccessRuleData.class);
-        RoleData role = EasyMock.createMock(RoleData.class);
+        AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
 
         rootNode.addAccessRule("/", accessRule, role);
 
@@ -78,10 +78,10 @@ public class AccessTreeNodeTest {
         Field roleRulePairsField = rootNode.getClass().getDeclaredField("roleRulePairs");
         roleRulePairsField.setAccessible(true);
         @SuppressWarnings("unchecked")
-        List< AbstractMap.SimpleEntry<RoleData, AccessRuleData>> roleRulePairs = (List< AbstractMap.SimpleEntry<RoleData, AccessRuleData>>) roleRulePairsField.get(rootNode);
+        List< AbstractMap.SimpleEntry<AdminGroupData, AccessRuleData>> roleRulePairs = (List< AbstractMap.SimpleEntry<AdminGroupData, AccessRuleData>>) roleRulePairsField.get(rootNode);
         Assert.assertFalse("No rule was added to root node", roleRulePairs.size() < 1);
         Assert.assertFalse("More than one rule was added to root node", roleRulePairs.size() > 1);
-        AbstractMap.SimpleEntry<RoleData, AccessRuleData> roleRulePair = roleRulePairs.get(0);
+        AbstractMap.SimpleEntry<AdminGroupData, AccessRuleData> roleRulePair = roleRulePairs.get(0);
         Assert.assertEquals("Correct role was not added.", role, roleRulePair.getKey());
         Assert.assertEquals("Correct rule was not added.", accessRule, roleRulePair.getValue());
     }
@@ -99,7 +99,7 @@ public class AccessTreeNodeTest {
         final String resource1 = "resource1";
         final String resource2 = "resource2";
         AccessRuleData accessRule_alpha = EasyMock.createMock(AccessRuleData.class);
-        RoleData role_alpha = EasyMock.createMock(RoleData.class);
+        AdminGroupData role_alpha = EasyMock.createMock(AdminGroupData.class);
 
         rootNode.addAccessRule("/" + resource1, accessRule_alpha, role_alpha);
 
@@ -146,7 +146,7 @@ public class AccessTreeNodeTest {
         final Integer accessUserPrimaryKey = 0;
         accessUsers.put(accessUserPrimaryKey, accessUser);
 
-        RoleData role = EasyMock.createMock(RoleData.class);
+        AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(accessUsers);
 
         EasyMock.replay(authenticationToken, acceptRule, role, accessUser);
@@ -199,7 +199,7 @@ public class AccessTreeNodeTest {
         EasyMock.expect(upnUser.getMatchValue()).andReturn("userid").anyTimes();	// Required if we run the test in trace mode
         EasyMock.expect(upnUser.getTokenType()).andReturn(X509CertificateAuthenticationToken.TOKEN_TYPE);
 
-        RoleData role = EasyMock.createMock(RoleData.class);
+        AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(countryUsers);
         EasyMock.expect(role.getAccessUsers()).andReturn(upnUsers);
 
@@ -257,7 +257,7 @@ public class AccessTreeNodeTest {
         final Integer accessUserPrimaryKey = 0;
         accessUsers.put(accessUserPrimaryKey, accessUser);
 
-        RoleData role = EasyMock.createMock(RoleData.class);
+        AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(accessUsers).times(4);
 
         EasyMock.replay(authenticationToken, role, acceptRecursive, denied, accessUser);
@@ -293,7 +293,7 @@ public class AccessTreeNodeTest {
         Map<Integer, AccessUserAspectData> upnUsers = new HashMap<Integer, AccessUserAspectData>();
         final Integer upnPrimaryKey = 1;
         upnUsers.put(upnPrimaryKey, upnUser);
-        RoleData role = EasyMock.createMock(RoleData.class);
+        AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(upnUsers).anyTimes();
 
         // Deny rule in role
@@ -307,7 +307,7 @@ public class AccessTreeNodeTest {
         EasyMock.expect(upnUser1.getTokenType()).andReturn(X509CertificateAuthenticationToken.TOKEN_TYPE).anyTimes();
         Map<Integer, AccessUserAspectData> upnUsers1 = new HashMap<Integer, AccessUserAspectData>();
         upnUsers1.put(upnPrimaryKey, upnUser1);
-        RoleData role1 = EasyMock.createMock(RoleData.class);
+        AdminGroupData role1 = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role1.getAccessUsers()).andReturn(upnUsers1).anyTimes();
 
         // Authentication token, always allow
@@ -343,7 +343,7 @@ public class AccessTreeNodeTest {
         Map<Integer, AccessUserAspectData> upnUsers = new HashMap<Integer, AccessUserAspectData>();
         final Integer upnPrimaryKey = 1;
         upnUsers.put(upnPrimaryKey, upnUser);
-        RoleData role = EasyMock.createMock(RoleData.class);
+        AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(upnUsers).anyTimes();
 
         // Deny rule in role
@@ -357,7 +357,7 @@ public class AccessTreeNodeTest {
         EasyMock.expect(upnUser1.getTokenType()).andReturn(X509CertificateAuthenticationToken.TOKEN_TYPE).anyTimes();
         Map<Integer, AccessUserAspectData> upnUsers1 = new HashMap<Integer, AccessUserAspectData>();
         upnUsers1.put(upnPrimaryKey, upnUser1);
-        RoleData role1 = EasyMock.createMock(RoleData.class);
+        AdminGroupData role1 = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role1.getAccessUsers()).andReturn(upnUsers1).anyTimes();
 
         // Authentication token, always allow
@@ -399,7 +399,7 @@ public class AccessTreeNodeTest {
         final Integer accessUserPrimaryKey = 0;
         accessUsers.put(accessUserPrimaryKey, accessUser);
 
-        RoleData role = EasyMock.createMock(RoleData.class);
+        AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(accessUsers);
 
         EasyMock.replay(authenticationToken, role, accessRule, accessUser);
@@ -442,7 +442,7 @@ public class AccessTreeNodeTest {
         final Integer accessUserPrimaryKey = 0;
         accessUsers.put(accessUserPrimaryKey, accessUser);
 
-        RoleData role = EasyMock.createMock(RoleData.class);
+        AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(accessUsers).times(2);
 
         EasyMock.replay(authenticationToken, role, acceptRecursive, unknown, accessUser);
