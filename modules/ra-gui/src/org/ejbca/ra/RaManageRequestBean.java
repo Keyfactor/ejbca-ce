@@ -26,8 +26,6 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -90,7 +88,14 @@ public class RaManageRequestBean implements Serializable {
     private Map<Integer, List<DynamicUiProperty<? extends Serializable>> > currentPartitionsProperties = null;
     List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
     Set<Integer> partitionsAuthorizedToApprove = null;
-    private String fromTab = null;
+    
+    public String idParam;
+    public String aidParam;
+    
+    public String getIdParam() { return idParam; }
+    public void setIdParam(final String value) { idParam = value; }
+    public String getAidParam() { return aidParam; }
+    public void setAidParam(final String value) { aidParam = value; }
     
     private void loadRequest(final int id) {
         requestData = raMasterApiProxyBean.getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), id);
@@ -107,15 +112,13 @@ public class RaManageRequestBean implements Serializable {
         requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
     }
     
-    private void initializeRequestInfo() {
+    public void initializeRequestInfo() {
         if (requestInfo == null) {
-            final String idHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("id");
-            if (idHttpParam!=null) {
-                final int id = Integer.parseInt(idHttpParam);
+            if (!StringUtils.isBlank(idParam)) {
+                final int id = Integer.parseInt(idParam);
                 loadRequest(id);
             } else {
-                final String aidHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("aid");
-                final int approvalId = Integer.parseInt(aidHttpParam);
+                final int approvalId = Integer.parseInt(aidParam);
                 loadRequestByApprovalId(approvalId);
             }
             if (requestData.getApprovalProfile() != null) {
@@ -125,34 +128,28 @@ public class RaManageRequestBean implements Serializable {
             } else {
                 unexpireDays = "1";
             }
-            fromTab = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("fromTab");
         }
     }
     
     private void reloadRequest() {
         loadRequest(requestData.getId());
+        // Make sure we don't use the approvalId (the hash) after we have edited a request
+        idParam = String.valueOf(requestData.getId());
+        aidParam = null;
     }
     
     public ApprovalRequestGUIInfo getRequest() {
-        initializeRequestInfo();
-        if (requestInfo == null) {
-            throw new IllegalStateException("Internal Error: requestInfo was null");
-        }
         return requestInfo;
     }
     
     public String getPageTitle() {
-        return raLocaleBean.getMessage("view_request_page_title", getRequest().getDisplayName());
-    }
-    
-    public String getFromTab() {
-        return fromTab;
+        return raLocaleBean.getMessage("view_request_page_title", requestInfo.getDisplayName());
     }
     
     public boolean isViewDataVisible() { return !editing; }
     public boolean isEditDataVisible() { return editing; }
     public boolean isStatusVisible() { return !editing; }
-    public boolean isPreviousStepsVisible() { return !editing && !getRequest().getPreviousSteps().isEmpty(); }
+    public boolean isPreviousStepsVisible() { return !editing && !requestInfo.getPreviousSteps().isEmpty(); }
     public boolean isApprovalVisible() { return !editing; } // even if approval is not possible, we still show a message explaining why it's not.
     
     public String getUnexpireDays() { return unexpireDays; }
@@ -164,7 +161,7 @@ public class RaManageRequestBean implements Serializable {
             log.debug("Ignored call to getPartitionProperties with null parameter");
             return "";
         }
-        final ApprovalProfile approvalProfile = getRequest().request.getApprovalProfile();
+        final ApprovalProfile approvalProfile = requestInfo.request.getApprovalProfile();
         final ApprovalStep step = approvalProfile.getStep(guiPartition.getStepId());
         final ApprovalPartition partition = step.getPartition(guiPartition.getPartitionId());
         DynamicUiProperty<? extends Serializable> property = partition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
@@ -180,7 +177,7 @@ public class RaManageRequestBean implements Serializable {
             log.debug("Ignored call to getPartitionProperties with null parameter");
             return new ArrayList<>();
         }
-        final ApprovalProfile approvalProfile = getRequest().request.getApprovalProfile();
+        final ApprovalProfile approvalProfile = requestInfo.request.getApprovalProfile();
         final ApprovalStep step = approvalProfile.getStep(guiPartition.getStepId());
         final ApprovalPartition partition = step.getPartition(guiPartition.getPartitionId());
         return getPartitionProperties(approvalProfile, partition);
@@ -191,8 +188,8 @@ public class RaManageRequestBean implements Serializable {
         if (partitionsAuthorizedToView == null) {
             List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> authorizedPartitions = new ArrayList<>();
             partitionsAuthorizedToApprove = new HashSet<>();
-            final ApprovalStep step = getRequest().request.getNextApprovalStep();
-            final ApprovalProfile approvalProfile = getRequest().request.getApprovalProfile();
+            final ApprovalStep step = requestInfo.request.getNextApprovalStep();
+            final ApprovalProfile approvalProfile = requestInfo.request.getApprovalProfile();
             if (step != null) {
                 for (ApprovalPartition approvalPartition : step.getPartitions().values()) {
                     try {
@@ -220,7 +217,7 @@ public class RaManageRequestBean implements Serializable {
     }
 
     private List<Approval> getPartitionApproval(final int partitionId, final int stepId) {
-        final ApprovalDataVO advo = getRequest().request.getApprovalData();
+        final ApprovalDataVO advo = requestInfo.request.getApprovalData();
         Collection<Approval> approvals = advo.getApprovals();
         List<Approval> partitionApprovals = new ArrayList<>();
         for(Approval approval : approvals) {
@@ -244,7 +241,7 @@ public class RaManageRequestBean implements Serializable {
         return partitionsAuthorizedToApprove.contains(partition.getPartitionId());
     }
     public boolean isPropertyReadOnly(String propertyName) {
-        return getRequest().request.getApprovalProfile().getReadOnlyProperties().contains(propertyName);
+        return requestInfo.request.getApprovalProfile().getReadOnlyProperties().contains(propertyName);
     }
     
     /**
@@ -316,34 +313,34 @@ public class RaManageRequestBean implements Serializable {
         final List<String> roles = new ArrayList<>(requestData.getNextStepAllowedRoles());
         if (!roles.isEmpty()) {
             Collections.sort(roles);
-            return raLocaleBean.getMessage("view_request_page_step_of_with_roles", getRequest().getCurrentStepOrdinal(), getRequest().getStepCount(), StringUtils.join(roles, ", "));
+            return raLocaleBean.getMessage("view_request_page_step_of_with_roles", requestInfo.getCurrentStepOrdinal(), requestInfo.getStepCount(), StringUtils.join(roles, ", "));
         } else {
-            return raLocaleBean.getMessage("view_request_page_step_of", getRequest().getCurrentStepOrdinal(), getRequest().getStepCount());
+            return raLocaleBean.getMessage("view_request_page_step_of", requestInfo.getCurrentStepOrdinal(), requestInfo.getStepCount());
         }
     }
     
     public String getCantApproveReason() {
-        if (getRequest().isExpired()) {
+        if (requestInfo.isExpired()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_expired");
-        } else if (getRequest().isPendingExecution()) {
+        } else if (requestInfo.isPendingExecution()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_pending_execution");
-        } else if (getRequest().isExecuted()) {
+        } else if (requestInfo.isExecuted()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_already_executed");
-        } else if (getRequest().isExecutionFailed()) {
+        } else if (requestInfo.isExecutionFailed()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_already_executed_failed");
-        } else if (!getRequest().isWaitingForApproval()) {
+        } else if (!requestInfo.isWaitingForApproval()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_not_waiting");
-        } else if (!getRequest().isAuthorizedToApprovalType()) {
+        } else if (!requestInfo.isAuthorizedToApprovalType()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_not_authorized");
-        } else if (getRequest().isEditedByMe()) {
+        } else if (requestInfo.isEditedByMe()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_edited_by_me");
-        } else if (getRequest().isApprovedByMe()) {
+        } else if (requestInfo.isApprovedByMe()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_approved_by_me");
-        } else if (getRequest().isRequestedByMe()) {
+        } else if (requestInfo.isRequestedByMe()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_requested_by_me");  
-        } else if (getRequest().isPending(raAuthenticationBean.getAuthenticationToken())) {
+        } else if (requestInfo.isPending(raAuthenticationBean.getAuthenticationToken())) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_pending");
-        } else if (!getRequest().hasNextApprovalStep()) {
+        } else if (!requestInfo.hasNextApprovalStep()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_no_next_step");
         } else {
             return raLocaleBean.getMessage("view_request_page_cannot_approve");
@@ -362,7 +359,7 @@ public class RaManageRequestBean implements Serializable {
         ApprovalRequest request = advo.getApprovalRequest();
         request.setApprovalProfile(storedApprovalProfile);
 
-        final int id = getRequest().request.getId();
+        final int id = requestInfo.request.getId();
         final int stepId = step.getStepIdentifier();
         final int partitionId = partition.getPartitionIdentifier();
         final RaApprovalResponseRequest approval = new RaApprovalResponseRequest(id, stepId, partitionId, request, "", action); // TODO comment field. should it be here for partitioned approvals also?
@@ -370,7 +367,7 @@ public class RaManageRequestBean implements Serializable {
     }
     
     public void approve() throws AuthorizationDeniedException, AuthenticationFailedException {
-        final ApprovalDataVO advo = getRequest().request.getApprovalData();
+        final ApprovalDataVO advo = requestInfo.request.getApprovalData();
         final ApprovalProfile approvalProfile = advo.getApprovalRequest().getApprovalProfile();
         
         for (ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition : partitionsAuthorizedToView) {
@@ -405,7 +402,7 @@ public class RaManageRequestBean implements Serializable {
     }
     
     public void reject() throws AuthorizationDeniedException, AuthenticationFailedException {
-        final ApprovalDataVO advo = getRequest().request.getApprovalData();
+        final ApprovalDataVO advo = requestInfo.request.getApprovalData();
         final ApprovalProfile approvalProfile = advo.getApprovalRequest().getApprovalProfile();
         
         for (ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition : partitionsAuthorizedToView) {
@@ -512,7 +509,7 @@ public class RaManageRequestBean implements Serializable {
     
     public void unexpireRequest() throws AuthorizationDeniedException {
         final long unexpireForMillis = Long.valueOf(unexpireDays) * 24*60*60*1000;
-        final long maxUnexpire = getRequest().request.getMaxUnexpirationPeriod();
+        final long maxUnexpire = requestInfo.request.getMaxUnexpirationPeriod();
         if (unexpireForMillis > maxUnexpire) {
             raLocaleBean.addMessageError("view_request_page_error_unexpire_too_long", getMaxUnexpireDays());
             return;
@@ -522,7 +519,7 @@ public class RaManageRequestBean implements Serializable {
     }
     
     public int getMaxUnexpireDays() {
-        long days = getRequest().request.getMaxUnexpirationPeriod() / (24*60*60*1000);
+        long days = requestInfo.request.getMaxUnexpirationPeriod() / (24*60*60*1000);
         return (int) days;
     }
     
