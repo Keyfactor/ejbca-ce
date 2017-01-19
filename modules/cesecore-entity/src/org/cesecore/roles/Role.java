@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.roles;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import org.apache.commons.lang.StringUtils;
@@ -44,6 +45,14 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
         this.roleName = roleName;
     }
 
+    public Role(final String nameSpace, final String roleName, final HashMap<String, Boolean> accessRules) {
+        this.roleId = ROLE_ID_UNASSIGNED;
+        setNameSpace(nameSpace);
+        this.roleName = roleName;
+        getAccessRules().putAll(accessRules);
+    }
+
+    /** Constructor used during load from database */
     public Role(final int roleId, final String nameSpace, final String roleName, final LinkedHashMap<Object, Object> dataMap) {
         this.roleId = roleId;
         setNameSpace(nameSpace);
@@ -172,5 +181,10 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
     /** Remove redundant rules. Assumes normalized form. */
     public void minimizeAccessRules() {
         AccessRulesHelper.minimizeAccessRules(getAccessRules());
+    }
+
+    /** Sort access rules by name. Assumes normalized form. */
+    public void sortAccessRules() {
+        AccessRulesHelper.sortAccessRules(getAccessRules());
     }
 }

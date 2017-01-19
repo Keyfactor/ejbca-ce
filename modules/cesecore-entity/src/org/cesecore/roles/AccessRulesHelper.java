@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -157,6 +158,15 @@ public abstract class AccessRulesHelper {
         }
         minimizeAccessRules(accessRules);
         return accessRules;
+    }
+
+    /** Sort the provided access rules. (Useful for more readable persistence format.) */
+    public static void sortAccessRules(final LinkedHashMap<String, Boolean> accessRules) {
+        final List<Entry<String, Boolean>> sortEntryList = getAsListSortedByKey(accessRules);
+        accessRules.clear();
+        for (final Entry<String, Boolean> entry : sortEntryList) {
+            accessRules.put(entry.getKey(), entry.getValue());
+        }
     }
 
     /** @return the map sorted by keys */
