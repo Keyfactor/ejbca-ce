@@ -50,6 +50,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
+import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.QueryResultWrapper;
 
@@ -68,8 +69,8 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     private AccessControlSessionLocal accessControlSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
-    //@EJB
-    //private RoleMemberSessionLocal roleMemberSession;
+    @EJB
+    private RoleMemberSessionLocal roleMemberSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;

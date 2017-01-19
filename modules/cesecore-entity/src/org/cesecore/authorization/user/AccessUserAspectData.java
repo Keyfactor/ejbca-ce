@@ -33,6 +33,8 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
  * <i>O</i>.
  * 
  * @version $Id$
+ * 
+ * @deprecated Kept only for upgrade reasons. Use org.cesecore.roles.RoleMemberData instead
  */
 @Entity
 @Table(name = "AccessUserAspectData")

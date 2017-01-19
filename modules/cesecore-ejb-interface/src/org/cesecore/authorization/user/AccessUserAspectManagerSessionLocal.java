@@ -24,6 +24,7 @@ import org.cesecore.roles.AdminGroupData;
  * 
  * @version $Id$
  *
+ * @deprecated Use RoleMemberManagementSession instead
  */
 @Local
 public interface AccessUserAspectManagerSessionLocal {
