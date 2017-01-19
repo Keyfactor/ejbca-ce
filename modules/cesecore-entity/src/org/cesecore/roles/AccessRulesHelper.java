@@ -64,6 +64,15 @@ public abstract class AccessRulesHelper {
         }
     }
 
+    /** Normalize access rules (make sure rules always end with a '/') */
+    public static String normalizeResource(final String resource) {
+        // For each rule, check if there are higher level rules (e.g. shorter path) with the same access state
+        if (!resource.endsWith("/")) {
+            return resource + "/";
+        }
+        return resource;
+    }
+
     /** Remove redundant rules. Assumes parameter is in normalized form. */
     public static void minimizeAccessRules(final HashMap<String, Boolean> accessRules) {
         // For each rule, check if there are higher level rules (e.g. shorter path) with the same access state
