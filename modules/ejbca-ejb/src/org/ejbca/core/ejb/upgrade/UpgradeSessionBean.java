@@ -88,14 +88,19 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.cesecore.roles.AccessRulesMigrator;
 import org.cesecore.roles.AdminGroupData;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.DatabaseConfiguration;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -112,6 +117,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
@@ -184,7 +190,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @EJB
     private RoleManagementSessionLocal roleMgmtSession;
     @EJB
+    private RoleSessionLocal roleSession;
+    @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLogger;
+    @EJB
+    private UserDataSourceSessionLocal userDataSourceSession;
 
 
     private UpgradeSessionLocal upgradeSession;
@@ -412,6 +422,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setEndEntityProfileInCertificateData(false);
             }
             setLastUpgradedToVersion("6.6.0");
+        }
+        if (isLesserThan(oldVersion, "6.8.0")) {
+            try {
+                upgradeSession.migrateDatabase680();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("6.8.0");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -1479,6 +1497,58 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new IllegalStateException("AlwaysAllowToken was denied access", e);
         }
         log.error("(This is not an error) Completed upgrade procedure to 6.6.0");
+    }
+
+    /**
+     * EJBCA 6.8.0:
+     * 
+     * 1.   Converts AdminGroupData, AccessRuleData and AdminEntityData to RoleData and RoleMemeberData
+     * 
+     * @throws UpgradeFailedException if upgrade fails (rolls back)
+     */
+    @SuppressWarnings("deprecation")
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase680() throws UpgradeFailedException {
+        log.debug("migrateDatabase680: Upgrading roles, rules and rolemembers.");
+        // Get largest possible list of all access rules on this system
+        final Map<String, Set<String>> categorizedAccessRules = complexAccessControlSession.getAuthorizedAvailableAccessRules(authenticationToken,
+                true, true, true, endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.CREATE_END_ENTITY),
+                userDataSourceSession.getAuthorizedUserDataSourceIds(authenticationToken, true), EjbcaConfiguration.getCustomAvailableAccessRules());
+        final Collection<String> allKnownResourcesInInstallation = new HashSet<>();
+        for (final Set<String> acessRuleSet : categorizedAccessRules.values()) {
+            allKnownResourcesInInstallation.addAll(acessRuleSet);
+        }
+        // Migrate one AdminGroupData at the time
+        final AccessRulesMigrator accessRulesMigrator = new AccessRulesMigrator(allKnownResourcesInInstallation);
+        final Collection<AdminGroupData> adminGroupDatas = roleMgmtSession.getAllRolesAuthorizedToEdit(authenticationToken);
+        for (final AdminGroupData adminGroupData : adminGroupDatas) {
+            // Convert AdminGroupData and linked AccessRuleDatas to RoleData
+            final String roleName = adminGroupData.getRoleName();
+            final Collection<AccessRuleData> oldAccessRules = adminGroupData.getAccessRules().values();
+            final HashMap<String, Boolean> newAccessRules = accessRulesMigrator.toNewAccessRules(oldAccessRules, roleName);
+            Role role = new Role(null, roleName, newAccessRules);
+            int failures = 0;
+            do {
+                try {
+                    role = roleSession.persistRoleNoAuthorizationCheck(authenticationToken, role);
+                    failures = 0;
+                } catch (RoleExistsException e) {
+                    failures++;
+                    role.setRoleName(roleName + "-" + failures);
+                }
+            } while (failures>0 && failures<100);
+            if (failures==100) {
+                throw new UpgradeFailedException("Unable to persist converted role '" + roleName + "'.");
+            }
+            final int roleId = role.getRoleId();
+            // Convert the linked AccessUserAspectDatas to RoleMemberDatas
+            final Map<Integer, AccessUserAspectData> accessUsers = adminGroupData.getAccessUsers();
+            // ...TODO...
+            
+            log.warn("Upgrade of AccessUserAspectData is not yet implemented.");
+        }
+        log.error("(This is not an error) Completed upgrade procedure to 6.8.0");
     }
 
     /** Add the previously global configuration configured approval notification */

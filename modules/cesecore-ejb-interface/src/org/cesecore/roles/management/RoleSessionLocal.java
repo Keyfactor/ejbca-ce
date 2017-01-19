@@ -49,9 +49,10 @@ public interface RoleSessionLocal extends RoleSession {
      * 
      * @param authenticationToken used for audit logging
      * @param role is the role to persist
+     * @return the Role parameter enriched with assigned Id and normalized access rules
      * @throws RoleExistsException if a different role exists with the same name under the same namespace.
      */
-    void persistRoleNoAuthorizationCheck(AuthenticationToken authenticationToken, Role role) throws RoleExistsException;
+    Role persistRoleNoAuthorizationCheck(AuthenticationToken authenticationToken, Role role) throws RoleExistsException;
 
     /**
      * Delete a role from the database (currently not affecting any role members)
