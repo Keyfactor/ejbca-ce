@@ -65,7 +65,7 @@ public class AccessRulesMigrator {
          * 
          * (Note that this last step changes the behavior when new sub-resources are created if all existing ones where granted at upgrade time!)
          * 
-         * Complexity: 2*N^2+N+N*M
+         * Complexity per role: <2*N^2+N+N*M ≃ N*M [N configured access rules in role, M total access rules in system]
          */
         final Set<AccessRuleData> oldRules = new HashSet<>(oldAccessRules);
         // If there is entries with unknown, remove them first since they provide no info
@@ -132,7 +132,7 @@ public class AccessRulesMigrator {
             final Set<String> denied = new HashSet<>();
             for (final String existingResource : allKnownResourcesNormalized) {
                 //log.debug(" existingResource="+existingResource +" acceptNonRecursiveRule="+acceptNonRecursiveRule);
-                if (existingResource.startsWith(acceptNonRecursiveRule)) {
+                if (existingResource.startsWith(acceptNonRecursiveRule) && !existingResource.equals(acceptNonRecursiveRule)) {
                     if (acceptNonRecursiveRules.contains(existingResource)) {
                         granted.add(existingResource);
                     } else {
@@ -145,7 +145,7 @@ public class AccessRulesMigrator {
                     log.debug("Adding STATE_ALLOW for resource '" + acceptNonRecursiveRule + "'.");
                 }
                 if (!granted.isEmpty()) {
-                    log.info("Role '" + roleNameForLogging + "' will be been granted access to all NEW sub resources under '" +
+                    log.debug("Role '" + roleNameForLogging + "' will be been granted access to all future new sub resources under '" +
                             acceptNonRecursiveRule + "', since it had access to all current sub-resources.");
                 }
                 ret.put(acceptNonRecursiveRule, Role.STATE_ALLOW);
@@ -160,10 +160,12 @@ public class AccessRulesMigrator {
                     }
                     ret.put(deniedSubResource, Role.STATE_DENY);
                 }
-                log.info("Role '" + roleNameForLogging + "' will be been granted access to all new sub resources under '" +
+                log.info("Role '" + roleNameForLogging + "' will be been granted access to all future new sub resources under '" +
                         acceptNonRecursiveRule + "'. Current decline rules for sub-resources will continue to be denied.");
             }
         }
+        // The unused rule '/ca_functionality/store_certificate/' was still added to roles before EJBCA 6.6.0 (clean it up now during conversion)
+        ret.remove("/ca_functionality/store_certificate/");
         if (!oldRules.isEmpty()) {
             throw new IllegalStateException("Failed to convert access rules from old to new format. " + oldRules.size() + " rules remained.");
         }
