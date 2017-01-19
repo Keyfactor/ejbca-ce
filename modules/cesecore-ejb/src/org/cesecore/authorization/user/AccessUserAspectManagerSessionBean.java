@@ -33,6 +33,7 @@ import org.cesecore.util.ValueExtractor;
  * 
  * @version $Id$
  * 
+ * @deprecated Use RoleMemberManagementSession instead
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AccessUserAspectManagerSessionLocal")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)

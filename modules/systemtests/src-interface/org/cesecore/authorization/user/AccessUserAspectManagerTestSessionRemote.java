@@ -25,6 +25,7 @@ import org.cesecore.roles.AdminGroupData;
  * @version $Id$
  *
  */
+@SuppressWarnings("deprecation")
 @Remote
 public interface AccessUserAspectManagerTestSessionRemote {
 
