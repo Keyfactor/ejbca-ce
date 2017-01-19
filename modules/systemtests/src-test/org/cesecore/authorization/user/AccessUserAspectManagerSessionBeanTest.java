@@ -45,6 +45,7 @@ import org.junit.Test;
  * @version $Id$
  * 
  */
+@SuppressWarnings("deprecation")
 public class AccessUserAspectManagerSessionBeanTest {
 
     private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
@@ -96,7 +97,6 @@ public class AccessUserAspectManagerSessionBeanTest {
         String issuerDn2 = "CN=" + roleName + "2";
         int caId1 = issuerDn1.hashCode();
         int caId2 = issuerDn2.hashCode();
-        @SuppressWarnings("deprecation")
         int oldStylePrimaryKey = AccessUserAspectData.generatePrimaryKeyOld(roleName, caId1,
                 X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE, roleName);
         AccessUserAspectData oldAspect = new AccessUserAspectData(roleName, caId1, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
@@ -129,7 +129,6 @@ public class AccessUserAspectManagerSessionBeanTest {
         String rule = "/" + roleName;
         String issuerDn = "CN=" + roleName;
         int caId = issuerDn.hashCode();
-        @SuppressWarnings("deprecation")
         int oldStylePrimaryKey = AccessUserAspectData.generatePrimaryKeyOld(roleName, caId,
                 X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE, roleName);
         AccessUserAspectData oldAspect = new AccessUserAspectData(roleName, caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME,

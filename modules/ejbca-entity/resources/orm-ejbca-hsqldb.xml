@@ -133,6 +133,20 @@
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
+    <entity class="org.cesecore.roles.member.RoleMemberData" access="PROPERTY" metadata-complete="false">
+    	<table name="RoleMemberData"/>
+    	<attributes>
+    		<id name="primaryKey"><column name="primaryKey" column-definition="INTEGER"/></id>
+    		 <basic fetch="EAGER" name="matchValue"><column name="matchValue" column-definition="INTEGER" nullable="false"/></basic>
+    		 <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="VARCHAR(256)" nullable="false"/></basic>
+    		 <basic fetch="EAGER" name="value"><column name="value" column-definition="VARCHAR(256)" nullable="false"/></basic>
+    		 <basic fetch="EAGER" name="roleId"><column name="roleId" column-definition="INTEGER" /></basic>
+    		 <basic fetch="EAGER" name="memberBindingType"><column name="memberBindingType" column-definition="VARCHAR(256)"/></basic>
+    		 <basic fetch="EAGER" name="memberBinding"><column name="memberBinding" column-definition="VARCHAR(256)"/></basic>
+    		 <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR"/><lob/></basic>
+    		 <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+    	</attributes>
+    </entity>
     <entity class="org.cesecore.roles.RoleData" access="PROPERTY" metadata-complete="false">
     	<table name="RoleData"/>
         <attributes>
