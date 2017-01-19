@@ -117,9 +117,13 @@ public class RaManageRequestBean implements Serializable {
             if (!StringUtils.isBlank(idParam)) {
                 final int id = Integer.parseInt(idParam);
                 loadRequest(id);
-            } else {
+            } else if (!StringUtils.isBlank(aidParam)) {
                 final int approvalId = Integer.parseInt(aidParam);
                 loadRequestByApprovalId(approvalId);
+            } else {
+                // JBoss EAP 6 can call this method from preRenderView event, even from the listing page. In that case there's no ID parameter.    
+                log.debug("No request ID passed in parameter. Will not initialize request info.");
+                return;
             }
             if (requestData.getApprovalProfile() != null) {
                 long defaultUnexpireMillis = Math.min(requestData.getApprovalProfile().getApprovalExpirationPeriod(),
