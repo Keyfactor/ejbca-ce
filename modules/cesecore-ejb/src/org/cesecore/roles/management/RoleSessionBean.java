@@ -221,18 +221,21 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     }
 
     @Override
-    public void persistRoleNoAuthorizationCheck(final AuthenticationToken authenticationToken, final Role role) throws RoleExistsException {
+    public Role persistRoleNoAuthorizationCheck(final AuthenticationToken authenticationToken, final Role role) throws RoleExistsException {
         // Normalize and minimize access rules
         role.normalizeAccessRules();
         role.minimizeAccessRules();
         final RoleData roleDataById = role.getRoleId()==Role.ROLE_ID_UNASSIGNED ? null : getRoleData(role.getRoleId());
         persistRoleInternal(authenticationToken, role, roleDataById);
+        return role;
     }
 
     private void persistRoleInternal(final AuthenticationToken authenticationToken, final Role role, final RoleData roleDataById) throws RoleExistsException {
         if (role.getRoleId()==Role.ROLE_ID_UNASSIGNED) {
             role.setRoleId(findFreeRoleId());
         }
+        // Sort access rules to make raw xml editing (e.g. statedump) easier
+        role.sortAccessRules();
         final RoleData roleByName = getRoleData(role.getNameSpace(), role.getRoleName());
         if (roleDataById == null) {
             // Persist new role

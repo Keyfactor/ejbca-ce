@@ -17,6 +17,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -79,6 +81,23 @@ public class AccessRulesHelperTest {
         assertTrue( ERRMSG_DENIED_TO_ALLOWED, AccessRulesHelper.hasAccessToResource(accessRules, "/c/"));
         assertFalse(ERRMSG_ALLOWED_TO_DENIED, AccessRulesHelper.hasAccessToResource(accessRules, "/c/d/"));
         log.trace("<testMergeOfAccessRules");
+    }
+
+    @Test
+    public void testSorting() {
+        final LinkedHashMap<String, Boolean> accessRules = new LinkedHashMap<>();
+        accessRules.put("/abc/d/", Role.STATE_ALLOW);
+        accessRules.put("/abc/", Role.STATE_DENY);
+        accessRules.put("/", Role.STATE_ALLOW);
+        accessRules.put("/a/b/", Role.STATE_DENY);
+        accessRules.put("/a/", Role.STATE_ALLOW);
+        AccessRulesHelper.sortAccessRules(accessRules);
+        final Iterator<Entry<String, Boolean>> iterator = accessRules.entrySet().iterator();
+        assertEquals("/", iterator.next().getKey());
+        assertEquals("/a/", iterator.next().getKey());
+        assertEquals("/a/b/", iterator.next().getKey());
+        assertEquals("/abc/", iterator.next().getKey());
+        assertEquals("/abc/d/", iterator.next().getKey());
     }
 
     private void debugLogAccessRules(final HashMap<String, Boolean> accessRules) {
