@@ -27,6 +27,10 @@
      -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
+    <f:metadata>
+        <ui:include src="/WEB-INF/include/request_search_params.xhtml"/>
+        <f:event type="preRenderView" listener="#{raManageRequestsBean.searchAndFilter}"/>
+    </f:metadata>
     <ui:define name="content">
         <h:panelGroup layout="block" class="header" id="title">
             <h1><h:outputText value="#{msg.manage_requests_page_title}"/></h1>
@@ -37,7 +41,7 @@
                 
                 <h:panelGroup layout="block" styleClass="tabButtonBar">
                     <h:outputLink value="managerequests.xhtml" styleClass="tabButton #{raManageRequestsBean.viewingNeedsApproval ? 'active' : ''}">
-                        <f:param name="tab" value="needsApproval"/>
+                        <f:param name="tab" value="to_approve"/>
                         <h:outputText value="#{msg.manage_requests_page_view_needs_approval}"/>
                     </h:outputLink>
                     
@@ -48,11 +52,13 @@
                     
                     <h:outputLink value="managerequests.xhtml" styleClass="tabButton #{raManageRequestsBean.viewingProcessed ? 'active' : ''}">
                         <f:param name="tab" value="processed"/>
+                        <f:param name="sortAsc" value="false"/>
                         <h:outputText value="#{msg.manage_requests_page_view_processed}"/>
                     </h:outputLink>
                     
                     <h:outputLink value="managerequests.xhtml" styleClass="tabButton #{raManageRequestsBean.viewingCustom ? 'active' : ''}">
-                        <f:param name="tab" value="custom"/>
+                        <f:param name="tab" value="custom_search"/>
+                        <f:param name="sortAsc" value="false"/>
                         <h:outputText value="#{msg.manage_requests_page_view_custom}"/>
                     </h:outputLink>
                 </h:panelGroup>
@@ -193,11 +199,10 @@
                             <h:outputText value="#{raRequest.status}" />
                         </h:column>
                         <h:column>
-                            <h:outputLink id="viewMoreButton" styleClass="viewMoreLink" value="managerequest.xhtml">
+                            <h:link id="viewMoreButton" styleClass="viewMoreLink" outcome="managerequest" includeViewParams="true">
                                 <f:param name="id" value="#{raRequest.id}"/>
-                                <f:param name="fromTab" value="#{raManageRequestsBean.currentTabName}"/>
                                 <h:outputText value="#{msg.manage_requests_page_view_more_command}"/>
-                            </h:outputLink>
+                            </h:link>
                         </h:column>
                     </h:dataTable>
                 </h:panelGroup>
