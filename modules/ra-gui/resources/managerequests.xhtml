@@ -28,7 +28,17 @@
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <f:metadata>
-        <ui:include src="/WEB-INF/include/request_search_params.xhtml"/>
+        <!-- Parameters must be duplicated here and in managerequests.xhtml. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
+        <f:viewParam name="tab" value="#{raManageRequestsBean.tab}"/>
+        <f:viewParam name="sortAsc" value="#{raManageRequestsBean.sortAscending}"/>
+        <f:viewParam name="sortCol" value="#{raManageRequestsBean.sortColumn}"/>
+        <f:viewParam name="searchWaiting" value="#{raManageRequestsBean.customSearchingWaiting}"/>
+        <f:viewParam name="searchProcessed" value="#{raManageRequestsBean.customSearchingProcessed}"/>
+        <f:viewParam name="searchExpired" value="#{raManageRequestsBean.customSearchingExpired}"/>
+        <f:viewParam name="searchStartDate" value="#{raManageRequestsBean.customSearchStartDate}"/>
+        <f:viewParam name="searchEndDate" value="#{raManageRequestsBean.customSearchEndDate}"/>
+        <f:viewParam name="searchExpiresDays" value="#{raManageRequestsBean.customSearchExpiresDays}"/>
+        
         <f:event type="preRenderView" listener="#{raManageRequestsBean.searchAndFilter}"/>
     </f:metadata>
     <ui:define name="content">
