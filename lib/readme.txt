@@ -7,7 +7,7 @@ The jars:
  commons-el-1.0.jar 
  commons-codec-1.3.jar
  commons-collections-3.2.2.jar
- commons-fileupload-1.3.1.jar
+ commons-fileupload-1.3.2.jar
  commons-io-1.3.2.jar
 are for example used by MyFaces/FileUpload etc.
 
