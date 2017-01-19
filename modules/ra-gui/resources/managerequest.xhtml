@@ -27,22 +27,25 @@
      -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
+<f:metadata>
+    <ui:include src="/WEB-INF/include/request_search_params.xhtml"/>
+    <f:viewParam name="id" value="#{raManageRequestBean.idParam}"/>
+    <f:viewParam name="aid" value="#{raManageRequestBean.aidParam}"/>
+    <f:event type="preRenderView" listener="#{raManageRequestBean.initializeRequestInfo}"/>
+</f:metadata>
 <ui:define name="content">
     <h:panelGroup layout="block" class="header" id="title">
         <h1><h:outputText value="#{raManageRequestBean.pageTitle}"/></h1>
     </h:panelGroup>
     <h:outputText value="#{msg.manage_requests_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToManageRequests}"/>
     <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToManageRequests}">
-        <h:panelGroup layout="block" rendered="#{raManageRequestBean.fromTab != null}">
-            <h:outputLink value="managerequests.xhtml" rendered="#{not raManageRequestBean.editDataVisible}" styleClass="pure-button ra-button">
-                <f:param name="tab" value="#{raManageRequestBean.fromTab}"/>
+        <h:panelGroup layout="block">
+            <h:link outcome="managerequests" rendered="#{not raManageRequestBean.editDataVisible and raManageRequestsBean.tab != null}" styleClass="pure-button ra-button" includeViewParams="true">
                 <h:outputText value="#{msg.generic_back}"/>
-            </h:outputLink>
-            <h:outputLink value="managerequest.xhtml" rendered="#{raManageRequestBean.editDataVisible}" styleClass="pure-button ra-button">
-                <f:param name="id" value="#{raManageRequestBean.request.id}"/>
-                <f:param name="fromTab" value="#{raManageRequestBean.fromTab}"/>
+            </h:link>
+            <h:link rendered="#{raManageRequestBean.editDataVisible}" styleClass="pure-button ra-button" includeViewParams="true">
                 <h:outputText value="#{msg.generic_back}"/>
-            </h:outputLink>
+            </h:link>
         </h:panelGroup>
         <h:form id="manageRequestForm" class="pure-form manageRequestDetView">
             
