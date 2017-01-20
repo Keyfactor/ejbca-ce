@@ -153,8 +153,8 @@
     		 <basic fetch="EAGER" name="value"><column name="value" column-definition="TEXT" nullable="false"/></basic>
     		 <basic fetch="EAGER" name="roleId"><column name="roleId" column-definition="INT4" /></basic>
     		 <basic fetch="EAGER" name="memberBindingType"><column name="memberBindingType" column-definition="TEXT"/></basic>
-    		 <basic fetch="EAGER" name="memberBinding"><column name="memberBinding" column-definition="TEXT"/></basic>
-    		 <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+    		 <basic fetch="EAGER" name="memberBindingValue"><column name="memberBindingValue" column-definition="TEXT"/></basic>
+    		 <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
     		 <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
     	</attributes>
     </entity>

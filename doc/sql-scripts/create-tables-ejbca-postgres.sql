@@ -331,6 +331,19 @@ CREATE TABLE RoleData (
     PRIMARY KEY (id)
 );
 
+CREATE TABLE RoleMemberData (
+	primaryKey INT4 NOT NULL,
+	matchValue INT4 NOT NULL,
+	tokenType TEXT NOT NULL,
+	value TEXT NOT NULL,
+	roleId INT4,
+	memberBindingType TEXT,
+	memberBindingValue TEXT,
+	rowProtection TEXT,
+    rowVersion INT4 NOT NULL,
+    PRIMARY KEY (primaryKey)
+);
+
 CREATE TABLE ServiceData (
     id INT4 NOT NULL,
     data TEXT,

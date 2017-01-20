@@ -142,7 +142,7 @@
     		 <basic fetch="EAGER" name="value"><column name="value" column-definition="VARCHAR(256)" nullable="false"/></basic>
     		 <basic fetch="EAGER" name="roleId"><column name="roleId" column-definition="INTEGER" /></basic>
     		 <basic fetch="EAGER" name="memberBindingType"><column name="memberBindingType" column-definition="VARCHAR(256)"/></basic>
-    		 <basic fetch="EAGER" name="memberBinding"><column name="memberBinding" column-definition="VARCHAR(256)"/></basic>
+    		 <basic fetch="EAGER" name="memberBindingValue"><column name="memberBindingValue" column-definition="VARCHAR(256)"/></basic>
     		 <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR"/><lob/></basic>
     		 <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
     	</attributes>

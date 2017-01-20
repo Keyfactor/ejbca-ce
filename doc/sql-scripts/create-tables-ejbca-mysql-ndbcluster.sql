@@ -334,6 +334,19 @@ CREATE TABLE RoleData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
+CREATE TABLE RoleMemberData (
+	primaryKey INT(11)  NOT NULL,
+	matchValue INT(11)  NOT NULL,
+	tokenType VARCHAR(250) BINARY NOT NULL,
+	value VARCHAR(250) BINARY NOT NULL,
+	roleId INT(11),
+	memberBindingType VARCHAR(250) BINARY,
+	memberBindingValue VARCHAR(250) BINARY,
+	rowProtection LONGTEXT,
+    rowVersion INT(11)  NOT NULL,
+    PRIMARY KEY (primaryKey)
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
+
 CREATE TABLE ServiceData (
     id INT(11) NOT NULL,
     data LONGTEXT,
