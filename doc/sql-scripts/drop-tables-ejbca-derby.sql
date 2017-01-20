@@ -28,6 +28,7 @@ drop table ProfileData;
 drop table PublisherData;
 drop table PublisherQueueData;
 drop table RoleData;
+drop table RoleMemberData;
 drop table ServiceData;
 drop table UserData;
 drop table UserDataSourceData;

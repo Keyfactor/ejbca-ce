@@ -30,7 +30,7 @@ import org.cesecore.util.ProfileID;
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleMemberSessionLocal")
 
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RoleMemberSessionBean implements RoleMemberSessionLocal {
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
@@ -38,7 +38,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal {
 
     @Override
     public int createOrEdit(RoleMemberData roleMember) {
-        if (roleMember.getPrimaryKey() == null) {
+        if (roleMember.getPrimaryKey() == 0) {
             roleMember.setPrimaryKey(findFreePrimaryKey());
             entityManager.persist(roleMember);
         } else {
@@ -52,7 +52,8 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal {
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
             public boolean isFree(int i) {
-                return find(i) == null;
+                //0 is a protected ID for RoleMemberData
+                return find(i) == null && i != 0;
             }
         };
         return ProfileID.getNotUsedID(db);
@@ -60,6 +61,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal {
 
 
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public RoleMemberData find(final int primaryKey) {
         return entityManager.find(RoleMemberData.class, primaryKey);
