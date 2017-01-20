@@ -1513,7 +1513,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.debug("migrateDatabase680: Upgrading roles, rules and rolemembers.");
         // Get largest possible list of all access rules on this system
         final Map<String, Set<String>> categorizedAccessRules = complexAccessControlSession.getAuthorizedAvailableAccessRules(authenticationToken,
-                true, true, true, endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.CREATE_END_ENTITY),
+                true, true, true, endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet(),
                 userDataSourceSession.getAuthorizedUserDataSourceIds(authenticationToken, true), EjbcaConfiguration.getCustomAvailableAccessRules());
         final Collection<String> allKnownResourcesInInstallation = new HashSet<>();
         for (final Set<String> acessRuleSet : categorizedAccessRules.values()) {
