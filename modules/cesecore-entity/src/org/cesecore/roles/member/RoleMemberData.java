@@ -142,7 +142,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         return memberBindingValue;
     }
 
-    public void setMemberBinding(String memberBindingValue) {
+    public void setMemberBindingValue(String memberBindingValue) {
         this.memberBindingValue = memberBindingValue;
     }
 
