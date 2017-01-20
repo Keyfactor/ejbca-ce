@@ -28,14 +28,15 @@ public class RoleMemberDataSessionTest {
 
     private RoleMemberProxySessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
+    
     /**
      * Simple sanity test, meant to involve other session beans as little as possible.
      */
     @Test
-    public void testCrudOperations() {
-        final RoleMemberData roleMember = new RoleMemberData(X500PrincipalAccessMatchValue.WITH_COUNTRY, "SE", null, null, null);
+    public void testCrudOperations() {      
         assertNull("accessUserAspectManagerSession.find did not return null for a non existing object.",
                 roleMemberSession.find(0));
+        final RoleMemberData roleMember = new RoleMemberData(X500PrincipalAccessMatchValue.WITH_COUNTRY, "SE", RoleMemberData.NO_ROLE, null, null);
         int roleMemberId = -1;
         try {
             roleMemberId = roleMemberSession.createOrEdit(roleMember);

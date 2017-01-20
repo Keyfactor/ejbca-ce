@@ -40,6 +40,7 @@ import org.cesecore.keybind.InternalKeyBindingData;
 import org.cesecore.keys.token.CryptoTokenData;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.member.RoleMemberData;
 import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.ca.publisher.PublisherData;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
@@ -192,6 +193,17 @@ public class DatabaseSchemaTest {
         logMemStats();
         AccessUserAspectData entity = new AccessUserAspectData(VARCHAR_250B, BOGUS_INTEGER, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER,
                 AccessMatchType.TYPE_EQUALCASEINS, VARCHAR_250B);
+        entity.setRowProtection(CLOB_10KiB);
+        entity.setRowVersion(0);
+        storeAndRemoveEntity(entity);
+        LOG.trace("<testAdminEntityData");
+    }
+    
+    @Test
+    public void testRoleMemberData() {
+        LOG.trace(">testAdminEntityData");
+        logMemStats();
+        RoleMemberData entity = new RoleMemberData(BOGUS_INTEGER, X500PrincipalAccessMatchValue.WITH_COUNTRY, "SE", null, null, null);
         entity.setRowProtection(CLOB_10KiB);
         entity.setRowVersion(0);
         storeAndRemoveEntity(entity);

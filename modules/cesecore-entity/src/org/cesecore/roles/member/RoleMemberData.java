@@ -42,17 +42,19 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 @Table(name = "RoleMemberData")
 public class RoleMemberData extends ProtectedData implements Serializable, Comparable<RoleMemberData> {
 
+    public static final Integer NO_ROLE = null;
+    
     private static final long serialVersionUID = 1L;
    
-    private Integer primaryKey;
+    private int primaryKey;
 
-    private Integer matchValue;
+    private int matchValue;
     private String tokenType;
     private String value;
     private Integer roleId;
     
     private String memberBindingType;
-    private String memberBinding;
+    private String memberBindingValue;
     
     private int rowVersion = 0;
     private String rowProtection;
@@ -67,12 +69,12 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * 
      * @param matchValue the AccessMatchValue to match this object with, i.e CN, SN, etc. 
      * @param value the actual value with which to match
-     * @param roleId roleId the ID of the role to which this member belongs. May be null. 
+     * @param roleId roleId the ID of the role to which this member belongs. May be null.
      * @param memberBindingType the type of member binding used for this member. May be null.
      * @param memberBinding the member binding for this member. May be null.
      */
     public RoleMemberData(final AccessMatchValue matchValue, final String value, final Integer roleId, String memberBindingType, String memberBinding) {
-        this(null, matchValue, value, roleId, memberBindingType, memberBinding);
+        this(0, matchValue, value, roleId, memberBindingType, memberBinding);
     }
 
     /**
@@ -82,11 +84,11 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      *  object will be overridden
      * @param matchValue the AccessMatchValue to match this object with, i.e CN, SN, etc. 
      * @param value the actual value with which to match
-     * @param roleId the ID of the role to which this member belongs. May be null. 
+     * @param roleId the ID of the role to which this member belongs. May be null.
      * @param memberBindingType the type of member binding used for this member. May be null.
      * @param memberBinding the member binding for this member. May be null.
      */
-    public RoleMemberData(final Integer primaryKey, final AccessMatchValue matchValue, final String value,
+    public RoleMemberData(final int primaryKey, final AccessMatchValue matchValue, final String value,
             final Integer roleId, String memberBindingType, String memberBinding) {
         this.primaryKey = primaryKey;
         this.matchValue = matchValue.getNumericValue();
@@ -94,17 +96,17 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         this.value = value;
         this.roleId = roleId;
         this.memberBindingType = memberBindingType;
-        this.memberBinding = memberBinding;
+        this.memberBindingValue = memberBinding;
     }
 
     /**
      * @return the primary key of this entity bean, a pseudo-random integer
      */
-    public Integer getPrimaryKey() {
+    public int getPrimaryKey() {
         return primaryKey;
     }
 
-    public void setPrimaryKey(Integer primaryKey) {
+    public void setPrimaryKey(int primaryKey) {
         this.primaryKey = primaryKey;
     }
 
@@ -123,7 +125,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     }
         
     /**
-     * @return a string defining the type of member marker, which is a method to bidn
+     * @return a string defining the class of member binding, which is a common value with which several members can be linked to one physical user.  
      */
     public String getMemberBindingType() {
         return memberBindingType;
@@ -133,12 +135,15 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         this.memberBindingType = memberBindingType;
     }
 
-    public String getMemberBinding() {
-        return memberBinding;
+    /**
+     * @return a string referring to a member binding value, which can be used to string together several members to one physical user. 
+     */
+    public String getMemberBindingValue() {
+        return memberBindingValue;
     }
 
-    public void setMemberBinding(String memberBinding) {
-        this.memberBinding = memberBinding;
+    public void setMemberBinding(String memberBindingValue) {
+        this.memberBindingValue = memberBindingValue;
     }
 
     /**
@@ -204,7 +209,8 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // What is important to protect here is the data that we define
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getPrimaryKey()).append(getMatchValue()).append(getValue()).append(getMatchValue());
+        build.append(getPrimaryKey()).append(getMatchValue()).append(getValue()).append(getMatchValue()).append(getRoleId()).append(getTokenType())
+                .append(getMemberBindingType()).append(getMemberBindingValue());
         return build.toString();
     }
 

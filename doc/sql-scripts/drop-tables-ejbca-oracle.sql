@@ -26,6 +26,7 @@ drop table ProfileData cascade constraints;
 drop table PublisherData cascade constraints;
 drop table PublisherQueueData cascade constraints;
 drop table RoleData;
+drop table RoleMemberData cascade constraints;
 drop table ServiceData cascade constraints;
 drop table UserData cascade constraints;
 drop table UserDataSourceData cascade constraints;
