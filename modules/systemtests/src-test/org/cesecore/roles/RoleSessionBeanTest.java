@@ -17,7 +17,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -33,8 +32,6 @@ import org.junit.Test;
  * @version $Id$
  */
 public class RoleSessionBeanTest extends RoleUsingTestCase {
-
-    private static final Logger log = Logger.getLogger(RoleSessionBeanTest.class);
     
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private AuthenticationToken authenticationToken;
