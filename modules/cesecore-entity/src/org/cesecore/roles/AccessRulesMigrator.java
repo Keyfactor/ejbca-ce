@@ -131,12 +131,17 @@ public class AccessRulesMigrator {
             final Set<String> granted = new HashSet<>();
             final Set<String> denied = new HashSet<>();
             for (final String existingResource : allKnownResourcesNormalized) {
-                //log.debug(" existingResource="+existingResource +" acceptNonRecursiveRule="+acceptNonRecursiveRule);
+                // Is the known resource a sub resource to the currently processed resource
                 if (existingResource.startsWith(acceptNonRecursiveRule) && !existingResource.equals(acceptNonRecursiveRule)) {
+                    // Deny the sub-resource, unless 
+                    // - is explicitly granted by an old accept rule
+                    // - has already been granted by an accept recursive
                     if (acceptNonRecursiveRules.contains(existingResource)) {
                         granted.add(existingResource);
                     } else {
-                        denied.add(existingResource);
+                        if (!AccessRulesHelper.hasAccessToResource(ret, existingResource)) {
+                            denied.add(existingResource);
+                        }
                     }
                 }
             }
