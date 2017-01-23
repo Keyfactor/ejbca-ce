@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.roles.member;
 
+import java.util.List;
+
 import javax.ejb.Remote;
 
 import org.cesecore.roles.member.RoleMemberData;
@@ -40,20 +42,21 @@ public interface RoleMemberProxySessionRemote {
      */
     RoleMemberData find(final int primaryKey);
 
-    /**
-     * Removes an RoleMemberData from the database.
-     * 
-     * @param roleMember
-     *            The RoleMemberData to remove.
-     */
-    void remove(final RoleMemberData roleMember);
     
     /**
      * Removes an RoleMemberData from the database.
      * 
      * @param primaryKey
-     *            The ID of the RoleMemberData to remove.
+     *            The ID of the RoleMemberData to remove.         
+     * @return true if removal was successful, false if no such role member was found
      */
-    void remove(final int primaryKey);
+    boolean remove(final int primaryKey);
+    
+    /**
+     * 
+     * @param roleId the ID of a role
+     * @return a list of members to the given role
+     */
+    List<RoleMemberData> findByRoleId(int roleId);
     
 }

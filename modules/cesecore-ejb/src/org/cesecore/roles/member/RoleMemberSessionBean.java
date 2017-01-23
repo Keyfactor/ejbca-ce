@@ -12,11 +12,14 @@
  *************************************************************************/
 package org.cesecore.roles.member;
 
+import java.util.List;
+
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
@@ -66,16 +69,24 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal {
     public RoleMemberData find(final int primaryKey) {
         return entityManager.find(RoleMemberData.class, primaryKey);
     }
-
-
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public void remove(final RoleMemberData roleMember) {
-        entityManager.remove(roleMember);
+    public List<RoleMemberData> findByRoleId(int roleId) {
+        final TypedQuery<RoleMemberData> query = entityManager.createQuery("SELECT a FROM RoleMemberData a WHERE a.roleId=:roleId", RoleMemberData.class);
+        query.setParameter("roleId", roleId);
+        return query.getResultList();
     }
 
     @Override
-    public void remove(final int primaryKey) {
-        entityManager.remove(find(primaryKey));
+    public boolean remove(final int primaryKey) {
+        RoleMemberData roleMember = find(primaryKey);
+        if (roleMember != null) {
+            entityManager.remove(roleMember);
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }
