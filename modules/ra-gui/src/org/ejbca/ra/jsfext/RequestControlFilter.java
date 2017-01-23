@@ -136,8 +136,14 @@ public class RequestControlFilter implements Filter {
 
         // if this request is excluded from the filter, then just process it
         if (!isFilteredRequest( httpRequest)) {
+            if (log.isTraceEnabled()) {
+                log.trace("URL not mached, not filtering: " + httpRequest.getRequestURI());
+            }
             chain.doFilter(request, response);
             return;
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("URL mached, will filter: " + httpRequest.getRequestURI());
         }
 
         synchronized(getSynchronizationObject(session)) {
