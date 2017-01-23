@@ -86,18 +86,37 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * @param value the actual value with which to match
      * @param roleId the ID of the role to which this member belongs. May be null.
      * @param memberBindingType the type of member binding used for this member. May be null.
-     * @param memberBinding the member binding for this member. May be null.
+     * @param memberBindingValue the member binding for this member. May be null.
      */
     public RoleMemberData(final int primaryKey, final AccessMatchValue matchValue, final String value,
-            final Integer roleId, String memberBindingType, String memberBinding) {
+            final Integer roleId, String memberBindingType, String memberBindingValue) {
+        this(primaryKey, matchValue.getNumericValue(), matchValue.getTokenType(), value, roleId, memberBindingType, memberBindingValue);
+    }
+    
+    /**
+     * Slightly more verbose constructor used for upgrades.
+     * 
+     * @param primaryKey the primary key for this object. It's required to check the database for any objects with the same key, otherwise that 
+     *  object will be overridden
+     * @param matchValue the integer value to match against, defined in a class that inherits the interface AcceessMatchValue
+     * @param tokenType a string which defined the implementation of AcceessMatchValue used by this member
+     * @param value the actual value with which to match
+     * @param roleId the ID of the role to which this member belongs. May be null.
+     * @param memberBindingType the type of member binding used for this member. May be null.
+     * @param memberBindingValue the member binding for this member. May be null.
+     */
+    public RoleMemberData(final int primaryKey, final int matchValue, final String tokenType, final String value,
+            final Integer roleId, String memberBindingType, String memberBindingValue) {
         this.primaryKey = primaryKey;
-        this.matchValue = matchValue.getNumericValue();
-        this.tokenType = matchValue.getTokenType();
+        this.matchValue = matchValue;
+        this.tokenType = tokenType;
         this.value = value;
         this.roleId = roleId;
         this.memberBindingType = memberBindingType;
-        this.memberBindingValue = memberBinding;
+        this.memberBindingValue = memberBindingValue;
     }
+    
+    
 
     /**
      * @return the primary key of this entity bean, a pseudo-random integer
