@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.roles.member;
 
+import java.util.List;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -42,13 +44,13 @@ public class RoleMemberProxySessionBean implements RoleMemberProxySessionRemote 
     }
 
     @Override
-    public void remove(RoleMemberData roleMember) {
-        roleMemberSession.remove(roleMember);
+    public boolean remove(int primaryKey) {
+        return roleMemberSession.remove(primaryKey);
     }
 
     @Override
-    public void remove(int primaryKey) {
-        roleMemberSession.remove(primaryKey);
+    public List<RoleMemberData> findByRoleId(int roleId) {
+        return roleMemberSession.findByRoleId(roleId);
     }
 
 }

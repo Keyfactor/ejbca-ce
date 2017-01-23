@@ -96,6 +96,8 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.member.RoleMemberData;
+import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.config.CmpConfiguration;
@@ -185,10 +187,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     @EJB
     private PublisherSessionLocal publisherSession;
+    @SuppressWarnings("deprecation")
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
+    @SuppressWarnings("deprecation")
     @EJB
     private RoleManagementSessionLocal roleMgmtSession;
+    @EJB
+    private RoleMemberSessionLocal roleMemberSession;
     @EJB
     private RoleSessionLocal roleSession;
     @EJB
@@ -837,6 +843,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * 
      * @return true if the upgrade was successful and false otherwise
      */
+    @SuppressWarnings("deprecation")
     private boolean addEKUAndCustomCertExtensionsAccessRulestoRoles() {
         Collection<AdminGroupData> roles = new ArrayList<>(roleAccessSession.getAllRoles());
         for (AdminGroupData role : roles) {
@@ -917,6 +924,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * The exact changes performed are documented in the UPGRADE document. 
      * @throws UpgradeFailedException if upgrade fails. 
      */
+    @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     private void addReadOnlyRules640() throws UpgradeFailedException {
         try {
@@ -1031,6 +1039,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws UpgradeFailedException 
      * 
      */
+    @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     private void addReadOnlyRules642() throws UpgradeFailedException {
         for (AdminGroupData role : roleAccessSession.getAllRoles()) {
@@ -1510,7 +1519,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase680() throws UpgradeFailedException {
-        log.debug("migrateDatabase680: Upgrading roles, rules and rolemembers.");
+        log.debug("migrateDatabase680: Upgrading roles, rules and role members.");
         // Get largest possible list of all access rules on this system
         final Map<String, Set<String>> categorizedAccessRules = complexAccessControlSession.getAuthorizedAvailableAccessRules(authenticationToken,
                 true, true, true, endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet(),
@@ -1544,9 +1553,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             final int roleId = role.getRoleId();
             // Convert the linked AccessUserAspectDatas to RoleMemberDatas
             final Map<Integer, AccessUserAspectData> accessUsers = adminGroupData.getAccessUsers();
-            // ...TODO...
-            
-            log.warn("Upgrade of AccessUserAspectData is not yet implemented.");
+            // Each AccessUserAspectData belongs to one and only one role, so retrieving them this way may be considered safe. 
+            for(AccessUserAspectData accessUserAspect : accessUsers.values()) {                
+                RoleMemberData roleMember = new RoleMemberData(0, accessUserAspect.getMatchWith(), accessUserAspect.getTokenType(),
+                        accessUserAspect.getMatchValue(), roleId, null, null);
+                roleMemberSession.createOrEdit(roleMember);
+            }           
         }
         log.error("(This is not an error) Completed upgrade procedure to 6.8.0");
     }
