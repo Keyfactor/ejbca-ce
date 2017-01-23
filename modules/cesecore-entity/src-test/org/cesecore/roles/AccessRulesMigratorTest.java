@@ -1926,6 +1926,77 @@ public class AccessRulesMigratorTest {
         log.trace("<testOldDeclineIsIrreversable()");
     }
 
+    /** Test that recursive accept rules are not overwritten by DENY of sub resources */ 
+    @Test
+    public void testKeepAcceptRecursiveForSubResources() {
+        log.trace(">testKeepAcceptRecursiveForSubResources()");
+        final AccessRulesMigrator accessRulesMigrator = new AccessRulesMigrator(Arrays.asList(
+                "/",
+                "/a",
+                "/a/b",
+                "/a/b/1",
+                "/a/b/2",
+                "/a/c"
+                ));
+        testMigrationInternal(accessRulesMigrator, "KeepAcceptRecursiveForSubResources 1", Arrays.asList(
+                new AccessRuleData("", "/a", AccessRuleState.RULE_ACCEPT, false),
+                new AccessRuleData("", "/a/b", AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData("", "/a/c", AccessRuleState.RULE_DECLINE, false)
+                ), Arrays.asList(
+                        new ExpectedResourceState(STATE_ALLOW, "/a/"),
+                        new ExpectedResourceState(STATE_DENY,  "/a/c/")
+                        ), new ArrayList<ExpectedResourceState>());
+        testMigrationInternal(accessRulesMigrator, "KeepAcceptRecursiveForSubResources 2", Arrays.asList(
+                new AccessRuleData("", "/a", AccessRuleState.RULE_ACCEPT, false),
+                new AccessRuleData("", "/a/b", AccessRuleState.RULE_ACCEPT, true)
+                ), Arrays.asList(
+                        new ExpectedResourceState(STATE_ALLOW, "/a/"),
+                        new ExpectedResourceState(STATE_DENY,  "/a/c/")
+                        ), new ArrayList<ExpectedResourceState>());
+        testMigrationInternal(accessRulesMigrator, "KeepAcceptRecursiveForSubResources 3", Arrays.asList(
+                new AccessRuleData("", "/a", AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData("", "/a/b/2", AccessRuleState.RULE_DECLINE, false)
+                ), Arrays.asList(
+                        new ExpectedResourceState(STATE_ALLOW, "/a/"),
+                        new ExpectedResourceState(STATE_DENY,  "/a/b/2/")
+                        ), new ArrayList<ExpectedResourceState>());
+        testMigrationInternal(accessRulesMigrator, "KeepAcceptRecursiveForSubResources 4", Arrays.asList(
+                new AccessRuleData("", "/a", AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData("", "/a/b/2", AccessRuleState.RULE_ACCEPT, false)
+                ), Arrays.asList(
+                        new ExpectedResourceState(STATE_ALLOW, "/a/")
+                        ), new ArrayList<ExpectedResourceState>());
+        testMigrationInternal(accessRulesMigrator, "KeepAcceptRecursiveForSubResources 5", Arrays.asList(
+                new AccessRuleData("", "/a", AccessRuleState.RULE_ACCEPT, false),
+                new AccessRuleData("", "/a/b/2", AccessRuleState.RULE_DECLINE, false)
+                ), Arrays.asList(
+                        new ExpectedResourceState(STATE_ALLOW, "/a/"),
+                        new ExpectedResourceState(STATE_DENY, "/a/b/"),
+                        new ExpectedResourceState(STATE_DENY, "/a/c/")
+                        ), new ArrayList<ExpectedResourceState>());
+        testMigrationInternal(accessRulesMigrator, "KeepAcceptRecursiveForSubResources 6", Arrays.asList(
+                new AccessRuleData("", "/a", AccessRuleState.RULE_ACCEPT, false),
+                new AccessRuleData("", "/a/b/", AccessRuleState.RULE_ACCEPT, false),
+                new AccessRuleData("", "/a/b/2", AccessRuleState.RULE_DECLINE, false)
+                ), Arrays.asList(
+                        new ExpectedResourceState(STATE_ALLOW, "/a/"),
+                        new ExpectedResourceState(STATE_DENY, "/a/b/1/"),
+                        new ExpectedResourceState(STATE_DENY, "/a/b/2/"),
+                        new ExpectedResourceState(STATE_DENY, "/a/c/")
+                        ), new ArrayList<ExpectedResourceState>());
+        testMigrationInternal(accessRulesMigrator, "KeepAcceptRecursiveForSubResources 7", Arrays.asList(
+                new AccessRuleData("", "/a", AccessRuleState.RULE_ACCEPT, false),
+                new AccessRuleData("", "/a/b/1", AccessRuleState.RULE_ACCEPT, false),
+                new AccessRuleData("", "/a/b/2", AccessRuleState.RULE_DECLINE, false)
+                ), Arrays.asList(
+                        new ExpectedResourceState(STATE_ALLOW, "/a/"),
+                        new ExpectedResourceState(STATE_DENY, "/a/b/"),
+                        new ExpectedResourceState(STATE_ALLOW, "/a/b/1/"),
+                        new ExpectedResourceState(STATE_DENY, "/a/c/")
+                        ), new ArrayList<ExpectedResourceState>());
+        log.trace("<testKeepAcceptRecursiveForSubResources()");
+    }
+
     /** Helper class for keeping a String and boolean */
     private class ExpectedResourceState {
         final boolean state;
