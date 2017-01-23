@@ -19,7 +19,17 @@ import org.apache.commons.lang.StringUtils;
 import org.cesecore.internal.UpgradeableDataHashMap;
 
 /**
- * A Role contains access rules and meta data about the Role (id, nameSpace, roleName).
+ * A Role contains access rules and meta data about the Role (roleId, nameSpace, roleName).
+ * 
+ * "roleId" is unique per installation and assigned when a role is persisted the first time (created on storage).
+ * "nameSpace" and "roleName" is unique per installation and is the human readable reference of a Role.
+ * 
+ * The empty nameSpace is persisted as NULL, but can also be denoted as empty String for database agnostic behavior.
+ * 
+ * The purpose of nameSpace is that multiple isolated user groups of the same EJBCA installation can use the same
+ * roleName without knowledge of each others roles.
+ * An administrator can only create new roles under a nameSpace that the administrator belong to, unless the admin
+ * belongs to the empty nameSpace. This ensures continued isolation of user groups when adminstrators create new roles.
  * 
  * @version $Id$
  */

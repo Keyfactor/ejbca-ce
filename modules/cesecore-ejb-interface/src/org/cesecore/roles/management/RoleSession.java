@@ -49,6 +49,9 @@ public interface RoleSession {
     Role getRole(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
 
     /**
+     * @param authenticationToken the callers AuthenticationToken
+     * @param nameSpace the namespace the role lives in that together with roleName is a globally unique combination. null (or empty String) is a valid namespace.
+     * @param roleName human readable name of the role
      * @return the Role for the specified id or null if no such role exists
      * @throws AuthorizationDeniedException the caller is not authorized to see this role (leaks that a role with this id exists)
      */
