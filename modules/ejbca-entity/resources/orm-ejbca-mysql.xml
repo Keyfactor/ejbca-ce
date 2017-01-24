@@ -140,9 +140,9 @@
     	<table name="RoleMemberData"/>
     	<attributes>
     		 <id name="primaryKey"><column name="primaryKey" column-definition="INT(11)"/></id>
-    		 <basic fetch="EAGER" name="matchValue"><column name="matchValue" column-definition="INT(11)" nullable="false"/></basic>
+    		 <basic fetch="EAGER" name="tokenSubType"><column name="tokenSubType" column-definition="INT(11)" nullable="false"/></basic>
     		 <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
-    		 <basic fetch="EAGER" name="value"><column name="value" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+    		 <basic fetch="EAGER" name="tokenTypeValue"><column name="tokenTypeValue" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
     		 <basic fetch="EAGER" name="roleId"><column name="roleId" column-definition="INT(11)" /></basic>
     		 <basic fetch="EAGER" name="memberBindingType"><column name="memberBindingType" column-definition="VARCHAR(250) BINARY"/></basic>
     		 <basic fetch="EAGER" name="memberBindingValue"><column name="memberBindingValue" column-definition="VARCHAR(250) BINARY"/></basic>
