@@ -43,7 +43,6 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -820,8 +819,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
     
     @Override
-    public void unexpireApprovalRequestNoAuth(final AuthenticationToken authenticationToken, final int approvalDataId, final long unexpireForMillisParam)
-            throws AuthorizationDeniedException {
+    public void unexpireApprovalRequestNoAuth(final AuthenticationToken authenticationToken, final int approvalDataId, final long unexpireForMillisParam) {
         ApprovalData approvalData = findById(approvalDataId);
         
         // Check status
