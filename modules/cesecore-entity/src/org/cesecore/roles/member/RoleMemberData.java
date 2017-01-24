@@ -41,7 +41,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 @Table(name = "RoleMemberData")
 public class RoleMemberData extends ProtectedData implements Serializable, Comparable<RoleMemberData> {
 
-    public static final Integer NO_ROLE = null;
+    public static final int NO_ROLE = 0;
     
     private static final long serialVersionUID = 1L;
    
@@ -72,7 +72,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * @param memberBindingType the type of member binding used for this member. May be null.
      * @param memberBinding the member binding for this member. May be null.
      */
-    public RoleMemberData(final AccessMatchValue tokenSubType, final String tokenMatchValue, final Integer roleId, String memberBindingType, String memberBinding) {
+    public RoleMemberData(final AccessMatchValue tokenSubType, final String tokenMatchValue, final int roleId, String memberBindingType, String memberBinding) {
         this(0, tokenSubType, tokenMatchValue, roleId, memberBindingType, memberBinding);
     }
 
@@ -88,7 +88,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * @param memberBindingValue the member binding for this member. May be null.
      */
     public RoleMemberData(final int primaryKey, final AccessMatchValue tokenSubType, final String tokenMatchValue,
-            final Integer roleId, String memberBindingType, String memberBindingValue) {
+            final int roleId, String memberBindingType, String memberBindingValue) {
         this(primaryKey, tokenSubType.getNumericValue(), tokenSubType.getTokenType(), tokenMatchValue, roleId, memberBindingType, memberBindingValue);
     }
     
@@ -105,7 +105,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * @param memberBindingValue the member binding for this member. May be null.
      */
     public RoleMemberData(final int primaryKey, final int tokenSubType, final String tokenType, final String tokenMatchValue,
-            final Integer roleId, String memberBindingType, String memberBindingValue) {
+            final int roleId, String memberBindingType, String memberBindingValue) {
         this.primaryKey = primaryKey;
         this.tokenSubType = tokenSubType;
         this.tokenType = tokenType;
