@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -86,6 +87,10 @@ public class FindEndEntityCommand extends BaseRaCommand {
                 getLogger().info("Hard Token Issuer ID: " + data.getHardTokenIssuerId());
                 getLogger().info("Created: " + data.getTimeCreated());
                 getLogger().info("Modified: " + data.getTimeModified());
+                byte[] csr = data.getExtendedinformation().getCertificateRequest();
+                if ((csr != null) && (csr.length > 0)) {
+                    getLogger().info("CSR:\n"+new String(CertTools.getPEMFromCertificateRequest(csr)));
+                }
                 return CommandResult.SUCCESS;
             } else {
                 getLogger().error("End entity '" + username + "' does not exist.");
