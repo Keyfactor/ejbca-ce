@@ -20,7 +20,6 @@ import java.util.List;
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
@@ -88,7 +87,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
       * @param unexpireForMillis The new expiration date will be set to current time plus this number of milliseconds
       * @throws IllegalStateException if the request has been approved or denied already.
       */
-     void unexpireApprovalRequestNoAuth(AuthenticationToken authenticationToken, int approvalDataId, long unexpireForMillis) throws AuthorizationDeniedException;
+     void unexpireApprovalRequestNoAuth(AuthenticationToken authenticationToken, int approvalDataId, long unexpireForMillis);
      
      /**
       * Method returning a list of approvals from the give query
