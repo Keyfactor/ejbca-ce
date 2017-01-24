@@ -42,10 +42,10 @@ public class RoleMemberDataSessionTest {
             roleMemberId = roleMemberSession.createOrEdit(roleMember);
             RoleMemberData createdRoleMember = roleMemberSession.find(roleMemberId);
             assertNotNull("Role Member was not persisted sucessfully", createdRoleMember);
-            createdRoleMember.setValue("DE");
+            createdRoleMember.setTokenTypeValue("DE");
             roleMemberSession.createOrEdit(createdRoleMember);
             RoleMemberData editedRoleMember = roleMemberSession.find(roleMemberId);
-            assertEquals("Role Member was not sucessfully edited.", "DE", editedRoleMember.getValue());
+            assertEquals("Role Member was not sucessfully edited.", "DE", editedRoleMember.getTokenTypeValue());
 
         } finally {
             roleMemberSession.remove(roleMemberId);

@@ -13,7 +13,7 @@ CREATE TABLE AdminEntityData (
     pK INTEGER NOT NULL,
     cAId INTEGER NOT NULL,
     matchType INTEGER NOT NULL,
-    matchValue VARCHAR(254),
+    tokenSubType VARCHAR(254),
     matchWith INTEGER NOT NULL,
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
@@ -333,9 +333,9 @@ CREATE TABLE RoleData (
 
 CREATE TABLE RoleMemberData (
 	primaryKey INTEGER  NOT NULL,
-	matchValue INTEGER  NOT NULL,
+	tokenSubType INTEGER  NOT NULL,
 	tokenType VARCHAR(254) NOT NULL,
-	value VARCHAR(254) NOT NULL,
+	tokenTypeValue VARCHAR(254) NOT NULL,
 	roleId INTEGER,
 	memberBindingType VARCHAR(254),
 	memberBindingValue VARCHAR(254),

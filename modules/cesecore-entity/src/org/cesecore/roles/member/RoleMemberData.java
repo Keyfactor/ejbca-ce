@@ -14,7 +14,6 @@
 package org.cesecore.roles.member;
 
 import java.io.Serializable;
-import java.security.InvalidParameterException;
 
 import javax.persistence.Entity;
 import javax.persistence.PostLoad;
@@ -48,9 +47,9 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
    
     private int primaryKey;
 
-    private int matchValue;
     private String tokenType;
-    private String value;
+    private int tokenSubType;
+    private String tokenTypeValue;
     private Integer roleId;
     
     private String memberBindingType;
@@ -108,9 +107,9 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     public RoleMemberData(final int primaryKey, final int matchValue, final String tokenType, final String value,
             final Integer roleId, String memberBindingType, String memberBindingValue) {
         this.primaryKey = primaryKey;
-        this.matchValue = matchValue;
+        this.tokenSubType = matchValue;
         this.tokenType = tokenType;
-        this.value = value;
+        this.tokenTypeValue = value;
         this.roleId = roleId;
         this.memberBindingType = memberBindingType;
         this.memberBindingValue = memberBindingValue;
@@ -132,15 +131,12 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     /**
      * @return the match value type with to match, i.e. CN, serial number, or username
      */
-    public int getMatchValue() {
-        return matchValue;
+    public int getTokenSubType() {
+        return tokenSubType;
     }
 
-    public void setMatchValue(Integer matchValue) {
-        if (matchValue == null) {
-            throw new InvalidParameterException("Invalid to set matchValue == null");
-        }
-        this.matchValue = matchValue;
+    public void setTokenSubType(int tokenSubType) {
+        this.tokenSubType = tokenSubType;
     }
         
     /**
@@ -169,12 +165,12 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * 
      * @return the actual value with which we match
      */
-    public String getValue() {
-        return value;
+    public String getTokenTypeValue() {
+        return tokenTypeValue;
     }
     
-    public void setValue(final String value) {
-        this.value = value;
+    public void setTokenTypeValue(final String value) {
+        this.tokenTypeValue = value;
     }
 
     /**
@@ -228,7 +224,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // What is important to protect here is the data that we define
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getPrimaryKey()).append(getMatchValue()).append(getValue()).append(getMatchValue()).append(getRoleId()).append(getTokenType())
+        build.append(getPrimaryKey()).append(getTokenSubType()).append(getTokenTypeValue()).append(getTokenSubType()).append(getRoleId()).append(getTokenType())
                 .append(getMemberBindingType()).append(getMemberBindingValue());
         return build.toString();
     }
@@ -264,6 +260,6 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
 
     @Override
     public int compareTo(RoleMemberData o) {
-        return new CompareToBuilder().append(this.matchValue, o.matchValue).append(this.value, o.value).toComparison();
+        return new CompareToBuilder().append(this.tokenSubType, o.tokenSubType).append(this.tokenTypeValue, o.tokenTypeValue).toComparison();
     }
 }

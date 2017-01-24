@@ -542,8 +542,8 @@ public class UpgradeSessionBeanTest {
             assertEquals("For some strange reason, a single role member was turned into several", 1, newRoleMembers.size());
             RoleMemberData newRoleMember = newRoleMembers.get(0);
             newRoleMemberId = newRoleMember.getPrimaryKey();
-            assertEquals("Match value type was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue(), newRoleMember.getMatchValue());
-            assertEquals("Match value was not upgraded properly." , "SE", newRoleMember.getValue());
+            assertEquals("Match value type was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue(), newRoleMember.getTokenSubType());
+            assertEquals("Match value was not upgraded properly." , "SE", newRoleMember.getTokenTypeValue());
             assertEquals("Token type was not upgraded properly." , X509CertificateAuthenticationToken.TOKEN_TYPE, newRoleMember.getTokenType());
         } finally {
             try {
