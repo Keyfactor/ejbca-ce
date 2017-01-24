@@ -178,6 +178,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
+    
+    private static final int RA_MASTER_API_VERSION = 1;
 
     @Override
     public boolean isBackendAvailable() {
@@ -193,6 +195,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         return available;
+    }
+    
+    @Override
+    public int getApiVersion() {
+        return RA_MASTER_API_VERSION;
     }
     
     @Override
