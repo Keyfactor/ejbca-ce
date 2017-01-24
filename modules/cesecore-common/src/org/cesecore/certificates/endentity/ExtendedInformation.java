@@ -14,6 +14,7 @@ package org.cesecore.certificates.endentity;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
@@ -154,13 +156,29 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         data.put(KEYSTORE_ALGORITHM_TYPE, keyStoreAlgorithmType);
     }
     
-    /** @return The certificate request if it was provided during user enrollment request, null otherwise.*/
-    public byte[] getCertificateRequest(){
-        return (byte[]) data.get(CERTIFICATE_REQUEST);
+    /** @return The certificate request in binary asn.1 form if it was provided during user enrollment request, null otherwise.*/
+    public byte[] getCertificateRequest() {
+        // For legacy reasons (<EJBCA 6.7.0) the data in the database may be stored in binary format. 
+        // We will make the optimistic assumption that it is b64 encoded first
+        final Object o = data.get(CERTIFICATE_REQUEST);
+        if (o == null) {
+            return null;
+        }
+        try {
+            return Base64.decode(((String)o).getBytes(StandardCharsets.UTF_8));
+        } catch (DecoderException | ClassCastException e) {
+            // Not base 64 encoded, return binary bytes
+            return (byte[])o;            
+        }
     }
     
-    public void setCertificateRequest(byte[] certificateRequest){
-        data.put(CERTIFICATE_REQUEST, certificateRequest);
+    /** 
+     * @param certificateRequest a CSR in binary asn.1 format
+     */
+    public void setCertificateRequest(byte[] certificateRequest) {
+        // Store it in the database in base64 encoded format, without CSR headers or linebreaks (or null)
+        final String str = certificateRequest == null ? null : new String(Base64.encode(certificateRequest), StandardCharsets.UTF_8);
+        data.put(CERTIFICATE_REQUEST, str);
     }
 
     public String getSubjectDirectoryAttributes() {
