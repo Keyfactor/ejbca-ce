@@ -55,8 +55,8 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal {
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
             public boolean isFree(int i) {
-                //0 is a protected ID for RoleMemberData
-                return find(i) == null && i != 0;
+                //0 is a protected ID for RoleMemberData. Use only positive values, since negatives are seen as "erronous" by some customers.
+                return find(i) == null && i > 0;
             }
         };
         return ProfileID.getNotUsedID(db);

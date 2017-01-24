@@ -543,7 +543,7 @@ public class UpgradeSessionBeanTest {
             RoleMemberData newRoleMember = newRoleMembers.get(0);
             newRoleMemberId = newRoleMember.getPrimaryKey();
             assertEquals("Match value type was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue(), newRoleMember.getTokenSubType());
-            assertEquals("Match value was not upgraded properly." , "SE", newRoleMember.getTokenTypeValue());
+            assertEquals("Match value was not upgraded properly." , "SE", newRoleMember.getTokenMatchValue());
             assertEquals("Token type was not upgraded properly." , X509CertificateAuthenticationToken.TOKEN_TYPE, newRoleMember.getTokenType());
         } finally {
             try {
