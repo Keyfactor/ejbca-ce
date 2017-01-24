@@ -52,6 +52,12 @@ public interface RaMasterApi {
     /** @return true if the implementation if the interface is available and usable. */
     boolean isBackendAvailable();
     
+    /**
+     * @return the current (lowest) back-end API version
+     * @since Master RA API version 1 (EJBCA 6.8.0)
+     */
+    int getApiVersion();
+
     /** Returns an AccessSet containing the access rules that are allowed for the given authentication token. */
     AccessSet getUserAccessSet(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
     
@@ -225,5 +231,4 @@ public interface RaMasterApi {
      * @throws EjbcaException exception with errorCode if check fails
      */
     void checkSubjectDn(AuthenticationToken admin, EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException;
-
 }

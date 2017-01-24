@@ -112,6 +112,22 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return false;
     }
 
+    // Added in Master RA API version 1
+    @Override
+    public int getApiVersion() {
+        int minApiVersion = Integer.MAX_VALUE;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    minApiVersion = Math.min(minApiVersion, raMasterApi.getApiVersion());
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return minApiVersion == Integer.MAX_VALUE ? 0 : minApiVersion;
+    }
+
     @Override
     public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         AccessSet merged = new AccessSet();
