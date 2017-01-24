@@ -66,14 +66,14 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * Constructor for a RoleMemberData object. Will by default be constructed with the primary key 0, which means that this object hasn't been
      * persisted yet. In that case, the primary key will be set by the CRUD bean. 
      * 
-     * @param tokenSubType the AccessMatchValue to match this object with, i.e CN, SN, etc. 
+     * @param accessMatchValue the AccessMatchValue to match this object with, i.e CN, SN, etc. 
      * @param tokenMatchValue the actual value with which to match
      * @param roleId roleId the ID of the role to which this member belongs. May be null.
      * @param memberBindingType the type of member binding used for this member. May be null.
      * @param memberBinding the member binding for this member. May be null.
      */
-    public RoleMemberData(final AccessMatchValue tokenSubType, final String tokenMatchValue, final int roleId, String memberBindingType, String memberBinding) {
-        this(0, tokenSubType, tokenMatchValue, roleId, memberBindingType, memberBinding);
+    public RoleMemberData(final AccessMatchValue accessMatchValue, final String tokenMatchValue, final int roleId, String memberBindingType, String memberBinding) {
+        this(0, accessMatchValue, tokenMatchValue, roleId, memberBindingType, memberBinding);
     }
 
     /**
@@ -81,15 +81,15 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * 
      * @param primaryKey the primary key for this object. It's required to check the database for any objects with the same key, otherwise that 
      *  object will be overridden
-     * @param tokenSubType the AccessMatchValue to match this object with, i.e CN, SN, etc. 
+     * @param accessMatchValue the AccessMatchValue to match this object with, i.e CN, SN, etc. 
      * @param tokenMatchValue the actual value with which to match
      * @param roleId the ID of the role to which this member belongs. May be null.
      * @param memberBindingType the type of member binding used for this member. May be null.
      * @param memberBindingValue the member binding for this member. May be null.
      */
-    public RoleMemberData(final int primaryKey, final AccessMatchValue tokenSubType, final String tokenMatchValue,
+    public RoleMemberData(final int primaryKey, final AccessMatchValue accessMatchValue, final String tokenMatchValue,
             final int roleId, String memberBindingType, String memberBindingValue) {
-        this(primaryKey, tokenSubType.getNumericValue(), tokenSubType.getTokenType(), tokenMatchValue, roleId, memberBindingType, memberBindingValue);
+        this(primaryKey, accessMatchValue.getTokenType(), accessMatchValue.getNumericValue(), tokenMatchValue, roleId, memberBindingType, memberBindingValue);
     }
     
     /**
@@ -104,11 +104,11 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * @param memberBindingType the type of member binding used for this member. May be null.
      * @param memberBindingValue the member binding for this member. May be null.
      */
-    public RoleMemberData(final int primaryKey, final int tokenSubType, final String tokenType, final String tokenMatchValue,
+    public RoleMemberData(final int primaryKey, final String tokenType, final int tokenSubType,  final String tokenMatchValue,
             final int roleId, String memberBindingType, String memberBindingValue) {
         this.primaryKey = primaryKey;
-        this.tokenSubType = tokenSubType;
         this.tokenType = tokenType;
+        this.tokenSubType = tokenSubType;
         this.tokenMatchValue = tokenMatchValue;
         this.roleId = roleId;
         this.memberBindingType = memberBindingType;
