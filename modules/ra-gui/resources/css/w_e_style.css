@@ -219,6 +219,9 @@ span .approvalStep,
     margin-right: 1.5%; }
     #manageRequestForm\:editRequestDataTable .pure-u-lg-1 > span > label, #manageRequestForm\:editRequestDataTable .pure-u-lg-1 > span span {
       margin-left: 0; }
+#manageRequestForm .bodyText {
+    margin-left: 0.4em;
+}
 
 .pure-form select {
   font-size: 90%;
