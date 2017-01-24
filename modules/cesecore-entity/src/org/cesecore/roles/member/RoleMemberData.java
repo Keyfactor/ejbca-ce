@@ -49,7 +49,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
 
     private String tokenType;
     private int tokenSubType;
-    private String tokenTypeValue;
+    private String tokenMatchValue;
     private Integer roleId;
     
     private String memberBindingType;
@@ -66,14 +66,14 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * Constructor for a RoleMemberData object. Will by default be constructed with the primary key 0, which means that this object hasn't been
      * persisted yet. In that case, the primary key will be set by the CRUD bean. 
      * 
-     * @param matchValue the AccessMatchValue to match this object with, i.e CN, SN, etc. 
-     * @param value the actual value with which to match
+     * @param tokenSubType the AccessMatchValue to match this object with, i.e CN, SN, etc. 
+     * @param tokenMatchValue the actual value with which to match
      * @param roleId roleId the ID of the role to which this member belongs. May be null.
      * @param memberBindingType the type of member binding used for this member. May be null.
      * @param memberBinding the member binding for this member. May be null.
      */
-    public RoleMemberData(final AccessMatchValue matchValue, final String value, final Integer roleId, String memberBindingType, String memberBinding) {
-        this(0, matchValue, value, roleId, memberBindingType, memberBinding);
+    public RoleMemberData(final AccessMatchValue tokenSubType, final String tokenMatchValue, final Integer roleId, String memberBindingType, String memberBinding) {
+        this(0, tokenSubType, tokenMatchValue, roleId, memberBindingType, memberBinding);
     }
 
     /**
@@ -81,15 +81,15 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * 
      * @param primaryKey the primary key for this object. It's required to check the database for any objects with the same key, otherwise that 
      *  object will be overridden
-     * @param matchValue the AccessMatchValue to match this object with, i.e CN, SN, etc. 
-     * @param value the actual value with which to match
+     * @param tokenSubType the AccessMatchValue to match this object with, i.e CN, SN, etc. 
+     * @param tokenMatchValue the actual value with which to match
      * @param roleId the ID of the role to which this member belongs. May be null.
      * @param memberBindingType the type of member binding used for this member. May be null.
      * @param memberBindingValue the member binding for this member. May be null.
      */
-    public RoleMemberData(final int primaryKey, final AccessMatchValue matchValue, final String value,
+    public RoleMemberData(final int primaryKey, final AccessMatchValue tokenSubType, final String tokenMatchValue,
             final Integer roleId, String memberBindingType, String memberBindingValue) {
-        this(primaryKey, matchValue.getNumericValue(), matchValue.getTokenType(), value, roleId, memberBindingType, memberBindingValue);
+        this(primaryKey, tokenSubType.getNumericValue(), tokenSubType.getTokenType(), tokenMatchValue, roleId, memberBindingType, memberBindingValue);
     }
     
     /**
@@ -99,17 +99,17 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      *  object will be overridden
      * @param matchValue the integer value to match against, defined in a class that inherits the interface AcceessMatchValue
      * @param tokenType a string which defined the implementation of AcceessMatchValue used by this member
-     * @param value the actual value with which to match
+     * @param tokenMatchValue the actual value with which to match
      * @param roleId the ID of the role to which this member belongs. May be null.
      * @param memberBindingType the type of member binding used for this member. May be null.
      * @param memberBindingValue the member binding for this member. May be null.
      */
-    public RoleMemberData(final int primaryKey, final int matchValue, final String tokenType, final String value,
+    public RoleMemberData(final int primaryKey, final int tokenSubType, final String tokenType, final String tokenMatchValue,
             final Integer roleId, String memberBindingType, String memberBindingValue) {
         this.primaryKey = primaryKey;
-        this.tokenSubType = matchValue;
+        this.tokenSubType = tokenSubType;
         this.tokenType = tokenType;
-        this.tokenTypeValue = value;
+        this.tokenMatchValue = tokenMatchValue;
         this.roleId = roleId;
         this.memberBindingType = memberBindingType;
         this.memberBindingValue = memberBindingValue;
@@ -165,12 +165,12 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * 
      * @return the actual value with which we match
      */
-    public String getTokenTypeValue() {
-        return tokenTypeValue;
+    public String getTokenMatchValue() {
+        return tokenMatchValue;
     }
     
-    public void setTokenTypeValue(final String value) {
-        this.tokenTypeValue = value;
+    public void setTokenMatchValue(final String tokenMatchValue) {
+        this.tokenMatchValue = tokenMatchValue;
     }
 
     /**
@@ -224,7 +224,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // What is important to protect here is the data that we define
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getPrimaryKey()).append(getTokenSubType()).append(getTokenTypeValue()).append(getTokenSubType()).append(getRoleId()).append(getTokenType())
+        build.append(getPrimaryKey()).append(getTokenSubType()).append(getTokenMatchValue()).append(getRoleId()).append(getTokenType())
                 .append(getMemberBindingType()).append(getMemberBindingValue());
         return build.toString();
     }
@@ -260,6 +260,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
 
     @Override
     public int compareTo(RoleMemberData o) {
-        return new CompareToBuilder().append(this.tokenSubType, o.tokenSubType).append(this.tokenTypeValue, o.tokenTypeValue).toComparison();
+        return new CompareToBuilder().append(this.tokenSubType, o.tokenSubType).append(this.tokenMatchValue, o.tokenMatchValue)
+                .append(this.tokenType, o.tokenType).toComparison();
     }
 }
