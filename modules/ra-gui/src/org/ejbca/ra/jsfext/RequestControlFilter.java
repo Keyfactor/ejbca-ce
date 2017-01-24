@@ -9,6 +9,8 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
+ *  This file is licensed by original authors under an artistic license  *
+ *                                                                       *
  *************************************************************************/
 package org.ejbca.ra.jsfext;
 
@@ -61,9 +63,11 @@ import org.apache.log4j.Logger;
  * @version $Id$
  */
 @WebFilter(filterName = "RequestControlFilter", urlPatterns = {"/*"}, initParams= {
-        @WebInitParam(name="excludePattern.1",value="/img/.*"),
-        @WebInitParam(name="excludePattern.2",value="/css/.*"),
-        @WebInitParam(name="excludePattern.2",value="/js/.*")
+        @WebInitParam(name="excludePattern.1",value="^.+\\.((gif))$"),
+        @WebInitParam(name="excludePattern.2",value="^.+\\.((png))$"),
+        @WebInitParam(name="excludePattern.3",value="^.+\\.((jpg))$"),
+        @WebInitParam(name="excludePattern.4",value="^.+\\.((css))$"),
+        @WebInitParam(name="excludePattern.5",value="^.+\\.((js))$")
 })
 public class RequestControlFilter implements Filter {
 
@@ -137,13 +141,13 @@ public class RequestControlFilter implements Filter {
         // if this request is excluded from the filter, then just process it
         if (!isFilteredRequest( httpRequest)) {
             if (log.isTraceEnabled()) {
-                log.trace("URL not mached, not filtering: " + httpRequest.getRequestURI());
+                log.trace("URL matches excludePattern, not filtering: " + httpRequest.getRequestURI());
             }
             chain.doFilter(request, response);
             return;
         }
         if (log.isTraceEnabled()) {
-            log.trace("URL mached, will filter: " + httpRequest.getRequestURI());
+            log.trace("URL not excluded, will filter: " + httpRequest.getRequestURI());
         }
 
         synchronized(getSynchronizationObject(session)) {
@@ -299,7 +303,7 @@ public class RequestControlFilter implements Filter {
      * should synchronize this request with others.
      *
      * @param httpRequest
-     * @return
+     * @return true if request should be filtered, false if it is excluded
      */
     private boolean isFilteredRequest(HttpServletRequest request) {
         // iterate through the exclude patterns.  If one matches this path,
@@ -307,7 +311,7 @@ public class RequestControlFilter implements Filter {
         String path = request.getRequestURI();
         for (Pattern p : excludePatterns) {
             Matcher m = p.matcher(path);
-            if(m.matches()) {
+            if (m.matches()) {
                 // at least one of the patterns excludes this request
                 return false;
             }
