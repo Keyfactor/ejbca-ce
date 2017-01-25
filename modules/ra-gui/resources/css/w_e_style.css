@@ -192,7 +192,8 @@ span .approvalStep,
 #manageRequestsForm\:customSearchOptions label.endDate {
     padding-left: 2%;
 }
-#manageRequestsForm\:customSearchOptions span.showErrorMessage {
+#manageRequestsForm span.showErrorMessage,
+#manageRequestForm span.showErrorMessage {
     background: #000;
     color: #fff;
     padding: 2%;
