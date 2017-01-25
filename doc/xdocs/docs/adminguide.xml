@@ -2346,6 +2346,13 @@ Information on how to use the Registration Authority (RA) UI is available <a hre
 </p>
 </section>
 
+<section name="MS Autoenrollment (Enterprise Edition only)">
+<p>Native Autoenrollment in Active Directory environments is available using a separate Autoenroll proxy component, which is 
+available as an add-on module to <a href="https://www.primekey.se/technologies/products-overview/ejbca-enterprise/">EJBCA Enterprise</a>.</p>
+<p>This module provides an environment where Active Directory Domain Users and Computers will seamlessly auto enroll for 
+certificates issued by EJBCA.</p>
+</section>
+
 <section name="External RA (Enterprise Edition Only)">
 <p>
 Information on how to use the (old) External RA using database polling is available <a href="externalra.html">here</a>.
