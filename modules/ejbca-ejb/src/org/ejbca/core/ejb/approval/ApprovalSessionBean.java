@@ -820,6 +820,10 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     
     @Override
     public void unexpireApprovalRequestNoAuth(final AuthenticationToken authenticationToken, final int approvalDataId, final long unexpireForMillisParam) {
+        if (unexpireForMillisParam <= 0) {
+            throw new IllegalArgumentException("Unexpiration period must be a positive non-zero number: " + unexpireForMillisParam);
+        }
+        
         ApprovalData approvalData = findById(approvalDataId);
         
         // Check status
