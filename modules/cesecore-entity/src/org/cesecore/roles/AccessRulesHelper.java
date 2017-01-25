@@ -36,7 +36,6 @@ public abstract class AccessRulesHelper {
         }
         // Normalize from "/a/b/c" to "/a/b/c/"
         final String resourceWithTrailingSlash = resource.endsWith("/") ? resource : resource + "/";
-        //log.debug("hasAccessToResource("+resource+") -> " + resourceWithTrailingSlash);
         int lastSlashIndex = resourceWithTrailingSlash.length()+1;
         while ((lastSlashIndex = resourceWithTrailingSlash.lastIndexOf('/', lastSlashIndex-1))!=-1) {
             final String subString = resourceWithTrailingSlash.substring(0, lastSlashIndex);
@@ -45,7 +44,6 @@ public abstract class AccessRulesHelper {
                 // Check if the non-normalized form is present
                 state = accessRules.get(subString + "/");
             }
-            //log.debug("hasAccessToResource("+resource+") : " + subString + " has state " + state);
             if (state!=null) {
                 return state.booleanValue();
             }
@@ -83,7 +81,6 @@ public abstract class AccessRulesHelper {
                 // Already removed from map
                 continue;
             }
-            //log.debug("minimizeAccessRules() " + resourceWithTrailingSlash + " currentState: " + currentState);
             int lastSlashIndex = resourceWithTrailingSlash.length()+1;
             while ((lastSlashIndex = resourceWithTrailingSlash.lastIndexOf('/', lastSlashIndex-1))!=-1) {
                 if (lastSlashIndex==resourceWithTrailingSlash.length()-1) {
@@ -91,7 +88,6 @@ public abstract class AccessRulesHelper {
                 }
                 final String subString = resourceWithTrailingSlash.substring(0, lastSlashIndex+1);
                 final Boolean state = accessRules.get(subString);
-                //log.debug("minimizeAccessRules()  " + subString + " state: " + state);
                 if (state!=null) {
                     if (state.booleanValue()==currentState.booleanValue()) {
                         // A short path already provides this rule
@@ -126,8 +122,8 @@ public abstract class AccessRulesHelper {
         }
     }
 
-    /** @return the rules for all resources granted by either set of normalized accessRules. */
-    public static HashMap<String, Boolean> mergeTotalAccess(final HashMap<String, Boolean> accessRules1, final HashMap<String, Boolean> accessRules2) {
+    /** @return the rules for all resources granted by either sets of normalized accessRules. (The union of the sets.) */
+    public static HashMap<String, Boolean> getAccessRulesUnion(final HashMap<String, Boolean> accessRules1, final HashMap<String, Boolean> accessRules2) {
         final HashMap<String, Boolean> accessRules = new HashMap<>();
         /*
          * Simple example of algorithm:
@@ -154,6 +150,49 @@ public abstract class AccessRulesHelper {
         for (final Entry<String, Boolean> entry : accessRules2.entrySet()) {
             if (entry.getValue().booleanValue() || !hasAccessToResource(accessRules1, entry.getKey())) {
                 accessRules.put(entry.getKey(), entry.getValue());
+            }
+        }
+        minimizeAccessRules(accessRules);
+        return accessRules;
+    }
+
+    /** @return the rules for all resources granted by both sets of normalized accessRules. (The intersection of the sets.) */
+    public static HashMap<String, Boolean> getAccessRulesIntersection(final HashMap<String, Boolean> accessRules1, final HashMap<String, Boolean> accessRules2) {
+        final HashMap<String, Boolean> accessRules = new HashMap<>();
+        /*
+         * Simple example of algorithm:
+         * 
+         * /a/   allow
+         * /a/b/ deny
+         * /b/   deny
+         * /c/d/ allow
+         * 
+         * /a/   allow
+         * /a/c/ deny
+         * /c/d/ deny
+         * →
+         * /a/   allow
+         * /a/b/ deny
+         * /a/c/ deny
+         * /b/   deny
+         * /c/d/ deny
+         */
+        // Keep deny rules from accessRules1 and allow rules from accessRules1 and that are also granted by accessRules2
+        for (final Entry<String, Boolean> entry : accessRules1.entrySet()) {
+            if (!entry.getValue().booleanValue() || hasAccessToResource(accessRules2, entry.getKey())) {
+                accessRules.put(entry.getKey(), entry.getValue());
+            }
+        }
+        // Keep deny rules from accessRules2 and allow rules from accessRules2 and that are also granted by accessRules1
+        for (final Entry<String, Boolean> entry : accessRules2.entrySet()) {
+            if (!entry.getValue().booleanValue()) {
+                accessRules.put(entry.getKey(), entry.getValue());
+            } else if (hasAccessToResource(accessRules1, entry.getKey())) {
+                final Boolean currentValue = accessRules.get(entry.getKey());
+                if (currentValue==null || currentValue.booleanValue()) {
+                    // Only overwrite empty or allow rules
+                    accessRules.put(entry.getKey(), entry.getValue());
+                }
             }
         }
         minimizeAccessRules(accessRules);
