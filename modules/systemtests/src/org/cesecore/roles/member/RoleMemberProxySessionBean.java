@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.roles.member;
 
+import java.util.List;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -44,6 +46,16 @@ public class RoleMemberProxySessionBean implements RoleMemberProxySessionRemote 
     @Override
     public int createOrEdit(RoleMemberData roleMember) {
         return roleMemberSession.createOrEdit(roleMember);
+    }
+
+    @Override
+    public RoleMember findRoleMember(int primaryKey) {
+        return roleMemberSession.findRoleMember(primaryKey);
+    }
+
+    @Override
+    public List<RoleMember> findRoleMemberByRoleId(int roleId) {
+        return roleMemberSession.findRoleMemberByRoleId(roleId);
     }
 
 

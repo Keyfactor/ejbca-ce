@@ -95,7 +95,6 @@ public class UpgradeSessionBeanTest {
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-    private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private RoleMemberProxySessionRemote roleMemberProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private UpgradeSessionRemote upgradeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UpgradeSessionRemote.class);
 
@@ -540,7 +539,7 @@ public class UpgradeSessionBeanTest {
             //Post upgrade, their should exist a new RoleData object with the given rolename
             Role newRole = roleSession.getRole(alwaysAllowtoken, null, oldRole.getRoleName());
             newRoleId = newRole.getRoleId();
-            List<RoleMember> newRoleMembers = roleMemberSession.findRoleMemberByRoleId(newRole.getRoleId());
+            List<RoleMember> newRoleMembers = roleMemberProxySession.findRoleMemberByRoleId(newRole.getRoleId());
             assertEquals("For some strange reason, a single role member was turned into several", 1, newRoleMembers.size());
             RoleMember newRoleMember = newRoleMembers.get(0);
             newRoleMemberId = newRoleMember.getId();
