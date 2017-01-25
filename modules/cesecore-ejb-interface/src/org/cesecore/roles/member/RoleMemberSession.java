@@ -14,26 +14,13 @@ package org.cesecore.roles.member;
 
 import java.util.List;
 
-import javax.ejb.Local;
-
 /**
  * CRUD session bean for managing RoleMemberData objects
  * 
  * @version $Id$
  *
  */
-@Local
-public interface RoleMemberSessionLocal extends RoleMemberSession {
-
-    /**
-     * Saves a RoleMemberData object to the database, either overwriting an existing one with the same primary key or editing an existing instance.
-     * 
-     * @param accessUserAspectData the AccessUserAspectData to persist.
-     * 
-     * @return the id of the persisted entity
-     */
-    int createOrEdit(final RoleMemberData roleMember);
-    
+public interface RoleMemberSession {
 
     /**
      * Finds an RoleMemberData by its primary key.
@@ -42,25 +29,14 @@ public interface RoleMemberSessionLocal extends RoleMemberSession {
      *            Primary key of the sought instance.
      * @return the sought RoleMember, otherwise null. .
      */
-    RoleMemberData find(final int primaryKey);
+    RoleMember findRoleMember(final int primaryKey);
 
-    
-    /**
-     * Removes an RoleMemberData from the database.
-     * 
-     * @param primaryKey
-     *            The ID of the RoleMemberData to remove.
-     * @return true if removal was successful, false if no such role member was found
-     */
-    boolean remove(final int primaryKey);
-    
     /**
      * 
      * @param roleId the ID of a role
      * @return a list of members to the given role
      */
-    List<RoleMemberData> findByRoleId(int roleId);
-    
+    List<RoleMember> findRoleMemberByRoleId(int roleId);
 
 
 }
