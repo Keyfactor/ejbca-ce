@@ -61,6 +61,22 @@ public interface RoleMemberSessionLocal extends RoleMemberSession {
      */
     List<RoleMemberData> findByRoleId(int roleId);
     
+    /**
+     * Finds an RoleMember by its primary key.
+     * 
+     * @param primaryKey
+     *            Primary key of the sought instance.
+     * @return the sought RoleMember, otherwise null. .
+     */
+    RoleMember findRoleMember(final int primaryKey);
 
+    /**
+     * Finds all role members belonging to a specific role.
+     * 
+     * 
+     * @param roleId the ID of a role
+     * @return a list of members to the given role
+     */
+    List<RoleMember> findRoleMemberByRoleId(int roleId);
 
 }
