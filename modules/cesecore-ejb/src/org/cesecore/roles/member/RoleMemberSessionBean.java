@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.roles.member;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -31,10 +32,9 @@ import org.cesecore.util.ProfileID;
  * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleMemberSessionLocal")
-
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleMemberSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class RoleMemberSessionBean implements RoleMemberSessionLocal {
+public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMemberSessionRemote {
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -70,12 +70,34 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal {
         return entityManager.find(RoleMemberData.class, primaryKey);
     }
     
+    @Override
+    public RoleMember findRoleMember(int primaryKey) {
+        RoleMemberData roleMemberData = find(primaryKey);
+        if (roleMemberData != null) {
+            return roleMemberData.asValueObject();
+        } else {
+            return null;
+        }
+    }
+    
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<RoleMemberData> findByRoleId(int roleId) {
         final TypedQuery<RoleMemberData> query = entityManager.createQuery("SELECT a FROM RoleMemberData a WHERE a.roleId=:roleId", RoleMemberData.class);
         query.setParameter("roleId", roleId);
         return query.getResultList();
+    }
+    
+    @Override
+    public List<RoleMember> findRoleMemberByRoleId(int roleId) {
+        List<RoleMemberData> entityBeans = findByRoleId(roleId);
+        List<RoleMember> result = new ArrayList<>();
+        for (RoleMemberData roleMemberData : entityBeans) {
+            if (roleMemberData != null) {
+                result.add(roleMemberData.asValueObject());
+            }
+        }
+        return result;
     }
 
     @Override
@@ -88,5 +110,9 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal {
             return false;
         }
     }
+
+
+
+
 
 }

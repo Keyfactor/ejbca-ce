@@ -26,7 +26,8 @@ import org.junit.Test;
  */
 public class RoleMemberDataSessionTest {
 
-    private RoleMemberProxySessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
+    private RoleMemberProxySessionRemote roleMemberProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     
     /**
@@ -35,21 +36,21 @@ public class RoleMemberDataSessionTest {
     @Test
     public void testCrudOperations() {      
         assertNull("accessUserAspectManagerSession.find did not return null for a non existing object.",
-                roleMemberSession.find(0));
+                roleMemberSession.findRoleMember(0));
         final RoleMemberData roleMember = new RoleMemberData(X500PrincipalAccessMatchValue.WITH_COUNTRY, "SE", RoleMemberData.NO_ROLE, null, null);
         int roleMemberId = -1;
         try {
-            roleMemberId = roleMemberSession.createOrEdit(roleMember);
-            RoleMemberData createdRoleMember = roleMemberSession.find(roleMemberId);
+            roleMemberId = roleMemberProxySession.createOrEdit(roleMember);
+            RoleMember createdRoleMember = roleMemberSession.findRoleMember(roleMemberId);
             assertNotNull("Role Member was not persisted sucessfully", createdRoleMember);
             createdRoleMember.setTokenMatchValue("DE");
-            roleMemberSession.createOrEdit(createdRoleMember);
-            RoleMemberData editedRoleMember = roleMemberSession.find(roleMemberId);
+            roleMemberProxySession.createOrEdit(createdRoleMember);
+            RoleMember editedRoleMember = roleMemberSession.findRoleMember(roleMemberId);
             assertEquals("Role Member was not sucessfully edited.", "DE", editedRoleMember.getTokenMatchValue());
 
         } finally {
-            roleMemberSession.remove(roleMemberId);
-            assertNull("AccessUserAspectManagerSessionRemote did not properly remove an object.",  roleMemberSession.find(roleMemberId));
+            roleMemberProxySession.remove(roleMemberId);
+            assertNull("AccessUserAspectManagerSessionRemote did not properly remove an object.",  roleMemberSession.findRoleMember(roleMemberId));
         }
     }
 }

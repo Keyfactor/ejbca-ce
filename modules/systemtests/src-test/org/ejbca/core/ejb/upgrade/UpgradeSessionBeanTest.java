@@ -31,7 +31,6 @@ import java.util.Set;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
@@ -59,8 +58,10 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
-import org.cesecore.roles.member.RoleMemberData;
+import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberProxySessionRemote;
+import org.cesecore.roles.member.RoleMemberSession;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -94,6 +95,7 @@ public class UpgradeSessionBeanTest {
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private RoleMemberProxySessionRemote roleMemberProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private UpgradeSessionRemote upgradeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UpgradeSessionRemote.class);
 
@@ -538,13 +540,12 @@ public class UpgradeSessionBeanTest {
             //Post upgrade, their should exist a new RoleData object with the given rolename
             Role newRole = roleSession.getRole(alwaysAllowtoken, null, oldRole.getRoleName());
             newRoleId = newRole.getRoleId();
-            List<RoleMemberData> newRoleMembers = roleMemberProxySession.findByRoleId(newRole.getRoleId());
+            List<RoleMember> newRoleMembers = roleMemberSession.findRoleMemberByRoleId(newRole.getRoleId());
             assertEquals("For some strange reason, a single role member was turned into several", 1, newRoleMembers.size());
-            RoleMemberData newRoleMember = newRoleMembers.get(0);
-            newRoleMemberId = newRoleMember.getPrimaryKey();
-            assertEquals("Match value type was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue(), newRoleMember.getTokenSubType());
+            RoleMember newRoleMember = newRoleMembers.get(0);
+            newRoleMemberId = newRoleMember.getId();
+            assertEquals("Match value type was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY, newRoleMember.getAccessMatchValue());
             assertEquals("Match value was not upgraded properly." , "SE", newRoleMember.getTokenMatchValue());
-            assertEquals("Token type was not upgraded properly." , X509CertificateAuthenticationToken.TOKEN_TYPE, newRoleMember.getTokenType());
         } finally {
             try {
                 roleManagementSession.remove(alwaysAllowtoken, oldRole);

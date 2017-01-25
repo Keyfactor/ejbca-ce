@@ -15,34 +15,12 @@ package org.cesecore.roles.member;
 import javax.ejb.Remote;
 
 /**
+ * CRUD session bean for managing RoleMemberData objects
+ * 
  * @version $Id$
  *
  */
 @Remote
-public interface RoleMemberProxySessionRemote {
+public interface RoleMemberSessionRemote extends RoleMemberSession {
 
-    /**
-     * Saves a RoleMemberData object to the database, either overwriting an existing one with the same primary key or editing an existing instance.
-     * 
-     * @param accessUserAspectData the AccessUserAspectData to persist.
-     */
-    int createOrEdit(final RoleMember roleMember);
-    
-    /**
-     * Saves a RoleMemberData object to the database, either overwriting an existing one with the same primary key or editing an existing instance.
-     * 
-     * @param accessUserAspectData the AccessUserAspectData to persist.
-     */
-    int createOrEdit(final RoleMemberData roleMember);
-    
-    
-    /**
-     * Removes an RoleMemberData from the database.
-     * 
-     * @param primaryKey
-     *            The ID of the RoleMemberData to remove.         
-     * @return true if removal was successful, false if no such role member was found
-     */
-    boolean remove(final int primaryKey);
-    
 }
