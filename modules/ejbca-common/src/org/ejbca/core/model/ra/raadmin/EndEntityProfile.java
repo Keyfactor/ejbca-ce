@@ -1349,9 +1349,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			String fieldValue = fields.getField(dnFieldExtractorID, j);
     			// Only keep domain for comparison of RFC822NAME, DNEMAILADDRESS and UPN fields
     			if ( DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid)) || DnComponents.DNEMAILADDRESS.equals(DnComponents.dnIdToProfileName(dnid)) || DnComponents.UPN.equals(DnComponents.dnIdToProfileName(dnid)) ) {
-        			if ( fieldValue.indexOf('@') == -1 ) {
-        				throw new EndEntityProfileValidationException(DnComponents.dnIdToProfileName(dnid) + " does not seem to be in something@somethingelse format.");
-        			}
         			//Don't split RFC822NAME addresses. 
         			if(!DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid))) {
         			    fieldValue = fieldValue.split("@")[1];
