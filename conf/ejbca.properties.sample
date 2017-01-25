@@ -60,6 +60,10 @@
 # Default : 28800 (8 Hours)
 #approval.defaultapprovalvalidity=28800
 
+# Default maximum allowed extension time for expired requests, in seconds
+# Default : 0 (disabled)
+#approval.defaultmaxextensiontime=0
+
 # Setting excluding some classes from approval. When one of the classes in this list calls a method that normally 
 # required approval, the call is immediately allowed, bypassing the approval mechanism. The list is comma separated.
 # Uncomment the line below to exclude extra from approvals.

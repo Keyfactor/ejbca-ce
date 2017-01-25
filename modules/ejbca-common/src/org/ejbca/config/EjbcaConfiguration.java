@@ -50,7 +50,7 @@ public final class EjbcaConfiguration {
     }
 
     /**
-     * How long an request should stay valid
+     * How long an request should stay valid. The value is stored in seconds in the configuration, but returned as milliseconds.
      */
     public static long getApprovalDefaultRequestValidity() {
         long value = 28800L;
@@ -63,7 +63,7 @@ public final class EjbcaConfiguration {
     }
 
     /**
-     * How long an approved request should stay valid
+     * How long an approved request should stay valid. The value is stored in seconds in the configuration, but returned as milliseconds.
      */
     public static long getApprovalDefaultApprovalValidity() {
         long value = 28800L;
@@ -76,14 +76,15 @@ public final class EjbcaConfiguration {
     }
     
     /**
-     * How long time an administrator can unexpire an approval request for, or 0 to forbid unexpiration of requests.
+     * How long time an administrator can extend an approval request for, or 0 to forbid extension of request expiration time.
+     * The value is stored in seconds in the configuration, but returned as milliseconds.
      */
-    public static long getApprovalDefaultMaxUnexpirationPeriod() {
+    public static long getApprovalDefaultMaxExtensionTime() {
         long value = 0L;
         try {
-            value = Long.parseLong(EjbcaConfigurationHolder.getString("approval.defaultmaxunexpirationperiod"));
+            value = Long.parseLong(EjbcaConfigurationHolder.getString("approval.defaultmaxextensiontime"));
         } catch (NumberFormatException e) {
-            log.warn("\"approval.defaultmaxunexpirationperiod\" is not a decimal number. Using default value: " + value);
+            log.warn("\"approval.defaultmaxextensiontime\" is not a decimal number. Using default value: " + value);
         }
         return value * 1000L;
     }

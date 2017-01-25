@@ -94,17 +94,17 @@
                 <h:panelGroup layout="block" styleClass="editButtons" rendered="#{raManageRequestBean.request.canEdit}">
                     <h:commandButton id="commandEditData" styleClass="pure-button ra-button" action="#{raManageRequestBean.editRequestData}" value="#{msg.view_request_page_edit_data_command}"/>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{raManageRequestBean.request.canUnexpire}">
-                    <h:outputLabel value="#{msg.view_request_page_unexpire_days_1}" styleClass="pure-u-lg-1-3"/>
-                    <h:inputText id="unexpireDays" value="#{raManageRequestBean.unexpireDays}" styleClass="pure-input-1-6" size="3"
+                <h:panelGroup rendered="#{raManageRequestBean.request.canExtend}">
+                    <h:outputLabel value="#{msg.view_request_page_extend_days_1}" styleClass="pure-u-lg-1-3"/>
+                    <h:inputText id="extendDays" value="#{raManageRequestBean.extendDays}" styleClass="pure-input-1-6" size="3"
                         validatorMessage="#{msg.generic_invalid_number}">
                         <f:validateRegex pattern="\s*([0-9]+\s*)?"/>
                     </h:inputText>
-                    <h:outputText value="#{raManageRequestBean.unexpireDaysPart2Text}" styleClass="bodyText"/>
+                    <h:outputText value="#{raManageRequestBean.extendDaysPart2Text}" styleClass="bodyText"/>
                     <br />
                     <h:outputText value="" styleClass="pure-u-lg-1-3"/>
-                    <h:commandButton id="commandUnexpireRequest" styleClass="pure-button ra-button" action="#{raManageRequestBean.unexpireRequest}" value="#{msg.view_request_page_unexpire_command}"/>
-                    <h:message for="unexpireDays" id="unexpireDaysMessage" styleClass="showErrorMessage"/>
+                    <h:commandButton id="commandExtendRequest" styleClass="pure-button ra-button" action="#{raManageRequestBean.extendRequest}" value="#{msg.view_request_page_extend_command}"/>
+                    <h:message for="extendDays" id="extendDaysMessage" styleClass="showErrorMessage"/>
                 </h:panelGroup>
             </h:panelGroup>
             <ui:repeat value="#{raManageRequestBean.request.editLogEntries}" var="entryText" rendered="#{raManageRequestBean.viewDataVisible}">

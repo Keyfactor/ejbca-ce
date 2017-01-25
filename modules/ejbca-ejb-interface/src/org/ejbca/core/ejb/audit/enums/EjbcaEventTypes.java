@@ -38,7 +38,7 @@ public enum EjbcaEventTypes implements EventType {
     /** <i>Event type is currently only used by EJBCA development tests.</i> */
     APPROVAL_REMOVE,
     /** Expiration date of an approval request was extended by an administrator. */
-    APPROVAL_UNEXPIRE,
+    APPROVAL_EXTEND,
     /** Adding an approval profile */
     APPROVAL_PROFILE_ADD,
     /** Editing an approval profile */
