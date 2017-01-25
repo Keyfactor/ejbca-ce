@@ -26,7 +26,6 @@ import org.junit.Test;
  */
 public class RoleMemberDataSessionTest {
 
-    private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private RoleMemberProxySessionRemote roleMemberProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     
@@ -36,21 +35,21 @@ public class RoleMemberDataSessionTest {
     @Test
     public void testCrudOperations() {      
         assertNull("accessUserAspectManagerSession.find did not return null for a non existing object.",
-                roleMemberSession.findRoleMember(0));
+                roleMemberProxySession.findRoleMember(0));
         final RoleMemberData roleMember = new RoleMemberData(X500PrincipalAccessMatchValue.WITH_COUNTRY, "SE", RoleMemberData.NO_ROLE, null, null);
         int roleMemberId = -1;
         try {
             roleMemberId = roleMemberProxySession.createOrEdit(roleMember);
-            RoleMember createdRoleMember = roleMemberSession.findRoleMember(roleMemberId);
+            RoleMember createdRoleMember = roleMemberProxySession.findRoleMember(roleMemberId);
             assertNotNull("Role Member was not persisted sucessfully", createdRoleMember);
             createdRoleMember.setTokenMatchValue("DE");
             roleMemberProxySession.createOrEdit(createdRoleMember);
-            RoleMember editedRoleMember = roleMemberSession.findRoleMember(roleMemberId);
+            RoleMember editedRoleMember = roleMemberProxySession.findRoleMember(roleMemberId);
             assertEquals("Role Member was not sucessfully edited.", "DE", editedRoleMember.getTokenMatchValue());
 
         } finally {
             roleMemberProxySession.remove(roleMemberId);
-            assertNull("AccessUserAspectManagerSessionRemote did not properly remove an object.",  roleMemberSession.findRoleMember(roleMemberId));
+            assertNull("AccessUserAspectManagerSessionRemote did not properly remove an object.",  roleMemberProxySession.findRoleMember(roleMemberId));
         }
     }
 }

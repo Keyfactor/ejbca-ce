@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.roles.member;
 
+import java.util.List;
+
 import javax.ejb.Remote;
 
 /**
@@ -45,4 +47,22 @@ public interface RoleMemberProxySessionRemote {
      */
     boolean remove(final int primaryKey);
     
+    /**
+     * Finds an RoleMember by its primary key.
+     * 
+     * @param primaryKey
+     *            Primary key of the sought instance.
+     * @return the sought RoleMember, otherwise null. .
+     */
+    RoleMember findRoleMember(final int primaryKey);
+
+    /**
+     * Finds all role members belonging to a specific role.
+     * 
+     * 
+     * @param roleId the ID of a role
+     * @return a list of members to the given role
+     */
+    List<RoleMember> findRoleMemberByRoleId(int roleId);
+
 }
