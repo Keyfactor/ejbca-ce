@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.roles.member;
 
-import java.util.List;
-
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -33,14 +31,9 @@ public class RoleMemberProxySessionBean implements RoleMemberProxySessionRemote 
     private RoleMemberSessionLocal roleMemberSession;
 
     @Override
-    public int createOrEdit(RoleMemberData roleMember) {
-        return roleMemberSession.createOrEdit(roleMember);
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public RoleMemberData find(int primaryKey) {
-        return roleMemberSession.find(primaryKey);
+    public int createOrEdit(RoleMember roleMember) {
+        return roleMemberSession.createOrEdit(new RoleMemberData(roleMember.getId(), roleMember.getAccessMatchValue(),
+                roleMember.getTokenMatchValue(), roleMember.getRoleId(), roleMember.getMemberBindingType(), roleMember.getMemberBindingValue()));
     }
 
     @Override
@@ -49,8 +42,9 @@ public class RoleMemberProxySessionBean implements RoleMemberProxySessionRemote 
     }
 
     @Override
-    public List<RoleMemberData> findByRoleId(int roleId) {
-        return roleMemberSession.findByRoleId(roleId);
+    public int createOrEdit(RoleMemberData roleMember) {
+        return roleMemberSession.createOrEdit(roleMember);
     }
+
 
 }

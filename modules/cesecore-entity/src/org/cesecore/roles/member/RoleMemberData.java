@@ -24,6 +24,7 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 
@@ -70,10 +71,10 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * @param tokenMatchValue the actual value with which to match
      * @param roleId roleId the ID of the role to which this member belongs. May be null.
      * @param memberBindingType the type of member binding used for this member. May be null.
-     * @param memberBinding the member binding for this member. May be null.
+     * @param memberBindingValue the member binding value for this member. May be null.
      */
-    public RoleMemberData(final AccessMatchValue accessMatchValue, final String tokenMatchValue, final int roleId, String memberBindingType, String memberBinding) {
-        this(0, accessMatchValue, tokenMatchValue, roleId, memberBindingType, memberBinding);
+    public RoleMemberData(final AccessMatchValue accessMatchValue, final String tokenMatchValue, final int roleId, String memberBindingType, String memberBindingValue) {
+        this(0, accessMatchValue, tokenMatchValue, roleId, memberBindingType, memberBindingValue);
     }
 
     /**
@@ -262,5 +263,11 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     public int compareTo(RoleMemberData o) {
         return new CompareToBuilder().append(this.tokenSubType, o.tokenSubType).append(this.tokenMatchValue, o.tokenMatchValue)
                 .append(this.tokenType, o.tokenType).toComparison();
+    }
+    
+    @Transient
+    public RoleMember asValueObject() {
+        return new RoleMember(primaryKey, AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, tokenSubType),
+                tokenMatchValue, roleId, memberBindingType, memberBindingValue);
     }
 }
