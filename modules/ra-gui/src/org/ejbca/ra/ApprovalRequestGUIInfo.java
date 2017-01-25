@@ -309,7 +309,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         
         requestDate = ValidityDate.formatAsISO8601ServerTZ(approvalData.getRequestDate().getTime(), TimeZone.getDefault());
         requestExpireDate = ValidityDate.formatAsISO8601ServerTZ(approvalData.getExpireDate().getTime(), TimeZone.getDefault());
-        // These must be added last, so the "Unexpire" button appears under the Expiration Date field.
+        // These must be added last, so the "Extend" button appears under the Expiration Date field.
         requestData.add(new RequestDataRow(raLocaleBean, new ApprovalDataText("REQUESTDATE", getRequestDate(), true, false), false, null));
         requestData.add(new RequestDataRow(raLocaleBean, new ApprovalDataText("REQUESTEXPIRATIONDATE", getRequestExpireDate(), true, false), false, null));
         
@@ -469,12 +469,12 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean hasNextApprovalStep() { return request.getNextApprovalStep() != null; }
     public boolean isAuthorizedToApprovalType() { return authorizedToRequestType; }
     
-    public boolean getCanUnexpire() {
+    public boolean getCanExtend() {
         if (log.isDebugEnabled()) {
-            log.debug("Checking if unexpiration is possible: Authorized=" + isAuthorizedToApprovalType() + ", expired=" + isExpired() + ", max unexpiration period=" + request.getMaxUnexpirationPeriod());
+            log.debug("Checking if extension of request expiration is possible: Authorized=" + isAuthorizedToApprovalType() + ", expired=" + isExpired() + ", max extension time=" + request.getMaxExtensionTime());
         }
         return isAuthorizedToApprovalType() && isExpired() &&
-                request.getMaxUnexpirationPeriod() != 0;
+                request.getMaxExtensionTime() != 0;
     }
     
 }

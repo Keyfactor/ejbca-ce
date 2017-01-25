@@ -82,12 +82,12 @@ public interface ApprovalSessionLocal extends ApprovalSession {
      /**
       * Moves the expiration date forward and sets the status for Waiting for Approval. Doesn't do any authorization checks.
       * 
-      * @param authenticationToken The administrator requesting unexpiration. Used for audit logging only.
+      * @param authenticationToken The administrator requesting extension of the request. Used for audit logging only.
       * @param approvalDataId Id of the approval request
-      * @param unexpireForMillis The new expiration date will be set to current time plus this number of milliseconds
+      * @param extendForMillis The new expiration date will be set to current time plus this number of milliseconds
       * @throws IllegalStateException if the request has been approved or denied already.
       */
-     void unexpireApprovalRequestNoAuth(AuthenticationToken authenticationToken, int approvalDataId, long unexpireForMillis);
+     void extendApprovalRequestNoAuth(AuthenticationToken authenticationToken, int approvalDataId, long extendForMillis);
      
      /**
       * Method returning a list of approvals from the give query

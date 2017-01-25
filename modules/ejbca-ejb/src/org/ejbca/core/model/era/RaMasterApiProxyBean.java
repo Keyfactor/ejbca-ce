@@ -237,11 +237,11 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public void unexpireApprovalRequest(AuthenticationToken authenticationToken, int id, long unexpireForMillis) throws AuthorizationDeniedException {
+    public void extendApprovalRequest(AuthenticationToken authenticationToken, int id, long extendForMillis) throws AuthorizationDeniedException {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    raMasterApi.unexpireApprovalRequest(authenticationToken, id, unexpireForMillis);
+                    raMasterApi.extendApprovalRequest(authenticationToken, id, extendForMillis);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }

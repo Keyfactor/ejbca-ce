@@ -448,16 +448,20 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public void unexpireApprovalRequest(final AuthenticationToken authenticationToken, final int id, final long unexpireForMillis) throws AuthorizationDeniedException {
+    public void extendApprovalRequest(final AuthenticationToken authenticationToken, final int id, final long extendForMillis) throws AuthorizationDeniedException {
         final ApprovalDataVO advo = getApprovalDataNoAuth(id);
-        // FIXME should require more access than just read access
-        if (getApprovalRequest(authenticationToken, advo) == null) { // Authorization check
+        
+        if (getApprovalRequest(authenticationToken, advo) == null) { // Check read authorization (includes authorization to referenced CAs) 
             if (log.isDebugEnabled()) {
                 log.debug("Authorization denied to approval request ID " + id + " for " + authenticationToken);
             }
             throw new AuthorizationDeniedException("You are not authorized to the Request with ID " + id + " at this point");
         }
-        approvalSession.unexpireApprovalRequestNoAuth(authenticationToken, id, unexpireForMillis);
+        
+        // Check specifically for approval authorization
+        approvalExecutionSession.assertAuthorizedToApprove(authenticationToken, advo);
+        
+        approvalSession.extendApprovalRequestNoAuth(authenticationToken, id, extendForMillis);
     }
     
     @Override
@@ -468,14 +472,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (advo == null) {
             // Return false so the next master api backend can see if it can handle the approval
             return false;
-        } else if (getApprovalRequest(authenticationToken, advo) == null) { // Authorization check
+        } else if (getApprovalRequest(authenticationToken, advo) == null) { // Check read authorization (includes authorization to referenced CAs) 
             if (log.isDebugEnabled()) {
                 log.debug("Authorization denied to approval request ID " + requestResponse.getId() + " for " + authenticationToken);
             }
             throw new AuthorizationDeniedException("You are not authorized to the Request with ID " + requestResponse.getId() + " at this point");
         }
         
-        // Check that we are authorized before continuing
+        // Check specifically for approval authorization
         approvalExecutionSession.assertAuthorizedToApprove(authenticationToken, advo);
         
         // Save the update request (needed if there are properties, e.g. checkboxes etc. in the partitions)

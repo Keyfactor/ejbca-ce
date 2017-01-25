@@ -104,12 +104,12 @@
 				</h:panelGroup>
 			</h:panelGroup>
 			
-			<h:outputLabel for="maxUnexpirationPeriod" value="#{web.text.MAX_UNEXPIRATION_PERIOD} #{web.text.FORMAT_TIME_YMDHMIN}"/>
+			<h:outputLabel for="maxExtensionTime" value="#{web.text.MAX_EXTENSION_TIME} #{web.text.FORMAT_TIME_YMDHMIN}"/>
             <h:panelGroup>
-                <h:inputText id="maxUnexpirationPeriod" disabled="#{approvalProfilesMBean.viewOnly}" value="#{approvalProfileMBean.maxUnexpirationPeriod}" />
+                <h:inputText id="maxExtensionTime" disabled="#{approvalProfilesMBean.viewOnly}" value="#{approvalProfileMBean.maxExtensionTime}" />
                 <br/>
                 <h:panelGroup styleClass="help">
-                    <h:outputText value="#{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}. #{web.text.MAX_UNEXPIRATION_PERIOD_HELP}"/>
+                    <h:outputText value="#{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}. #{web.text.MAX_EXTENSION_TIME_HELP}"/>
                 </h:panelGroup>
             </h:panelGroup>
 				
