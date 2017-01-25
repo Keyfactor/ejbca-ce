@@ -342,7 +342,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         final List<Integer> roleIdsCallerBelongsTo = new ArrayList<>(); // TODO: roleMemberSession.getRoleIds(authenticationToken)
         HashMap<String, Boolean> totalAccessRules = new HashMap<>();
         for (final int roleId : roleIdsCallerBelongsTo) {
-            totalAccessRules = AccessRulesHelper.mergeTotalAccess(totalAccessRules, getRole(roleId).getAccessRules());
+            totalAccessRules = AccessRulesHelper.getAccessRulesUnion(totalAccessRules, getRole(roleId).getAccessRules());
         }
         for (final Entry<String, Boolean> entry : totalAccessRules.entrySet()) {
             if (!entry.getValue().booleanValue()) {
