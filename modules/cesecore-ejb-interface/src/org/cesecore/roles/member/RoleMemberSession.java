@@ -23,7 +23,7 @@ import java.util.List;
 public interface RoleMemberSession {
 
     /**
-     * Finds an RoleMemberData by its primary key.
+     * Finds an RoleMember by its primary key.
      * 
      * @param primaryKey
      *            Primary key of the sought instance.
@@ -32,6 +32,8 @@ public interface RoleMemberSession {
     RoleMember findRoleMember(final int primaryKey);
 
     /**
+     * Finds all role members belonging to a specific role.
+     * 
      * 
      * @param roleId the ID of a role
      * @return a list of members to the given role
