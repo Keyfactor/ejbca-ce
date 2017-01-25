@@ -70,6 +70,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         return entityManager.find(RoleMemberData.class, primaryKey);
     }
     
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public RoleMember findRoleMember(int primaryKey) {
         RoleMemberData roleMemberData = find(primaryKey);
@@ -87,7 +88,8 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         query.setParameter("roleId", roleId);
         return query.getResultList();
     }
-    
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<RoleMember> findRoleMemberByRoleId(int roleId) {
         List<RoleMemberData> entityBeans = findByRoleId(roleId);
