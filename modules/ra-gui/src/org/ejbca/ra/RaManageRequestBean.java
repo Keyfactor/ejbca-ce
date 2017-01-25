@@ -84,7 +84,7 @@ public class RaManageRequestBean implements Serializable {
     private ApprovalRequestGUIInfo requestInfo;
     private RaApprovalRequestInfo requestData;
     private boolean editing = false;
-    private String unexpireDays;
+    private String extendDays;
     private Map<Integer, List<DynamicUiProperty<? extends Serializable>> > currentPartitionsProperties = null;
     List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
     Set<Integer> partitionsAuthorizedToApprove = null;
@@ -126,11 +126,11 @@ public class RaManageRequestBean implements Serializable {
                 return;
             }
             if (requestData.getApprovalProfile() != null) {
-                long defaultUnexpireMillis = Math.min(requestData.getApprovalProfile().getApprovalExpirationPeriod(),
-                        requestData.getMaxUnexpirationPeriod());
-                unexpireDays = String.valueOf((defaultUnexpireMillis + 24*60*60*1000 - 1) / (24*60*60*1000));
+                long defaultExtensionMillis = Math.min(requestData.getApprovalProfile().getApprovalExpirationPeriod(),
+                        requestData.getMaxExtensionTime());
+                extendDays = String.valueOf((defaultExtensionMillis + 24*60*60*1000 - 1) / (24*60*60*1000));
             } else {
-                unexpireDays = "1";
+                extendDays = "1";
             }
         }
     }
@@ -156,8 +156,8 @@ public class RaManageRequestBean implements Serializable {
     public boolean isPreviousStepsVisible() { return !editing && !requestInfo.getPreviousSteps().isEmpty(); }
     public boolean isApprovalVisible() { return !editing; } // even if approval is not possible, we still show a message explaining why it's not.
     
-    public String getUnexpireDays() { return unexpireDays; }
-    public void setUnexpireDays(final String unexpireDays) { this.unexpireDays = unexpireDays; }
+    public String getExtendDays() { return extendDays; }
+    public void setExtendDays(final String extendDays) { this.extendDays = extendDays; }
     
     public String getPartitionName(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
         if (guiPartition == null) {
@@ -511,29 +511,29 @@ public class RaManageRequestBean implements Serializable {
         editing = false;
     }
     
-    public String unexpireRequest() throws AuthorizationDeniedException {
-        if (StringUtils.isBlank(unexpireDays)) {
-            raLocaleBean.addMessageError("view_request_page_error_unexpire_missing");
+    public String extendRequest() throws AuthorizationDeniedException {
+        if (StringUtils.isBlank(extendDays)) {
+            raLocaleBean.addMessageError("view_request_page_error_extend_missing_days");
             return "";
         }
         
-        final long unexpireForMillis = Long.valueOf(unexpireDays.trim()) * 24*60*60*1000;
-        final long maxUnexpire = requestInfo.request.getMaxUnexpirationPeriod();
-        if (unexpireForMillis > maxUnexpire) {
-            raLocaleBean.addMessageError("view_request_page_error_unexpire_too_long", getMaxUnexpireDays());
+        final long extendForMillis = Long.valueOf(extendDays.trim()) * 24*60*60*1000;
+        final long maxExtensionTime = requestInfo.request.getMaxExtensionTime();
+        if (extendForMillis > maxExtensionTime) {
+            raLocaleBean.addMessageError("view_request_page_error_extend_too_long", getMaxExtensionDays());
             return "";
         }
-        raMasterApiProxyBean.unexpireApprovalRequest(raAuthenticationBean.getAuthenticationToken(), requestData.getId(), unexpireForMillis);
+        raMasterApiProxyBean.extendApprovalRequest(raAuthenticationBean.getAuthenticationToken(), requestData.getId(), extendForMillis);
         return "managerequest.xhtml?faces-redirect=true&includeViewParams=true";
     }
     
-    public int getMaxUnexpireDays() {
-        long days = requestInfo.request.getMaxUnexpirationPeriod() / (24*60*60*1000);
+    public int getMaxExtensionDays() {
+        long days = requestInfo.request.getMaxExtensionTime() / (24*60*60*1000);
         return (int) days;
     }
     
-    public String getUnexpireDaysPart2Text() {
-        return raLocaleBean.getMessage("view_request_page_unexpire_days_2", getMaxUnexpireDays());
+    public String getExtendDaysPart2Text() {
+        return raLocaleBean.getMessage("view_request_page_extend_days_2", getMaxExtensionDays());
     }
     
     public String getDN(final RequestDataRow dataRow) {

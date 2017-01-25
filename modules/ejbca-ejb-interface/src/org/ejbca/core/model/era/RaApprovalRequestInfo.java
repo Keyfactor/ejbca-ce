@@ -55,7 +55,7 @@ public class RaApprovalRequestInfo implements Serializable {
     private final int status;
     private final ApprovalDataVO approvalData;
     private final ApprovalProfile approvalProfile;
-    private final long maxUnexpirationPeriod;
+    private final long maxExtensionTime;
     private final String endEntityProfileName;
     private final EndEntityProfile endEntityProfile;
     private final String certificateProfileName;
@@ -142,9 +142,9 @@ public class RaApprovalRequestInfo implements Serializable {
         // The profile contains information about the approval steps
         approvalProfile = approvalProfileParam != null ? approvalProfileParam : approval.getApprovalProfile();
         if (approvalProfile != null) {
-            maxUnexpirationPeriod = approvalProfile.getMaxUnexpirationPeriod();
+            maxExtensionTime = approvalProfile.getMaxExtensionTime();
         } else {
-            maxUnexpirationPeriod = EjbcaConfiguration.getApprovalDefaultMaxUnexpirationPeriod();
+            maxExtensionTime = EjbcaConfiguration.getApprovalDefaultMaxExtensionTime();
         }
         
         
@@ -267,9 +267,9 @@ public class RaApprovalRequestInfo implements Serializable {
         return approvalProfile;
     }
     
-    /** @since EJBCA 6.7.0. If the response comes from an earlier version, it will return 0 (=unexpiration not allowed) */
-    public long getMaxUnexpirationPeriod() {
-        return maxUnexpirationPeriod;
+    /** @since EJBCA 6.7.0. If the response comes from an earlier version, it will return 0 (=extension of requests not allowed) */
+    public long getMaxExtensionTime() {
+        return maxExtensionTime;
     }
     
     public ApprovalStep getNextApprovalStep() {
