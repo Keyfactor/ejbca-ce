@@ -37,13 +37,10 @@ public class RoleSessionBeanTest {
     private final AuthenticationToken alwaysAllowAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "AuthorizationSessionBeanTest"));
 
-    private void cleanUpRole(final String nameSpace, final String roleName) {
-        try {
-            final Role cleanUpRole = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
-            if (cleanUpRole!=null) {
-                roleSession.deleteRole(alwaysAllowAuthenticationToken, cleanUpRole.getRoleId());
-            }
-        } catch (AuthorizationDeniedException | RoleNotFoundException e) {
+    private void cleanUpRole(final String nameSpace, final String roleName) throws AuthorizationDeniedException {
+        final Role cleanUpRole = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
+        if (cleanUpRole!=null) {
+            roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, cleanUpRole.getRoleId(), false);
         }
     }
     
@@ -75,7 +72,7 @@ public class RoleSessionBeanTest {
         assertEquals(fetchedRole.getAccessRules().size(), updatedRole.getAccessRules().size());
         // Delete
         try {
-            roleSession.deleteRole(alwaysAllowAuthenticationToken, createdRole.getRoleId());
+            roleSession.deleteRole(alwaysAllowAuthenticationToken, createdRole.getRoleId(), false);
         } catch (RoleNotFoundException e) {
             fail("Unable to delete the role created by this test.");
         }

@@ -40,7 +40,15 @@ public interface RoleSession {
      * @throws RoleNotFoundException when no such role exists
      * @throws AuthorizationDeniedException if the caller is not authorized to see this role and edit roles in general
      */
-    void deleteRole(AuthenticationToken authenticationToken, int roleId) throws RoleNotFoundException, AuthorizationDeniedException;
+    void deleteRole(AuthenticationToken authenticationToken, int roleId, boolean alsoDeleteRoleMembers) throws RoleNotFoundException, AuthorizationDeniedException;
+
+    /**
+     * Deletes the role with the requested id.
+     * 
+     * @throws AuthorizationDeniedException if the caller is not authorized to see this role and edit roles in general
+     * @return true if a change was made to the database
+     */
+    boolean deleteRoleIdempotent(AuthenticationToken authenticationToken, int roleId, boolean alsoDeleteRoleMembers) throws AuthorizationDeniedException;
 
     /**
      * @return the Role for the specified id or null if no such role exists

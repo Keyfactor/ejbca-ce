@@ -60,8 +60,6 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberProxySessionRemote;
-import org.cesecore.roles.member.RoleMemberSession;
-import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -533,16 +531,14 @@ public class UpgradeSessionBeanTest {
         AccessUserAspectData oldAccessUserAspect = new AccessUserAspectData(oldRole.getRoleName(), 4711, X500PrincipalAccessMatchValue.WITH_COUNTRY, AccessMatchType.TYPE_EQUALCASE, "SE");
         roleManagementSession.addSubjectsToRole(alwaysAllowtoken, oldRole, Arrays.asList(oldAccessUserAspect));
         int newRoleId = 0;
-        int newRoleMemberId = 0;
         try {
             upgradeSession.upgrade(null, "6.7.0", false);
-            //Post upgrade, their should exist a new RoleData object with the given rolename
+            // Post upgrade, there should exist a new RoleData object with the given rolename
             Role newRole = roleSession.getRole(alwaysAllowtoken, null, oldRole.getRoleName());
             newRoleId = newRole.getRoleId();
             List<RoleMember> newRoleMembers = roleMemberProxySession.findRoleMemberByRoleId(newRole.getRoleId());
             assertEquals("For some strange reason, a single role member was turned into several", 1, newRoleMembers.size());
             RoleMember newRoleMember = newRoleMembers.get(0);
-            newRoleMemberId = newRoleMember.getId();
             assertEquals("Match value type was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY, newRoleMember.getAccessMatchValue());
             assertEquals("Match value was not upgraded properly." , "SE", newRoleMember.getTokenMatchValue());
         } finally {
@@ -551,13 +547,7 @@ public class UpgradeSessionBeanTest {
             } catch (RoleNotFoundException e) {
                 // NOPMD Ignore
             }
-            try {
-                roleSession.deleteRole(alwaysAllowtoken, newRoleId);
-            } catch (RoleNotFoundException e) {
-                // NOPMD Ignore
-            }
-            roleMemberProxySession.remove(newRoleMemberId);
+            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId, true);
         }
     }
-
 }
