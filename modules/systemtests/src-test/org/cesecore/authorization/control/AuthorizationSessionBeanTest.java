@@ -42,6 +42,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.junit.Test;
 
 /**
+ * System test of AuthorizationSessionBean.
  * 
  * @version $Id$
 ' */
