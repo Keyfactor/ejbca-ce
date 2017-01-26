@@ -1541,11 +1541,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             int failures = 0;
             do {
                 try {
-                    role = roleSession.persistRoleNoAuthorizationCheck(authenticationToken, role);
+                    role = roleSession.persistRole(authenticationToken, role);
                     failures = 0;
                 } catch (RoleExistsException e) {
                     failures++;
                     role.setRoleName(roleName + "-" + failures);
+                } catch (AuthorizationDeniedException e) {
+                    throw new UpgradeFailedException(e);
                 }
             } while (failures>0 && failures<100);
             if (failures==100) {

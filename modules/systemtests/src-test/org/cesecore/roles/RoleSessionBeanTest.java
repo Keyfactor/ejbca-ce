@@ -17,13 +17,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -31,27 +30,18 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class RoleSessionBeanTest extends RoleUsingTestCase {
+public class RoleSessionBeanTest {
     
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-    private AuthenticationToken authenticationToken;
 
-    @Before
-    public void setUp() throws RoleExistsException, RoleNotFoundException {
-        setUpAuthTokenAndRole(RoleSessionBeanTest.class.getSimpleName());
-        authenticationToken = roleMgmgToken;
-    }
-
-    @After
-    public void tearDown() throws RoleNotFoundException, AuthorizationDeniedException {
-        tearDownRemoveRole();
-    }
+    private final AuthenticationToken alwaysAllowAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
+            "AuthorizationSessionBeanTest"));
 
     private void cleanUpRole(final String nameSpace, final String roleName) {
         try {
-            final Role cleanUpRole = roleSession.getRole(authenticationToken, nameSpace, roleName);
+            final Role cleanUpRole = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
             if (cleanUpRole!=null) {
-                roleSession.deleteRole(authenticationToken, cleanUpRole.getRoleId());
+                roleSession.deleteRole(alwaysAllowAuthenticationToken, cleanUpRole.getRoleId());
             }
         } catch (AuthorizationDeniedException | RoleNotFoundException e) {
         }
@@ -63,13 +53,13 @@ public class RoleSessionBeanTest extends RoleUsingTestCase {
         // Create
         final Role role = new Role(null, "RoleSessionBeanTest.testCrud");
         role.getAccessRules().put("/", Role.STATE_ALLOW);
-        final Role createdRole = roleSession.persistRole(authenticationToken, role);
+        final Role createdRole = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
         assertFalse(Role.ROLE_ID_UNASSIGNED == createdRole.getRoleId());
         assertEquals(role.getNameSpace(), createdRole.getNameSpace());
         assertEquals(role.getRoleName(), createdRole.getRoleName());
         assertEquals(role.getAccessRules().size(), createdRole.getAccessRules().size());
         // Read
-        final Role fetchedRole = roleSession.getRole(authenticationToken, createdRole.getRoleId());
+        final Role fetchedRole = roleSession.getRole(alwaysAllowAuthenticationToken, createdRole.getRoleId());
         assertEquals(createdRole.getRoleId(), fetchedRole.getRoleId());
         assertEquals(createdRole.getNameSpace(), fetchedRole.getNameSpace());
         assertEquals(createdRole.getRoleName(), fetchedRole.getRoleName());
@@ -78,14 +68,14 @@ public class RoleSessionBeanTest extends RoleUsingTestCase {
         fetchedRole.getAccessRules().put("/a/b", Role.STATE_DENY);
         fetchedRole.setRoleName(fetchedRole.getRoleName() + " (renamed)");
         fetchedRole.setNameSpace("companyx");
-        final Role updatedRole = roleSession.persistRole(authenticationToken, fetchedRole);
+        final Role updatedRole = roleSession.persistRole(alwaysAllowAuthenticationToken, fetchedRole);
         assertEquals(fetchedRole.getRoleId(), updatedRole.getRoleId());
         assertEquals(fetchedRole.getNameSpace(), updatedRole.getNameSpace());
         assertEquals(fetchedRole.getRoleName(), updatedRole.getRoleName());
         assertEquals(fetchedRole.getAccessRules().size(), updatedRole.getAccessRules().size());
         // Delete
         try {
-            roleSession.deleteRole(authenticationToken, createdRole.getRoleId());
+            roleSession.deleteRole(alwaysAllowAuthenticationToken, createdRole.getRoleId());
         } catch (RoleNotFoundException e) {
             fail("Unable to delete the role created by this test.");
         }
@@ -97,12 +87,12 @@ public class RoleSessionBeanTest extends RoleUsingTestCase {
         // Create
         final Role role1 = new Role(null, "RoleSessionBeanTest.testConflict");
         role1.getAccessRules().put("/", Role.STATE_ALLOW);
-        roleSession.persistRole(authenticationToken, role1);
-        assertNotNull(roleSession.getRole(authenticationToken, null, "RoleSessionBeanTest.testConflict"));
+        roleSession.persistRole(alwaysAllowAuthenticationToken, role1);
+        assertNotNull(roleSession.getRole(alwaysAllowAuthenticationToken, null, "RoleSessionBeanTest.testConflict"));
         final Role role2 = new Role(null, "RoleSessionBeanTest.testConflict");
         role2.getAccessRules().put("/", Role.STATE_ALLOW);
         try {
-            roleSession.persistRole(authenticationToken, role2);
+            roleSession.persistRole(alwaysAllowAuthenticationToken, role2);
             fail("Should not have been able to create 2 roles with the same nameSpace + roleName combination.");
         } catch (RoleExistsException e) {
             
