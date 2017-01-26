@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.authorization.control;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -52,7 +53,6 @@ public class AuthorizationSessionBeanTest {
 
     private AuthorizationSessionRemote authorizationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSessionRemote.class);
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-    //private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private RoleMemberProxySessionRemote roleMemberProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private final AuthenticationToken alwaysAllowAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
@@ -60,8 +60,8 @@ public class AuthorizationSessionBeanTest {
 
     @Test
     public void testIsAuthorizedAlwaysAllow() {
-        authorizationSession.isAuthorizedNoLogging(alwaysAllowAuthenticationToken, "/a", "/b");
-        authorizationSession.isAuthorized(alwaysAllowAuthenticationToken, "/a", "/b");
+        assertTrue(authorizationSession.isAuthorizedNoLogging(alwaysAllowAuthenticationToken, "/a", "/b"));
+        assertTrue(authorizationSession.isAuthorized(alwaysAllowAuthenticationToken, "/a", "/b"));
     }
 
     @Test
@@ -85,38 +85,36 @@ public class AuthorizationSessionBeanTest {
             final String commonName = roleName;
             final String subjectAndIssuerDn = "CN="+commonName;
             final int caId = subjectAndIssuerDn.hashCode();
-            roleMemberProxySession.createOrEdit(new RoleMember(0, X500PrincipalAccessMatchValue.WITH_COMMONNAME, caId, commonName, role.getRoleId(), null, null));
-
+            final int roleMemberId = roleMemberProxySession.createOrEdit(new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X500PrincipalAccessMatchValue.WITH_COMMONNAME, caId,
+                    commonName, role.getRoleId(), null, null));
+            assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId).getTokenIssuerId());
             final AuthenticationToken authenticationToken = createAuthenticationToken("CN="+commonName);
-
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource()));
-            /* Being able to do successful authorization checks for an X500Principal requires ECA-5653 (tokenIssuerId) to be implemented
-            assertTrue(authorizationSession.isAuthorized(authenticationToken, "/acceptRecursive"));
-            assertTrue(authorizationSession.isAuthorized(authenticationToken, "/accept"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/decline"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/notused"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/unexistent"));
-            assertTrue(authorizationSession.isAuthorized(authenticationToken, "/acceptRecursive/accept"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/acceptRecursive/decline"));
-            assertTrue(authorizationSession.isAuthorized(authenticationToken, "/acceptRecursive/notused"));
-            assertTrue(authorizationSession.isAuthorized(authenticationToken, "/acceptRecursive/unexistent"));
-            assertTrue(authorizationSession.isAuthorized(authenticationToken, "/acceptRecursive/accept/notused"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/acceptRecursive/decline/notused"));
-            assertTrue(authorizationSession.isAuthorized(authenticationToken, "/acceptRecursive/notused/notused"));
-            assertTrue(authorizationSession.isAuthorized(authenticationToken, "/accept/accept"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/accept/decline"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/accept/notused"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/accept/unexistent"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/decline/accept"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/decline/decline"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/decline/notused"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/decline/unexistent"));
-            assertTrue(authorizationSession.isAuthorized(authenticationToken, "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
-            assertTrue(authorizationSession.isAuthorized(authenticationToken, "/acceptRecursive/accept", "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/acceptRecursive/decline", "/acceptRecursive/accept"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/acceptRecursive/accept", "/acceptRecursive/decline"));
-            assertFalse(authorizationSession.isAuthorized(authenticationToken, "/acceptRecursive/accept", "/acceptRecursive/decline", "/acceptRecursive/unexistent"));
-             */
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource()));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/accept"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/decline"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/notused"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/unexistent"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/accept"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/decline"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/notused"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/unexistent"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/accept/notused"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/decline/notused"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/notused/notused"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/accept/accept"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/accept/decline"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/accept/notused"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/accept/unexistent"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/decline/accept"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/decline/decline"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/decline/notused"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/decline/unexistent"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/accept", "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/decline", "/acceptRecursive/accept"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/accept", "/acceptRecursive/decline"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/accept", "/acceptRecursive/decline", "/acceptRecursive/unexistent"));
         } finally {
             cleanUpRole(nameSpace, roleName);
         }
