@@ -96,7 +96,7 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
         String[] clientstrings = null;
         if (StringUtils.equals(TOKEN_TYPE,accessUser.getTokenType())) {
             // First check that issuers match.
-            if (accessUser.getCaId() == adminCaId) {
+            if (accessUser.getCaId()!=null && accessUser.getCaId().intValue() == adminCaId) {
                 // Determine part of certificate to match with.
                 DNFieldExtractor usedExtractor = dnExtractor;
                 X500PrincipalAccessMatchValue matchValue = (X500PrincipalAccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());

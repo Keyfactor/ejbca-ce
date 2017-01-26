@@ -13,7 +13,9 @@
 package org.cesecore.roles.member;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -22,6 +24,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
+import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessUserAspect;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
@@ -113,8 +120,85 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Set<Integer> getRoleIdsMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        final Set<Integer> ret = new HashSet<>();
+        final AccessMatchValue defaultAccessMatchValue = authenticationToken.getDefaultMatchValue();
+        final String tokenType = defaultAccessMatchValue.getTokenType();
+        // TODO: This a naive implementation iterating over all RoleMemberDatas of this type ECA-5607
+        final TypedQuery<RoleMemberData> query = entityManager.createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType", RoleMemberData.class);
+        query.setParameter("tokenType", tokenType);
+        final List<RoleMemberData> roleMemberDatas = query.getResultList();
+        for (final RoleMemberData roleMemberData : roleMemberDatas) {
+            if (roleMemberData.getRoleId()!=null) {
+                if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData))) {
+                    ret.add(roleMemberData.getRoleId());
+                }
+            }
+        }
+        return ret;
+    }
+    
+    // TODO: Remove this once there is a better way to match tokens
+    private AccessUserAspect convertToAccessUserAspect(final RoleMemberData roleMemberData) {
+        return new AccessUserAspect() {
+            private static final long serialVersionUID = 1L;
 
+            @Override
+            public int getMatchWith() {
+                return roleMemberData.getTokenSubType();
+            }
 
+            @Override
+            public void setMatchWith(Integer matchWith) {
+            }
 
+            @Override
+            public int getMatchType() {
+                return AccessMatchType.TYPE_NONE.getNumericValue();
+            }
 
+            @Override
+            public void setMatchType(Integer matchType) {
+            }
+
+            @Override
+            public void setMatchTypeAsValue(AccessMatchType matchType) {
+            }
+
+            @Override
+            public AccessMatchType getMatchTypeAsType() {
+                return AccessMatchType.TYPE_NONE;
+            }
+
+            @Override
+            public String getMatchValue() {
+                return roleMemberData.getTokenMatchValue();
+            }
+
+            @Override
+            public void setMatchValue(String matchValue) {
+            }
+
+            @Override
+            public Integer getCaId() {
+                // TODO return roleMemberData.getTokenIssuerId(); ECA-5653
+                return null;
+            }
+
+            @Override
+            public void setCaId(Integer caId) {
+            }
+
+            @Override
+            public String getTokenType() {
+                return roleMemberData.getTokenType();
+            }
+
+            @Override
+            public void setTokenType(String tokenType) {
+            }
+        };
+    }
 }
