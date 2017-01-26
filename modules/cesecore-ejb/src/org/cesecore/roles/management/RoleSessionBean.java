@@ -30,7 +30,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.AuditRecordStorageException;
-import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -63,7 +63,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     private AuthorizationSessionLocal authorizationSession;
     // We have to depend on the internal security events logger here, since the remote depends on us
     @EJB
-    private InternalSecurityEventsLoggerSessionLocal internalSecurityEventsLoggerSession;
+    private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
     @EJB
     private TrustedTimeWatcherSessionLocal trustedTimeWatcherSession;
     @EJB
@@ -109,7 +109,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         details.put("roleId", role.getRoleId());
         details.put("roleName", role.getRoleName());
         details.put("nameSpace", role.getNameSpace());
-        internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.ROLE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+        securityEventsLoggerSession.log(EventTypes.ROLE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                 authenticationToken.toString(), null, null, null, details);
     }
 
@@ -143,7 +143,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             details.put("roleId", role.getRoleId());
             details.put("roleName", role.getRoleName());
             details.put("nameSpace", role.getNameSpace());
-            internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.ROLE_CREATION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+            securityEventsLoggerSession.log(EventTypes.ROLE_CREATION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, details);
         } else {
             // Save to existing role
@@ -158,7 +158,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                 details.put("roleNameNew", role.getRoleName());
                 details.put("nameSpaceOld", roleById.getNameSpace());
                 details.put("nameSpaceNew", role.getNameSpace());
-                internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.ROLE_RENAMING, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                securityEventsLoggerSession.log(EventTypes.ROLE_RENAMING, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                         authenticationToken.toString(), null, null, null, details);
             } else {
                 if (roleByName.getRoleId() != role.getRoleId()) {
@@ -190,7 +190,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         details.put("roleId", role.getRoleId());
         details.put("roleName", role.getRoleName());
         details.put("nameSpace", role.getNameSpace());
-        internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.ROLE_ACCESS_RULE_CHANGE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+        securityEventsLoggerSession.log(EventTypes.ROLE_ACCESS_RULE_CHANGE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                 authenticationToken.toString(), null, null, null, details);
         return role;
     }
