@@ -13,8 +13,12 @@
 package org.cesecore.roles.member;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.Local;
+
+import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * CRUD session bean for managing RoleMemberData objects
@@ -60,7 +64,6 @@ public interface RoleMemberSessionLocal extends RoleMemberSession {
      * @return a list of members to the given role
      */
     List<RoleMemberData> findByRoleId(int roleId);
-    
     /**
      * Finds an RoleMember by its primary key.
      * 
@@ -79,4 +82,5 @@ public interface RoleMemberSessionLocal extends RoleMemberSession {
      */
     List<RoleMember> findRoleMemberByRoleId(int roleId);
 
+    Set<Integer> getRoleIdsMatchingAuthenticationToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
 }
