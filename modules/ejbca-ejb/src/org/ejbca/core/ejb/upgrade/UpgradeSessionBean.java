@@ -96,6 +96,7 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.JBossUnmarshaller;
@@ -1554,9 +1555,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // Convert the linked AccessUserAspectDatas to RoleMemberDatas
             final Map<Integer, AccessUserAspectData> accessUsers = adminGroupData.getAccessUsers();
             // Each AccessUserAspectData belongs to one and only one role, so retrieving them this way may be considered safe. 
-            for(AccessUserAspectData accessUserAspect : accessUsers.values()) {                
-                RoleMemberData roleMember = new RoleMemberData(0, accessUserAspect.getTokenType(), accessUserAspect.getMatchWith(), 
-                        accessUserAspect.getMatchValue(), roleId, null, null);
+            for (final AccessUserAspectData accessUserAspect : accessUsers.values()) {
+                final int tokenIssuerId = accessUserAspect.getCaId()==null ? RoleMember.NO_ISSUER : accessUserAspect.getCaId();
+                final RoleMemberData roleMember = new RoleMemberData(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, accessUserAspect.getTokenType(),
+                        accessUserAspect.getMatchWith(), tokenIssuerId, accessUserAspect.getMatchValue(), roleId, null, null);
                 roleMemberSession.createOrEdit(roleMember);
             }           
         }

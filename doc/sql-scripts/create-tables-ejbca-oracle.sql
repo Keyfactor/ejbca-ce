@@ -332,15 +332,16 @@ CREATE TABLE RoleData (
 );
 
 CREATE TABLE RoleMemberData (
-	primaryKey NUMBER(10)  NOT NULL,
-	tokenSubType NUMBER(10)  NOT NULL,
-	tokenType VARCHAR2(255 byte) NOT NULL,
-	tokenMatchValue VARCHAR2(255 byte) NOT NULL,
-	roleId NUMBER(10),
-	memberBindingType VARCHAR2(255 byte),
-	memberBindingValue VARCHAR2(255 byte),
-	rowProtection CLOB,
-    rowVersion NUMBER(10)  NOT NULL,
+    primaryKey NUMBER(10) NOT NULL,
+    tokenType VARCHAR2(255 byte) NOT NULL,
+    tokenSubType NUMBER(10) NOT NULL,
+    tokenIssuerId NUMBER(10) NOT NULL,
+    tokenMatchValue VARCHAR2(255 byte) NOT NULL,
+    roleId NUMBER(10) NOT NULL,
+    memberBindingType VARCHAR2(255 byte),
+    memberBindingValue VARCHAR2(255 byte),
+    rowProtection CLOB,
+    rowVersion NUMBER(10) NOT NULL,
     PRIMARY KEY (primaryKey)
 );
 
