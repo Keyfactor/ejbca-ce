@@ -48,11 +48,13 @@ public class RoleMemberProxySessionBean implements RoleMemberProxySessionRemote 
         return roleMemberSession.createOrEdit(roleMember);
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public RoleMember findRoleMember(int primaryKey) {
         return roleMemberSession.findRoleMember(primaryKey);
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<RoleMember> findRoleMemberByRoleId(int roleId) {
         return roleMemberSession.findRoleMemberByRoleId(roleId);
