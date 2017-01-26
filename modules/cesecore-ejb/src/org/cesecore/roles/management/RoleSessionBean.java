@@ -44,6 +44,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
+import org.cesecore.time.TrustedTime;
 import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 import org.cesecore.time.providers.TrustedTimeProviderException;
 
@@ -108,13 +109,8 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         details.put("roleId", role.getRoleId());
         details.put("roleName", role.getRoleName());
         details.put("nameSpace", role.getNameSpace());
-        try {
-            internalSecurityEventsLoggerSession.log(trustedTimeWatcherSession.getTrustedTime(false), EventTypes.ROLE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
-                    authenticationToken.toString(), null, null, null, details);
-        } catch (TrustedTimeProviderException e) {
-            log.error(e.getMessage(), e);
-            throw new AuditRecordStorageException(e.getMessage(), e);
-        }
+        internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.ROLE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                authenticationToken.toString(), null, null, null, details);
     }
 
     @Override
@@ -147,13 +143,8 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             details.put("roleId", role.getRoleId());
             details.put("roleName", role.getRoleName());
             details.put("nameSpace", role.getNameSpace());
-            try {
-                internalSecurityEventsLoggerSession.log(trustedTimeWatcherSession.getTrustedTime(false), EventTypes.ROLE_CREATION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
-                        authenticationToken.toString(), null, null, null, details);
-            } catch (TrustedTimeProviderException e) {
-                log.error(e.getMessage(), e);
-                throw new AuditRecordStorageException(e.getMessage(), e);
-            }
+            internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.ROLE_CREATION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                    authenticationToken.toString(), null, null, null, details);
         } else {
             // Save to existing role
             if (roleByName==null) {
@@ -167,13 +158,8 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                 details.put("roleNameNew", role.getRoleName());
                 details.put("nameSpaceOld", roleById.getNameSpace());
                 details.put("nameSpaceNew", role.getNameSpace());
-                try {
-                    internalSecurityEventsLoggerSession.log(trustedTimeWatcherSession.getTrustedTime(false), EventTypes.ROLE_RENAMING, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
-                            authenticationToken.toString(), null, null, null, details);
-                } catch (TrustedTimeProviderException e) {
-                    log.error(e.getMessage(), e);
-                    throw new AuditRecordStorageException(e.getMessage(), e);
-                }
+                internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.ROLE_RENAMING, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                        authenticationToken.toString(), null, null, null, details);
             } else {
                 if (roleByName.getRoleId() != role.getRoleId()) {
                     throw new RoleExistsException("A role with the same name exists.");
@@ -204,13 +190,8 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         details.put("roleId", role.getRoleId());
         details.put("roleName", role.getRoleName());
         details.put("nameSpace", role.getNameSpace());
-        try {
-            internalSecurityEventsLoggerSession.log(trustedTimeWatcherSession.getTrustedTime(false), EventTypes.ROLE_ACCESS_RULE_CHANGE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
-                    authenticationToken.toString(), null, null, null, details);
-        } catch (TrustedTimeProviderException e) {
-            log.error(e.getMessage(), e);
-            throw new AuditRecordStorageException(e.getMessage(), e);
-        }
+        internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.ROLE_ACCESS_RULE_CHANGE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                authenticationToken.toString(), null, null, null, details);
         return role;
     }
 
@@ -281,6 +262,16 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             }
         } catch (AuthenticationFailedException e) {
             throw new AuthorizationDeniedException("Current AuthenticationToken is not authorized to the namespace '"+role.getNameSpace()+"'.");
+        }
+    }
+
+    /** @return the trusted time requires for audit logging */
+    private TrustedTime getTrustedTime() throws AuditRecordStorageException {
+        try {
+            return trustedTimeWatcherSession.getTrustedTime(false);
+        } catch (TrustedTimeProviderException e) {
+            log.error(e.getMessage(), e);
+            throw new AuditRecordStorageException(e.getMessage(), e);
         }
     }
 }

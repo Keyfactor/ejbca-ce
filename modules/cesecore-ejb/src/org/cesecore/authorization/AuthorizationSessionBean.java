@@ -28,6 +28,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -58,7 +59,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
     @EJB
-    private InternalSecurityEventsLoggerSessionLocal securityEventsLoggerSession;
+    private InternalSecurityEventsLoggerSessionLocal internalSecurityEventsLoggerSession;
     @EJB
     private TrustedTimeWatcherSessionLocal trustedTimeWatcherSession;
 
@@ -101,25 +102,15 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
                 }
             }
             if (doLogging) {
-                TrustedTime trustedTime = null;
-                try {
-                    trustedTime = trustedTimeWatcherSession.getTrustedTime(false);
-                } catch (TrustedTimeProviderException e) {
-                    log.error("Error getting trusted time for audit log: ", e);
-                }
-                securityEventsLoggerSession.log(trustedTime, EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL,
+                internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL,
                         ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
             }
             return true;
         } catch (AuthenticationFailedException e) {
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", InternalResources.getInstance().getLocalizedMessage("authentication.failed", e.getMessage()));
-            try {
-                securityEventsLoggerSession.log(trustedTimeWatcherSession.getTrustedTime(false), EventTypes.AUTHENTICATION, EventStatus.FAILURE,
-                        ModuleTypes.AUTHENTICATION, ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
-            } catch (TrustedTimeProviderException f) {
-                log.error("Error getting trusted time for audit log: ", e);
-            }
+            internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.AUTHENTICATION, EventStatus.FAILURE, ModuleTypes.AUTHENTICATION,
+                    ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
         }
         return false;
     }
@@ -184,5 +175,15 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
             }
         }
         return accessRules;
+    }
+
+    /** @return the trusted time requires for audit logging */
+    private TrustedTime getTrustedTime() throws AuditRecordStorageException {
+        try {
+            return trustedTimeWatcherSession.getTrustedTime(false);
+        } catch (TrustedTimeProviderException e) {
+            log.error(e.getMessage(), e);
+            throw new AuditRecordStorageException(e.getMessage(), e);
+        }
     }
 }
