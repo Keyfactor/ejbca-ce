@@ -20,9 +20,8 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.jndi.JndiConstants;
-import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
-import org.ejbca.core.ejb.approval.ApprovalSessionProxyRemote;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -49,6 +48,11 @@ public class ApprovalSessionProxyBean implements ApprovalSessionProxyRemote {
             Date expiresBefore, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString) {
         return approvalSession.queryByStatus(includeUnfinished, includeProcessed, includeExpired, startDate, endDate, expiresBefore,
                 index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString);
+    }
+    
+    @Override
+    public void extendApprovalRequestNoAuth(final AuthenticationToken authenticationToken, final int approvalRequestId, final long extendForMillis) {
+        approvalSession.extendApprovalRequestNoAuth(authenticationToken, approvalRequestId, extendForMillis);
     }
 
 }

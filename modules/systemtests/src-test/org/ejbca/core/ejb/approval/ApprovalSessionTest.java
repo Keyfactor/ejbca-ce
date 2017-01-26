@@ -16,6 +16,7 @@ package org.ejbca.core.ejb.approval;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -160,6 +161,7 @@ public class ApprovalSessionTest extends CaTestCase {
         createTestCA();      
         approvalProfile = new AccumulativeApprovalProfile("AccumulativeApprovalProfile");
         approvalProfile.setNumberOfApprovalsRequired(2);
+        approvalProfile.setMaxExtensionTime(0);
         ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
         int approvalProfileId =  approvalProfileSession.addApprovalProfile(intadmin, approvalProfile);
         approvalProfile.setProfileId(approvalProfileId);
@@ -659,6 +661,50 @@ public class ApprovalSessionTest extends CaTestCase {
 
         }
     }
+    
+    @Test
+    public void testExtendApprovalRequest() throws Exception {
+        final long originalValidity = approvalProfile.getRequestExpirationPeriod();
+        approvalProfile.setRequestExpirationPeriod(500);
+        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+        try {
+            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
+            removeApprovalId = nonExecutableRequest.generateApprovalId();
+
+            int requestId = approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
+            Thread.sleep(1100);
+            
+            // Should be in expired state now
+            ApprovalDataVO result = approvalSessionRemote.findNonExpiredApprovalRequest(admin1, nonExecutableRequest.generateApprovalId());
+            assertNull(result);
+            
+            // Try to extend without having enabled request extension in the profile. Should fail
+            try {
+                approvalSessionProxyRemote.extendApprovalRequestNoAuth(admin1, requestId, 1000);
+                fail("Should not be able to extend request when disabled in profile");
+            } catch (Exception e) {
+                // NOPMD expected
+            }
+            
+            // Enable approval extension
+            approvalProfile.setMaxExtensionTime(2000);
+            approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+            
+            // Extend the validity of the request
+            approvalSessionProxyRemote.extendApprovalRequestNoAuth(admin1, requestId, 1000);
+
+            // Should have been unexpired, so findNonExpiredApprovalRequest should return it.
+            // And the approvalId (the request hash) should not change by a change of expiry date.  
+            result = approvalSessionRemote.findNonExpiredApprovalRequest(admin1, nonExecutableRequest.generateApprovalId());
+            assertNotNull(result);
+            assertEquals(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, result.getStatus()); // should not change at all during the test, just a safety check
+            
+        } finally {
+            approvalProfile.setRequestExpirationPeriod(originalValidity);
+            approvalProfile.setMaxExtensionTime(0);
+            approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+        }
+    }
 
     @Test
     public void testFindNonExpiredApprovalRequest() throws Exception {
@@ -676,7 +722,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
             ApprovalDataVO result = approvalSessionRemote.findNonExpiredApprovalRequest(admin1, nonExecutableRequest.generateApprovalId());
             assertNotNull(result);
-            assertTrue(result.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
+            assertEquals(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, result.getStatus());
 
             Collection<ApprovalDataVO> all = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             for (ApprovalDataVO next : all) {
