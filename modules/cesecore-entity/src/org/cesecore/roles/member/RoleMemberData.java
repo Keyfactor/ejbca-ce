@@ -132,7 +132,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         
     /** @return issuer identifier of this token or 0 if this is not relevant for this token type */
     public int getTokenIssuerId() {
-        return tokenSubType;
+        return tokenIssuerId;
     }
 
     public void setTokenIssuerId(int tokenIssuerId) {
