@@ -16,10 +16,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import javax.annotation.Resource;
 import javax.ejb.EJB;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -37,7 +36,7 @@ import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.AccessRulesHelper;
-import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.time.TrustedTime;
 import org.cesecore.time.TrustedTimeWatcherSessionLocal;
@@ -54,32 +53,14 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     private static final Logger log = Logger.getLogger(AuthorizationSessionBean.class);
 
-    //@EJB
-    private RoleSessionLocal roleSession = null;
+    @EJB
+    private RoleDataSessionLocal roleDataSession;
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
     @EJB
     private InternalSecurityEventsLoggerSessionLocal securityEventsLoggerSession;
     @EJB
     private TrustedTimeWatcherSessionLocal trustedTimeWatcherSession;
-
-    @Resource
-    private SessionContext sessionContext;
-
-    /*
-    @PostConstruct
-    public void postConstruct() {
-    }
-    */
-    
-    // TODO: Fix structure with higher level bean for mgmt of Roles to void this circular dependency
-    private RoleSessionLocal getRoleSession() {
-        // Look-up RoleSession used for reading to avoid deploy-time circular dependencies
-        if (roleSession==null) {
-            roleSession = sessionContext.getBusinessObject(RoleSessionLocal.class);
-        }
-        return roleSession;
-    }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -95,7 +76,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     private boolean isAuthorized(final AuthenticationToken authenticationToken, final boolean doLogging, final String... resources) {
         try {
-            HashMap<String, Boolean> accessRules = getAccessAvailableToAuthenticationToken(authenticationToken);
+            final HashMap<String, Boolean> accessRules = getAccessAvailableToAuthenticationToken(authenticationToken);
             final Map<String, Object> details = doLogging ? new LinkedHashMap<String, Object>() : null;
             for (int i=0; i<resources.length; i++) {
                 final String resource = resources[i];
@@ -109,9 +90,9 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
                     // If we are checking authorization without logging, for example to see if an admin menu should be available, only log at debug level.
                     // Note: same message below, but if debug logging is not enabled we don't want to construct the string at all (to save time and objects) for debug logging, therefore code copied.
                     if (doLogging) {
-                        log.info("Authorization failed for " + authenticationToken.toString() + " of type " + authenticationToken.getClass().getSimpleName() + " for resource " + resource);                        
+                        log.info("Authorization failed for " + authenticationToken.toString() + " of type " + authenticationToken.getClass().getSimpleName() + " for resource " + resource);
                     } else if (log.isDebugEnabled()) {
-                        log.debug("Authorization failed for " + authenticationToken.toString() + " of type " + authenticationToken.getClass().getSimpleName() + " for resource " + resource);                        
+                        log.debug("Authorization failed for " + authenticationToken.toString() + " of type " + authenticationToken.getClass().getSimpleName() + " for resource " + resource);
                     }
                     // We failed one of the checks, so there is no point in continuing..
                     // If we failed an authorization check, there is no need to log successful ones before this point since
@@ -170,16 +151,37 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
                     }
                 }
             }
+            if (log.isDebugEnabled()) {
+                debugLogAccessRules(authenticationToken, accessRules);
+            }
             AuthorizationCache.INSTANCE.put(authenticationToken, accessRules);
         }
         return accessRules;
+    }
+    
+    private void debugLogAccessRules(final AuthenticationToken authenticationToken, final HashMap<String, Boolean> accessRules) {
+        final StringBuilder sb = new StringBuilder(authenticationToken.toString()).append(" has the following access rules:\n");
+        for (final Entry<String,Boolean> entry : accessRules.entrySet()) {
+            if (entry.getValue().booleanValue()) {
+                sb.append(" allow ");
+            } else {
+                sb.append(" deny  ");
+            }
+            sb.append(entry.getKey()).append('\n');
+        }
+        log.debug(sb);
     }
 
     /** @return the union of access rules available to the AuthenticationToken if it matches several roles (ignoring any nested tokens) */
     private HashMap<String, Boolean> getAccessAvailableToSingleToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         HashMap<String, Boolean> accessRules = new HashMap<>();
-        for (final int matchingRoleId : roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
-            accessRules = AccessRulesHelper.getAccessRulesUnion(accessRules, getRoleSession().getRole(matchingRoleId).getAccessRules());
+        if (authenticationToken.matchTokenType("AlwaysAllowAuthenticationToken") && authenticationToken.matches(null)) {
+            // Special handing of the AlwaysAllowAuthenticationToken to grant full access
+            accessRules.put("/", Boolean.TRUE);
+        } else {
+            for (final int matchingRoleId : roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
+                accessRules = AccessRulesHelper.getAccessRulesUnion(accessRules, roleDataSession.getRole(matchingRoleId).getAccessRules());
+            }
         }
         return accessRules;
     }

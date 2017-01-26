@@ -43,6 +43,8 @@ import org.cesecore.util.ProfileID;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMemberSessionRemote {
 
+    //private static final Logger log = Logger.getLogger(RoleMemberSessionBean.class);
+
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
@@ -153,7 +155,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
 
             @Override
             public int getMatchType() {
-                return AccessMatchType.TYPE_NONE.getNumericValue();
+                return AccessMatchType.TYPE_EQUALCASE.getNumericValue();
             }
 
             @Override
@@ -161,7 +163,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
 
             @Override
             public AccessMatchType getMatchTypeAsType() {
-                return AccessMatchType.TYPE_NONE;
+                return AccessMatchType.TYPE_EQUALCASE;
             }
 
             @Override
