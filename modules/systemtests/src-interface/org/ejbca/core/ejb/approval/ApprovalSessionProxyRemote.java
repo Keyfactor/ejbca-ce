@@ -17,6 +17,7 @@ import java.util.List;
 
 import javax.ejb.Remote;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -52,4 +53,12 @@ public interface ApprovalSessionProxyRemote {
      */
     List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, boolean includeExpired, Date startDate, Date endDate, Date expiresBefore,
             int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString);
+    
+    /**
+     * Extends the validity of an approval request.
+     * @param authenticationToken Admin, only used for audit logging.
+     * @param approvalRequestId ID of approval request.
+     * @param extendForMillis Milliseconds to extend the request by.
+     */
+    void extendApprovalRequestNoAuth(AuthenticationToken authenticationToken, int approvalRequestId, long extendForMillis);
 }

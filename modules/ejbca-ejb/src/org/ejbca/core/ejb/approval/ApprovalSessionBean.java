@@ -824,7 +824,10 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             throw new IllegalArgumentException("Time to extend for must be a positive non-zero number: " + extendForMillisParam);
         }
         
-        ApprovalData approvalData = findById(approvalDataId);
+        final ApprovalData approvalData = findById(approvalDataId);
+        if (approvalData == null) {
+            throw new IllegalStateException("Approval request with ID " + approvalDataId + " does not exist");
+        }
         
         // Check status
         final long status = approvalData.getStatus();
