@@ -15,18 +15,23 @@ package org.cesecore.roles.member;
 import java.io.Serializable;
 
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.roles.Role;
 
 /**
  * Value object for the RoleMemberData entity bean, so that we don't have to pass information like row protection remotely. 
  * 
  * @version $Id$
- *
  */
 public class RoleMember implements Serializable {
+    
+    public static int ROLE_MEMBER_ID_UNASSIGNED = 0;
+    public static int NO_ROLE = Role.ROLE_ID_UNASSIGNED;
+    public static int NO_ISSUER = 0;
 
     private static final long serialVersionUID = 1L;
     private int id;
     private AccessMatchValue accessMatchValue;
+    private int tokenIssuerId;
     private String tokenMatchValue;
     private Integer roleId; 
     private String memberBindingType;
@@ -37,19 +42,21 @@ public class RoleMember implements Serializable {
      * persisted yet. In that case, the primary key will be set by the CRUD bean. 
      * 
      * @param accessMatchValue the AccessMatchValue to match this object with, i.e CN, SN, etc. 
+     * @param tokenIssuerId the issuer identifier of this token or 0 if not relevant
      * @param tokenMatchValue the actual value with which to match
      * @param roleId roleId the ID of the role to which this member belongs. May be null.
      * @param memberBindingType the type of member binding used for this member. May be null.
      * @param memberBinding the member binding for this member. May be null.
      */
-    public RoleMember(int id, final AccessMatchValue accessMatchValue, final String tokenMatchValue, final int roleId, String memberBindingType, String memberBindingValue) {
+    public RoleMember(int id, final AccessMatchValue accessMatchValue, final int tokenIssuerId, final String tokenMatchValue, final int roleId,
+            final String memberBindingType, final String memberBindingValue) {
         this.setId(id);
         this.setAccessMatchValue(accessMatchValue);
+        this.setTokenIssuerId(tokenIssuerId);
         this.setTokenMatchValue(tokenMatchValue);
         this.setRoleId(roleId);
         this.setMemberBindingType(memberBindingType);
         this.setMemberBindingValue(memberBindingValue);
-     
     }
 
     public int getId() {
@@ -66,6 +73,14 @@ public class RoleMember implements Serializable {
 
     public void setAccessMatchValue(AccessMatchValue accessMatchValue) {
         this.accessMatchValue = accessMatchValue;
+    }
+
+    public int getTokenIssuerId() {
+        return tokenIssuerId;
+    }
+
+    public void setTokenIssuerId(final int tokenIssuerId) {
+        this.tokenIssuerId = tokenIssuerId;
     }
 
     public String getTokenMatchValue() {
@@ -99,6 +114,4 @@ public class RoleMember implements Serializable {
     public void setMemberBindingValue(String memberBindingValue) {
         this.memberBindingValue = memberBindingValue;
     }
-
-
 }

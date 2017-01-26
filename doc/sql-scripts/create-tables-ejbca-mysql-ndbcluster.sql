@@ -335,15 +335,16 @@ CREATE TABLE RoleData (
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
 CREATE TABLE RoleMemberData (
-	primaryKey INT(11)  NOT NULL,
-	tokenSubType INT(11)  NOT NULL,
-	tokenType VARCHAR(250) BINARY NOT NULL,
-	tokenMatchValue VARCHAR(250) BINARY NOT NULL,
-	roleId INT(11),
-	memberBindingType VARCHAR(250) BINARY,
-	memberBindingValue VARCHAR(250) BINARY,
-	rowProtection LONGTEXT,
-    rowVersion INT(11)  NOT NULL,
+    primaryKey INT(11) NOT NULL,
+    tokenType VARCHAR(250) BINARY NOT NULL,
+    tokenSubType INT(11) NOT NULL,
+    tokenIssuerId INT(11) NOT NULL,
+    tokenMatchValue VARCHAR(250) BINARY NOT NULL,
+    roleId INT(11) NOT NULL,
+    memberBindingType VARCHAR(250) BINARY,
+    memberBindingValue VARCHAR(250) BINARY,
+    rowProtection LONGTEXT,
+    rowVersion INT(11) NOT NULL,
     PRIMARY KEY (primaryKey)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 

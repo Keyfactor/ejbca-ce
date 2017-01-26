@@ -69,8 +69,6 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         return ProfileID.getNotUsedID(db);
     }
 
-
-
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public RoleMemberData find(final int primaryKey) {
@@ -126,12 +124,12 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         final Set<Integer> ret = new HashSet<>();
         final AccessMatchValue defaultAccessMatchValue = authenticationToken.getDefaultMatchValue();
         final String tokenType = defaultAccessMatchValue.getTokenType();
-        // TODO: This a naive implementation iterating over all RoleMemberDatas of this type ECA-5607
+        // TODO: This a naive implementation iterating over all RoleMemberDatas of this type. See ECA-5607 for suggested improvement.
         final TypedQuery<RoleMemberData> query = entityManager.createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType", RoleMemberData.class);
         query.setParameter("tokenType", tokenType);
         final List<RoleMemberData> roleMemberDatas = query.getResultList();
         for (final RoleMemberData roleMemberData : roleMemberDatas) {
-            if (roleMemberData.getRoleId()!=null) {
+            if (roleMemberData.getRoleId()!=RoleMember.NO_ROLE) {
                 if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData))) {
                     ret.add(roleMemberData.getRoleId());
                 }
@@ -151,8 +149,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             }
 
             @Override
-            public void setMatchWith(Integer matchWith) {
-            }
+            public void setMatchWith(Integer matchWith) { }
 
             @Override
             public int getMatchType() {
@@ -160,12 +157,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             }
 
             @Override
-            public void setMatchType(Integer matchType) {
-            }
-
-            @Override
-            public void setMatchTypeAsValue(AccessMatchType matchType) {
-            }
+            public void setMatchType(Integer matchType) { }
 
             @Override
             public AccessMatchType getMatchTypeAsType() {
@@ -173,23 +165,23 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             }
 
             @Override
+            public void setMatchTypeAsValue(AccessMatchType matchType) { }
+
+            @Override
             public String getMatchValue() {
                 return roleMemberData.getTokenMatchValue();
             }
 
             @Override
-            public void setMatchValue(String matchValue) {
-            }
+            public void setMatchValue(String matchValue) { }
 
             @Override
             public Integer getCaId() {
-                // TODO return roleMemberData.getTokenIssuerId(); ECA-5653
-                return null;
+                return roleMemberData.getTokenIssuerId();
             }
 
             @Override
-            public void setCaId(Integer caId) {
-            }
+            public void setCaId(Integer caId) { }
 
             @Override
             public String getTokenType() {
@@ -197,8 +189,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             }
 
             @Override
-            public void setTokenType(String tokenType) {
-            }
+            public void setTokenType(String tokenType) { }
         };
     }
 }

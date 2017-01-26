@@ -85,7 +85,7 @@ public class AuthorizationSessionBeanTest {
             final String commonName = roleName;
             final String subjectAndIssuerDn = "CN="+commonName;
             final int caId = subjectAndIssuerDn.hashCode();
-            roleMemberProxySession.createOrEdit(new RoleMember(0, X500PrincipalAccessMatchValue.WITH_COMMONNAME, commonName, role.getRoleId(), null, null));
+            roleMemberProxySession.createOrEdit(new RoleMember(0, X500PrincipalAccessMatchValue.WITH_COMMONNAME, caId, commonName, role.getRoleId(), null, null));
 
             final AuthenticationToken authenticationToken = createAuthenticationToken("CN="+commonName);
 

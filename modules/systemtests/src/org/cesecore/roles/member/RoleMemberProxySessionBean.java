@@ -34,7 +34,7 @@ public class RoleMemberProxySessionBean implements RoleMemberProxySessionRemote 
 
     @Override
     public int createOrEdit(RoleMember roleMember) {
-        return roleMemberSession.createOrEdit(new RoleMemberData(roleMember.getId(), roleMember.getAccessMatchValue(),
+        return roleMemberSession.createOrEdit(new RoleMemberData(roleMember.getId(), roleMember.getAccessMatchValue(), roleMember.getTokenIssuerId(),
                 roleMember.getTokenMatchValue(), roleMember.getRoleId(), roleMember.getMemberBindingType(), roleMember.getMemberBindingValue()));
     }
 

@@ -203,7 +203,7 @@ public class DatabaseSchemaTest {
     public void testRoleMemberData() {
         LOG.trace(">testAdminEntityData");
         logMemStats();
-        RoleMemberData entity = new RoleMemberData(BOGUS_INT, X500PrincipalAccessMatchValue.WITH_COUNTRY, "SE", BOGUS_INT, null, null);
+        RoleMemberData entity = new RoleMemberData(BOGUS_INT, X500PrincipalAccessMatchValue.WITH_COUNTRY, BOGUS_INT, "SE", BOGUS_INT, null, null);
         entity.setRowProtection(CLOB_10KiB);
         entity.setRowVersion(0);
         storeAndRemoveEntity(entity);
