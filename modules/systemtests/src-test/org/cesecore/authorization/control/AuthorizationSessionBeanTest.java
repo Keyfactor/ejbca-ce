@@ -124,15 +124,7 @@ public class AuthorizationSessionBeanTest {
         final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("cleanUpRole"));
         final Role role = roleSession.getRole(authenticationToken, nameSpace, roleName);
         if (role!=null) {
-            final List<RoleMember> roleMembers = roleMemberProxySession.findRoleMemberByRoleId(role.getRoleId());
-            for (final RoleMember roleMember : roleMembers) {
-                roleMemberProxySession.remove(roleMember.getId());
-            }
-            try {
-                roleSession.deleteRole(authenticationToken, role.getRoleId());
-            } catch (RoleNotFoundException e) {
-                throw new IllegalStateException(e);
-            }
+            roleSession.deleteRoleIdempotent(authenticationToken, role.getRoleId(), true);
         }
     }
 
