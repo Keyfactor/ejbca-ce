@@ -450,6 +450,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public void extendApprovalRequest(final AuthenticationToken authenticationToken, final int id, final long extendForMillis) throws AuthorizationDeniedException {
         final ApprovalDataVO advo = getApprovalDataNoAuth(id);
+        if (advo == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Approval request with ID " + id + " does not exist on this node.");
+            }
+            return;
+        }
         
         if (getApprovalRequest(authenticationToken, advo) == null) { // Check read authorization (includes authorization to referenced CAs) 
             if (log.isDebugEnabled()) {
