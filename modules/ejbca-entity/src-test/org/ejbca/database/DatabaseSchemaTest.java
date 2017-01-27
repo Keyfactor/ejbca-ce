@@ -84,6 +84,8 @@ public class DatabaseSchemaTest {
 
     private static String VARCHAR_80B;
     private static String VARCHAR_250B;
+    private static String VARCHAR_400B;
+    private static String VARCHAR_2000B;
     private static String CLOB_10KiB;
     private static String CLOB_100KiB;
     private static String CLOB_1MiB;
@@ -132,6 +134,8 @@ public class DatabaseSchemaTest {
         LOG.debug("Allocating memory..");
         VARCHAR_80B = getClob(80);
         VARCHAR_250B = getClob(250);
+        VARCHAR_400B = getClob(400);
+        VARCHAR_2000B = getClob(2000);
         CLOB_10KiB = getClob(10 * 1024);
         CLOB_100KiB = getClob(100 * 1024);
         CLOB_1MiB = getClob(1024 * 1024);
@@ -203,7 +207,7 @@ public class DatabaseSchemaTest {
     public void testRoleMemberData() {
         LOG.trace(">testAdminEntityData");
         logMemStats();
-        RoleMemberData entity = new RoleMemberData(BOGUS_INT, X500PrincipalAccessMatchValue.WITH_COUNTRY, BOGUS_INT, "SE", BOGUS_INT, null, null);
+        RoleMemberData entity = new RoleMemberData(BOGUS_INT, X500PrincipalAccessMatchValue.WITH_COUNTRY, BOGUS_INT, VARCHAR_2000B, BOGUS_INT, null, null);
         entity.setRowProtection(CLOB_10KiB);
         entity.setRowVersion(0);
         storeAndRemoveEntity(entity);
@@ -321,8 +325,8 @@ public class DatabaseSchemaTest {
         entity.setRowVersion(0);
         entity.setSerialNumber(VARCHAR_250B);
         entity.setStatus(0);
-        entity.setSubjectDN(VARCHAR_250B);
-        //setPrivateField(entity, "subjectDN", VARCHAR_250B);
+        entity.setSubjectDN(VARCHAR_400B);
+        entity.setSubjectAltName(VARCHAR_2000B);
         entity.setSubjectKeyId(VARCHAR_250B);
         entity.setTag(VARCHAR_250B);
         entity.setType(0);
@@ -521,8 +525,8 @@ public class DatabaseSchemaTest {
         entity.setRowProtection(CLOB_10KiB);
         entity.setRowVersion(0);
         entity.setStatus(0);
-        entity.setSubjectAltName(VARCHAR_250B);
-        entity.setSubjectDN(VARCHAR_250B);
+        entity.setSubjectAltName(VARCHAR_2000B);
+        entity.setSubjectDN(VARCHAR_400B);
         entity.setSubjectEmail(VARCHAR_250B);
         entity.setTimeCreated(0L);
         entity.setTimeModified(0L);
