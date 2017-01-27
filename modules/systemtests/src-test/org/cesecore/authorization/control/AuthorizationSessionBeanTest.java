@@ -105,7 +105,7 @@ public class AuthorizationSessionBeanTest {
             assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/accept/accept"));
             assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/accept/decline"));
             assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/accept/notused"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/accept/unexistent"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/accept/unexistent"));
             assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/decline/accept"));
             assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/decline/decline"));
             assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/decline/notused"));
