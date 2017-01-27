@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -26,6 +27,7 @@ import javax.persistence.TypedQuery;
 
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
@@ -45,6 +47,9 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
 
     //private static final Logger log = Logger.getLogger(RoleMemberSessionBean.class);
 
+    @EJB
+    private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
+
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
@@ -56,6 +61,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         } else {
             entityManager.merge(roleMember);
         }
+        accessTreeUpdateSession.signalForAccessTreeUpdate();
         return roleMember.getPrimaryKey();
 
     }
@@ -114,6 +120,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         RoleMemberData roleMember = find(primaryKey);
         if (roleMember != null) {
             entityManager.remove(roleMember);
+            accessTreeUpdateSession.signalForAccessTreeUpdate();
             return true;
         } else {
             return false;
@@ -127,6 +134,8 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         final AccessMatchValue defaultAccessMatchValue = authenticationToken.getDefaultMatchValue();
         final String tokenType = defaultAccessMatchValue.getTokenType();
         // TODO: This a naive implementation iterating over all RoleMemberDatas of this type. See ECA-5607 for suggested improvement.
+        // For example keep a list of distinct tokenSubTypes present in the table and asking the authToken for all permutations might be another approach
+        // With the naive approach below we would be better off to background reload all rows into memory and search there
         final TypedQuery<RoleMemberData> query = entityManager.createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType", RoleMemberData.class);
         query.setParameter("tokenType", tokenType);
         final List<RoleMemberData> roleMemberDatas = query.getResultList();

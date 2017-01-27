@@ -23,6 +23,7 @@ import javax.ejb.Remote;
  * @version $Id$
  *
  */
+@Deprecated
 @Remote
 public interface AccessControlSessionRemote extends AccessControlSession {
 

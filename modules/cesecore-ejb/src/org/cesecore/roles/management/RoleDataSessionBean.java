@@ -15,6 +15,7 @@ package org.cesecore.roles.management;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -25,6 +26,7 @@ import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleData;
@@ -41,6 +43,9 @@ import org.cesecore.util.QueryResultWrapper;
 public class RoleDataSessionBean implements RoleDataSessionLocal {
 
     private static final Logger log = Logger.getLogger(RoleDataSessionBean.class);
+
+    @EJB
+    private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -127,6 +132,7 @@ public class RoleDataSessionBean implements RoleDataSessionLocal {
             entityManager.merge(new RoleData(role));
         }
         RoleCache.INSTANCE.updateWith(role.getRoleId(), role.hashCode(), Role.getRoleNameFullAsCacheName(role.getNameSpace(), role.getRoleName()), role);
+        accessTreeUpdateSession.signalForAccessTreeUpdate();
         return role.getRoleId();
     }
 
@@ -146,7 +152,10 @@ public class RoleDataSessionBean implements RoleDataSessionLocal {
         // Use an DELETE query instead of entityManager.remove to tolerate concurrent deletion better
         final Query query = entityManager.createQuery("DELETE FROM RoleData a WHERE a.id=:id");
         query.setParameter("id", roleId);
-        return query.executeUpdate()==1;
-
+        boolean ret = query.executeUpdate()==1;
+        if (ret) {
+            accessTreeUpdateSession.signalForAccessTreeUpdate();
+        }
+        return ret;
     }    
 }

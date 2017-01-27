@@ -25,12 +25,10 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -46,9 +44,7 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
-import org.cesecore.time.TrustedTime;
 import org.cesecore.time.TrustedTimeWatcherSessionLocal;
-import org.cesecore.time.providers.TrustedTimeProviderException;
 
 /**
  * Implementation of the RoleSession interfaces.
@@ -59,11 +55,10 @@ import org.cesecore.time.providers.TrustedTimeProviderException;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
 
-    private static final Logger log = Logger.getLogger(RoleSessionBean.class);
+    //private static final Logger log = Logger.getLogger(RoleSessionBean.class);
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
-    // We have to depend on the internal security events logger here, since the remote depends on us
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
     @EJB
@@ -286,16 +281,6 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             }
         } catch (AuthenticationFailedException e) {
             throw new AuthorizationDeniedException("Current AuthenticationToken is not authorized to the namespace '"+role.getNameSpace()+"'.");
-        }
-    }
-
-    /** @return the trusted time requires for audit logging */
-    private TrustedTime getTrustedTime() throws AuditRecordStorageException {
-        try {
-            return trustedTimeWatcherSession.getTrustedTime(false);
-        } catch (TrustedTimeProviderException e) {
-            log.error(e.getMessage(), e);
-            throw new AuditRecordStorageException(e.getMessage(), e);
         }
     }
 }
