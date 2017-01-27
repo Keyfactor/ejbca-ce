@@ -140,7 +140,7 @@
             <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenSubType"><column name="tokenSubType" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenIssuerId"><column name="tokenIssuerId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="tokenMatchValue"><column name="tokenMatchValue" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="tokenMatchValue"><column name="tokenMatchValue" column-definition="VARCHAR2(2000 byte)" nullable="false"/></basic>
             <basic fetch="EAGER" name="roleId"><column name="roleId" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="memberBindingType"><column name="memberBindingType" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="memberBindingValue"><column name="memberBindingValue" column-definition="VARCHAR2(255 byte)"/></basic>

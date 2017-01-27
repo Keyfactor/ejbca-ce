@@ -143,7 +143,7 @@
             <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenSubType"><column name="tokenSubType" column-definition="INT(11)" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenIssuerId"><column name="tokenIssuerId" column-definition="INT(11)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="tokenMatchValue"><column name="tokenMatchValue" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic fetch="EAGER" name="tokenMatchValue"><column name="tokenMatchValue" column-definition="VARCHAR(2000) BINARY" nullable="false"/></basic>
             <basic fetch="EAGER" name="roleId"><column name="roleId" column-definition="INT(11)" nullable="false"/></basic>
             <basic fetch="EAGER" name="memberBindingType"><column name="memberBindingType" column-definition="VARCHAR(250) BINARY"/></basic>
             <basic fetch="EAGER" name="memberBindingValue"><column name="memberBindingValue" column-definition="VARCHAR(250) BINARY"/></basic>
