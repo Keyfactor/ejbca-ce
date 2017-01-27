@@ -336,7 +336,7 @@ CREATE TABLE RoleMemberData (
     tokenType VARCHAR2(255 byte) NOT NULL,
     tokenSubType NUMBER(10) NOT NULL,
     tokenIssuerId NUMBER(10) NOT NULL,
-    tokenMatchValue VARCHAR2(255 byte) NOT NULL,
+    tokenMatchValue VARCHAR2(2000 byte) NOT NULL,
     roleId NUMBER(10) NOT NULL,
     memberBindingType VARCHAR2(255 byte),
     memberBindingValue VARCHAR2(255 byte),
