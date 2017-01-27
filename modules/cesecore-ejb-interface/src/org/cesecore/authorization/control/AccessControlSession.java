@@ -24,6 +24,7 @@ import org.cesecore.authorization.access.AccessSet;
  * @version $Id$
  * 
  */
+@Deprecated
 public interface AccessControlSession {
 
     /**

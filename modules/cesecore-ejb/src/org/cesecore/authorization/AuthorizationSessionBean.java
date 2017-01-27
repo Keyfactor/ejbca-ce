@@ -33,6 +33,7 @@ import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.NestableAuthenticationToken;
+import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -54,6 +55,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     private static final Logger log = Logger.getLogger(AuthorizationSessionBean.class);
 
+    @EJB
+    private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
     @EJB
     private RoleDataSessionLocal roleDataSession;
     @EJB
@@ -145,7 +148,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
             if (log.isDebugEnabled()) {
                 debugLogAccessRules(authenticationToken, accessRules);
             }
-            AuthorizationCache.INSTANCE.put(authenticationToken, accessRules);
+            AuthorizationCache.INSTANCE.put(authenticationToken, accessRules, accessTreeUpdateSession.getAccessTreeUpdateNumber());
         }
         return accessRules;
     }

@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -64,6 +65,8 @@ public class ClearCacheServlet extends HttpServlet {
 	private AccessControlSessionLocal accessControlSession;
 	@EJB
 	private ApprovalProfileSessionLocal approvalprofilesession;
+	@EJB
+	private AuthorizationSessionLocal authorizationSession;
 	@EJB
 	private CaSessionLocal caSession;
 	@EJB
@@ -137,6 +140,7 @@ public class ClearCacheServlet extends HttpServlet {
                     log.debug("Approval Profile cache cleared");
                 }
         		
+                authorizationSession.forceCacheExpire();
         		accessControlSession.forceCacheExpire();
         		if(log.isDebugEnabled()) {
         			log.debug("Authorization Rule cache cleared");
