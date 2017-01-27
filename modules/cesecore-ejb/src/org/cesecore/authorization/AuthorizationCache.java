@@ -22,8 +22,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  * Extremely basic implementation that assumes that AuthenticationToken generate non-colliding hashCodes.
  * 
  * TODO: Require AuthenticationToken to generate globally unique identifiers (that takes nesting into account) and use this as key
- * TODO: Base this on org.cesecore.util.ConcurrentCache and expire older entries
+ * TODO: Potentially case this on org.cesecore.util.ConcurrentCache and expire older entries
  * TODO: Expire old tokens to prevent every growing structure consuming memory
+ * TODO: Provide global version used in each entry and call for rebuilding non-expired entries with too old version
+ * TODO: Rely on background reload when cache expires via Timeout in SSB
  * 
  * @version $Id$
  */
@@ -40,7 +42,7 @@ public enum AuthorizationCache {
         return map.get(authenticationToken);
     }
 
-    public void put(final AuthenticationToken authenticationToken, final HashMap<String, Boolean> accessRules) {
+    public void put(final AuthenticationToken authenticationToken, final HashMap<String, Boolean> accessRules, final int accessRulesVersion) {
         map.put(authenticationToken, accessRules);
     }
 

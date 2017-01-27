@@ -47,6 +47,7 @@ import org.cesecore.time.providers.TrustedTimeProviderException;
  * @version $Id$
  * 
  */
+@Deprecated
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AccessControlSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AccessControlSessionBean implements AccessControlSessionLocal, AccessControlSessionRemote {

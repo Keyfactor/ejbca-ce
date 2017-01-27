@@ -40,4 +40,10 @@ public interface AuthorizationSession {
      * @return true if user is authorized, false if not.
      */
     boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String...resources);
+
+    /**
+     * Helper method to clear the local access control rule cache. Normally the cache expires after configured time, but when modifying access rules
+     * on the local node we can force cache clearing so we don't have to wait. Other nodes in a cluster will still wait until expire though.
+     */
+    void forceCacheExpire();
 }

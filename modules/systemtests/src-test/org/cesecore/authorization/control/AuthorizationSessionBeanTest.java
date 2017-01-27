@@ -20,11 +20,9 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -49,7 +47,7 @@ import org.junit.Test;
 ' */
 public class AuthorizationSessionBeanTest {
 
-    private static final Logger log = Logger.getLogger(AccessControlSessionBeanTest.class);
+    //private static final Logger log = Logger.getLogger(AuthorizationSessionBeanTest.class);
 
     private AuthorizationSessionRemote authorizationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSessionRemote.class);
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);

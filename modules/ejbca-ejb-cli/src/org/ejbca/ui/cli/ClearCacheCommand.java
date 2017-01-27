@@ -14,6 +14,7 @@
 package org.ejbca.ui.cli;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationSessionRemote;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -132,6 +133,7 @@ public class ClearCacheCommand extends EjbcaCommandBase {
         if (authorization) {
             log.info("Flushing Authorization cache.");
             // Flush access control
+            EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSessionRemote.class).forceCacheExpire();
             EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class).forceCacheExpire();
             EjbRemoteHelper.INSTANCE.getRemoteSession(ComplexAccessControlSessionRemote.class).forceRemoteCacheExpire();
         }

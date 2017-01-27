@@ -22,6 +22,7 @@ import javax.ejb.Local;
  * @version $Id$
  * 
  */
+@Deprecated
 @Local
 public interface AccessControlSessionLocal extends AccessControlSession {
    
