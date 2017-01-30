@@ -87,9 +87,11 @@ public class FindEndEntityCommand extends BaseRaCommand {
                 getLogger().info("Hard Token Issuer ID: " + data.getHardTokenIssuerId());
                 getLogger().info("Created: " + data.getTimeCreated());
                 getLogger().info("Modified: " + data.getTimeModified());
-                byte[] csr = data.getExtendedinformation().getCertificateRequest();
-                if ((csr != null) && (csr.length > 0)) {
-                    getLogger().info("CSR:\n"+new String(CertTools.getPEMFromCertificateRequest(csr)));
+                if (data.getExtendedinformation() != null) {
+                    byte[] csr = data.getExtendedinformation().getCertificateRequest();
+                    if ((csr != null) && (csr.length > 0)) {
+                        getLogger().info("CSR:\n"+new String(CertTools.getPEMFromCertificateRequest(csr)));
+                    }                    
                 }
                 return CommandResult.SUCCESS;
             } else {
