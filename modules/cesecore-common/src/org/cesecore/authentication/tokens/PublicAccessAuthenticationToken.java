@@ -151,4 +151,8 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
         return credential.isConfidentialTransport()==other.credential.isConfidentialTransport();
     }
 
+    @Override
+    protected String generateUniqueId() {
+        return generateUniqueId(super.isCreatedInThisJvm(), principal.getName(), credential.isConfidentialTransport()) + ";" + super.generateUniqueId();
+    }
 }

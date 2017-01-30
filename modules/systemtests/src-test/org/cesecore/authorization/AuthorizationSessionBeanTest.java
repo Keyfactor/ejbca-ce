@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.authorization.control;
+package org.cesecore.authorization;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -28,6 +28,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionRemote;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;

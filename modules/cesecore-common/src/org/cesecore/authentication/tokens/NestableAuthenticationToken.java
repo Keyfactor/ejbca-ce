@@ -85,4 +85,9 @@ public abstract class NestableAuthenticationToken extends LocalJvmOnlyAuthentica
         }
         return "";
     }
+
+    @Override
+    protected String generateUniqueId() {
+        return nestedAuthenticationToken==null ? null : nestedAuthenticationToken.getTokenType() + ";" + nestedAuthenticationToken.getUniqueId();
+    }
 }

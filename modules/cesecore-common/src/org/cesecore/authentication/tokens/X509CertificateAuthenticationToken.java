@@ -13,6 +13,7 @@
 package org.cesecore.authentication.tokens;
 
 import java.math.BigInteger;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -308,6 +309,17 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
     @Override
     public AccessMatchValue getDefaultMatchValue() {        
         return X500PrincipalAccessMatchValue.NONE;
+    }
+
+    @Override
+    protected String generateUniqueId() {
+        byte[] encodedCertificate = null;
+        try {
+            encodedCertificate = certificate.getEncoded();
+        } catch (CertificateEncodingException e) {
+            throw new IllegalStateException(e);
+        }
+        return generateUniqueId(super.isCreatedInThisJvm(), encodedCertificate) + ";" + super.generateUniqueId();
     }
 }
 

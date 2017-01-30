@@ -18,8 +18,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
@@ -33,8 +40,10 @@ import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.NestableAuthenticationToken;
+import org.cesecore.authorization.AuthorizationCache.AuthorizationCacheCallback;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.AccessRulesHelper;
@@ -65,6 +74,34 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     private InternalSecurityEventsLoggerSessionLocal internalSecurityEventsLoggerSession;
     @EJB
     private TrustedTimeWatcherSessionLocal trustedTimeWatcherSession;
+
+    @Resource
+    private SessionContext sessionContext;
+    private TimerService timerService; // When the sessionContext is injected, the timerService should be looked up.
+    private AuthorizationSessionLocal authorizationSession;
+
+    @PostConstruct
+    public void postConstruct() {
+        timerService = sessionContext.getTimerService();
+        authorizationSession = sessionContext.getBusinessObject(AuthorizationSessionLocal.class);
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void scheduleBackgroundRefresh() {
+        for (final Timer timer : timerService.getTimers()) {
+            timer.cancel();
+        }
+        timerService.createSingleActionTimer(0, new TimerConfig("AuthorizationSessionTimer", false));
+    }
+
+    @Override
+    @Timeout
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void timeOut(final Timer timer) {
+        authorizationSession.refreshAuthorizationCache();
+        timerService.createSingleActionTimer(CesecoreConfiguration.getCacheAuthorizationTime(), new TimerConfig("AuthorizationSessionTimer", false));
+    }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -124,16 +161,31 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         if (log.isTraceEnabled()) {
             log.trace("forceCacheExpire");
         }
-        AuthorizationCache.INSTANCE.flush();
+        AuthorizationCache.INSTANCE.clear(accessTreeUpdateSession.getAccessTreeUpdateNumber());
         // Clear the local RA Access Set Cache
         RemoteAccessSetCacheHolder.forceEmptyCache();
+        authorizationSession.scheduleBackgroundRefresh();
     }
-
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void refreshAuthorizationCache() {
+        if (log.isTraceEnabled()) {
+            log.trace("updateCache");
+        }
+        AuthorizationCache.INSTANCE.refresh(authorizationCacheCallback);
+    }
+    
     /** @return the access rules available to the AuthenticationToken and its nested tokens, taking each such tokens role membership into account */
     private HashMap<String, Boolean> getAccessAvailableToAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        HashMap<String, Boolean> accessRules = AuthorizationCache.INSTANCE.get(authenticationToken);
-        if (accessRules==null) {
-            accessRules = getAccessAvailableToSingleToken(authenticationToken);
+        return AuthorizationCache.INSTANCE.get(authenticationToken, authorizationCacheCallback);
+    }
+    
+    /** Callback for loading cache misses */
+    private AuthorizationCacheCallback authorizationCacheCallback = new AuthorizationCacheCallback() {
+        @Override
+        public HashMap<String, Boolean> loadAccessRules(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+            HashMap<String, Boolean> accessRules = getAccessAvailableToSingleToken(authenticationToken);
             if (authenticationToken!=null && authenticationToken instanceof NestableAuthenticationToken) {
                 final List<NestableAuthenticationToken> nestedAuthenticatonTokens = ((NestableAuthenticationToken)authenticationToken).getNestedAuthenticationTokens();
                 for (final NestableAuthenticationToken nestableAuthenticationToken : nestedAuthenticatonTokens) {
@@ -148,11 +200,21 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
             if (log.isDebugEnabled()) {
                 debugLogAccessRules(authenticationToken, accessRules);
             }
-            AuthorizationCache.INSTANCE.put(authenticationToken, accessRules, accessTreeUpdateSession.getAccessTreeUpdateNumber());
+            return accessRules;
         }
-        return accessRules;
-    }
-    
+
+        @Override
+        public int getUpdateNumber() {
+            return accessTreeUpdateSession.getAccessTreeUpdateNumber();
+        }
+
+        @Override
+        public long getKeepUnusedEntriesFor() {
+            // Setting this to the same as the background cache refresh interval means that any token that has not been used will be purged
+            return CesecoreConfiguration.getCacheAuthorizationTime();
+        }
+    };
+
     private void debugLogAccessRules(final AuthenticationToken authenticationToken, final HashMap<String, Boolean> accessRules) {
         final StringBuilder sb = new StringBuilder(authenticationToken.toString()).append(" has the following access rules:\n");
         for (final Entry<String,Boolean> entry : accessRules.entrySet()) {

@@ -13,6 +13,7 @@
 package org.cesecore.authorization;
 
 import javax.ejb.Local;
+import javax.ejb.Timer;
 
 /**
  * 
@@ -21,4 +22,12 @@ import javax.ejb.Local;
 @Local
 public interface AuthorizationSessionLocal extends AuthorizationSession {
 
+    /** Invoked when authorization cache should be checked for updates. */
+    void refreshAuthorizationCache();
+
+    /** Invoked by background cache refresh timeouts */
+    void timeOut(Timer timer);
+
+    /** Initialize background cache refresh timeouts */
+    void scheduleBackgroundRefresh();
 }

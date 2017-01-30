@@ -280,4 +280,8 @@ public class CliAuthenticationToken extends AuthenticationToken {
         }
     }
 
+    @Override
+    protected String generateUniqueId() {
+        return generateUniqueId(isVerified, userName);
+    }
 }
