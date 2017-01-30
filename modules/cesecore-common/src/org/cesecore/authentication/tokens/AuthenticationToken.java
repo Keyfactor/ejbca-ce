@@ -128,7 +128,7 @@ public abstract class AuthenticationToken implements Serializable {
         }
     }
     
-    /** @return a String that is guaranteed to be unique across all AuthenticationTokens. */
+    /** @return a String that is guaranteed to be unique across all AuthenticationTokens (and will be different if nested with different AuthenticationTokens). */
     public String getUniqueId() {
         if (uniqueId==null) {
             uniqueId = getTokenType() + ";" + generateUniqueId();
