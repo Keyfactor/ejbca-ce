@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.Collection;
 
+import org.apache.commons.io.FileUtils;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -67,7 +68,7 @@ public class CaExportImportProfilesCommandTest {
         
         File f = new File(PROFILES_DIR);
         if (f.exists()) {
-            f.delete();
+            FileUtils.deleteDirectory(f);
         }
         // Create temp directory
         f.mkdir();        
@@ -76,7 +77,9 @@ public class CaExportImportProfilesCommandTest {
     @After
     public void tearDown() throws Exception {
         File f = new File(PROFILES_DIR);
-        f.deleteOnExit();
+        if (f.exists()) {
+            FileUtils.deleteDirectory(f);
+        }
     }
 
     /**

@@ -288,6 +288,9 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         cprofile.loadData(decoder.readObject());
                                         // Make sure CAs in profile exist
                                         List<Integer> cas = cprofile.getAvailableCAs();
+                                        if (cas == null) {
+                                            cas = new ArrayList<Integer>();
+                                        }
                                         ArrayList<Integer> casToRemove = new ArrayList<Integer>();
                                         for (Integer currentCA : cas) {
                                             // If the CA is not ANYCA and the CA does not exist, remove it from the profile before import
