@@ -94,5 +94,9 @@ public class UsernameBasedAuthenticationToken extends AuthenticationToken{
         }
     }
 
+    @Override
+    protected String generateUniqueId() {
+        return generateUniqueId(username);
+    }
 }
 

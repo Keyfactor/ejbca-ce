@@ -120,4 +120,9 @@ public class TestAlwaysAllowLocalAuthenticationToken extends AuthenticationToken
             return numericValue == DEFAULT.numericValue;
         }
     }
+
+    @Override
+    protected String generateUniqueId() {
+        return generateUniqueId(getPrincipals().iterator().next().getName());
+    }
 }
