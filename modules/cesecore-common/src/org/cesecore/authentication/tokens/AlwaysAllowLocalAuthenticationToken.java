@@ -112,4 +112,9 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
             return numericValue == DEFAULT.numericValue;
         }
     }
+
+    @Override
+    protected String generateUniqueId() {
+        return generateUniqueId(super.isCreatedInThisJvm());
+    }
 }

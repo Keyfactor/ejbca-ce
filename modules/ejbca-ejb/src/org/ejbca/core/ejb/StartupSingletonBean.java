@@ -48,6 +48,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessMatchValue;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -94,6 +95,8 @@ public class StartupSingletonBean {
     private final Logger log = Logger.getLogger(StartupSingletonBean.class);
     private final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Application internal"));
     
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
@@ -176,6 +179,7 @@ public class StartupSingletonBean {
         log.trace(">init CryptoTokenFactory just to load those classes that are available");
         CryptoTokenFactory.instance();
         
+        authorizationSession.scheduleBackgroundRefresh();
         // Load CAs at startup to improve impression of speed the first time a CA is accessed, it takes a little time to load it.
         log.trace(">init loading CAs into cache");
         try {

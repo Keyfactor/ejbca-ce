@@ -13,9 +13,13 @@
 package org.cesecore.authentication.tokens;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.Set;
 
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
@@ -36,6 +40,7 @@ public abstract class AuthenticationToken implements Serializable {
 
     private final Set<? extends Principal> principals;
     private final Set<?> credentials;
+    private transient String uniqueId = null;
 
     public AuthenticationToken(Set<? extends Principal> principals, Set<?> credentials) {
         this.principals = principals;
@@ -106,4 +111,33 @@ public abstract class AuthenticationToken implements Serializable {
      * @return the enum implementing AccessMatchValue that matches the given numeric value from the database.
      */
     public abstract AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue);
+    
+    /** @return a String that is guaranteed to be unique across all AuthenticationTokens of this type. */
+    protected abstract String generateUniqueId();
+
+    /** @return a hex-encoded string of the hash over all the provided arguments */
+    protected String generateUniqueId(final Object...arguments) {
+        try {
+            final MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            for (final Object argument : arguments) {
+                messageDigest.update((String.valueOf(argument)+";").getBytes(StandardCharsets.UTF_8));
+            }
+            return new String(Hex.encode(messageDigest.digest()));
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+    
+    /** @return a String that is guaranteed to be unique across all AuthenticationTokens. */
+    public String getUniqueId() {
+        if (uniqueId==null) {
+            uniqueId = getTokenType() + ";" + generateUniqueId();
+        }
+        return uniqueId;
+    }
+
+    /** @return the type identifier of this AuthenticationToken */
+    public String getTokenType() {
+        return getDefaultMatchValue().getTokenType();
+    }
 }
