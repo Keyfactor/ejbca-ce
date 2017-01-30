@@ -1,3 +1,28 @@
+EJBCA 6.7.0
+-----------
+We are pleased to release EJBCA 6.7.0. EJBCA 6.7.0 adds official support for MS Autoenrollment, implemented as an 
+enrollment Proxy/Gateway which is delivered as a separate component. In addition to this there are many security fixes and enhancements 
+in this release, plugging a few holes and making it harder than ever to misuse EJBCA. All in all there are 76 issued fixed in this release.
+ 
+ The most notable changes are:
+ 
+ Features:
+- Native Windows Autoenrollment using a separate autoenrollment proxy component.
+- Support for CT logs that use RSA instead of ECC.
+- Improvements to how requests can be managed and searched for in the the new RA interface.
+- Ability to limit which OIDs that are acceptable in Extension Override gives better control over API managed RAs.
+
+Improvement:
+- Keeping order of CT logs configured and adding the possibility to re-order them.
+- Additional security hardening including updated library dependencies.
+- Not requiring @ in rfc822Name improves integration with Cisco ISE.
+- Allowing native CAs to be Vendor CAs for CMP testing. 
+- Add a field for default "CA issuer URI" in CA configuration makes some use cases more efficient.
+
+Bugfixes: 
+- Security fixes
+- Lots of minor usability issues fixed.
+
 EJBCA 6.6.3
 -----------
 
