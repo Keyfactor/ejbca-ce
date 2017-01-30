@@ -811,7 +811,6 @@
 		    	<exclude name="**/hs_err*" />
 		    	<exclude name="doc/xdocs/site/**" />
 		    	<exclude name="modules/statedump/**" />
-		    	<exclude name="modules/ejbca-msautoenroll-war/**" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
@@ -1165,10 +1164,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
 		
     <target name="renew.war" if="renew.war.enabled">
     	<ant dir="modules" target="renew-war" />
-    </target>   
-
-    <target name="msautoenroll.war">
-    	<ant dir="modules" target="msautoenroll-war" />
     </target>   
 
     <target name="scep.war">

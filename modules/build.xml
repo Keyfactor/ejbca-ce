@@ -97,7 +97,6 @@
 		<antcall target="externalra-guiclean"/>
 		<antcall target="externalra-scepclean"/>
 		<antcall target="peerconnectorclean"/>
-		<antcall target="msautoenroll-war-clean"/>
 		<delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
@@ -447,13 +446,6 @@
 
 	<target name="renew-war" depends="ejbca-common-web" description="Build the Renew WAR">
 		<ant antfile="${mod.renew-war.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
-	</target>
-
-	<target name="msautoenroll-war-clean" if="${mod.msautoenroll-war.exists}">
-		<ant antfile="${mod.ms-autoenroll.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-	</target>
-	<target name="msautoenroll-war" depends="ejbca-common-web" if="${mod.msautoenroll-war.exists}" description="Build the MS autoenroll WAR">
-		<ant antfile="${mod.ms-autoenroll.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
 	<target name="scep-war" depends="ejbca-common-web" description="Build the SCEP WAR">

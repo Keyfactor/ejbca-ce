@@ -88,8 +88,6 @@
     <property name="mod.crlstore.path" location="${mod.path}/crlstore" />
     <property name="mod.renew-war.path" location="${mod.path}/ejbca-renew-war" />
     <property name="mod.renew-war.war" location="${mod.dist.path}/renew.war" />
-    <property name="mod.ms-autoenroll.path" location="${mod.path}/ejbca-msautoenroll-war" />
-    <property name="mod.ms-autoenroll.war" location="${mod.dist.path}/msautoenroll.war" />
     <property name="mod.scep-war.path" location="${mod.path}/ejbca-scep-war" />
     <property name="mod.scep-war.war" location="${mod.dist.path}/scep.war" />
     <property name="mod.webdist-war.path" location="${mod.path}/ejbca-webdist-war" />
@@ -377,9 +375,5 @@
     <condition property="mod.statedump.exists">
         <available file="${mod.statedump.path}/build.xml" />
     </condition>
-
-	<condition property="mod.msautoenroll-war.exists">
-		<available file="${mod.ms-autoenroll.path}/build.xml" />
-	</condition>
 
 </project>

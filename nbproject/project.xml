@@ -201,12 +201,6 @@ auxiliary.show.customizer.message=<message>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
-                    <label>modules/ejbca-msautoenroll-war/src</label>
-                    <type>java</type>
-                    <location>modules/ejbca-msautoenroll-war/src</location>
-                    <encoding>UTF-8</encoding>
-                </source-folder>
-                <source-folder>
                     <label>modules/ejbca-renew-war/src</label>
                     <type>java</type>
                     <location>modules/ejbca-renew-war/src</location>
@@ -822,10 +816,6 @@ auxiliary.show.customizer.message=<message>
                         <location>modules/ejbca-entity/src-cli</location>
                     </source-folder>
                     <source-folder style="packages">
-                        <label>modules/ejbca-msautoenroll-war/src</label>
-                        <location>modules/ejbca-msautoenroll-war/src</location>
-                    </source-folder>
-                    <source-folder style="packages">
                         <label>modules/ejbca-renew-war/src</label>
                         <location>modules/ejbca-renew-war/src</location>
                     </source-folder>
@@ -1075,7 +1065,6 @@ auxiliary.show.customizer.message=<message>
                 <package-root>modules/ejbca-ejb/src</package-root>
                 <package-root>modules/ejbca-entity/src</package-root>
                 <package-root>modules/ejbca-entity/src-cli</package-root>
-                <package-root>modules/ejbca-msautoenroll-war/src</package-root>
                 <package-root>modules/ejbca-renew-war/src</package-root>
                 <package-root>modules/ejbca-scep-war/src</package-root>
                 <package-root>modules/ejbca-webdist-war/src</package-root>
