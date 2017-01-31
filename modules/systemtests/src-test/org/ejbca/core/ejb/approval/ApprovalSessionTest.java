@@ -700,6 +700,10 @@ public class ApprovalSessionTest extends CaTestCase {
             assertEquals(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, result.getStatus()); // should not change at all during the test, just a safety check
             
         } finally {
+            Collection<ApprovalDataVO> all = approvalSessionRemote.findApprovalDataVO(admin1, removeApprovalId);
+            for (ApprovalDataVO next : all) {
+                approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+            }
             approvalProfile.setRequestExpirationPeriod(originalValidity);
             approvalProfile.setMaxExtensionTime(0);
             approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
@@ -721,14 +725,14 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
 
             ApprovalDataVO result = approvalSessionRemote.findNonExpiredApprovalRequest(admin1, nonExecutableRequest.generateApprovalId());
-            assertNotNull(result);
+            assertNotNull("Approval should not be found, because it should have expired", result);
             assertEquals(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, result.getStatus());
 
-            Collection<ApprovalDataVO> all = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+        } finally {
+            Collection<ApprovalDataVO> all = approvalSessionRemote.findApprovalDataVO(admin1, removeApprovalId);
             for (ApprovalDataVO next : all) {
                 approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
             }
-        } finally {
             approvalProfile.setRequestExpirationPeriod(originalValidity);
             approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         }
