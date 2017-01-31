@@ -72,7 +72,7 @@ public enum AuthorizationCache {
         latestUpdateNumber.set(0);
     }
 
-    /** Re-build the authorization cache for all entries that */
+    /** Re-build the authorization cache for all entries that been seen recently (as determined by authorizationCacheCallback.getKeepUnusedEntriesFor()). */
     public void refresh(final AuthorizationCacheCallback authorizationCacheCallback) {
         setUpdateNumberIfLower(authorizationCacheCallback.getUpdateNumber());
         final long purgeUnusedAuthorizationAfter = authorizationCacheCallback.getKeepUnusedEntriesFor();
