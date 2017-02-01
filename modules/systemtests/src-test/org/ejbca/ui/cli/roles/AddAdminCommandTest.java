@@ -87,13 +87,25 @@ public class AddAdminCommandTest {
     }
 
     @Test
-    public void testAddAdminCommand() {
-        final String matchValue = TESTCLASS_NAME;
+    public void testAddAdminCommandLegacy() {
+        final String matchValue = TESTCLASS_NAME + " Legacy";
         String[] args = new String[] { TESTCLASS_NAME, x509ca.getName(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.toString(),
                 AccessMatchType.TYPE_EQUALCASEINS.toString(), matchValue };
         command.execute(args);
         AccessUserAspect result = accessUserAspectManagerTestSession.find(AccessUserAspectData.generatePrimaryKey(TESTCLASS_NAME, x509ca.getCAId(),
-                X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, matchValue));
+                X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, matchValue));
+        assertNotNull("Admin was not added,", result);
+
+    }
+
+    @Test
+    public void testAddAdminCommand() {
+        final String matchValue = TESTCLASS_NAME;
+        String[] args = new String[] { TESTCLASS_NAME, "--caname", x509ca.getName(), "--with", X500PrincipalAccessMatchValue.WITH_COMMONNAME.toString(),
+                "--value", matchValue };
+        command.execute(args);
+        AccessUserAspect result = accessUserAspectManagerTestSession.find(AccessUserAspectData.generatePrimaryKey(TESTCLASS_NAME, x509ca.getCAId(),
+                X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, matchValue));
         assertNotNull("Admin was not added,", result);
 
     }
