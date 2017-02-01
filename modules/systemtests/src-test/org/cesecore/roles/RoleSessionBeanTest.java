@@ -15,6 +15,7 @@ package org.cesecore.roles;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -40,7 +41,7 @@ public class RoleSessionBeanTest {
     private void cleanUpRole(final String nameSpace, final String roleName) throws AuthorizationDeniedException {
         final Role cleanUpRole = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
         if (cleanUpRole!=null) {
-            roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, cleanUpRole.getRoleId(), false);
+            roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, cleanUpRole.getRoleId());
         }
     }
     
@@ -71,11 +72,7 @@ public class RoleSessionBeanTest {
         assertEquals(fetchedRole.getRoleName(), updatedRole.getRoleName());
         assertEquals(fetchedRole.getAccessRules().size(), updatedRole.getAccessRules().size());
         // Delete
-        try {
-            roleSession.deleteRole(alwaysAllowAuthenticationToken, createdRole.getRoleId(), false);
-        } catch (RoleNotFoundException e) {
-            fail("Unable to delete the role created by this test.");
-        }
+        assertTrue("Unable to delete the role created by this test.", roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, createdRole.getRoleId()));
     }
 
     @Test

@@ -547,7 +547,7 @@ public class UpgradeSessionBeanTest {
             } catch (RoleNotFoundException e) {
                 // NOPMD Ignore
             }
-            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId, true);
+            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId);
         }
     }
 }
