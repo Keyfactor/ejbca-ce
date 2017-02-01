@@ -141,7 +141,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         final List<RoleMemberData> roleMemberDatas = query.getResultList();
         for (final RoleMemberData roleMemberData : roleMemberDatas) {
             if (roleMemberData.getRoleId()!=RoleMember.NO_ROLE) {
-                if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData))) {
+                if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData.asValueObject()))) {
                     ret.add(roleMemberData.getRoleId());
                 }
             }
@@ -150,13 +150,13 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
     }
     
     // TODO: Remove this once there is a better way to match tokens
-    private AccessUserAspect convertToAccessUserAspect(final RoleMemberData roleMemberData) {
+    private AccessUserAspect convertToAccessUserAspect(final RoleMember roleMember) {
         return new AccessUserAspect() {
             private static final long serialVersionUID = 1L;
 
             @Override
             public int getMatchWith() {
-                return roleMemberData.getTokenSubType();
+                return roleMember.getTokenMatchKey();
             }
 
             @Override
@@ -164,7 +164,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
 
             @Override
             public int getMatchType() {
-                return AccessMatchType.TYPE_EQUALCASE.getNumericValue();
+                return roleMember.getTokenMatchOperator();
             }
 
             @Override
@@ -172,7 +172,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
 
             @Override
             public AccessMatchType getMatchTypeAsType() {
-                return AccessMatchType.TYPE_EQUALCASE;
+                return AccessMatchType.matchFromDatabase(roleMember.getTokenMatchOperator());
             }
 
             @Override
@@ -180,7 +180,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
 
             @Override
             public String getMatchValue() {
-                return roleMemberData.getTokenMatchValue();
+                return roleMember.getTokenMatchValue();
             }
 
             @Override
@@ -188,7 +188,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
 
             @Override
             public Integer getCaId() {
-                return roleMemberData.getTokenIssuerId();
+                return roleMember.getTokenIssuerId();
             }
 
             @Override
@@ -196,7 +196,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
 
             @Override
             public String getTokenType() {
-                return roleMemberData.getTokenType();
+                return roleMember.getTokenType();
             }
 
             @Override
