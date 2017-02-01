@@ -62,7 +62,9 @@ import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleExistsException;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -112,6 +114,7 @@ import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
@@ -1559,11 +1562,47 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // Each AccessUserAspectData belongs to one and only one role, so retrieving them this way may be considered safe. 
             for (final AccessUserAspectData accessUserAspect : accessUsers.values()) {
                 final String tokenType = accessUserAspect.getTokenType();
-                final int tokenIssuerId = accessUserAspect.getCaId()==null ? RoleMember.NO_ISSUER : accessUserAspect.getCaId();
+                // Only the X509CertificateAuthenticationToken actually uses the CA Id, so leave it unset for the rest
+                final int tokenIssuerId;
+                if (X509CertificateAuthenticationToken.TOKEN_TYPE.equals(tokenType) && accessUserAspect.getCaId()!=null) {
+                    tokenIssuerId = accessUserAspect.getCaId().intValue();
+                } else {
+                    tokenIssuerId = RoleMember.NO_ISSUER;
+                }
                 final int tokenMatchKey = accessUserAspect.getMatchWith();
-                final int tokenMatchOperator = accessUserAspect.getMatchType();
+                int tokenMatchOperator = accessUserAspect.getMatchType();
                 final String tokenMatchValue = accessUserAspect.getMatchValue();
-                
+                // Straighten out comparison operators that don't make sense, since previous versions of EJBCA might have allowed such configuration
+                if (X509CertificateAuthenticationToken.TOKEN_TYPE.equals(tokenType)) {
+                    if (tokenMatchKey==X500PrincipalAccessMatchValue.NONE.getNumericValue()) {
+                        // This will never match anything, drop it
+                        log.info("Admin in role '" + roleName + "' of type " + tokenType + " with match key="+X500PrincipalAccessMatchValue.NONE.name() +
+                                " operator=" + AccessMatchType.TYPE_NONE.name() + " and value='" + tokenMatchValue +
+                                "' will be dropped since it will never grant any access.");
+                        continue;
+                    }
+                    if (tokenMatchOperator == AccessMatchType.TYPE_NONE.getNumericValue()) {
+                        // This will never match anything, drop it
+                        log.info("Admin in role '" + roleName + "' of type " + tokenType + " with match key="+tokenMatchKey+" operator=" +
+                                AccessMatchType.TYPE_NONE.name() + " and value='" + tokenMatchValue +
+                                "' will be dropped since it will never grant any access.");
+                        continue;
+                    }
+                    if (tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASE.getNumericValue() ||
+                            tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASEINS.getNumericValue()) {
+                        log.warn("Admin in role '" + roleName + "' of type " + tokenType + " with match key="+tokenMatchKey+" operator=" + tokenMatchOperator +
+                                " and value='"+tokenMatchValue+"' is most likely misconfigured. This will grant role access to anything not matching the value!");
+                    }
+                } else if (CliAuthenticationToken.TOKEN_TYPE.equals(tokenType) || "UsernameBasedAuthenticationToken".equals(tokenType)) {
+                    if (tokenMatchOperator != AccessMatchType.TYPE_EQUALCASE.getNumericValue()) {
+                        // The implementation always does case sensitive compare
+                        log.debug("Found admin of type " + tokenType + " with and value='"+tokenMatchValue+"'. Changing operator type to defacto operator equals.");
+                        tokenMatchOperator = AccessMatchType.TYPE_EQUALCASE.getNumericValue();
+                    }
+                } else {
+                    // None of the other known tokens when writing this upgrade use any operator
+                    tokenMatchOperator = AccessMatchType.TYPE_UNUSED.getNumericValue();
+                }
                 final RoleMemberData roleMember = new RoleMemberData(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, tokenType,
                         tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, null, null);
                 roleMemberSession.createOrEdit(roleMember);

@@ -13,6 +13,10 @@
 
 package org.cesecore.authorization.user.matchvalues;
 
+import java.util.List;
+
+import org.cesecore.authorization.user.AccessMatchType;
+
 /**
  * Interface for all AccessMatchValue implementations.
  * 
@@ -50,4 +54,7 @@ public interface AccessMatchValue {
      * @return true of this AccessMatchValue is issued by a CA 
      */
     boolean isIssuedByCa();
+
+    /** @return a list of valid match operators for this match */
+    List<AccessMatchType> getAvailableAccessMatchTypes();
 }

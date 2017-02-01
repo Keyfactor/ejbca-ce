@@ -13,8 +13,11 @@
 package org.cesecore.authentication.tokens;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
+import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
@@ -110,6 +113,11 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
         @Override
         public boolean isDefaultValue() {
             return numericValue == DEFAULT.numericValue;
+        }
+
+        @Override
+        public List<AccessMatchType> getAvailableAccessMatchTypes() {
+            return Arrays.asList();
         }
     }
 

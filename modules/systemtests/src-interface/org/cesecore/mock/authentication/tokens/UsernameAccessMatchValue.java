@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.cesecore.mock.authentication.tokens;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 
@@ -52,4 +56,8 @@ public enum UsernameAccessMatchValue implements AccessMatchValue {
         return false;
     }
 
+    @Override
+    public List<AccessMatchType> getAvailableAccessMatchTypes() {
+        return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
+    }
 }

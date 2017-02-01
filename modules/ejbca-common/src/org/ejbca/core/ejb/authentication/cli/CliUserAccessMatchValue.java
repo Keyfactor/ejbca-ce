@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.cli;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 
@@ -50,5 +54,11 @@ public enum CliUserAccessMatchValue implements AccessMatchValue {
     @Override
     public boolean isIssuedByCa() {
         return false;
+    }
+
+    @Override
+    public List<AccessMatchType> getAvailableAccessMatchTypes() {
+        // Always use case sensitive match for usernames
+        return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
     }
 }
