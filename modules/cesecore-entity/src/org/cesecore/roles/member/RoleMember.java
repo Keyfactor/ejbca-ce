@@ -14,7 +14,9 @@ package org.cesecore.roles.member;
 
 import java.io.Serializable;
 
+import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.roles.Role;
 
 /**
@@ -30,8 +32,10 @@ public class RoleMember implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private int id;
-    private AccessMatchValue accessMatchValue;
+    private String tokenType;
     private int tokenIssuerId;
+    private int tokenMatchKey;
+    private int tokenMatchOperator;
     private String tokenMatchValue;
     private Integer roleId; 
     private String memberBindingType;
@@ -48,15 +52,17 @@ public class RoleMember implements Serializable {
      * @param memberBindingType the type of member binding used for this member. May be null.
      * @param memberBinding the member binding for this member. May be null.
      */
-    public RoleMember(int id, final AccessMatchValue accessMatchValue, final int tokenIssuerId, final String tokenMatchValue, final int roleId,
-            final String memberBindingType, final String memberBindingValue) {
-        this.setId(id);
-        this.setAccessMatchValue(accessMatchValue);
-        this.setTokenIssuerId(tokenIssuerId);
-        this.setTokenMatchValue(tokenMatchValue);
-        this.setRoleId(roleId);
-        this.setMemberBindingType(memberBindingType);
-        this.setMemberBindingValue(memberBindingValue);
+    public RoleMember(final int id, final String tokenType, final int tokenIssuerId, final int tokenMatchKey, final int tokenMatchOperator,
+            final String tokenMatchValue, final int roleId, final String memberBindingType, final String memberBindingValue) {
+        this.id = id;
+        this.tokenType = tokenType;
+        this.tokenIssuerId = tokenIssuerId;
+        this.tokenMatchKey = tokenMatchKey;
+        this.tokenMatchOperator = tokenMatchOperator;
+        this.tokenMatchValue = tokenMatchValue;
+        this.roleId = roleId;
+        this.memberBindingType = memberBindingType;
+        this.memberBindingValue = memberBindingValue;
     }
 
     public int getId() {
@@ -67,12 +73,16 @@ public class RoleMember implements Serializable {
         this.id = id;
     }
 
-    public AccessMatchValue getAccessMatchValue() {
-        return accessMatchValue;
+    public String getTokenType() {
+        return tokenType;
     }
 
-    public void setAccessMatchValue(AccessMatchValue accessMatchValue) {
-        this.accessMatchValue = accessMatchValue;
+    public void setTokenType(String tokenType) {
+        this.tokenType = tokenType;
+    }
+
+    public AccessMatchValue getAccessMatchValue() {
+        return AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, tokenMatchKey);
     }
 
     public int getTokenIssuerId() {
@@ -81,6 +91,26 @@ public class RoleMember implements Serializable {
 
     public void setTokenIssuerId(final int tokenIssuerId) {
         this.tokenIssuerId = tokenIssuerId;
+    }
+
+    public AccessMatchType getAccessMatchType() {
+        return AccessMatchType.matchFromDatabase(tokenMatchOperator);
+    }
+
+    public int getTokenMatchKey() {
+        return tokenMatchKey;
+    }
+
+    public void setTokenMatchKey(int tokenMatchKey) {
+        this.tokenMatchKey = tokenMatchKey;
+    }
+
+    public int getTokenMatchOperator() {
+        return tokenMatchOperator;
+    }
+
+    public void setTokenMatchOperator(int tokenMatchOperator) {
+        this.tokenMatchOperator = tokenMatchOperator;
     }
 
     public String getTokenMatchValue() {
