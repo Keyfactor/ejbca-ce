@@ -227,15 +227,6 @@ public class RolesManagedBean extends BaseManagedBean {
         return matchWithItems;
     }
 
-    /** @return a viewable list of 'match type'-texts */
-    public List<SelectItem> getMatchTypeTexts() {
-        List<SelectItem> list = new ArrayList<SelectItem>();
-        for (AccessMatchType current : AccessMatchType.values()) {
-            list.add(new SelectItem(current, getEjbcaWebBean().getText(current.toString())));
-        }
-        return list;
-    }
-
     public Map<String, Integer> getAccessMatchValuesAsMap() {
         Map<String, Integer> result = new HashMap<String, Integer>();
         for (String tokenType : AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes()) {
@@ -269,18 +260,6 @@ public class RolesManagedBean extends BaseManagedBean {
         this.matchWithMenu = matchWithMenu;
     }
 
-    public AccessMatchType getMatchType() {
-        if(matchType == null) {
-            //Default value
-            setMatchType(AccessMatchType.TYPE_EQUALCASE);
-        }
-        return matchType;
-    }
-
-    public void setMatchType(AccessMatchType matchType) {
-        this.matchType = matchType;
-    }
-
     public String getMatchValue() {
         return matchValue;
     }
@@ -298,8 +277,14 @@ public class RolesManagedBean extends BaseManagedBean {
         String[] matchWithMenuItems = ((String) matchWithMenu.getValue()).split(":");
         AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(matchWithMenuItems[0],
                 matchWithMenuItems[1]);
-        AccessMatchType matchType = getMatchType();
-        if (matchType.equals(AccessMatchType.TYPE_NONE)) {
+        final AccessMatchType matchType;
+        if (matchWith.getAvailableAccessMatchTypes().isEmpty()) {
+            matchType = AccessMatchType.TYPE_UNUSED;
+        } else {
+            // Just grab the first one, since we according to ECA-3164 only will have a single allowed match operator for each match key
+            matchType = matchWith.getAvailableAccessMatchTypes().get(0);
+        }
+        if (matchType.equals(AccessMatchType.TYPE_UNUSED)) {
             matchValue = "";
         } else {
             matchValue = getMatchValue();
