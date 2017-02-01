@@ -334,8 +334,9 @@ CREATE TABLE RoleData (
 CREATE TABLE RoleMemberData (
     primaryKey INT(11) NOT NULL,
     tokenType VARCHAR(250) BINARY NOT NULL,
-    tokenSubType INT(11) NOT NULL,
     tokenIssuerId INT(11) NOT NULL,
+    tokenMatchKey INT(11) NOT NULL,
+    tokenMatchOperator INT(11) NOT NULL,
     tokenMatchValue VARCHAR(2000) BINARY NOT NULL,
     roleId INT(11) NOT NULL,
     memberBindingType VARCHAR(250) BINARY,

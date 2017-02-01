@@ -1558,9 +1558,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             final Map<Integer, AccessUserAspectData> accessUsers = adminGroupData.getAccessUsers();
             // Each AccessUserAspectData belongs to one and only one role, so retrieving them this way may be considered safe. 
             for (final AccessUserAspectData accessUserAspect : accessUsers.values()) {
+                final String tokenType = accessUserAspect.getTokenType();
                 final int tokenIssuerId = accessUserAspect.getCaId()==null ? RoleMember.NO_ISSUER : accessUserAspect.getCaId();
-                final RoleMemberData roleMember = new RoleMemberData(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, accessUserAspect.getTokenType(),
-                        accessUserAspect.getMatchWith(), tokenIssuerId, accessUserAspect.getMatchValue(), roleId, null, null);
+                final int tokenMatchKey = accessUserAspect.getMatchWith();
+                final int tokenMatchOperator = accessUserAspect.getMatchType();
+                final String tokenMatchValue = accessUserAspect.getMatchValue();
+                
+                final RoleMemberData roleMember = new RoleMemberData(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, tokenType,
+                        tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, null, null);
                 roleMemberSession.createOrEdit(roleMember);
             }           
         }

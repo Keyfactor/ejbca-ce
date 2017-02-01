@@ -142,8 +142,9 @@
         <attributes>
             <id name="primaryKey"><column name="primaryKey" column-definition="INT4"/></id>
             <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="VARCHAR(256)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="tokenSubType"><column name="tokenSubType" column-definition="INT4" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenIssuerId"><column name="tokenIssuerId" column-definition="INT4" nullable="false"/></basic>
+            <basic fetch="EAGER" name="tokenMatchKey"><column name="tokenMatchKey" column-definition="INT4" nullable="false"/></basic>
+            <basic fetch="EAGER" name="tokenMatchOperator"><column name="tokenMatchOperator" column-definition="INT4" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenMatchValue"><column name="tokenMatchValue" column-definition="VARCHAR(2000)" nullable="false"/></basic>
             <basic fetch="EAGER" name="roleId"><column name="roleId" column-definition="INT4" nullable="false"/></basic>
             <basic fetch="EAGER" name="memberBindingType"><column name="memberBindingType" column-definition="VARCHAR(256)"/></basic>
