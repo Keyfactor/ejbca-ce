@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -62,8 +63,8 @@ public class AddAdminCommand extends BaseRolesCommand {
                 "Name of issuing CA"));
         registerParameter(new Parameter(MATCH_WITH_KEY, "Value", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The MatchWith Value"));
-        registerParameter(new Parameter(MATCH_TYPE_KEY, "Type", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "The MatchType"));
+        registerParameter(new Parameter(MATCH_TYPE_KEY, "Type", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "(Ignored) Match operator type. Kept to prevent legacy scripts from breaking. Currently implied by " + MATCH_WITH_KEY +" switch."));
         registerParameter(new Parameter(MATCH_VALUE_KEY, "Value", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The value to match against."));
     }
@@ -102,10 +103,16 @@ public class AddAdminCommand extends BaseRolesCommand {
             getLogger().error("No such thing to match with as \"" + parameters.get(MATCH_WITH_KEY) + "\".");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        AccessMatchType matchType = AccessMatchType.matchFromName(parameters.get(MATCH_TYPE_KEY));
-        if (matchType == null) {
-            getLogger().error("No such type to match with as \"" + parameters.get(MATCH_TYPE_KEY) + "\".");
-            return CommandResult.FUNCTIONAL_FAILURE;
+        final AccessMatchType matchType;
+        if (matchWith.getAvailableAccessMatchTypes().isEmpty()) {
+            matchType = AccessMatchType.TYPE_UNUSED;
+        } else {
+            // Just grab the first one, since we according to ECA-3164 only will have a single allowed match operator for each match key
+            matchType = matchWith.getAvailableAccessMatchTypes().get(0);
+        }
+        final String matchTypeParam = parameters.get(MATCH_TYPE_KEY);
+        if (StringUtils.isNotEmpty(matchTypeParam)) {
+            log.info("Parameter " + MATCH_TYPE_KEY + " is ignored. " + MATCH_WITH_KEY + " value " + matchWith.name() + " implies " + matchType.name() + ".");
         }
         String matchValue = parameters.get(MATCH_VALUE_KEY);
         AccessUserAspectData accessUser = new AccessUserAspectData(roleName, caid, matchWith, matchType, matchValue);
@@ -149,14 +156,11 @@ public class AddAdminCommand extends BaseRolesCommand {
         sb.append("Available CAs: " + availableCas + "\n");
         String availableMatchers = "";
         for (AccessMatchValue currentMatchWith : X500PrincipalAccessMatchValue.values()) {
-            availableMatchers += (availableMatchers.length() == 0 ? "" : ", ") + currentMatchWith;
+            if (!X500PrincipalAccessMatchValue.NONE.equals(currentMatchWith)) {
+                availableMatchers += (availableMatchers.length() == 0 ? "" : ", ") + currentMatchWith;
+            }
         }
         sb.append("Match with is one of: " + availableMatchers + "\n");
-        String availableMatchTypes = "";
-        for (AccessMatchType currentMatchType : AccessMatchType.values()) {
-            availableMatchTypes += (availableMatchTypes.length() == 0 ? "" : ", ") + currentMatchType;
-        }
-        sb.append("Match type is one of: " + availableMatchTypes + "\n");
         return sb.toString();
     }
 
