@@ -126,7 +126,7 @@ public class AuthorizationSessionBeanTest {
         final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("cleanUpRole"));
         final Role role = roleSession.getRole(authenticationToken, nameSpace, roleName);
         if (role!=null) {
-            roleSession.deleteRoleIdempotent(authenticationToken, role.getRoleId(), true);
+            roleSession.deleteRoleIdempotent(authenticationToken, role.getRoleId());
         }
     }
 
