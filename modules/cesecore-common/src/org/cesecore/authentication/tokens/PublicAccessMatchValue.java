@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.cesecore.authentication.tokens;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 
@@ -51,5 +55,10 @@ public enum PublicAccessMatchValue implements AccessMatchValue {
     @Override
     public boolean isIssuedByCa() {
         return false;
+    }
+
+    @Override
+    public List<AccessMatchType> getAvailableAccessMatchTypes() {
+        return Arrays.asList();
     }
 }

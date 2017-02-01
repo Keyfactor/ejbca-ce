@@ -16,6 +16,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cesecore.authorization.user.AccessMatchType;
 import org.junit.Test;
 
 /**
@@ -79,6 +83,10 @@ public class AccessMatchValueReverseLookupRegistryTest {
         @Override
         public boolean isDefaultValue() {
             return true;
+        }
+        @Override
+        public List<AccessMatchType> getAvailableAccessMatchTypes() {
+            return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
         }
     }
 }

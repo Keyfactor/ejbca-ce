@@ -13,10 +13,13 @@
 package org.cesecore.mock.authentication.tokens;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
@@ -118,6 +121,11 @@ public class TestAlwaysAllowLocalAuthenticationToken extends AuthenticationToken
         @Override
         public boolean isDefaultValue() {
             return numericValue == DEFAULT.numericValue;
+        }
+
+        @Override
+        public List<AccessMatchType> getAvailableAccessMatchTypes() {
+            return Arrays.asList();
         }
     }
 

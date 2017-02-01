@@ -21,7 +21,15 @@ import java.util.Map;
  */
 public enum AccessMatchType {
 
-    TYPE_EQUALCASE(1000), TYPE_EQUALCASEINS(1001), TYPE_NOT_EQUALCASE(1002), TYPE_NOT_EQUALCASEINS(1003), TYPE_NONE(1999);
+    TYPE_UNUSED(0),
+    TYPE_EQUALCASE(1000),
+    TYPE_EQUALCASEINS(1001),
+    @Deprecated
+    TYPE_NOT_EQUALCASE(1002),
+    @Deprecated
+    TYPE_NOT_EQUALCASEINS(1003),
+    @Deprecated
+    TYPE_NONE(1999);
 
     private AccessMatchType(int numericValue) {
         this.numericValue = numericValue;

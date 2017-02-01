@@ -12,7 +12,11 @@
  *************************************************************************/
 package org.cesecore.authorization.user.matchvalues;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authorization.user.AccessMatchType;
 
 /**
  * Match with constants. Observe that these constants are also used as a priority indicator for access rules. The higher values the higher priority.
@@ -21,8 +25,22 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
  * 
  */
 public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
-    NONE(0), WITH_COUNTRY(1), WITH_DOMAINCOMPONENT(2), WITH_STATEORPROVINCE(3), WITH_LOCALITY(4), WITH_ORGANIZATION(5), WITH_ORGANIZATIONALUNIT(6), WITH_TITLE(7), WITH_COMMONNAME(
-            8), WITH_UID(9), WITH_DNSERIALNUMBER(10), WITH_SERIALNUMBER(11), WITH_DNEMAILADDRESS(12), WITH_RFC822NAME(13), WITH_UPN(14), WITH_FULLDN(15);
+    NONE(0),
+    WITH_COUNTRY(1),
+    WITH_DOMAINCOMPONENT(2),
+    WITH_STATEORPROVINCE(3),
+    WITH_LOCALITY(4),
+    WITH_ORGANIZATION(5),
+    WITH_ORGANIZATIONALUNIT(6),
+    WITH_TITLE(7),
+    WITH_COMMONNAME(8),
+    WITH_UID(9),
+    WITH_DNSERIALNUMBER(10),
+    WITH_SERIALNUMBER(11),
+    WITH_DNEMAILADDRESS(12),
+    WITH_RFC822NAME(13),
+    WITH_UPN(14),
+    WITH_FULLDN(15);
     
     static {
         AccessMatchValueReverseLookupRegistry.INSTANCE.register(X500PrincipalAccessMatchValue.values());
@@ -52,5 +70,16 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     @Override
     public boolean isIssuedByCa() {
         return true;
+    }
+
+    @Override
+    public List<AccessMatchType> getAvailableAccessMatchTypes() {
+        switch(this) {
+        case WITH_SERIALNUMBER:
+            // Compared as BigInteger
+            return Arrays.asList(AccessMatchType.TYPE_EQUALCASEINS);
+        default:
+        }
+        return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
     }
 }
