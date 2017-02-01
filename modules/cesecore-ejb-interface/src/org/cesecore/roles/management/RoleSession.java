@@ -16,7 +16,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
-import org.cesecore.roles.RoleNotFoundException;
 
 /**
  * Common interface for Role management operations.
@@ -37,18 +36,10 @@ public interface RoleSession {
     /**
      * Deletes the role with the requested id.
      * 
-     * @throws RoleNotFoundException when no such role exists
-     * @throws AuthorizationDeniedException if the caller is not authorized to see this role and edit roles in general
-     */
-    void deleteRole(AuthenticationToken authenticationToken, int roleId, boolean alsoDeleteRoleMembers) throws RoleNotFoundException, AuthorizationDeniedException;
-
-    /**
-     * Deletes the role with the requested id.
-     * 
      * @throws AuthorizationDeniedException if the caller is not authorized to see this role and edit roles in general
      * @return true if a change was made to the database
      */
-    boolean deleteRoleIdempotent(AuthenticationToken authenticationToken, int roleId, boolean alsoDeleteRoleMembers) throws AuthorizationDeniedException;
+    boolean deleteRoleIdempotent(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
 
     /**
      * @return the Role for the specified id or null if no such role exists

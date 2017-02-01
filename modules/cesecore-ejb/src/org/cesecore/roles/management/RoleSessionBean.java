@@ -41,7 +41,6 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
-import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.time.TrustedTimeWatcherSessionLocal;
@@ -88,28 +87,13 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         return role;
     }
 
-    
     @Override
-    public boolean deleteRoleIdempotent(final AuthenticationToken authenticationToken, final int roleId, final boolean alsoDeleteRoleMembers) throws AuthorizationDeniedException {
+    public boolean deleteRoleIdempotent(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
         assertAuthorizedToEditRoles(authenticationToken);
         final Role role = roleDataSession.getRole(roleId);
         if (role==null) {
             return false;
         }
-        return deleteRoleInternal(authenticationToken, role, alsoDeleteRoleMembers);
-    }
-
-    @Override
-    public void deleteRole(final AuthenticationToken authenticationToken, final int roleId, final boolean alsoDeleteRoleMembers) throws RoleNotFoundException, AuthorizationDeniedException {
-        assertAuthorizedToEditRoles(authenticationToken);
-        final Role role = roleDataSession.getRole(roleId);
-        if (role==null) {
-            throw new RoleNotFoundException(InternalResources.getInstance().getLocalizedMessage("authorization.errorrolenotexists", "id="+roleId));
-        }
-        deleteRoleInternal(authenticationToken, role, alsoDeleteRoleMembers);
-    }
-
-    private boolean deleteRoleInternal(final AuthenticationToken authenticationToken, final Role role, final boolean alsoDeleteRoleMembers) throws AuthorizationDeniedException {
         // Check that authenticationToken is allowed to remove the role with all its rights
         assertAuthorizedToAllAccessRules(authenticationToken, role);
         assertNotMemberAndAuthorizedToNameSpace(authenticationToken, role);
@@ -123,11 +107,9 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         details.put("nameSpace", role.getNameSpace());
         securityEventsLoggerSession.log(EventTypes.ROLE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                 authenticationToken.toString(), null, null, null, details);
-        if (alsoDeleteRoleMembers) {
-            final List<RoleMember> roleMembers = roleMemberSession.findRoleMemberByRoleId(role.getRoleId());
-            for (final RoleMember roleMember : roleMembers) {
-                ret |= roleMemberSession.remove(roleMember.getId());
-            }
+        final List<RoleMember> roleMembers = roleMemberSession.findRoleMemberByRoleId(role.getRoleId());
+        for (final RoleMember roleMember : roleMembers) {
+            ret |= roleMemberSession.remove(roleMember.getId());
         }
         return ret;
     }
