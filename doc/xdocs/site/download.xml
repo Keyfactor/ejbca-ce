@@ -10,11 +10,11 @@
     <note>
     If you have problems with any of the download links below or need older releases, try to download through the Sourceforge <a href="http://sourceforge.net/projects/ejbca/files/">download page</a>.
     <br/><br/>
-    EJBCA Community 6.3.1.1 is available for  
-    <a href="https://sourceforge.net/projects/ejbca/files/ejbca6/ejbca_6_3_1_1/ejbca_ce_6_3_1_1.zip">download</a>.
+    EJBCA Community 6.5.0 is available for  
+    <a href="https://sourceforge.net/projects/ejbca/files/ejbca6/ejbca_6_5_0/ejbca_ce_6_5_0.zip">download</a>.
     <br/>
-    SHA1 checksum: 7f498f6a647e5948404a59a4c75cd7cf8a4460d6<br/>
-    SHA256 checksum: a38a6cd8bf03ee55b1235c0c91b51a9478180af0860769b1268df059be5cf762
+    SHA1 checksum: fbcab98bbab9ed0db70897f8654666b6a6673dda<br/>
+    SHA256 checksum: fcb850c6ffeaaea90e6cfd2ba6ef5230c1d2743883b8d5bf60dd7302e32096fa
     <br/><br/>
     Cert-cvc library 1.4.5 with support for EAC 2.10 Access Control Templates is now available for <a
     href="https://sourceforge.net/projects/ejbca/files/cert-cvc/cert-cvc-1.4.5/cert-cvc-1.4.5.zip">download</a>.
@@ -27,7 +27,7 @@
   <section name="Virtual Machine for Testing">
     <p>
     Get a feeling for, and start testing, EJBCA easily by downloading and running our 
-    <a href="https://download.primekey.se/public/ejbcav6ce-vm.zip">EJBCAv6 VM</a>.
+    <a href="https://download.primekey.se/public/ejbcav6ce-vm.zip">EJBCAv6 VM</a>, currently not with the latest release of EJBCA though.
     The VM features a full EJBCA Community v6 install, running on JBoss 7.1.1.GA and Java 7, using a <a href="http://www.mariadb.org/" target="_mariadb">MariaDB</a> database backend. 
     It comes with a readme file with instructions and some usage hints. The VM runs on KVM, VirtualBox and VWware<sup>&#174;</sup>. The VM should not be used in production as admin keys are pre-generated, i.e. identical on all VMs.
     <br/>Have fun! 
