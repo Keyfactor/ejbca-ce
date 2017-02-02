@@ -25,10 +25,9 @@ import javax.security.auth.x500.X500Principal;
 
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.NestableAuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.AuthorizationSessionRemote;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
@@ -36,7 +35,6 @@ import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemot
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
-import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberProxySessionRemote;
@@ -66,7 +64,7 @@ public class AuthorizationSessionBeanTest {
     }
 
     @Test
-    public void testIsAuthorized() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+    public void testIsAuthorizedSingleRole() throws RoleExistsException, AuthorizationDeniedException {
         // Let's set up a role and a nice resource tree to play with.
         final String nameSpace = null;
         final String roleName = "Role testIsAuthorized";
@@ -79,10 +77,9 @@ public class AuthorizationSessionBeanTest {
             accessRules.put("/acceptRecursive/decline", Role.STATE_DENY);
             accessRules.put("/accept/accept", Role.STATE_ALLOW);
             accessRules.put("/accept/decline", Role.STATE_DENY);
-            accessRules.put("/decline/accept", Role.STATE_ALLOW);
-            accessRules.put("/decline/decline", Role.STATE_DENY);
+            accessRules.put("/somerule/accept", Role.STATE_ALLOW);
+            accessRules.put("/somerule/decline", Role.STATE_DENY);
             final Role role = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName, accessRules));
-
             final String commonName = roleName;
             final String subjectAndIssuerDn = "CN="+commonName;
             final int caId = subjectAndIssuerDn.hashCode();
@@ -108,10 +105,10 @@ public class AuthorizationSessionBeanTest {
             assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/accept/decline"));
             assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/accept/notused"));
             assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/accept/unexistent"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/decline/accept"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/decline/decline"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/decline/notused"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/decline/unexistent"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/accept"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/decline"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/notused"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/unexistent"));
             assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
             assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/accept", "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
             assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/decline", "/acceptRecursive/accept"));
@@ -119,6 +116,154 @@ public class AuthorizationSessionBeanTest {
             assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/acceptRecursive/accept", "/acceptRecursive/decline", "/acceptRecursive/unexistent"));
         } finally {
             cleanUpRole(nameSpace, roleName);
+        }
+    }
+
+    @Test
+    public void testIsAuthorizedBelongToMoreThanOneGroup() throws RoleExistsException, AuthorizationDeniedException {
+        final String nameSpace = null;
+        final String commonName = "Role testIsAuthorized";
+        final String roleName1 = commonName + "1";
+        final String roleName2 = commonName + "2";
+        try {
+            final HashMap<String,Boolean> accessRules1 = new HashMap<>();
+            accessRules1.put("/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/denyInFirst", Role.STATE_DENY);
+            accessRules1.put("/allowInBoth", Role.STATE_ALLOW);
+            accessRules1.put("/allowInBoth/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/allowInBoth/denyInFirst", Role.STATE_DENY);
+            accessRules1.put("/allowInFirst/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/allowInFirst/denyInFirst", Role.STATE_DENY);
+            accessRules1.put("/somerule/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/somerule/denyInFirst", Role.STATE_DENY);
+            final Role role1 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName1, accessRules1));
+            final HashMap<String,Boolean> accessRules2 = new HashMap<>();
+            accessRules2.put("/allowInBoth", Role.STATE_ALLOW);
+            accessRules2.put("/allowInBoth/allowInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInBoth/denyInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInFirst/allowInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInFirst/denyInFirst", Role.STATE_ALLOW);
+            accessRules2.put("/somerule/allowInFirst", Role.STATE_DENY);
+            accessRules2.put("/somerule/denyInFirst", Role.STATE_DENY);
+            final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName2, accessRules2));
+            final String subjectAndIssuerDn = "CN="+commonName;
+            final int caId = subjectAndIssuerDn.hashCode();
+            final int roleMemberId1 = roleMemberProxySession.createOrEdit(new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationToken.TOKEN_TYPE,
+                    caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role1.getRoleId(), null, null));
+            assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId1).getTokenIssuerId());
+            final int roleMemberId2 = roleMemberProxySession.createOrEdit(new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationToken.TOKEN_TYPE,
+                    caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role2.getRoleId(), null, null));
+            assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId2).getTokenIssuerId());
+            assertFalse(roleMemberId1==roleMemberId2);
+            final AuthenticationToken authenticationToken = createAuthenticationToken("CN="+commonName);
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource()));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/denyInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/notused"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/unexistent"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/denyInFirst"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/notused"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/unexistent"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst/notused"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/denyInFirst/notused"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/notused/notused"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/accept"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/denyInFirst"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/notused"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/unexistent"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/allowInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/denyInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/notused"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/unexistent"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/notused", "/allowInBoth/unexistent"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst", "/allowInBoth/notused", "/allowInBoth/unexistent"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/denyInFirst", "/allowInBoth/allowInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst", "/allowInBoth/denyInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/acceptInOne", "/allowInBoth/denyInFirst", "/allowInBoth/unexistent"));
+        } finally {
+            cleanUpRole(nameSpace, roleName1);
+            cleanUpRole(nameSpace, roleName2);
+        }
+    }
+
+    @Test
+    public void testIsAuthorizedNestedAuthenticationToken() throws RoleExistsException, AuthorizationDeniedException {
+        final String nameSpace = null;
+        final String commonName1 = "Role testIsAuthorized 1";
+        final String commonName2 = "Role testIsAuthorized 2";
+        final String roleName1 = commonName1;
+        final String roleName2 = commonName2;
+        try {
+            final HashMap<String,Boolean> accessRules1 = new HashMap<>();
+            accessRules1.put("/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/denyInFirst", Role.STATE_DENY);
+            accessRules1.put("/allowInBoth", Role.STATE_ALLOW);
+            accessRules1.put("/allowInBoth/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/allowInBoth/denyInFirst", Role.STATE_DENY);
+            accessRules1.put("/allowInFirst/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/allowInFirst/denyInFirst", Role.STATE_DENY);
+            accessRules1.put("/somerule/accept", Role.STATE_ALLOW);
+            accessRules1.put("/somerule/denyInFirst", Role.STATE_DENY);
+            final Role role1 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName1, accessRules1));
+            final HashMap<String,Boolean> accessRules2 = new HashMap<>();
+            accessRules2.put("/allowInBoth", Role.STATE_ALLOW);
+            accessRules2.put("/allowInBoth/allowInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInBoth/denyInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInFirst/allowInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInFirst/denyInFirst", Role.STATE_ALLOW);
+            accessRules2.put("/somerule/allowInFirst", Role.STATE_DENY);
+            accessRules2.put("/somerule/denyInFirst", Role.STATE_DENY);
+            final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName2, accessRules2));
+            assertFalse(role1.getRoleId()==role2.getRoleId());
+            final String subjectAndIssuerDn = "CN="+commonName1;
+            final int caId = subjectAndIssuerDn.hashCode();
+            final int roleMemberId1 = roleMemberProxySession.createOrEdit(new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationToken.TOKEN_TYPE,
+                    caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName1, role1.getRoleId(), null, null));
+            assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId1).getTokenIssuerId());
+            final String subjectAndIssuerDn2 = "CN="+commonName2;
+            final int caId2 = subjectAndIssuerDn2.hashCode();
+            final int roleMemberId2 = roleMemberProxySession.createOrEdit(new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationToken.TOKEN_TYPE,
+                    caId2, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName2, role2.getRoleId(), null, null));
+            assertEquals(caId2, roleMemberProxySession.findRoleMember(roleMemberId2).getTokenIssuerId());
+            assertFalse(roleMemberId1==roleMemberId2);
+            final AuthenticationToken authenticationToken = createAuthenticationToken("CN="+commonName1);
+            final AuthenticationToken nestedAuthenticationToken = createAuthenticationToken("CN="+commonName2);
+            ((NestableAuthenticationToken)authenticationToken).appendNestedAuthenticationToken((NestableAuthenticationToken) nestedAuthenticationToken);
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource()));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/denyInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/notused"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/unexistent"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/denyInFirst"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/notused"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/unexistent"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst/notused"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/denyInFirst/notused"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/notused/notused"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/allowInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/denyInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/notused"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/unexistent"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/allowInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/denyInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/notused"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/unexistent"));
+            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/notused", "/allowInBoth/unexistent"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst", "/allowInBoth/notused", "/allowInBoth/unexistent"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/denyInFirst", "/allowInBoth/allowInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst", "/allowInBoth/denyInFirst"));
+            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst", "/allowInBoth/denyInFirst", "/allowInBoth/unexistent"));
+        } finally {
+            cleanUpRole(nameSpace, roleName1);
+            cleanUpRole(nameSpace, roleName2);
         }
     }
     
