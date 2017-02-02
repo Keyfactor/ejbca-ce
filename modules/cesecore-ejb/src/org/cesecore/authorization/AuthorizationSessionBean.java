@@ -186,15 +186,11 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         @Override
         public HashMap<String, Boolean> loadAccessRules(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
             HashMap<String, Boolean> accessRules = getAccessAvailableToSingleToken(authenticationToken);
-            if (authenticationToken!=null && authenticationToken instanceof NestableAuthenticationToken) {
+            if (authenticationToken instanceof NestableAuthenticationToken) {
                 final List<NestableAuthenticationToken> nestedAuthenticatonTokens = ((NestableAuthenticationToken)authenticationToken).getNestedAuthenticationTokens();
                 for (final NestableAuthenticationToken nestableAuthenticationToken : nestedAuthenticatonTokens) {
-                    final HashMap<String, Boolean> accessRulesForToken = getAccessAvailableToSingleToken(nestableAuthenticationToken);
-                    if (accessRules==null) {
-                        accessRules = accessRulesForToken;
-                    } else {
-                        AccessRulesHelper.getAccessRulesIntersection(accessRules, accessRulesForToken);
-                    }
+                    final HashMap<String, Boolean> accessRulesForNestedToken = getAccessAvailableToSingleToken(nestableAuthenticationToken);
+                    accessRules = AccessRulesHelper.getAccessRulesIntersection(accessRules, accessRulesForNestedToken);
                 }
             }
             if (log.isDebugEnabled()) {
@@ -231,12 +227,14 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     /** @return the union of access rules available to the AuthenticationToken if it matches several roles (ignoring any nested tokens) */
     private HashMap<String, Boolean> getAccessAvailableToSingleToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         HashMap<String, Boolean> accessRules = new HashMap<>();
-        if (authenticationToken.matchTokenType("AlwaysAllowAuthenticationToken") && authenticationToken.matches(null)) {
-            // Special handing of the AlwaysAllowAuthenticationToken to grant full access
-            accessRules.put("/", Boolean.TRUE);
-        } else {
-            for (final int matchingRoleId : roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
-                accessRules = AccessRulesHelper.getAccessRulesUnion(accessRules, roleDataSession.getRole(matchingRoleId).getAccessRules());
+        if (authenticationToken!=null) {
+            if (authenticationToken.matchTokenType("AlwaysAllowAuthenticationToken") && authenticationToken.matches(null)) {
+                // Special handing of the AlwaysAllowAuthenticationToken to grant full access
+                accessRules.put("/", Boolean.TRUE);
+            } else {
+                for (final int matchingRoleId : roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
+                    accessRules = AccessRulesHelper.getAccessRulesUnion(accessRules, roleDataSession.getRole(matchingRoleId).getAccessRules());
+                }
             }
         }
         return accessRules;
