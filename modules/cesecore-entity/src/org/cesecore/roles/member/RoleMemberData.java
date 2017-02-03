@@ -65,9 +65,9 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
      * @param primaryKey the primary key for this object. It's required to check the database for any objects with the same key, otherwise that 
      *  object will be overridden
      * @param tokenType a string which defined the implementation of AcceessMatchValue used by this member
-     * @param tokenIssuerId the issuer of token if relevant or 0 otherwise
+     * @param tokenIssuerId the issuer of token if relevant or 0 (RoleMember.NO_ISSUER) otherwise
      * @param tokenMatchKey the integer value determining how to interpret the tokenMatchValue, defined in a class that inherits the interface AcceessMatchValue
-     * @param tokenMatchOperator how to perform the match. 0 to let the determine this from tokenSubType.
+     * @param tokenMatchOperator how to perform the match. 0 (AccessMatchType.UNUSED.getNumericValue())to let the determine this from tokenSubType.
      * @param tokenMatchValue the actual value with which to match
      * @param roleId the ID of the role to which this member belongs. May be null.
      * @param memberBindingType the type of member binding used for this member. May be null.
@@ -104,7 +104,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         this.tokenType = tokenType;
     }
 
-    /** @return issuer identifier of this token or 0 if this is not relevant for this token type */
+    /** @return issuer identifier of this token or 0 (RoleMember.NO_ISSUER) if this is not relevant for this token type */
     public int getTokenIssuerId() {
         return tokenIssuerId;
     }
