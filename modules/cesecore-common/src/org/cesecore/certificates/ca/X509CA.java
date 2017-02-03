@@ -1412,6 +1412,14 @@ public class X509CA extends CA implements Serializable {
                     nrOfRecactedLables.add(new ASN1Integer(0));
                 }
             }
+            if(generalName.getTagNo() == 1) {
+                final String str = CertTools.getGeneralNameString(1, generalName.getName());                if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
+                    // Remove '\' from the email that will end up on the certificate
+                    String certBuilderEmailValue = StringUtils.remove(str, "rfc822name=");
+                    certBuilderEmailValue = StringUtils.remove(certBuilderEmailValue, '\\');                    // Replace the old value with the new
+                    gns[j] = new GeneralName(1, new DERIA5String(certBuilderEmailValue));
+                }
+            }
         }
         ExtensionsGenerator gen = new ExtensionsGenerator();
         // Use the GeneralName from original altName in order to not re-encode anything 
