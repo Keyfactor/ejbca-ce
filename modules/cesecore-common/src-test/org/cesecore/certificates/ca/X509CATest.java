@@ -640,6 +640,55 @@ public class X509CATest {
         assertNotNull(crl);
 	}
 	
+	   /** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */
+    @Test
+    public void testRfc822NameWithPlus() throws Exception {
+
+        // set up test CA, end entity and certificate profile
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final KeyPair keypair = KeyTools.genKeys("1024", "RSA");
+        final X509CA ca = createTestCA(cryptoToken, "CN=foo");
+        
+        String emailPlane = "user@user.com";
+        String emailEscaped = "user\\+plus@user.com";
+        String emailUnescaped = "user+plus@user.com";
+        CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+   
+        // test with no plus character in email
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailPlane, emailPlane, 
+                new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        Certificate certificate = null;
+        try {
+            certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
+            assertNotNull(certificate);
+            assertEquals("rfc822name=" + emailPlane, CertTools.getSubjectAlternativeName(certificate));
+        } catch (CAOfflineException e) {
+            fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
+        }
+
+        // test with a user with escaped plus character in email
+        user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailEscaped, emailEscaped, 
+                new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        try {
+            certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
+            assertNotNull(certificate);
+            assertEquals("rfc822name=" + emailUnescaped, CertTools.getSubjectAlternativeName(certificate));
+        } catch (CAOfflineException e) {
+            fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
+        }
+        
+        // test with a user with unescaped plus character in email
+        user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailUnescaped, emailUnescaped, 
+                new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        try {
+            certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
+            assertNotNull(certificate);
+            assertEquals("rfc822name=user", CertTools.getSubjectAlternativeName(certificate));
+        } catch (CAOfflineException e) {
+            fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
+        }
+    }
+	
 	/** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */
     @Test
     public void testAuthorityInformationAccessCertificateExtension() throws Exception {
