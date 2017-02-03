@@ -141,12 +141,15 @@
             <basic fetch="EAGER" name="tokenIssuerId"><column name="tokenIssuerId" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenMatchKey"><column name="tokenMatchKey" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenMatchOperator"><column name="tokenMatchOperator" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="zTokenMatchValue"><column name="tokenMatchValue" column-definition="VARCHAR2(2000 byte)" nullable="false"/></basic>
             <basic fetch="EAGER" name="roleId"><column name="roleId" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="memberBindingType"><column name="memberBindingType" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="memberBindingValue"><column name="memberBindingValue" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic fetch="EAGER" name="tokenMatchValue"><column name="tokenMatchValue" column-definition="VARCHAR2(2000 byte)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="zRowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
+            <!-- Required by Oracle + Hibernate work-around -->
+            <transient name="tokenMatchValue"/>
+            <transient name="trowProtection"/>
         </attributes>
     </entity>
     <entity class="org.cesecore.roles.RoleData" access="PROPERTY" metadata-complete="false">
