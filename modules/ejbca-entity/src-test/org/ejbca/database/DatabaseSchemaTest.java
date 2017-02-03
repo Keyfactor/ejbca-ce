@@ -134,8 +134,8 @@ public class DatabaseSchemaTest {
         LOG.debug("Allocating memory..");
         VARCHAR_80B = getClob(80);
         VARCHAR_250B = getClob(250);
-        VARCHAR_400B = getClob(400);
-        VARCHAR_2000B = getClob(2000);
+        VARCHAR_400B = getClob(400-5);
+        VARCHAR_2000B = getClob(2000-5);
         CLOB_10KiB = getClob(10 * 1024);
         CLOB_100KiB = getClob(100 * 1024);
         CLOB_1MiB = getClob(1024 * 1024);
