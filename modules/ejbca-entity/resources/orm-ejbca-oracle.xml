@@ -36,6 +36,10 @@
          
          Notes:
          - Oracle considers NULL and empty Strings to be the same.
+         - "ORA-24816 Expanded non LONG bind data supplied after actual LONG or LOB column" means that the CLOB column(s)
+           were not the last one in the SQL statement. Hibernate sorts by property accessor name, so our only control is to
+           name the CLOB accessors with a leading "zzz" when there are columns with names that would be sorted after the CLOBs.
+           Apparently (from testing) this is only relevant if there are inserts of VARCHAR2s exceeding the default 255 bytes.
     -->
 
     <entity class="org.cesecore.certificates.certificate.CertificateData" access="PROPERTY" metadata-complete="false">
@@ -141,15 +145,14 @@
             <basic fetch="EAGER" name="tokenIssuerId"><column name="tokenIssuerId" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenMatchKey"><column name="tokenMatchKey" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenMatchOperator"><column name="tokenMatchOperator" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="zTokenMatchValue"><column name="tokenMatchValue" column-definition="VARCHAR2(2000 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="tokenMatchValue"><column name="tokenMatchValue" column-definition="VARCHAR2(2000 byte)" nullable="false"/></basic>
             <basic fetch="EAGER" name="roleId"><column name="roleId" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="memberBindingType"><column name="memberBindingType" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="memberBindingValue"><column name="memberBindingValue" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic fetch="EAGER" name="zRowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
-            <!-- Required by Oracle + Hibernate work-around -->
-            <transient name="tokenMatchValue"/>
-            <transient name="trowProtection"/>
+            <!-- Required by Oracle + Hibernate ORA-24816 work-around -->
+            <transient name="rowProtection"/>
         </attributes>
     </entity>
     <entity class="org.cesecore.roles.RoleData" access="PROPERTY" metadata-complete="false">
