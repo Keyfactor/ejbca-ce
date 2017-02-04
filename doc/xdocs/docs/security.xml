@@ -453,13 +453,236 @@ http://www.linuxsecurity.com/docs/SecurityAdminGuide/SecurityAdminGuide-5.html</
 </subsection>
 </section>
 <section name="Denial of Service">
-    <subsection name="Due too large data packages">
+    <subsection name="Due too large data packages or slow connections">
         <p>
             There is no way to limit the datapackages reaching JBoss through a HTTP request from within JBoss. 
             This is due to the way the TCP protocol works. 
             The best way to avoid this kind of DOS attacks is to use a firewall or proxy that can limit the size of request and configure it properly.
+            For example, mod_reqtimeout can be used in an APache proxy.
         </p>
     </subsection>
+</section>
+
+<section name="External Log Signing">
+<p>Signing logs as they are being archived (rotated) can be done in several ways, here are a few examples:</p>
+<ul>
+<li>Logs are sent to syslog and the syslog rotation can sign files when they are rotated, using openssl or a Time Stamp Server (TSA).</li>
+<li>Logs are stored by JBoss, a special log4j appender can be used to sign files when they are rotated, using a time stamp server (TSA).</li>
+</ul>
+<subsection name="Log signing using logrotate and openssl">
+<p>
+Save and enable the below logrotate configuration for syslog, is should normaly be stored as the file syslog
+in the directory /etc/logrotate.d.
+If there is a previous configuration for syslog, you should remove this, perhaps merge some changes if you like.
+Syslog is normally not rotated in most linux distributions.
+
+After enabling the configuration you should make sure that logrotate is run as often as you like. Normally is is
+run every night. If you want to run it more often for syslog, you can add a crontab entry to run it every hour for example.
+In that cas call logrotate with the specified configuration file:
+logrotate syslog.conf
+
+Note, that when stored in logrotate.d, the syslog configuration will be called when logrotate is normally run. qc1.priv is the private key used for signing the logfile.
+</p>
+<source>
+/var/log/syslog {
+  rotate 5
+  postrotate
+  /usr/bin/killall -HUP syslogd
+  endscript
+  lastaction
+  OPENSSL=/usr/bin/openssl
+  LOGFILE=/var/log/syslog
+  FILE="$LOGFILE.`date +%F.%H:%M:%S`.log"
+  SIGNATUREFILE="$FILE.sign"
+  cp $LOGFILE.1 "$FILE"
+  PRIVATEKEY="/etc/logsigner/qc1.priv"
+  $OPENSSL dgst -sign $PRIVATEKEY -sha1 $FILE > $SIGNATUREFILE
+  endscript
+  }
+</source>
+<p>
+A simple shell script below for signing anv verifying using openssl, as well as to convert a pkcs12 file to the public key and private key files that openssl uses.
+<br/>
+To verify, you can issue the command:
+log-sign.sh verify qc1.pub logfile.log lofile.log.sign
+</p>
+<source>
+#!/bin/bash
+
+# Openssl command for signing and verifying
+#openssl dgst -sign superadmin.key -sha1 test.txt > test.txt.sign
+#openssl dgst -verify superadmin.pubkey -signature test.txt.sign -sha1 test.txt
+
+# Openssl command to convert a p12 file to cert and key files in pem
+# First cert:
+#openssl pkcs12 -in qc1.p12 -nodes -nokeys -clcerts -out qc1.pem
+# Then public key
+#openssl x509 -in qc1.pem -pubkey -noout > qc1.pub
+# Then private key:
+#openssl pkcs12 -in qc1.p12 -nodes -nocerts -out qc1.priv
+
+OPENSSL=/usr/bin/openssl
+SCRIPTNAME=`basename $0`
+OPTION=$1
+DATE=`date +"%Y-%m-%d"`
+
+if [ "$OPTION" = "sign" ]; then
+ PRIVATEKEY="$2"
+ FILE="$3"
+ SIGNATUREFILE="$4"
+ $OPENSSL dgst -sign $PRIVATEKEY -sha1 $FILE > $SIGNATUREFILE
+
+ exit 0
+
+elif [ "$OPTION" = "verify" ]; then
+ PUBLICKEY="$2"
+ FILE="$3"
+ SIGNATUREFILE="$4"
+
+ $OPENSSL dgst -verify $PUBLICKEY -signature $SIGNATUREFILE -sha1 $FILE
+ exit 0
+
+else
+ echo "Usage:"
+ echo "To sign files you have to edit the script and add the files you want signed."
+ echo "$SCRIPTNAME sign   "
+ echo "$SCRIPTNAME verify   "
+ exit 0
+fi
+</source>
+</subsection>
+<subsection name="Log signing using logrotate and TSA">
+<p>
+The same approach is taken for signing using a Tie Stamp Authority (TSA) server instead of openssl.
+In this example the timeStampClient and TSA from <a href="https://www.signserver.org/">SignServer</a> is used. 
+After building'signserver' the timeStampClient.jar and other needed jar files are availale.
+</p>
+<p>The new logrotate configuration:</p>
+<source>
+/var/log/syslog {
+  rotate 5
+  postrotate
+  /usr/bin/killall -HUP syslogd
+  endscript
+  lastaction
+  TSACLIENTDIR=/opt/signserver/dist-client
+  LOGFILE=/var/log/syslog
+  FILE="$LOGFILE.`date +%F.%H:%M:%S`.log"
+  SIGNATUREFILE="$FILE.sign"
+  cp $LOGFILE.1 "$FILE"
+  java -jar "$TSACLIENTDIR/timeStampClient.jar" -url "http://127.0.0.1:8080/signserver/tsa?signerId=1" -infile $FILE -outrep $SIGNATUREFILE -base64
+  endscript
+}
+</source>
+<p>
+Replace the ip-address and port (127.0.0.1:8080) with the ip and port of your actual
+TSA.
+</p>
+<p>
+And the new shell script for verification (or manual signing), log-sign-tsa.sh
+</p>
+<source>
+#!/bin/bash
+ TSACLIENTDIR=/opt/signserver/dist-client
+ SCRIPTNAME=`basename $0`
+ OPTION=$1
+ DATE=`date +"%Y-%m-%d"`
+ if [ "$OPTION" = "sign" ]; then
+ FILE="$2"
+ SIGNATUREFILE="$3"
+ TSAURL="$4"
+ java -jar "$TSACLIENTDIR/timeStampClient.jar" -url $TSAURL -infile $FILE -outrep $SIGNATUREFILE -base64
+ exit 0
+elif [ "$OPTION" = "verify" ]; then
+ PUBLICKEY="$2"
+ FILE="$3"
+ SIGNATUREFILE="$4"
+ java -jar "$TSACLIENTDIR/timeStampClient.jar" -verify -inrep $SIGNATUREFILE -signerfile $PUBLICKEY
+ sha1sum $FILE
+ exit 0
+else
+ echo "Usage:"
+ echo "To sign files you have to edit the script and add the files you want signed" 
+ echo "$SCRIPTNAME sign"
+ echo "$SCRIPTNAME verify"
+ exit 0
+fi
+</source>
+<p>
+When verifying the time stamp token, the sha1 hash from the time stamp token
+(signed) and the calculated sha1 hash of the file is printed.
+You must compare them manually.
+</p>
+</subsection>
+<subsection name="Log signing using external script in JBoss">
+<p>(unsupported)
+</p><p>There is an implementation that runs an external script when JBoss log files are rolled-over. 
+This can be every hour for example.</p>
+<ul>
+<li>Stop JBoss</li>
+<li>Issue the command: ant jbosslogsigning</li>
+<li>Copy dist/ejbcalogsigning.jar to jboss.home/standalone/lib</li>
+<li>Configure jboss.home/server/default/conf/log4j.xml, according to below</li>
+<li>Create the script that is to be run (see example below)</li>
+<li>Start JBoss</li>
+</ul>
+<p>Replace the logging section in standalone.xml with something like the following in order to use the ScriptrunningDailyRollingFileAppender.</p>
+<source>
+&lt;!-- A time/date based rolling appender that signs rolled over log files using TSA --&gt;
+&lt;appender name="FILE" class="org.ejbca.appserver.jboss.ScriptrunningDailyRollingFileAppender">
+  &lt;errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/&gt;
+  &lt;param name="File" value="${jboss.server.log.dir}/server.log"/&gt;
+  &lt;param name="Append" value="false"/&gt;
+  &lt;param name="Script" value="/home/jboss/log-sign-tsa-jboss.sh"/&gt;
+  &lt;!-- Rollover at midnight each day --&gt;
+  &lt;param name="DatePattern" value="'.'yyyy-MM-dd"/&gt;
+  &lt;!-- Rollover at the top of each hour
+  &lt;param name="DatePattern" value="'.'yyyy-MM-dd-HH"/&gt;
+  --&gt;
+  &lt;!-- Rollover at the beginning of every minute
+  &lt;param name="DatePattern" value="'.'yyyy-MM-dd-HH-mm"/&gt;
+  --&gt;
+  &lt;layout class="org.apache.log4j.PatternLayout">
+    &lt;!-- The default pattern: Date Priority [Category] Message\n --&gt;
+    &lt;param name="ConversionPattern" value="%d %-5p [%c] %m%n"/&gt;
+    &lt;!-- The full pattern: Date MS Priority [Category] (Thread:NDC) Message\n
+    &lt;param name="ConversionPattern" value="%d %-5r %-5p [%c] (%t:%x) %m"/&gt;
+    --&gt;
+  &lt;/layout&gt;
+&lt;/appender&gt;
+</source>
+<p>Where /opt/log-sign-tsa-jboss.sh is your script that should be run to do the
+signing.</p>
+<source>
+#!/bin/bash
+TSACLIENTDIR=/opt/signserver/dist-client
+TSAURL="http://127.0.0.1:8080/signserver/tsa?signerId=1"
+SCRIPTNAME=`basename $0`FILE="$1"
+SIGNATUREFILE="$FILE.tsa"
+java -jar "$TSACLIENTDIR/timeStampClient.jar" -url $TSAURL -infile $FILE -outfile $SIGNATUREFILE
+exit 0
+</source>
+<p>
+You can verify time stamps with a time stamp client, for example the one that comes
+with SignServer TSA.
+</p>
+<source>
+java -jar timeStampClient.jar -verify -signerfile tsa1.pem -inrep server.log
+Token was validated successfully.
+Token was generated on: Fri Jul 28 18:59:00 CEST 2006
+Token hash alg: SHA1
+MessageDigest=1a02dc7e05d06df45d2e0f74da502513852064d5
+</source>
+<source>
+sha1sum server.log.2006-07-28-18-58
+1a02dc7e05d06df45d2e0f74da502513852064d5 *server.log.2006-07-28-18-58
+</source>
+<p>
+If the hashes from the time stamp token (MessageDigest) matches the hash from
+sha1sum, the file is verified, i.e. has not been changed since the time stamp token
+was generated.
+</p>
+</subsection>
 </section>
 
 </body>
