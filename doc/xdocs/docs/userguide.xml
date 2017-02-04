@@ -1126,6 +1126,49 @@ not appear, no limit is imposed.
 </source>
 </subsubsection>
 
+<subsubsection name="Key Usage">
+<p>
+Key usage is an extension defining the suggested purpose of this certificate. For users, certificate usage often separated in certificates used for signatures 
+(digitalSignature and Non-repudiation) and certificates used for encryption (Key encipherment and Data encipherment). 
+</p><p>
+For CA certificates Key Usage is normally set to 'Key certificate sign' and 'CRL sign'.
+</p><p>
+The fixed profiles have sensible defaults. See RFC 5280 for detailed explanation.
+</p>
+</subsubsection>
+
+<subsubsection name="Allow Key Usage Override">
+<p>
+This box should be checked if you want to allow users to over-ride the key usages defined in the profile when requesting a certificate. 
+When checking this it is possible to have one certificate profile, but still issue certificates for different purposes. Leave it disabled unless you are sure what you are doing.
+</p>
+</subsubsection>
+
+<subsubsection name="Extended Key Usage">
+<p>
+The meaning of Extended key usage is defined in <a href="http://www.ietf.org/rfc/rfc5280.txt">RFC5280</a>.
+Normally the values specified in the fixed certificate profiles are good for the usage the fixed profile is for. 
+</p>
+<p>
+You can define your own extended key usages very simply. In the 'Extended Key Usages' tab in the 'System Configuration' page in the Admin web, 
+add your custom extended key usage's OIDs and readable name. After adding the new key usage, it can be chosen in the 'Edit Certificate Profile' page. See also the <a href="adminguide.html#Extended%20Key%20Usages">Admin Guide</a>.
+</p>
+</subsubsection>
+
+<subsubsection name="Certificate Policies">
+<p>
+Certificate Policies indicates which policy a certificate issued with this profile is issued under. Certificate Policies are more described in several RFCs. 
+A certificate policy is on the form of an OID: 2.5.29.32.0
+</p><p>
+The OID 2.5.29.32.0 is the 'anyPolicy' as defined by RFC 5280. If you make your own policy you must create you own OID, which should be constructed from an 'Enterprise Number' assigned by IANA. 
+Getting an Enterprise Number is free and you can get it from <a href="http://www.iana.org/assignments/enterprise-numbers">IANA</a>.
+</p><p>
+For example. PrimeKeys enterprise number is 22408 and and OID can be constructed like 1.3.6.1.4.1.22408.1.1.1.1. Here 1.3.6.1.4.1 is IANA standard prefix, PrimeKey is 22408 and the following 
+stands for products->ejbca->attibutes->ejbcaDeviceCertificate. 
+The numbers after 22408 are defined by PrimeKey.
+</p>
+</subsubsection>
+
 <subsubsection name="Issuer Alternative Name">
 <p>
 Using the Issuer Alternative Name extension simply copies the Subject Alternative Name value from the issuing CA certificate and places it into the certificate produced.
@@ -1214,7 +1257,17 @@ You have to build the actual CRL Issuer software yourself. If set, and the certi
 <p>(a.k.a. Delta CRL Distribution Point)</p>
 <p>The Freshest CRL extension is used for Delta CRLs. How to issue delta CRLs is explained in CA configuration.
 The freshest CRL extension identifies how delta CRL information is obtained. The same syntax is used for this extension and the cRLDistributionPoints extension,
-</p> 
+</p>
+<p>From RFC5280:</p>
+<source>
+The freshest CRL extension identifies how delta CRL information is
+obtained.  The extension MUST be marked as non-critical by conforming
+CAs.  Further discussion of CRL management is contained in Section 5.
+
+The same syntax is used for this extension and the
+cRLDistributionPoints extension, and is described in Section
+4.2.1.13.  The same conventions apply to both extensions.
+</source>
 </subsubsection>
 
 <subsubsection name="OCSP Service Locator">
@@ -1264,22 +1317,6 @@ This means that if both are true the DN will have last-to-first (LDAP) DN order,
 For some references see <a href="http://www.ietf.org/rfc/rfc2253.txt">RFC2253</a> and <a href="http://www.ietf.org/rfc/rfc4514.txt">RFC4514</a>
 </p>
 </subsubsection>
-<subsubsection name="Extended Key Usage">
-<p>
-The meaning of Extended key usage is defined in <a href="http://www.ietf.org/rfc/rfc5280.txt">RFC5280</a>.
-Normally the values specified in the fixed certificate profiles are good for the usage the fixed profile is for. 
-</p>
-<p>
-You can define your own extended key usages very simply. In the 'Extended Key Usages' tab in the 'System Configuration' page in the Admin web, 
-add your custom extended key usage's OIDs and readable name. After adding the new key usage, it can be chosen in the 'Edit Certificate Profile' page. See also the <a href="adminguide.html#Extended%20Key%20Usages">Admin Guide</a>.
-</p>
-</subsubsection>
-
-<subsubsection name="Document Type List">
-<p>The DocumentTypeList extension is used to indicate the document types (as contained in the MRZ) that the corresponding document signer is allowed to produce. 
-The list should be separated with a comma ','. For example: "P", or "P,ID"</p>
-<p>See ICAO MRTD Technical Report LDS and PKI Maintenance for reference.</p>
-</subsubsection>
 
 <subsubsection name="Private Key Usage Period">
 <p>
@@ -1294,6 +1331,59 @@ notBefore = cert.notBefore + startOffset
 notAfter = notBefore + periodLength
 </source>
 </subsubsection>
+
+<subsubsection name="Qualified Certificate Statement">
+<p>
+The qualified certificate statement is generally described in RFC 3739 and in ETSI documents. 
+The following fields implements the predefined QC-statement from rfc3739. See section 3.2.6.1 in http://www.ietf.org/rfc/rfc3739.txt?number=3739. 
+RFC3739 does not specify if QC should be critical or not, it may be either
+</p>
+<ul>
+<li>Use PKIX QCSyntax-v2 - RFC3739 defines an older version (v1 from rfc3039) and a new (v2 from rfc3739)</li>
+<li>Semantics Id - an object identifier, for example 1.2.3.4.5</li>
+<li>RA Name - this component, if present, SHALL contain a name of one or more name registration authorities, responsible for registration of attributes or names associated with the subject (for example rfc822Name=)</li>
+</ul>
+<p>
+The next fields implements the QC-statements defined in the Qualified Certificate profile in ETSI TS 101 862:
+</p>
+<ul>
+<li>Use ETSI QC Compliance - Statement claiming that the certificates is a Qualified Certificate (section 5.2.1 in the profile document).</li>
+<li>Use ETSI Secure Signature Creation Device - Statement claiming that the private key related to the certified public key resides in a Secure Signature Creation Device (section 5.2.4 in the profile document).</li>
+<li>Use ETSI transaction value limit - Statement regarding limits on the value of transactions, if this is checked the next three fields must be filled in.</li>
+<ul>
+<li>Value Limit Currency - e.g. EUR, SEK, etc</li>
+<li>Value Limit Amount - e.g. 10000</li>
+<li>Value Limit Exponent - e.g. 0, 1, etc. Total value = amount * 10^exponent</li>
+</ul>
+</ul>
+<p>
+The fields for 'Custom QC-statement String' implements a QC-statement with the following ASN.1:
+</p>
+<source>
+qcStatement-YourCustom QC-STATEMENT ::= { SYNTAX YourCustomUTF8String
+ IDENTIFIED BY youroid }
+-- This statement gives you the possibility to define your own QC-statement
+-- using an OID and a simple UTF8String, with describing text. A sample text could for example be:
+-- This certificate, according to Act. No. xxxx Electronic Signature Law is a qualified electronic certificate
+
+YourCustomUTF8String ::= UTF8String
+</source>
+<ul>
+<li>Use Custom QC-statement String - Include this custom QC-statement in the QC-statements extension in the certificates.</li>
+<li>Custom QC-statement OID - your OID as defined above, you must define this OID yourself.</li>
+<li>Custom QC-statement Text - the describing text as defined above.</li>
+</ul>
+<p>A typical eIDAS QC Statement may consist of:</p>
+<ul>
+<li>id-etsi-qcs-QcCompliance</li>
+<li>id-qcs-pkixQCSyntax-v2</li>
+<li>id-etsi-qcs-QcSSCD </li>
+<li>id-etsi-qcs-QcPDS = https://www.primekey.se/repository </li>
+<li>id-etsi-qcs-QcType = 0.4.0.1862.1.6.1 (Electronic Signature)</li>
+<li>SematicsID = 0.4.0.194121.1.2</li>
+</ul>
+</subsubsection>
+
 <subsubsection name="Certificate Transparency (Enterprise only)">
 <p>This is a module in EJBCA Enterprise Edition that implements Certificate Transparency (CT) as specified in <a href="http://tools.ietf.org/html/rfc6962">RFC 6962</a>.
 The purpose of CT is to create public audit logs of all certificates issued by the public SSL/TLS CAs. The presence of audit records is planned to be required for EV certificates in Google Chrome from February 2015 (and other web browsers and non-EV certificates later on as well). Note that CT is only relevant for CAs issuing <em>public SSL/TLS</em> certificates; other types of CAs should not use CT. More information can be found on the <a href="http://www.certificate-transparency.org/">CT website</a>.</p>
@@ -1323,6 +1413,19 @@ by parentheses. For example, when entering DNSName "(top.secret).domain.se", the
 "(PRIVATE).domain.se" in its SubjectAlternativeName, but the certificate itself will have the DNSName "top.secret.domain.se" in its SubjectAlternativeName.
 EJBCA implements this feature according to RFC 6962.
 </p>
+
+<subsubsection name="Microsoft Template Value">
+<p>
+The Microsoft Template Value is a special Microsoft extension used in Domain Controller (AD controller) certificates. 
+It should only be used in certificates issued to Domain Controllers.
+</p>
+</subsubsection>
+
+<subsubsection name="Document Type List">
+<p>The DocumentTypeList extension is used to indicate the document types (as contained in the MRZ) that the corresponding document signer is allowed to produce. 
+The list should be separated with a comma ','. For example: "P", or "P,ID"</p>
+<p>See ICAO MRTD Technical Report LDS and PKI Maintenance for reference.</p>
+</subsubsection>
 
 </subsubsection>
 <subsubsection name="Cardnumber">
