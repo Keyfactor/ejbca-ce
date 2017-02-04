@@ -273,7 +273,10 @@
 			<h:outputLabel for="checkallowdnoverrideeei" value="#{web.text.ALLOW} "/>
 		</h:panelGroup>
 
-		<h:outputLabel for="checkallowkeyusageoverridegroup" value="#{web.text.ALLOWKEYUSAGEOVERRIDE}"/>
+		<h:panelGroup>
+		    <h:outputLabel for="checkallowkeyusageoverridegroup" value="#{web.text.ALLOWKEYUSAGEOVERRIDE}"/>
+	        <%=ejbcawebbean.getHelpReference("/userguide.html#Allow%20Key%20Usage%20Override")%>
+		</h:panelGroup>
 		<h:panelGroup id="checkallowkeyusageoverridegroup">
 			<h:selectBooleanCheckbox id="checkallowkeyusageoverride" value="#{certProfileBean.certificateProfile.allowKeyUsageOverride}" disabled="#{certProfilesBean.viewOnly}"/>
 			<h:outputLabel for="checkallowkeyusageoverride" value="#{web.text.ALLOW} "/>
@@ -375,13 +378,15 @@
 	<h:panelGrid columns="2" styleClass="edit-top subsection" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- X.509v3 extensions (PKIX) : Usages --%>
-
-		<h:outputLabel for="header_x509v3extensions_usages" value="#{web.text.X509EXTENSIONS}" style="font-weight: bold;"/>
+	    <h:outputLabel for="header_x509v3extensions_usages" value="#{web.text.X509EXTENSIONS}" style="font-weight: bold;"/>
+	    
 		<h:outputLabel id="header_x509v3extensions_usages" value="#{web.text.X509EXTENSIONS_USAGES}"/>
 
 		<%-- PKIX Key Usage (KU) extension --%>
-
-		<h:outputLabel for="cbkeyusagegroup" value="#{web.text.EXT_PKIX_KEYUSAGE}" style="font-weight: bold;"/>
+		<h:panelGroup>
+		    <h:outputLabel for="cbkeyusagegroup" value="#{web.text.EXT_PKIX_KEYUSAGE}" style="font-weight: bold;"/>
+	        <%=ejbcawebbean.getHelpReference("/userguide.html#Key%20Usage")%>
+		</h:panelGroup>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="cbkeyusagegroup">
 				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useKeyUsage}" rendered="#{!web.legacyInternetExplorer}"
@@ -443,7 +448,11 @@
 
 		<%-- PKIX Certificate Policies extension --%>
 
-		<h:outputLabel for="certificatePolicies" value="#{web.text.EXT_PKIX_CERTIFICATEPOLICIES}" style="font-weight: bold;"/>
+		<h:panelGroup>
+		    <h:outputLabel for="certificatePolicies" value="#{web.text.EXT_PKIX_CERTIFICATEPOLICIES}" style="font-weight: bold;"/>
+	        <%=ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Policies")%>
+	    </h:panelGroup>
+	    
 		<h:panelGrid id="certificatePolicies" columns="1">
 			<h:panelGroup>
 				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCertificatePolicies}" rendered="#{!web.legacyInternetExplorer}"
@@ -781,11 +790,13 @@
 	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- Qualified Certificates Statements (qcStatements) extension --%>
-
 		<h:outputLabel for="header_qcStatements" value="#{web.text.EXT_HEADER_QCSTATEMENTS}" style="font-weight: bold;"/>
 		<h:panelGroup id="header_qcStatements"/>
 
-		<h:outputLabel for="checkuseqcstatementgroup" value="#{web.text.EXT_PKIX_QCSTATEMENTS}"/>
+		<h:panelGroup>
+			<h:outputLabel for="checkuseqcstatementgroup" value="#{web.text.EXT_PKIX_QCSTATEMENTS}"/>
+	    	<%=ejbcawebbean.getHelpReference("/userguide.html#Qualified%20Certificate%20Statement")%>
+		</h:panelGroup>	    
 		<h:panelGroup id="checkuseqcstatementgroup">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useQCStatement}" rendered="#{!web.legacyInternetExplorer}"
 				disabled="#{certProfilesBean.viewOnly}"/>
