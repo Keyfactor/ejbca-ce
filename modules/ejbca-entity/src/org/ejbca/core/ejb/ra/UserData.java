@@ -360,14 +360,30 @@ public class UserData extends ProtectedData implements Serializable {
      */
     // @Column @Lob
     public String getExtendedInformationData() {
-        return extendedInformationData;
+        return this.getZzzExtendedInformationData();
     }
 
     /**
      * Non-searchable information about a user.
      */
     public void setExtendedInformationData(String extendedInformationData) {
-        this.extendedInformationData = extendedInformationData;
+        this.setZzzExtendedInformationData(extendedInformationData);
+    }
+
+    /** 
+     * Horrible work-around due to the fact that Oracle needs to have (LONG and) CLOB values last in order to avoid ORA-24816.
+     * 
+     * Since Hibernate sorts columns by the property names, naming this Z-something will apparently ensure that this column is used last.
+     * @deprecated Use {@link #getExtendedInformationData()} instead
+     */
+    @Deprecated
+    public String getZzzExtendedInformationData() {
+        return extendedInformationData;
+    }
+    /** @deprecated Use {@link #setExtendedInformationData(String)} instead */
+    @Deprecated
+    public void setZzzExtendedInformationData(final String zzzExtendedInformationData) {
+        this.extendedInformationData = zzzExtendedInformationData;
     }
 
     @Deprecated
@@ -395,12 +411,28 @@ public class UserData extends ProtectedData implements Serializable {
     // @Column @Lob
     @Override
     public String getRowProtection() {
-        return rowProtection;
+        return this.getZzzRowProtection();
     }
 
     @Override
     public void setRowProtection(String rowProtection) {
-        this.rowProtection = rowProtection;
+        this.setZzzRowProtection(rowProtection);
+    }
+
+    /** 
+     * Horrible work-around due to the fact that Oracle needs to have (LONG and) CLOB values last in order to avoid ORA-24816.
+     * 
+     * Since Hibernate sorts columns by the property names, naming this Z-something will apparently ensure that this column is used last.
+     * @deprecated Use {@link #getRowProtection()} instead
+     */
+    @Deprecated
+    public String getZzzRowProtection() {
+        return rowProtection;
+    }
+    /** @deprecated Use {@link #setRowProtection(String)} instead */
+    @Deprecated
+    public void setZzzRowProtection(final String zzzRowProtection) {
+        this.rowProtection = zzzRowProtection;
     }
 
     //

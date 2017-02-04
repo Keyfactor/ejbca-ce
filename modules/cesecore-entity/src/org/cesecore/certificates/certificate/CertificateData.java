@@ -466,7 +466,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      */
     // @Column @Lob
     public String getBase64Cert() {
-        return base64Cert;
+        return this.getZzzBase64Cert();
     }
 
     /**
@@ -475,7 +475,23 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param base64Cert base64 encoded certificate
      */
     public void setBase64Cert(String base64Cert) {
-        this.base64Cert = base64Cert;
+        this.setZzzBase64Cert(base64Cert);
+    }
+
+    /** 
+     * Horrible work-around due to the fact that Oracle needs to have (LONG and) CLOB values last in order to avoid ORA-24816.
+     * 
+     * Since Hibernate sorts columns by the property names, naming this Z-something will apparently ensure that this column is used last.
+     * @deprecated Use {@link #getBase64Cert()} instead
+     */
+    @Deprecated
+    public String getZzzBase64Cert() {
+        return base64Cert;
+    }
+    /** @deprecated Use {@link #setBase64Cert(String)} instead */
+    @Deprecated
+    public void setZzzBase64Cert(final String zzzBase64Cert) {
+        this.base64Cert = zzzBase64Cert;
     }
 
     /**
@@ -578,12 +594,30 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     // @Column @Lob
+    @Override
     public String getRowProtection() {
-        return rowProtection;
+        return this.getZzzRowProtection();
     }
 
+    @Override
     public void setRowProtection(String rowProtection) {
-        this.rowProtection = rowProtection;
+        this.setZzzRowProtection(rowProtection);
+    }
+
+    /** 
+     * Horrible work-around due to the fact that Oracle needs to have (LONG and) CLOB values last in order to avoid ORA-24816.
+     * 
+     * Since Hibernate sorts columns by the property names, naming this Z-something will apparently ensure that this column is used last.
+     * @deprecated Use {@link #getRowProtection()} instead
+     */
+    @Deprecated
+    public String getZzzRowProtection() {
+        return rowProtection;
+    }
+    /** @deprecated Use {@link #setRowProtection(String)} instead */
+    @Deprecated
+    public void setZzzRowProtection(final String zzzRowProtection) {
+        this.rowProtection = zzzRowProtection;
     }
 
     //

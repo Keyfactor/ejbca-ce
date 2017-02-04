@@ -57,7 +57,7 @@
             <basic fetch="EAGER" name="revocationDate"><column name="revocationDate" column-definition="NUMBER(19)" nullable="false"/></basic>
             <basic fetch="EAGER" name="revocationReason"><column name="revocationReason" column-definition="NUMBER(10)" nullable="false"/></basic>
             <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
-            <basic fetch="EAGER" name="base64Cert"><column name="base64Cert" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzBase64Cert"><column name="base64Cert" column-definition="CLOB"/><lob/></basic>
             <basic fetch="EAGER" name="username"><column name="username" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="tag"><column name="tag" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="certificateProfileId"><column name="certificateProfileId" column-definition="NUMBER(10)" nullable="false"/></basic>
@@ -65,8 +65,11 @@
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="NUMBER(19)" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR2(2000 byte)" nullable="true"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
+            <!-- Required by Oracle + Hibernate ORA-24816 work-around -->
+            <transient name="base64Cert"/>
+            <transient name="rowProtection"/>
         </attributes>
     </entity>
     <entity class="org.cesecore.certificates.certificate.Base64CertData" access="PROPERTY" metadata-complete="false">
@@ -361,11 +364,14 @@
             <basic fetch="EAGER" name="certificateProfileId"><column name="certificateProfileId" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="hardTokenIssuerId"><column name="hardTokenIssuerId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="extendedInformationData"><column name="extendedInformationData" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzExtendedInformationData"><column name="extendedInformationData" column-definition="CLOB"/><lob/></basic>
             <basic fetch="EAGER" name="keyStorePassword"><column name="keyStorePassword" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="cardNumber"><column name="cardNumber" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
+            <!-- Required by Oracle + Hibernate ORA-24816 work-around -->
+            <transient name="extendedInformationData"/>
+            <transient name="rowProtection"/>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData" access="PROPERTY" metadata-complete="false">
