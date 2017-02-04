@@ -141,14 +141,13 @@
             <basic fetch="EAGER" name="tokenIssuerId"><column name="tokenIssuerId" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenMatchKey"><column name="tokenMatchKey" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenMatchOperator"><column name="tokenMatchOperator" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="zzzTokenMatchValue"><column name="tokenMatchValue" column-definition="VARCHAR(2000)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="tokenMatchValue"><column name="tokenMatchValue" column-definition="VARCHAR(2000)" nullable="false"/></basic>
             <basic fetch="EAGER" name="roleId"><column name="roleId" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="memberBindingType"><column name="memberBindingType" column-definition="VARCHAR(254)"/></basic>
             <basic fetch="EAGER" name="memberBindingValue"><column name="memberBindingValue" column-definition="VARCHAR(254)"/></basic>
             <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
             <!-- Required by Oracle + Hibernate ORA-24816 work-around -->
-            <transient name="tokenMatchValue"/>
             <transient name="rowProtection"/>
         </attributes>
     </entity> 

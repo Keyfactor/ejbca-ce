@@ -133,25 +133,11 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
 
     /** @return the actual value with which we match */
     public String getTokenMatchValue() {
-        return getZzzTokenMatchValue();
+        return tokenMatchValue;
     }
     
     public void setTokenMatchValue(final String tokenMatchValue) {
-        this.setZzzTokenMatchValue(tokenMatchValue);
-    }
-
-    /** 
-     * Horrible work-around due to the fact that Oracle needs to have LONG and CLOB values last in order to avoid ORA-24816.
-     * 
-     * Since Hibernate sorts columns by the property names, naming this Z-something will apparently ensure that this column is used last.
-     * @deprecated Use {@link #getTokenMatchValue()} instead
-     */
-    public String getZzzTokenMatchValue() {
-        return tokenMatchValue;
-    }
-    /** @deprecated Use {@link #setTokenMatchValue(String)} instead */
-    public void setZzzTokenMatchValue(final String zzzTokenMatchValue) {
-        this.tokenMatchValue = zzzTokenMatchValue;
+        this.tokenMatchValue = tokenMatchValue;
     }
 
     /** @return the role to which this member belongs or 0 if it is not assigned to a role. */
@@ -198,7 +184,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     }
 
     /** 
-     * Horrible work-around due to the fact that Oracle needs to have LONG and CLOB values last in order to avoid ORA-24816.
+     * Horrible work-around due to the fact that Oracle needs to have (LONG and) CLOB values last in order to avoid ORA-24816.
      * 
      * Since Hibernate sorts columns by the property names, naming this Z-something will apparently ensure that this column is used last.
      * @deprecated Use {@link #getRowProtection()} instead

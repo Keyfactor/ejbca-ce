@@ -134,11 +134,18 @@ public class DatabaseSchemaTest {
         LOG.debug("Allocating memory..");
         VARCHAR_80B = getClob(80);
         VARCHAR_250B = getClob(250);
-        VARCHAR_400B = getClob(400-5);
-        VARCHAR_2000B = getClob(2000-5);
+        VARCHAR_400B = getClob(400);
+        VARCHAR_2000B = getClob(2000);
         CLOB_10KiB = getClob(10 * 1024);
         CLOB_100KiB = getClob(100 * 1024);
         CLOB_1MiB = getClob(1024 * 1024);
+        LOG.debug("VARCHAR_80B   is      " + VARCHAR_80B.length() + " chars and     " + VARCHAR_80B.getBytes().length + " bytes.");
+        LOG.debug("VARCHAR_250B  is     " + VARCHAR_250B.length() + " chars and     " + VARCHAR_250B.getBytes().length + " bytes.");
+        LOG.debug("VARCHAR_400B  is     " + VARCHAR_400B.length() + " chars and     " + VARCHAR_400B.getBytes().length + " bytes.");
+        LOG.debug("VARCHAR_2000B is    " + VARCHAR_2000B.length() + " chars and    " + VARCHAR_2000B.getBytes().length + " bytes.");
+        LOG.debug("CLOB_10KiB    is   " + CLOB_10KiB.length()     + " chars and   " + CLOB_10KiB.getBytes().length + " bytes.");
+        LOG.debug("CLOB_100KiB   is  " + CLOB_100KiB.length()     + " chars and  " + CLOB_100KiB.getBytes().length + " bytes.");
+        LOG.debug("CLOB_1MiB     is " + CLOB_1MiB.length()        + " chars and " + CLOB_1MiB.getBytes().length + " bytes.");
         LOG.debug("Filling HashMaps..");
         HASHMAP_200K.put("object", getLob(196 * 1024)); // It need to be less than 200KiB in Serialized format..
         HASHMAP_1M.put("object", getLob(996 * 1024)); // It need to be less than 1MiB in Serialized format.. 
