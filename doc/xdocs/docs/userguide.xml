@@ -498,6 +498,7 @@ Some specific standards mandates that certificates are kept on the CRL even afte
 from future CRLs, and thus the CRL can grow infinitely if you are not careful. For example CABForum specifies this in their
 'Minimum Requirements for the Issuance and Management of Publicly-Trusted Code Signing Certificates', version 1.1, section 13.2.1.  
 </p>
+<p>When this option is selected the expiredCertsOnCRL CRL Extension as per ISO 9594-8 par. 8.5.2.12 is added to the CRL.</p>
 <p>
 Note: This setting should be set at CA creation and then never changed. This is because if unchecked, revoked and expired certificates will be set in state 'archived' and not be put on a CRL again, 
 even if the checkbox is re-checked again.
