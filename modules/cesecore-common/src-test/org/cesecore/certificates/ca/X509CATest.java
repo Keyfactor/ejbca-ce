@@ -684,8 +684,8 @@ public class X509CATest {
         try {
             certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
             assertNotNull(certificate);
-            assertFalse(StringUtils.equals(emailUnescaped, CertTools.getSubjectAlternativeName(certificate)));
-            assertFalse(StringUtils.equals(emailEscaped, CertTools.getSubjectAlternativeName(certificate)));
+            assertFalse(StringUtils.equals("rfc822name=" + emailUnescaped, CertTools.getSubjectAlternativeName(certificate)));
+            assertFalse(StringUtils.equals("rfc822name=" + emailEscaped, CertTools.getSubjectAlternativeName(certificate)));
         } catch (CAOfflineException e) {
             fail("Certificate could not be created: " + e.getMessage());
         }
