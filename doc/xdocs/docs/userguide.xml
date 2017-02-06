@@ -1129,7 +1129,7 @@ not appear, no limit is imposed.
 <subsubsection name="Key Usage">
 <p>
 Key usage is an extension defining the suggested purpose of this certificate. For users, certificate usage often separated in certificates used for signatures 
-(digitalSignature and Non-repudiation) and certificates used for encryption (Key encipherment and Data encipherment). 
+(Digital signature and Non-repudiation) and certificates used for encryption (Key encipherment and Data encipherment). 
 </p><p>
 For CA certificates Key Usage is normally set to 'Key certificate sign' and 'CRL sign'.
 </p><p>
