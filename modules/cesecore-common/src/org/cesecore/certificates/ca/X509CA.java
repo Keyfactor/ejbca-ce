@@ -1413,7 +1413,8 @@ public class X509CA extends CA implements Serializable {
                 }
             }
             if(generalName.getTagNo() == 1) {
-                final String str = CertTools.getGeneralNameString(1, generalName.getName());                if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
+                final String str = CertTools.getGeneralNameString(1, generalName.getName());                
+                if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
                     // Remove '\' from the email that will end up on the certificate
                     String certBuilderEmailValue = StringUtils.remove(str, "rfc822name=");
                     certBuilderEmailValue = StringUtils.remove(certBuilderEmailValue, '\\');                    // Replace the old value with the new

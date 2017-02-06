@@ -45,6 +45,7 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -649,19 +650,19 @@ public class X509CATest {
         final KeyPair keypair = KeyTools.genKeys("1024", "RSA");
         final X509CA ca = createTestCA(cryptoToken, "CN=foo");
         
-        String emailPlane = "user@user.com";
+        String emailPlain = "user@user.com";
         String emailEscaped = "user\\+plus@user.com";
         String emailUnescaped = "user+plus@user.com";
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
    
         // test with no plus character in email
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailPlane, emailPlane, 
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailPlain, emailPlain, 
                 new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         Certificate certificate = null;
         try {
             certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
             assertNotNull(certificate);
-            assertEquals("rfc822name=" + emailPlane, CertTools.getSubjectAlternativeName(certificate));
+            assertEquals("rfc822name=" + emailPlain, CertTools.getSubjectAlternativeName(certificate));
         } catch (CAOfflineException e) {
             fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
         }
@@ -683,9 +684,10 @@ public class X509CATest {
         try {
             certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
             assertNotNull(certificate);
-            assertEquals("rfc822name=user", CertTools.getSubjectAlternativeName(certificate));
+            assertFalse(StringUtils.equals(emailUnescaped, CertTools.getSubjectAlternativeName(certificate)));
+            assertFalse(StringUtils.equals(emailEscaped, CertTools.getSubjectAlternativeName(certificate)));
         } catch (CAOfflineException e) {
-            fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
+            fail("Certificate could not be created: " + e.getMessage());
         }
     }
 	
