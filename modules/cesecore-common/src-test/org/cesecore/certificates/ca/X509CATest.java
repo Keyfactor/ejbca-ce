@@ -684,6 +684,9 @@ public class X509CATest {
         try {
             certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
             assertNotNull(certificate);
+            // An unescaped '+' character is interpreted as a separator between two connected subjectAltName fields. So "rfc822Name=user+plus@user.com" is 
+            // handled as "rfc822Name=user" and "plus@user.com". Since the second part does not map to any known fields, the resulting SubjectAltName is 
+            // "rfc822Name=user" 
             assertFalse(StringUtils.equals("rfc822name=" + emailUnescaped, CertTools.getSubjectAlternativeName(certificate)));
             assertFalse(StringUtils.equals("rfc822name=" + emailEscaped, CertTools.getSubjectAlternativeName(certificate)));
         } catch (CAOfflineException e) {
