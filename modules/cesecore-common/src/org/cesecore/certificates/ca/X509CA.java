@@ -1417,7 +1417,8 @@ public class X509CA extends CA implements Serializable {
                 if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
                     // Remove '\' from the email that will end up on the certificate
                     String certBuilderEmailValue = StringUtils.remove(str, "rfc822name=");
-                    certBuilderEmailValue = StringUtils.remove(certBuilderEmailValue, '\\');                    // Replace the old value with the new
+                    certBuilderEmailValue = StringUtils.remove(certBuilderEmailValue, '\\');
+                    // Replace the old value with the new
                     gns[j] = new GeneralName(1, new DERIA5String(certBuilderEmailValue));
                 }
             }
