@@ -68,6 +68,8 @@
     <property name="mod.peerconnector-rar.lib" location="${mod.dist.path}/peerconnector.rar" />
     <property name="mod.peerconnector-war.lib" location="${mod.dist.path}/peerconnector.war" />
     <property name="mod.peerconnector-publ.lib" location="${mod.dist.path}/peerconnector-publ.jar" />
+    <property name="mod.acme.path" location="${mod.path}/acme" />
+    <property name="mod.acme.war" location="${mod.dist.path}/acme.war" />
     <property name="mod.admin-gui.path" location="${mod.path}/admin-gui" />
     <property name="mod.admin-gui.war" location="${mod.dist.path}/adminweb.war" />
     <property name="mod.cmp-war.path" location="${mod.path}/ejbca-cmp-war" />
@@ -222,6 +224,9 @@
 	</path>
 	<path id="lib.quickserver.classpath"><fileset dir="${ejbca.home}/lib/quickserver" includes="QuickServer.jar"/></path>
 	<path id="lib.jaxb-namespaceprfixmapper-interfaces.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/></path>
+	<path id="lib.json-simple.classpath"><fileset dir="${ejbca.home}/lib" includes="json-simple-*.jar"/></path>
+	<path id="lib.ninbus-jose-jwt.classpath"><fileset dir="${ejbca.home}/lib/" includes="nimbus-jose-jwt-*.jar"/></path>
+	<path id="lib.json-smart.classpath"><fileset dir="${ejbca.home}/lib/" includes="json-smart-*.jar"/></path>
 
 	<path id="lib.utils.classpath">
 		<fileset dir="${ejbca.home}/lib">
@@ -375,5 +380,9 @@
     <condition property="mod.statedump.exists">
         <available file="${mod.statedump.path}/build.xml" />
     </condition>
+
+	<condition property="mod.acme.exists">
+		<available file="${mod.acme.path}/build.xml" />
+	</condition>
 
 </project>
