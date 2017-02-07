@@ -689,6 +689,7 @@ public class X509CATest {
             // "rfc822Name=user" 
             assertFalse(StringUtils.equals("rfc822name=" + emailUnescaped, CertTools.getSubjectAlternativeName(certificate)));
             assertFalse(StringUtils.equals("rfc822name=" + emailEscaped, CertTools.getSubjectAlternativeName(certificate)));
+            assertEquals("rfc822name=user", CertTools.getSubjectAlternativeName(certificate));
         } catch (CAOfflineException e) {
             fail("Certificate could not be created: " + e.getMessage());
         }
