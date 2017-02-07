@@ -435,6 +435,13 @@
 			replacement-web-uri="ra-gui.war"
 			replacement-context-root="/ejbca/ra"
 		/>
+		<war-replacement-in-module
+				replacement-tag="!--@acme.war@-->"
+				replacement-file="${eardd.src}/META-INF/application.xml"
+				replacement-enabled="${mod.acme.exists}"
+				replacement-web-uri="acme.war"
+				replacement-context-root="/ejbca/acme"
+		/>
 		<antcall target="va_replacings_in_application.xml">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
 		</antcall>
@@ -472,6 +479,8 @@
                 <include name="log4j-1.2.16.jar" unless="jbosseap6-specials"/>
                 <include name="ldap.jar" />
                 <include name="commons-*.jar" />
+				<include name="nimbus-jose-jwt-*.jar"/>
+				<include name="json-smart-*.jar"/>
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/ct" erroronmissingdir="false">
                 <!-- Certificate Transparency -->
@@ -507,6 +516,7 @@
                 <include name="peerconnector.war" />
                 <include name="peerconnector-ejb.jar" />
                 <include name="ra-gui.war" />
+				<include name="acme.war" />
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="externalra-service.jar" />
