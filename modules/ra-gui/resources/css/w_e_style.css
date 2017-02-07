@@ -1392,9 +1392,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
       height: 25.5px; } }
   .cas-menu-link:hover, .cas-menu-link:focus,
   .enroll-menu-link:hover, .enroll-menu-link:focus,
-  .pure-menu-link:hover, .pure-menu-link:focus,
-  .requests-menu-link:hover, .requests-menu-link:focus,
-  .search-menu-link:hover, .search-menu-link:focus {
+  .pure-menu-link:hover, .pure-menu-link:focus {
     background: #fff; }
 
   ul.pure-menu-list {
