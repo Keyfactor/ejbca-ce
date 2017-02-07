@@ -2685,8 +2685,6 @@ the number of copies and uploading a SVG formatted template. There
 exists a template in 'src/cli/svgTemplate/Batch PIN envelope print.svg' 
 that can be used for testing.
 </p><p>
-For more information how to write EJBCA SVG templates see: http://wiki.ejbca.org/ (Administration->hardtokenprofiles). 
-</p><p>
 A good SVG client can be downloaded from inkscape.org 
 </p><p>
 In order to renew the list of available printers you must restart
@@ -6330,9 +6328,6 @@ Appends the information from the offical event to the console or file. This is
 the same target where all the other info/debug output is sent to. There are no
 protection from alteration and events sent to this device cannot be fetched
 back to EJBCA for display in the Admin GUI.
-</p>
-<p>
-You can find information about configuring log4j on JBoss in the EJBCA <a href="http://wiki.ejbca.org/ejbca-install#toc5">wiki</a>.
 </p>
 </subsubsection>
 <subsubsection name="IntegrityProtectedDevice (EJBCA Enterprise only)">
