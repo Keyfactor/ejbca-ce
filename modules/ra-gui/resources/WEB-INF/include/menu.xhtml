@@ -133,13 +133,31 @@
                         	</ul>
                         </li>
                         </ui:remove>
-                        	<ui:remove>
-                        	<!-- Not yet implemented for 6.6.0, but put here as a placeholder. 
                         <ui:fragment rendered="#{raAccessBean.authorizedToRoles}">
-                            <li class="pure-menu-item">
-                                <h:outputLink value="#" styleClass="pure-menu-link">Roles Management</h:outputLink>
+                            <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+                                <h:selectBooleanCheckbox id="web-express-roles" class="web-express tablet"/>
+                                <label for="web-express-roles" class="web-express tablet">&nbsp;</label>
+                                <a href="#" id="roles" class="pure-menu-link roles-menu-link">#{msg.menu_pagetitle_role_management}</a>
+                                <ul class="pure-menu-children">
+                                    <ui:fragment rendered="#{raAccessBean.authorizedToRoleRules}">
+                                        <li class="pure-menu-item">
+                                            <h:outputLink value="roles.xhtml" styleClass="pure-menu-link role-menu-link">
+                                                <h:outputText value="#{msg.menu_pagetitle_roles}"/>
+                                            </h:outputLink>
+                                            </li>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{raAccessBean.authorizedToRoleMembers}">
+                                        <li class="pure-menu-item">
+                                                <h:outputLink value="role_members.xhtml" styleClass="pure-menu-link role-menu-link">
+                                                    <h:outputText value="#{msg.menu_pagetitle_role_members}"/>
+                                                </h:outputLink>
+                                            </li>
+                                    </ui:fragment>
+                                </ul>
                             </li>
                         </ui:fragment>
+                        <ui:remove>
+                        <!-- Not yet implemented for 6.6.0, but put here as a placeholder. 
                         <li class="pure-menu-item pure-menu-allow-hover"><h:outputLink value="#" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_documentation}"/></h:outputLink></li>
                         -->
                         </ui:remove>
