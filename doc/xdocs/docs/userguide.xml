@@ -22,11 +22,6 @@ To go straight ahead and learn how to configure profiles and issue server certif
 </section>
 
 <section name="EJBCA Administration">
-<subsection name="Administrative tutorials">
-<p>
-There are additional documentation and administrative tutorial movies at <a href="http://wiki.ejbca.org/">http://wiki.ejbca.org/</a>.
-</p>
-</subsection>
 <subsection name="Administrating EJBCA">
 <p>
 You can administer EJBCA using a web browser and the Admin GUI, this is the easiest way. 
