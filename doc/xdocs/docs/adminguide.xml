@@ -6504,6 +6504,13 @@ You can, in run-time, change between DEBUG and INFO logging with the simple jbos
 &lt;/subsystem>
 </source>
 </subsection>
+<subsection name="Log Signing">
+<p>There are many ways to fulfil requirements on log signing, aka signed log files.</p>
+<ul>
+<li>The built in EJBCA <a href="security.html#Database%20Integrity%20Protection">Database Integrity Protection</a>.</li>
+<li>Sign logs with <a href="security.html#External%20Log%20Signing">external tools</a> as they are being rotated.</li>
+</ul>
+</subsection>
 </section>
 
 <section name="Command Line Interfaces">
