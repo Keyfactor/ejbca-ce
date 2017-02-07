@@ -162,6 +162,14 @@ public class RaAccessBean implements Serializable {
     }
     
     public boolean isAuthorizedToRoles() {
+        return isAuthorizedToRoleRules() || isAuthorizedToRoleRules();
+    }
+    
+    public boolean isAuthorizedToRoleRules() {
+        return isAuthorized(StandardRules.VIEWROLES.resource());
+    }
+    
+    public boolean isAuthorizedToRoleMembers() {
         return isAuthorized(StandardRules.VIEWROLES.resource());
     }
 
