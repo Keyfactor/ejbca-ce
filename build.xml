@@ -296,12 +296,11 @@
 		<echo message="Plugins found!"/>
     	<mkdir dir="${ejbca.plugin.gen.path}/lib"/>
         <script language="javascript"> <![CDATA[
-		    importClass(java.io.File);
 		    var path = project.getProperty ("ejbca.plugin.collection");
 
         	// Build one plugin at a time
         	while (path != null) {
-		        var i = path.indexOf (File.pathSeparatorChar);
+		        var i = path.indexOf (java.io.File.pathSeparatorChar);
 		        var plugin_file = path;
 		        if (i > 0) {
 		            plugin_file = path.substring (0, i);
