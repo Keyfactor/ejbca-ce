@@ -182,7 +182,6 @@ java org.ejbca.ui.cli.ImportMSCACertificates /path/certdump.txt "MS CA v1"
   <ul>
     <li>EJBCA and SmartCard Logon is described <a href="#Microsoft%20smart%20card%20logon">here</a> and <a href="#EJBCA%20with%20GemSAFE%20Toolbox">here</a>.</li>
     <li>Autoenroll is done with a separate Autoenroll proxy component. Contact <a href="https://www.primekey.se/">PrimeKey</a> for information on this.</li>
-    <li>The Wiki has an <a href="http://wiki.ejbca.org/sample-certificates">index of sample MS certificates</a> can be used for configuring new certificate profiles.</li>
   </ul>
   </subsubsection>
   </subsection>

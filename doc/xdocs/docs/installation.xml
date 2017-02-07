@@ -16,8 +16,6 @@ The EJBCA Homepage can be found at <a href="https://www.ejbca.org/">https://www.
 Information about contacting the EJBCA team, contributing to
 EJBCA, etc can be found through the Homepage.
 </p><p>
-More documentation can also be found on the homepage and on the wiki site <a href="http://wiki.ejbca.org/">http://wiki.ejbca.org/</a>.
-</p><p>
 EJBCA is completely written in Java and should as such run on any
 platform where a JEE server runs. Development and testing is
 performed on Linux and Windows platforms.
