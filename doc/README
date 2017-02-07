@@ -21,8 +21,6 @@ In the subdirectories there hides some other docs:
 - samples contains some sample code that does not fit on the source tree
 - developer contains architecture documents and information for developers.
 
-There is also a good batch of documentation at http://wiki.ejbca.org/
-
 Installation
 ------------
 Follow the installation instructions in the User's Guide, either built above, or from https://www.ejbca.org/.
