@@ -84,7 +84,7 @@ Contributors are asked if they want to have their name and optional contact info
 <ul>
 <li>An operating system that can run Java (Linux, OSX, Windows..). Most developers use Ubuntu/Debian.</li>
 <li>Eclipse JEE edition with an additional Subversion (SVN) plugin installed.</li>
-<li>OpenJDK 7, or OracleJDK 7, or later</li>
+<li>OpenJDK 8, or OracleJDK 8, or later</li>
 <li>Apache Ant 1.9.x (with all the extras that comes with the zip from apache.org or 'ant-optional' Ubuntu package)</li>
 <li>A supported application server (WildFly 9, JBoss EAP, JBoss AS 7.1.1.GA, etc)</li>
 <li>A favorite database supported by EJBCA that is easy to work with (H2, MariaDB, MySQL, PostgreSQL.).</li>
@@ -108,9 +108,6 @@ What you need to know to develop EJBCA
     <li>Databases</li>
 </ul>
 </ul>
-    <p>
-    The <a href="http://wiki.ejbca.org/developers">EJBCA Wiki</a> have more information you need to get started with EJBCA development.
-    </p>
 </subsection>
 <subsection name="Using SVN">
 <p>

@@ -33,7 +33,6 @@
 
             <menu name="Other documentation">
                 <item name="FAQ"		  href="/faq.html"/>
-                <item name="Wiki"   href="http://wiki.ejbca.org/"/>
             </menu>
 
         </menusection>
