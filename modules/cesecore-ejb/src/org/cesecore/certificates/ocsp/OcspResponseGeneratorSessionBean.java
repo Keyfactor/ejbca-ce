@@ -1278,6 +1278,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             certStatus = null; // null means "good" in OCSP
                             if (transactionLogger.isEnabled()) {
                                 transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD);
+                                transactionLogger.paramPut(TransactionLogger.REV_REASON, CRLReason.certificateHold);
                             }
                         } else if (OcspConfigurationCache.INSTANCE.isNonExistingRevoked(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding()) &&
                                 OcspSigningCache.INSTANCE.getEntry(certId) != null) {
@@ -1286,6 +1287,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     CRLReason.lookup(CRLReason.certificateHold)));
                             if (transactionLogger.isEnabled()) {
                                 transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED); 
+                                transactionLogger.paramPut(TransactionLogger.REV_REASON, CRLReason.certificateHold);
                             }
                             addExtendedRevokedExtension = true;
                         } else {
@@ -1293,6 +1295,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             certStatus = new UnknownStatus();
                             if (transactionLogger.isEnabled()) {
                                 transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_UNKNOWN);
+                                transactionLogger.paramPut(TransactionLogger.REV_REASON, CRLReason.certificateHold);
                             }
                         }
                     } else if (status.equals(CertificateStatus.REVOKED)) {
@@ -1302,6 +1305,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 CRLReason.lookup(status.revocationReason)));
                         if (transactionLogger.isEnabled()) {
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
+                            transactionLogger.paramPut(TransactionLogger.REV_REASON, status.revocationReason);
                         }
                         // If we have an explicit value configured for this certificate profile, we override the the current value with this value
                         if (status.certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE &&

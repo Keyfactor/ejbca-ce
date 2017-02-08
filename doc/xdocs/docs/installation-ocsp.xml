@@ -503,7 +503,8 @@ ISSUER_NAME_HASH, SHA1 hash of the issuer DN.<br/>
 ISSUER_KEY, The public key of the issuer of a requested certificate.<br/>
 DIGEST_ALGOR, Algorithm used by requested certificate to hash issuer key and issuer name.<br/>
 SERIAL_NO, Serial number of the a requested certificate.<br/>
-CERT_STATUS, The requested certificate revocation status.<br/>
+CERT_STATUS, The requested certificate revocation status. 0=good, 1=revoked, 2=unknown<br/>
+REV_REASON, The requested certificate revocation reason, or -1, if not revoked. Set to 6 (certificateHold) when certificate is unknown, even if status returned is good.<br/>
 REPLY_TIME, The time measured between when the request is received by the responder and when the response is sent. This time includes the time it takes to read the request bytes.<br/>
 PROCESS_TIME, The time measured between when the request has been read by the responder and when the response is sent. This time starts after the request bytes have been read.<br/>
 CERT_PROFILE_ID, The integer identifier of the certificate profile that was used to issue the requested certificate.<br/>
