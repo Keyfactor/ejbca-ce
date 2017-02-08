@@ -5883,6 +5883,7 @@ keyword "error". The error message will be visible in the log file.
 </source>
 <p>In order to avoid that certificates go missing in the CertSafe server if publishing fails (network down etc), it's recommended to configure a Publish Queue process service, as described below.
 </p>
+<p>You can find more information and full specifications in <a href="https://jira.primekey.se/browse/ECA-3437">ECA-3437</a>.</p>
 </subsubsection>
 
 </subsection>
