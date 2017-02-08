@@ -13,6 +13,7 @@
 package org.cesecore.certificates.ocsp.logging;
 
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.config.OcspConfiguration;
 
 /**
@@ -64,10 +65,16 @@ public class TransactionLogger extends PatternLogger {
     public static final String NUM_CERT_ID = "NUM_CERT_ID";
 
     /**
-     * The requested certificate revocation status.
+     * The requested certificate revocation status, 0=good, 1=revoked, 2=unknown (see OCSPResponseItem).
      */
     public static final String CERT_STATUS = "CERT_STATUS";
-    
+
+    /**
+     * The requested certificate revocation reason, or NOT_REVOKED, if unrevoked (see RevocationReasons).
+     * Set to 6 (certificateHold) when certificate is unknown, even if status returned is good.
+     */
+    public static final String REV_REASON = "REV_REASON";
+
     /** The id of the certificate profile that was used to issue the requested certificate. */
     public static final String CERT_PROFILE_ID = "CERT_PROFILE_ID";
 
@@ -97,5 +104,6 @@ public class TransactionLogger extends PatternLogger {
         paramPut(PatternLogger.PROCESS_TIME, "-1");
         paramPut(CERT_PROFILE_ID, String.valueOf(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
         paramPut(FORWARDED_FOR, "");
+        paramPut(REV_REASON, String.valueOf(RevocationReasons.NOT_REVOKED.getDatabaseValue()));
     }
 }
