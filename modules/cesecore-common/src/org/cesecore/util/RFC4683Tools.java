@@ -44,7 +44,7 @@ import org.cesecore.certificates.util.DnComponents;
  * certificate is also the person corresponding to a particular sensitive identifier 
  * (see {@link https://tools.ietf.org/html/rfc4683}).
  * 
- * @version $Id: RFC4683Tools.java 24591 2016-10-28 08:32:17Z anjakobs $
+ * @version $Id$
  */
 public final class RFC4683Tools {
 
