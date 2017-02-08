@@ -102,6 +102,8 @@ public final class RFC4683Tools {
                     if (tokens.length == 4) {
                         final String newSim = generateInternalSimString(tokens[0], tokens[1], tokens[2], tokens[3]);
                         san = san.replace(sim, newSim);
+                    } else if (tokens.length == 3) {
+                        // NOOP
                     } else {
                         throw new IllegalArgumentException("Wrong SIM input string with " + tokens.length + " tokens.");
                     }
@@ -174,38 +176,6 @@ public final class RFC4683Tools {
             LOG.debug("SIM string PEPSI created: " + pepsi);
         }
         return result.toString();
-    }
-
-    /**
-     * Creates a SIM GeneralName by the internal SIM storage format ('hashAlgorithmOIDString::R::PEPSI')
-     * SIM ::= SEQUENCE { hashAlg AlgorithmIdentifier, authorityRandom OCTET
-     * STRING, -- RA-chosen random number -- used in computation of -- pEPSI
-     * pEPSI OCTET STRING -- hash of HashContent -- with algorithm hashAlg }
-     * 
-     * @param hashAlogrithmOidString the OID string for the hash algorithm used to hash R and PEPSI.
-     * @param authorityRandom the registration authority chosen random value, hashed with hash of hashAlogrithmOidString (see https://tools.ietf.org/html/rfc4683#section-4.3).
-     * @param pepsi Privacy-Enhanced Protected Subject Information (PEPSI), with SIM = R || PEPSI.
-     * @return the RFC4683 SIM GeneralName (see {@link https://tools.ietf.org/html/rfc4683#section-4.3}).
-     */
-    public static final GeneralName createSimGeneralNameThomas(final String hashAlgorithmIdentifier, final String authorityRandom,
-            final String pepsi) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Creating SIM with hash algorithem identifier " + hashAlgorithmIdentifier + ", authority random " + authorityRandom
-                    + " and PEPSI " + pepsi);
-        }
-        final ASN1EncodableVector otherName = new ASN1EncodableVector();
-        otherName.add(new ASN1ObjectIdentifier(SUBJECTIDENTIFICATIONMETHOD_OBJECTID));
-        final ASN1EncodableVector simVector = new ASN1EncodableVector();
-        simVector.add(new DERTaggedObject(true, 0, new AlgorithmIdentifier(new ASN1ObjectIdentifier(hashAlgorithmIdentifier)))); // new DERTaggedObject(true, 0, 
-        simVector.add(new DERTaggedObject(true, 0, new DEROctetString((authorityRandom).getBytes())));
-        simVector.add(new DERTaggedObject(true, 0, new DEROctetString((pepsi).getBytes())));
-        //        otherName.add(new DERTaggedObject(false, 0, new DERSequence(simVector)));
-        otherName.add(new DERTaggedObject(false, 0, new DLSequence(simVector)));
-        final GeneralName generalName = GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(otherName)));
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("GeneralName (type 0 - OtherName) for SIM created " + generalName.toString());
-        }
-        return generalName;
     }
 
     /**
