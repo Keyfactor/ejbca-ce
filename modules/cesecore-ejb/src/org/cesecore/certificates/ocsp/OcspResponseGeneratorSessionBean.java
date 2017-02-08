@@ -1221,6 +1221,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
                     if (transactionLogger.isEnabled()) {
                         transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
+                        transactionLogger.paramPut(TransactionLogger.REV_REASON, signerIssuerCertStatus.revocationReason);
                         transactionLogger.writeln();
                     }
                 } else {
