@@ -86,6 +86,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.PrintableStringNameStyle;
+import org.cesecore.util.RFC4683Tools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -332,7 +333,16 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         
         final String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(endEntityProfileId);
         final String dn = endEntity.getDN();
-        final String altName = endEntity.getSubjectAltName();
+        String altName = endEntity.getSubjectAltName();
+        try {
+            altName =  RFC4683Tools.generateSimForInternalSanFormat( altName);
+        } catch(Exception e) {
+            log.info("Could not generate SIM string for SAN: " + altName, e);
+            throw new EndEntityProfileValidationException("Could not generate SIM string for SAN: " + e.getMessage(), e);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("addUser(calculated SIM " + altName + ")");
+        }
         final String email = endEntity.getEmail();
         final EndEntityType type = endEntity.getType();
         String newpassword = endEntity.getPassword();
@@ -697,6 +707,15 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         String altName = endEntityInformation.getSubjectAltName();
         if (log.isTraceEnabled()) {
             log.trace(">changeUser(" + username + ", " + dn + ", " + endEntityInformation.getEmail() + ")");
+        }   
+        try {
+            altName =  RFC4683Tools.generateSimForInternalSanFormat( altName);
+        } catch(Exception e) {
+             log.info("Could not generate SIM string for SAN: " + altName, e);
+             throw new EndEntityProfileValidationException("Could not generate SIM string for SAN: " + e.getMessage(), e);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace(">changeUser(calculated SIM " + altName + ")");
         }
         final UserData userData = UserData.findByUsername(entityManager, username);
         if (userData == null) {

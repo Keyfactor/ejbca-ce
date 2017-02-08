@@ -445,7 +445,7 @@ function confirmrepublish(){
 		 <td><% if(certificatedata.getSubjectAltName() == null)
 	                  out.write(ejbcawebbean.getText("ALT_NONE"));
 	                else
-	                  out.write(certificatedata.getSubjectAltName());%> 
+	                  out.write(certificatedata.getSubjectAltName().replace( ",", "</br>"));%> 
 	         </td>
        </tr>
        <tr id="Row<%=(row++)%2%>">

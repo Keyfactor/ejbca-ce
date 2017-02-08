@@ -41,6 +41,7 @@
 <li>Qualified Certificate Statement (RFC3739) for issuing EU/ETSI qualified certificates.</li>
 <li>Supports the Online Certificate Status Protocol (<a href="docs/architecture-ocsp.html">OCSP</a> - RFC2560, RFC6960 and RFC5019), including AIA-extension.</li>
 <li>Supports RFC4387 for distribution of CA certificates and CRLs over HTTP.</li>
+<li>Support for RFC4683, Subject Identification Method (SIM).</li>
 <li>Validation Authority service serving OCSP responses (RFC2560/5019), CA certificates and CRLS (RFC4387).</li>
 <li>Supports the German <a href="http://www.t7ev.org/T7-de/Common-PKI">Common PKI</a> SigG CertHash OCSP extension.</li> 
 <li>Supports <a href="docs/adminguide.html#CMP">CMP</a> (RFC4210 and RFC4211).</li>

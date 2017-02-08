@@ -1598,7 +1598,7 @@ There are a number of standard ones, and the possibility to define special ones,
 such as MS UPN, GUID, Krb5PrincipalName.
 </p>
 <p>
-Subject alternative names can be: rfc822Name=&lt;email>, dNSName=&lt;host name>, uri=&lt;http://host.com/>, ipaddress=&lt;address>, upn=&lt;MS UPN>, guid=&lt;MS globally unique id>, directoryName=&lt;LDAP escaped DN>, krb5principal=&lt;Krb5 principal name>, permanentIdentifier=&lt;Permanent Identifier values&gt;
+Subject alternative names can be: rfc822Name=&lt;email>, dNSName=&lt;host name>, uri=&lt;http://host.com/>, ipaddress=&lt;address>, upn=&lt;MS UPN>, guid=&lt;MS globally unique id>, directoryName=&lt;LDAP escaped DN>, krb5principal=&lt;Krb5 principal name>, permanentIdentifier=&lt;Permanent Identifier values&gt;, subjectIdentificationMethod=&lt;Subject Identification Method values or parameters&gt;
 </p>
 <p>
 The text fields and check boxes for Subject Alternative Names generally work in a similar way as the <a href="#Subject DN Fields">Subject DN fields</a>.
@@ -1657,6 +1657,17 @@ abc0123/1.2.3.4
 abc0123/
 /1.2.3.4
 /
+</source>
+<strong>Subject Identification Method (RFC 4683)</strong>
+<p>The SIM (Subject Identification Method) value is stored in the form "HashAlgorithmOid::HashedAuthorityRandom::PEPSI" where PEPSI (Privacy-Enhanced Protected Subject Information) is built by the two times hashed concatenation of the user chosen password, the authority random value, the SSI type and the SSI itself. This value is calculated after adding or editing an end entity. Therefore the SIM needs to be entered as its parameters of the form 'HashAlgorithmOid::UserChosenPassword::SSIType::SSI', where the SSIType is the type of SSI (Sensitive Identification Information).
+<br />Examples for input parameters with SHA-256 hash algorithm and calculated SIM (is done after saving an end entity with SIM parameters):
+</p>
+<source>
+2.16.840.1.101.3.4.2.1::MoreThan8Chars::DriversLicenseId::ABC1234567
+
+-&gt; is processed to 
+
+2.16.840.1.101.3.4.2.1::CB3AE7FBFFFD9C85A3FB234E51FFFD2190B1F8F161C0A2873B998EFAC067B03A::6D9E6264DDBD0FC997B9B40524247C8BC319D02A583F4B499DD3ECAF06C786DF
 </source>
 </subsubsection>
 <subsubsection name="Certificate Validity">

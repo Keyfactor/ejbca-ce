@@ -328,6 +328,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("subjectdn", endEntityInformation.getDN());
         details.put("requestX500name", (request == null || request.getRequestX500Name() == null) ? "null" : request.getRequestX500Name().toString());
+        details.put("subjectaltname", endEntityInformation.getSubjectAltName());
+        if (null != request) {
+            details.put("requestaltname", request.getRequestAltNames());
+        }
         details.put("certprofile", endEntityInformation.getCertificateProfileId());
         details.put("keyusage", keyusage);
         details.put("notbefore", notBefore);
