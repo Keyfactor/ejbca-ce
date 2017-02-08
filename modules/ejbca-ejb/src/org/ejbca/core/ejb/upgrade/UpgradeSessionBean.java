@@ -1198,7 +1198,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private boolean postMigrateDatabase632() {
         if(!enterpriseEditionEjbBridgeSession.isRunningEnterprise()) {
             log.error("Upgrade procedure to 6.3.2 can only be run on EJBCA Enterprise.");
-            return false;
+            return true; // Fail gracefully and pretend it was ok.
         }
         log.error("(this is not an error) Starting post upgrade to 6.3.2");
         //Find all publishers, make copies of them using the new publisher class. 
