@@ -248,9 +248,6 @@ public abstract class CertTools {
     public static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
     /** extended key usage OID Intel AMT (out of band) network management */
     public static final String Intel_amt = "2.16.840.1.113741.1.2.3";
-    /** ID on SIM support (RFC-4683) */
-    public static final String OID_ID_ON_SIM = id_pkix + ".8.6";
-    public static final String IdOnSIM = "sim";
     
     /** Object ID for CT (Certificate Transparency) specific extensions */
     public static final String id_ct_redacted_domains = "1.3.6.1.4.1.11129.2.4.6";
@@ -2222,25 +2219,6 @@ public abstract class CertTools {
         }
         return result;
     }
-
-    /**
-     * Helper method for getting the idOnSIM name 
-     * 
-     * @param seq the OtherName sequence
-     */
-    private static String getSIMStringFromSequence(ASN1Sequence seq) throws IOException {
-        if (seq != null) {
-            // First in sequence is the object identifier, that we must check
-            ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
-            if (id.getId().equals(CertTools.OID_ID_ON_SIM)) {
-                ASN1TaggedObject obj = (ASN1TaggedObject) seq.getObjectAt(1);
-                ASN1OctetString str = ASN1OctetString.getInstance(obj.getObject());
-                String ret = new String(Hex.encode(str.getOctets()));
-                return ret;
-            }
-        }
-        return null;
-    }
     
     /**
      * Helper method to get MS GUID from GeneralName otherName sequence
@@ -2473,49 +2451,47 @@ public abstract class CertTools {
             if (altNames == null) {
                 return null;
             }
-            Iterator<List<?>> iter = altNames.iterator();
-            String append = "";
+            final Iterator<List<?>> iter = altNames.iterator();
+            String append = new String();
+            List<?> item = null;
+            Integer type = null;
+            Object value = null;
             while (iter.hasNext()) {
-                List<?> item = iter.next();
-                Integer type = (Integer) item.get(0);
-                Object value = item.get(1);
+                item = iter.next();
+                type = (Integer) item.get(0);
+                value = item.get(1);
                 if (!StringUtils.isEmpty(result)) {
                     // Result already contains one altname, so we have to add comma if there are more altNames
                     append = ", ";
                 }
                 switch (type.intValue()) {
                 case 0:
-                    ASN1Sequence seq = getAltnameSequence(item);
-                    String upn = getUTF8StringFromSequence(seq, CertTools.UPN_OBJECTID);
-                    // OtherName can be something else besides UPN
-                    if (upn != null) {
-                        result += append + CertTools.UPN + "=" + upn;
-                    } else {
-                        String permanentIdentifier = getPermanentIdentifierStringFromSequence(seq);
-                        if (permanentIdentifier != null) {
-                            result += append + CertTools.PERMANENTIDENTIFIER + "=" + permanentIdentifier;
-                        } else {
-                            String krb5Principal = getKrb5PrincipalNameFromSequence(seq);
-                            if (krb5Principal != null) {
-                                result += append + CertTools.KRB5PRINCIPAL + "=" + krb5Principal;
-                            } else {
-                                String guid = getGUIDStringFromSequence(seq);
-                                if (guid != null) {
-                                    result += append + CertTools.GUID + "=" + guid;
-                                } else {
-                                    final String xmpAddr = getUTF8StringFromSequence(seq, CertTools.XMPPADDR_OBJECTID);
-                                    if (xmpAddr != null) {
-                                        result += append + CertTools.XMPPADDR + "=" + xmpAddr;
-                                    } else {
-                                        final String srvName = getIA5StringFromSequence(seq, CertTools.SRVNAME_OBJECTID);
-                                        if (srvName != null) {
-                                            result += append + CertTools.SRVNAME + "=" + srvName;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    final ASN1Sequence sequence = getAltnameSequence(item);
+                    final ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(sequence.getObjectAt(0));
+                    switch(oid.getId()) {
+                        case CertTools.UPN_OBJECTID:
+                            result += append + CertTools.UPN + "=" + getUTF8StringFromSequence(sequence, CertTools.UPN_OBJECTID);
+                            break;
+                        case CertTools.PERMANENTIDENTIFIER_OBJECTID:
+                            result += append + CertTools.PERMANENTIDENTIFIER + "=" + getPermanentIdentifierStringFromSequence(sequence);
+                            break;
+                        case CertTools.KRB5PRINCIPAL_OBJECTID:
+                            result += append + CertTools.KRB5PRINCIPAL + "=" + getKrb5PrincipalNameFromSequence(sequence);
+                            break;
+                        case RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD_OBJECTID:
+                            final String sim = RFC4683Tools.getSimStringSequence(sequence);
+                            result += append + RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD + "=" + sim;
+                            break;
+                        case CertTools.GUID:
+                            result += append + CertTools.GUID + "=" + getGUIDStringFromSequence(sequence);
+                            break;
+                        case CertTools.XMPPADDR_OBJECTID:
+                            result += append + CertTools.XMPPADDR + "=" + getUTF8StringFromSequence(sequence, CertTools.XMPPADDR_OBJECTID);
+                            break;
+                        case CertTools.SRVNAME_OBJECTID:
+                            result += append + CertTools.SRVNAME + "=" + getIA5StringFromSequence(sequence, CertTools.SRVNAME_OBJECTID);
+                            break;
+                    };
                     break;
                 case 1:
                     result += append + CertTools.EMAIL + "=" + (String) value;
@@ -2720,17 +2696,18 @@ public abstract class CertTools {
             vec.add(gn);
         }
 
-        // idOnSIM is an OtherName. See RFC-4683 
-        for (final String simString : CertTools.getPartsFromDN(altName, CertTools.IdOnSIM)) {
-            if (log.isDebugEnabled()) {
-                log.debug("simString: " + simString);
-            }
-            ASN1EncodableVector v = new ASN1EncodableVector();
-            v.add(new ASN1ObjectIdentifier(CertTools.OID_ID_ON_SIM));
-            v.add(new DERTaggedObject(true, 0, new DEROctetString(Hex.decode(simString))));
-            // GeneralName gn = new GeneralName(new DERSequence(v), 0);
-            final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
-            vec.add(gn);
+        // SIM is an OtherName. See RFC-4683
+        for (final String internalSimString : CertTools.getPartsFromDN(altName, RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD)) {
+            if (StringUtils.isNotBlank(internalSimString)) {
+                final String[] tokens = internalSimString.split(RFC4683Tools.LIST_SEPARATOR); 
+                if (tokens.length==3) {
+                    ASN1Primitive gn = RFC4683Tools.createSimGeneralName(tokens[0], tokens[1], tokens[2]);
+                    vec.add(gn);
+                    if (log.isDebugEnabled()) {
+                        log.debug("SIM GeneralName added: " + gn.toString());
+                    }
+                }
+            }            
         }
         
         // To support custom OIDs in altNames, they must be added as an OtherName of plain type UTF8String
@@ -2764,38 +2741,31 @@ public abstract class CertTools {
         String ret = null;
         switch (tag) {
         case 0:
-            ASN1Sequence seq = getAltnameSequence(value.toASN1Primitive().getEncoded());
-            String upn = getUTF8StringFromSequence(seq, CertTools.UPN_OBJECTID);
-            // OtherName can be something else besides UPN
-            if (upn != null) {
-                ret = CertTools.UPN + "=" + upn;
-            } else {
-                String permanentIdentifier = getPermanentIdentifierStringFromSequence(seq);
-                if (permanentIdentifier != null) {
-                    ret = CertTools.PERMANENTIDENTIFIER + "=" + permanentIdentifier;
-                } else {
-                    String krb5Principal = getKrb5PrincipalNameFromSequence(seq);
-                    if (krb5Principal != null) {
-                        ret = CertTools.KRB5PRINCIPAL + "=" + krb5Principal;
-                    } else {
-                        String simString = getSIMStringFromSequence(seq);
-                        if (simString != null) {
-                            ret = CertTools.IdOnSIM + "=" + simString;
-                        } else {
-                            final String xmpAddr = getUTF8StringFromSequence(seq, CertTools.XMPPADDR_OBJECTID);
-                            if (xmpAddr != null) {
-                                ret = CertTools.XMPPADDR + "=" + xmpAddr;
-                            } else {
-                                final String srvName = getIA5StringFromSequence(seq, CertTools.SRVNAME_OBJECTID);
-                                if (srvName != null) {
-                                    ret = CertTools.SRVNAME + "=" + srvName;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        {
+            final ASN1Sequence sequence = getAltnameSequence(value.toASN1Primitive().getEncoded());
+            final ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(sequence.getObjectAt(0));
+            switch(oid.getId()) {
+                case CertTools.UPN_OBJECTID:
+                    ret = CertTools.UPN + "=" + getUTF8StringFromSequence(sequence, CertTools.UPN_OBJECTID);
+                    break;
+                case CertTools.PERMANENTIDENTIFIER_OBJECTID:
+                    ret = CertTools.PERMANENTIDENTIFIER + "=" + getPermanentIdentifierStringFromSequence(sequence);
+                    break;
+                case CertTools.KRB5PRINCIPAL_OBJECTID:
+                    ret = CertTools.KRB5PRINCIPAL + "=" + getKrb5PrincipalNameFromSequence(sequence);
+                    break;
+                case RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD_OBJECTID:
+                    ret = RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD + "=" + RFC4683Tools.getSimStringSequence(sequence);
+                    break;
+                case CertTools.XMPPADDR_OBJECTID:
+                    ret = CertTools.XMPPADDR + "=" + getUTF8StringFromSequence(sequence, CertTools.XMPPADDR_OBJECTID);
+                    break;
+                case CertTools.SRVNAME_OBJECTID:
+                    ret = CertTools.SRVNAME + "=" + getIA5StringFromSequence(sequence, CertTools.SRVNAME_OBJECTID);
+                    break;
+            };
             break;
+        }
         case 1:
             ret = CertTools.EMAIL + "=" + DERIA5String.getInstance(value).getString();
             break;

@@ -80,7 +80,8 @@ public class DNFieldExtractor implements java.io.Serializable {
     public static final int GUID = 26;
     public static final int KRB5PRINCIPAL = 52;
     public static final int PERMANTIDENTIFIER = 56;
-
+    public static final int SUBJECTIDENTIFICATIONMETHOD = 59;
+    
     // Subject Directory Attributes
     public static final int DATEOFBIRTH = 27;
     public static final int PLACEOFBIRTH = 28;

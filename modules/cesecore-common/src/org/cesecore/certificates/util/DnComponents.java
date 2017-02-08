@@ -144,6 +144,7 @@ public class DnComponents {
     public static final String GUID = "GUID";
     public static final String KRB5PRINCIPAL = "KRB5PRINCIPAL";
     public static final String PERMANENTIDENTIFIER = "PERMANENTIDENTIFIER";
+    public static final String SUBJECTIDENTIFICATIONMETHOD = "SUBJECTIDENTIFICATIONMETHOD";
     // Below are altNames that are not implemented yet
     public static final String OTHERNAME = "OTHERNAME";
     public static final String X400ADDRESS = "X400ADDRESS";
