@@ -75,13 +75,19 @@ public class RFC4683ToolsTest {
         san = "SUBJECTIDENTIFICATIONMETHOD=, DNSNAME=localhost";
         assertEquals(RFC4683Tools.generateSimForInternalSanFormat(san), san);
         // 1d: Test SAN with 'subjectIdentificationMethod' but with wrong number of SIM parameters.
-        san = "SUBJECTIDENTIFICATIONMETHOD=2.16.840.1.101.3.4.2.1::MyStrongPassword::SsiType, DNSNAME=localhost";
+        san = "SUBJECTIDENTIFICATIONMETHOD=2.16.840.1.101.3.4.2.1::MyStrongPassword::SsiType::abc::abc, DNSNAME=localhost";
         try {
             RFC4683Tools.generateSimForInternalSanFormat(san);
             fail("An illegal number SIM parameters should throw an IllegalArgumentException: " + san);
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().startsWith("Wrong SIM input string with "));
         }
+        // SIM is calculated (4 tokens).
+        san = "SUBJECTIDENTIFICATIONMETHOD=2.16.840.1.101.3.4.2.1::MyStrongPassword::SsiType::SsiValue, DNSNAME=localhost";
+        RFC4683Tools.generateSimForInternalSanFormat(san);
+        // Calculated SIM (3 tokens) -> nothing happens
+        san = "SUBJECTIDENTIFICATIONMETHOD=2.16.840.1.101.3.4.2.1::CB3AE7FBFFFD9C85A3FB234E51FFFD2190B1F8F161C0A2873B998EFAC067B03A::6D9E6264DDBD0FC997B9B40524247C8BC319D02A583F4B499DD3ECAF06C786DF, DNSNAME=localhost";
+        assertEquals(RFC4683Tools.generateSimForInternalSanFormat(san), san);
     }
 
     @Test
