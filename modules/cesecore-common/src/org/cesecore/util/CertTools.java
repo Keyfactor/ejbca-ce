@@ -2482,7 +2482,7 @@ public abstract class CertTools {
                             final String sim = RFC4683Tools.getSimStringSequence(sequence);
                             result += append + RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD + "=" + sim;
                             break;
-                        case CertTools.GUID:
+                        case CertTools.GUID_OBJECTID:
                             result += append + CertTools.GUID + "=" + getGUIDStringFromSequence(sequence);
                             break;
                         case CertTools.XMPPADDR_OBJECTID:
