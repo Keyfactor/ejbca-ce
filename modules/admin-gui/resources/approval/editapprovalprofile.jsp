@@ -272,7 +272,8 @@
 			</h:panelGroup>
 			<h:panelGroup>
 				<h:commandButton value="#{web.text.SAVE}" action="#{approvalProfileMBean.save}" rendered="#{!approvalProfilesMBean.viewOnly}"/>
-				<h:commandButton value="#{web.text.CANCEL}" action="#{approvalProfileMBean.cancel}" immediate="true" />
+				<h:commandButton value="#{web.text.CANCEL}" action="#{approvalProfileMBean.cancel}" immediate="true" rendered="#{!approvalProfilesMBean.viewOnly}"/>
+				<h:commandButton value="#{web.text.BACK}" action="#{approvalProfileMBean.cancel}" immediate="true" rendered="#{approvalProfilesMBean.viewOnly}"/>
 			</h:panelGroup>
 	
 		</h:panelGrid>
