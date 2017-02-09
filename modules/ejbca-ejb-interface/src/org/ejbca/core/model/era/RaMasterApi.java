@@ -24,6 +24,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.roles.Role;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -66,6 +67,9 @@ public interface RaMasterApi {
 
     /** @return a list with information about non-external CAs that the caller is authorized to see. */
     List<CAInfo> getAuthorizedCas(AuthenticationToken authenticationToken);
+    
+    /** @return a list with roles that the caller is authorized to see. */
+    List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken);
 
     /** @return the approval request with the given id, or null if it doesn't exist or if authorization was denied */
     RaApprovalRequestInfo getApprovalRequest(AuthenticationToken authenticationToken, int id);

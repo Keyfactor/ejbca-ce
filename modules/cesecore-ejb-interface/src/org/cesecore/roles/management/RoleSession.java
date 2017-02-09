@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.roles.management;
 
+import java.util.List;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.roles.Role;
@@ -55,4 +57,11 @@ public interface RoleSession {
      * @throws AuthorizationDeniedException the caller is not authorized to see this role (leaks that a role with this id exists)
      */
     Role getRole(AuthenticationToken authenticationToken, String nameSpace, String roleName) throws AuthorizationDeniedException;
+    
+    /**
+     * Returns a list of all roles that the gives administrator is allowed to see. 
+     * @param authenticationToken Administrator.
+     * @return List of authorized roles. May be empty, but never null.
+     */
+    List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken);
 }

@@ -90,6 +90,8 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -175,6 +177,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private SignSessionLocal signSessionLocal;
     @EJB
     private EndEntityAuthenticationSessionLocal endEntityAuthenticationSessionLocal;
+    @EJB
+    private RoleSessionLocal roleSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -227,6 +231,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public List<CAInfo> getAuthorizedCas(AuthenticationToken authenticationToken) {
         return caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
     }
+    
+    @Override
+    public List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken) {
+        return roleSession.getAuthorizedRoles(authenticationToken);
+    }
+    
     
     private ApprovalDataVO getApprovalDataNoAuth(final int id) {
         final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);
