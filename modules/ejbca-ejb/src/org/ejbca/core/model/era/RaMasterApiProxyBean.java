@@ -40,6 +40,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.roles.Role;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -79,7 +80,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     /** Constructor for use from JUnit tests */
     public RaMasterApiProxyBean(final RaMasterApi... raMasterApis) {
         this.raMasterApis = raMasterApis;
-        final List<RaMasterApi> implementations = new ArrayList<RaMasterApi>(Arrays.asList(raMasterApis));
+        final List<RaMasterApi> implementations = new ArrayList<>(Arrays.asList(raMasterApis));
         Collections.reverse(implementations);
         this.raMasterApisLocalFirst = implementations.toArray(new RaMasterApi[implementations.size()]);
     }
@@ -182,6 +183,23 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return new ArrayList<>(caInfoMap.values());
+    }
+    
+    @Override
+    public List<Role> getAuthorizedRoles(final AuthenticationToken authenticationToken) {
+        final Map<Integer, Role> roleMap = new HashMap<>();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    for (final Role role : raMasterApi.getAuthorizedRoles(authenticationToken)) {
+                        roleMap.put(role.getRoleId(), role);
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return new ArrayList<>(roleMap.values());
     }
 
     @Override
