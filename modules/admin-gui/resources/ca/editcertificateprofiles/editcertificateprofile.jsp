@@ -164,7 +164,7 @@
 		<%-- Expiration restriction for weekdays (ECA-5330) --%>
 
 		<h:panelGroup>
-			<h:outputLabel for="checkuseexpirationtrestrictionforweekdaysgroup" value="#{web.text.CERT_EXPRIATION_RESTRICTIONS}"/>
+			<h:outputLabel for="checkuseexpirationtrestrictionforweekdaysgroup" value="#{web.text.CERT_EXPIRATION_RESTRICTIONS}"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Expiration%20restrictions") %>
 		</h:panelGroup>
 		<h:panelGrid columns="1">
@@ -176,7 +176,7 @@
 					disabled="#{certProfilesBean.viewOnly}"/>
 				<h:outputLabel for="checkuseexpirationtrestrictionforweekdays" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 			</h:panelGroup>
-			<h:outputLabel for="expirationRestrictionWeekdaysSelection" value="#{web.text.CERT_EXPRIATION_RESTRICTION_FOR_WEEKDAYS}:" rendered="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays}"/>
+			<h:outputLabel for="expirationRestrictionWeekdaysSelection" value="#{web.text.CERT_EXPIRATION_RESTRICTION_FOR_WEEKDAYS}:" rendered="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays}"/>
 			<h:panelGrid id="expirationRestrictionWeekdaysSelection" columns="8" rendered="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays}">
 				<h:selectBooleanCheckbox id="expirationRestrictionMonday" value="#{certProfileBean.expirationRestrictionMonday}" disabled="#{certProfilesBean.viewOnly}"/>
 				<h:outputLabel for="expirationRestrictionMonday" value="#{web.text.DAY_MONDAY}"/>
@@ -194,7 +194,7 @@
 				<h:outputLabel for="expirationRestrictionSunday" value="#{web.text.DAY_SUNDAY}"/>
 			</h:panelGrid>
 			<h:panelGroup id="expirationRestrictionWeekdaysBeforeGroup" rendered="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays}">
-			    <h:outputLabel for="expirationRestrictionWeekdaysBefore" value="#{web.text.CERT_EXPRIATION_RESTRICTION_FOR_WEEKDAYS_BUT} "/>
+			    <h:outputLabel for="expirationRestrictionWeekdaysBefore" value="#{web.text.CERT_EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BUT} "/>
 				<h:selectOneMenu id="expirationRestrictionWeekdaysBefore" value="#{certProfileBean.certificateProfile.expirationRestrictionForWeekdaysExpireBefore}" disabled="#{certProfilesBean.viewOnly}">
 					<f:selectItems value="#{certProfileBean.expirationRestrictionWeekdaysAvailable}"/>
 				</h:selectOneMenu>
