@@ -32,6 +32,15 @@ public interface CrlStoreSession {
 	 */
 	byte[] getLastCRL(String issuerdn, boolean deltaCRL);
 
+    /**
+     * Retrieves a specific CRL issued by this CA.
+     * 
+     * @param issuerdn the CRL issuers DN (CAs subject DN)
+     * @param crlNumber a crlNumber of a complete, or delta, CRL
+     * @return byte[] with DER encoded X509CRL or null of no CRLs have been issued.
+     */
+    byte[] getCRL(String issuerdn, int crlNumber);
+
 	/**
 	 * Retrieves the information about the latest CRL issued by this CA.
 	 * Retrieves less information than getLastCRL, i.e. not the actual CRL data.

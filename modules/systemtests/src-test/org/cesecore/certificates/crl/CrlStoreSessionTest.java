@@ -176,6 +176,15 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
     	crlbytes = crlStoreSession.getLastCRL( issuerDN, true);
     	assertNotNull(crlbytes);
     	assertEquals(deltaFingerprint, CertTools.getFingerprintAsString(crlbytes));
+
+    	// Get by CRL number
+        crlbytes = crlStoreSession.getCRL(issuerDN, crlnumber.intValue());
+        assertNotNull(crlbytes);
+        assertEquals(fingerprint, CertTools.getFingerprintAsString(crlbytes));
+        crlbytes = crlStoreSession.getCRL( issuerDN, deltaCrlnumber.intValue());
+        assertNotNull(crlbytes);
+        assertEquals(deltaFingerprint, CertTools.getFingerprintAsString(crlbytes));
+    	
     }
 
     /** Test error handling when we request info that does not exist. */
