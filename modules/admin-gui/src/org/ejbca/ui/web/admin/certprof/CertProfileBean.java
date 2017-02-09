@@ -184,7 +184,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                     }
                 }
                 if (allDaysExcluded) {
-                    addErrorMessage("CERT_EXPRIATION_RESTRICTION_FOR_WEEKDAYS_ALL_EXCLUDED");
+                    addErrorMessage("CERT_EXPIRATION_RESTRICTION_FOR_WEEKDAYS_ALL_EXCLUDED");
                     success = false;
                 }
             }
@@ -241,7 +241,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                     if (!appliedDate.equals(endDate)) {
                         final String newEncodedValidity = ValidityDate.formatAsISO8601ServerTZ(appliedDate.getTime(), ValidityDate.TIMEZONE_SERVER);
                         profile.setEncodedValidity(newEncodedValidity);
-                        addInfoMessage("CERT_EXPRIATION_RESTRICTION_FIXED_DATE_CHANGED", encodedValidty, newEncodedValidity);
+                        addInfoMessage("CERT_EXPIRATION_RESTRICTION_FIXED_DATE_CHANGED", encodedValidty, newEncodedValidity);
                     }
                 }
                 catch(Exception e) {
@@ -414,8 +414,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getExpirationRestrictionWeekdaysAvailable() {
         final List<SelectItem> result = new ArrayList<SelectItem>();
-        result.add(new SelectItem(Boolean.TRUE, getEjbcaWebBean().getText("CERT_EXPRIATION_RESTRICTION_BEFORE")));
-        result.add(new SelectItem(Boolean.FALSE, getEjbcaWebBean().getText("CERT_EXPRIATION_RESTRICTION_AFTER")));
+        result.add(new SelectItem(Boolean.TRUE, getEjbcaWebBean().getText("CERT_EXPIRATION_RESTRICTION_BEFORE")));
+        result.add(new SelectItem(Boolean.FALSE, getEjbcaWebBean().getText("CERT_EXPIRATION_RESTRICTION_AFTER")));
         return result;
     }
     
