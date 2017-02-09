@@ -216,15 +216,11 @@ public class RaRoleMembersBean {
     }
     
     
-    public boolean isOnlyOneRoleAvailable() { return getAvailableRoles().size()==1; }
+    public boolean isOnlyOneRoleAvailable() { return getAvailableRoles().size()==2; } // two including the "any role" choice
     public List<SelectItem> getAvailableRoles() {
         if (availableRoles == null) {
             availableRoles = new ArrayList<>();
-            // TODO
-            //final List<Role> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoles(raAuthenticationBean.getAuthenticationToken()));
-            final List<Role> roles = new ArrayList<>();
-            roles.add(new Role("", "TODO Role1"));
-            roles.add(new Role("", "TODO Role2"));
+            final List<Role> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoles(raAuthenticationBean.getAuthenticationToken()));
             Collections.sort(roles, new Comparator<Role>() {
                 @Override
                 public int compare(final Role role1, final Role role2) {
@@ -242,7 +238,7 @@ public class RaRoleMembersBean {
         return availableRoles;
     }
     
-    public boolean isOnlyOneCaAvailable() { return getAvailableCas().size()==1; }
+    public boolean isOnlyOneCaAvailable() { return getAvailableCas().size()==2; } // two including the "any CA" choice
     public List<SelectItem> getAvailableCas() {
         if (availableCas == null) {
             availableCas = new ArrayList<>();
@@ -264,7 +260,7 @@ public class RaRoleMembersBean {
         return availableCas;
     }
     
-    public boolean isOnlyOneTokenTypeAvailable() { return getAvailableTokenTypes().size()==1; }
+    public boolean isOnlyOneTokenTypeAvailable() { return getAvailableTokenTypes().size()==2; } // two including the "any token type" choice
     public List<SelectItem> getAvailableTokenTypes() {
         if (availableTokenTypes == null) {
             availableTokenTypes = new ArrayList<>();
