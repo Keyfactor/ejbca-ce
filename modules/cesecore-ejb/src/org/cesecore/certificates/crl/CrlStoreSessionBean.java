@@ -132,6 +132,36 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public byte[] getCRL(String issuerdn, int crlNumber) {
+        if (log.isTraceEnabled()) {
+            log.trace(">getCRL(" + issuerdn + ", " + crlNumber + ")");
+        }
+        try {
+            byte[] crlbytes = null;
+            final CRLData data = CRLData.findByIssuerDNAndCRLNumber(entityManager, issuerdn, crlNumber);
+            if (data != null) {
+                crlbytes = data.getCRLBytes();
+                if (crlbytes != null) {
+                    final String msg = intres.getLocalizedMessage("store.getcrl", issuerdn, Integer.valueOf(crlNumber));
+                    log.info(msg);
+                    return crlbytes;
+                }
+            }
+        } catch (Exception e) {
+            final String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn);
+            log.info(msg);
+            throw new EJBException(e);
+        }
+        final String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, Integer.valueOf(crlNumber));
+        log.info(msg);
+        if (log.isTraceEnabled()) {
+            log.trace("<getCRL()");
+        }
+        return null;
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CRLInfo getLastCRLInfo(String issuerdn, boolean deltaCRL) {
         if (log.isTraceEnabled()) {
             log.trace(">getLastCRLInfo(" + issuerdn + ", " + deltaCRL + ")");

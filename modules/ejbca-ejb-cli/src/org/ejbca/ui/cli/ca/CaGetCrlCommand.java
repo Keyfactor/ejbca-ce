@@ -17,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -44,6 +45,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
     private static final String DELTA_KEY = "-delta";
     private static final String PEM_KEY = "-pem";
     private static final String FILE_KEY = "-f";
+    private static final String CRLNUMBER_KEY = "-crlnumber";
 
     {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -54,6 +56,8 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
                 "Fetch the latest delta CRL. Default is regular CRL."));
         registerParameter(new Parameter(PEM_KEY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
                 "Use PEM encoding. Default is DER encoding."));
+        registerParameter(new Parameter(CRLNUMBER_KEY, "CRL Number", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "Get CRL with the specified CRL number, instead of the latest. Used to read historical CRLs."));
     }
 
     @Override
@@ -69,9 +73,21 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
         // Perform CRL fetch
         String caname = parameters.get(CA_NAME_KEY);
         String outfile = parameters.get(FILE_KEY);
+        String crlnumber = parameters.get(CRLNUMBER_KEY);
+        if (crlnumber != null) {
+            if (!StringUtils.isNumeric(crlnumber)) {
+                log.error("CRL Number must be numerical");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
+        }
         try {
             String issuerdn = getIssuerDN(getAuthenticationToken(), caname);
-            byte[] crl = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(issuerdn, deltaSelector);
+            final byte[] crl;
+            if (crlnumber != null) {
+                crl = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getCRL(issuerdn, Integer.valueOf(crlnumber));                
+            } else {
+                crl = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(issuerdn, deltaSelector);
+            }
             if (crl != null) {
                 FileOutputStream fos = new FileOutputStream(outfile);
                 if (pem) {
@@ -100,7 +116,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Retrieves the latest CRL from a CA.";
+        return "Retrieves a CRL from a CA. Either the latest CRL or a CRL with a specified CRL number.";
 
     }
 
