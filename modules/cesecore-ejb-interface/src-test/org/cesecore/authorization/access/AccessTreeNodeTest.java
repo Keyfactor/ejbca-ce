@@ -71,6 +71,7 @@ public class AccessTreeNodeTest {
     public void testAddAccessRuleToRootNode() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         AccessRuleData accessRule = EasyMock.createMock(AccessRuleData.class);
         AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
+        EasyMock.expect(role.getRoleName()).andReturn("RoleName").anyTimes(); // Again... for trace logging
 
         rootNode.addAccessRule("/", accessRule, role);
 
@@ -100,6 +101,8 @@ public class AccessTreeNodeTest {
         final String resource2 = "resource2";
         AccessRuleData accessRule_alpha = EasyMock.createMock(AccessRuleData.class);
         AdminGroupData role_alpha = EasyMock.createMock(AdminGroupData.class);
+        EasyMock.expect(role_alpha.getRoleName()).andReturn("RoleName").anyTimes(); // Again... for trace logging
+        EasyMock.replay(role_alpha);
 
         rootNode.addAccessRule("/" + resource1, accessRule_alpha, role_alpha);
 
@@ -148,6 +151,7 @@ public class AccessTreeNodeTest {
 
         AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(accessUsers);
+        EasyMock.expect(role.getRoleName()).andReturn("RoleName").anyTimes(); // Again... for trace logging
 
         EasyMock.replay(authenticationToken, acceptRule, role, accessUser);
 
@@ -202,6 +206,7 @@ public class AccessTreeNodeTest {
         AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(countryUsers);
         EasyMock.expect(role.getAccessUsers()).andReturn(upnUsers);
+        EasyMock.expect(role.getRoleName()).andReturn("RoleName").anyTimes(); // Again... for trace logging
 
         EasyMock.replay(acceptRule, declineRule, countryUser, upnUser, authenticationToken, role);
 
@@ -259,6 +264,7 @@ public class AccessTreeNodeTest {
 
         AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(accessUsers).times(4);
+        EasyMock.expect(role.getRoleName()).andReturn("RoleName").anyTimes(); // Again... for trace logging
 
         EasyMock.replay(authenticationToken, role, acceptRecursive, denied, accessUser);
 
@@ -295,6 +301,7 @@ public class AccessTreeNodeTest {
         upnUsers.put(upnPrimaryKey, upnUser);
         AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(upnUsers).anyTimes();
+        EasyMock.expect(role.getRoleName()).andReturn("RoleName").anyTimes(); // Again... for trace logging
 
         // Deny rule in role
         AccessRuleData denyRule = EasyMock.createMock(AccessRuleData.class);
@@ -309,6 +316,7 @@ public class AccessTreeNodeTest {
         upnUsers1.put(upnPrimaryKey, upnUser1);
         AdminGroupData role1 = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role1.getAccessUsers()).andReturn(upnUsers1).anyTimes();
+        EasyMock.expect(role1.getRoleName()).andReturn("RoleName1").anyTimes(); // Again... for trace logging
 
         // Authentication token, always allow
         AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(""));
@@ -345,6 +353,7 @@ public class AccessTreeNodeTest {
         upnUsers.put(upnPrimaryKey, upnUser);
         AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(upnUsers).anyTimes();
+        EasyMock.expect(role.getRoleName()).andReturn("RoleName").anyTimes(); // Again... for trace logging
 
         // Deny rule in role
         AccessRuleData denyRule = EasyMock.createMock(AccessRuleData.class);
@@ -359,6 +368,7 @@ public class AccessTreeNodeTest {
         upnUsers1.put(upnPrimaryKey, upnUser1);
         AdminGroupData role1 = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role1.getAccessUsers()).andReturn(upnUsers1).anyTimes();
+        EasyMock.expect(role1.getRoleName()).andReturn("RoleName1").anyTimes(); // Again... for trace logging
 
         // Authentication token, always allow
         AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(""));
@@ -401,6 +411,7 @@ public class AccessTreeNodeTest {
 
         AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(accessUsers);
+        EasyMock.expect(role.getRoleName()).andReturn("RoleName").anyTimes(); // Again... for trace logging
 
         EasyMock.replay(authenticationToken, role, accessRule, accessUser);
 
@@ -444,6 +455,7 @@ public class AccessTreeNodeTest {
 
         AdminGroupData role = EasyMock.createMock(AdminGroupData.class);
         EasyMock.expect(role.getAccessUsers()).andReturn(accessUsers).times(2);
+        EasyMock.expect(role.getRoleName()).andReturn("RoleName").anyTimes(); // Again... for trace logging
 
         EasyMock.replay(authenticationToken, role, acceptRecursive, unknown, accessUser);
 
