@@ -191,7 +191,9 @@ public class AccessTreeNode {
      *            The desired Role
      */
     public void addAccessRule(String resource, AccessRuleData accessRule, AdminGroupData role) {
-        log.trace("Role " + role.getRoleName() + " accessRule " + accessRule.toString() + " for resource " + resource + " (this.resource=" + this.resource + ").");
+        if (log.isTraceEnabled()) {
+            log.trace("Role " + role.getRoleName() + " accessRule " + accessRule.toString() + " for resource " + resource + " (this.resource=" + this.resource + ").");
+        }
         if (resource.equals(this.resource)) {
             roleRulePairs.add(new AbstractMap.SimpleEntry<AdminGroupData, AccessRuleData>(role, accessRule));
         } else {
