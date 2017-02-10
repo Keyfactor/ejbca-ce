@@ -213,6 +213,26 @@ Read the full change log for details, and see the UPGRADE document for all funct
     *	Race condition when multiple RA threads are requesting certificates for the same user: https://jira.primekey.se/browse/ECA-4347
     * 	ClientToolBox is unable to verify signature when testing more exotic EC keys in HSM: https://jira.primekey.se/browse/ECA-4596
 
+EJBCA 6.5.0.4
+-----------
+
+Patch release for pages broken in WildFly 10 and post-upgrade in EJBCA Community. 
+
+EJBCA 6.5.0.3
+-----------
+
+Patch release for ECA-4931 and ECA-4955
+
+EJBCA 6.5.0.2
+-----------
+
+Patch release for https://jira.primekey.se/browse/ECA-4860
+
+EJBCA 6.5.0.1
+-----------
+
+Patch release for https://jira.primekey.se/browse/ECA-4862
+
 EJBCA 6.5.0
 -----------
 Primekey Solutions is very pleased to release EJBCA 6.5.0 into the wild. This release has primarily focused on tuning up the UI and responding 
