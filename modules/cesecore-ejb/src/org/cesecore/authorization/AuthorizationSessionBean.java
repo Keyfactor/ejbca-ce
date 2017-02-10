@@ -228,7 +228,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     private HashMap<String, Boolean> getAccessAvailableToSingleToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         HashMap<String, Boolean> accessRules = new HashMap<>();
         if (authenticationToken!=null) {
-            if (authenticationToken.matchTokenType("AlwaysAllowAuthenticationToken") && authenticationToken.matches(null)) {
+            if (authenticationToken.getMetaData().isSuperToken() && authenticationToken.matches(null)) {
                 // Special handing of the AlwaysAllowAuthenticationToken to grant full access
                 accessRules.put("/", Boolean.TRUE);
             } else {

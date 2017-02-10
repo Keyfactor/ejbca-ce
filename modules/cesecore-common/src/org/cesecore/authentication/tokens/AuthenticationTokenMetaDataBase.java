@@ -76,4 +76,10 @@ public abstract class AuthenticationTokenMetaDataBase implements AuthenticationT
     public AccessMatchValue getAccessMatchValueDefault() {
         return defaultAccessMatchValue;
     }
+    
+    @Override
+    public boolean isSuperToken() {
+        // Legacy pattern: When default value is assigned number Integer.MAX_VALUE, the AuthenticationToken will grant any access rule...
+        return getAccessMatchValueDefault().getNumericValue() == Integer.MAX_VALUE;
+    }
 }

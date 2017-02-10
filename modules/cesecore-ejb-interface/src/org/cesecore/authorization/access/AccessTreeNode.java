@@ -14,6 +14,7 @@ package org.cesecore.authorization.access;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -149,8 +150,10 @@ public class AccessTreeNode {
             } else {
                 nextname = nextsubresource;
             }
-
-            final AccessTreeNode next = (AccessTreeNode) leafs.get(nextname);
+            if (log.isTraceEnabled()) {
+                log.trace("current: " + this.resource + " nextname: " + nextname + " values: " + Arrays.asList(leafs.keySet()));
+            }
+            final AccessTreeNode next = leafs.get(nextname);
             if (next == null) { // resource path doesn't exist            
                 // If internal state is accept recursive.
                 if (internalstate == AccessTreeState.STATE_ACCEPT_RECURSIVE) {
@@ -192,7 +195,7 @@ public class AccessTreeNode {
      */
     public void addAccessRule(String resource, AccessRuleData accessRule, AdminGroupData role) {
         if (log.isTraceEnabled()) {
-            log.trace("Role " + role.getRoleName() + " accessRule " + accessRule.toString() + " for resource " + resource + " (this.resource=" + this.resource + ").");
+            log.trace("this.resource " + this.resource + " role " + role.getRoleName() + " accessRule " + accessRule.toString() + " for resource " + resource);
         }
         if (resource.equals(this.resource)) {
             roleRulePairs.add(new AbstractMap.SimpleEntry<AdminGroupData, AccessRuleData>(role, accessRule));
@@ -228,7 +231,8 @@ public class AccessTreeNode {
      */
     private AccessTreeState findPreferredRule(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         AccessTreeState state = null; 
-        AccessMatchValue statePriority = authenticationToken.getDefaultMatchValue();
+        // Start with the lowest priority match value
+        AccessMatchValue statePriority = authenticationToken.getMetaData().getAccessMatchValues().get(0);
         if (log.isTraceEnabled()) {
             log.trace("AccessTreeNode " + resource + " has " + roleRulePairs.size() + " roleRulePairs");
         }
@@ -243,17 +247,12 @@ public class AccessTreeNode {
                 if (authenticationToken.matchTokenType(accessUser.getTokenType())) {
                     // And the two principals match (done inside to save on cycles)
                     if (authenticationToken.matches(accessUser)) {
-                        /*
-                         * The below line is a hack in order to allow supertokens. By setting state = null at the top of this
-                         * method, any authentication token that doesn't match will get STATE_UNKNOWN in this method's last line. 
-                         * 
-                         * Should we match token type and access user, we have a special state where we can let an authentication token
-                         * be a super token by setting the return of getDefaultMatchValue() to Integer.MaxInt, hence trumping any other 
-                         * matches done by this method. This eliminates the need for any reflective code for supertokens. 
-                         */
-                        if (state == null) {
-                            //Only set state to A+R if this is the first run
-                            state = AccessTreeState.STATE_ACCEPT_RECURSIVE;
+                        /* The below line is a hack in order to allow supertokens trumping any other matches done by this method. */
+                        if (authenticationToken.getMetaData().isSuperToken()) {
+                            if (log.isTraceEnabled()) {
+                                log.trace("AuthenticationToken " + authenticationToken.toString() + " is a supertoken!");
+                            }
+                            return AccessTreeState.STATE_ACCEPT_RECURSIVE;
                         }
                         final AccessTreeState thisUserState = roleRulePair.getValue().getTreeState();
                         final AccessMatchValue thisUserStatePriority = authenticationToken.getMatchValueFromDatabaseValue(accessUser.getMatchWith());
@@ -284,7 +283,7 @@ public class AccessTreeNode {
                         } else {
                             if (statePriority == thisUserStatePriority) {
                                 // If the priority is the same then decline has priority over accept.
-                                if (state.getLegacyNumber() < thisUserState.getLegacyNumber()) {
+                                if (state==null || state.getLegacyNumber() < thisUserState.getLegacyNumber()) {
                                     state = thisUserState;
                                 }
                             }
