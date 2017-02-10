@@ -13,46 +13,19 @@
 package org.cesecore.mock.authentication.tokens;
 
 import java.util.Arrays;
-import java.util.List;
 
-import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authentication.tokens.AuthenticationTokenMetaDataBase;
 
 /**
+ * Meta data definition and ServiceLoader marker for {@link org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken}.
+ * 
  * @version $Id$
- *
  */
-public enum UsernameAccessMatchValue implements AccessMatchValue {
-    USERNAME(0);
+public class UsernameBasedAuthenticationTokenMetaData extends AuthenticationTokenMetaDataBase {
 
-    private int numericValue;
-
-    private UsernameAccessMatchValue(int numericValue) {
-        this.numericValue = numericValue;
-    }
-
-    @Override
-    public int getNumericValue() {
-        return numericValue;
-    }
-
-    @Override
-    public boolean isDefaultValue() {
-        return true; // Single value
-    }
-
-    @Override
-    public String getTokenType() {
-        return UsernameBasedAuthenticationTokenMetaData.TOKEN_TYPE;
-    }
-
-    @Override
-    public boolean isIssuedByCa() {
-        return false;
-    }
-
-    @Override
-    public List<AccessMatchType> getAvailableAccessMatchTypes() {
-        return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
+    public static final String TOKEN_TYPE = "UsernameBasedAuthenticationToken";
+    
+    public UsernameBasedAuthenticationTokenMetaData() {
+        super(TOKEN_TYPE, Arrays.asList(UsernameAccessMatchValue.values()), false);
     }
 }

@@ -13,15 +13,10 @@
 package org.cesecore.mock.authentication.tokens;
 
 import java.security.Principal;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
 /**
  * This token is God-token that can be sent via remote (and should never be deployed). It's purpose is to simplify boilerplate work in system tests, and
@@ -33,19 +28,12 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
  * 
  * @version $Id$
  */
-public class TestAlwaysAllowLocalAuthenticationToken extends AuthenticationToken {
+public class TestAlwaysAllowLocalAuthenticationToken extends AlwaysAllowLocalAuthenticationToken {
 
     private static final long serialVersionUID = -3942437717641924829L;
 
     public TestAlwaysAllowLocalAuthenticationToken(final Principal principal) {
-        super(new HashSet<Principal>() {
-            private static final long serialVersionUID = 3125729459998373943L;
-
-            {
-                add(principal);
-            }
-        }, null);
-
+        super(principal);
     }
     
     public TestAlwaysAllowLocalAuthenticationToken(final String username) {
@@ -74,59 +62,12 @@ public class TestAlwaysAllowLocalAuthenticationToken extends AuthenticationToken
 
     @Override
     public int hashCode() {
-        return "AlwaysAllowLocalAuthenticationToken".hashCode();
+        return super.hashCode();
     }
 
     @Override
     public boolean matchTokenType(String tokenType) {
-        return true;
-    }
-
-    @Override
-    public AccessMatchValue getDefaultMatchValue() {
-        return InternalMatchValue.DEFAULT;
-    }
-
-    @Override
-    public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {
-        return InternalMatchValue.INSTANCE;
-    }
-    
-    private static enum InternalMatchValue implements AccessMatchValue {
-        INSTANCE(0), DEFAULT(Integer.MAX_VALUE);
-
-        private static final String TOKEN_TYPE = "AlwaysAllowAuthenticationToken";
-        
-        private final int numericValue;
-        
-        private InternalMatchValue(final int numericValue) {
-            this.numericValue = numericValue;
-        }
-        
-        @Override
-        public int getNumericValue() {         
-            return numericValue;
-        }
-
-        @Override
-        public String getTokenType() {           
-            return TOKEN_TYPE;
-        }
-
-        @Override
-        public boolean isIssuedByCa() {
-            return false;
-        }
-
-        @Override
-        public boolean isDefaultValue() {
-            return numericValue == DEFAULT.numericValue;
-        }
-
-        @Override
-        public List<AccessMatchType> getAvailableAccessMatchTypes() {
-            return Arrays.asList();
-        }
+        return true; // Skip check if it was created in this JVM
     }
 
     @Override

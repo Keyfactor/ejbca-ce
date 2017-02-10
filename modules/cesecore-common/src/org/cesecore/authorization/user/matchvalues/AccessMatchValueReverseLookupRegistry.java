@@ -14,8 +14,11 @@ package org.cesecore.authorization.user.matchvalues;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
 
 /**
  * This enum-pattern singleton acts as a lookup registry for AccessMatchValue implementations. 
@@ -27,38 +30,31 @@ import java.util.concurrent.ConcurrentHashMap;
 public enum AccessMatchValueReverseLookupRegistry {
     INSTANCE;
     
-    // Registry of methods used to look up database values
-    private final Map<String, Map<String, AccessMatchValue>> nameLookupRegistry = new ConcurrentHashMap<String, Map<String, AccessMatchValue>>();
-    private final Map<String, Map<Integer, AccessMatchValue>> idLookupRegistry = new ConcurrentHashMap<String, Map<Integer, AccessMatchValue>>();
-    private final Map<String, AccessMatchValue> defaultValues = new ConcurrentHashMap<String, AccessMatchValue>();
-
-    public Set<String> getAllTokenTypes() {
-        return defaultValues.keySet();
-    }
+    private final Logger log = Logger.getLogger(AccessMatchValueReverseLookupRegistry.class);
     
-    /** Register a set of AccessMatchValues for reverse lookup. */
-    public void register(final AccessMatchValue[] values) {
-        if (values.length>0) {
-            final String tokenType = values[0].getTokenType();
-            if (defaultValues.containsKey(tokenType)) {
-                throw new InvalidMatchValueException(tokenType + " has already been registered.");
-            }
-            // If none of the provided AccessMatchValues would volunteer as default we will use the first one as fall-back
-            defaultValues.put(tokenType, values[0]);
-            final Map<String, AccessMatchValue> nameLookup = new HashMap<String, AccessMatchValue>();
-            final Map<Integer, AccessMatchValue> idLookup = new HashMap<Integer, AccessMatchValue>();
-            for (final AccessMatchValue value : values) {
-                nameLookup.put(value.name(), value);
-                idLookup.put(value.getNumericValue(), value);
-                if (value.isDefaultValue()) {
-                    defaultValues.put(tokenType, value);
-                }
-            }
-            nameLookupRegistry.put(tokenType, nameLookup);
-            idLookupRegistry.put(tokenType, idLookup);
+    // Registry of methods used to look up database values
+    private final Map<String, AuthenticationTokenMetaData> metaDatas = new HashMap<>();
+
+    private AccessMatchValueReverseLookupRegistry() {
+        for (final AuthenticationTokenMetaData metaData : ServiceLoader.load(AuthenticationTokenMetaData.class)) {
+            register(metaData);
         }
     }
 
+    /** package accessible register class also for use from JUnit test */
+    void register(final AuthenticationTokenMetaData metaData) {
+        if (metaData!=null && metaData.getTokenType()!=null && metaData.getAccessMatchValues()!=null && !metaData.getAccessMatchValues().isEmpty()) {
+            metaDatas.put(metaData.getTokenType(), metaData);
+            if (log.isDebugEnabled()) {
+                log.debug("Registered AuthenticationToken of type " + metaData.getTokenType() +" with match keys " + metaData.getAccessMatchValues().toString());
+            }
+        }
+    }
+
+    public Set<String> getAllTokenTypes() {
+        return metaDatas.keySet();
+    }
+    
     /**
      * This method performs a reverse lookup given a token type and an integer, by using already registered callback method
      * to translate those values into an AccessMatchValue. If no corresponding callback method has been registered, this method
@@ -68,16 +64,9 @@ public enum AccessMatchValueReverseLookupRegistry {
      * @param databaseValue the numeric value from the database.
      * @return The AccessMatchValue-extending enum returned by the corresponding lookup method, null if token type isn't registered. 
      */
-    public AccessMatchValue performReverseLookup(String tokenType, int databaseValue) {
-        if (tokenType == null) {
-            return null;
-        } else {
-            final Map<Integer, AccessMatchValue> valueMap = idLookupRegistry.get(tokenType);
-            if (valueMap == null) {
-                return null;
-            }
-            return valueMap.get(databaseValue);
-        }
+    public AccessMatchValue performReverseLookup(final String tokenType, final int databaseValue) {
+        final AuthenticationTokenMetaData metaData = metaDatas.get(tokenType);
+        return metaData == null ? null : metaData.getAccessMatchValueIdMap().get(databaseValue);
     }
     
     /**
@@ -87,23 +76,20 @@ public enum AccessMatchValueReverseLookupRegistry {
      * @param matchValueName the name of the match value
      * @return the sought AccessMatchValue. Returns null if match value not found for the given token type.
      */
-    public AccessMatchValue lookupMatchValueFromTokenTypeAndName(String tokenType, String matchValueName) {
-        final Map<String, AccessMatchValue> valueMap = nameLookupRegistry.get(tokenType);
-        if (valueMap == null) {
-            throw new ReverseMatchValueLookupException("Token type of name " + tokenType + " not found.");
-        }
-        return valueMap.get(matchValueName);
+    public AccessMatchValue lookupMatchValueFromTokenTypeAndName(final String tokenType, final String matchValueName) {
+        final AuthenticationTokenMetaData metaData = metaDatas.get(tokenType);
+        return metaData == null ? null : metaData.getAccessMatchValueNameMap().get(matchValueName);
     }
 
     /**
      * @return the nameLookupMap for a given token type. Never returns null.
      */
-    public Map<String, AccessMatchValue> getNameLookupRegistryForTokenType(String tokenType) {
-        Map<String, AccessMatchValue> valueMap = nameLookupRegistry.get(tokenType);
-        if(valueMap == null) {
+    public Map<String, AccessMatchValue> getNameLookupRegistryForTokenType(final String tokenType) {
+        final AuthenticationTokenMetaData metaData = metaDatas.get(tokenType);
+        if (metaData == null) {
             throw new ReverseMatchValueLookupException("Token type of name " + tokenType + " not found.");
         }
-        return valueMap;
+        return metaData.getAccessMatchValueNameMap();
     }
     
     /**
@@ -112,12 +98,11 @@ public enum AccessMatchValueReverseLookupRegistry {
      * @param tokenType the token type asked for 
      * @return the default value for the given token type. May return null if such a value is registered as default.
      */
-    public AccessMatchValue getDefaultValueForTokenType(String tokenType) {
-        AccessMatchValue result = defaultValues.get(tokenType);
-        if(!nameLookupRegistry.containsKey(tokenType)) {
-            throw new ReverseMatchValueLookupException("Token type " + tokenType + " does not exist.");
+    public AccessMatchValue getDefaultValueForTokenType(final String tokenType) {
+        final AuthenticationTokenMetaData metaData = metaDatas.get(tokenType);
+        if (metaData == null) {
+            throw new ReverseMatchValueLookupException("Token type of name " + tokenType + " not found.");
         }
-        return result;
+        return metaData.getAccessMatchValueDefault();
     }
-
 }

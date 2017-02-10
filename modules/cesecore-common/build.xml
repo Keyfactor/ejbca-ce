@@ -54,7 +54,7 @@
 			<classpath refid="compile.classpath"/>
 		</javac>
 		<!-- generates dynamically META-INF/services for the ServiceLocator to find implementations of CvcPlugin -->
-		<buildservicemanifest interface="org.cesecore.certificates.ca.CvcPlugin;org.cesecore.authorization.rules.AccessRulePlugin;org.cesecore.configuration.ConfigurationCache;org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension"
+		<buildservicemanifest interface="org.cesecore.authentication.tokens.AuthenticationTokenMetaData;org.cesecore.certificates.ca.CvcPlugin;org.cesecore.authorization.rules.AccessRulePlugin;org.cesecore.configuration.ConfigurationCache;org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension"
     		file="${cesecore-common.dir}/build/classes" classpath="manifest.classpath"/>
 		<mkdir dir="${cesecore-common.dir}/dist"/>
 		<jar destfile="${cesecore-common.dir}/dist/cesecore-common.jar">

@@ -191,7 +191,7 @@ public class AccessTreeNode {
      *            The desired Role
      */
     public void addAccessRule(String resource, AccessRuleData accessRule, AdminGroupData role) {
-
+        log.trace("Role " + role.getRoleName() + " accessRule " + accessRule.toString() + " for resource " + resource + " (this.resource=" + this.resource + ").");
         if (resource.equals(this.resource)) {
             roleRulePairs.add(new AbstractMap.SimpleEntry<AdminGroupData, AccessRuleData>(role, accessRule));
         } else {
@@ -272,7 +272,7 @@ public class AccessTreeNode {
                             }
                             final AccessMatchType matchType = accessUser.getMatchTypeAsType();
                             log.trace("accessUser " + logMatchValue.name() + " " + (matchType == null ? "null" : matchType.name()) + " "
-                                    + accessUser.getMatchValue() + " matched authenticationToken. thisUserState=" + logState.name()
+                                    + accessUser.getMatchValue() + " matched authenticationToken '"+authenticationToken.toString()+"'. thisUserState=" + logState.name()
                                     + " thisUserStatePriority=" + thisUserStatePriority);
                         }
                         // If rule has higher priority, its state is to be used.
@@ -293,7 +293,7 @@ public class AccessTreeNode {
                         
                     } else if (log.isTraceEnabled()) {
                         log.trace("accessUser " + authenticationToken.getMatchValueFromDatabaseValue(accessUser.getMatchWith()).name() + " " + accessUser.getMatchTypeAsType().name() + " "
-                                + accessUser.getMatchValue() + " did not match authenticationToken.");
+                                + accessUser.getMatchValue() + " did not match authenticationToken '"+authenticationToken.toString()+"'.");
                     }
                 }
             }

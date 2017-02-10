@@ -23,6 +23,7 @@ import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
@@ -42,7 +43,7 @@ public class HexSerialNumberValidator implements Validator {
 	        // Special treatment of admin management for legacy reasons
 		    final String matchWithType = (String) ((UIOutput) textField.findComponent("matchWith")).getValue();
 		    // Check if the matchWithType is "CertificateAuthenticationToken:WITH_SERIALNUMBER"
-            if ((X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getTokenType()+":"
+            if ((X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE+":"
                     +X500PrincipalAccessMatchValue.WITH_SERIALNUMBER).equals(matchWithType)) {
                 try {
                     new BigInteger((String) object, 16);

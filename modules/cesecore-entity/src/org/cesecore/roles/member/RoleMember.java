@@ -15,8 +15,6 @@ package org.cesecore.roles.member;
 import java.io.Serializable;
 
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.roles.Role;
 
 /**
@@ -79,10 +77,6 @@ public class RoleMember implements Serializable {
 
     public void setTokenType(String tokenType) {
         this.tokenType = tokenType;
-    }
-
-    public AccessMatchValue getAccessMatchValue() {
-        return AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, tokenMatchKey);
     }
 
     public int getTokenIssuerId() {

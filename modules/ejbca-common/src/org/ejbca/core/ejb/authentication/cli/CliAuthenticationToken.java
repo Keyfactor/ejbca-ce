@@ -17,9 +17,9 @@ import java.util.HashSet;
 
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessUserAspect;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.ejbca.core.ejb.authentication.cli.exception.UninitializedCliAuthenticationTokenException;
 import org.ejbca.util.crypto.BCrypt;
 import org.ejbca.util.crypto.CryptoTools;
@@ -33,7 +33,7 @@ import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
  */
 public class CliAuthenticationToken extends AuthenticationToken {
 
-    public static final String TOKEN_TYPE = "CliAuthenticationToken";
+    public static final CliAuthenticationTokenMetaData metaData = new CliAuthenticationTokenMetaData();
     
     private static final long serialVersionUID = -3942437717641924829L;
 
@@ -262,26 +262,12 @@ public class CliAuthenticationToken extends AuthenticationToken {
     }
 
     @Override
-    public boolean matchTokenType(String tokenType) {
-        return tokenType.equals(TOKEN_TYPE);
-    }
-
-    @Override
-    public AccessMatchValue getDefaultMatchValue() {   
-        return CliUserAccessMatchValue.USERNAME;
-    }
-
-    @Override
-    public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {     
-        if (databaseValue.intValue() != CliUserAccessMatchValue.USERNAME.getNumericValue()) {
-            return null;
-        } else {
-            return CliUserAccessMatchValue.USERNAME;
-        }
-    }
-
-    @Override
     protected String generateUniqueId() {
         return generateUniqueId(isVerified, userName);
+    }
+
+    @Override
+    public AuthenticationTokenMetaData getMetaData() {
+        return metaData;
     }
 }

@@ -30,7 +30,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
@@ -131,8 +130,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
     @Override
     public Set<Integer> getRoleIdsMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         final Set<Integer> ret = new HashSet<>();
-        final AccessMatchValue defaultAccessMatchValue = authenticationToken.getDefaultMatchValue();
-        final String tokenType = defaultAccessMatchValue.getTokenType();
+        final String tokenType = authenticationToken.getMetaData().getTokenType();
         // TODO: This a naive implementation iterating over all RoleMemberDatas of this type. See ECA-5607 for suggested improvement.
         // For example keep a list of distinct tokenSubTypes present in the table and asking the authToken for all permutations might be another approach
         // With the naive approach below we would be better off to background reload all rows into memory and search there

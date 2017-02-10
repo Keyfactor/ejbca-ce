@@ -17,12 +17,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -94,7 +94,7 @@ public class RemoveAdminCommand extends BaseRolesCommand {
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(
-                X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getTokenType(), parameters.get(MATCH_WITH_KEY));
+                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, parameters.get(MATCH_WITH_KEY));
         if (matchWith == null) {
             getLogger().error("No such thing to match with as \"" + parameters.get(MATCH_WITH_KEY) + "\".");
             return CommandResult.FUNCTIONAL_FAILURE;

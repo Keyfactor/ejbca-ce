@@ -26,8 +26,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.InvalidAuthenticationTokenException;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.user.AccessUserAspect;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.CertTools;
@@ -40,9 +38,7 @@ import org.cesecore.util.CertTools;
 
 public class TestX509CertificateAuthenticationToken extends X509CertificateAuthenticationToken {
 
-    public static final String TOKEN_TYPE = X509CertificateAuthenticationToken.TOKEN_TYPE;
-    
-    private static final Logger log = Logger.getLogger(X509CertificateAuthenticationToken.class);
+    private static final Logger log = Logger.getLogger(TestX509CertificateAuthenticationToken.class);
     
     private static final long serialVersionUID = 4343703249070152822L;
 
@@ -94,7 +90,7 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
         int parameter;
         int size = 0;
         String[] clientstrings = null;
-        if (StringUtils.equals(TOKEN_TYPE,accessUser.getTokenType())) {
+        if (StringUtils.equals(getMetaData().getTokenType(), accessUser.getTokenType())) {
             // First check that issuers match.
             if (accessUser.getCaId()!=null && accessUser.getCaId().intValue() == adminCaId) {
                 // Determine part of certificate to match with.
@@ -230,7 +226,7 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
             }
         } else {
             if (log.isTraceEnabled()) {
-                log.trace("Token type does not match. Required="+TOKEN_TYPE+", actual was "+accessUser.getTokenType());
+                log.trace("Token type does not match. Required="+getMetaData().getTokenType()+", actual was "+accessUser.getTokenType());
             }            
         }
 
@@ -269,20 +265,5 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
     
     public X509Certificate getCertificate() {
         return this.certificate;
-    }
-
-    @Override
-    public boolean matchTokenType(String tokenType) {
-        return tokenType.equals(X509CertificateAuthenticationToken.TOKEN_TYPE);
-    }
-
-    @Override
-    public AccessMatchValue getDefaultMatchValue() {        
-        return X500PrincipalAccessMatchValue.NONE;
-    }
-    
-    @Override
-    public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {
-        return AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(TOKEN_TYPE, databaseValue.intValue());
     }
 }

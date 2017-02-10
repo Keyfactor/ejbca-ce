@@ -41,6 +41,7 @@ public interface AccessMatchValue {
      * 
      * @return a name for the implementation of this match value. 
      */
+    @Deprecated // Use RoleMember.getTokenType instead
     String getTokenType();
     
     /**

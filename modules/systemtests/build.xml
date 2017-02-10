@@ -130,6 +130,7 @@
 		<javac srcdir="${src.interface.dir}" destdir="${build.interface.dir}" debug="on" includeantruntime="no"
 	        	encoding="UTF-8" classpathref="interfaces.classpath" target="${java.target.version}">
 		</javac>
+		<buildservicemanifest interface="org.cesecore.authentication.tokens.AuthenticationTokenMetaData" file="${build.interface.dir}" classpath="manifest.classpath"/>
 		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
 		<copy file="${systemtests.properties.file}" todir="${build.interface.dir}" failonerror="false"/>
 	</target>
