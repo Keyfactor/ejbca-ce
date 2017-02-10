@@ -26,6 +26,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -57,7 +58,7 @@ import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
 
-    //private static final Logger log = Logger.getLogger(RoleSessionBean.class);
+    private static final Logger log = Logger.getLogger(RoleSessionBean.class);
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
@@ -95,6 +96,17 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<Role> getAuthorizedRoles(final AuthenticationToken authenticationToken) {
+        // Get all namespaces the current authentication token is allowed to access
+        Set<Integer> roleIdsCallerBelongsTo;
+        try {
+            roleIdsCallerBelongsTo = roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
+        } catch (AuthenticationFailedException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Failed to list Role IDs for this authenticaiton token: '" + authenticationToken + "'", e);
+            }
+            return new ArrayList<>();
+        }
+        
         // This code is based on the old code from RoleAccessSessionBean.getAllAuthorizedRoles
         final List<Role> roles = new ArrayList<>();
         roleLoop: for (final Role role : roleDataSession.getAllRoles()) {
@@ -109,6 +121,10 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                 if(!caSession.authorizedToCANoLogging(authenticationToken, caId) && role.hasAccessToResource(StandardRules.CAACCESS.resource() + caId)) {
                     continue roleLoop;
                 }
+            }
+            // Third, check that the authentication token has a role that's authorized to this role's namespace
+            if (!isAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo)) {
+                continue roleLoop;
             }
             roles.add(role);
         }
@@ -280,17 +296,26 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                 }
             }
             // Assert that AuthenticationToken is allowed to mess with the role's nameSpace
-            if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
-                final Set<String> ownedNameSpaces = new HashSet<>();
-                for (final int current : roleIdsCallerBelongsTo) {
-                    ownedNameSpaces.add(roleDataSession.getRole(current).getNameSpace());
-                }
-                if (!ownedNameSpaces.contains("") && !ownedNameSpaces.contains(role.getNameSpace())) {
-                    throw new AuthorizationDeniedException("Current AuthenticationToken is not authorized to the namespace '"+role.getNameSpace()+"'.");
-                }
+            if (!isAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo)) {
+                throw new AuthorizationDeniedException("Current AuthenticationToken is not authorized to the namespace '"+role.getNameSpace()+"'.");
             }
         } catch (AuthenticationFailedException e) {
             throw new AuthorizationDeniedException("Current AuthenticationToken is not authorized to the namespace '"+role.getNameSpace()+"'.");
         }
+    }
+    
+    /** @throws AuthorizationDeniedException if the nameSpace is not "owned" by the caller. */
+    private boolean isAuthorizedToNameSpace(final AuthenticationToken authenticationToken, final Role role, final Set<Integer> roleIdsCallerBelongsTo) {
+        // Assert that AuthenticationToken is allowed to mess with the role's nameSpace
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
+            final Set<String> ownedNameSpaces = new HashSet<>();
+            for (final int current : roleIdsCallerBelongsTo) {
+                ownedNameSpaces.add(roleDataSession.getRole(current).getNameSpace());
+            }
+            if (!ownedNameSpaces.contains("") && !ownedNameSpaces.contains(role.getNameSpace())) {
+                return false;
+            }
+        }
+        return true;
     }
 }
