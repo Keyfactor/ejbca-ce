@@ -540,6 +540,28 @@ New Feature
 Task
     [ECA-4868] - Security Issue
 
+EJBCA 6.5.0.4, 2017-02-10
+---
+Bug
+    [ECA-4872] - System configuration page broken in WildFly 10
+    [ECA-4945] - Edit admin entities broken in WildFly 10
+    [ECA-5687] - EJBCA 6.5.0 Community post-upgrade does not fail gracefully
+
+EJBCA 6.5.0.3, 2016-03-23
+---
+Bug
+    [ECA-4931] - Minor security issue
+    [ECA-4955] - CMP Proxy swallows underlying error message when verifying certificate path
+
+EJBCA 6.5.0.2, 2016-03-01
+---
+Bug
+    [ECA-4860] - CryptoToken Id not updated when importing a statedump with the merge option
+
+EJBCA 6.5.0.1, 2016-03-01
+---
+Bug
+    [ECA-4862] - CmpMessageHelper.createUnprotectedErrorMessage throws an NPE if a nonce is not included in the CMP message
 
 EJBCA 6.5.0, 2016-02-29
 ---
