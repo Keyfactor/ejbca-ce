@@ -72,7 +72,7 @@ public class AccessTreeCache {
      *         configuration file. Return <code>false</code> otherwise.
      */
     public boolean needsUpdate() {
-        if ((accessTree == null) || (lastUpdateTime + CesecoreConfiguration.getCacheAuthorizationTime() < System.currentTimeMillis())) {
+        if (accessTree == null || accessTreeUpdatenumber == -1 || (lastUpdateTime + CesecoreConfiguration.getCacheAuthorizationTime() < System.currentTimeMillis())) {
             return true;
         }
         return false;

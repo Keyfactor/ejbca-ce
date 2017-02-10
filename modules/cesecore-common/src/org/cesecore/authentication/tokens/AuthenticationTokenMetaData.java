@@ -41,4 +41,7 @@ public interface AuthenticationTokenMetaData {
 
     /** @return the default AccessMatchValue for this type of AuthenticationToken */
     AccessMatchValue getAccessMatchValueDefault();
+
+    /** @return true if the token is a super token (granting access to any rule) */
+    boolean isSuperToken();
 }
