@@ -53,7 +53,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -114,7 +114,7 @@ import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
-import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
@@ -742,7 +742,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	    Collection<AccessUserAspectData> updatedUsers = new ArrayList<>();
     	    for(AccessUserAspectData userAspect : role.getAccessUsers().values()) {
     	        if(userAspect.getTokenType() == null) {
-    	            userAspect.setTokenType(X509CertificateAuthenticationToken.TOKEN_TYPE);
+    	            userAspect.setTokenType(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE);
     	            updatedUsers.add(userAspect);
     	        }
     	    }
@@ -1564,7 +1564,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 final String tokenType = accessUserAspect.getTokenType();
                 // Only the X509CertificateAuthenticationToken actually uses the CA Id, so leave it unset for the rest
                 final int tokenIssuerId;
-                if (X509CertificateAuthenticationToken.TOKEN_TYPE.equals(tokenType) && accessUserAspect.getCaId()!=null) {
+                if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) && accessUserAspect.getCaId()!=null) {
                     tokenIssuerId = accessUserAspect.getCaId().intValue();
                 } else {
                     tokenIssuerId = RoleMember.NO_ISSUER;
@@ -1573,7 +1573,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 int tokenMatchOperator = accessUserAspect.getMatchType();
                 final String tokenMatchValue = accessUserAspect.getMatchValue();
                 // Straighten out comparison operators that don't make sense, since previous versions of EJBCA might have allowed such configuration
-                if (X509CertificateAuthenticationToken.TOKEN_TYPE.equals(tokenType)) {
+                if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType)) {
                     if (tokenMatchKey==X500PrincipalAccessMatchValue.NONE.getNumericValue()) {
                         // This will never match anything, drop it
                         log.info("Admin in role '" + roleName + "' of type " + tokenType + " with match key="+X500PrincipalAccessMatchValue.NONE.name() +
@@ -1593,7 +1593,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         log.warn("Admin in role '" + roleName + "' of type " + tokenType + " with match key="+tokenMatchKey+" operator=" + tokenMatchOperator +
                                 " and value='"+tokenMatchValue+"' is most likely misconfigured. This will grant role access to anything not matching the value!");
                     }
-                } else if (CliAuthenticationToken.TOKEN_TYPE.equals(tokenType) || "UsernameBasedAuthenticationToken".equals(tokenType)) {
+                } else if (CliAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) || "UsernameBasedAuthenticationToken".equals(tokenType)) {
                     if (tokenMatchOperator != AccessMatchType.TYPE_EQUALCASE.getNumericValue()) {
                         // The implementation always does case sensitive compare
                         log.debug("Found admin of type " + tokenType + " with and value='"+tokenMatchValue+"'. Changing operator type to defacto operator equals.");

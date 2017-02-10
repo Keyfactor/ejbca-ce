@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -98,7 +99,7 @@ public class AddAdminCommand extends BaseRolesCommand {
         }
         int caid = caInfo.getCAId();
         AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(
-                X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getTokenType(), parameters.get(MATCH_WITH_KEY));
+                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, parameters.get(MATCH_WITH_KEY));
         if (matchWith == null) {
             getLogger().error("No such thing to match with as \"" + parameters.get(MATCH_WITH_KEY) + "\".");
             return CommandResult.FUNCTIONAL_FAILURE;

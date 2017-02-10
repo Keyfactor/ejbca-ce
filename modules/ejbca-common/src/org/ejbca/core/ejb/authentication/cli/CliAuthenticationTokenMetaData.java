@@ -13,47 +13,19 @@
 package org.ejbca.core.ejb.authentication.cli;
 
 import java.util.Arrays;
-import java.util.List;
 
-import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authentication.tokens.AuthenticationTokenMetaDataBase;
 
 /**
+ * Meta data definition and ServiceLoader marker for {@link org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken}.
+ * 
  * @version $Id$
- *
  */
-public enum CliUserAccessMatchValue implements AccessMatchValue {
-    USERNAME(0);
+public class CliAuthenticationTokenMetaData extends AuthenticationTokenMetaDataBase {
 
-    private final int numericValue;
+    public static final String TOKEN_TYPE = "CliAuthenticationToken";
 
-    private CliUserAccessMatchValue(int numericValue) {
-        this.numericValue = numericValue;
-    }
-
-    @Override
-    public int getNumericValue() {
-        return numericValue;
-    }
-
-    @Override
-    public boolean isDefaultValue() {
-        return numericValue == USERNAME.numericValue;
-    }
-
-    @Override
-    public String getTokenType() {
-        return CliAuthenticationTokenMetaData.TOKEN_TYPE;
-    }
-
-    @Override
-    public boolean isIssuedByCa() {
-        return false;
-    }
-
-    @Override
-    public List<AccessMatchType> getAvailableAccessMatchTypes() {
-        // Always use case sensitive match for usernames
-        return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
+    public CliAuthenticationTokenMetaData() {
+        super(TOKEN_TYPE, Arrays.asList(CliUserAccessMatchValue.USERNAME), true);
     }
 }

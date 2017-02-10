@@ -45,11 +45,9 @@ import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.PublicAccessMatchValue;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -65,7 +63,6 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
@@ -93,7 +90,7 @@ import org.ejbca.util.JDBCUtil;
 public class StartupSingletonBean {
 
     private final Logger log = Logger.getLogger(StartupSingletonBean.class);
-    private final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Application internal"));
+    private final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Application internal");
     
     @EJB
     private AuthorizationSessionLocal authorizationSession;
@@ -173,7 +170,11 @@ public class StartupSingletonBean {
                 break;
             }
         }
-
+        /* 
+         * Trigger ServiceLoader for AuthenticationTokens at startup, since this is a critical function it makes
+         * debugging nicer if the available tokens are shown at startup
+         */
+        log.info("Registered AuthenticationTokens " + AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes().toString());
         // We have to read CAs into cache (and upgrade them) early, because the log system may use CAs for signing logs
         
         log.trace(">init CryptoTokenFactory just to load those classes that are available");
@@ -264,22 +265,6 @@ public class StartupSingletonBean {
             certCreateSession.isUniqueCertificateSerialNumberIndex();
         } else {
             certificateStoreSession.setUniqueCertificateSerialNumberIndex(unique);
-        }
-        
-        /*
-         * FIXME: This is a hack, because we need some sort of annotation or service loader to make sure 
-         * that the AccessMatchValue-implementing enums get initialized at runtime. Sadly, enums aren't 
-         * initialized until they're called, which causes trouble with this registry. 
-         * 
-         * These lines are to be removed once a dynamic initialization heuristic has been developed.
-         * 
-         */      
-        try {
-            Class.forName(X500PrincipalAccessMatchValue.class.getName());
-            Class.forName(CliUserAccessMatchValue.class.getName());
-            Class.forName(PublicAccessMatchValue.class.getName());
-        } catch (ClassNotFoundException e) {
-            log.error("Failure during match value initialization", e);
         }
         // Perform (automatic) upgrades, if needed
         upgradeSession.performPreUpgrade(isFreshInstallation);

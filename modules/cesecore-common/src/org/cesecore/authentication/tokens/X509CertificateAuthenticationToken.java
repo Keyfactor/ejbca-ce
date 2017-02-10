@@ -25,8 +25,6 @@ import javax.security.auth.x500.X500Principal;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.AccessUserAspect;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.CertTools;
@@ -44,10 +42,9 @@ import org.cesecore.util.CertTools;
  */
 public class X509CertificateAuthenticationToken extends NestableAuthenticationToken {
 
-    public static final String TOKEN_TYPE = "CertificateAuthenticationToken";
+    public static final X509CertificateAuthenticationTokenMetaData metaData = new X509CertificateAuthenticationTokenMetaData();
     
     private static final Logger log = Logger.getLogger(X509CertificateAuthenticationToken.class);
-    
     private static final long serialVersionUID = 1097165653913865515L;
 
     private static final Pattern serialPattern = Pattern.compile("\\bSERIALNUMBER=", Pattern.CASE_INSENSITIVE);
@@ -95,8 +92,7 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
      * @throws NullPointerException if the provided certificate is null
      */
     public X509CertificateAuthenticationToken(final X509Certificate certificate) {
-        this(new HashSet<>(Arrays.asList(new X500Principal[]{ certificate.getSubjectX500Principal() })),
-                new HashSet<>(Arrays.asList(new X509Certificate[]{ certificate })));
+        this(new HashSet<>(Arrays.asList(certificate.getSubjectX500Principal())), new HashSet<>(Arrays.asList(certificate)));
     }
 
     @Override
@@ -109,7 +105,7 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
         int parameter;
         int size = 0;
         String[] clientstrings = null;
-        if (StringUtils.equals(TOKEN_TYPE,accessUser.getTokenType())) {
+        if (StringUtils.equals(getMetaData().getTokenType(), accessUser.getTokenType())) {
             // First check that issuers match.
             if (accessUser.getCaId() == adminCaId) {
                 // Determine part of certificate to match with.
@@ -246,7 +242,7 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
             }
         } else {
             if (log.isTraceEnabled()) {
-                log.trace("Token type does not match. Required="+TOKEN_TYPE+", actual was "+accessUser.getTokenType());
+                log.trace("Token type does not match. Required="+getMetaData().getTokenType()+", actual was "+accessUser.getTokenType());
             }            
         }
 
@@ -297,21 +293,6 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
     }
     
     @Override
-    public boolean matchTokenType(String tokenType) {
-        return tokenType.equals(TOKEN_TYPE);
-    }
-    
-    @Override
-    public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {
-        return AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(TOKEN_TYPE, databaseValue.intValue());
-    }
-    
-    @Override
-    public AccessMatchValue getDefaultMatchValue() {        
-        return X500PrincipalAccessMatchValue.NONE;
-    }
-
-    @Override
     protected String generateUniqueId() {
         byte[] encodedCertificate = null;
         try {
@@ -320,6 +301,11 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
             throw new IllegalStateException(e);
         }
         return generateUniqueId(super.isCreatedInThisJvm(), encodedCertificate) + ";" + super.generateUniqueId();
+    }
+
+    @Override
+    public X509CertificateAuthenticationTokenMetaData getMetaData() {
+        return metaData;
     }
 }
 

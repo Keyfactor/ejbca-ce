@@ -88,6 +88,6 @@ public abstract class NestableAuthenticationToken extends LocalJvmOnlyAuthentica
 
     @Override
     protected String generateUniqueId() {
-        return nestedAuthenticationToken==null ? null : nestedAuthenticationToken.getTokenType() + ";" + nestedAuthenticationToken.getUniqueId();
+        return nestedAuthenticationToken==null ? null : nestedAuthenticationToken.getMetaData().getTokenType() + ";" + nestedAuthenticationToken.getUniqueId();
     }
 }

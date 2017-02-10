@@ -17,7 +17,6 @@ import java.util.List;
 
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 
 /**
  * @version $Id: UsernameAccessMatchValue.java 18613 2014-03-17 13:31:40Z mikekushner $
@@ -28,10 +27,6 @@ public enum PublicAccessMatchValue implements AccessMatchValue {
     TRANSPORT_CONFIDENTIAL(2);
 
     private int numericValue;
-
-    static {
-        AccessMatchValueReverseLookupRegistry.INSTANCE.register(values());
-    }
 
     private PublicAccessMatchValue(int numericValue) {
         this.numericValue = numericValue;
@@ -49,7 +44,7 @@ public enum PublicAccessMatchValue implements AccessMatchValue {
 
     @Override
     public String getTokenType() {
-        return PublicAccessAuthenticationToken.TOKEN_TYPE;
+        return PublicAccessAuthenticationTokenMetaData.TOKEN_TYPE;
     }
 
     @Override
