@@ -19,6 +19,7 @@ import static org.junit.Assert.fail;
 import java.util.Arrays;
 import java.util.List;
 
+import org.cesecore.authentication.tokens.AuthenticationTokenMetaDataBase;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.junit.Test;
 
@@ -33,18 +34,17 @@ public class AccessMatchValueReverseLookupRegistryTest {
     @Test
     public void testVanillaMatchValue() throws SecurityException, NoSuchMethodException {
         try {
-            AccessMatchValueReverseLookupRegistry.INSTANCE.register(VanillaAccessMatchValueMock.values());
+            AccessMatchValueReverseLookupRegistry.INSTANCE.register(new VanillaAuthenticationTokenMetaData());
         } catch (InvalidMatchValueException e) {
             fail("Exception was caught for vanilla AccessMatchValue, test can't proceed");
         }
-        //Test that you can't add twice.
+        // Test that you can add twice.
         try {
-            AccessMatchValueReverseLookupRegistry.INSTANCE.register(VanillaAccessMatchValueMock.values());
-            fail("Added the same lookup method twice"); // NOPMD
+            AccessMatchValueReverseLookupRegistry.INSTANCE.register(new VanillaAuthenticationTokenMetaData());
         } catch (InvalidMatchValueException e) {
-            //Ignore
+            fail("Could not add the same token type twice.");
         }
-        VanillaAccessMatchValueMock foo = (VanillaAccessMatchValueMock) AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(VanillaAccessMatchValueMock.TOKEN_TYPE, 0);
+        VanillaAccessMatchValueMock foo = (VanillaAccessMatchValueMock) AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(VanillaAuthenticationTokenMetaData.TOKEN_TYPE, 0);
         assertEquals("Retrieved match value was not as expected", VanillaAccessMatchValueMock.FOO, foo);
     }
 
@@ -61,16 +61,23 @@ public class AccessMatchValueReverseLookupRegistryTest {
         }
     }
 
+    public static class VanillaAuthenticationTokenMetaData extends AuthenticationTokenMetaDataBase {
+        public static final String TOKEN_TYPE = "foo";
+
+        public VanillaAuthenticationTokenMetaData() {
+            super(TOKEN_TYPE, Arrays.asList(VanillaAccessMatchValueMock.values()), false);
+        }
+    }
+    
     private enum VanillaAccessMatchValueMock implements AccessMatchValue {
         FOO;
-        public static final String TOKEN_TYPE = "foo";
         @Override
         public int getNumericValue() {
             return 0;
         }
         @Override
         public String getTokenType() {
-            return TOKEN_TYPE;
+            return VanillaAuthenticationTokenMetaData.TOKEN_TYPE;
         }
         @SuppressWarnings("unused")
         public static AccessMatchValue lookup(Integer value) {

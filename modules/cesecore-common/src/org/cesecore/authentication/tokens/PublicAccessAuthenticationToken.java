@@ -17,11 +17,8 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.user.AccessUserAspect;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 
 /**
  * AuthenticationToken representing a user that has provided no means of authentication,
@@ -60,7 +57,7 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
     }
 
     private static final long serialVersionUID = 1L;
-    public static final String TOKEN_TYPE = "PublicAccessAuthenticationToken";
+    public static final PublicAccessAuthenticationTokenMetaData metaData = new PublicAccessAuthenticationTokenMetaData();
     
     private final PublicAccessPrincipal principal;
     private final PublicAccessCredential credential;
@@ -71,8 +68,8 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
     }
 
     public PublicAccessAuthenticationToken(final String principal, final boolean confidentialTransport) {
-        super(new HashSet<>(Arrays.asList(new Principal[] { new PublicAccessPrincipal(principal) })),
-                new HashSet<>(Arrays.asList(new PublicAccessCredential[] { new PublicAccessCredential(confidentialTransport) })));
+        super(new HashSet<>(Arrays.asList(new PublicAccessPrincipal(principal))),
+                new HashSet<>(Arrays.asList(new PublicAccessCredential(confidentialTransport))));
         this.principal = new PublicAccessPrincipal(principal);
         this.credential = new PublicAccessCredential(confidentialTransport);
     }
@@ -83,11 +80,9 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
         if (!super.isCreatedInThisJvm()) {
             return false;
         }
-        
-        if (!StringUtils.equals(TOKEN_TYPE, accessUser.getTokenType())) {
+        if (!matchTokenType(accessUser.getTokenType())) {
             return false;
         }
-        
         final PublicAccessMatchValue matchValue = (PublicAccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
         switch (matchValue) {
         case TRANSPORT_CONFIDENTIAL:
@@ -99,21 +94,6 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
         default:
             return false;
         }
-    }
-
-    @Override
-    public boolean matchTokenType(final String tokenType) {
-        return tokenType.equals(TOKEN_TYPE);
-    }
-
-    @Override
-    public AccessMatchValue getDefaultMatchValue() {
-        return PublicAccessMatchValue.TRANSPORT_ANY;
-    }
-
-    @Override
-    public AccessMatchValue getMatchValueFromDatabaseValue(final Integer databaseValue) {
-        return AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(TOKEN_TYPE, databaseValue.intValue());
     }
 
     /** Returns information of the entity this authentication token belongs to. */
@@ -154,5 +134,10 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
     @Override
     protected String generateUniqueId() {
         return generateUniqueId(super.isCreatedInThisJvm(), principal.getName(), credential.isConfidentialTransport()) + ";" + super.generateUniqueId();
+    }
+
+    @Override
+    public AuthenticationTokenMetaData getMetaData() {
+        return metaData;
     }
 }

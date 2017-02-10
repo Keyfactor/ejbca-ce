@@ -70,6 +70,8 @@ public abstract class AuthenticationToken implements Serializable {
     
     @Override
     public abstract int hashCode();
+    
+    public abstract AuthenticationTokenMetaData getMetaData();
 
     /**
      * Default way of returning the user information of the user(s) this authentication token belongs to.
@@ -92,25 +94,29 @@ public abstract class AuthenticationToken implements Serializable {
     }
     
     /**
-     * 
-     * 
      * @param tokenType String a String from an AccessMatchValue derivative that matches this token type.
      * @return true if the given value matches this AuthenticationToken's inherent token type.
      */
-    public abstract boolean matchTokenType(String tokenType);
+    public boolean matchTokenType(String tokenType) {
+        return getMetaData().getTokenType().equals(tokenType);
+    }
     
     /**
      * 
-     * @return the AccessMatchValue inherent to the implementing token type.
+     * @return the first available AccessMatchValue inherent to the implementing token type.
      */
-    public abstract AccessMatchValue getDefaultMatchValue();
-    
+    public AccessMatchValue getDefaultMatchValue() {
+        return getMetaData().getAccessMatchValueDefault();
+    }
+
     /**
      * 
      * @param databaseValue the numeric value from the database.
      * @return the enum implementing AccessMatchValue that matches the given numeric value from the database.
      */
-    public abstract AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue);
+    public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {
+        return getMetaData().getAccessMatchValueIdMap().get(databaseValue);
+    }
     
     /** @return a String that is guaranteed to be unique across all AuthenticationTokens of this type. */
     protected abstract String generateUniqueId();
@@ -131,13 +137,8 @@ public abstract class AuthenticationToken implements Serializable {
     /** @return a String that is guaranteed to be unique across all AuthenticationTokens (and will be different if nested with different AuthenticationTokens). */
     public String getUniqueId() {
         if (uniqueId==null) {
-            uniqueId = getTokenType() + ";" + generateUniqueId();
+            uniqueId = getMetaData().getTokenType() + ";" + generateUniqueId();
         }
         return uniqueId;
-    }
-
-    /** @return the type identifier of this AuthenticationToken */
-    public String getTokenType() {
-        return getDefaultMatchValue().getTokenType();
     }
 }

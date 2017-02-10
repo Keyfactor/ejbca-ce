@@ -52,7 +52,7 @@ public class CliAuthenticationTokenTest {
         CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
         EasyMock.expect(accessUser.getMatchValue()).andReturn("TEST");
-        EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationToken.TOKEN_TYPE);
+        EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationTokenMetaData.TOKEN_TYPE);
         EasyMock.replay(accessUser);
         assertTrue(authenticationToken.matches(accessUser));
         // The token should still work
@@ -68,7 +68,7 @@ public class CliAuthenticationTokenTest {
                 SupportedPasswordHashAlgorithm.SHA1_OLD);
         CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
-        EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationToken.TOKEN_TYPE).times(2);
+        EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationTokenMetaData.TOKEN_TYPE).times(2);
         EasyMock.expect(accessUser.getMatchValue()).andReturn("TEST").times(2);
         EasyMock.replay(accessUser);
         assertTrue(authenticationToken.matches(accessUser));
@@ -103,7 +103,7 @@ public class CliAuthenticationTokenTest {
         CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
         EasyMock.expect(accessUser.getMatchValue()).andReturn("TEST").times(2);
-        EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationToken.TOKEN_TYPE).times(2);
+        EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationTokenMetaData.TOKEN_TYPE).times(2);
         EasyMock.replay(accessUser);
         assertTrue(authenticationToken.matches(accessUser));        
         // Modify the token, so that it becomes "spent"
@@ -129,7 +129,7 @@ public class CliAuthenticationTokenTest {
         CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
         EasyMock.expect(accessUser.getMatchValue()).andReturn("TEST");
-        EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationToken.TOKEN_TYPE);
+        EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationTokenMetaData.TOKEN_TYPE);
         EasyMock.replay(accessUser);
         authenticationToken.setSha1Hash("You're a kitty!");
         boolean caught = false;

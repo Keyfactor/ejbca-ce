@@ -15,9 +15,7 @@ package org.cesecore.authentication.tokens;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 
-import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
@@ -25,7 +23,7 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
  * An authentication token that always matches the provided AccessUserAspectData if the AuthenticationToken was created in the same JVM as it is
  * verified.
  * 
- * Example usage: AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal function abc"));
+ * Example usage: AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Internal function abc");
  * 
  * @version $Id$
  */
@@ -33,15 +31,14 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
 
     private static final long serialVersionUID = -3942437717641924829L;
 
+    public static final AlwaysAllowLocalAuthenticationTokenMetaData metaData = new AlwaysAllowLocalAuthenticationTokenMetaData();
+    
     public AlwaysAllowLocalAuthenticationToken(final Principal principal) {
-        super(new HashSet<Principal>() {
-            private static final long serialVersionUID = 3125729459998373943L;
+        super(new HashSet<Principal>(Arrays.asList(principal)), null);
+    }
 
-            {
-                add(principal);
-            }
-        }, null);
-
+    public AlwaysAllowLocalAuthenticationToken(final String username) {
+        super(new HashSet<Principal>(Arrays.asList(new UsernamePrincipal(username))), null);
     }
 
     @Override
@@ -66,7 +63,7 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
 
     @Override
     public int hashCode() {
-        return "AlwaysAllowLocalAuthenticationToken".hashCode();
+        return getMetaData().getTokenType().hashCode();
     }
 
     @Override
@@ -75,54 +72,18 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
     }
 
     @Override
-    public AccessMatchValue getDefaultMatchValue() {
-        return InternalMatchValue.DEFAULT;
-    }
-
-    @Override
     public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {
-        return InternalMatchValue.INSTANCE;
+        // Special legacy handling for unclear reasons..?
+        return getMetaData().getAccessMatchValues().get(0);
     }
     
-    private static enum InternalMatchValue implements AccessMatchValue {
-        INSTANCE(0), DEFAULT(Integer.MAX_VALUE);
-
-        private static final String TOKEN_TYPE = "AlwaysAllowAuthenticationToken";
-        
-        private final int numericValue;
-        
-        private InternalMatchValue(final int numericValue) {
-            this.numericValue = numericValue;
-        }
-        
-        @Override
-        public int getNumericValue() {         
-            return numericValue;
-        }
-
-        @Override
-        public String getTokenType() {           
-            return TOKEN_TYPE;
-        }
-
-        @Override
-        public boolean isIssuedByCa() {
-            return false;
-        }
-
-        @Override
-        public boolean isDefaultValue() {
-            return numericValue == DEFAULT.numericValue;
-        }
-
-        @Override
-        public List<AccessMatchType> getAvailableAccessMatchTypes() {
-            return Arrays.asList();
-        }
-    }
-
     @Override
     protected String generateUniqueId() {
         return generateUniqueId(super.isCreatedInThisJvm());
+    }
+
+    @Override
+    public AlwaysAllowLocalAuthenticationTokenMetaData getMetaData() {
+        return metaData;
     }
 }

@@ -34,7 +34,7 @@ import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -143,7 +143,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
             Map<Integer, AccessUserAspectData> existingSuperAdminAspects = role.getAccessUsers();
             for (AccessUserAspectData aspect : oldSuperAdminAspects.values()) {
                 AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(
-                        X509CertificateAuthenticationToken.TOKEN_TYPE, aspect.getMatchWith());
+                        X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, aspect.getMatchWith());
                 AccessUserAspectData superAdminUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, aspect.getCaId(), matchWith,
                         aspect.getMatchTypeAsType(), aspect.getMatchValue());
                 if (existingSuperAdminAspects.containsKey(superAdminUserAspect.getPrimaryKey())) {

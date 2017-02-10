@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.util.EjbRemoteHelper;
@@ -35,7 +36,7 @@ public class RoleMemberDataSessionTest {
     public void testCrudOperations() {      
         assertNull("accessUserAspectManagerSession.find did not return null for a non existing object.",
                 roleMemberProxySession.findRoleMember(0));
-        final RoleMemberData roleMember = new RoleMemberData(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X500PrincipalAccessMatchValue.WITH_COUNTRY.getTokenType(),
+        final RoleMemberData roleMember = new RoleMemberData(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 RoleMember.NO_ISSUER, X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "SE", RoleMember.NO_ROLE, null, null);
         int roleMemberId = -1;
         try {

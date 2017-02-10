@@ -539,8 +539,9 @@ public class UpgradeSessionBeanTest {
             List<RoleMember> newRoleMembers = roleMemberProxySession.findRoleMemberByRoleId(newRole.getRoleId());
             assertEquals("For some strange reason, a single role member was turned into several", 1, newRoleMembers.size());
             RoleMember newRoleMember = newRoleMembers.get(0);
-            assertEquals("Match value type was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY, newRoleMember.getAccessMatchValue());
-            assertEquals("Match value was not upgraded properly." , "SE", newRoleMember.getTokenMatchValue());
+            assertEquals("Match value token type was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY.getTokenType(), newRoleMember.getTokenType());
+            assertEquals("Match value key was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue(), newRoleMember.getTokenMatchKey());
+            assertEquals("Match value value was not upgraded properly." , "SE", newRoleMember.getTokenMatchValue());
         } finally {
             try {
                 roleManagementSession.remove(alwaysAllowtoken, oldRole);

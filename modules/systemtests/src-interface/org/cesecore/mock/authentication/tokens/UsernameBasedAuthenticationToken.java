@@ -13,35 +13,30 @@
 package org.cesecore.mock.authentication.tokens;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.HashSet;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessUserAspect;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
 /**
  * This mock of an authentication token is to provide a simple token to test authentication/authorization based
  * on a username. It shouldn't be used outside that context, and shouldn't be used to avoid proper authorization tests.
  * 
  * @version $Id$
- *
  */
 public class UsernameBasedAuthenticationToken extends AuthenticationToken{
     
-    public static final String TOKEN_TYPE = "UsernameBasedAuthenticationToken";
+    public static final UsernameBasedAuthenticationTokenMetaData metaData = new UsernameBasedAuthenticationTokenMetaData();
     
     private static final long serialVersionUID = -8284027258387832870L;
 
     private String username;
     
     public UsernameBasedAuthenticationToken(final UsernamePrincipal principal) {
-        super(new HashSet<Principal>() {
-            private static final long serialVersionUID = -5658805274530978504L;
-            {
-                add(principal);
-            }
-        }, null);
+        super(new HashSet<Principal>(Arrays.asList(principal)), null);
         this.username = principal.getName();
     }
 
@@ -76,27 +71,13 @@ public class UsernameBasedAuthenticationToken extends AuthenticationToken{
     }
 
     @Override
-    public boolean matchTokenType(String tokenType) {        
-        return TOKEN_TYPE.equals(tokenType);
-    }
-
-    @Override
-    public AccessMatchValue getDefaultMatchValue() {
-        return UsernameAccessMatchValue.USERNAME;
-    }
-
-    @Override
-    public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {
-        if (databaseValue != UsernameAccessMatchValue.USERNAME.getNumericValue()) {
-            return null;
-        } else {
-            return UsernameAccessMatchValue.USERNAME;
-        }
-    }
-
-    @Override
     protected String generateUniqueId() {
         return generateUniqueId(username);
+    }
+
+    @Override
+    public AuthenticationTokenMetaData getMetaData() {
+        return metaData;
     }
 }
 

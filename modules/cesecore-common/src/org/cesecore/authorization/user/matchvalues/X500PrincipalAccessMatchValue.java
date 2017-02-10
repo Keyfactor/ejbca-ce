@@ -15,7 +15,7 @@ package org.cesecore.authorization.user.matchvalues;
 import java.util.Arrays;
 import java.util.List;
 
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.user.AccessMatchType;
 
 /**
@@ -42,10 +42,6 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     WITH_UPN(14),
     WITH_FULLDN(15);
     
-    static {
-        AccessMatchValueReverseLookupRegistry.INSTANCE.register(X500PrincipalAccessMatchValue.values());
-    }
-    
     private final int numericValue;
     
     private X500PrincipalAccessMatchValue(int numericValue) {
@@ -64,7 +60,7 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
 
     @Override
     public String getTokenType() {
-        return X509CertificateAuthenticationToken.TOKEN_TYPE;
+        return X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE;
     }
 
     @Override

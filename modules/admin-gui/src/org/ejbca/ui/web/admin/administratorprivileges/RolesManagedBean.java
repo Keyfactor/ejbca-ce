@@ -30,7 +30,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
@@ -353,7 +353,7 @@ public class RolesManagedBean extends BaseManagedBean {
     }
 
     public String getDefaultMatchWith() {
-        String defaultToken = X509CertificateAuthenticationToken.TOKEN_TYPE;
+        String defaultToken = X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE;
         return defaultToken + ":" + AccessMatchValueReverseLookupRegistry.INSTANCE.getDefaultValueForTokenType(defaultToken);
     }
     
