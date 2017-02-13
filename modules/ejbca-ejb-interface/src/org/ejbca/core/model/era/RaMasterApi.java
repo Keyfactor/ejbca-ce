@@ -127,6 +127,15 @@ public interface RaMasterApi {
     /** @return list of end entities from the specified search criteria*/
     RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest raEndEntitySearchRequest);
 
+    /**
+     * Searches for role members in all roles that the given authentication token has access to.
+     * @param authenticationToken administrator (affects the search results)
+     * @param raRoleMemberSearchRequest Object specifying the search criteria.
+     * @return Object containing list of role members and search status.
+     */
+    RaRoleMemberSearchResponse searchForRoleMembers(AuthenticationToken authenticationToken, RaRoleMemberSearchRequest raRoleMemberSearchRequest);
+    
+    
     /** @return map of authorized certificate profile Ids and each mapped name */
     Map<Integer, String> getAuthorizedCertificateProfileIdsToNameMap(AuthenticationToken authenticationToken);
 
