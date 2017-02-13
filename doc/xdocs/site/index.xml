@@ -26,9 +26,9 @@
  PrimeKey's <a href="https://www.primekey.se/technologies/products-overview/ejbca-enterprise/">EJBCA Enterprise</a> is Common Criteria EAL4+ certified and CWA/ETSI compliant to provide the most powerful and flexible PKI. For entire non-community features, only available in EJBCA Enterprise, see the section on <a href="features.html#Enterprise%20Edition%20features">"Enterprise Edition features" in the features list</a>.
   <br /><span class="date"> Posted: 2016-12-22</span>
   </p>
- <p><strong>EJBCA Community 6.5.0 is now available</strong> Improved auditor role and granular name policy enforcement by the CA. The best open source PKI, supporting Java 8 and new advanced features.
+ <p><strong>EJBCA Community 6.5.0.4 is now available</strong> Improved auditor role and granular name policy enforcement by the CA. The best open source PKI, supporting Java 8 and new advanced features.
   Visit the <a href="download.html">download</a> section. There you will also find a pre-installed VM (currently with an older version) to try.
-  <br /><span class="date"> Posted: 2017-02-02</span>  
+  <br /><span class="date"> Posted: 2017-02-13</span>  
   </p>  
     <p><strong>EJBCA Tech Blog!</strong> <a href="http://blog.ejbca.org" target="ejbcablog">What does eIDAS compliance mean for a PKI?</a> 
   <br /><span class="date"> Posted: 2016-05-18</span>
