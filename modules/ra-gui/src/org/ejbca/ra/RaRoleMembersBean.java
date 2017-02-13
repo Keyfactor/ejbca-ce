@@ -70,6 +70,7 @@ public class RaRoleMembersBean {
     private Integer criteriaRoleId;
     private Integer criteriaCaId;
     private String criteriaTokenType;
+    private boolean fromRolesPage;
     
     //private RaRequestsSearchResponse lastExecutedResponse = null;
     
@@ -81,14 +82,14 @@ public class RaRoleMembersBean {
     
     
     public void initialize() {
-        // TODO
+        searchAndFilterCommon();
     }
     
     public String getGenericSearchString() {
         return genericSearchString;
     }
     
-    public void setGenericSearchString(final String v) {
+    public void setGenericSearchString(final String genericSearchString) {
         this.genericSearchString = genericSearchString;
     }
 
@@ -114,6 +115,14 @@ public class RaRoleMembersBean {
 
     public void setCriteriaTokenType(final String criteriaTokenType) {
         this.criteriaTokenType = criteriaTokenType;
+    }
+    
+    public boolean isFromRolesPage() {
+        return fromRolesPage;
+    }
+    
+    public void setFromRolesPage(final boolean fromRolesPage) {
+        this.fromRolesPage = fromRolesPage;
     }
 
 

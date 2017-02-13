@@ -32,6 +32,14 @@
         <f:viewParam name="criteriaRoleId" value="#{raRoleMembersBean.criteriaRoleId}"/>
         <f:viewParam name="criteriaCaId" value="#{raRoleMembersBean.criteriaCaId}"/>
         <f:viewParam name="criteriaTokenType" value="#{raRoleMembersBean.criteriaTokenType}"/>
+        <f:viewParam name="membersSortAsc" value="#{raRoleMembersBean.sortAscending}"/>
+        <f:viewParam name="membersSortCol" value="#{raRoleMembersBean.sortColumn}"/>
+        <f:viewParam name="fromRolesPage" value="#{raRoleMembersBean.fromRolesPage}"/>
+        
+        <!-- These parameters must be duplicated here and in roles.xhtml. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
+        <f:viewParam name="roleSearchString" value="#{raRolesBean.roleSearchString}"/>
+        <f:viewParam name="rolesSortAsc" value="#{raRolesBean.sortAscending}"/>
+        <f:viewParam name="rolesSortCol" value="#{raRolesBean.sortColumn}"/>
         
         <f:event type="preRenderView" listener="#{raRoleMembersBean.initialize}"/>
     </f:metadata>
@@ -41,8 +49,12 @@
         </h:panelGroup>
         <h:outputText value="#{msg.manage_roles_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToRoleMembers}"/>
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToRoleMembers}">
+            <h:panelGroup layout="block">
+                <h:link outcome="roles" rendered="#{raRoleMembersBean.fromRolesPage}" styleClass="pure-button ra-button" includeViewParams="true">
+                    <h:outputText value="#{msg.generic_back}"/>
+                </h:link>
+            </h:panelGroup>
             <h:form id="roleMembersForm" class="pure-form">
-                
                 <h:panelGroup id="basic" styleClass="pure-g">
                     <h:panelGroup id="parentGenericSearchString" styleClass="pure-u-1 pure-u-lg-4-5">
                         <h:inputText id="genericSearchString" value="#{raRoleMembersBean.genericSearchString}" styleClass="jsAutoFocusFirst jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
