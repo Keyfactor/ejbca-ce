@@ -39,48 +39,49 @@
         <h:panelGroup layout="block" class="header" id="title">
             <h1><h:outputText value="#{msg.role_members_page_title}"/></h1>
         </h:panelGroup>
-        <h:outputText value="#{msg.manage_roles_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToRoles}"/>
-        <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToRoles}">
-            <h:form id="manageRolesForm" class="pure-form">
+        <h:outputText value="#{msg.manage_roles_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToRoleMembers}"/>
+        <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToRoleMembers}">
+            <h:form id="roleMembersForm" class="pure-form">
                 
                 <h:panelGroup id="basic" styleClass="pure-g">
                     <h:panelGroup id="parentGenericSearchString" styleClass="pure-u-1 pure-u-lg-4-5">
                         <h:inputText id="genericSearchString" value="#{raRoleMembersBean.genericSearchString}" styleClass="jsAutoFocusFirst jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
                              title="#{msg.role_members_page_criteria_generic_title}">
-                            <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raRoleMembersBean.searchAndFilterAjaxListener}"
-                                onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                            <f:ajax event="keyup" execute="@this" render=":roleMembersForm:filteredResults" listener="#{raRoleMembersBean.searchAndFilterAjaxListener}"
+                                onevent="function(data){ejbca.ra.onAjaxEvent(data,'roleMembersForm:filteredResults');}"
+                                onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
                         </h:inputText>
                     </h:panelGroup>
 
                     <h:panelGroup id="parentGenericSearchButton" styleClass="pure-u-1 pure-u-lg-1-5">
-                        <h:commandButton action="#{raRoleMembersBean.searchAndFilter}" value="#{msg.search_certs_page_search_command}" styleClass="pure-button pure-button-primary searchButton jsHide"/>
+                        <h:commandButton action="#{raRoleMembersBean.searchAndFilter}" value="#{msg.role_members_page_search_command}" styleClass="pure-button pure-button-primary searchButton jsHide"/>
                     </h:panelGroup>
                     
+                    <!-- TODO: choose namespace also? and only show the first 100 roles here? -->
                     <h:panelGroup id="parentCriteriaRoleId" styleClass="pure-u-1 pure-u-lg-1-5" rendered="#{!raRoleMembersBean.onlyOneRoleAvailable}">
                         <h:selectOneMenu id="criteriaRoleId" value="#{raRoleMembersBean.criteriaRoleId}" styleClass="pure-input-1">
                             <f:selectItems value="#{raRoleMembersBean.availableRoles}"/>
-                            <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raRoleMembersBean.searchAndFilterAjaxListener}"
-                                onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                            <f:ajax event="change" execute="@this" render=":roleMembersForm:filteredResults" listener="#{raRoleMembersBean.searchAndFilterAjaxListener}"
+                                onevent="function(data){ejbca.ra.onAjaxEvent(data,'roleMembersForm:filteredResults');}"
+                                onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
                     
                     <h:panelGroup id="parentCriteriaCaId" styleClass="pure-u-1 pure-u-lg-1-5">
                         <h:selectOneMenu id="criteriaCaId" value="#{raRoleMembersBean.criteriaCaId}" styleClass="pure-input-1" rendered="#{!raRoleMembersBean.onlyOneCaAvailable}">
                             <f:selectItems value="#{raRoleMembersBean.availableCas}"/>
-                            <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raRoleMembersBean.searchAndFilterAjaxListener}"
-                                onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                            <f:ajax event="change" execute="@this" render=":roleMembersForm:filteredResults" listener="#{raRoleMembersBean.searchAndFilterAjaxListener}"
+                                onevent="function(data){ejbca.ra.onAjaxEvent(data,'roleMembersForm:filteredResults');}"
+                                onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
 
                     <h:panelGroup id="parentCriteriaTokenType" styleClass="pure-u-1 pure-u-lg-1-5">
                         <h:selectOneMenu id="criteriaTokenType" value="#{raRoleMembersBean.criteriaTokenType}" styleClass="pure-input-1" rendered="#{!raRoleMembersBean.onlyOneTokenTypeAvailable}">
                             <f:selectItems value="#{raRoleMembersBean.availableTokenTypes}"/>
-                            <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raRoleMembersBean.searchAndFilterAjaxListener}"
-                                onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                            <f:ajax event="change" execute="@this" render=":roleMembersForm:filteredResults" listener="#{raRoleMembersBean.searchAndFilterAjaxListener}"
+                                onevent="function(data){ejbca.ra.onAjaxEvent(data,'roleMembersForm:filteredResults');}"
+                                onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
                 </h:panelGroup>

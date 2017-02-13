@@ -102,7 +102,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             roleIdsCallerBelongsTo = roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
         } catch (AuthenticationFailedException e) {
             if (log.isDebugEnabled()) {
-                log.debug("Failed to list Role IDs for this authenticaiton token: '" + authenticationToken + "'", e);
+                log.debug("Failed to list Role IDs for this authentication token: '" + authenticationToken + "'", e);
             }
             return new ArrayList<>();
         }

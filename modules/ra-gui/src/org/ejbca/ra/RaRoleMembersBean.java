@@ -34,7 +34,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 
 /**
- * Backing bean for Manage Roles page
+ * Backing bean for the Role Members page
  *  
  * @version $Id$
  */
@@ -45,7 +45,7 @@ public class RaRoleMembersBean {
     //public static final class RoleMemberGuiInfo 
 
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(RaManageRequestBean.class);
+    private static final Logger log = Logger.getLogger(RaRoleMembersBean.class);
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
