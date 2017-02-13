@@ -13,10 +13,13 @@
 package org.ejbca.ra;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -31,6 +34,8 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.RaRoleMemberSearchRequest;
+import org.ejbca.core.model.era.RaRoleMemberSearchResponse;
 
 
 /**
@@ -72,9 +77,11 @@ public class RaRoleMembersBean {
     private String criteriaTokenType;
     private boolean fromRolesPage;
     
-    //private RaRequestsSearchResponse lastExecutedResponse = null;
+    private RaRoleMemberSearchResponse lastExecutedResponse = null;
     
     private List<RaRoleMemberGUIInfo> resultsFiltered = new ArrayList<>();
+    private Map<Integer,String> caIdToNameMap;
+    private Map<Integer,String> roleIdToNameMap;
     
     private enum SortBy { ROLE, CA, TOKENTYPE, TOKENMATCHVALUE, BINDING };
     private SortBy sortBy = SortBy.ROLE;
@@ -138,7 +145,28 @@ public class RaRoleMembersBean {
     
     /** Determine if we need to query back end or just filter and execute the required action. */
     private void searchAndFilterCommon() {
-        // TODO
+        // First make sure we have all CA and Role names
+        getAvailableCas();
+        getAvailableRoles();
+        
+        // Make search request
+        final RaRoleMemberSearchRequest searchRequest = new RaRoleMemberSearchRequest();
+        if (criteriaCaId != null) {
+            searchRequest.setCaIds(new ArrayList<>(Arrays.asList(criteriaCaId)));
+        }
+        if (criteriaRoleId != null) {
+            searchRequest.setRoleIds(new ArrayList<>(Arrays.asList(criteriaRoleId)));
+        }
+        searchRequest.setGenericSearchString(genericSearchString);
+        lastExecutedResponse = raMasterApiProxyBean.searchForRoleMembers(raAuthenticationBean.getAuthenticationToken(), searchRequest);
+        
+        // Add names of CAs and roles
+        resultsFiltered = new ArrayList<>();
+        for (final RoleMember member : lastExecutedResponse.getRoleMembers()) {
+            final String caName = caIdToNameMap.get(member.getTokenIssuerId());
+            final String roleName = roleIdToNameMap.get(member.getRoleId());
+            resultsFiltered.add(new RaRoleMemberGUIInfo(member, caName, roleName));
+        }
     }
     
     public List<RaRoleMemberGUIInfo> getFilteredResults() {
@@ -146,8 +174,7 @@ public class RaRoleMembersBean {
     }
     
     public boolean isMoreResultsAvailable() {
-        // TODO
-        return false;
+        return lastExecutedResponse.isMightHaveMoreResults();
     }
     
     // Sorting
@@ -236,9 +263,10 @@ public class RaRoleMembersBean {
                     return role1.getRoleName().compareTo(role2.getRoleName());
                 }
             });
-            /*for (final Role role : roles) {
+            roleIdToNameMap = new HashMap<>();
+            for (final Role role : roles) {
                 roleIdToNameMap.put(role.getRoleId(), role.getRoleName());
-            }*/
+            }
             availableRoles.add(new SelectItem(0, raLocaleBean.getMessage("role_members_page_criteria_role_optionany")));
             for (final Role role : roles) {
                 availableRoles.add(new SelectItem(role.getRoleId(), "- " + role.getRoleName()));
@@ -258,9 +286,10 @@ public class RaRoleMembersBean {
                     return caInfo1.getName().compareTo(caInfo2.getName());
                 }
             });
-            /*for (final CAInfo caInfo : caInfos) {
+            caIdToNameMap = new HashMap<>();
+            for (final CAInfo caInfo : caInfos) {
                 caIdToNameMap.put(caInfo.getCAId(), caInfo.getName());
-            }*/
+            }
             availableCas.add(new SelectItem(0, raLocaleBean.getMessage("role_members_page_criteria_ca_optionany")));
             for (final CAInfo caInfo : caInfos) {
                 availableCas.add(new SelectItem(caInfo.getCAId(), "- " + caInfo.getName()));
