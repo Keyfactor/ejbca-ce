@@ -61,13 +61,15 @@ public class PublisherData extends ProtectedData implements Serializable {
 	 * @ejb.create-method view-type="local"
 	 */
 	public PublisherData(int id, String name, BasePublisher publisher) {
+        if (log.isDebugEnabled()) {
+            log.debug("Creating PublisherData '" + name + "' ("+id+")");
+        }
 		setId(id);
 		setName(name);
 		setUpdateCounter(0);
 		if (publisher != null) {
 			setPublisher(publisher);
 		}
-		log.debug("Created Hard Token Profile " + name);
 	}
 
 	public PublisherData() { }
