@@ -86,6 +86,7 @@
 					<include name="modules/cesecore-ejb-interface/src-test/**/${test.runone}.java" />
 					<include name="modules/cesecore-entity/src-test/**/${test.runone}.java" />
 					<include name="modules/cmpProxy/src-test/**/${test.runone}.java" />
+					<include name="modules/va/publisher/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -132,6 +133,9 @@
     	</condition>
         <condition property="module" value="modules/cmpProxy">
             <matches string="${test-fullname}" pattern="^modules/cmpProxy/.*$"/>
+        </condition>
+        <condition property="module" value="modules/va">
+            <matches string="${test-fullname}" pattern="^modules/va/publisher/.*$"/>
         </condition>
         <condition property="test-buildfile" value="build-http.xml" else="build.xml">
             <matches string="${test-fullname}" pattern="^modules/cmpProxy/.*$"/>

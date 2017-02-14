@@ -116,16 +116,30 @@ public class CustomPublisherContainer extends BasePublisher {
     }
 	
     public Properties getProperties() throws IOException {
-        Properties prop = new Properties();
-        String propertyData = getPropertyData();
+        final Properties properties = new Properties();
+        final String propertyData = getPropertyData();
         if (propertyData != null) {
-            prop.load(new ByteArrayInputStream(propertyData.getBytes()));
+            properties.load(new ByteArrayInputStream(propertyData.getBytes()));
         }
-        for (Object key : data.keySet()) {
-            prop.setProperty((String) key, String.valueOf(data.get(key)));
+        /*
+         * The below code is only to be able to handle the change of our EnterpriseValidationAuthorityPublisher from
+         * built in to custom type.
+         * 
+         * Since the built in type had its properties in XML we need to provide a one time upgrade path.
+         * The old settings will still be present in the XML, but can be removed in a future version with a
+         * deterministic upgrade gate version to ensure that all installation data looks the same.
+         * 
+         * Note that for example get/setDescription belongs to the BasePublisher and not the ICustomPublisher instance.
+         * This is just one of many small things that needs to be corrected in a major version rewrite.
+         */
+        for (final CustomPublisherProperty customPublisherProperty : getCustomUiPropertyList()) {
+        	final String key = customPublisherProperty.getName();
+            if (!properties.containsKey(key)) {
+                // If this is a publisher that used to have it's specific properties in the "data", we need to provide an upgrade conversion path ONCE
+                properties.setProperty(key, String.valueOf(data.get(key)));
+            }
         }
-		
-		return prop;
+		return properties;
 	}
   
 	@Override
@@ -169,6 +183,10 @@ public class CustomPublisherContainer extends BasePublisher {
 	} 
 
 	/**
+	 * The ICustomPublisher is the custom implementation used for the actual publishing work.
+	 * 
+	 * Note that this class can only be queried about its specific settings (and not common base settings like
+	 * publisher description or queue settings).
 	 * 
 	 * @return the custom publisher wrapped by this class, null if none is defined. 
 	 */

@@ -145,4 +145,21 @@
 		<antcall target="showtime"/>
 	</target>
 
+	<!-- =================================
+          Run a single test specified with -Dtest.runone=TestName
+         ================================= -->
+	<target name="runone" depends="tests-compile">
+		<fail message="'test.runone' is not set. Example -Dtest.runone=TestName" unless="test.runone" />
+		<junit printsummary="yes" haltonfailure="no" >
+			<classpath>
+        		<path refid="test.classpath"/>
+				<path location="${build-test.dir}" />
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}" includes="**/${test.runone}.class"/>
+			</batchtest>
+		</junit>
+	</target>
 </project>
