@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
+import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.StringTools;
 
@@ -368,7 +369,8 @@ public class EndEntityInformation implements Serializable {
      * @return an information map about this end entity, listing all general fields.
      */
     public Map<String, String> getDetailMap() {
-        Map<String, String> details = new LinkedHashMap<>();
+        @SuppressWarnings("unchecked")
+        Map<String, String> details = new Base64GetHashMap();
         details.put("caid", Integer.toString(caid));
         details.put("cardnumber", cardNumber);
         details.put("certificateprofileid", Integer.toString(certificateprofileid));
@@ -408,7 +410,7 @@ public class EndEntityInformation implements Serializable {
      * @return the differences between this map and the parameter, as <key, [thisValue, otherValue]>
      */
     public Map<String, String[]> getDiff(EndEntityInformation other) {
-        Map<String, String[]> changedValues = new HashMap<>();
+        Map<String, String[]> changedValues = new LinkedHashMap<>();
         Map<String, String> thisValues = getDetailMap();
         Map<String, String> otherValues = other.getDetailMap();
         List<String> thisKeySet = new ArrayList<>(thisValues.keySet());
