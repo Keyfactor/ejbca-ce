@@ -75,7 +75,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
         String outfile = parameters.get(FILE_KEY);
         String crlnumber = parameters.get(CRLNUMBER_KEY);
         if (crlnumber != null) {
-            if ( !StringUtils.isNumeric(crlnumber) || (StringUtils.isNumeric(crlnumber) && (Integer.valueOf(crlnumber) < 0)) ) {
+            if ( !StringUtils.isNumeric(crlnumber) || (Integer.valueOf(crlnumber) < 0) ) {
                 log.error("CRL Number must be a positive number");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
