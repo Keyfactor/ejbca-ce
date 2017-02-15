@@ -134,7 +134,7 @@ public class CustomPublisherContainer extends BasePublisher {
          */
         for (final CustomPublisherProperty customPublisherProperty : getCustomUiPropertyList()) {
         	final String key = customPublisherProperty.getName();
-            if (!properties.containsKey(key)) {
+            if (!properties.containsKey(key) && data.get(key)!=null) {
                 // If this is a publisher that used to have it's specific properties in the "data", we need to provide an upgrade conversion path ONCE
                 properties.setProperty(key, String.valueOf(data.get(key)));
             }
