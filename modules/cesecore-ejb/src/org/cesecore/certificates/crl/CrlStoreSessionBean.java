@@ -136,21 +136,15 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
         if (log.isTraceEnabled()) {
             log.trace(">getCRL(" + issuerdn + ", " + crlNumber + ")");
         }
-        try {
-            byte[] crlbytes = null;
-            final CRLData data = CRLData.findByIssuerDNAndCRLNumber(entityManager, issuerdn, crlNumber);
-            if (data != null) {
-                crlbytes = data.getCRLBytes();
-                if (crlbytes != null) {
-                    final String msg = intres.getLocalizedMessage("store.getcrl", issuerdn, Integer.valueOf(crlNumber));
-                    log.info(msg);
-                    return crlbytes;
-                }
+        byte[] crlbytes = null;
+        final CRLData data = CRLData.findByIssuerDNAndCRLNumber(entityManager, issuerdn, crlNumber);
+        if (data != null) {
+            crlbytes = data.getCRLBytes();
+            if (crlbytes != null) {
+                final String msg = intres.getLocalizedMessage("store.getcrl", issuerdn, Integer.valueOf(crlNumber));
+                log.info(msg);
+                return crlbytes;
             }
-        } catch (Exception e) {
-            final String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn);
-            log.info(msg);
-            throw new EJBException(e);
         }
         final String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, Integer.valueOf(crlNumber));
         log.info(msg);
