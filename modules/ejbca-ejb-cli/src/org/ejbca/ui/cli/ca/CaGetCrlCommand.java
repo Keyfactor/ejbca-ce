@@ -75,8 +75,8 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
         String outfile = parameters.get(FILE_KEY);
         String crlnumber = parameters.get(CRLNUMBER_KEY);
         if (crlnumber != null) {
-            if (!StringUtils.isNumeric(crlnumber)) {
-                log.error("CRL Number must be numerical");
+            if ( !StringUtils.isNumeric(crlnumber) || (StringUtils.isNumeric(crlnumber) && (Integer.valueOf(crlnumber) < 0)) ) {
+                log.error("CRL Number must be a positive number");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
         }
@@ -96,9 +96,9 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
                     fos.write(crl);
                 }
                 fos.close();
-                log.info("Wrote latest " + (deltaSelector ? "delta " : "") + "CRL to " + outfile + " using " + (pem ? "PEM" : "DER") + " format");
+                log.info("Wrote "+(crlnumber == null ? "latest" : ("crlNumber "+crlnumber)) + (deltaSelector ? "delta" : "") + " CRL to " + outfile + " using " + (pem ? "PEM" : "DER") + " format");
             } else {
-                log.info("No " + (deltaSelector ? "delta " : "") + "CRL exists for CA " + caname + ".");
+                log.info("No " + (deltaSelector ? "delta " : "") + "CRL " + (crlnumber == null ? "" : ("with crlNumber "+crlnumber+" ")) + "exists for CA " + caname + ".");
             }
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {
