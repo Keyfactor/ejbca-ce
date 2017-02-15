@@ -914,14 +914,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
             // Send notification if it should be sent.
             sendNotification(admin, notificationEndEntityInformation, newstatus, approvalRequestId, lastApprovingAdmin, null);
+            // Logging details object
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            // Set times so that diffing is made properly
+            // Make a diff of what was changed to we can log it
+            // We need to set times so that diffing is made properly
             endEntityInformation.setTimeModified(new Date(userData.getTimeModified()));
             endEntityInformation.setTimeCreated(new Date(userData.getTimeCreated()));
             Map<String, String[]> diff = originalCopy.getDiff(endEntityInformation);
-            for(String key : diff.keySet()) {
-                details.put(key, diff.get(key)[0] + " -> " + diff.get(key)[1]);
-            }
+            // Add the diff later on, in order to have it after the "msg"
             if (newstatus != oldstatus) {
                 // Only print stuff on a printer on the same conditions as for
                 // notifications, we also only print if the status changes, not for
@@ -931,13 +931,18 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     print(profile, endEntityInformation);
                 }
                 final String msg = intres.getLocalizedMessage("ra.editedentitystatus", username, Integer.valueOf(newstatus));
-                
                 details.put("msg", msg);
+                for(String key : diff.keySet()) {
+                    details.put(key, diff.get(key)[0] + " -> " + diff.get(key)[1]);
+                }
                 auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, username, details);
             } else {
                 final String msg = intres.getLocalizedMessage("ra.editedentity", username);
                 details.put("msg", msg);
+                for(String key : diff.keySet()) {
+                    details.put(key, diff.get(key)[0] + " -> " + diff.get(key)[1]);
+                }
                 auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, username, details);
             }
