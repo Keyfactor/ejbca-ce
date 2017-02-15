@@ -158,7 +158,10 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         // Make selection of the remote CertSafe server configurable 
         ret.add(new CustomPublisherProperty(certSafeUrlPropertyName, CustomPublisherProperty.UI_TEXTINPUT, urlstr));
         
-        // Authentication key binding we use to authenticate against the remove remote CertSafe server 
+        // Authentication key binding we use to authenticate against the remove remote CertSafe server
+        if (internalKeyBindingMgmtSession==null) {
+            internalKeyBindingMgmtSession = new EjbLocalHelper().getInternalKeyBindingMgmtSession();
+        }
         List<InternalKeyBindingInfo> kinfos = internalKeyBindingMgmtSession.getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS);
         ArrayList<String> options = new ArrayList<String>();
         Iterator<InternalKeyBindingInfo> itr = kinfos.iterator();
