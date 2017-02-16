@@ -368,11 +368,11 @@ public abstract class AlgorithmTools {
                     // This was a bug of non upgraded NSS in RHEL at some point in time.
                     try {
                         KeyPairGenerator.getInstance("EC", ecProvider.getName());
+                        providerName = ecProvider.getName();
+                        break;
                     } catch (RuntimeException e) {
-                        log.info("Provider "+ecProvider.getName()+" bail out on EC, ignored.", e);
+                        log.info("Provider "+ecProvider.getName()+" bailed out on EC, ignored.", e);
                     }
-                    providerName = ecProvider.getName();
-                    break;
                 }
             }
             final KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC", providerName);
