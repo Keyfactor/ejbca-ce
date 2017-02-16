@@ -350,7 +350,7 @@ public abstract class AlgorithmTools {
         return keyspec;
     }
 
-    /** Check if the curve name is known by the first found PKCS#11 provider or default (if none was found)*/
+    /** Check if the curve name is known by the first found PKCS#11 provider or default (BC) (if no EC capable PKCS#11 provider were found)*/
     public static boolean isNamedECKnownInDefaultProvider(String ecNamedCurveBc) {
         final Provider[] providers = Security.getProviders("KeyPairGenerator.EC");
         String providerName = providers[0].getName();
@@ -361,6 +361,16 @@ public abstract class AlgorithmTools {
                     log.debug("Found EC capable provider named: " + ecProvider.getName());
                 }
                 if (ecProvider.getName().startsWith("SunPKCS11-") && !ecProvider.getName().startsWith("SunPKCS11-NSS") ) {
+                    // Sometimes the P11 provider will not even know about EC, skip these providers. As an example the SunP11 
+                    // provider in some version/installations will throw a:
+                    // java.lang.RuntimeException: Cannot load SunEC provider
+                    //   at sun.security.pkcs11.P11ECKeyFactory.getSunECProvider(P11ECKeyFactory.java:55)
+                    // This was a bug of non upgraded NSS in RHEL at some point in time.
+                    try {
+                        KeyPairGenerator.getInstance("EC", ecProvider.getName());
+                    } catch (RuntimeException e) {
+                        log.info("Provider "+ecProvider.getName()+" bail out on EC, ignored.", e);
+                    }
                     providerName = ecProvider.getName();
                     break;
                 }
