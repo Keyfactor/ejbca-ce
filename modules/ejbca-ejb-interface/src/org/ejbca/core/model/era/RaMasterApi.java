@@ -25,6 +25,7 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleExistsException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -83,6 +84,16 @@ public interface RaMasterApi {
      */
     List<String> getAuthorizedRoleNamespaces(AuthenticationToken authenticationToken, int roleId);
     
+    /**
+     * Adds or updates a role in the database. If the role has an ID, it will be updated, but only on the system where it exists.
+     * Otherwise, this method will try to create it on any of the configured systems.
+     * @param authenticationToken Admin
+     * @param role Role to persist. The roleId controls whether it should be added or updated.
+     * @return The role object if the role was added/updated, otherwise null.
+     * @throws AuthorizationDeniedException if unauthorized to update this role, or not authorized on any system to add it.
+     * @throws RoleExistsException if a role with the given name already exists (can happen when adding or renaming)
+     */
+    Role saveRole(AuthenticationToken authenticationToken, Role role) throws AuthorizationDeniedException, RoleExistsException;
 
     /** @return the approval request with the given id, or null if it doesn't exist or if authorization was denied */
     RaApprovalRequestInfo getApprovalRequest(AuthenticationToken authenticationToken, int id);
