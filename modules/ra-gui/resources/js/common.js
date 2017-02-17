@@ -217,10 +217,11 @@
         }
     }
     
-    var toggleElements = function(visible, elements) {
+    var toggleElements = function(visible, elements, visibleState) {
+        visibleState = visibleState || 'inline-block';
         for (var i = 0; i < elements.length; i++) {
             var elem = document.getElementById(elements[i]);
-            elem.style.display = visible ? 'block' : 'none';
+            elem.style.display = visible ? visibleState : 'none';
         }
     };
 
