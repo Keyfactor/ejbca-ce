@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:component="http://java.sun.com/jsf/composite/component"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+<ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     version: $Id$
+     -->
+</ui:remove>
+<ui:composition template="/WEB-INF/include/template.xhtml">
+    <f:metadata>
+        <f:viewParam name="roleId" value="#{raRoleBean.roleId}"/>
+
+        <!-- These parameters must be duplicated here and in roles.xhtml and role_members.xhtml. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
+        <f:viewParam name="roleSearchString" value="#{raRolesBean.roleSearchString}"/>
+        <f:viewParam name="rolesSortAsc" value="#{raRolesBean.sortAscending}"/>
+        <f:viewParam name="rolesSortCol" value="#{raRolesBean.sortColumn}"/>
+        
+        <f:event type="preRenderView" listener="#{raRoleBean.initialize}"/>
+    </f:metadata>
+    <ui:define name="content">
+        <h:panelGroup layout="block" class="header" id="title">
+            <h1><h:outputText value="#{msg.role_page_title}"/></h1>
+        </h:panelGroup>
+        <h:outputText value="#{msg.manage_role_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEditRoleRules}"/>
+        <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToEditRoleRules}">
+            <h:form id="roleForm" class="pure-form">
+                <h:panelGroup id="basic" styleClass="pure-g">
+                    <h:panelGroup  layout="block" styleClass="pure-u-1 pure-u-lg-5-5">
+                        <h:outputText value="TODO page is under construction"/>
+                    </h:panelGroup>
+                
+                    <h:panelGroup id="parentNamespace" layout="block" styleClass="pure-u-1 pure-u-lg-3-5" rendered="#{not raRoleBean.limitedToOneNamespace}">
+                        <h:selectOneMenu id="namespace" value="#{raRoleBean.namespace}" styleClass="pure-input-1 jsAutoFocusFirst jsDelayKeyUp"
+                            onchange="ejbca.ra.toggleElements(this.selectedIndex==1, ['roleForm:parentNewNamespace']);"
+                            onkeyup="ejbca.ra.toggleElements(this.selectedIndex==1, ['roleForm:parentNewNamespace']);">
+                            <f:selectItems value="#{raRoleBean.namespaceOptions}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup id="parentNewNamespace" layout="block" styleClass="pure-u-1 pure-u-lg-3-5 jsHide">
+                        <h:inputText id="newNamespace" value="#{raRoleBean.newNamespace}" styleClass="pure-input-1" size="20"/>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup id="parentRoleName" layout="block" styleClass="pure-u-1 pure-u-lg-3-5">
+                        <h:inputText id="roleName" value="#{raRoleBean.name}" styleClass="pure-input-1" size="20"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup id="parentSaveButton" layout="block" styleClass="pure-u-1 pure-u-lg-5-5">
+                        <h:commandButton id="saveButton" action="#{raRoleBean.save}" value="#{msg.role_page_save_command}" styleClass="pure-button ra-button saveButton"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
+</html>

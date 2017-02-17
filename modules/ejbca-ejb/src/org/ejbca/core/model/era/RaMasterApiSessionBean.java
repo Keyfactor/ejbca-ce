@@ -92,7 +92,6 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -237,6 +236,26 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken) {
         return roleSession.getAuthorizedRoles(authenticationToken);
+    }
+    
+    @Override
+    public Role getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+        return roleSession.getRole(authenticationToken, roleId);
+    }
+
+    @Override
+    public List<String> getAuthorizedRoleNamespaces(final AuthenticationToken authenticationToken, final int roleId) {
+        // Skip roles that come from other peers if roleId is set
+        try {
+            if (roleId != 0 && getRole(authenticationToken, roleId) == null) {
+                return new ArrayList<>();
+            }
+        } catch (AuthorizationDeniedException e) {
+            // Should usually not happen
+            return new ArrayList<>();
+        }
+        
+        return roleSession.getAuthorizedNamespaces(authenticationToken);
     }
     
     

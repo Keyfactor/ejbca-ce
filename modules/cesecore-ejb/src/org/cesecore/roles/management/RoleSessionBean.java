@@ -318,4 +318,20 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         }
         return true;
     }
+    
+    @Override
+    public List<String> getAuthorizedNamespaces(final AuthenticationToken authenticationToken) {
+        final Set<String> namespaces = new HashSet<>();
+        
+        try {
+            final Set<Integer> roleIdsCallerBelongsTo = roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
+            for (final int current : roleIdsCallerBelongsTo) {
+                namespaces.add(roleDataSession.getRole(current).getNameSpace());
+            }
+        } catch (AuthenticationFailedException e) {
+            log.debug("Authentication failed, returning empty list of authorized namespaces.", e);
+        }
+        
+        return new ArrayList<>(namespaces);
+    }
 }
