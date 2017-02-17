@@ -43,6 +43,7 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleExistsException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -234,6 +235,32 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return new ArrayList<>(namespaceSet);
+    }
+    
+    @Override
+    public Role saveRole(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException, RoleExistsException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            try {
+                if (raMasterApi.isBackendAvailable()) {
+                    final Role savedRole = raMasterApi.saveRole(authenticationToken, role);
+                    if (savedRole != null) {
+                        return savedRole;
+                    }
+                }
+            } catch (AuthorizationDeniedException e) {
+                if (authorizationDeniedException == null) {
+                    authorizationDeniedException = e;
+                }
+                // Just try next implementation
+            } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                // Just try next implementation
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        return null;
     }
 
     @Override
