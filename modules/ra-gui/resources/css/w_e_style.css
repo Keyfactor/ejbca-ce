@@ -247,6 +247,9 @@ span .approvalStep,
 #requestInfoForm\:selectKeyAlgorithmOuterPanel > .internal-frame > .pure-control-group > label {
   text-align: left; }
 
+/* For fields/labels in forms etc., to get some extra padding between it and unrelated fields below */  
+.bottomMargin { margin-bottom: 1em; }
+
 .language_button,
 .language_button:hover,
 .language_button:hover {

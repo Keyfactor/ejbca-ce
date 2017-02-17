@@ -49,23 +49,26 @@
                         <h:outputText value="TODO page is under construction"/>
                     </h:panelGroup>
                 
-                    <h:panelGroup id="parentNamespace" layout="block" styleClass="pure-u-1 pure-u-lg-3-5" rendered="#{not raRoleBean.limitedToOneNamespace}">
-                        <h:selectOneMenu id="namespace" value="#{raRoleBean.namespace}" styleClass="pure-input-1 jsAutoFocusFirst jsDelayKeyUp"
-                            onchange="ejbca.ra.toggleElements(this.selectedIndex==1, ['roleForm:parentNewNamespace']);"
-                            onkeyup="ejbca.ra.toggleElements(this.selectedIndex==1, ['roleForm:parentNewNamespace']);">
+                    <h:panelGroup id="parentNamespace" layout="block" styleClass="pure-u-1" rendered="#{not raRoleBean.limitedToOneNamespace}">
+                        <h:outputLabel for="namespace" value="#{msg.role_page_namespace_label}" styleClass="pure-u-lg-1-5"/>
+                        <h:selectOneMenu id="namespace" value="#{raRoleBean.namespace}" styleClass=" pure-input pure-u-lg-3-5 jsAutoFocusFirst jsDelayKeyUp"
+                            onchange="ejbca.ra.toggleElements(this.selectedIndex==1, ['roleForm:newNamespaceLabel', 'roleForm:newNamespace']);"
+                            onkeyup="ejbca.ra.toggleElements(this.selectedIndex==1, ['roleForm:newNamespaceLabel', 'roleForm:newNamespace']);">
                             <f:selectItems value="#{raRoleBean.namespaceOptions}"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
                     
-                    <h:panelGroup id="parentNewNamespace" layout="block" styleClass="pure-u-1 pure-u-lg-3-5 jsHide">
-                        <h:inputText id="newNamespace" value="#{raRoleBean.newNamespace}" styleClass="pure-input-1" size="20"/>
+                    <h:panelGroup id="parentNewNamespace" layout="block" styleClass="pure-u-1">
+                        <h:outputText id="newNamespaceLabel" value="" styleClass="pure-u-lg-1-5 bottomMargin jsHide"/>
+                        <h:inputText id="newNamespace" value="#{raRoleBean.newNamespace}" styleClass="pure-input pure-u-lg-3-5 bottomMargin jsHide jsTitleAsPlaceHolder" title="#{msg.role_page_new_namespace_title}" size="20"/>
                     </h:panelGroup>
                     
-                    <h:panelGroup id="parentRoleName" layout="block" styleClass="pure-u-1 pure-u-lg-3-5">
-                        <h:inputText id="roleName" value="#{raRoleBean.name}" styleClass="pure-input-1" size="20"/>
+                    <h:panelGroup id="parentRoleName" layout="block" styleClass="pure-u-1">
+                        <h:outputLabel for="roleName" value="#{msg.role_page_role_name_label}" styleClass="pure-u-lg-1-5"/>
+                        <h:inputText id="roleName" value="#{raRoleBean.name}" styleClass="pure-input pure-u-lg-3-5" size="20"/>
                     </h:panelGroup>
 
-                    <h:panelGroup id="parentSaveButton" layout="block" styleClass="pure-u-1 pure-u-lg-5-5">
+                    <h:panelGroup id="parentSaveButton" layout="block" styleClass="pure-u-lg-5-5">
                         <h:commandButton id="saveButton" action="#{raRoleBean.save}" value="#{msg.role_page_save_command}" styleClass="pure-button ra-button saveButton"/>
                     </h:panelGroup>
                 </h:panelGroup>
