@@ -91,6 +91,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.util.CertTools;
@@ -248,14 +249,39 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // Skip roles that come from other peers if roleId is set
         try {
             if (roleId != 0 && getRole(authenticationToken, roleId) == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Requested role with ID " + roleId + " does not exist on this system, returning empty list of namespaces");
+                }
                 return new ArrayList<>();
             }
         } catch (AuthorizationDeniedException e) {
             // Should usually not happen
+            if (log.isDebugEnabled()) {
+                log.debug("Authorization denied to role with ID " + roleId + ", returning empty list of namespaces");
+            }
             return new ArrayList<>();
         }
         
         return roleSession.getAuthorizedNamespaces(authenticationToken);
+    }
+    
+    @Override
+    public Role saveRole(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException, RoleExistsException {
+        if (role.getRoleId() != Role.ROLE_ID_UNASSIGNED) {
+            // Updating a role
+            Role oldRole = roleSession.getRole(authenticationToken, role.getRoleId());
+            if (oldRole == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Role with ID " + role.getRoleId() + " does not exist on this system, and will not be updated here. The role name to save was '" + role.getRoleNameFull() + "'");
+                }
+                return null; // not present on this system
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Persisting a role with ID " + role.getRoleId() + " and name '" + role.getRoleNameFull() + "'");
+        }
+        return roleSession.persistRole(authenticationToken, role);
+        
     }
     
     

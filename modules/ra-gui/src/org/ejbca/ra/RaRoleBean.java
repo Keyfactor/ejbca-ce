@@ -20,11 +20,14 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleExistsException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 
@@ -144,8 +147,26 @@ public class RaRoleBean {
         return namespaceOptions;
     }
 
-    public String save() {
-        // TODO
+    public String save() throws AuthorizationDeniedException, RoleExistsException {
+        final String namespaceToUse;
+        if (!isLimitedToOneNamespace()) {
+            if (NEW_NAMESPACE_ITEM.equals(namespace)) {
+                if (StringUtils.isBlank(newNamespace)) {
+                    raLocaleBean.addMessageError("role_page_error_empty_namespace");
+                    return "";
+                }
+                namespaceToUse = newNamespace;
+            } else {
+                namespaceToUse = namespace;
+            }
+            role.setNameSpace(namespaceToUse);
+        }
+        role.setRoleName(name);
+        
+        // TODO access rules
+        
+        role = raMasterApiProxyBean.saveRole(raAuthenticationBean.getAuthenticationToken(), role);
+        roleId = role.getRoleId();
         
         // XXX note: the CA must check namespace access, including access to use the "" namespace and access to create new namespaces (which is the same)
         
