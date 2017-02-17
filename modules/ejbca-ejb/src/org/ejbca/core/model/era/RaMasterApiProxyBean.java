@@ -16,8 +16,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.ConcurrencyManagement;
@@ -200,6 +202,38 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return new ArrayList<>(roleMap.values());
+    }
+    
+    @Override
+    public Role getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    Role role = raMasterApi.getRole(authenticationToken, roleId);
+                    if (role != null) {
+                        return role;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public List<String> getAuthorizedRoleNamespaces(final AuthenticationToken authenticationToken, final int roleId) {
+        final Set<String> namespaceSet = new HashSet<>();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    namespaceSet.addAll(raMasterApi.getAuthorizedRoleNamespaces(authenticationToken, roleId));
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return new ArrayList<>(namespaceSet);
     }
 
     @Override

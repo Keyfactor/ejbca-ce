@@ -70,6 +70,19 @@ public interface RaMasterApi {
     
     /** @return a list with roles that the caller is authorized to see. */
     List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken);
+    
+    /**
+     * @return the Role with the given ID, or null if it does not exist
+     * @throws AuthorizationDeniedException if missing view access.
+     */
+    Role getRole(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
+
+    /**
+     * @param roleId Only include namespaces from peers where this role is present. Set to 0 to include all.
+     * @return a list of role namespaces the caller is authorized to see. Never returns null.
+     */
+    List<String> getAuthorizedRoleNamespaces(AuthenticationToken authenticationToken, int roleId);
+    
 
     /** @return the approval request with the given id, or null if it doesn't exist or if authorization was denied */
     RaApprovalRequestInfo getApprovalRequest(AuthenticationToken authenticationToken, int id);

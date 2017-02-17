@@ -64,4 +64,11 @@ public interface RoleSession {
      * @return List of authorized roles. May be empty, but never null.
      */
     List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken);
+
+    /**
+     * Returns a list of all role namespaces that the gives administrator is allowed to see. 
+     * @param authenticationToken Administrator.
+     * @return List of authorized roles. May be empty, but never null.
+     */
+    List<String> getAuthorizedNamespaces(AuthenticationToken authenticationToken);
 }
