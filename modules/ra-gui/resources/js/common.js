@@ -201,6 +201,8 @@
     	console.log("onAjaxError: " + data.errorMessage);
         document.getElementById(elementId).style.opacity = "0.2";
     };
+    
+    
 
     function toggleDetails(element, show, hide) {
         var detailsId = element.id + 'Details';
@@ -214,6 +216,13 @@
             element.value = show;
         }
     }
+    
+    var toggleElements = function(visible, elements) {
+        for (var i = 0; i < elements.length; i++) {
+            var elem = document.getElementById(elements[i]);
+            elem.style.display = visible ? 'block' : 'none';
+        }
+    };
 
 
     // Setup name space...
@@ -226,4 +235,5 @@
     ejbca.ra.onAjaxEvent = onAjaxEvent;
     ejbca.ra.onAjaxError = onAjaxError;
     ejbca.ra.toggleDetails = toggleDetails;
+    ejbca.ra.toggleElements = toggleElements;
 }());
