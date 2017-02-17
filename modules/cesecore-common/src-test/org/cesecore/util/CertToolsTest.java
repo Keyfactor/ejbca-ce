@@ -744,6 +744,9 @@ public class CertToolsTest {
         assertEquals("CN=cn,O=\\ the org\\\\,C=SE", CertTools.stringToBCDNString(dn34a));
         String dn34b = "CN=cn,O=\\ the org\\ ";
         assertEquals("CN=cn,O=\\ the org\\\\", CertTools.stringToBCDNString(dn34b));
+        // Same string as tested in EjbcaWSTest.test51CertificateRequestWithNoForbiddenChars
+        String dn35 = "CN=Foo,O=|\n|\r|;|A|!|`|?|$|~|, C=SE";
+        assertEquals("CN=Foo,O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE", CertTools.stringToBCDNString(dn35));
     }
 
     @Test

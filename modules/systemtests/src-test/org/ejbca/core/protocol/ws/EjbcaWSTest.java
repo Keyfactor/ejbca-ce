@@ -1189,9 +1189,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test51CertificateRequestWithNoForbiddenChars() throws Exception {
         long rnd = secureRandom.nextLong();
         cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "");
+        // Using JDK8 \r is transformed into \n for some reason, expected will work if: O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE
         testCertificateRequestWithSpecialChars(
                 "CN=test51CertificateRequestWithNoForbiddenChars" + rnd +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
-                "CN=test51CertificateRequestWithNoForbiddenChars" + rnd + ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
+                "CN=test51CertificateRequestWithNoForbiddenChars" + rnd +   ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
     }
 
 
