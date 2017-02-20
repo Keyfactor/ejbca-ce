@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:component="http://java.sun.com/jsf/composite/component"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+<ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     version: $Id$
+     -->
+</ui:remove>
+<ui:composition template="/WEB-INF/include/template.xhtml">
+    <f:metadata>
+        <!-- These parameters must be duplicated in several places. See role_members.xhtml for a complete list. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
+        <f:viewParam name="genericSearchString" value="#{raRoleMembersBean.genericSearchString}"/>
+        <f:viewParam name="criteriaRoleId" value="#{raRoleMembersBean.criteriaRoleId}"/>
+        <f:viewParam name="criteriaCaId" value="#{raRoleMembersBean.criteriaCaId}"/>
+        <f:viewParam name="criteriaTokenType" value="#{raRoleMembersBean.criteriaTokenType}"/>
+        <f:viewParam name="membersSortAsc" value="#{raRoleMembersBean.sortAscending}"/>
+        <f:viewParam name="membersSortCol" value="#{raRoleMembersBean.sortColumn}"/>
+        <f:viewParam name="fromRolesPage" value="#{raRoleMembersBean.fromRolesPage}"/>
+
+        <!-- These parameters must be duplicated in several places. See roles.xhtml for a complete list. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
+        <f:viewParam name="roleSearchString" value="#{raRolesBean.roleSearchString}"/>
+        <f:viewParam name="rolesSortAsc" value="#{raRolesBean.sortAscending}"/>
+        <f:viewParam name="rolesSortCol" value="#{raRolesBean.sortColumn}"/>
+        
+        <f:event type="preRenderView" listener="#{raRoleMemberBean.initialize}"/>
+    </f:metadata>
+    <ui:define name="content">
+        <h:panelGroup layout="block" class="header" id="title">
+            <h1><h:outputText value="#{msg.role_member_page_add_title}"/></h1>
+        </h:panelGroup>
+        <h:outputText value="#{msg.manage_role_members_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEditRoleMembers}"/>
+        <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToEditRoleMembers}">
+            <h:form id="roleForm" class="pure-form">
+                <h:panelGroup id="basic" styleClass="pure-g">
+                    <h:panelGroup id="parentRole" layout="block" styleClass="pure-u-1">
+                        <h:outputLabel for="roleLabel" value="#{msg.role_member_page_role_label}" styleClass="pure-u-lg-1-5"/>
+                        <h:selectOneMenu id="roleId" value="#{raRoleMemberBean.roleId}" styleClass=" pure-input pure-u-lg-3-5 jsAutoFocusFirst">
+                            <f:selectItems value="#{raRoleMemberBean.availableRoles}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+                    
+                    
+                    <h:panelGroup id="parentTokenType" layout="block" styleClass="pure-u-1">
+                        <h:outputLabel for="tokenTypeLabel" value="#{msg.role_member_page_tokentype_label}" styleClass="pure-u-lg-1-5"/>
+                        <h:selectOneMenu id="tokenType" value="#{raRoleMemberBean.tokenType}" styleClass=" pure-input pure-u-lg-3-5">
+                            <f:selectItems value="#{raRoleMemberBean.availableTokenTypes}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup id="parentCA" layout="block" styleClass="pure-u-1">
+                        <h:outputLabel for="caLabel" value="#{msg.role_member_page_ca_label}" styleClass="pure-u-lg-1-5"/>
+                        <h:selectOneMenu id="caId" value="#{raRoleMemberBean.caId}" styleClass=" pure-input pure-u-lg-3-5">
+                            <f:selectItems value="#{raRoleMemberBean.availableCAs}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup id="parentMatchType" layout="block" styleClass="pure-u-1">
+                        <h:outputLabel for="matchTypeLabel" value="#{msg.role_member_page_matchtype_label}" styleClass="pure-u-lg-1-5"/>
+                        <h:selectOneMenu id="matchType" value="#{raRoleMemberBean.matchType}" styleClass=" pure-input pure-u-lg-3-5">
+                            <f:selectItems value="#{raRoleMemberBean.availableMatchTypes}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+                    
+                    <!-- TODO search? -->
+                    <h:panelGroup id="parentMatchValue" layout="block" styleClass="pure-u-1">
+                        <h:outputLabel id="matchValueLabel" value="#{msg.role_member_page_matchvalue_label}" styleClass="pure-u-lg-1-5"/>
+                        <h:inputText id="matchValue" value="#{raRoleMemberBean.matchValue}" styleClass="pure-input pure-u-lg-3-5 bottomMargin" title="#{msg.role_member_page_matchvalue_title}" size="20"/>
+                    </h:panelGroup>
+                    
+                    <!-- TODO member bindings. perhaps have a "Use default member binding" and automatically link to the username based on the cert serno -->
+
+                    <h:panelGroup id="parentSaveButton" layout="block" styleClass="pure-u-lg-5-5">
+                        <h:commandButton id="saveButton" action="#{raRoleMemberBean.save}" value="#{msg.role_member_page_add_command}" styleClass="pure-button ra-button saveButton"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
+</html>

@@ -93,7 +93,9 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberData;
+import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -181,6 +183,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private EndEntityAuthenticationSessionLocal endEntityAuthenticationSessionLocal;
     @EJB
     private RoleSessionLocal roleSession;
+    @EJB
+    private RoleMemberSessionLocal roleMemberSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -266,6 +270,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
+    public List<String> getAuthorizedRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
+        // TODO
+        final List<String> tokenTypes = new ArrayList<>();
+        tokenTypes.add("X509"); // FIXME remove
+        return tokenTypes;
+    }
+    
+    @Override
     public Role saveRole(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException, RoleExistsException {
         if (role.getRoleId() != Role.ROLE_ID_UNASSIGNED) {
             // Updating a role
@@ -282,6 +294,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return roleSession.persistRole(authenticationToken, role);
         
+    }
+    
+    @Override
+    public RoleMember getRoleMember(final AuthenticationToken authenticationToken, final int roleMemberId) throws AuthorizationDeniedException {
+        return roleMemberSession.getRoleMember(authenticationToken, roleMemberId);
+    }
+
+    @Override
+    public RoleMember saveRoleMember(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
+        // TODO
+        throw new UnsupportedOperationException("not implemented");
     }
     
     

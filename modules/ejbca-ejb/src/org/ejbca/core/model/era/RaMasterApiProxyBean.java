@@ -44,6 +44,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.member.RoleMember;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -238,6 +239,21 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
+    public List<String> getAuthorizedRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
+        final Set<String> tokenTypesSet = new HashSet<>();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    tokenTypesSet.addAll(raMasterApi.getAuthorizedRoleMemberTokenTypes(authenticationToken));
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return new ArrayList<>(tokenTypesSet);
+    }
+    
+    @Override
     public Role saveRole(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException, RoleExistsException {
         AuthorizationDeniedException authorizationDeniedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
@@ -246,6 +262,49 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     final Role savedRole = raMasterApi.saveRole(authenticationToken, role);
                     if (savedRole != null) {
                         return savedRole;
+                    }
+                }
+            } catch (AuthorizationDeniedException e) {
+                if (authorizationDeniedException == null) {
+                    authorizationDeniedException = e;
+                }
+                // Just try next implementation
+            } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                // Just try next implementation
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        return null;
+    }
+    
+    @Override
+    public RoleMember getRoleMember(AuthenticationToken authenticationToken, int roleMemberId) throws AuthorizationDeniedException {
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    RoleMember roleMember = raMasterApi.getRoleMember(authenticationToken, roleMemberId);
+                    if (roleMember != null) {
+                        return roleMember;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public RoleMember saveRoleMember(AuthenticationToken authenticationToken, RoleMember roleMember) throws AuthorizationDeniedException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            try {
+                if (raMasterApi.isBackendAvailable()) {
+                    final RoleMember savedRoleMember = raMasterApi.saveRoleMember(authenticationToken, roleMember);
+                    if (savedRoleMember != null) {
+                        return savedRoleMember;
                     }
                 }
             } catch (AuthorizationDeniedException e) {

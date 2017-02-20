@@ -162,7 +162,7 @@ public class RaAccessBean implements Serializable {
     }
     
     public boolean isAuthorizedToRoles() {
-        return isAuthorizedToRoleRules() || isAuthorizedToRoleRules();
+        return isAuthorizedToRoleRules() || isAuthorizedToRoleMembers();
     }
     
     public boolean isAuthorizedToEditRoleRules() {
@@ -175,6 +175,10 @@ public class RaAccessBean implements Serializable {
     
     public boolean isAuthorizedToRoleMembers() {
         return isAuthorized(StandardRules.VIEWROLES.resource());
+    }
+    
+    public boolean isAuthorizedToEditRoleMembers() {
+        return isAuthorized(StandardRules.EDITROLES.resource());
     }
 
     public boolean isAuthorizedToRevokeCertificates() {

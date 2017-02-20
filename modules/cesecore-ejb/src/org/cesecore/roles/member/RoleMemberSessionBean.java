@@ -25,13 +25,18 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.ProfileID;
 
 /**
@@ -44,10 +49,14 @@ import org.cesecore.util.ProfileID;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMemberSessionRemote {
 
-    //private static final Logger log = Logger.getLogger(RoleMemberSessionBean.class);
+    private static final Logger log = Logger.getLogger(RoleMemberSessionBean.class);
 
     @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private RoleSessionLocal roleSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -91,6 +100,26 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         } else {
             return null;
         }
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public RoleMember getRoleMember(final AuthenticationToken authenticationToken, final int roleMemberId) throws AuthorizationDeniedException {
+        final RoleMember roleMember = findRoleMember(roleMemberId);
+        // Authorization checks
+        if (roleMember.getRoleId() != null && roleMember.getRoleId() != RoleMember.NO_ROLE) {
+            roleSession.getRole(authenticationToken, roleMember.getRoleId());
+        }
+        if (roleMember.getTokenIssuerId() != RoleMember.NO_ISSUER) {
+            try {
+                caSession.getCA(authenticationToken, roleMember.getTokenIssuerId());
+            } catch (CADoesntExistsException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Role references CA with ID " + roleMember.getTokenIssuerId() + ", which is missing.");
+                }
+            }
+        }
+        return roleMember;
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
