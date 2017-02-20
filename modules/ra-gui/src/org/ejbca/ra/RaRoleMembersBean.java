@@ -46,8 +46,6 @@ import org.ejbca.core.model.era.RaRoleMemberSearchResponse;
 @ManagedBean
 @ViewScoped
 public class RaRoleMembersBean {
-    
-    //public static final class RoleMemberGuiInfo 
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaRoleMembersBean.class);
@@ -301,20 +299,12 @@ public class RaRoleMembersBean {
     public boolean isOnlyOneTokenTypeAvailable() { return getAvailableTokenTypes().size()==2; } // two including the "any token type" choice
     public List<SelectItem> getAvailableTokenTypes() {
         if (availableTokenTypes == null) {
+            final List<String> tokenTypes = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoleMemberTokenTypes(raAuthenticationBean.getAuthenticationToken()));
+            Collections.sort(tokenTypes);
             availableTokenTypes = new ArrayList<>();
-            // TODO
-            /*final List<Role> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoles(raAuthenticationBean.getAuthenticationToken()));
-            Collections.sort(roles, new Comparator<Role>() {
-                @Override
-                public int compare(final Role role1, final Role role2) {
-                    return role1.getRoleName().compareTo(role2.getRoleName());
-                }
-            });*/
-            availableTokenTypes.add(new SelectItem(0, raLocaleBean.getMessage("role_members_page_criteria_tokentype_optionany")));
-            /*for (final Role role : roles) {
-                availableRoles.add(new SelectItem(role.getRoleId(), "- " + role.getRoleName()));
-            }*/
-            availableTokenTypes.add(new SelectItem("X509")); // FIXME remove
+            for (final String tokenType : tokenTypes) {
+                availableTokenTypes.add(new SelectItem(tokenType, raLocaleBean.getMessage("role_member_token_type_" + tokenType)));
+            }
         }
         return availableTokenTypes;
     }
