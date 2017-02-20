@@ -540,7 +540,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void sendApprovalNotifications(final AuthenticationToken authenticationToken, final ApprovalRequest approvalRequest, final ApprovalProfile approvalProfile,
             final List<Approval> approvalsPerformed, final boolean expired) {
         try {
