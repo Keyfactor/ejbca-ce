@@ -28,6 +28,7 @@
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <f:metadata>
+        <!-- These parameters must be duplicated here and in add_role_member.xhtml. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
         <f:viewParam name="genericSearchString" value="#{raRoleMembersBean.genericSearchString}"/>
         <f:viewParam name="criteriaRoleId" value="#{raRoleMembersBean.criteriaRoleId}"/>
         <f:viewParam name="criteriaCaId" value="#{raRoleMembersBean.criteriaCaId}"/>
@@ -36,7 +37,7 @@
         <f:viewParam name="membersSortCol" value="#{raRoleMembersBean.sortColumn}"/>
         <f:viewParam name="fromRolesPage" value="#{raRoleMembersBean.fromRolesPage}"/>
         
-        <!-- These parameters must be duplicated here and in roles.xhtml. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
+        <!-- These parameters must be duplicated in several places. See roles.xhtml for a complete list. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
         <f:viewParam name="roleSearchString" value="#{raRolesBean.roleSearchString}"/>
         <f:viewParam name="rolesSortAsc" value="#{raRolesBean.sortAscending}"/>
         <f:viewParam name="rolesSortCol" value="#{raRolesBean.sortColumn}"/>
@@ -173,6 +174,15 @@
                         </ui:remove>
                         
                     </h:dataTable>
+                </h:panelGroup>
+                
+                <h:panelGroup id="bottomLinks" layout="block" rendered="#{raAccessBean.authorizedToEditRoleMembers}">
+                    <h:link id="addRoleMemberButton" outcome="role_member" includeViewParams="true">
+                        <f:param name="roleId" value="#{raRoleMembersBean.criteriaRoleId}" disable="#{raRoleMembersBean.criteriaRoleId == null}"/>
+                        <f:param name="caId" value="#{raRoleMembersBean.criteriaCaId}" disable="#{raRoleMembersBean.criteriaCaId == null}"/>
+                        <f:param name="tokenType" value="#{raRoleMembersBean.criteriaTokenType}" disable="#{raRoleMembersBean.criteriaTokenType == null}"/>
+                        <h:outputText value="#{msg.role_members_page_add_member_command}"/>
+                    </h:link>
                 </h:panelGroup>
             </h:form>
         </h:panelGroup>

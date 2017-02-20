@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.cesecore.roles.member;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+
 /**
  * CRUD session bean for managing RoleMemberData objects
  * 
@@ -20,5 +23,10 @@ package org.cesecore.roles.member;
  */
 public interface RoleMemberSession {
 
+    /**
+     * Returns the Role Member with the given ID, or null if it does not exist.
+     * @throws AuthorizationDeniedException if not authorized to the Role or the CA in the RoleMember object.
+     */
+    RoleMember getRoleMember(AuthenticationToken authenticationToken, int roleMemberId) throws AuthorizationDeniedException;
 
 }

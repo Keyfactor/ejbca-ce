@@ -26,6 +26,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.member.RoleMember;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -69,20 +70,32 @@ public interface RaMasterApi {
     /** @return a list with information about non-external CAs that the caller is authorized to see. */
     List<CAInfo> getAuthorizedCas(AuthenticationToken authenticationToken);
     
-    /** @return a list with roles that the caller is authorized to see. */
+    /**
+     * @return a list with roles that the caller is authorized to see.
+     * @since Master RA API version 1 (EJBCA 6.8.0)
+     */
     List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken);
     
     /**
      * @return the Role with the given ID, or null if it does not exist
      * @throws AuthorizationDeniedException if missing view access.
+     * @since Master RA API version 1 (EJBCA 6.8.0)
      */
     Role getRole(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
 
     /**
      * @param roleId Only include namespaces from peers where this role is present. Set to 0 to include all.
      * @return a list of role namespaces the caller is authorized to see. Never returns null.
+     * @since Master RA API version 1 (EJBCA 6.8.0)
      */
     List<String> getAuthorizedRoleNamespaces(AuthenticationToken authenticationToken, int roleId);
+    
+    /**
+     * @return a list of token types the caller is authorized to.
+     * @since Master RA API version 1 (EJBCA 6.8.0)
+     */
+    List<String> getAuthorizedRoleMemberTokenTypes(AuthenticationToken authenticationToken);
+    
     
     /**
      * Adds or updates a role in the database. If the role has an ID, it will be updated, but only on the system where it exists.
@@ -92,9 +105,28 @@ public interface RaMasterApi {
      * @return The role object if the role was added/updated, otherwise null.
      * @throws AuthorizationDeniedException if unauthorized to update this role, or not authorized on any system to add it.
      * @throws RoleExistsException if a role with the given name already exists (can happen when adding or renaming)
+     * @since Master RA API version 1 (EJBCA 6.8.0)
      */
     Role saveRole(AuthenticationToken authenticationToken, Role role) throws AuthorizationDeniedException, RoleExistsException;
 
+    /**
+     * @return the Role Member with the given ID, or null if it does not exist
+     * @throws AuthorizationDeniedException if missing view access.
+     * @since Master RA API version 1 (EJBCA 6.8.0)
+     */
+    RoleMember getRoleMember(AuthenticationToken authenticationToken, int roleMemberId) throws AuthorizationDeniedException;
+
+    /**
+     * Adds or updates a role member in the database. If the role member has an ID, it will be updated, but only on the system where it exists.
+     * Otherwise, this method will try to create it on any of the configured systems.
+     * @param authenticationToken Admin
+     * @param roleMember RoleMember to persist. The roleMemberId controls whether it should be added or updated.
+     * @return The role member object if the role member was added/updated, otherwise null.
+     * @throws AuthorizationDeniedException if unauthorized to update this role member, or not authorized on any system to add it.
+     * @since Master RA API version 1 (EJBCA 6.8.0)
+     */
+    RoleMember saveRoleMember(AuthenticationToken authenticationToken, RoleMember roleMember) throws AuthorizationDeniedException;
+    
     /** @return the approval request with the given id, or null if it doesn't exist or if authorization was denied */
     RaApprovalRequestInfo getApprovalRequest(AuthenticationToken authenticationToken, int id);
 
