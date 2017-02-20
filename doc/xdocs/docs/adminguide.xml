@@ -7074,6 +7074,7 @@ For OCSP it is more important, but OCSP is also more light weight so the default
 <p>In more specialized PKI installations there can however be the need to issue hundreds of certificates per second. Therefore we provide a small list of
 configuration items that can maximize performance of EJBCA to issue more than 100 certificates per second (depending on hardware etc).</p>
 <ul>
+<li>Enable database indexes, see doc/sql-scripts.</li>
 <li>Disable logging to database in cesecore.properties, only use Log4jLogDevice. This removes a database insert and gives a big boost.</li>
 <li>Configure Log4j to log only to file, not console, and use only INFO or ERROR logging, not DEBUG. This can give a small improvement.</li>
 <li>Disable use of CertReqHistory in CA configuration. This removes a database insert and gives a big boost.</li>
