@@ -35,6 +35,24 @@ EJBCA 6.7.0 removes the value ocsp.responderidtype as read from ocsp.properties.
 of Internal Key Bindings back in EJBCA 6.0.0, been set for each OCSP  keybinding individually, and thus the value from ocsp.properties has only been 
 used for CAs acting as their own responders. From EJBCA 6.7.0 this value will be set from the OCSP Keybindings tab instead of in ocsp.properties. 
 
+From EJBCA 6.6.x to EJBCA 6.6.x
+-------------------------------
+
+See release notes for details between certain versions below. 
+Normally upgrades within a major release are plug-in upgrades.
+
+Simply copy conf/*.properties from the earlier installation (if not using ejbca-custom).
+Merge changes (if there are any) from *.properties.sample into your *.properties.
+Copy the directory 'p12' from the earlier installation and do 'ant deployear' with the new version.
+(note the new command deployear that only deploys a new ejbca.ear application, and does no configuration of the application server)
+
+Note the possibility to use 'ejbca-custom' directory since EJBCA 3.5.x, this can simplify upgrades. 
+See Admin Guide
+
+Read RELEASE_NOTES carefully in order to see if any particular changes might effect your upgrade particularly.
+
+If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very well.
+Delete the directories JBOSS_HOME/standalone/tmp and restart JBoss to get it working.
 
 From EJBCA 6.6.0 to EJBCA 6.6.1
 -------------------------------

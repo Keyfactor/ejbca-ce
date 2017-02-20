@@ -24,9 +24,12 @@ Bugfixes:
 - Security fixes
 - Lots of minor usability issues fixed.
 
+EJBCA 6.6.4
+-----------
+This release of EJBCA only fixes two issues related to upgrades in specific cases.
+
 EJBCA 6.6.3
 -----------
-
 PrimeKey Solutions are very proud to present the final EJBCA release for 2016: EJBCA 6.6.3. This release fixes nine minor issues which we were dying 
 to make live before our next feature release due for Q1, and primarily fixes issues which cropped up when using ExternalRA since 6.6.0, a bug in the
 upgrade script for Oracle databases and a bug which caused an inability to create CRLs on MSSQL. 
