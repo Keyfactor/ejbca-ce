@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <faceted-project>
-  <runtime name="JBoss 6.2 EAP"/>
-  <secondary-runtime name="JBoss 7.1 Runtime"/>
-  <secondary-runtime name="JBoss EAP 6.1+ Runtime"/>
-  <secondary-runtime name="JBoss 6.1 EAP "/>
+  <runtime name="WildFly 10.0 Runtime"/>
   <fixed facet="wst.jsdt.web"/>
   <installed facet="java" version="1.7"/>
   <installed facet="jst.web" version="3.0"/>
