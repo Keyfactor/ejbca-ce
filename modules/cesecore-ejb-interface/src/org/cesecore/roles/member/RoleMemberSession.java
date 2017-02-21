@@ -29,4 +29,11 @@ public interface RoleMemberSession {
      */
     RoleMember getRoleMember(AuthenticationToken authenticationToken, int roleMemberId) throws AuthorizationDeniedException;
 
+    /**
+     * Adds or updates a Role Member (depending on the value of the ID).
+     * @return The ID of the role member after persisting it.
+     * @throws AuthorizationDeniedException If access was denied to editing this role member or the referenced CA or Role.
+     */
+    int createOrEdit(AuthenticationToken authenticationToken, RoleMember roleMember) throws AuthorizationDeniedException;
+
 }

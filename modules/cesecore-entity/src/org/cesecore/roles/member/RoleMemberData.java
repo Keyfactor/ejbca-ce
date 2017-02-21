@@ -250,4 +250,18 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     public RoleMember asValueObject() {
         return new RoleMember(primaryKey, tokenType, tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, memberBindingType, memberBindingValue);
     }
+    
+    /** Sets all fields except the ID */
+    @Transient
+    public void updateValuesFromValueObject(final RoleMember roleMember) {
+        setTokenType(roleMember.getTokenType());
+        setTokenIssuerId(roleMember.getTokenIssuerId());
+        setTokenMatchKey(roleMember.getTokenMatchKey());
+        setTokenMatchOperator(roleMember.getTokenMatchOperator());
+        setTokenMatchValue(roleMember.getTokenMatchValue());
+        setTokenMatchValue(roleMember.getTokenMatchValue());
+        setRoleId(roleMember.getRoleId());
+        setMemberBindingType(roleMember.getMemberBindingType());
+        setMemberBindingValue(roleMember.getMemberBindingValue());
+    }
 }
