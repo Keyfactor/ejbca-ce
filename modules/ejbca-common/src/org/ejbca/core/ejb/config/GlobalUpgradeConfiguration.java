@@ -30,6 +30,7 @@ public class GlobalUpgradeConfiguration extends ConfigurationBase {
     private static final String UPGRADED_TO_VERSION = "upgradedToVersion";
     private static final String POST_UPGRADED_TO_VERSION = "postUpgradedToVersion";
     private static final String EEP_IN_CERTIFICATE_DATA = "endEntityProfileInCertificateData";
+    private static final String POST_UPGRADE_STARTED = "postUpgradeStarted";
     
     public String getUpgradedToVersion() {
         return (String) data.get(UPGRADED_TO_VERSION);
@@ -69,5 +70,16 @@ public class GlobalUpgradeConfiguration extends ConfigurationBase {
         properties.put(UPGRADED_TO_VERSION, getUpgradedToVersion());
         properties.put(POST_UPGRADED_TO_VERSION, getPostUpgradedToVersion());
         return properties;
+    }
+
+    public long getPostUpgradeStarted() {
+        final String value = (String) data.get(POST_UPGRADE_STARTED);
+        if (value==null) {
+            return 0L;
+        }
+        return Long.parseLong(value);
+    }
+    public void setPostUpgradeStarted(long startTimeMs) {
+        data.put(POST_UPGRADE_STARTED, String.valueOf(startTimeMs));
     }
 }

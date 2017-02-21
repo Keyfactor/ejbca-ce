@@ -19,6 +19,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 
 /**
@@ -31,6 +32,8 @@ public class RoleMemberProxySessionBean implements RoleMemberProxySessionRemote 
 
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
+    @EJB
+    private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
 
     @Override
     public int createOrEdit(RoleMember roleMember) {
@@ -61,5 +64,9 @@ public class RoleMemberProxySessionBean implements RoleMemberProxySessionRemote 
         return roleMemberSession.findRoleMemberByRoleId(roleId);
     }
 
-
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public boolean isNewAuthorizationPatternMarkerPresent() {
+        return accessTreeUpdateSession.isNewAuthorizationPatternMarkerPresent();
+    }
 }

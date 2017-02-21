@@ -31,9 +31,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
@@ -115,6 +118,7 @@ import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
+import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
@@ -205,7 +209,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private SecurityEventsLoggerSessionLocal securityEventsLogger;
     @EJB
     private UserDataSourceSessionLocal userDataSourceSession;
-
+    @EJB
+    private UpgradeStatusSingletonLocal upgradeStatusSingleton;
 
     private UpgradeSessionLocal upgradeSession;
 
@@ -246,6 +251,36 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
+    @Override
+    public long getPostUpgradeStarted() {
+        return getGlobalUpgradeConfiguration().getPostUpgradeStarted();
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public boolean setPostUpgradeStarted(final long startTimeMs) {
+        final GlobalUpgradeConfiguration globalUpgradeConfiguration = getGlobalUpgradeConfiguration();
+        if (startTimeMs!=0L && globalUpgradeConfiguration.getPostUpgradeStarted()!=0L) {
+            return false;
+        }
+        globalUpgradeConfiguration.setPostUpgradeStarted(startTimeMs);
+        setGlobalUpgradeConfiguration(globalUpgradeConfiguration);
+        return true;
+    }
+
+    private boolean setPostUpgradeStartedInternal(final long startTimeMs) {
+        boolean ret = false;
+        try {
+            ret = upgradeSession.setPostUpgradeStarted(startTimeMs);
+            if (!ret) {
+                log.debug("Post upgrade has already been started elsewhere and update prevents start on this node.");
+            }
+        } catch (RuntimeException e) {
+            log.debug("Concurrent persistence update prevents upgrade to start on this node.");
+        }
+        return ret;
+    }
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isEndEntityProfileInCertificateData() {
@@ -255,16 +290,20 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private void setEndEntityProfileInCertificateData(final boolean value) {
         final GlobalUpgradeConfiguration guc = getGlobalUpgradeConfiguration();
         guc.setEndEntityProfileInCertificateData(value);
-        try {
-            globalConfigurationSession.saveConfiguration(authenticationToken, guc);
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException(e);
-        }
+        setGlobalUpgradeConfiguration(guc);
     }
 
     private GlobalUpgradeConfiguration getGlobalUpgradeConfiguration() {
         return (GlobalUpgradeConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
     }
+    private void setGlobalUpgradeConfiguration(final GlobalUpgradeConfiguration globalUpgradeConfiguration) {
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalUpgradeConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+    
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
@@ -322,25 +361,49 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return ret;
     }
 
-    /* TODO: Currently not used, but should be invokable from the Admin GUI */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Asynchronous
     @Override
-    public boolean performPostUpgrade() {
-        final String dbType = DatabaseConfiguration.getDatabaseName();
-        final String currentVersion = InternalConfiguration.getAppVersionNumber();
-        final String last = getLastPostUpgradedToVersion();
-        boolean ret = true;
-        if (isLesserThan(last, currentVersion)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Database content version: " + last + " Current application version: " + currentVersion + " -> Starting post-upgrade.");
+    public Future<Boolean> startPostUpgrade() {
+        log.trace(">startPostUpgrade");
+        boolean ret = false;
+        if (setPostUpgradeStartedInternal(System.currentTimeMillis())) {
+            try {
+                upgradeStatusSingleton.logAppenderAttach(log);
+                if (upgradeStatusSingleton.setPostUpgradeInProgressIfDifferent(true)) {
+                    try {
+                        final String dbType = DatabaseConfiguration.getDatabaseName();
+                        final String currentVersion = InternalConfiguration.getAppVersionNumber();
+                        final String last = getLastPostUpgradedToVersion();
+                        if (isLesserThan(last, currentVersion)) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Database content version: " + last + " Current application version: " + currentVersion + " -> Starting post-upgrade.");
+                            }
+                            ret = upgradeSession.upgrade(dbType, last, true);
+                        } else {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Database content version: " + last + " Current application version: " + currentVersion + " -> Post-upgrade is not needed.");
+                            }
+                            ret = true;
+                        }
+                    } finally {
+                        upgradeStatusSingleton.resetPostUpgradeInProgress();
+                    }
+                } else {
+                    log.info("Preventing start of post-upgrade background tasks since it has already been started on this cluster node.");
+                }
+            } catch (RuntimeException e) {
+                // Since this is invoked asynchronously the calling client might no longer be around to receive the "result"
+                log.error("Unexpected error from post-upgrade: " + e.getMessage(), e);
+            } finally {
+                setPostUpgradeStartedInternal(0L);
+                upgradeStatusSingleton.logAppenderDetach(log);
             }
-            ret = upgradeSession.upgrade(dbType, last, true);
         } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Database content version: " + last + " Current application version: " + currentVersion + " -> Post-upgrade is not needed.");
-            }
+            log.info("Preventing start of post-upgrade background tasks since it has already been started by a cluster node.");
         }
-        return ret;
+        log.trace("<startPostUpgrade");
+        return new AsyncResult<Boolean>(ret);
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -471,6 +534,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("6.3.2");
         }
+        if (isLesserThan(oldVersion, "6.8.0")) {
+            if (!postMigrateDatabase680()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("6.8.0");
+        }
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -479,7 +548,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "6.3.2");
+        return isLesserThan(getLastPostUpgradedToVersion(), "6.8.0");
     }
 
     /**
@@ -1574,28 +1643,34 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 final String tokenMatchValue = accessUserAspect.getMatchValue();
                 // Straighten out comparison operators that don't make sense, since previous versions of EJBCA might have allowed such configuration
                 if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType)) {
-                    if (tokenMatchKey==X500PrincipalAccessMatchValue.NONE.getNumericValue()) {
+                    if (tokenMatchKey == X500PrincipalAccessMatchValue.NONE.getNumericValue() ||
+                            tokenMatchOperator == AccessMatchType.TYPE_NONE.getNumericValue()) {
                         // This will never match anything, drop it
-                        log.info("Admin in role '" + roleName + "' of type " + tokenType + " with match key="+X500PrincipalAccessMatchValue.NONE.name() +
-                                " operator=" + AccessMatchType.TYPE_NONE.name() + " and value='" + tokenMatchValue +
+                        log.info("Admin in role '" + roleName + "' of type " + tokenType + " with match key " + tokenMatchKey +
+                                " match operator " + tokenMatchOperator + " and match value '" + tokenMatchValue +
                                 "' will be dropped since it will never grant any access.");
                         continue;
                     }
-                    if (tokenMatchOperator == AccessMatchType.TYPE_NONE.getNumericValue()) {
-                        // This will never match anything, drop it
-                        log.info("Admin in role '" + roleName + "' of type " + tokenType + " with match key="+tokenMatchKey+" operator=" +
-                                AccessMatchType.TYPE_NONE.name() + " and value='" + tokenMatchValue +
-                                "' will be dropped since it will never grant any access.");
-                        continue;
+                    if (tokenMatchKey == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue() &&
+                            tokenMatchOperator == AccessMatchType.TYPE_EQUALCASE.getNumericValue()) {
+                        // The implementation always does case insensitive compare
+                        log.debug("Admin in role '" + roleName + "' of type " + tokenType + " with match key " + X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.name() +
+                                " match operator " + AccessMatchType.TYPE_EQUALCASE.name() + " with and match value '" + tokenMatchValue +
+                                "'. Changing match operator type to defacto operator TYPE_EQUALCASEINS.");
+                        tokenMatchOperator = AccessMatchType.TYPE_EQUALCASEINS.getNumericValue();
                     }
                     if (tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASE.getNumericValue() ||
                             tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASEINS.getNumericValue()) {
-                        log.warn("Admin in role '" + roleName + "' of type " + tokenType + " with match key="+tokenMatchKey+" operator=" + tokenMatchOperator +
-                                " and value='"+tokenMatchValue+"' is most likely misconfigured. This will grant role access to anything not matching the value!");
+                        log.warn("Admin in role '" + roleName + "' of type " + tokenType + " with match key=" + tokenMatchKey +
+                                " match operator " + tokenMatchOperator + " and match value='"+tokenMatchValue +
+                                "' is most likely misconfigured. This will grant role access to anything not matching the value!");
                     }
                 } else if (CliAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) || "UsernameBasedAuthenticationToken".equals(tokenType)) {
                     if (tokenMatchOperator != AccessMatchType.TYPE_EQUALCASE.getNumericValue()) {
                         // The implementation always does case sensitive compare
+                        log.debug("Admin in role '" + roleName + "' of type " + tokenType + " with match key " + CliUserAccessMatchValue.USERNAME.name() +
+                                " match operator " + tokenMatchOperator + " with and match value '" + tokenMatchValue +
+                                "'. Changing match operator type to defacto operator TYPE_EQUALCASE.");
                         log.debug("Found admin of type " + tokenType + " with and value='"+tokenMatchValue+"'. Changing operator type to defacto operator equals.");
                         tokenMatchOperator = AccessMatchType.TYPE_EQUALCASE.getNumericValue();
                     }
@@ -1609,6 +1684,49 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }           
         }
         log.error("(This is not an error) Completed upgrade procedure to 6.8.0");
+    }
+
+    private boolean postMigrateDatabase680() {
+        log.info("Starting post upgrade to 6.8.0.");
+        // Verify that there are no TYPE_NOT_EQUALCASE* still in use
+        log.info("Verifying that there are no TYPE_NOT_EQUALCASE or TYPE_NOT_EQUALCASEINS token match operators still in use.");
+        boolean hasNotEquals = false;
+        for (final Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
+            for (final RoleMember roleMember : roleMemberSession.findRoleMemberByRoleId(role.getRoleId())) {
+                final int tokenMatchOperator = roleMember.getTokenMatchOperator();
+                if (AccessMatchType.TYPE_NOT_EQUALCASE.getNumericValue()==tokenMatchOperator ||
+                        AccessMatchType.TYPE_NOT_EQUALCASEINS.getNumericValue()==tokenMatchOperator) {
+                    log.error("Role '" + role.getRoleNameFull() + "' has a member with a 'not equals' match operator. Post-upgrade cannot complete until this is corrected.");
+                    hasNotEquals = true;
+                    break;
+                }
+            }
+        }
+        if (hasNotEquals) {
+            return false;
+        }
+        // Change to use union role access rules instead of enum priority matching
+        accessTreeUpdateSession.setNewAuthorizationPatternMarker();
+        log.info("Admins belonging to multiple roles will now be granted the combined access when cache expires.");
+        /* DEVELOPMENT: Comment out this section before 6.8.0 release */
+        log.warn("DEVELOPMENT: Sleep for a bit so the GUI can be easily tested (and demo nested exceptions)...", new Exception("exceptiontext", new Exception("nestedexceptiontext")));
+        try {
+            for (int i=10; i>=0; i--) {
+                Thread.sleep(1000L);
+                log.info("(Countdown for demo purpose " + i + ")");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        // Empty the legacy AdminEntityData, AdmingGroupData and AccessRulesData tables.
+        log.info("Cleaning up legacy roles and rules.");
+        // TODO 
+        log.error("Clean up not implemented yet! Failing post-upgrade!");
+        return false; // Fail it
+        /*
+        log.info("Post upgrade to 6.8.0 complete.");
+        return true;
+        */
     }
 
     /** Add the previously global configuration configured approval notification */
@@ -1800,14 +1918,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 		return exists;
     }
     
-    /**
-     * Takes two versions and compares the first and the second versions to each other
-     * 
-     * @param first a version number
-     * @param second a version number
-     * @return true of the first version is lower (1.0 < 2.0) than the second, false otherwise. 
-     */
-    private boolean isLesserThan(final String first, final String second) {
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public boolean isLesserThan(final String first, final String second) {
         if (log.isTraceEnabled()) {
             log.trace("isLesserThan("+first+", "+second+")");
         }

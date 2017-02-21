@@ -225,6 +225,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     }
 
     /** @return the union of access rules available to the AuthenticationToken if it matches several roles (ignoring any nested tokens) */
+    @SuppressWarnings("deprecation")
     private HashMap<String, Boolean> getAccessAvailableToSingleToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         HashMap<String, Boolean> accessRules = new HashMap<>();
         if (authenticationToken!=null) {
@@ -232,8 +233,35 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
                 // Special handing of the AlwaysAllowAuthenticationToken to grant full access
                 accessRules.put("/", Boolean.TRUE);
             } else {
-                for (final int matchingRoleId : roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
-                    accessRules = AccessRulesHelper.getAccessRulesUnion(accessRules, roleDataSession.getRole(matchingRoleId).getAccessRules());
+                if (accessTreeUpdateSession.isNewAuthorizationPatternMarkerPresent()) {
+                    // This is the new 6.8.0+ behavior (combine access of matched rules)
+                    for (final int matchingRoleId : roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
+                        accessRules = AccessRulesHelper.getAccessRulesUnion(accessRules, roleDataSession.getRole(matchingRoleId).getAccessRules());
+                    }
+                } else {
+                    // This is the legacy behavior (use priority matching). Remove this once we no longer need to support upgrades to 6.8.0.
+                    // Greater tokenMatchKey number has higher priority. When equal, deny trumps accept
+                    final Map<Integer, Integer> roleIdToTokenMatchKeyMap = roleMemberSession.getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(authenticationToken);
+                    final Map<Integer, Integer> keepMap = new HashMap<>();
+                    // 1. Find highest tokenMatchKey number and keep these entries
+                    int highest = 0;
+                    for (final Entry<Integer,Integer> entry : roleIdToTokenMatchKeyMap.entrySet()) {
+                        final int current = entry.getValue();
+                        if (highest<current) {
+                            keepMap.clear();
+                            highest = current;
+                        }
+                        if (highest == current) {
+                            keepMap.put(entry.getKey(), entry.getValue());
+                        }
+                    }
+                    // 2. Get the intersection of rights for all matching roles
+                    if (!keepMap.isEmpty()) {
+                        accessRules.put("/", Boolean.TRUE);
+                        for (final int matchingRoleId : keepMap.keySet()) {
+                            accessRules = AccessRulesHelper.getAccessRulesIntersection(accessRules, roleDataSession.getRole(matchingRoleId).getAccessRules());
+                        }
+                    }
                 }
             }
         }

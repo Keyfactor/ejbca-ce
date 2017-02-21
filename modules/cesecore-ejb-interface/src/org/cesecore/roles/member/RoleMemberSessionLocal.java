@@ -13,6 +13,7 @@
 package org.cesecore.roles.member;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.Local;
@@ -82,5 +83,10 @@ public interface RoleMemberSessionLocal extends RoleMemberSession {
      */
     List<RoleMember> findRoleMemberByRoleId(int roleId);
 
+    /** @return all roleId matching the specified AuthenticationToken*/
     Set<Integer> getRoleIdsMatchingAuthenticationToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
+
+    /** @return roleId,tokenMatchType values for legacy priority matching */
+    @Deprecated // Keep for as long as we need to support upgrades to 6.8.0
+    Map<Integer, Integer> getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
 }
