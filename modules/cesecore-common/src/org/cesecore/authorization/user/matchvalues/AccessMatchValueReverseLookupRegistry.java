@@ -55,6 +55,11 @@ public enum AccessMatchValueReverseLookupRegistry {
         return metaDatas.keySet();
     }
     
+    /** @return the meta data for the specified tokenType or null if none exists */
+    public AuthenticationTokenMetaData getMetaData(final String tokenType) {
+        return metaDatas.get(tokenType);
+    }
+    
     /**
      * This method performs a reverse lookup given a token type and an integer, by using already registered callback method
      * to translate those values into an AccessMatchValue. If no corresponding callback method has been registered, this method

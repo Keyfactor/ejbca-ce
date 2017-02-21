@@ -25,6 +25,7 @@ import org.cesecore.authorization.user.AccessMatchType;
  * 
  */
 public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
+    @Deprecated // Will never match anything which makes it rather useless keep around long term. (Deprecated in 6.8.0.) 
     NONE(0),
     WITH_COUNTRY(1),
     WITH_DOMAINCOMPONENT(2),
