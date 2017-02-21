@@ -184,7 +184,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     /** Callback for loading cache misses */
     private AuthorizationCacheCallback authorizationCacheCallback = new AuthorizationCacheCallback() {
         @Override
-        public HashMap<String, Boolean> loadAccessRules(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        public HashMap<String, Boolean> loadAccessRules(final AuthenticationToken authenticationToken) {
             HashMap<String, Boolean> accessRules = getAccessAvailableToSingleToken(authenticationToken);
             if (authenticationToken instanceof NestableAuthenticationToken) {
                 final List<NestableAuthenticationToken> nestedAuthenticatonTokens = ((NestableAuthenticationToken)authenticationToken).getNestedAuthenticationTokens();
@@ -226,12 +226,18 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     /** @return the union of access rules available to the AuthenticationToken if it matches several roles (ignoring any nested tokens) */
     @SuppressWarnings("deprecation")
-    private HashMap<String, Boolean> getAccessAvailableToSingleToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+    private HashMap<String, Boolean> getAccessAvailableToSingleToken(final AuthenticationToken authenticationToken) {
         HashMap<String, Boolean> accessRules = new HashMap<>();
         if (authenticationToken!=null) {
-            if (authenticationToken.getMetaData().isSuperToken() && authenticationToken.matches(null)) {
-                // Special handing of the AlwaysAllowAuthenticationToken to grant full access
-                accessRules.put("/", Boolean.TRUE);
+            if (authenticationToken.getMetaData().isSuperToken()) {
+                try {
+                    if (authenticationToken.matches(null)) {
+                        // Special handing of the AlwaysAllowAuthenticationToken to grant full access
+                        accessRules.put("/", Boolean.TRUE);
+                    }
+                } catch (AuthenticationFailedException e) {
+                    log.debug(e.getMessage(), e);
+                }
             } else {
                 if (accessTreeUpdateSession.isNewAuthorizationPatternMarkerPresent()) {
                     // This is the new 6.8.0+ behavior (combine access of matched rules)
