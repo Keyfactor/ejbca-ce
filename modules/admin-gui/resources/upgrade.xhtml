@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:component="http://java.sun.com/jsf/composite/component"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+    <ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     version: $Id: viewcert.xhtml 24106 2016-08-04 08:42:03Z anatom $
+     -->
+    </ui:remove>
+    <ui:composition template="/WEB-INF/include/template.xhtml">
+        <ui:define name="content">
+            <h1><h:outputText value="#{web.text.UPGRADE_TITLE}"/></h1>
+            <div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div>
+            <h:outputText styleClass="alert" rendered="#{!upgradeBean.authorizedToUpgrade}" value="#{web.text.UPGRADE_ERR_UNAUTH}"/>
+            
+            <h:form id="upgrade" rendered="#{upgradeBean.authorizedToUpgrade}" styleClass="fullwidth readablewidth">
+                <h:panelGrid id="status" columns="2" styleClass="edit-top fullwidth" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2" cellpadding="3">
+                    <h:outputLabel value=""/>
+                    <h:outputText value=""/>
+                    <h:outputLabel styleClass="titles" value="#{web.text.UPGRADE_VERSION_NEWEST}"/>
+                    <h:outputText value="#{upgradeBean.lastUpgradedToVersion}"/>
+                    <h:outputLabel styleClass="titles" value="#{web.text.UPGRADE_VERSION_EFFECTIVE}"/>
+                    <h:outputText value="#{upgradeBean.lastPostUpgradedToVersion}"/>
+                    <h:outputLabel styleClass="titles" value="#{web.text.UPGRADE_STATUS}"/>
+                    <h:panelGroup>
+                        <h:outputText rendered="#{!upgradeBean.postUpgradeFailed}" value="#{upgradeBean.postUpgradeInProgress ? web.text.UPGRADE_STATUS_RUNNING : web.text.UPGRADE_STATUS_NOTRUNNING}"/>
+                        <h:outputText rendered="#{upgradeBean.postUpgradeFailed}" style="color: #ff0000;" value="#{web.text.UPGRADE_STATUS_FAILED}"/>
+                    </h:panelGroup>
+                    <h:panelGroup>
+                        <h:outputLabel styleClass="titles" value="#{web.text.UPGRADE_STATUS_CLUSTER}"/><br/>
+                        <h:outputText styleClass="help" value="#{web.text.UPGRADE_STATUS_CLUSTER_HELP}"/><br/>
+                    </h:panelGroup>
+                    <h:outputText value="#{upgradeBean.postUpgradeInProgressInCluster ? upgradeBean.postUpgradeStartedInCluster : web.text.UPGRADE_STATUS_NOTRUNNING}"/>
+                </h:panelGrid>
+                <br/>
+                <h:panelGroup layout="block" styleClass="informationalSection" rendered="#{upgradeBean.actionStartUpgradeAllowed}">
+                    <h2><h:outputText value="#{web.text.UPGRADE_INFO_TITLE}"/></h2>
+                    <h:panelGroup layout="block" styleClass="">
+                        <h:outputText value="#{web.text.UPGRADE_INFO_WARNING}"/>
+                    </h:panelGroup>
+                    <br/>
+                    <h:panelGroup layout="block" styleClass="" rendered="#{upgradeBean.renderPostUpgradeInfoNotes}">
+                        <h:outputText value="#{web.text.UPGRADE_INFO_NOTES}:"/>
+                        <ul>
+                            <h:panelGroup rendered="#{upgradeBean.renderPostUpgradeInfoTo680}">
+                                <li><h:outputText value="#{web.text.UPGRADE_INFO_NOTES_TO680}"/></li>
+                            </h:panelGroup>
+                        </ul>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup styleClass="alignright fullwidth" layout="block">
+                    <h:commandButton value="#{web.text.UPGRADE_ACTION_START}" action="#{upgradeBean.actionStartUpgrade}" rendered="#{upgradeBean.actionStartUpgradeAllowed}"/>
+                    <h:commandButton value="#{web.text.UPGRADE_ACTION_CLEARLOCK}" action="#{upgradeBean.actionClearUpgradeLock}" rendered="#{upgradeBean.actionForceRestartUpgradeAllowed}"/>
+                    <h:commandButton id="refreshButton" value="#{web.text.UPGRADE_ACTION_REFRESH}" action="#{upgradeBean.actionNoAction}" rendered="#{upgradeBean.postUpgradeInProgressInCluster}">
+                        <f:ajax execute="@this" render=":messages @form" listener="#{upgradeBean.actionNoActionAjaxListener}"/>
+                    </h:commandButton>
+                    <ui:remove><!-- Automatically hide and click the refresh button every other second --></ui:remove>
+                    <h:panelGroup id="ajaxRefresh" rendered="#{upgradeBean.postUpgradeInProgressInCluster}">
+                        <script>
+                        var button = document.getElementById("upgrade:refreshButton");
+                        button.style.display = "none";
+                        window.setTimeout(function() { button.click(); }, 2000);
+                        </script>
+                    </h:panelGroup>
+                </h:panelGroup>
+                
+                <h:panelGroup id="log" styleClass="" layout="block" rendered="#{upgradeBean.postUpgradeInProgress or not empty upgradeBean.logged}">
+                    <h2><h:outputText value="#{web.text.UPGRADE_LOGGED_TITLE}"/></h2>
+                    <h:outputText rendered="#{empty upgradeBean.logged}" value="#{web.text.UPGRADE_LOGGED_NONE}"/>
+                    <h:dataTable rendered="#{not empty upgradeBean.logged}" value="#{upgradeBean.logged}" var="logEvent">
+                        <h:column>
+                            <h:outputText styleClass="monospace" style="font-size: 8pt;" value="#{logEvent.time}"/>
+                        </h:column>
+                        <h:column>
+                            <h:outputText styleClass="monospace" style="font-size: 8pt; color: #000000;" value="#{logEvent.level}" rendered="#{logEvent.levelInfo}"/>
+                            <h:outputText styleClass="monospace" style="font-size: 8pt; color: #ffa500;" value="#{logEvent.level}" rendered="#{logEvent.levelWarning}"/>
+                            <h:outputText styleClass="monospace" style="font-size: 8pt; color: #ff0000;" value="#{logEvent.level}" rendered="#{logEvent.levelError}"/>
+                        </h:column>
+                        <h:column>
+                            <h:outputText styleClass="monospace" style="font-size: 8pt;" value="#{logEvent.message}"/>
+                        </h:column>
+                    </h:dataTable>
+                </h:panelGroup>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</html>

@@ -38,6 +38,7 @@ public class AccessTreeUpdateData extends ProtectedData implements Serializable 
     private static final long serialVersionUID = 778158550351189295L;
 
     public static final Integer AUTHORIZATIONTREEUPDATEDATA = Integer.valueOf(1);
+    public static final Integer NEW_AUTHORIZATION_PATTERN_MARKER = Integer.valueOf(2);
     public static final int DEFAULTACCESSTREEUPDATENUMBER = 0;
 
     private Integer primaryKey;

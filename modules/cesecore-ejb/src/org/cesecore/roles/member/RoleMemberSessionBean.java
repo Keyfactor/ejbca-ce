@@ -13,8 +13,10 @@
 package org.cesecore.roles.member;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -158,18 +160,35 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Set<Integer> getRoleIdsMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        final Set<Integer> ret = new HashSet<>();
-        final String tokenType = authenticationToken.getMetaData().getTokenType();
         // TODO: This a naive implementation iterating over all RoleMemberDatas of this type. See ECA-5607 for suggested improvement.
         // For example keep a list of distinct tokenSubTypes present in the table and asking the authToken for all permutations might be another approach
         // With the naive approach below we would be better off to background reload all rows into memory and search there
-        final TypedQuery<RoleMemberData> query = entityManager.createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType", RoleMemberData.class);
-        query.setParameter("tokenType", tokenType);
-        final List<RoleMemberData> roleMemberDatas = query.getResultList();
-        for (final RoleMemberData roleMemberData : roleMemberDatas) {
+        final TypedQuery<RoleMemberData> query = entityManager
+                .createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType", RoleMemberData.class)
+                .setParameter("tokenType", authenticationToken.getMetaData().getTokenType());
+        final Set<Integer> ret = new HashSet<>();
+        for (final RoleMemberData roleMemberData : query.getResultList()) {
             if (roleMemberData.getRoleId()!=RoleMember.NO_ROLE) {
                 if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData.asValueObject()))) {
                     ret.add(roleMemberData.getRoleId());
+                }
+            }
+        }
+        return ret;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    @Deprecated
+    public Map<Integer,Integer> getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        final TypedQuery<RoleMemberData> query = entityManager
+                .createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType", RoleMemberData.class)
+                .setParameter("tokenType", authenticationToken.getMetaData().getTokenType());
+        final Map<Integer,Integer> ret = new HashMap<>();
+        for (final RoleMemberData roleMemberData : query.getResultList()) {
+            if (roleMemberData.getRoleId()!=RoleMember.NO_ROLE) {
+                if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData.asValueObject()))) {
+                    ret.put(roleMemberData.getRoleId(), roleMemberData.getTokenMatchKey());
                 }
             }
         }

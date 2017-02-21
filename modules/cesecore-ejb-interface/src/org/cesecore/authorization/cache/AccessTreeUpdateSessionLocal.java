@@ -1,5 +1,6 @@
 /*************************************************************************
  *                                                                       *
+
  *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
@@ -42,4 +43,9 @@ public interface AccessTreeUpdateSessionLocal {
      */
     void addReloadEvent(AuthorizationCacheReloadListener listener);
 
+    /** @return true after EJBCA 6.8.0 post upgrade has completed where we now combine multiple matched roles' access rules */
+    boolean isNewAuthorizationPatternMarkerPresent();
+
+    /** @see #isNewAuthorizationPatternMarkerPresent() */
+    void setNewAuthorizationPatternMarker();
 }

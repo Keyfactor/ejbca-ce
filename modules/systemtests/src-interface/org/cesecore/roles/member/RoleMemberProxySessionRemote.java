@@ -65,4 +65,6 @@ public interface RoleMemberProxySessionRemote {
      */
     List<RoleMember> findRoleMemberByRoleId(int roleId);
 
+    /** @return true if the EJBCA 6.8.0 union of access rules from multiple matched roles is in use */
+    boolean isNewAuthorizationPatternMarkerPresent();
 }
