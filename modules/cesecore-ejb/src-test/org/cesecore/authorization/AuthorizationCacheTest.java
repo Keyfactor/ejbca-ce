@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -52,7 +51,7 @@ public class AuthorizationCacheTest {
         final AuthenticationToken at1 = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AuthorizationCacheTest1"));
         final AuthorizationCacheCallback callback = new AuthorizationCacheCallback() {
             @Override
-            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
                 if (at1==authenticationToken) {
                     return accessRules1;
                 }
@@ -78,7 +77,7 @@ public class AuthorizationCacheTest {
         final AuthenticationToken at2 = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AuthorizationCacheTest2"));
         final AuthorizationCacheCallback callbackEmpty = new AuthorizationCacheCallback() {
             @Override
-            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
                 return null;
             }
             @Override
@@ -129,7 +128,7 @@ public class AuthorizationCacheTest {
         final AtomicInteger loadInvocations = new AtomicInteger(0);
         final AuthorizationCacheCallback callback = new AuthorizationCacheCallback() {
             @Override
-            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
                 loadInvocations.incrementAndGet();
                 if (at1==authenticationToken) {
                     countDownLatchThreadsStarted.countDown();
