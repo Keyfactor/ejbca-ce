@@ -28,6 +28,26 @@ $ ant web-configure
 All database upgrades require CREATE and ALTER TABLE privileges besides the regular SELECT, UPDATE, INSERT and DELETE. The SQL executed by 
 database upgrades code is available in "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 6.7.x to EJBCA 6.8.0
+-------------------------------
+The role, role members and access rule implementation has changed!
+
+All rules are now recursive and during upgrade the existing access rules are converted to grant the same access.
+Note that when new objects are created under a recursive accept rule, access will be automatically granted.
+
+After a post-upgrade an authenticated session matching Role Members in different Roles will have the combined access from all the Roles.
+(In previous versions different authentication methods had different priority in the case where authenticated session could belong to multiple
+Administrator Groups.)
+
+The "Not equals case sensitive" and "Not equals case insensitive" match operator are no longer allowed. If you use currently use them, you need
+to reconfigure your roles to be able to proceed past the post-upgrade
+Additionally each match key now implies if the match should be case sensitive or not. You are recommended to use the default match value operator
+for existing rules (usually this means "Equals case sensitive").
+
+AuthenticationTokens are now loaded dynamically and custom implementations will need modification.
+
+Post upgrade can now be performed from the GUI.
+
 From EJBCA 6.6.1 to EJBCA 6.7.0
 -------------------------------
 

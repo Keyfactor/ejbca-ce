@@ -72,6 +72,8 @@ public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal
                 accessTreeUpdateData = new AccessTreeUpdateData();
                 accessTreeUpdateData.setAccessTreeUpdateNumber(AccessTreeUpdateData.DEFAULTACCESSTREEUPDATENUMBER+1);
                 entityManager.persist(accessTreeUpdateData);
+                // Additionally we set the marker that this (new) installation should use the new union access rule pattern
+                setNewAuthorizationPatternMarker();
             } catch (Exception e) {
                 LOG.error(InternalResources.getInstance().getLocalizedMessage("authorization.errorcreateauthtree"), e);
                 throw new EJBException(e);
@@ -93,5 +95,25 @@ public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal
     @Override
     public void addReloadEvent(final AuthorizationCacheReloadListener observer) {
         authCacheReloadEvent.add(observer);
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public boolean isNewAuthorizationPatternMarkerPresent() {
+        return entityManager.find(AccessTreeUpdateData.class, AccessTreeUpdateData.NEW_AUTHORIZATION_PATTERN_MARKER)!=null;
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void setNewAuthorizationPatternMarker() {
+        /*
+         * Use a row in this table as a marker, since it is already a dependency from AuthorizationSessionBean.
+         * (Otherwise we would have to depend on reading configuration which in turn depends back on authorization.)
+         */
+        if (!isNewAuthorizationPatternMarkerPresent()) {
+            final AccessTreeUpdateData marker = new AccessTreeUpdateData();
+            marker.setPrimaryKey(AccessTreeUpdateData.NEW_AUTHORIZATION_PATTERN_MARKER);
+            entityManager.persist(marker);
+        }
     }
 }

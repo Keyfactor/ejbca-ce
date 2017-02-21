@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.upgrade;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import javax.ejb.Local;
 
@@ -35,7 +36,7 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
 	boolean performUpgrade();
 
 	/** Perform upgrades that require all nodes connected to the same database to run the current EJBCA version. */
-    boolean performPostUpgrade();
+    Future<Boolean> startPostUpgrade();
 
     /** @return true if post upgrade is required */
     boolean isPostUpgradeNeeded();
@@ -45,6 +46,9 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
 
     /** @return EJBCA version of the database content that can be upgraded after all nodes run the same EJBCA version. */
     String getLastPostUpgradedToVersion();
+
+    /** @return the epoch time of when the post-upgrade was last started in the cluster */
+    long getPostUpgradeStarted();
 
     /** @return true if the endEntityProfileId column in CertificateData has been populated. */
     boolean isEndEntityProfileInCertificateData();
@@ -81,4 +85,16 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     void migrateDatabase660() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only! */
     void migrateDatabase680() throws UpgradeFailedException;
+
+    /** Persist the time when the post-upgrade starts or 0L when it is no longer running. */
+    boolean setPostUpgradeStarted(long startTimeMs);
+
+    /**
+     * Takes two versions and compares the first and the second versions to each other
+     * 
+     * @param first a version number
+     * @param second a version number
+     * @return true of the first version is lower (1.0 < 2.0) than the second, false otherwise. 
+     */
+    boolean isLesserThan(String first, String second);
 }

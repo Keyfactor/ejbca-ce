@@ -1130,6 +1130,22 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
 	right: auto;
 	left: auto;
 }
+.informationalSection {
+	font-style: normal;
+	padding: 0.5em;
+	border-radius: 0.3em;
+	background: #fcfcfc;
+	margin-bottom: 1em;
+}
+.readablewidth {
+    max-width: 1000px;
+}
+.fullwidth {
+    width: 100%;
+}
+.alignright {
+    text-align: right;
+}
 
 /* CSS2 compatible expandable text */
 .expandOnClick { width: 25em;  height: 1em;  display: block; overflow: hidden; white-space: nowrap; }
