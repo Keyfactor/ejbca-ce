@@ -226,6 +226,7 @@ public class RaRoleMemberBean {
         roleMember = raMasterApiProxyBean.saveRoleMember(raAuthenticationBean.getAuthenticationToken(), roleMember);
         roleMemberId = roleMember.getId();
         
+        // TODO if the active filter does not include the newly added role member, then change the filter to show it
         return "role_members?faces-redirect=true&includeViewParams=true";
     }    
     

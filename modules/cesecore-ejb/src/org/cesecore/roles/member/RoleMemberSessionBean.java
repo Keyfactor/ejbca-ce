@@ -63,6 +63,46 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
+    
+    private void checkRoleAuth(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
+        // TODO should do an authorization check on the role itself, see RoleSessionBean.persistRole()
+        //assertAuthorizedToEditRoles(authenticationToken);
+        //assertAuthorizedToAllAccessRules(authenticationToken, role);
+        //assertNotMemberAndAuthorizedToNameSpace(authenticationToken, role);
+        
+        // Check existence and authorization of referenced objects 
+        if (roleMember.getRoleId() != RoleMember.NO_ROLE && roleSession.getRole(authenticationToken, roleMember.getRoleId()) == null) {
+            throw new IllegalStateException("Role with ID " + roleMember.getRoleId() + " was not found, or administrator is not authorized to it");
+        }
+        if (roleMember.getTokenIssuerId() != RoleMember.NO_ISSUER) {
+            try {
+                caSession.getCAInfo(authenticationToken, roleMember.getTokenIssuerId());
+            } catch (CADoesntExistsException e) {
+                throw new IllegalStateException("CA with ID " + roleMember.getTokenIssuerId() + " was not found, or administrator is not authorized to it");
+            }
+        }
+    }
+    
+    @Override
+    public int createOrEdit(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
+        checkRoleAuth(authenticationToken, roleMember);
+        
+        final RoleMemberData roleMemberData;
+        if (roleMember.getId() != RoleMember.ROLE_MEMBER_ID_UNASSIGNED) {
+            roleMemberData = find(roleMember.getId());
+            checkRoleAuth(authenticationToken, roleMemberData.asValueObject());
+        } else {
+            roleMemberData = new RoleMemberData();
+        }
+        
+        roleMemberData.updateValuesFromValueObject(roleMember);
+        
+        if (log.isDebugEnabled()) {
+            log.debug("Persisting a role member with ID " + roleMember.getRoleId() + " and match value '" + roleMember.getTokenMatchValue() + "'");
+        }
+        return createOrEdit(roleMemberData);
+    }
+    
     @Override
     public int createOrEdit(RoleMemberData roleMember) {
         if (roleMember.getPrimaryKey() == 0) {

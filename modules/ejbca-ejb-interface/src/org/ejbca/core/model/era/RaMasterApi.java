@@ -91,7 +91,7 @@ public interface RaMasterApi {
     List<String> getAuthorizedRoleNamespaces(AuthenticationToken authenticationToken, int roleId);
     
     /**
-     * @return a list of token types and their match keys, which the caller is authorized to.
+     * @return a list of token types and their match keys, which the caller is authorized to. Only user-configurable token types are returned.
      * @since Master RA API version 1 (EJBCA 6.8.0)
      */
     Map<String,RaRoleMemberTokenTypeInfo> getAuthorizedRoleMemberTokenTypes(AuthenticationToken authenticationToken);

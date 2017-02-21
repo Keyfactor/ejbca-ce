@@ -277,6 +277,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // TODO hide internal token types
         final Map<String,RaRoleMemberTokenTypeInfo> result = new HashMap<>();
         for (final String tokenType : AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes()) {
+            if (!AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType).isUserConfigurable()) {
+                continue;
+            }
+            
             final Map<String,Integer> stringToNumberMap = new HashMap<>();
             for (final Entry<String,AccessMatchValue> entry : AccessMatchValueReverseLookupRegistry.INSTANCE.getNameLookupRegistryForTokenType(tokenType).entrySet()) {
                 stringToNumberMap.put(entry.getKey(), entry.getValue().getNumericValue());
@@ -315,8 +319,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public RoleMember saveRoleMember(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
-        // TODO
-        throw new UnsupportedOperationException("not implemented");
+        if (log.isDebugEnabled()) {
+            log.debug("Persisting a role member with ID " + roleMember.getRoleId() + " and match value '" + roleMember.getTokenMatchValue() + "'");
+        }
+        int id = roleMemberSession.createOrEdit(authenticationToken, roleMember);
+        roleMember.setId(id);
+        return roleMember;
     }
     
     
