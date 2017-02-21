@@ -17,19 +17,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.faces.component.html.HtmlSelectOneMenu;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -41,6 +40,7 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.roles.AdminGroupData;
@@ -88,8 +88,6 @@ public class RolesManagedBean extends BaseManagedBean {
     
     private List<SelectItem> matchWithItems;
     
-    private AccessMatchType matchType;
-   
     private String matchValue = null;
 
     private String newRoleName = "new";
@@ -193,37 +191,25 @@ public class RolesManagedBean extends BaseManagedBean {
         return list;
     }
 
-    public List<SelectItem> getTokenTypeItems() {
-        List<SelectItem> list = new ArrayList<SelectItem>();
-        Iterator<String> tokenTypeIterator =  AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes().iterator();
-        while(tokenTypeIterator.hasNext()) {
-            list.add(new SelectItem(tokenTypeIterator.next()));
-        }
-        return list;
-     }
-    
-    /** @return a viewable list of 'match with'-texts 
-     * @throws IllegalAccessException if the class defined by currentAccessMatchValue doesn't have a public constructor.
-     * @throws InstantiationException if the class defined by currentAccessMatchValue can't be instantiated
-     */
-    public List<SelectItem> getMatchWithItems() throws InstantiationException, IllegalAccessException {
-        //Lazy initialization
+    /** @return a viewable list of 'match with'-texts */
+    public List<SelectItem> getMatchWithItems() {
         if (matchWithItems == null) {
-            matchWithItems = new ArrayList<SelectItem>();
-            List<String> tokenTypes = new ArrayList<String>(AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes());
+            matchWithItems = new ArrayList<>();
+            final List<String> tokenTypes = new ArrayList<String>(AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes());
             Collections.sort(tokenTypes);
-            for (String tokenType : tokenTypes) {             
-                List<AccessMatchValue> accessMatchValues = new ArrayList<AccessMatchValue>(AccessMatchValueReverseLookupRegistry.INSTANCE
-                        .getNameLookupRegistryForTokenType(tokenType).values());
-                Set<AccessMatchValue> treeSet = new TreeSet<AccessMatchValue>();
-                treeSet.addAll(accessMatchValues);
-                for (AccessMatchValue current : treeSet) {
-                    matchWithItems.add(new SelectItem(tokenType + ":" + current.name(), 
-                            getEjbcaWebBean().getText(tokenType) + ": " + getEjbcaWebBean().getText(current.name())));
+            for (final String tokenType : tokenTypes) {
+                final AuthenticationTokenMetaData authenticationTokenMetaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType);
+                if (authenticationTokenMetaData.isUserConfigurable()) {
+                    for (final AccessMatchValue accessMatchValue : authenticationTokenMetaData.getAccessMatchValues()) {
+                        // Special exclusion of this rather useless match value that will never match anything
+                        if (!X500PrincipalAccessMatchValue.NONE.equals(accessMatchValue)) {
+                            matchWithItems.add(new SelectItem(tokenType + ":" + accessMatchValue.name(), 
+                                    getEjbcaWebBean().getText(tokenType) + ": " + getEjbcaWebBean().getText(accessMatchValue.name())));
+                        }
+                    }
                 }
             }
         }
-       
         return matchWithItems;
     }
 
