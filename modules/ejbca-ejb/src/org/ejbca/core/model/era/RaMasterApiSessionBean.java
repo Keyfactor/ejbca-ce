@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -56,6 +57,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -271,9 +273,20 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public List<String> getAuthorizedRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
+    public Map<String,RaRoleMemberTokenTypeInfo> getAuthorizedRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
         // TODO hide internal token types
-        return new ArrayList<>(AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes());
+        final Map<String,RaRoleMemberTokenTypeInfo> result = new HashMap<>();
+        for (final String tokenType : AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes()) {
+            final Map<String,Integer> stringToNumberMap = new HashMap<>();
+            for (final Entry<String,AccessMatchValue> entry : AccessMatchValueReverseLookupRegistry.INSTANCE.getNameLookupRegistryForTokenType(tokenType).entrySet()) {
+                stringToNumberMap.put(entry.getKey(), entry.getValue().getNumericValue());
+            }
+            
+            result.put(tokenType, new RaRoleMemberTokenTypeInfo(stringToNumberMap,
+                    AccessMatchValueReverseLookupRegistry.INSTANCE.getDefaultValueForTokenType(tokenType).name()));
+            
+        }
+        return result;
     }
     
     @Override
@@ -1193,18 +1206,29 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         // Token types
-        // TODO
+        final List<String> authorizedLocalTokenTypes = new ArrayList<>(getAuthorizedRoleMemberTokenTypes(authenticationToken).keySet());
+        if (!request.getTokenTypes().isEmpty()) {
+            authorizedLocalTokenTypes.retainAll(request.getTokenTypes());
+        }
+        
+        if (authorizedLocalCaIds.isEmpty() || authorizedLocalRoleIds.isEmpty() || authorizedLocalTokenTypes.isEmpty()) {
+            log.debug("No authorized CAs, no authorized Roles, and/or token types. Returning empty response in role member search");
+            return response;
+        }
         
         // Build query
-        final StringBuilder sb = new StringBuilder("SELECT a FROM RoleMemberData a WHERE a.tokenIssuerId IN (:caId) AND a.roleId IN (:roleId)");
+        final StringBuilder sb = new StringBuilder("SELECT a FROM RoleMemberData a WHERE a.tokenIssuerId IN (:caId) AND a.roleId IN (:roleId) AND a.tokenType IN (:tokenType)");
+        // TODO only search by exact tokenMatchValue if it seems to be a serial number?
         if (!StringUtils.isEmpty(request.getGenericSearchString())) {
-            sb.append(" AND (a.tokenMatchValue = :searchString OR a.memberBindingValue LIKE :searchStringInexact)");
+            //sb.append(" AND (a.tokenMatchValue = :searchString OR a.memberBindingValue LIKE :searchStringInexact)");
+            sb.append(" AND (a.tokenMatchValue LIKE :searchStringInexact OR a.memberBindingValue LIKE :searchStringInexact)");
         }
         final Query query = entityManager.createQuery(sb.toString());
         query.setParameter("caId", authorizedLocalCaIds);
         query.setParameter("roleId", authorizedLocalRoleIds);
+        query.setParameter("tokenType", authorizedLocalTokenTypes);
         if (!StringUtils.isEmpty(request.getGenericSearchString())) {
-            query.setParameter("searchString", request.getGenericSearchString());
+            //query.setParameter("searchString", request.getGenericSearchString());
             query.setParameter("searchStringInexact", request.getGenericSearchString() + '%');
         }
         

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -23,12 +24,14 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.RaRoleMemberTokenTypeInfo;
 
 
 /**
@@ -61,7 +64,7 @@ public class RaRoleMemberBean {
     private List<SelectItem> availableRoles = null;
     private List<SelectItem> availableTokenTypes = null;
     private List<SelectItem> availableCAs = null;
-    private List<SelectItem> availableMatchType = null;
+    private Map<String,RaRoleMemberTokenTypeInfo> tokenTypeInfos;
     
     private Integer roleMemberId;
     private RoleMember roleMember;
@@ -69,18 +72,35 @@ public class RaRoleMemberBean {
     private int roleId;
     private String tokenType;
     private int caId;
-    private int matchType;
+    private Integer matchType;
     private String matchValue;    
     
     public void initialize() throws AuthorizationDeniedException {
+        tokenTypeInfos = raMasterApiProxyBean.getAuthorizedRoleMemberTokenTypes(raAuthenticationBean.getAuthenticationToken());
+        
         if (roleMemberId != null) {
             roleMember = raMasterApiProxyBean.getRoleMember(raAuthenticationBean.getAuthenticationToken(), roleMemberId);
             roleId = roleMember.getId();
+            tokenType = roleMember.getTokenType();
             caId = roleMember.getTokenIssuerId();
             matchType = roleMember.getTokenMatchKey();
             matchValue = roleMember.getTokenMatchValue();
         } else {
             roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, "", RoleMember.NO_ISSUER, 0, 0, "", 0, "", "");
+            // Default values
+            if (StringUtils.isEmpty(tokenType)) {
+                tokenType = "CertificateAuthenticationToken";
+            }
+            
+            if (matchType == null) {
+                final RaRoleMemberTokenTypeInfo tokenTypeInfo = tokenTypeInfos.get(tokenType);
+                if (tokenTypeInfo != null) {
+                    matchType = tokenTypeInfo.getMatchKeysMap().get(tokenTypeInfo.getDefaultMatchKey());
+                } else {
+                    log.debug("Missing information about token type " + tokenType);
+                    matchType = 0;
+                }
+            }
         }
     }
     
@@ -154,7 +174,7 @@ public class RaRoleMemberBean {
 
     public List<SelectItem> getAvailableTokenTypes() {
         if (availableTokenTypes == null) {
-            final List<String> tokenTypes = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoleMemberTokenTypes(raAuthenticationBean.getAuthenticationToken()));
+            final List<String> tokenTypes = new ArrayList<>(tokenTypeInfos.keySet());
             Collections.sort(tokenTypes);
             availableTokenTypes = new ArrayList<>();
             for (final String tokenType : tokenTypes) {
@@ -182,12 +202,16 @@ public class RaRoleMemberBean {
     }
 
     public List<SelectItem> getAvailableMatchTypes() {
-        if (availableMatchType == null) {
-            // TODO
-            availableMatchType = new ArrayList<>();
-            availableMatchType.add(new SelectItem(0, "Serial Number"));
+        final RaRoleMemberTokenTypeInfo tokenTypeInfo = tokenTypeInfos.get(tokenType);
+        final List<SelectItem> result = new ArrayList<>();
+        if (tokenTypeInfo != null) {
+            final List<String> namesSorted = new ArrayList<>(tokenTypeInfo.getMatchKeysMap().keySet());
+            Collections.sort(namesSorted);
+            for (final String name : namesSorted) {
+                result.add(new SelectItem(tokenTypeInfo.getMatchKeysMap().get(name), name));
+            }
         }
-        return availableMatchType;
+        return result;
     }
 
 

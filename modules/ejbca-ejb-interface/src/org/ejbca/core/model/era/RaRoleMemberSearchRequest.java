@@ -49,7 +49,7 @@ public class RaRoleMemberSearchRequest implements Serializable {
     public List<Integer> getCaIds() { return caIds; }
     public void setCaIds(final List<Integer> caIds) { this.caIds = caIds; }
     public List<String> getTokenTypes() { return tokenTypes; }
-    public void setTokenType(final List<String> tokenTypes) { this.tokenTypes = tokenTypes; }
+    public void setTokenTypes(final List<String> tokenTypes) { this.tokenTypes = tokenTypes; }
     public String getGenericSearchString() { return genericSearchString; }
     /** Prefix string to search for in the subject DN, or full serial number. */
     public void setGenericSearchString(final String genericSearchString) { this.genericSearchString = genericSearchString; }
