@@ -56,6 +56,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -271,10 +272,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public List<String> getAuthorizedRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
-        // TODO
-        final List<String> tokenTypes = new ArrayList<>();
-        tokenTypes.add("X509"); // FIXME remove
-        return tokenTypes;
+        // TODO hide internal token types
+        return new ArrayList<>(AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes());
     }
     
     @Override

@@ -302,6 +302,7 @@ public class RaRoleMembersBean {
             final List<String> tokenTypes = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoleMemberTokenTypes(raAuthenticationBean.getAuthenticationToken()));
             Collections.sort(tokenTypes);
             availableTokenTypes = new ArrayList<>();
+            availableTokenTypes.add(new SelectItem(null, raLocaleBean.getMessage("role_members_page_criteria_tokentype_optionany")));
             for (final String tokenType : tokenTypes) {
                 availableTokenTypes.add(new SelectItem(tokenType, raLocaleBean.getMessage("role_member_token_type_" + tokenType)));
             }
