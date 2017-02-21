@@ -18,6 +18,8 @@ import javax.ejb.Local;
 
 /**
  * Local interface for UpgradeStatusSingletonBean.
+ * 
+ * @version $Id$
  */
 @Local
 public interface UpgradeStatusSingletonLocal {
