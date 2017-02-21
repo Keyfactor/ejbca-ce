@@ -174,15 +174,15 @@
                         </ui:remove>
                         
                     </h:dataTable>
-                </h:panelGroup>
-                
-                <h:panelGroup id="bottomLinks" layout="block" rendered="#{raAccessBean.authorizedToEditRoleMembers}">
-                    <h:link id="addRoleMemberButton" outcome="role_member" includeViewParams="true">
-                        <f:param name="roleId" value="#{raRoleMembersBean.criteriaRoleId}" disable="#{raRoleMembersBean.criteriaRoleId == null}"/>
-                        <f:param name="caId" value="#{raRoleMembersBean.criteriaCaId}" disable="#{raRoleMembersBean.criteriaCaId == null}"/>
-                        <f:param name="tokenType" value="#{raRoleMembersBean.criteriaTokenType}" disable="#{raRoleMembersBean.criteriaTokenType == null}"/>
-                        <h:outputText value="#{msg.role_members_page_add_member_command}"/>
-                    </h:link>
+                    
+                    <h:panelGroup id="bottomLinks" layout="block" rendered="#{raAccessBean.authorizedToEditRoleMembers}">
+                        <h:link id="addRoleMemberButton" outcome="role_member" includeViewParams="true">
+                            <f:param name="roleId" value="#{raRoleMembersBean.criteriaRoleId}" disable="#{raRoleMembersBean.criteriaRoleId == null}"/>
+                            <f:param name="caId" value="#{raRoleMembersBean.criteriaCaId}" disable="#{raRoleMembersBean.criteriaCaId == null}"/>
+                            <f:param name="tokenType" value="#{raRoleMembersBean.criteriaTokenType}" disable="#{raRoleMembersBean.criteriaTokenType == null}"/>
+                            <h:outputText value="#{msg.role_members_page_add_member_command}"/>
+                        </h:link>
+                    </h:panelGroup>
                 </h:panelGroup>
             </h:form>
         </h:panelGroup>

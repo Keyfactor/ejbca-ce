@@ -239,18 +239,28 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public List<String> getAuthorizedRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
-        final Set<String> tokenTypesSet = new HashSet<>();
+    public Map<String,RaRoleMemberTokenTypeInfo> getAuthorizedRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
+        final HashMap<String,RaRoleMemberTokenTypeInfo> result = new HashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    tokenTypesSet.addAll(raMasterApi.getAuthorizedRoleMemberTokenTypes(authenticationToken));
+                    final Map<String,RaRoleMemberTokenTypeInfo> mergeWith = raMasterApi.getAuthorizedRoleMemberTokenTypes(authenticationToken);
+                    for (final Map.Entry<String,RaRoleMemberTokenTypeInfo> entry : mergeWith.entrySet()) {
+                        final String tokenType = entry.getKey();
+                        final RaRoleMemberTokenTypeInfo entryInfo = entry.getValue();
+                        final RaRoleMemberTokenTypeInfo resultInfo = result.get(tokenType);
+                        if (resultInfo == null) {
+                            result.put(tokenType, entryInfo);
+                        } else {
+                            resultInfo.merge(entryInfo);
+                        }
+                    }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        return new ArrayList<>(tokenTypesSet);
+        return result;
     }
     
     @Override
