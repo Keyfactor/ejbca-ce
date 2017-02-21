@@ -41,7 +41,7 @@ public enum AuthorizationCache {
     /** Call-back interface for loading access rules on cache miss */
     public interface AuthorizationCacheCallback {
         /** @return the access rules for the specified authenticationToken */
-        HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
+        HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken);
 
         /** @return the update number for the current state of roles and members used to determine if there are authorization changes */
         int getUpdateNumber();
@@ -123,10 +123,6 @@ public enum AuthorizationCache {
                 if (loadedAccessRules != null) {
                     // Cache a copy of the loaded access rules map
                     ret.accessRules.putAll(loadedAccessRules);
-                }
-            } catch (AuthenticationFailedException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Failed to retrieve access rules for '" + authenticationToken.toString() + "': " + e.getMessage());
                 }
             } finally {
                 // Ensure that we release any waiting thread
