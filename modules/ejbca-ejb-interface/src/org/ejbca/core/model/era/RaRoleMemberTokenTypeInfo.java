@@ -13,10 +13,7 @@
 package org.ejbca.core.model.era;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Contains information from {@link org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry}
@@ -26,26 +23,15 @@ public final class RaRoleMemberTokenTypeInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /*public final static class MatchKeyInfo implements Serializable {
-        private static final long serialVersionUID = 1L;
-        private final int number;
-        private final String name;
-        public MatchKeyInfo(int number, String name) {
-            this.number = number;
-            this.name = name;
-        }
-        public int getNumber() { return number; }
-        public String getName() { return name; }
-    }*/
-    
-    //private final Set<MatchKeyInfo> matchKeys;
+
     private final Map<String,Integer> matchKeys;
     private final String defaultMatchKey;
+    private final boolean issuedByCA;
     
-    //public RaRoleMemberTokenTypeInfo(final Set<MatchKeyInfo> matchKeys, final String defaultMatchKey) {
-    public RaRoleMemberTokenTypeInfo(final Map<String,Integer> matchKeys, final String defaultMatchKey) {
+    public RaRoleMemberTokenTypeInfo(final Map<String,Integer> matchKeys, final String defaultMatchKey, final boolean issuedByCA) {
         this.matchKeys = matchKeys;
         this.defaultMatchKey = defaultMatchKey;
+        this.issuedByCA = issuedByCA;
     }
 
     public Map<String,Integer> getMatchKeysMap() {
@@ -54,6 +40,10 @@ public final class RaRoleMemberTokenTypeInfo implements Serializable {
 
     public String getDefaultMatchKey() {
         return defaultMatchKey;
+    }
+    
+    public boolean isIssuedByCA() {
+        return issuedByCA;
     }
     
     public void merge(final RaRoleMemberTokenTypeInfo other) {
