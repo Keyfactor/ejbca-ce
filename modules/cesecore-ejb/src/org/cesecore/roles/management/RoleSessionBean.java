@@ -119,7 +119,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                     }
                 }
                 for (int tokenIssuerId : tokenIssuerIds) {
-                    if (!authorizationSession.isAuthorized(authenticationToken, StandardRules.CAACCESS.resource() + tokenIssuerId)) {
+                    if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + tokenIssuerId)) {
                         throw new AuthorizationDeniedException("Not authorized to all members in role.");
                     }
                 }
@@ -253,7 +253,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
      * @throws AuthorizationDeniedException if not authorized
      */
     private void assertAuthorizedToEditRoles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
-        if (!authorizationSession.isAuthorized(authenticationToken, StandardRules.EDITROLES.resource())) {
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.EDITROLES.resource())) {
             String msg = InternalResources.getInstance().getLocalizedMessage("authorization.notauthorizedtoeditroles", authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
@@ -264,7 +264,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         // Verify that authenticationToken has access to every single added allow access rule
         for (final Entry<String, Boolean> entry : role.getAccessRules().entrySet()) {
             if (entry.getValue().booleanValue()) {
-                if (!authorizationSession.isAuthorized(authenticationToken, entry.getKey())) {
+                if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, entry.getKey())) {
                     // Role would allow what is is not granted to current authenticationToken
                     throw new AuthorizationDeniedException("Not authorized to all access rules in role.");
                 }
