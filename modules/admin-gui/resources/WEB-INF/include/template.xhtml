@@ -49,19 +49,19 @@
             <h:messages id="messages" class="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
         </h:panelGroup>
 
-        <div id="content" class="content">
+        <h:panelGroup layout="block" id="content" styleClass="content">
             <ui:insert name="content">
                 <p>If you see this then whatever you're looking at couldn't be rendered.</p>
             </ui:insert>
-        </div>
+        </h:panelGroup>
 
-        <div id="footer" class="footer">
+        <h:panelGroup layout="block" id="footer" styleClass="footer">
             <ui:insert name="footer">
                 <div class="align-center">
                     <p>© 2002–2017 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB.</p>
                 </div>
             </ui:insert>
-        </div>
+        </h:panelGroup>
     </h:body>
     </f:view>
 </html>
