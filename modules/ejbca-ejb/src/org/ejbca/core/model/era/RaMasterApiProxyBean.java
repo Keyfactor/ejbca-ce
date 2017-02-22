@@ -331,6 +331,30 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
+    
+    @Override
+    public boolean deleteRoleMember(AuthenticationToken authenticationToken, int roleId, int roleMemberId) throws AuthorizationDeniedException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        boolean result = false;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            try {
+                if (raMasterApi.isBackendAvailable()) {
+                    result |= raMasterApi.deleteRoleMember(authenticationToken, roleId, roleMemberId);
+                }
+            } catch (AuthorizationDeniedException e) {
+                if (authorizationDeniedException == null) {
+                    authorizationDeniedException = e;
+                }
+                // Just try next implementation
+            } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                // Just try next implementation
+            }
+        }
+        if (!result && authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        return result;
+    }
 
     @Override
     public RaApprovalRequestInfo getApprovalRequest(AuthenticationToken authenticationToken, int id) {
