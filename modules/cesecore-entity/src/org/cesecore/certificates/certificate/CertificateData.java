@@ -122,7 +122,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param endEntityProfileId end entity profile id, can be 0 for "no profile"
      * @param tag a custom tag to map the certificate to any custom defined tag
      * @param updatetime the time the certificate was updated in the database, i.e. System.currentTimeMillis().
-     * @param storeCertificate true if a special table is used for the encoded certificates, or if certificate data isn't supposed to be stored at all. NOTE: If true then the caller must store the certificate in Base64CertData as well. 
+     * @param storeCertificate true if the certificate should be stored in this table in the base&4Cert column, false if certificate data isn't to be stored in this table. NOTE: If false and the data should be stored in Base64CertData then the caller must store the certificate in Base64CertData as well. 
      * @param storeSubjectAltName true if the subjectAltName column should be populated with the Subject Alternative Name of the certificate
      */
     public CertificateData(Certificate certificate, PublicKey enrichedpubkey, String username, String cafp, int status, int type, int certprofileid, int endEntityProfileId,
