@@ -274,7 +274,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public Map<String,RaRoleMemberTokenTypeInfo> getAuthorizedRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
-        // TODO hide internal token types
         final Map<String,RaRoleMemberTokenTypeInfo> result = new HashMap<>();
         for (final String tokenType : AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes()) {
             if (!AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType).isUserConfigurable()) {
@@ -285,9 +284,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             for (final Entry<String,AccessMatchValue> entry : AccessMatchValueReverseLookupRegistry.INSTANCE.getNameLookupRegistryForTokenType(tokenType).entrySet()) {
                 stringToNumberMap.put(entry.getKey(), entry.getValue().getNumericValue());
             }
+            final AccessMatchValue defaultValue = AccessMatchValueReverseLookupRegistry.INSTANCE.getDefaultValueForTokenType(tokenType);
             
-            result.put(tokenType, new RaRoleMemberTokenTypeInfo(stringToNumberMap,
-                    AccessMatchValueReverseLookupRegistry.INSTANCE.getDefaultValueForTokenType(tokenType).name()));
+            result.put(tokenType, new RaRoleMemberTokenTypeInfo(stringToNumberMap, defaultValue.name(), defaultValue.isIssuedByCa()));
             
         }
         return result;
@@ -1220,6 +1219,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final RaRoleMemberSearchResponse response = new RaRoleMemberSearchResponse();
         
         final List<Integer> authorizedLocalCaIds = new ArrayList<>(caSession.getAuthorizedCaIds(authenticationToken));
+        authorizedLocalCaIds.add(RoleMember.NO_ISSUER);
         // Only search a subset of the requested CAs if requested
         if (!request.getCaIds().isEmpty()) {
             authorizedLocalCaIds.retainAll(request.getCaIds());
@@ -1232,6 +1232,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (request.getRoleIds().isEmpty() || request.getRoleIds().contains(roleId)) {
                 authorizedLocalRoleIds.add(roleId);
             }
+        }
+        if (request.getRoleIds().contains(RoleMember.NO_ROLE)) {
+            authorizedLocalRoleIds.add(RoleMember.NO_ROLE);
         }
         
         // Token types
