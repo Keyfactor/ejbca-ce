@@ -81,6 +81,11 @@ public class RaRoleMemberBean {
     private String matchValue;
     
     public void initialize() throws AuthorizationDeniedException {
+        if (tokenType != null && tokenTypeInfos != null) {
+            // Don't re-initialize
+            return;
+        }
+        
         tokenTypeInfos = raMasterApiProxyBean.getAuthorizedRoleMemberTokenTypes(raAuthenticationBean.getAuthenticationToken());
         
         if (roleMemberId != null) {
@@ -104,7 +109,7 @@ public class RaRoleMemberBean {
             }
             
             if (matchType == null) {
-                final RaRoleMemberTokenTypeInfo tokenTypeInfo = tokenTypeInfos.get(tokenType);
+                final RaRoleMemberTokenTypeInfo tokenTypeInfo = getTokenTypeInfos().get(tokenType);
                 if (tokenTypeInfo != null) {
                     matchType = tokenTypeInfo.getMatchKeysMap().get(tokenTypeInfo.getDefaultMatchKey());
                 } else {
@@ -113,6 +118,13 @@ public class RaRoleMemberBean {
                 }
             }
         }
+    }
+    
+    private Map<String,RaRoleMemberTokenTypeInfo> getTokenTypeInfos() {
+        if (tokenTypeInfos != null) {
+            tokenTypeInfos = raMasterApiProxyBean.getAuthorizedRoleMemberTokenTypes(raAuthenticationBean.getAuthenticationToken());
+        }
+        return tokenTypeInfos;
     }
     
     
@@ -189,7 +201,7 @@ public class RaRoleMemberBean {
 
     public List<SelectItem> getAvailableTokenTypes() {
         if (availableTokenTypes == null) {
-            final List<String> tokenTypes = new ArrayList<>(tokenTypeInfos.keySet());
+            final List<String> tokenTypes = new ArrayList<>(getTokenTypeInfos().keySet());
             Collections.sort(tokenTypes);
             availableTokenTypes = new ArrayList<>();
             for (final String tokenType : tokenTypes) {
@@ -217,16 +229,22 @@ public class RaRoleMemberBean {
     }
 
     public List<SelectItem> getAvailableMatchTypes() {
-        final RaRoleMemberTokenTypeInfo tokenTypeInfo = tokenTypeInfos.get(tokenType);
+        final RaRoleMemberTokenTypeInfo tokenTypeInfo = getTokenTypeInfos().get(tokenType);
         final List<SelectItem> result = new ArrayList<>();
         if (tokenTypeInfo != null) {
+            // TODO should not be sorted, or should be sorted by numeric value
             final List<String> namesSorted = new ArrayList<>(tokenTypeInfo.getMatchKeysMap().keySet());
             Collections.sort(namesSorted);
             for (final String name : namesSorted) {
-                result.add(new SelectItem(tokenTypeInfo.getMatchKeysMap().get(name), name));
+                result.add(new SelectItem(tokenTypeInfo.getMatchKeysMap().get(name), raLocaleBean.getMessage("role_member_matchkey_" + tokenType + "_" + name)));
             }
         }
         return result;
+    }
+    
+    public boolean isTokenTypeIssuedByCA() {
+        final RaRoleMemberTokenTypeInfo tokenTypeInfo = getTokenTypeInfos().get(tokenType);
+        return tokenTypeInfo == null || tokenTypeInfo.isIssuedByCA();
     }
 
     public String getEditPageTitle() {
@@ -237,8 +255,17 @@ public class RaRoleMemberBean {
         return raLocaleBean.getMessage(roleMemberId != null ? "role_member_page_save_command" : "role_member_page_add_command");
     }
     
+    /** Called when the token type is changed. Does nothing */
+    public String update() {
+        return "";
+    }
+    
     public String save() throws AuthorizationDeniedException {
-        // TODO validation etc.
+        final RaRoleMemberTokenTypeInfo tokenTypeInfo = getTokenTypeInfos().get(tokenType);
+        if (tokenTypeInfo.isIssuedByCA()) {
+            caId = RoleMember.NO_ISSUER;
+        }
+        
         roleMember.setRoleId(roleId);
         roleMember.setTokenType(tokenType);
         roleMember.setTokenIssuerId(caId);
@@ -257,7 +284,7 @@ public class RaRoleMemberBean {
         
         // If the active filter does not include the newly added role member, then change the filter to show it
         if (raRoleMembersBean.getCriteriaCaId() != null && raRoleMembersBean.getCriteriaCaId() != roleMember.getTokenIssuerId()) {
-            raRoleMembersBean.setCriteriaCaId(caId);
+            raRoleMembersBean.setCriteriaCaId(caId != RoleMember.NO_ISSUER ? caId : null);
         }
         
         if (raRoleMembersBean.getCriteriaTokenType() != null && raRoleMembersBean.getCriteriaTokenType() != roleMember.getTokenType()) {

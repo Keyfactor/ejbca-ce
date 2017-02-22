@@ -60,7 +60,7 @@
                     <h:outputText value="#{msg.generic_back}"/>
                 </h:link>
             </h:panelGroup>
-            <h:form id="roleForm" class="pure-form">
+            <h:form id="roleMemberForm" class="pure-form">
                 <h:panelGroup id="basic" styleClass="pure-g">
                     <h:panelGroup id="parentRole" layout="block" styleClass="pure-u-1">
                         <h:outputLabel for="roleId" value="#{msg.role_member_page_role_label}" styleClass="pure-u-lg-1-5"/>
@@ -74,27 +74,33 @@
                         <h:outputLabel for="tokenType" value="#{msg.role_member_page_tokentype_label}" styleClass="pure-u-lg-1-5"/>
                         <h:selectOneMenu id="tokenType" value="#{raRoleMemberBean.tokenType}" styleClass=" pure-input pure-u-lg-3-5">
                             <f:selectItems value="#{raRoleMemberBean.availableTokenTypes}"/>
+                            <f:ajax event="change" execute="@this" render=":roleMemberForm:tokenTypeDependent" listener="#{raRoleMemberBean.update}"
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'roleMemberForm:tokenTypeDependent');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'roleMemberForm:tokenTypeDependent');}"/>
                         </h:selectOneMenu>
+                        <h:commandButton action="#{raRoleMemberBean.update}" value="#{msg.generic_update}" styleClass="pure-button pure-button-primary updateButton jsHide"/>
                     </h:panelGroup>
                     
-                    <h:panelGroup id="parentCA" layout="block" styleClass="pure-u-1">
-                        <h:outputLabel for="caId" value="#{msg.role_member_page_ca_label}" styleClass="pure-u-lg-1-5"/>
-                        <h:selectOneMenu id="caId" value="#{raRoleMemberBean.caId}" styleClass=" pure-input pure-u-lg-3-5">
-                            <f:selectItems value="#{raRoleMemberBean.availableCAs}"/>
-                        </h:selectOneMenu>
-                    </h:panelGroup>
-                    
-                    <h:panelGroup id="parentMatchType" layout="block" styleClass="pure-u-1">
-                        <h:outputLabel for="matchType" value="#{msg.role_member_page_matchtype_label}" styleClass="pure-u-lg-1-5"/>
-                        <h:selectOneMenu id="matchType" value="#{raRoleMemberBean.matchType}" styleClass=" pure-input pure-u-lg-3-5">
-                            <f:selectItems value="#{raRoleMemberBean.availableMatchTypes}"/>
-                        </h:selectOneMenu>
-                    </h:panelGroup>
-                    
-                    <!-- TODO search? -->
-                    <h:panelGroup id="parentMatchValue" layout="block" styleClass="pure-u-1">
-                        <h:outputLabel for="matchValue" value="#{msg.role_member_page_matchvalue_label}" styleClass="pure-u-lg-1-5"/>
-                        <h:inputText id="matchValue" value="#{raRoleMemberBean.matchValue}" styleClass="pure-input pure-u-lg-3-5 bottomMargin" title="#{msg.role_member_page_matchvalue_title}" size="20"/>
+                    <h:panelGroup id="tokenTypeDependent">
+                        <h:panelGroup id="parentCA" layout="block" styleClass="pure-u-1" rendered="#{raRoleMemberBean.tokenTypeIssuedByCA}">
+                            <h:outputLabel for="caId" value="#{msg.role_member_page_ca_label}" styleClass="pure-u-lg-1-5"/>
+                            <h:selectOneMenu id="caId" value="#{raRoleMemberBean.caId}" styleClass=" pure-input pure-u-lg-3-5">
+                                <f:selectItems value="#{raRoleMemberBean.availableCAs}"/>
+                            </h:selectOneMenu>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup id="parentMatchType" layout="block" styleClass="pure-u-1">
+                            <h:outputLabel for="matchType" value="#{msg.role_member_page_matchtype_label}" styleClass="pure-u-lg-1-5"/>
+                            <h:selectOneMenu id="matchType" value="#{raRoleMemberBean.matchType}" styleClass=" pure-input pure-u-lg-3-5">
+                                <f:selectItems value="#{raRoleMemberBean.availableMatchTypes}"/>
+                            </h:selectOneMenu>
+                        </h:panelGroup>
+                        
+                        <!-- TODO search? -->
+                        <h:panelGroup id="parentMatchValue" layout="block" styleClass="pure-u-1">
+                            <h:outputLabel for="matchValue" value="#{msg.role_member_page_matchvalue_label}" styleClass="pure-u-lg-1-5"/>
+                            <h:inputText id="matchValue" value="#{raRoleMemberBean.matchValue}" styleClass="pure-input pure-u-lg-3-5 bottomMargin" size="20"/>
+                        </h:panelGroup>
                     </h:panelGroup>
                     
                     <!-- TODO member bindings. perhaps have a "Use default member binding" and automatically link to the username based on the cert serno -->
