@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.admin.upgrade;
@@ -23,7 +26,7 @@ import javax.faces.event.AjaxBehaviorEvent;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeStatusSingletonLocal;
@@ -72,7 +75,7 @@ public class UpgradeBean extends BaseManagedBean implements Serializable {
     //private static final Logger log = Logger.getLogger(UpgradeBean.class);
     
     @EJB
-    private AccessControlSessionLocal accessControlSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private UpgradeSessionLocal upgradeSession;
     @EJB
@@ -89,7 +92,7 @@ public class UpgradeBean extends BaseManagedBean implements Serializable {
 
     /** @return true if the current administrator is authorized to start the upgrade */
     public boolean isAuthorizedToUpgrade() {
-        return accessControlSession.isAuthorizedNoLogging(getAdmin(), "/system_functionality/edit_systemconfiguration");
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), "/system_functionality/edit_systemconfiguration");
     }
 
     /** @return true if an upgrade is currently in progress on this node */
