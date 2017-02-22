@@ -61,6 +61,10 @@ public class RaRoleMemberBean {
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
     
+    @ManagedProperty(value="#{raRoleMembersBean}")
+    private RaRoleMembersBean raRoleMembersBean;
+    public void setRaRoleMembersBean(final RaRoleMembersBean raRoleMembersBean) { this.raRoleMembersBean = raRoleMembersBean; }
+    
     private List<SelectItem> availableRoles = null;
     private List<SelectItem> availableTokenTypes = null;
     private List<SelectItem> availableCAs = null;
@@ -226,7 +230,19 @@ public class RaRoleMemberBean {
         roleMember = raMasterApiProxyBean.saveRoleMember(raAuthenticationBean.getAuthenticationToken(), roleMember);
         roleMemberId = roleMember.getId();
         
-        // TODO if the active filter does not include the newly added role member, then change the filter to show it
+        // If the active filter does not include the newly added role member, then change the filter to show it
+        if (raRoleMembersBean.getCriteriaCaId() != null && raRoleMembersBean.getCriteriaCaId() != roleMember.getTokenIssuerId()) {
+            raRoleMembersBean.setCriteriaCaId(caId);
+        }
+        
+        if (raRoleMembersBean.getCriteriaTokenType() != null && raRoleMembersBean.getCriteriaTokenType() != roleMember.getTokenType()) {
+            raRoleMembersBean.setCriteriaTokenType(tokenType);
+        }
+        
+        if (raRoleMembersBean.getCriteriaRoleId() != null && raRoleMembersBean.getCriteriaRoleId() != roleMember.getRoleId()) {
+            raRoleMembersBean.setCriteriaRoleId(roleId);
+        }
+        
         return "role_members?faces-redirect=true&includeViewParams=true";
     }    
     
