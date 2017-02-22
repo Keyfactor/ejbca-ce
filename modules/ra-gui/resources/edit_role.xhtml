@@ -30,7 +30,7 @@
     <f:metadata>
         <f:viewParam name="roleId" value="#{raRoleBean.roleId}"/>
 
-        <!-- These parameters must be duplicated here and in roles.xhtml and role_members.xhtml. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
+        <!-- These parameters must be duplicated in several places. See roles.xhtml for a complete list. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
         <f:viewParam name="roleSearchString" value="#{raRolesBean.roleSearchString}"/>
         <f:viewParam name="rolesSortAsc" value="#{raRolesBean.sortAscending}"/>
         <f:viewParam name="rolesSortCol" value="#{raRolesBean.sortColumn}"/>
@@ -39,10 +39,15 @@
     </f:metadata>
     <ui:define name="content">
         <h:panelGroup layout="block" class="header" id="title">
-            <h1><h:outputText value="#{msg.role_page_title}"/></h1>
+            <h1><h:outputText value="#{raRoleBean.pageTitle}"/></h1>
         </h:panelGroup>
         <h:outputText value="#{msg.manage_role_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEditRoleRules}"/>
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToEditRoleRules}">
+            <h:panelGroup styleClass="topLinks" layout="block">
+                <h:link outcome="roles" styleClass="backLink" includeViewParams="true">
+                    <h:outputText value="#{msg.generic_back}"/>
+                </h:link>
+            </h:panelGroup>
             <h:form id="roleForm" class="pure-form">
                 <h:panelGroup id="basic" styleClass="pure-g">
                     <h:panelGroup  layout="block" styleClass="pure-u-1 pure-u-lg-5-5">
@@ -69,7 +74,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup id="parentSaveButton" layout="block" styleClass="pure-u-lg-5-5">
-                        <h:commandButton id="saveButton" action="#{raRoleBean.save}" value="#{msg.role_page_save_command}" styleClass="pure-button ra-button saveButton"/>
+                        <h:commandButton id="saveButton" action="#{raRoleBean.save}" value="#{raRoleBean.saveButtonText}" styleClass="pure-button ra-button executeActionButton saveButton"/>
                     </h:panelGroup>
                 </h:panelGroup>
             </h:form>

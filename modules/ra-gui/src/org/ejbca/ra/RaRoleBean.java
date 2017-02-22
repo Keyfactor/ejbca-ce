@@ -146,6 +146,19 @@ public class RaRoleBean {
     public List<SelectItem> getNamespaceOptions() {
         return namespaceOptions;
     }
+    
+    
+    public String getPageTitle() {
+        if (roleId == null) {
+            return raLocaleBean.getMessage("role_page_title_add");
+        } else {
+            return raLocaleBean.getMessage("role_page_title_edit", role.getRoleName());
+        }
+    }
+    
+    public String getSaveButtonText() {
+        return raLocaleBean.getMessage(roleId == null ? "role_page_add_command" : "role_page_save_command");
+    }
 
     public String save() throws AuthorizationDeniedException, RoleExistsException {
         final String namespaceToUse;
