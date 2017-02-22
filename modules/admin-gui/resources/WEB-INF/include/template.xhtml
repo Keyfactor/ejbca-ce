@@ -42,24 +42,57 @@
         <link rel="stylesheet" type="text/css" href="#{web.ejbcaWebBean.baseUrl}/#{web.ejbcaWebBean.cssFile}"/>
         <script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/js/ejbcajslib.js"></script>
         <link rel="shortcut icon" type="image/png" href="#{facesContext.externalContext.context.contextPath}/images/favicon.png"/>
+        <style type="text/css">
+            /* CSS to push down 40px footer to bottom of page when there is too little content. */
+            html, body {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+            }
+            #messagesAndContent {
+                min-height: 100%;
+                padding-left: 30px;
+                padding-right: 15px;
+            }
+            #contentBlock {
+                overflow: auto;
+                padding-top: 7px;
+                padding-bottom: 40px;
+            }
+            #footerBlock {
+                position: relative;
+                margin-top: -47px;
+	            height: 40px;
+                padding-left: 30px;
+                padding-right: 15px;
+	            clear: both;
+                text-align: center;
+            }
+            #footerInner {
+                line-height: 40px;
+                vertical-align: middle;
+                height: 40px;
+            }
+        </style>
     </h:head>
     <h:body dir="ltr" styleClass="ltrDirection">
-
-        <h:panelGroup layout="block" id="globalMessages">
-            <h:messages id="messages" class="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
+        <h:panelGroup layout="block" id="messagesAndContent">
+            <h:panelGroup layout="block" id="messagesBlock">
+                <h:messages id="messages" class="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
+            </h:panelGroup>
+    
+            <h:panelGroup layout="block" id="contentBlock" styleClass="contentBlock">
+                <ui:insert name="content">
+                    <h:outputText value="If you see this then whatever you're looking at couldn't be rendered."/>
+                </ui:insert>
+            </h:panelGroup>
         </h:panelGroup>
 
-        <h:panelGroup layout="block" id="content" styleClass="content">
-            <ui:insert name="content">
-                <p>If you see this then whatever you're looking at couldn't be rendered.</p>
-            </ui:insert>
-        </h:panelGroup>
-
-        <h:panelGroup layout="block" id="footer" styleClass="footer">
+        <h:panelGroup layout="block" id="footerBlock" styleClass="footerBlock">
             <ui:insert name="footer">
-                <div class="align-center">
-                    <p>© 2002–2017 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB.</p>
-                </div>
+                <h:panelGroup layout="block" id="footerInner" styleClass="footerInner">
+                    <h:outputText value="© 2002–2017 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB."/>
+                </h:panelGroup>
             </ui:insert>
         </h:panelGroup>
     </h:body>
