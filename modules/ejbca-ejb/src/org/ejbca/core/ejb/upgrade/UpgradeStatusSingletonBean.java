@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.upgrade;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -74,7 +75,21 @@ public class UpgradeStatusSingletonBean implements UpgradeStatusSingletonLocal {
     };
 
     private AtomicBoolean postUpgradeInProgress = new AtomicBoolean(false);
-    private List<LoggingEvent> logged = new ArrayList<>();
+
+    /** Fixed size list (dropping oldest additions when running out of space) to prevent all memory from being consumed if attached process never detaches. */
+    private List<LoggingEvent> logged = new LinkedList<LoggingEvent>() {
+        private static final long serialVersionUID = 1L;
+        private static final int MAX_ENTRIES_IN_LIST = 10000;
+
+        @Override
+        public boolean add(final LoggingEvent loggingEvent) {
+            final boolean added = super.add(loggingEvent);
+            while (added && size()>MAX_ENTRIES_IN_LIST) {
+               super.remove();
+            }
+            return added;
+        }  
+    };
     
     @Override
     public boolean isPostUpgradeInProgress() {
