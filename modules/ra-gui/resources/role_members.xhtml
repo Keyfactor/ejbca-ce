@@ -162,16 +162,19 @@
                         </h:column>
                         
                         
-                        <ui:remove>
-                        <!--
                         <h:column>
-                            <h:link id="viewMoreButton" styleClass="viewMoreLink" outcome="managerequest" includeViewParams="true">
-                                <f:param name="id" value="#{raRequest.id}"/>
-                                <h:outputText value="#{msg.manage_requests_page_view_more_command}"/>
+                            <h:link id="editButton" styleClass="viewMoreLink" outcome="role_member" includeViewParams="true">
+                                <f:param name="roleMemberId" value="#{raRoleMember.roleMember.id}"/>
+                                <h:outputText value="#{msg.role_members_page_edit_command}"/>
                             </h:link>
                         </h:column>
-                        -->
-                        </ui:remove>
+                        
+                        <h:column>
+                            <h:link id="removeButton" styleClass="viewMoreLink" outcome="remove_role_member" includeViewParams="true">
+                                <f:param name="roleMemberId" value="#{raRoleMember.roleMember.id}"/>
+                                <h:outputText value="#{msg.role_members_page_remove_command}"/>
+                            </h:link>
+                        </h:column>
                         
                     </h:dataTable>
                     

@@ -36,4 +36,9 @@ public interface RoleMemberSession {
      */
     int createOrEdit(AuthenticationToken authenticationToken, RoleMember roleMember) throws AuthorizationDeniedException;
 
+    /**
+     * Deletes the role member with the specified ID.
+     * @return true if successfully deleted, false if it did not exist.
+     */
+    boolean remove(final AuthenticationToken authenticationToken, final int roleMemberId) throws AuthorizationDeniedException;
 }

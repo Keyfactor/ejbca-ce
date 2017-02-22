@@ -23,16 +23,13 @@
      *                                                                       *
      *************************************************************************/
 
-     version: $Id$
+     version: $Id: role_member.xhtml 25310 2017-02-21 16:47:29Z samuellb $
      -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <f:metadata>
         <f:viewParam name="roleMemberId" value="#{raRoleMemberBean.roleMemberId}"/>
-        <f:viewParam name="roleId" value="#{raRoleMemberBean.roleId}"/>
-        <f:viewParam name="caId" value="#{raRoleMemberBean.caId}"/>
-        <f:viewParam name="tokenType" value="#{raRoleMemberBean.tokenType}"/>
-
+        
         <!-- These parameters must be duplicated in several places. See role_members.xhtml for a complete list. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
         <f:viewParam name="genericSearchString" value="#{raRoleMembersBean.genericSearchString}"/>
         <f:viewParam name="criteriaRoleId" value="#{raRoleMembersBean.criteriaRoleId}"/>
@@ -51,56 +48,26 @@
     </f:metadata>
     <ui:define name="content">
         <h:panelGroup layout="block" class="header" id="title">
-            <h1><h:outputText value="#{raRoleMemberBean.editPageTitle}"/></h1>
+            <h1><h:outputText value="#{raRoleMemberBean.removePageTitle}"/></h1>
         </h:panelGroup>
         <h:outputText value="#{msg.manage_role_members_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEditRoleMembers}"/>
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToEditRoleMembers}">
+            <ui:remove>
+            <!--
             <h:panelGroup styleClass="topLinks" layout="block">
                 <h:link outcome="role_members" styleClass="backLink" includeViewParams="true">
                     <h:outputText value="#{msg.generic_back}"/>
                 </h:link>
             </h:panelGroup>
+            -->
+            </ui:remove>
             <h:form id="roleForm" class="pure-form">
-                <h:panelGroup id="basic" styleClass="pure-g">
-                    <h:panelGroup id="parentRole" layout="block" styleClass="pure-u-1">
-                        <h:outputLabel for="roleId" value="#{msg.role_member_page_role_label}" styleClass="pure-u-lg-1-5"/>
-                        <h:selectOneMenu id="roleId" value="#{raRoleMemberBean.roleId}" styleClass=" pure-input pure-u-lg-3-5 jsAutoFocusFirst">
-                            <f:selectItems value="#{raRoleMemberBean.availableRoles}"/>
-                        </h:selectOneMenu>
-                    </h:panelGroup>
-                    
-                    
-                    <h:panelGroup id="parentTokenType" layout="block" styleClass="pure-u-1">
-                        <h:outputLabel for="tokenType" value="#{msg.role_member_page_tokentype_label}" styleClass="pure-u-lg-1-5"/>
-                        <h:selectOneMenu id="tokenType" value="#{raRoleMemberBean.tokenType}" styleClass=" pure-input pure-u-lg-3-5">
-                            <f:selectItems value="#{raRoleMemberBean.availableTokenTypes}"/>
-                        </h:selectOneMenu>
-                    </h:panelGroup>
-                    
-                    <h:panelGroup id="parentCA" layout="block" styleClass="pure-u-1">
-                        <h:outputLabel for="caId" value="#{msg.role_member_page_ca_label}" styleClass="pure-u-lg-1-5"/>
-                        <h:selectOneMenu id="caId" value="#{raRoleMemberBean.caId}" styleClass=" pure-input pure-u-lg-3-5">
-                            <f:selectItems value="#{raRoleMemberBean.availableCAs}"/>
-                        </h:selectOneMenu>
-                    </h:panelGroup>
-                    
-                    <h:panelGroup id="parentMatchType" layout="block" styleClass="pure-u-1">
-                        <h:outputLabel for="matchType" value="#{msg.role_member_page_matchtype_label}" styleClass="pure-u-lg-1-5"/>
-                        <h:selectOneMenu id="matchType" value="#{raRoleMemberBean.matchType}" styleClass=" pure-input pure-u-lg-3-5">
-                            <f:selectItems value="#{raRoleMemberBean.availableMatchTypes}"/>
-                        </h:selectOneMenu>
-                    </h:panelGroup>
-                    
-                    <!-- TODO search? -->
-                    <h:panelGroup id="parentMatchValue" layout="block" styleClass="pure-u-1">
-                        <h:outputLabel for="matchValue" value="#{msg.role_member_page_matchvalue_label}" styleClass="pure-u-lg-1-5"/>
-                        <h:inputText id="matchValue" value="#{raRoleMemberBean.matchValue}" styleClass="pure-input pure-u-lg-3-5 bottomMargin" title="#{msg.role_member_page_matchvalue_title}" size="20"/>
-                    </h:panelGroup>
-                    
-                    <!-- TODO member bindings. perhaps have a "Use default member binding" and automatically link to the username based on the cert serno -->
+                <h:panelGroup id="basic" styleClass="">
+                    <h:outputText value="#{raRoleMemberBean.removeConfirmationText}"/>
 
-                    <h:panelGroup id="parentSaveButton" layout="block" styleClass="pure-u-lg-5-5">
-                        <h:commandButton id="saveButton" action="#{raRoleMemberBean.save}" value="#{raRoleMemberBean.saveButtonText}" styleClass="pure-button ra-button executeActionButton saveButton"/>
+                    <h:panelGroup id="parentConfirmRemovalButton" layout="block" styleClass="pure-u-lg-5-5">
+                        <h:commandButton id="confirmRemovalButton" action="#{raRoleMemberBean.delete}" value="#{msg.remove_role_member_page_remove_command}" styleClass="pure-button ra-button executeActionButton removeButton"/>
+                        <h:commandButton id="confirmCancelButton" action="#{raRoleMemberBean.cancel}" value="#{msg.generic_cancel}" styleClass="pure-button ra-button cancelButton"/>
                     </h:panelGroup>
                 </h:panelGroup>
             </h:form>

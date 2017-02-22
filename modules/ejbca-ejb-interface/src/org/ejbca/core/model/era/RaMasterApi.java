@@ -127,6 +127,12 @@ public interface RaMasterApi {
      */
     RoleMember saveRoleMember(AuthenticationToken authenticationToken, RoleMember roleMember) throws AuthorizationDeniedException;
     
+    /**
+     * Removes a role member from a role.
+     * @return true if the role member was found and was deleted, and false if it didn't exist.
+     */
+    boolean deleteRoleMember(AuthenticationToken authenticationToken, int roleId, int roleMemberId) throws AuthorizationDeniedException;
+    
     /** @return the approval request with the given id, or null if it doesn't exist or if authorization was denied */
     RaApprovalRequestInfo getApprovalRequest(AuthenticationToken authenticationToken, int id);
 

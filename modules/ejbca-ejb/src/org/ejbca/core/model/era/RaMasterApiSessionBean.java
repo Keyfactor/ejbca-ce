@@ -327,6 +327,27 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return roleMember;
     }
     
+    @Override
+    public boolean deleteRoleMember(AuthenticationToken authenticationToken, int roleId, int roleMemberId) throws AuthorizationDeniedException {
+        if (log.isDebugEnabled()) {
+            log.debug("Removing role member with ID " + roleMemberId + " from the role with ID " + roleId);
+        }
+        RoleMember roleMember = roleMemberSession.getRoleMember(authenticationToken, roleMemberId);
+        if (roleMember == null) {
+            log.debug("Can't delete role member with ID " + roleMemberId + " because it does not exist.");
+            return false;
+        }
+        // Sanity check that there's no ID collision
+        if (roleMember.getRoleId() != roleId) {
+            if (log.isDebugEnabled()) {
+                log.debug("Role member has an unexpected Role ID " + roleMemberId + ". Role ID " + roleId);
+            }
+            return false;
+        }
+        
+        return roleMemberSession.remove(authenticationToken, roleMemberId);
+    }
+    
     
     private ApprovalDataVO getApprovalDataNoAuth(final int id) {
         final org.ejbca.util.query.Query query = new org.ejbca.util.query.Query(org.ejbca.util.query.Query.TYPE_APPROVALQUERY);

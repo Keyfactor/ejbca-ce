@@ -149,6 +149,9 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
     public RoleMember getRoleMember(final AuthenticationToken authenticationToken, final int roleMemberId) throws AuthorizationDeniedException {
         final RoleMember roleMember = findRoleMember(roleMemberId);
         // Authorization checks
+        if (roleMember == null) {
+            return null;
+        }
         if (roleMember.getRoleId() != null && roleMember.getRoleId() != RoleMember.NO_ROLE) {
             roleSession.getRole(authenticationToken, roleMember.getRoleId());
         }
@@ -183,6 +186,13 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             }
         }
         return result;
+    }
+    
+    @Override
+    public boolean remove(final AuthenticationToken authenticationToken, final int roleMemberId) throws AuthorizationDeniedException {
+        // TODO auth check
+        //authenticationToken
+        return remove(roleMemberId);
     }
 
     @Override

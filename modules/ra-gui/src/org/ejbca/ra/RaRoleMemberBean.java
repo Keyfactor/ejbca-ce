@@ -72,23 +72,30 @@ public class RaRoleMemberBean {
     
     private Integer roleMemberId;
     private RoleMember roleMember;
+    private Role role;
     
     private int roleId;
     private String tokenType;
     private int caId;
     private Integer matchType;
-    private String matchValue;    
+    private String matchValue;
     
     public void initialize() throws AuthorizationDeniedException {
         tokenTypeInfos = raMasterApiProxyBean.getAuthorizedRoleMemberTokenTypes(raAuthenticationBean.getAuthenticationToken());
         
         if (roleMemberId != null) {
             roleMember = raMasterApiProxyBean.getRoleMember(raAuthenticationBean.getAuthenticationToken(), roleMemberId);
-            roleId = roleMember.getId();
+            roleId = roleMember.getRoleId();
             tokenType = roleMember.getTokenType();
             caId = roleMember.getTokenIssuerId();
             matchType = roleMember.getTokenMatchKey();
             matchValue = roleMember.getTokenMatchValue();
+            if (roleId != RoleMember.NO_ROLE) {
+                role = raMasterApiProxyBean.getRole(raAuthenticationBean.getAuthenticationToken(), roleId);
+                if (role == null) {
+                    log.debug("Reference to missing role with ID " + roleId + " in role member with ID " + roleMemberId);
+                }
+            }
         } else {
             roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, "", RoleMember.NO_ISSUER, 0, 0, "", 0, "", "");
             // Default values
@@ -111,6 +118,10 @@ public class RaRoleMemberBean {
     
     public Integer getRoleMemberId() {
         return roleMemberId;
+    }
+    
+    public void setRoleMemberId(final Integer roleMemberId) {
+        this.roleMemberId = roleMemberId;
     }
 
     public RoleMember getRoleMember() {
@@ -218,7 +229,14 @@ public class RaRoleMemberBean {
         return result;
     }
 
-
+    public String getEditPageTitle() {
+        return raLocaleBean.getMessage(roleMemberId != null ? "role_member_page_edit_title" : "role_member_page_add_title");
+    }
+    
+    public String getSaveButtonText() {
+        return raLocaleBean.getMessage(roleMemberId != null ? "role_member_page_save_command" : "role_member_page_add_command");
+    }
+    
     public String save() throws AuthorizationDeniedException {
         // TODO validation etc.
         roleMember.setRoleId(roleId);
@@ -228,6 +246,13 @@ public class RaRoleMemberBean {
         roleMember.setTokenMatchValue(matchValue);
         
         roleMember = raMasterApiProxyBean.saveRoleMember(raAuthenticationBean.getAuthenticationToken(), roleMember);
+        if (roleMember == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("The role member could not be saved. Role member ID: " + roleMemberId + ". Role ID: " + roleId + ". Match value: '" + matchValue + "'");
+            }
+            raLocaleBean.addMessageError("role_member_page_error_generic");
+            return "";
+        }
         roleMemberId = roleMember.getId();
         
         // If the active filter does not include the newly added role member, then change the filter to show it
@@ -244,6 +269,34 @@ public class RaRoleMemberBean {
         }
         
         return "role_members?faces-redirect=true&includeViewParams=true";
-    }    
+    }
+    
+
+    public String getRemovePageTitle() {
+        return raLocaleBean.getMessage("remove_role_member_page_title", matchValue);
+    }
+    
+    public String getRemoveConfirmationText() {
+        if (role != null) {
+            return raLocaleBean.getMessage("remove_role_member_page_confirm_with_role", role.getRoleName());
+        } else {
+            return raLocaleBean.getMessage("remove_role_member_page_confirm");
+        }
+    }
+    
+    public String delete() throws AuthorizationDeniedException {
+        if (!raMasterApiProxyBean.deleteRoleMember(raAuthenticationBean.getAuthenticationToken(), roleMember.getRoleId(), roleMember.getId())) {
+            if (log.isDebugEnabled()) {
+                log.debug("The role member could not be deleted. Role member ID: " + roleMemberId + ". Role ID: " + roleId + ". Match value: '" + matchValue + "'");
+            }
+            raLocaleBean.addMessageError("remove_role_member_page_error_generic");
+            return "";
+        }
+        return "role_members?faces-redirect=true&includeViewParams=true";
+    }
+    
+    public String cancel() {
+        return "role_members?faces-redirect=true&includeViewParams=true";
+    }
     
 }
