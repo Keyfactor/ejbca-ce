@@ -65,10 +65,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
 
     
     private void checkRoleAuth(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
-        // TODO should do an authorization check on the role itself, see RoleSessionBean.persistRole()
-        //assertAuthorizedToEditRoles(authenticationToken);
-        //assertAuthorizedToAllAccessRules(authenticationToken, role);
-        //assertNotMemberAndAuthorizedToNameSpace(authenticationToken, role);
+        roleSession.assertAuthorizedToEditRoleMembers(authenticationToken, roleMember.getRoleId());
         
         // Check existence and authorization of referenced objects 
         if (roleMember.getRoleId() != RoleMember.NO_ROLE && roleSession.getRole(authenticationToken, roleMember.getRoleId()) == null) {
@@ -190,8 +187,8 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
     
     @Override
     public boolean remove(final AuthenticationToken authenticationToken, final int roleMemberId) throws AuthorizationDeniedException {
-        // TODO auth check
-        //authenticationToken
+        final RoleMember roleMember = findRoleMember(roleMemberId);
+        checkRoleAuth(authenticationToken, roleMember);
         return remove(roleMemberId);
     }
 
