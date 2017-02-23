@@ -236,6 +236,10 @@ public class RaRoleMemberBean {
             final List<String> namesSorted = new ArrayList<>(tokenTypeInfo.getMatchKeysMap().keySet());
             Collections.sort(namesSorted);
             for (final String name : namesSorted) {
+                if ("CertificateAuthenticationToken".equals(tokenType) && "NONE".equals(name) &&
+                        !matchType.equals(tokenType)) {
+                    continue; // deprecated value
+                }
                 result.add(new SelectItem(tokenTypeInfo.getMatchKeysMap().get(name), raLocaleBean.getMessage("role_member_matchkey_" + tokenType + "_" + name)));
             }
         }

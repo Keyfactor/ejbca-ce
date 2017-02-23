@@ -168,7 +168,8 @@ public class RaRoleMembersBean {
         for (final RoleMember member : lastExecutedResponse.getRoleMembers()) {
             final String caName = caIdToNameMap.get(member.getTokenIssuerId());
             final String roleName = roleIdToNameMap.get(member.getRoleId());
-            resultsFiltered.add(new RaRoleMemberGUIInfo(member, caName, roleName));
+            final String tokenTypeText = raLocaleBean.getMessage("role_member_token_type_" + member.getTokenType());
+            resultsFiltered.add(new RaRoleMemberGUIInfo(member, caName, roleName, tokenTypeText));
         }
     }
     

@@ -57,7 +57,7 @@
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToEditRoleMembers}">
             <h:panelGroup styleClass="topLinks" layout="block">
                 <h:link outcome="role_members" styleClass="backLink" includeViewParams="true">
-                    <h:outputText value="#{msg.generic_back}"/>
+                    <h:outputText value="#{msg.role_member_page_back_to_role_members_page}"/>
                 </h:link>
             </h:panelGroup>
             <h:form id="roleMemberForm" class="pure-form">
@@ -78,7 +78,7 @@
                                     onevent="function(data){ejbca.ra.onAjaxEvent(data,'roleMemberForm:tokenTypeDependent');}"
                                     onerror="function(data){ejbca.ra.onAjaxError(data,'roleMemberForm:tokenTypeDependent');}"/>
                         </h:selectOneMenu>
-                        <h:commandButton action="#{raRoleMemberBean.update}" value="#{msg.generic_update}" styleClass="pure-button pure-button-primary updateButton jsHide"/>
+                        <h:commandButton action="#{raRoleMemberBean.update}" value="#{msg.generic_update}" styleClass="pure-button updateButton jsHide"/>
                     </h:panelGroup>
                     
                     <h:panelGroup id="tokenTypeDependent">
@@ -105,8 +105,12 @@
                     
                     <!-- TODO member bindings. perhaps have a "Use default member binding" and automatically link to the username based on the cert serno -->
 
-                    <h:panelGroup id="parentSaveButton" layout="block" styleClass="pure-u-lg-5-5">
+                    <h:panelGroup id="buttons" layout="block" styleClass="pure-u-lg-5-5">
                         <h:commandButton id="saveButton" action="#{raRoleMemberBean.save}" value="#{raRoleMemberBean.saveButtonText}" styleClass="pure-button ra-button executeActionButton saveButton"/>
+                        
+                        <h:link id="cancelButton" styleClass="pure-button ra-button" outcome="role_members" includeViewParams="true">
+                            <h:outputText value="#{msg.generic_cancel}"/>
+                        </h:link>
                     </h:panelGroup>
                 </h:panelGroup>
             </h:form>
