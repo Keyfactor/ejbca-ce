@@ -45,7 +45,7 @@
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToEditRoleRules}">
             <h:panelGroup styleClass="topLinks" layout="block">
                 <h:link outcome="roles" styleClass="backLink" includeViewParams="true">
-                    <h:outputText value="#{msg.generic_back}"/>
+                    <h:outputText value="#{msg.role_page_back_to_roles_page}"/>
                 </h:link>
             </h:panelGroup>
             <h:form id="roleForm" class="pure-form">
@@ -73,8 +73,12 @@
                         <h:inputText id="roleName" value="#{raRoleBean.name}" styleClass="pure-input pure-u-lg-3-5" size="20"/>
                     </h:panelGroup>
 
-                    <h:panelGroup id="parentSaveButton" layout="block" styleClass="pure-u-lg-5-5">
+                    <h:panelGroup id="buttons" layout="block" styleClass="pure-u-lg-5-5">
                         <h:commandButton id="saveButton" action="#{raRoleBean.save}" value="#{raRoleBean.saveButtonText}" styleClass="pure-button ra-button executeActionButton saveButton"/>
+                        
+                        <h:link id="cancelButton" styleClass="pure-button ra-button" outcome="roles" includeViewParams="true">
+                            <h:outputText value="#{msg.generic_cancel}"/>
+                        </h:link>
                     </h:panelGroup>
                 </h:panelGroup>
             </h:form>
