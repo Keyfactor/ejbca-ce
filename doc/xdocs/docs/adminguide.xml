@@ -2671,6 +2671,10 @@ Create 3 email notifications:
 </li>
 </ol>
 </p>
+<p>An example URL to include in an email can be to directly take the user to the screen to generate a keystore:
+<br/>
+https://server:8443/ejbca/enrol/keystore.jsp?action=generatetoken&amp;hidemenu=true&amp;textfieldusername=${USERNAME}&amp;textfieldpassword=${PASSWORD}
+</p>
 </subsection>
 
 </section>
