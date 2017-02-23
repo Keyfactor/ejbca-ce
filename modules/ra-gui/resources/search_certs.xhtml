@@ -27,6 +27,11 @@
      -->
     </ui:remove>
     <ui:composition template="/WEB-INF/include/template.xhtml">
+        <f:metadata>
+            <!-- Parameters defined here can be passed in GET requests -->
+            <f:viewParam name="certsGenericSearchString" value="#{raSearchCertsBean.genericSearchString}"/>
+            <f:event type="preRenderView" listener="#{raSearchCertsBean.initialize}"/>
+        </f:metadata>
         <ui:define name="content">
         	<h:panelGroup layout="block" class="header" id="title">
 				<h1><h:outputText value="#{msg.search_certs_page_title}"/></h1>

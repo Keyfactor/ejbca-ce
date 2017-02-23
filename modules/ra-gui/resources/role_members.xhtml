@@ -160,7 +160,11 @@
                                         onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
-                            <h:outputText value="#{raRoleMember.roleMember.tokenMatchValue}" style="white-space: nowrap"/>
+                            <h:outputText value="#{raRoleMember.roleMember.tokenMatchValue}" style="white-space: nowrap" rendered="#{not raRoleMember.tokenMatchValueIsLink}"/>
+                            <h:outputLink value="search_certs.xhtml" style="white-space: nowrap" rendered="#{raRoleMember.tokenMatchValueIsLink}">
+                                <f:param name="certsGenericSearchString" value="#{raRoleMember.roleMember.tokenMatchValue}"/>
+                                <h:outputText value="#{raRoleMember.roleMember.tokenMatchValue}"/>
+                            </h:outputLink>
                         </h:column>
                         <h:column>
                             <f:facet name="header">
