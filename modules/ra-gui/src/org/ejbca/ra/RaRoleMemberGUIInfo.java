@@ -22,11 +22,13 @@ public final class RaRoleMemberGUIInfo {
     public final RoleMember roleMember;
     public final String caName;
     public final String roleName;
+    public final String tokenTypeText;
     
-    public RaRoleMemberGUIInfo(final RoleMember roleMember, final String caName, final String roleName) {
+    public RaRoleMemberGUIInfo(final RoleMember roleMember, final String caName, final String roleName, final String tokenTypeText) {
         this.roleMember = roleMember;
         this.caName = caName;
         this.roleName = roleName;
+        this.tokenTypeText = tokenTypeText;
     }
 
     public RoleMember getRoleMember() {
@@ -39,6 +41,10 @@ public final class RaRoleMemberGUIInfo {
     
     public String getRoleName() {
         return roleName;
+    }
+    
+    public String getTokenTypeText() {
+        return tokenTypeText;
     }
     
 }

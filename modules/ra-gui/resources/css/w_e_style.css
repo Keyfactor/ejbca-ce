@@ -129,6 +129,10 @@ img.menu_logo {
   .internal-frame-black > .keygeneration-button-group:nth-of-type(3) {
     padding: 0px 0px 2% 0; }
 
+.topRightButtons {
+    text-align: right;
+}
+
 #detailsForm {
   background: #4f6177;
   border-radius: 2px; }
@@ -318,6 +322,11 @@ table.pure-table > tbody a {
   table.pure-table > tbody a:hover {
     text-decoration: underline; }
 
+table.fullWidthTable { /* can be used with the pure-u-lg-5-5 (etc.) style to get the same width */
+    min-width: 100%;
+}
+td.noneCell, td span.noneCell { color: #aaa; font-style: italic;  }
+
 #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset {
   margin-top: 1%; }
   #requestInfoForm\:requestPreviewOuterPanel > .internal-frame > fieldset > label {
@@ -429,9 +438,6 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #enrollWithRequestIdForm\:generatePkcs7,
 #enrollWithRequestIdForm\:generatePemFullChain,
 #enrollWithRequestIdForm\:generatePem,
-#manageRequestForm\:commandSaveData,
-#manageRequestForm\:commandReject,
-#manageRequestForm\:commandApprove,
 #enrollWithRequestIdForm\:generateKeyStorePem,
 #enrollWithRequestIdForm\:generatePkcs12,
 #enrollWithRequestIdForm\:generateJks,
@@ -450,9 +456,7 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #requestInfoForm\:generateKeyStorePem,
 #requestInfoForm\:generateP12,
 #requestInfoForm\:generateJks,
-#manageRequestForm\:commandApprove,
-#manageRequestForm\:commandReject,
-#manageRequestForm\:commandSaveData {
+.executeActionButton {
   background: #e9af13;
   color: #fff; }
 
@@ -1357,6 +1361,18 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
   #requestTemplateForm\:selectCPOneMenuMessage {
     float: right;
     width: 90%; }
+    
+  .topLeftButtons a.ra-button, .topRightButtons a.ra-button {
+    padding: 1em; }
+  
+  /* Add some spacing between the drop down boxes in the role members form */
+  #roleMembersForm\:genericSearchString {
+    margin-bottom: 2%;
+  }
+  #roleMembersForm\:criteriaRoleId,
+  #roleMembersForm\:criteriaCaId {
+    width: 96%;
+  }
 
   .footer > .align-center > p {
     /*footer-texten*/

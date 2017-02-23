@@ -50,14 +50,18 @@
         </h:panelGroup>
         <h:outputText value="#{msg.manage_roles_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToRoleMembers}"/>
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToRoleMembers}">
-            <h:panelGroup layout="block">
-                <h:link outcome="roles" rendered="#{raRoleMembersBean.fromRolesPage}" styleClass="pure-button ra-button" includeViewParams="true">
-                    <h:outputText value="#{msg.generic_back}"/>
-                </h:link>
+        
+            <h:panelGroup id="basic" layout="block">
+                <h:panelGroup styleClass="pure-u-1 pure-u-lg-2-5 topLeftButtons">
+                    <h:link outcome="roles" rendered="#{raRoleMembersBean.fromRolesPage}" layout="block" styleClass="backLink" includeViewParams="true">
+                        <h:outputText value="#{msg.role_members_page_back_to_roles_page}"/>
+                    </h:link>
+                </h:panelGroup>
             </h:panelGroup>
-            <h:form id="roleMembersForm" class="pure-form">
+            
+            <h:form id="roleMembersForm" styleClass="pure-form">
                 <h:panelGroup id="basic" styleClass="pure-g">
-                    <h:panelGroup id="parentGenericSearchString" styleClass="pure-u-1 pure-u-lg-4-5">
+                    <h:panelGroup id="parentGenericSearchString" styleClass="pure-u-1 pure-u-lg-3-5">
                         <h:inputText id="genericSearchString" value="#{raRoleMembersBean.genericSearchString}" styleClass="jsAutoFocusFirst jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
                              title="#{msg.role_members_page_criteria_generic_title}">
                             <f:ajax event="keyup" execute="@this" render=":roleMembersForm:filteredResults" listener="#{raRoleMembersBean.searchAndFilterAjaxListener}"
@@ -66,7 +70,7 @@
                         </h:inputText>
                     </h:panelGroup>
 
-                    <h:panelGroup id="parentGenericSearchButton" styleClass="pure-u-1 pure-u-lg-1-5">
+                    <h:panelGroup id="parentGenericSearchButton" styleClass="pure-u-1 pure-u-lg-2-5">
                         <h:commandButton action="#{raRoleMembersBean.searchAndFilterAction}" value="#{msg.role_members_page_search_command}" styleClass="pure-button pure-button-primary searchButton jsHide"/>
                     </h:panelGroup>
                     
@@ -97,14 +101,23 @@
                                 onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
+                    
+                    <h:panelGroup id="parentAddRoleMemberButton" styleClass="pure-u-1 pure-u-lg-2-5 topRightButtons" rendered="#{raAccessBean.authorizedToEditRoleMembers}">
+                        <h:link id="addRoleMemberButton" outcome="role_member" includeViewParams="true" styleClass="pure-button ra-button">
+                            <f:param name="roleId" value="#{raRoleMembersBean.criteriaRoleId}" disable="#{raRoleMembersBean.criteriaRoleId == null}"/>
+                            <f:param name="caId" value="#{raRoleMembersBean.criteriaCaId}" disable="#{raRoleMembersBean.criteriaCaId == null}"/>
+                            <f:param name="tokenType" value="#{raRoleMembersBean.criteriaTokenType}" disable="#{raRoleMembersBean.criteriaTokenType == null}"/>
+                            <h:outputText value="#{msg.role_members_page_add_member_command}"/>
+                        </h:link>
+                    </h:panelGroup>
                 </h:panelGroup>
                 
 
-                <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
+                <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;" styleClass="pure-u-lg-5-5">
                     <h:outputText rendered="#{empty raRoleMembersBean.filteredResults}" value="#{msg.role_members_page_info_noresult}"/>
                     <h:outputText styleClass="fineprint" rendered="#{raRoleMembersBean.moreResultsAvailable}" value="#{msg.role_members_page_info_moreresults}"/>
                     <h:dataTable id="roleMembersTable" rendered="#{not empty raRoleMembersBean.filteredResults}" value="#{raRoleMembersBean.filteredResults}" var="raRoleMember"
-                        styleClass="pure-table" rowClasses=",pure-table-odd">
+                        styleClass="pure-table fullWidthTable" rowClasses=",pure-table-odd">
                         <h:column>
                             <f:facet name="header">
                                 <h:outputLabel for="sortRole" value="#{msg.role_members_page_colhead_role} #{raRoleMembersBean.sortedByRole}"/>
@@ -114,7 +127,7 @@
                                         onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
-                            <h:outputText value="#{raRoleMember.roleName}" style="white-space: nowrap"/>
+                            <h:outputText value="#{not empty raRoleMember.roleName ? raRoleMember.roleName : msg.role_members_page_role_none}" style="white-space: nowrap" styleClass="#{empty raRoleMember.roleName ? &quot;noneCell&quot; : &quot;&quot;}"/>
                         </h:column>
                         <h:column>
                             <f:facet name="header">
@@ -136,7 +149,7 @@
                                         onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
-                            <h:outputText value="#{raRoleMember.roleMember.tokenType}" style="white-space: nowrap"/>
+                            <h:outputText value="#{raRoleMember.tokenTypeText}" style="white-space: nowrap"/>
                         </h:column>
                         <h:column>
                             <f:facet name="header">
@@ -178,14 +191,6 @@
                         
                     </h:dataTable>
                     
-                    <h:panelGroup id="bottomLinks" layout="block" rendered="#{raAccessBean.authorizedToEditRoleMembers}">
-                        <h:link id="addRoleMemberButton" outcome="role_member" includeViewParams="true">
-                            <f:param name="roleId" value="#{raRoleMembersBean.criteriaRoleId}" disable="#{raRoleMembersBean.criteriaRoleId == null}"/>
-                            <f:param name="caId" value="#{raRoleMembersBean.criteriaCaId}" disable="#{raRoleMembersBean.criteriaCaId == null}"/>
-                            <f:param name="tokenType" value="#{raRoleMembersBean.criteriaTokenType}" disable="#{raRoleMembersBean.criteriaTokenType == null}"/>
-                            <h:outputText value="#{msg.role_members_page_add_member_command}"/>
-                        </h:link>
-                    </h:panelGroup>
                 </h:panelGroup>
             </h:form>
         </h:panelGroup>
