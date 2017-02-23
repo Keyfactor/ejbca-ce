@@ -12,12 +12,16 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.util.regex.Pattern;
+
 import org.cesecore.roles.member.RoleMember;
 
 /**
  * @version $Id$
  */
 public final class RaRoleMemberGUIInfo {
+    
+    private static final Pattern serialNumberPattern = Pattern.compile("^[0-9A-Fa-f]{8,}$");
     
     public final RoleMember roleMember;
     public final String caName;
@@ -45,6 +49,10 @@ public final class RaRoleMemberGUIInfo {
     
     public String getTokenTypeText() {
         return tokenTypeText;
+    }
+    
+    public boolean getTokenMatchValueIsLink() {
+        return roleMember.getTokenMatchValue() != null && serialNumberPattern.matcher(roleMember.getTokenMatchValue()).matches();
     }
     
 }

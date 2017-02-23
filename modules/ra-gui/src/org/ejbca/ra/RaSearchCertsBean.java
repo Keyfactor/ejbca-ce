@@ -35,6 +35,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -118,6 +119,14 @@ public class RaSearchCertsBean implements Serializable {
             return ret;
         }
     };
+    
+    /** Invoked when the page is loaded */
+    public void initialize() {
+        // Perform a search if parameters where passed in the query string
+        if (genericSearchString != null) {
+            searchAndFilterCommon();
+        }
+    }
 
     /** Invoked action on search form post */
     public void searchAndFilterAction() {
