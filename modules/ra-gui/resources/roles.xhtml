@@ -28,7 +28,7 @@
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <f:metadata>
-        <!-- Parameters must be duplicated here and in role_members.xhtml and edit_role.xhtml. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
+        <!-- Parameters must be duplicated here and in role_members.xhtml, role_member.xhtml and edit_role.xhtml. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
         <f:viewParam name="roleSearchString" value="#{raRolesBean.roleSearchString}"/>
         <f:viewParam name="rolesSortAsc" value="#{raRolesBean.sortAscending}"/>
         <f:viewParam name="rolesSortCol" value="#{raRolesBean.sortColumn}"/>
@@ -39,10 +39,9 @@
         <h:panelGroup layout="block" class="header" id="title">
             <h1><h:outputText value="#{msg.roles_page_title}"/></h1>
         </h:panelGroup>
-        <h:outputText value="#{msg.manage_roles_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToRoles}"/>
+        <h:outputText value="#{msg.manage_roles_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToRoles}"/>
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToRoles}">
             <h:form id="rolesForm" class="pure-form">
-                
                 <h:panelGroup id="basic" styleClass="pure-g">
                     <ui:remove>
                     <!--
@@ -57,7 +56,7 @@
                     -->
                     </ui:remove>
                     
-                    <h:panelGroup id="parentRoleSearchString" styleClass="pure-u-1 pure-u-lg-4-5">
+                    <h:panelGroup id="parentRoleSearchString" styleClass="pure-u-1 pure-u-lg-2-5">
                         <h:inputText id="roleSearchString" value="#{raRolesBean.roleSearchString}" styleClass="jsAutoFocusFirst jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
                              title="#{msg.roles_page_criteria_generic_title}">
                             <f:ajax event="keyup" execute="@this" render=":rolesForm:filteredResults" listener="#{raRolesBean.searchAndFilterAjaxListener}"
@@ -69,25 +68,20 @@
                     <h:panelGroup id="parentGenericSearchButton" styleClass="pure-u-1 pure-u-lg-1-5">
                         <h:commandButton action="#{raRolesBean.searchAndFilterAction}" value="#{msg.roles_page_search_command}" styleClass="pure-button pure-button-primary searchButton jsHide"/>
                     </h:panelGroup>
+                    
+                    <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5 topRightButtons" layout="block" rendered="#{raAccessBean.authorizedToEditRoleRules}">
+                        <h:link id="createRoleButton" outcome="edit_role" includeViewParams="true" styleClass="pure-button ra-button">
+                            <h:outputText value="#{msg.roles_page_create_role_command}"/>
+                        </h:link>
+                    </h:panelGroup>
                 </h:panelGroup>
                 
 
-                <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
+                <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;" styleClass="pure-u-lg-4-5">
                     <h:outputText rendered="#{empty raRolesBean.filteredResults}" value="#{msg.roles_page_info_noresult}"/>
                     <h:outputText styleClass="fineprint" rendered="#{raRolesBean.moreResultsAvailable}" value="#{msg.roles_page_info_moreresults}"/>
                     <h:dataTable id="rolesTable" rendered="#{not empty raRolesBean.filteredResults}" value="#{raRolesBean.filteredResults}" var="raRole"
-                        styleClass="pure-table" rowClasses=",pure-table-odd">
-                        <h:column rendered="#{raRolesBean.hasNamespaces}">
-                            <f:facet name="header">
-                                <h:outputLabel for="sortNamespace" value="#{msg.roles_page_colhead_namespace} #{raRolesBean.sortedByNamespace}"/>
-                                <h:commandButton id="sortNamespace" action="#{raRolesBean.sortByNamespace}" value="#{msg.generic_sort_command}" style="display: none;">
-                                    <f:ajax execute="@this" render=":rolesForm:filteredResults"
-                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'rolesForm:filteredResults');}"
-                                        onerror="function(data){ejbca.ra.onAjaxError(data,'rolesForm:filteredResults');}"/>
-                                </h:commandButton>
-                            </f:facet>
-                            <h:outputText value="#{raRole.nameSpace}" style="white-space: nowrap"/>
-                        </h:column>
+                        styleClass="pure-table fullWidthTable" rowClasses=",pure-table-odd" >
                         <h:column>
                             <f:facet name="header">
                                 <h:outputLabel for="sortRole" value="#{msg.roles_page_colhead_role} #{raRolesBean.sortedByRole}"/>
@@ -100,11 +94,22 @@
                             <h:outputText value="#{raRole.roleName}" style="white-space: nowrap"/>
                         </h:column>
                         
+                        <h:column rendered="#{raRolesBean.hasNamespaces}">
+                            <f:facet name="header">
+                                <h:outputLabel for="sortNamespace" value="#{msg.roles_page_colhead_namespace} #{raRolesBean.sortedByNamespace}"/>
+                                <h:commandButton id="sortNamespace" action="#{raRolesBean.sortByNamespace}" value="#{msg.generic_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":rolesForm:filteredResults"
+                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'rolesForm:filteredResults');}"
+                                        onerror="function(data){ejbca.ra.onAjaxError(data,'rolesForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText value="#{raRole.nameSpace}" style="white-space: nowrap"/>
+                        </h:column>
                         
                         <h:column>
                             <h:link id="editButton" styleClass="editLink" outcome="edit_role" includeViewParams="true">
                                 <f:param name="roleId" value="#{raRole.roleId}"/>
-                                <h:outputText value="#{msg.roles_page_edit_command}"/>
+                                <h:outputText value="#{msg.roles_page_edit_command}" styleClass="viewMoreLink"/>
                             </h:link>
                         </h:column>
                         
@@ -112,17 +117,11 @@
                             <h:link id="membersButton" styleClass="membersLink" outcome="role_members" includeViewParams="true">
                                 <f:param name="criteriaRoleId" value="#{raRole.roleId}"/>
                                 <f:param name="fromRolesPage" value="true"/>
-                                <h:outputText value="#{msg.roles_page_members_command}"/>
+                                <h:outputText value="#{msg.roles_page_members_command}" styleClass="viewMoreLink"/>
                             </h:link>
                         </h:column>
                         
                     </h:dataTable>
-                </h:panelGroup>
-                                
-                <h:panelGroup id="topLinks" layout="block" rendered="#{raAccessBean.authorizedToEditRoleRules}">
-                    <h:link id="createRoleButton" styleClass="createRoleLink" outcome="edit_role" includeViewParams="true">
-                        <h:outputText value="#{msg.roles_page_create_role_command}"/>
-                    </h:link>
                 </h:panelGroup>
                 
             </h:form>
