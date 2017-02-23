@@ -14,6 +14,9 @@ package org.cesecore.roles.management;
 
 import javax.ejb.Local;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+
 /**
  * Local interface for Role management operations.
  * 
@@ -22,4 +25,10 @@ import javax.ejb.Local;
 @Local
 public interface RoleSessionLocal extends RoleSession {
 
+    /**
+     * Checks if the administrator is allowed to add/edit/remove role members from role with the given ID.
+     * Note that role member objects may reference a CA also, which must be checked for access as well. 
+     */
+    void assertAuthorizedToEditRoleMembers(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
+    
 }
