@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.faces.application.FacesMessage;
+import javax.faces.application.FacesMessage.Severity;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
@@ -53,6 +54,11 @@ public abstract class BaseManagedBean implements Serializable{
 	/** @return true if the current admin is authorized to the resources or false otherwise */
     protected boolean isAuthorizedTo(final String...resources) {
         return getEjbcaWebBean().getEjb().getAccessControlSession().isAuthorizedNoLogging(getAdmin(), resources);
+    }
+
+    protected void addGlobalMessage(final Severity severity, final String messageResource, final Object... params) {
+        final String msg = getEjbcaWebBean().getText(messageResource, true, params);
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, msg, msg));
     }
 
 	protected void addErrorMessage(String messageResource, Object... params) {

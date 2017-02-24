@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:component="http://java.sun.com/jsf/composite/component"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+    <ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     version: $Id: upgrade.xhtml 25318 2017-02-22 10:56:51Z jeklund $
+     -->
+    </ui:remove>
+    <ui:composition template="/WEB-INF/include/template.xhtml">
+        <ui:define name="content">
+            <h1>
+                <h:outputText value="#{web.text.MANAGEROLES}" rendered="#{rolesBean.authorizedToEditRoles}"/>
+                <h:outputText value="#{web.text.VIEWROLES}" rendered="#{!rolesBean.authorizedToEditRoles}"/>
+                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/userguide.html#Administrator%20Roles')}" escape="false"/>
+            </h1>
+            <h:outputText styleClass="alert" rendered="#{!rolesBean.authorizedToViewRoles}" value="#{web.text.UPGRADE_ERR_UNAUTH}"/>
+            
+            <h:form id="roles" rendered="#{rolesBean.authorizedToViewRoles}">
+                <ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
+                <h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
+
+                <h:dataTable id="list" value="#{rolesBean.rolesAvailable}" var="role" headerClass="listHeader" rowClasses="Row0,Row1">
+                    <h:column rendered="#{!rolesBean.onlyEmptyNameSpaceInUse}">
+                        <f:facet name="header"><h:outputText value="#{web.text.ROLES_LABEL_NAMESPACE}"/></f:facet>
+                        <h:outputText value="#{role.nameSpace}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header"><h:outputText value="#{web.text.ROLES_LABEL_ROLENAME}"/></f:facet>
+                        <h:outputText value="#{role.roleName}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header"></f:facet>
+                        <h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/rolemembers.xhtml?roleId=#{role.roleId}"
+                            styleClass="commandLink" title="#{web.text.EDITADMINS}">
+                            <h:outputText value="#{web.text.ADMINS}"/>
+                        </h:outputLink>
+                        <h:outputLink value="#{facesContext.externalContext.context.contextPath}/accessrules.xhtml?roleId=#{role.roleId}"
+                            styleClass="commandLink" title="#{web.text.EDITACCESSRULES}">
+                            <h:outputText value="#{web.text.ACCESSRULES}"/>
+                        </h:outputLink>
+                    </h:column>
+                    <h:column rendered="#{rolesBean.authorizedToEditRoles}">
+                        <f:facet name="header"></f:facet>
+                        <h:commandButton action="#{rolesBean.actionRenameRoleStart}" value="#{web.text.RENAME}">
+                            <f:ajax execute="@this" render=":modalBlockContainer"/>
+                        </h:commandButton>
+                        <h:commandButton action="#{rolesBean.actionDeleteRoleStart}" value="#{web.text.DELETE}">
+                            <f:ajax execute="@this" render=":modalBlockContainer"/>
+                        </h:commandButton>
+                        <f:facet name="footer">
+                            <h:panelGroup styleClass="alignright fullwidth" layout="block">
+                                <h:commandButton value="#{web.text.ADD}" action="#{rolesBean.actionAddRoleStart}">
+                                    <f:ajax execute="@this" render=":modalBlockContainer"/>
+                                </h:commandButton>
+                            </h:panelGroup>
+                        </f:facet>
+                    </h:column>
+                </h:dataTable>
+            </h:form>
+        </ui:define>
+
+        <ui:remove><!-- Template will render this when element ":modalBlockContainer" is rendered and "renderModal" param is true. --></ui:remove>
+        <ui:param name="renderModal" value="#{rolesBean.renderAddRole or rolesBean.renderRenameRole or rolesBean.renderDeleteRole}"/>
+        <ui:define name="modal">
+            <h:form id="modal">
+                <ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
+                <h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
+
+                <h:panelGroup id="add" rendered="#{rolesBean.renderAddRole}">
+                    <h2><h:outputText value="#{web.text.ADDROLE}"/></h2>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="#{web.text.ROLES_LABEL_NAMESPACE}"/>
+                        <h:panelGroup>
+                            <h:outputText value="#{rolesBean.editNameSpaceSelected}"
+                                rendered="#{!rolesBean.renderEditNameSpace and rolesBean.nameSpaceAvailable.size()==1}"/>
+                            <h:selectOneMenu value="#{rolesBean.editNameSpaceSelected}" styleClass="fullwidth"
+                                rendered="#{!rolesBean.renderEditNameSpace and rolesBean.nameSpaceAvailable.size()!=1}">
+                                <f:selectItems value="#{rolesBean.nameSpaceAvailable}"/>
+                                <f:ajax execute="@form" render="@form"/>
+                            </h:selectOneMenu>
+                            <h:inputText value="#{rolesBean.editNameSpace}" title="#{web.text.ROLES_NAMESPACE_PLACEHOLDER}"
+                                rendered="#{rolesBean.renderEditNameSpace}">
+                                <f:validator validatorId="legalCharsValidator"/>
+                            </h:inputText>
+                        </h:panelGroup>
+                        <h:panelGroup>
+                            <h:commandButton value="#{web.text.ROLES_ACTION_NEWNAMESPACE}" action="#{rolesBean.actionEditNewNameSpace}"
+                                rendered="#{!rolesBean.renderEditNameSpace and rolesBean.authorizedToCreateNewNameSpace}">
+                                <f:ajax execute="@form" render="@form"/>
+                            </h:commandButton>
+                        </h:panelGroup>
+                        <h:outputLabel value="#{web.text.ROLES_LABEL_ROLENAME}"/>
+                        <h:inputText value="#{rolesBean.editRoleName}" title="#{web.text.ROLES_ROLENAME_PLACEHOLDER}">
+                            <f:validator validatorId="legalCharsValidator"/>
+                        </h:inputText>
+                        <h:panelGroup/>
+                    </h:panelGrid>
+                    <h:panelGroup styleClass="alignright fullwidth" layout="block">
+                        <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionAddRoleReset}">
+                            <f:ajax execute="@this" render=":modalBlockContainer"/>
+                        </h:commandButton>
+                        <h:commandButton value="#{web.text.ADD}" action="#{rolesBean.actionAddRoleConfirm}">
+                            <f:ajax execute="@form" render="@all"/>
+                        </h:commandButton>
+                    </h:panelGroup>
+                </h:panelGroup>
+    
+                <h:panelGroup id="rename" rendered="#{rolesBean.renderRenameRole}">
+                    <h2><h:outputText value="#{web.text.RENAMEROLE}"/></h2>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="#{web.text.ROLES_LABEL_NAMESPACE}"/>
+                        <h:panelGroup>
+                            <h:outputText value="#{rolesBean.editNameSpaceSelected}"
+                                rendered="#{!rolesBean.renderEditNameSpace and rolesBean.nameSpaceAvailable.size()==1}"/>
+                            <h:selectOneMenu value="#{rolesBean.editNameSpaceSelected}" styleClass="fullwidth"
+                                rendered="#{!rolesBean.renderEditNameSpace and rolesBean.nameSpaceAvailable.size()!=1}">
+                                <f:selectItems value="#{rolesBean.nameSpaceAvailable}"/>
+                                <f:ajax execute="@form" render="@form"/>
+                            </h:selectOneMenu>
+                            <h:inputText value="#{rolesBean.editNameSpace}" title="#{web.text.ROLES_NAMESPACE_PLACEHOLDER}"
+                                rendered="#{rolesBean.renderEditNameSpace}">
+                                <f:validator validatorId="legalCharsValidator"/>
+                            </h:inputText>
+                        </h:panelGroup>
+                        <h:panelGroup>
+                            <h:commandButton value="#{web.text.ROLES_ACTION_NEWNAMESPACE}" action="#{rolesBean.actionEditNewNameSpace}"
+                                rendered="#{!rolesBean.renderEditNameSpace and rolesBean.authorizedToCreateNewNameSpace}">
+                                <f:ajax execute="@form" render="@form"/>
+                            </h:commandButton>
+                        </h:panelGroup>
+                        <h:outputLabel value="#{web.text.ROLES_LABEL_ROLENAME}"/>
+                        <h:inputText value="#{rolesBean.editRoleName}" title="#{web.text.ROLES_ROLENAME_PLACEHOLDER}">
+                            <f:validator validatorId="legalCharsValidator"/>
+                        </h:inputText>
+                        <h:panelGroup/>
+                    </h:panelGrid>
+                    <h:panelGroup styleClass="alignright fullwidth" layout="block">
+                        <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionRenameRoleReset}">
+                            <f:ajax execute="@this" render=":modalBlockContainer"/>
+                        </h:commandButton>
+                        <h:commandButton value="#{web.text.RENAME}" action="#{rolesBean.actionRenameRoleConfirm}">
+                            <f:ajax execute="@form" render="@all"/>
+                        </h:commandButton>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+                <h:panelGroup id="delete" rendered="#{rolesBean.renderDeleteRole}">
+                    <h2><h:outputText value="#{web.text.DELETEROLE}"/></h2>
+                    <h:panelGrid columns="2">
+                        <h:outputLabel value="#{web.text.ROLES_LABEL_NAMESPACE}"/>
+                        <h:outputText value="#{rolesBean.roleToDelete.nameSpace}"/>
+                        <h:outputLabel value="#{web.text.ROLES_LABEL_ROLENAME}"/>
+                        <h:outputText value="#{rolesBean.roleToDelete.roleName}"/>
+                    </h:panelGrid>
+                    <h:panelGroup styleClass="alignright fullwidth" layout="block">
+                        <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionDeleteRoleReset}">
+                            <f:ajax execute="@this" render=":modalBlockContainer"/>
+                        </h:commandButton>
+                        <h:commandButton value="#{web.text.DELETE}" action="#{rolesBean.actionDeleteRoleConfirm}">
+                            <f:ajax execute="@form" render="@all"/>
+                        </h:commandButton>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</html>
