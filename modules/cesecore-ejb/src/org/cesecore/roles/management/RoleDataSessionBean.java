@@ -129,7 +129,8 @@ public class RoleDataSessionBean implements RoleDataSessionLocal {
             role.setRoleId(findFreeRoleId());
             entityManager.persist(new RoleData(role));
         } else {
-            entityManager.merge(new RoleData(role));
+            final RoleData roleData = getRoleData(role.getRoleId());
+            roleData.setRole(role);
         }
         RoleCache.INSTANCE.updateWith(role.getRoleId(), role.hashCode(), Role.getRoleNameFullAsCacheName(role.getNameSpace(), role.getRoleName()), role);
         accessTreeUpdateSession.signalForAccessTreeUpdate();
