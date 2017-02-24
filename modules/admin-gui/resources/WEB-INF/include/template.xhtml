@@ -40,7 +40,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <title dir="ltr"><h:outputText value="#{web.ejbcaTitle}"/></title>
         <link rel="stylesheet" type="text/css" href="#{web.ejbcaWebBean.baseUrl}/#{web.ejbcaWebBean.cssFile}"/>
-        <script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/js/ejbcajslib.js"></script>
+        <script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/ejbcajslib.js"></script>
         <link rel="shortcut icon" type="image/png" href="#{facesContext.externalContext.context.contextPath}/images/favicon.png"/>
         <style type="text/css">
             /* CSS to push down 40px footer to bottom of page when there is too little content. */
@@ -73,12 +73,33 @@
                 vertical-align: middle;
                 height: 40px;
             }
+            #modalBlock {
+                position: fixed;
+                left: 0px;
+                top: 0px;
+                width: 100%;
+                height: 100%;
+                background-color: #fefefec0;
+                text-align: center;
+            }
+            #modalInner {
+                position: static;
+                display: inline-block;
+                text-align: left;
+                margin: 10% auto;
+                max-width: 90%;
+                width: auto;
+                padding: 20px;
+                background-color: #fefefe;
+                border: 1px solid #aeaeae;
+                border-radius: 5px;
+            }
         </style>
     </h:head>
     <h:body dir="ltr" styleClass="ltrDirection">
         <h:panelGroup layout="block" id="messagesAndContent">
             <h:panelGroup layout="block" id="messagesBlock">
-                <h:messages id="messages" class="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
+                <h:messages id="messages" styleClass="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
             </h:panelGroup>
     
             <h:panelGroup layout="block" id="contentBlock" styleClass="contentBlock">
@@ -94,6 +115,17 @@
                     <h:outputText value="© 2002–2017 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB."/>
                 </h:panelGroup>
             </ui:insert>
+        </h:panelGroup>
+
+        <h:panelGroup id="modalBlockContainer">
+        <h:panelGroup layout="block" id="modalBlock" styleClass="modalBlock" rendered="#{not empty renderModal and renderModal}">
+            <h:panelGroup layout="block" id="modalInner" styleClass="modalInner">
+                <h:messages id="modalMessages" styleClass="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
+                <ui:insert name="modal">
+                    <h:outputText value="Modal dialog placeholder"/>
+                </ui:insert>
+            </h:panelGroup>
+        </h:panelGroup>
         </h:panelGroup>
     </h:body>
     </f:view>

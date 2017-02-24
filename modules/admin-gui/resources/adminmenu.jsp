@@ -53,7 +53,8 @@ org.cesecore.keybind.InternalKeyBindingRules
        final String SERVICES_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "services/listservices.jsf";
        final String PEERCONNECTOR_LINK       = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "peerconnector/peerconnectors.jsf";
        
-       final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() + "/administratorprivileges.jsf";
+       final String ADMINISTRATORPRIV_LINK_LEGACY = ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() + "/administratorprivileges.jsf";
+       final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() + "/roles.xhtml";
        
        final String SCEPCONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/scepconfiguration.jsf";
        
@@ -296,6 +297,7 @@ org.cesecore.keybind.InternalKeyBindingRules
          systemheaderprinted=true;
          }  %>
 				<li><a href="<%= ADMINISTRATORPRIV_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_ROLES") %></a></li>
+				<li><a href="<%= ADMINISTRATORPRIV_LINK_LEGACY %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_ROLES") %> (old)</a></li>
 <% } %>
 
 

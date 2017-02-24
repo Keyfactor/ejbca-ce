@@ -107,7 +107,11 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
 
     @Override
     public int compareTo(Role role) {
-        return getRoleNameFull().compareTo(role.getRoleNameFull());
+        final int nameSpaceCompare = getNameSpace().compareTo(role.getNameSpace());
+        if (nameSpaceCompare!=0) {
+            return nameSpaceCompare;
+        }
+        return getRoleName().compareTo(role.getRoleName());
     }
 
     @Override
