@@ -26,6 +26,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -206,6 +207,10 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         if (roleById == null) {
             if (roleByName!=null) {
                 throw new RoleExistsException(InternalResources.getInstance().getLocalizedMessage("authorization.erroraddroleexists", role.getRoleNameFull()));
+            }
+            // Enforce a non-empty role name
+            if (StringUtils.isEmpty(role.getRoleName())) {
+                throw new IllegalArgumentException("Role name cannot be empty.");
             }
             // Persist new role
             role.setRoleId(roleDataSession.persistRole(role));
