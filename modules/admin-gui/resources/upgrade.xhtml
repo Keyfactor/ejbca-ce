@@ -29,7 +29,6 @@
     <ui:composition template="/WEB-INF/include/template.xhtml">
         <ui:define name="content">
             <h1><h:outputText value="#{web.text.UPGRADE_TITLE}"/></h1>
-            <h:panelGroup layout="block" styleClass="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></h:panelGroup>
             <h:outputText styleClass="alert" rendered="#{!upgradeBean.authorizedToUpgrade}" value="#{web.text.UPGRADE_ERR_UNAUTH}"/>
             
             <h:form id="upgrade" rendered="#{upgradeBean.authorizedToUpgrade}" styleClass="fullwidth readablewidth">
