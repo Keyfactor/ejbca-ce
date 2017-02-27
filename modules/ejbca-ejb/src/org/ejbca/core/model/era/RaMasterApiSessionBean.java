@@ -312,6 +312,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
+    public boolean deleteRole(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException {
+        if (log.isDebugEnabled()) {
+            log.debug("Deleting role with ID " + roleId);
+        }
+        return roleSession.deleteRoleIdempotent(authenticationToken, roleId);
+    }
+    
+    @Override
     public RoleMember getRoleMember(final AuthenticationToken authenticationToken, final int roleMemberId) throws AuthorizationDeniedException {
         return roleMemberSession.getRoleMember(authenticationToken, roleMemberId);
     }
