@@ -175,20 +175,17 @@ function isExternalGeneric(){
    var createorinitbutton =  document.ca.<%= isUninitialized ? BUTTON_INITIALIZE : BUTTON_CREATE %>; 
    var certproffield      =  document.ca.<%=SELECT_CERTIFICATEPROFILE %>;
    var validityfield      =  document.ca.<%=TEXTFIELD_VALIDITY%>;
-   var utf8policytxtfield =  document.ca.<%=CHECKBOX_USEUTF8POLICYTEXT%>;
 
    makebutton.disabled = true;
    createorinitbutton.disabled = false;
    certproffield.disabled = false;
    validityfield.disabled = false;
-   utf8policytxtfield.disabled = false;
 
    if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SIGNEDBYEXTERNALCA %>){
       makebutton.disabled = false;
       <% if (!isUninitialized) { %>createorinitbutton.disabled = true;<% } %>
       certproffield.disabled = true;
       validityfield.disabled = true;
-      utf8policytxtfield.disabled = true;
    } 
 }
 <% } %>
