@@ -63,6 +63,7 @@ import org.ejbca.ui.web.admin.configuration.AuthorizationDataHandler;
  * 
  * @version $Id$
  */
+@Deprecated // Superseeded by new Roles config in EJBCA 6.8.0 (remove as part of cleanup)
 public class RolesManagedBean extends BaseManagedBean {
 
     private static final long serialVersionUID = 1227489070299372101L;
