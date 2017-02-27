@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.admin;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -25,8 +26,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.faces.application.FacesMessage;
 import javax.faces.application.FacesMessage.Severity;
 import javax.faces.context.FacesContext;
+import javax.faces.context.Flash;
+import javax.faces.context.PartialViewContext;
 import javax.faces.model.SelectItem;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
@@ -37,9 +41,10 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * 
  * @version $Id$
  */
-public abstract class BaseManagedBean implements Serializable{
+public abstract class BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -8019234011853194880L;
+    private static final Logger log = Logger.getLogger(BaseManagedBean.class);
     
     private static final Map<String, Map<String, Object>> publicConstantCache = new ConcurrentHashMap<>();
 
@@ -120,4 +125,30 @@ public abstract class BaseManagedBean implements Serializable{
             }
 	    });
 	}
+
+    /** 
+     * Perform a post-redirect-get if the requests is not invoked via AJAX to the current view id with the specified request string appended.
+     * 
+     * It will try to preserve FacesMessages using the bug-riddled Flash scope.
+     */
+    protected void nonAjaxPostRedirectGet(final String requestString) {
+        final FacesContext facesContext = FacesContext.getCurrentInstance();
+        final PartialViewContext partialViewContext = facesContext.getPartialViewContext();
+        if (!partialViewContext.isAjaxRequest()) {
+            final String viewUrl = facesContext.getApplication().getViewHandler().getActionURL(facesContext, facesContext.getViewRoot().getViewId());
+            final Flash flash = facesContext.getExternalContext().getFlash();
+            flash.setKeepMessages(true);
+            final String url = viewUrl + (requestString==null ? "" : requestString);
+            if (log.isDebugEnabled()) {
+                log.debug("Trying Post-Redirect-Get to '" + url + "'.");
+            }
+            try {
+                facesContext.getExternalContext().redirect(url);
+            } catch (IOException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Post-Redirect-Get to '" + url + "' failed: " + e.getMessage());
+                }
+            }
+        }
+    }
 }

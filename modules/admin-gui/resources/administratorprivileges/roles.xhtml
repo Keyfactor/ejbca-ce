@@ -167,8 +167,8 @@
                 <h:panelGroup id="delete" rendered="#{rolesBean.renderDeleteRole}">
                     <h2><h:outputText value="#{web.text.DELETEROLE}"/></h2>
                     <h:panelGrid columns="2">
-                        <h:outputLabel value="#{web.text.ROLES_LABEL_NAMESPACE}"/>
-                        <h:outputText value="#{rolesBean.roleToDelete.nameSpace}"/>
+                        <h:outputLabel value="#{web.text.ROLES_LABEL_NAMESPACE}" rendered="#{!rolesBean.onlyEmptyNameSpaceInUse}"/>
+                        <h:outputText value="#{rolesBean.roleToDelete.nameSpace}" rendered="#{!rolesBean.onlyEmptyNameSpaceInUse}"/>
                         <h:outputLabel value="#{web.text.ROLES_LABEL_ROLENAME}"/>
                         <h:outputText value="#{rolesBean.roleToDelete.roleName}"/>
                     </h:panelGrid>
