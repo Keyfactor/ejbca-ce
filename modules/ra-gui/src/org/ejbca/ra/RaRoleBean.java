@@ -65,6 +65,7 @@ public class RaRoleBean {
     private static final Object NEW_NAMESPACE_ITEM = "#NEW#";
     
     private Integer roleId;
+    private Integer cloneFromRoleId;
     private Role role;
     
     private String name;
@@ -76,10 +77,14 @@ public class RaRoleBean {
 
     
     public void initialize() throws AuthorizationDeniedException {
-        if (roleId != null) {
-            role = raMasterApiProxyBean.getRole(raAuthenticationBean.getAuthenticationToken(), roleId);
+        if (roleId != null || cloneFromRoleId != null) {
+            int roleToFetch = (roleId != null ? roleId : cloneFromRoleId);
+            role = raMasterApiProxyBean.getRole(raAuthenticationBean.getAuthenticationToken(), roleToFetch);
             name = role.getRoleName();
             namespace = role.getNameSpace();
+            if (roleId == null) {
+                role.setRoleId(Role.ROLE_ID_UNASSIGNED); // force creation of a new role if we are cloning
+            }
         } else {
             role = new Role("", "");
         }
@@ -105,6 +110,14 @@ public class RaRoleBean {
 
     public void setRoleId(final Integer roleId) {
         this.roleId = roleId;
+    }
+    
+    public Integer getCloneFromRoleId() {
+        return cloneFromRoleId;
+    }
+
+    public void setCloneFromRoleId(final Integer cloneFromRoleId) {
+        this.cloneFromRoleId = cloneFromRoleId;
     }
 
     public Role getRole() {
@@ -149,15 +162,25 @@ public class RaRoleBean {
     
     
     public String getPageTitle() {
-        if (roleId == null) {
-            return raLocaleBean.getMessage("role_page_title_add");
-        } else {
+        if (roleId != null) {
             return raLocaleBean.getMessage("role_page_title_edit", role.getRoleName());
+        } else if (cloneFromRoleId != null) {
+            return raLocaleBean.getMessage("role_page_title_clone", role.getRoleName());
+        } else {
+            return raLocaleBean.getMessage("role_page_title_add");
         }
     }
     
     public String getSaveButtonText() {
-        return raLocaleBean.getMessage(roleId == null ? "role_page_add_command" : "role_page_save_command");
+        final String messageKey;
+        if (roleId != null) {
+            messageKey = "role_page_save_command";
+        } else if (cloneFromRoleId != null) {
+            messageKey = "role_page_clone_command";
+        } else {
+            messageKey = "role_page_add_command";
+        }
+        return raLocaleBean.getMessage(messageKey);
     }
 
     public String save() throws AuthorizationDeniedException, RoleExistsException {
