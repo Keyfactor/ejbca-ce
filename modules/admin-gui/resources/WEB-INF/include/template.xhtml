@@ -99,7 +99,7 @@
     <h:body dir="ltr" styleClass="ltrDirection">
         <h:panelGroup layout="block" id="messagesAndContent">
             <h:panelGroup layout="block" id="messagesBlock">
-                <h:messages id="messages" styleClass="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
+                <h:messages id="messages" styleClass="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="false"/>
             </h:panelGroup>
     
             <h:panelGroup layout="block" id="contentBlock" styleClass="contentBlock">
@@ -120,7 +120,7 @@
         <h:panelGroup id="modalBlockContainer">
         <h:panelGroup layout="block" id="modalBlock" styleClass="modalBlock" rendered="#{not empty renderModal and renderModal}">
             <h:panelGroup layout="block" id="modalInner" styleClass="modalInner">
-                <h:messages id="modalMessages" styleClass="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
+                <h:messages id="modalMessages" styleClass="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="false"/>
                 <ui:insert name="modal">
                     <h:outputText value="Modal dialog placeholder"/>
                 </ui:insert>
