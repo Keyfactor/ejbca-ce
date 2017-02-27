@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:component="http://java.sun.com/jsf/composite/component"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+    <ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     version: $Id$
+     -->
+    </ui:remove>
+    <ui:composition template="/WEB-INF/include/template.xhtml">
+        <ui:define name="content">
+            <h1>
+                <h:outputText value="#{web.text.EDITACCESSRULES}" rendered="#{accessRulesBean.authorizedToEditRole}"/>
+                <h:outputText value="#{web.text.VIEWACCESSRULES}" rendered="#{!accessRulesBean.authorizedToEditRole}"/>
+                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/userguide.html#Pre-defined%20Role%20Templates')}" escape="false"/>
+            </h1>
+            <h2>
+                <h:outputText value="#{web.text.ADMINROLE} : #{accessRulesBean.role.roleName}"
+                    rendered="#{not empty accessRulesBean.role and empty accessRulesBean.role.nameSpace}"/>
+                <h:outputText value="#{web.text.ADMINROLE} : [#{accessRulesBean.role.nameSpace}] #{accessRulesBean.role.roleName}"
+                    rendered="#{not empty accessRulesBean.role and not empty accessRulesBean.role.nameSpace}"/>
+            </h2>
+            <h:panelGrid styleClass="edit-top" width="100%" columns="1" rowClasses="Row0,Row1" style="text-align: right;">
+                <h:outputLink value="roles.xhtml">
+                    <h:outputText value="#{web.text.BACKTOROLES}"/>
+                </h:outputLink>
+                <h:outputLink value="rolemembers.xhtml?roleId=#{accessRulesBean.role.roleId}"
+                    rendered="#{not empty accessRulesBean.role}">
+                    <h:outputText value="#{web.text.EDITADMINS}" rendered="#{accessRulesBean.authorizedToEditRole}"/>
+                    <h:outputText value="#{web.text.VIEWADMINS}" rendered="#{!accessRulesBean.authorizedToEditRole}"/>
+                </h:outputLink>
+            </h:panelGrid>
+            <h:outputText styleClass="alert" rendered="#{empty accessRulesBean.role}" value="#{web.text.ACCESSRUlES_ERROR_UNAUTH}"/>
+            
+            <h:form id="rolemembers" rendered="#{not empty accessRulesBean.role}">
+                <ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
+                <h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
+
+                <h:outputText value="not implemented yet"/>
+            </h:form>
+        </ui:define>
+
+        <ui:remove><!-- Template will render this when element ":modalBlockContainer" is rendered and "renderModal" param is true. --></ui:remove>
+        <ui:param name="renderModal" value="false"/>
+        <ui:define name="modal">
+            <h:form id="modal">
+                <ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
+                <h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
+
+
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</html>
