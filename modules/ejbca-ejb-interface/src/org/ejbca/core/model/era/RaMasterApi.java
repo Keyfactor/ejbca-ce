@@ -110,6 +110,12 @@ public interface RaMasterApi {
     Role saveRole(AuthenticationToken authenticationToken, Role role) throws AuthorizationDeniedException, RoleExistsException;
 
     /**
+     * Deletes a role.
+     * @return true if the role was found and was deleted, and false if it didn't exist.
+     */
+    boolean deleteRole(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
+    
+    /**
      * @return the Role Member with the given ID, or null if it does not exist
      * @throws AuthorizationDeniedException if missing view access.
      * @since Master RA API version 1 (EJBCA 6.8.0)

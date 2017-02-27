@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:component="http://java.sun.com/jsf/composite/component"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+<ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     version: $Id$
+     -->
+</ui:remove>
+<ui:composition template="/WEB-INF/include/template.xhtml">
+    <f:metadata>
+        <f:viewParam name="roleId" value="#{raRoleBean.roleId}"/>
+        
+        <!-- These parameters must be duplicated in several places. See roles.xhtml for a complete list. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
+        <f:viewParam name="roleSearchString" value="#{raRolesBean.roleSearchString}"/>
+        <f:viewParam name="rolesSortAsc" value="#{raRolesBean.sortAscending}"/>
+        <f:viewParam name="rolesSortCol" value="#{raRolesBean.sortColumn}"/>
+        
+        <f:event type="preRenderView" listener="#{raRoleBean.initialize}"/>
+    </f:metadata>
+    <ui:define name="content">
+        <h:panelGroup layout="block" class="header" id="title">
+            <h1><h:outputText value="#{raRoleBean.deletePageTitle}"/></h1>
+        </h:panelGroup>
+        <h:outputText value="#{msg.manage_roles_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEditRoleRules}"/>
+        <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToEditRoleRules}">
+            <ui:remove>
+            <!--
+            <h:panelGroup styleClass="topLinks" layout="block">
+                <h:link outcome="roles" styleClass="backLink" includeViewParams="true">
+                    <h:outputText value="#{msg.generic_back}"/>
+                </h:link>
+            </h:panelGroup>
+            -->
+            </ui:remove>
+            <h:form id="roleForm" class="pure-form">
+                <h:panelGroup id="basic" styleClass="">
+                    <h:outputText value="#{raRoleBean.deleteConfirmationText}"/>
+
+                    <h:panelGroup id="parentConfirmDeletionButton" layout="block" styleClass="pure-u-lg-5-5">
+                        <h:commandButton id="confirmDeletionButton" action="#{raRoleBean.delete}" value="#{msg.delete_role_page_delete_command}" styleClass="pure-button ra-button executeActionButton deleteButton"/>
+                        <h:commandButton id="cancelButton" action="#{raRoleBean.cancel}" value="#{msg.generic_cancel}" styleClass="pure-button ra-button cancelButton"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
+</html>

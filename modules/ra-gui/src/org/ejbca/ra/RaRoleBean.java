@@ -185,5 +185,28 @@ public class RaRoleBean {
         
         return "roles?faces-redirect=true&includeViewParams=true";
     }
+
+    public String getDeletePageTitle() {
+        return raLocaleBean.getMessage("delete_role_page_title", role.getRoleName());
+    }
+    
+    public String getDeleteConfirmationText() {
+        return raLocaleBean.getMessage("delete_role_page_confirm", role.getAccessRules().size());
+    }
+    
+    public String delete() throws AuthorizationDeniedException {
+        if (!raMasterApiProxyBean.deleteRole(raAuthenticationBean.getAuthenticationToken(), role.getRoleId())) {
+            if (log.isDebugEnabled()) {
+                log.debug("The role '" + role.getRoleNameFull() + "' could not be deleted. Role ID: " + role.getRoleId());
+            }
+            raLocaleBean.addMessageError("delete_role_page_error_generic");
+            return "";
+        }
+        return "roles?faces-redirect=true&includeViewParams=true";
+    }
+    
+    public String cancel() {
+        return "roles?faces-redirect=true&includeViewParams=true";
+    }
     
 }

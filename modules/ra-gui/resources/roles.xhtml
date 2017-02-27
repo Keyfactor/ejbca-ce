@@ -28,7 +28,7 @@
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <f:metadata>
-        <!-- Parameters must be duplicated here and in role_members.xhtml, role_member.xhtml and edit_role.xhtml. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
+        <!-- Parameters must be duplicated here and in role_members.xhtml, role_member.xhtml, delete_role.xhtml and edit_role.xhtml. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
         <f:viewParam name="roleSearchString" value="#{raRolesBean.roleSearchString}"/>
         <f:viewParam name="rolesSortAsc" value="#{raRolesBean.sortAscending}"/>
         <f:viewParam name="rolesSortCol" value="#{raRolesBean.sortColumn}"/>
@@ -110,6 +110,20 @@
                             <h:link id="editButton" styleClass="editLink" outcome="edit_role" includeViewParams="true">
                                 <f:param name="roleId" value="#{raRole.roleId}"/>
                                 <h:outputText value="#{msg.roles_page_edit_command}" styleClass="viewMoreLink"/>
+                            </h:link>
+                        </h:column>
+                        
+                        <h:column rendered="#{raAccessBean.authorizedToEditRoleRules}">
+                            <h:link id="deleteButton" styleClass="deleteLink" outcome="delete_role" includeViewParams="true">
+                                <f:param name="roleId" value="#{raRole.roleId}"/>
+                                <h:outputText value="#{msg.roles_page_delete_command}" styleClass="viewMoreLink"/>
+                            </h:link>
+                        </h:column>
+                        
+                        <h:column rendered="#{raAccessBean.authorizedToEditRoleRules}">
+                            <h:link id="cloneButton" styleClass="cloneLink" outcome="clone_role" includeViewParams="true">
+                                <f:param name="roleId" value="#{raRole.roleId}"/>
+                                <h:outputText value="#{msg.roles_page_clone_command}" styleClass="viewMoreLink"/>
                             </h:link>
                         </h:column>
                         
