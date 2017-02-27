@@ -121,8 +121,8 @@
                         </h:column>
                         
                         <h:column rendered="#{raAccessBean.authorizedToEditRoleRules}">
-                            <h:link id="cloneButton" styleClass="cloneLink" outcome="clone_role" includeViewParams="true">
-                                <f:param name="roleId" value="#{raRole.roleId}"/>
+                            <h:link id="cloneButton" styleClass="cloneLink" outcome="edit_role" includeViewParams="true">
+                                <f:param name="cloneFromRoleId" value="#{raRole.roleId}"/>
                                 <h:outputText value="#{msg.roles_page_clone_command}" styleClass="viewMoreLink"/>
                             </h:link>
                         </h:column>
