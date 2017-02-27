@@ -50,11 +50,11 @@
                     </h:column>
                     <h:column>
                         <f:facet name="header"></f:facet>
-                        <h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/rolemembers.xhtml?roleId=#{role.roleId}"
+                        <h:outputLink value="rolemembers.xhtml?roleId=#{role.roleId}"
                             styleClass="commandLink" title="#{web.text.EDITADMINS}">
                             <h:outputText value="#{web.text.ADMINS}"/>
                         </h:outputLink>
-                        <h:outputLink value="#{facesContext.externalContext.context.contextPath}/accessrules.xhtml?roleId=#{role.roleId}"
+                        <h:outputLink value="accessrules.xhtml?roleId=#{role.roleId}"
                             styleClass="commandLink" title="#{web.text.EDITACCESSRULES}">
                             <h:outputText value="#{web.text.ACCESSRULES}"/>
                         </h:outputLink>
