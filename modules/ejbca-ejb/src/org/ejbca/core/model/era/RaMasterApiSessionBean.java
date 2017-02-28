@@ -339,9 +339,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (log.isDebugEnabled()) {
             log.debug("Removing role member with ID " + roleMemberId + " from the role with ID " + roleId);
         }
-        RoleMember roleMember = roleMemberSession.getRoleMember(authenticationToken, roleMemberId);
+        final RoleMember roleMember = roleMemberSession.getRoleMember(authenticationToken, roleMemberId);
         if (roleMember == null) {
-            log.debug("Can't delete role member with ID " + roleMemberId + " because it does not exist.");
+            if (log.isDebugEnabled()) {
+                log.debug("Can't delete role member with ID " + roleMemberId + " because it does not exist.");
+            }
             return false;
         }
         // Sanity check that there's no ID collision

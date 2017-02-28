@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,7 +42,7 @@ import org.ejbca.core.model.era.RaRoleMemberTokenTypeInfo;
  */
 @ManagedBean
 @ViewScoped
-public class RaRoleMemberBean {
+public class RaRoleMemberBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaRoleMemberBean.class);
