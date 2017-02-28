@@ -1221,6 +1221,21 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return response;
     }
     
+    @Override
+    public RaRoleSearchResponse searchForRoles(AuthenticationToken authenticationToken, RaRoleSearchRequest request) {
+        // TODO optimize this (ECA-5721), should filter with a database query
+        final List<Role> authorizedRoles = getAuthorizedRoles(authenticationToken);
+        final RaRoleSearchResponse resp = new RaRoleSearchResponse();
+        final String searchString = request.getGenericSearchString();
+        for (final Role role : authorizedRoles) {
+            if (searchString == null || StringUtils.containsIgnoreCase(role.getRoleName(), searchString) ||
+                    (role.getNameSpace() != null && StringUtils.containsIgnoreCase(role.getNameSpace(), searchString))) {
+                resp.getRoles().add(role);
+            }
+        }
+        return resp;
+    }
+    
     @SuppressWarnings("unchecked")
     @Override
     public RaRoleMemberSearchResponse searchForRoleMembers(AuthenticationToken authenticationToken, RaRoleMemberSearchRequest request) {
