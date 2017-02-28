@@ -523,6 +523,22 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
+    public RaRoleSearchResponse searchForRoles(AuthenticationToken authenticationToken,
+            RaRoleSearchRequest raRoleSearchRequest) {
+        final RaRoleSearchResponse ret = new RaRoleSearchResponse();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    ret.merge(raMasterApi.searchForRoles(authenticationToken, raRoleSearchRequest));
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
+    
+    @Override
     public RaRoleMemberSearchResponse searchForRoleMembers(AuthenticationToken authenticationToken,
             RaRoleMemberSearchRequest raRoleMemberSearchRequest) {
         final RaRoleMemberSearchResponse ret = new RaRoleMemberSearchResponse();

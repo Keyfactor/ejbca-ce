@@ -58,7 +58,7 @@
                     
                     <h:panelGroup id="parentRoleSearchString" styleClass="pure-u-1 pure-u-lg-2-5">
                         <h:inputText id="roleSearchString" value="#{raRolesBean.roleSearchString}" styleClass="jsAutoFocusFirst jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
-                             title="#{msg.roles_page_criteria_generic_title}">
+                             title="#{raRolesBean.searchStringPlaceholder}">
                             <f:ajax event="keyup" execute="@this" render=":rolesForm:filteredResults" listener="#{raRolesBean.searchAndFilterAjaxListener}"
                                 onevent="function(data){ejbca.ra.onAjaxEvent(data,'rolesForm:filteredResults');}"
                                 onerror="function(data){ejbca.ra.onAjaxError(data,'rolesForm:filteredResults');}"/>
