@@ -50,12 +50,12 @@
                     </h:column>
                     <h:column>
                         <f:facet name="header"></f:facet>
-                        <h:outputLink value="rolemembers.xhtml?roleId=#{role.roleId}"
-                            styleClass="commandLink" title="#{web.text.EDITADMINS}">
+                        <h:outputLink value="rolemembers.xhtml" styleClass="commandLink" title="#{web.text.EDITADMINS}">
+                            <f:param name="roleId" value="#{role.roleId}"/>
                             <h:outputText value="#{web.text.ADMINS}"/>
                         </h:outputLink>
-                        <h:outputLink value="accessrules.xhtml?roleId=#{role.roleId}"
-                            styleClass="commandLink" title="#{web.text.EDITACCESSRULES}">
+                        <h:outputLink value="accessrules.xhtml" styleClass="commandLink" title="#{web.text.EDITACCESSRULES}">
+                            <f:param name="roleId" value="#{role.roleId}"/>
                             <h:outputText value="#{web.text.ACCESSRULES}"/>
                         </h:outputLink>
                     </h:column>
