@@ -43,19 +43,6 @@
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToRoles}">
             <h:form id="rolesForm" class="pure-form">
                 <h:panelGroup id="basic" styleClass="pure-g">
-                    <ui:remove>
-                    <!--
-                    <h:panelGroup id="parentCriteriaNamespace" styleClass="pure-u-1 pure-u-lg-1-5" rendered="#{not raRolesBean.onlyOneNamespaceAvailable}">
-                        <h:selectOneMenu id="criteriaNamespace" value="#{raRolesBean.criteriaNamespace}" styleClass="pure-input-1">
-                            <f:selectItems value="#{raRolesBean.availableNamespaces}"/>
-                            <f:ajax event="change" execute="@this" render=":rolesForm:filteredResults" listener="#{raRolesBean.searchAndFilterAjaxListener}"
-                                onevent="function(data){ejbca.ra.onAjaxEvent(data,'rolesForm:filteredResults');}"
-                                onerror="function(data){ejbca.ra.onAjaxError(data,'rolesForm:filteredResults');}"/>
-                        </h:selectOneMenu>
-                    </h:panelGroup>
-                    -->
-                    </ui:remove>
-                    
                     <h:panelGroup id="parentRoleSearchString" styleClass="pure-u-1 pure-u-lg-2-5">
                         <h:inputText id="roleSearchString" value="#{raRolesBean.roleSearchString}" styleClass="jsAutoFocusFirst jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
                              title="#{raRolesBean.searchStringPlaceholder}">

@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -39,10 +40,8 @@ import org.ejbca.core.model.era.RaRoleSearchResponse;
  */
 @ManagedBean
 @ViewScoped
-public class RaRolesBean {
+public class RaRolesBean implements Serializable {
     
-    //public static final class RoleMemberGuiInfo 
-
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaRolesBean.class);
     
