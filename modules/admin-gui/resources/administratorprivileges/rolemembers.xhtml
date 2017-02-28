@@ -42,8 +42,8 @@
                 <h:outputLink value="roles.xhtml">
                     <h:outputText value="#{web.text.BACKTOROLES}"/>
                 </h:outputLink>
-                <h:outputLink value="accessrules.xhtml?roleId=#{roleMembersBean.role.roleId}"
-                    rendered="#{not empty roleMembersBean.role}">
+                <h:outputLink value="accessrules.xhtml" rendered="#{not empty roleMembersBean.role}">
+                    <f:param name="roleId" value="#{roleMembersBean.role.roleId}"/>
                     <h:outputText value="#{web.text.EDITACCESSRULES}" rendered="#{roleMembersBean.authorizedToEditRole}"/>
                     <h:outputText value="#{web.text.VIEWACCESSRULES}" rendered="#{!roleMembersBean.authorizedToEditRole}"/>
                 </h:outputLink>
