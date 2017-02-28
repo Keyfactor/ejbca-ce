@@ -1547,6 +1547,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 
                 final RequestMessage certReq = new PKCS10RequestMessage(request.getCsr());
                 final EndEntityInformation eei = endEntityAccessSession.findUser("acmetestuser");
+                eei.setPassword("foo123")
                 ResponseMessage certResp = signSessionLocal.createCertificate(authenticationToken, certReq, X509ResponseMessage.class, eei);
                 
                 response.setCertificate(certResp.getResponseMessage());
