@@ -23,12 +23,13 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.roles.Role;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.RaRoleSearchRequest;
+import org.ejbca.core.model.era.RaRoleSearchResponse;
 
 
 /**
@@ -60,12 +61,9 @@ public class RaRolesBean {
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
     
-    private List<SelectItem> availableNamespaces = null;
-    
-    //private String criteriaNamespace;
     private String roleSearchString;
     
-    //private RaRequestsSearchResponse lastExecutedResponse = null;
+    private RaRoleSearchResponse lastExecutedResponse = null;
     
     private List<Role> resultsFiltered = new ArrayList<>();
     private boolean hasNamespaces;
@@ -87,14 +85,6 @@ public class RaRolesBean {
         this.roleSearchString = roleSearchString;
     }
 
-/*    public String getCriteriaNamespace() {
-        return criteriaNamespace;
-    }
-
-    public void setCriteriaNamespace(final String criteriaNamespace) {
-        this.criteriaNamespace = criteriaNamespace;
-    }*/
-
 
     /** Invoked action on search form post */
     public void searchAndFilterAction() {
@@ -109,8 +99,10 @@ public class RaRolesBean {
     /** Determine if we need to query back end or just filter and execute the required action. */
     private void searchAndFilterCommon() {
         // Get data
-        // TODO filtering
-        resultsFiltered = raMasterApiProxyBean.getAuthorizedRoles(raAuthenticationBean.getAuthenticationToken());
+        final RaRoleSearchRequest searchRequest = new RaRoleSearchRequest();
+        searchRequest.setGenericSearchString(roleSearchString);
+        lastExecutedResponse = raMasterApiProxyBean.searchForRoles(raAuthenticationBean.getAuthenticationToken(), searchRequest);
+        resultsFiltered = lastExecutedResponse.getRoles();
         
         // Check if we should show the namespace column
         hasNamespaces = false;
@@ -128,12 +120,15 @@ public class RaRolesBean {
     }
     
     public boolean isMoreResultsAvailable() {
-        // TODO
-        return false;
+        return lastExecutedResponse != null && lastExecutedResponse.isMightHaveMoreResults();
     }
     
     public boolean getHasNamespaces() {
         return hasNamespaces;
+    }
+    
+    public String getSearchStringPlaceholder() {
+        return raLocaleBean.getMessage(hasNamespaces ? "roles_page_search_placeholder_with_namespaces" : "roles_page_search_placeholder_without_namespaces");
     }
     
     // Sorting
@@ -198,27 +193,5 @@ public class RaRolesBean {
     public void setSortAscending(final boolean value) {
         sortAscending = value;
     }
-    
-    
-    public boolean isOnlyOneNamespaceAvailable() { return getAvailableNamespaces().size()==2; } // two including the "any namespace" choice
-    public List<SelectItem> getAvailableNamespaces() {
-        // TODO potentially this method will be slow, because it has to go through all roles
-        if (availableNamespaces == null) {
-            availableNamespaces = new ArrayList<>();
-//            final List<Role> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoles(raAuthenticationBean.getAuthenticationToken()));
-//            Collections.sort(roles, new Comparator<Role>() {
-//                @Override
-//                public int compare(final Role role1, final Role role2) {
-//                    return role1.getRoleName().compareTo(role2.getRoleName());
-//                }
-//            });
-            availableNamespaces.add(new SelectItem(0, raLocaleBean.getMessage("roles_page_criteria_namespace_optionany")));
-//            for (final Role role : roles) {
-//                availableRoles.add(new SelectItem(role.getRoleId(), "- " + role.getRoleName()));
-//            }
-        }
-        return availableNamespaces;
-    }
-    
     
 }

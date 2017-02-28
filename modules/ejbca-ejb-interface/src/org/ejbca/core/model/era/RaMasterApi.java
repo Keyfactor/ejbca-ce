@@ -196,6 +196,14 @@ public interface RaMasterApi {
     RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest raEndEntitySearchRequest);
 
     /**
+     * Searches for roles that the given authentication token has access to.
+     * @param authenticationToken administrator (affects the search results)
+     * @param raRoleSearchRequest Object specifying the search criteria.
+     * @return Object containing list of roles and search status.
+     */
+    RaRoleSearchResponse searchForRoles(AuthenticationToken authenticationToken, RaRoleSearchRequest raRoleSearchRequest);
+    
+    /**
      * Searches for role members in all roles that the given authentication token has access to.
      * @param authenticationToken administrator (affects the search results)
      * @param raRoleMemberSearchRequest Object specifying the search criteria.
