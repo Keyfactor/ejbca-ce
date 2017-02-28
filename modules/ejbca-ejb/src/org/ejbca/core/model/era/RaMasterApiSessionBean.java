@@ -51,6 +51,7 @@ import javax.persistence.QueryTimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
+import org.cesecore.ErrorCode;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -80,6 +81,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -1520,6 +1522,46 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             log.info("Client '"+authenticationToken+"' requested status change of certificate '"+fingerprint+"' that does not exist or the client is not authorized to see.");
         }
         return false;
+    }
+    
+    @Override
+    public RaAcmeResponse makeAcmeRequest(final AuthenticationToken authenticationToken, final RaAcmeRequest request) throws AuthorizationDeniedException, EjbcaException {
+        if (StringUtils.isEmpty(request.getAcmeBaseUrl())) {
+            throw new IllegalArgumentException("ACME base URL must be set");
+        }
+        if (request.getType() == 0) {
+            throw new IllegalArgumentException("ACME request type must be set");
+        }
+        
+        // Look up the ACME configuration for the given base URL. If not present, return null
+        // TODO
+        //final String caName = "AcmeTestCA"; // XXX test data
+        
+        
+        final RaAcmeResponse response = new RaAcmeResponse();
+        switch (request.getType()) {
+        case RaAcmeRequest.TYPE_CERTREQ:
+            // TODO this is test code
+            try {
+                //final CAInfo caInfo = caSession.getCAInfo(authenticationToken, caName);
+                
+                final RequestMessage certReq = new PKCS10RequestMessage(request.getCsr());
+                final EndEntityInformation eei = endEntityAccessSession.findUser("acmetestuser");
+                ResponseMessage certResp = signSessionLocal.createCertificate(authenticationToken, certReq, X509ResponseMessage.class, eei);
+                
+                response.setCertificate(certResp.getResponseMessage());
+            } catch (CryptoTokenOfflineException | CAOfflineException e) {
+                throw new EjbcaException(ErrorCode.CA_OFFLINE, e);
+            } catch (NoSuchEndEntityException | CustomCertificateSerialNumberException | IllegalKeyException | SignRequestException |
+                    SignRequestSignatureException | IllegalNameException | CertificateCreateException | CertificateRevokeException |
+                    CertificateSerialNumberException | IllegalValidityException | InvalidAlgorithmException | CertificateExtensionException |
+                    CertificateEncodingException | CADoesntExistsException e) {
+                throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
+            }
+            return response;
+        default:
+            return null;
+        }
     }
 
     private GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
