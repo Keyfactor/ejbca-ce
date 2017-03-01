@@ -44,6 +44,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -68,6 +69,8 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     private RoleSessionLocal roleSession;
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
+    @EJB
+    private RoleMemberDataSessionLocal roleMemberDataSession;
 
     private String roleIdParam;
     private Role role;
@@ -124,7 +127,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     /** @return a ListDataModel of all RoleMembers in this Role (sorted) */
     public ListDataModel<RoleMember> getRoleMembers() {
         if (roleMembers==null) {
-            final List<RoleMember> roleMembers = roleMemberSession.findRoleMemberByRoleId(role.getRoleId());
+            final List<RoleMember> roleMembers = roleMemberDataSession.findRoleMemberByRoleId(role.getRoleId());
             Collections.sort(roleMembers, new Comparator<RoleMember>() {
                 @Override
                 public int compare(final RoleMember roleMember1, final RoleMember roleMember2) {
