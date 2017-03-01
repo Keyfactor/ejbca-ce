@@ -103,7 +103,7 @@ import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberData;
-import org.cesecore.roles.member.RoleMemberSessionLocal;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.config.CmpConfiguration;
@@ -202,7 +202,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @EJB
     private RoleManagementSessionLocal roleMgmtSession;
     @EJB
-    private RoleMemberSessionLocal roleMemberSession;
+    private RoleMemberDataSessionLocal roleMemberDataSession;
     @EJB
     private RoleSessionLocal roleSession;
     @EJB
@@ -1680,7 +1680,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 }
                 final RoleMemberData roleMember = new RoleMemberData(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, tokenType,
                         tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, null, null);
-                roleMemberSession.createOrEdit(roleMember);
+                roleMemberDataSession.createOrEdit(roleMember);
             }           
         }
         log.error("(This is not an error) Completed upgrade procedure to 6.8.0");
@@ -1692,7 +1692,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Verifying that there are no TYPE_NOT_EQUALCASE or TYPE_NOT_EQUALCASEINS token match operators still in use.");
         boolean hasNotEquals = false;
         for (final Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
-            for (final RoleMember roleMember : roleMemberSession.findRoleMemberByRoleId(role.getRoleId())) {
+            for (final RoleMember roleMember : roleMemberDataSession.findRoleMemberByRoleId(role.getRoleId())) {
                 final int tokenMatchOperator = roleMember.getTokenMatchOperator();
                 if (AccessMatchType.TYPE_NOT_EQUALCASE.getNumericValue()==tokenMatchOperator ||
                         AccessMatchType.TYPE_NOT_EQUALCASEINS.getNumericValue()==tokenMatchOperator) {
