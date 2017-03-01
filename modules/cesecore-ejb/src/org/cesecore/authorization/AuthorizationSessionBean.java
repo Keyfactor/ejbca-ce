@@ -48,7 +48,7 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.management.RoleDataSessionLocal;
-import org.cesecore.roles.member.RoleMemberSessionLocal;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.time.TrustedTime;
 import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 import org.cesecore.time.providers.TrustedTimeProviderException;
@@ -69,7 +69,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     @EJB
     private RoleDataSessionLocal roleDataSession;
     @EJB
-    private RoleMemberSessionLocal roleMemberSession;
+    private RoleMemberDataSessionLocal roleMemberSession;
     @EJB
     private InternalSecurityEventsLoggerSessionLocal internalSecurityEventsLoggerSession;
     @EJB

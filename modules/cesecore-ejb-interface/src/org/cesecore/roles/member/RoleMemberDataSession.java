@@ -12,14 +12,11 @@
  *************************************************************************/
 package org.cesecore.roles.member;
 
-import javax.ejb.Local;
 
 /**
  * CRUD session bean for managing RoleMemberData objects
  * 
  * @version $Id$
- *
  */
-@Local
-public interface RoleMemberSessionLocal extends RoleMemberSession {
+public interface RoleMemberDataSession {
 }

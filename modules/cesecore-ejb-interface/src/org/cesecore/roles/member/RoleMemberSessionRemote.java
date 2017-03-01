@@ -22,5 +22,4 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface RoleMemberSessionRemote extends RoleMemberSession {
-
 }

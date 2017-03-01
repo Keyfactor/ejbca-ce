@@ -48,7 +48,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberData;
-import org.cesecore.roles.member.RoleMemberSessionLocal;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 
 /**
@@ -71,14 +71,14 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     @EJB
     private RoleDataSessionLocal roleDataSession;
     @EJB
-    private RoleMemberSessionLocal roleMemberSession;
+    private RoleMemberDataSessionLocal roleMemberDataSession;
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Role getRole(final AuthenticationToken authenticationToken, final String nameSpace, final String roleName) throws AuthorizationDeniedException {
         final Role role = roleDataSession.getRole(nameSpace, roleName);
         if (role!=null) {
-            final Set<Integer> roleIdsCallerBelongsTo = roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
+            final Set<Integer> roleIdsCallerBelongsTo = roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
             assertAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo);
             assertAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo);
         }
@@ -90,7 +90,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     public Role getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
         final Role role = roleDataSession.getRole(roleId);
         if (role!=null) {
-            final Set<Integer> roleIdsCallerBelongsTo = roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
+            final Set<Integer> roleIdsCallerBelongsTo = roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
             assertAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo);
             assertAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo);
         }
@@ -101,7 +101,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<Role> getAuthorizedRoles(final AuthenticationToken authenticationToken) {
         final List<Role> roles = new ArrayList<>();
-        final Set<Integer> roleIdsCallerBelongsTo = roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
+        final Set<Integer> roleIdsCallerBelongsTo = roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
         for (final Role role : roleDataSession.getAllRoles()) {
             try {
                 // Verify that the caller is authorized to role's namespace
@@ -112,7 +112,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                 assertAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo);
                 // Verify that the caller is authorized to all CAs that are issuers of members in this role
                 final Set<Integer> tokenIssuerIds = new HashSet<>();
-                for (final RoleMemberData roleMemberData : roleMemberSession.findByRoleId(role.getRoleId())) {
+                for (final RoleMemberData roleMemberData : roleMemberDataSession.findByRoleId(role.getRoleId())) {
                     final AuthenticationTokenMetaData metaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(roleMemberData.getTokenType());
                     final AccessMatchValue accessMatchValue = metaData.getAccessMatchValueIdMap().get(roleMemberData.getTokenMatchKey());
                     if (accessMatchValue.isIssuedByCa()) {
@@ -142,7 +142,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             return false;
         }
         // Check that authenticationToken is allowed to remove the role with all its rights
-        final Set<Integer> roleIdsCallerBelongsTo = roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
+        final Set<Integer> roleIdsCallerBelongsTo = roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
         assertAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo);
         assertNotMember(authenticationToken, role, roleIdsCallerBelongsTo);
         assertAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo);
@@ -156,9 +156,9 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         details.put("nameSpace", role.getNameSpace());
         securityEventsLoggerSession.log(EventTypes.ROLE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                 authenticationToken.toString(), null, null, null, details);
-        final List<RoleMember> roleMembers = roleMemberSession.findRoleMemberByRoleId(role.getRoleId());
+        final List<RoleMember> roleMembers = roleMemberDataSession.findRoleMemberByRoleId(role.getRoleId());
         for (final RoleMember roleMember : roleMembers) {
-            ret |= roleMemberSession.remove(roleMember.getId());
+            ret |= roleMemberDataSession.remove(roleMember.getId());
         }
         return ret;
     }
@@ -171,7 +171,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         // Is the authToken authorized to the role found by id in the database?
         final Role roleById = roleId==Role.ROLE_ID_UNASSIGNED ? null : roleDataSession.getRole(roleId);
         if (roleById!=null) {
-            final Set<Integer> roleIdsCallerBelongsTo = roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
+            final Set<Integer> roleIdsCallerBelongsTo = roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
             assertAuthorizedToAllAccessRules(authenticationToken, roleById, roleIdsCallerBelongsTo);
             assertAuthorizedToNameSpace(authenticationToken, roleById, roleIdsCallerBelongsTo);
         }
@@ -181,7 +181,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         // Check if the caller is authorized to edit roles in general
         assertAuthorizedToEditRoles(authenticationToken);
         // Is the authToken authorized to the role as provided as an argument?
-        final Set<Integer> roleIdsCallerBelongsTo = roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
+        final Set<Integer> roleIdsCallerBelongsTo = roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
         assertAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo);
         assertNotMember(authenticationToken, role, roleIdsCallerBelongsTo);
         assertAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo);
@@ -347,7 +347,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     @Override
     public List<String> getAuthorizedNamespaces(final AuthenticationToken authenticationToken) {
         final Set<String> namespaces = new HashSet<>();
-        for (final int current : roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
+        for (final int current : roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
             namespaces.add(roleDataSession.getRole(current).getNameSpace());
         }
         if (namespaces.contains("")) {

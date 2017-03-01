@@ -26,42 +26,42 @@ import org.cesecore.jndi.JndiConstants;
  * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleMemberProxySessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleMemberDataProxySessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class RoleMemberProxySessionBean implements RoleMemberProxySessionRemote {
+public class RoleMemberDataProxySessionBean implements RoleMemberDataProxySessionRemote {
 
     @EJB
-    private RoleMemberSessionLocal roleMemberSession;
+    private RoleMemberDataSessionLocal roleMemberDataSession;
     @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
 
     @Override
     public int createOrEdit(RoleMember roleMember) {
-        return roleMemberSession.createOrEdit(new RoleMemberData(roleMember.getId(), roleMember.getTokenType(), roleMember.getTokenIssuerId(),
+        return roleMemberDataSession.createOrEdit(new RoleMemberData(roleMember.getId(), roleMember.getTokenType(), roleMember.getTokenIssuerId(),
                 roleMember.getTokenMatchKey(), roleMember.getTokenMatchOperator(), roleMember.getTokenMatchValue(),
                 roleMember.getRoleId(), roleMember.getMemberBindingType(), roleMember.getMemberBindingValue()));
     }
 
     @Override
     public boolean remove(int primaryKey) {
-        return roleMemberSession.remove(primaryKey);
+        return roleMemberDataSession.remove(primaryKey);
     }
 
     @Override
     public int createOrEdit(RoleMemberData roleMember) {
-        return roleMemberSession.createOrEdit(roleMember);
+        return roleMemberDataSession.createOrEdit(roleMember);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public RoleMember findRoleMember(int primaryKey) {
-        return roleMemberSession.findRoleMember(primaryKey);
+        return roleMemberDataSession.findRoleMember(primaryKey);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<RoleMember> findRoleMemberByRoleId(int roleId) {
-        return roleMemberSession.findRoleMemberByRoleId(roleId);
+        return roleMemberDataSession.findRoleMemberByRoleId(roleId);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

@@ -59,7 +59,7 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
-import org.cesecore.roles.member.RoleMemberProxySessionRemote;
+import org.cesecore.roles.member.RoleMemberDataProxySessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -93,7 +93,7 @@ public class UpgradeSessionBeanTest {
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-    private RoleMemberProxySessionRemote roleMemberProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private RoleMemberDataProxySessionRemote roleMemberProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberDataProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private UpgradeSessionRemote upgradeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UpgradeSessionRemote.class);
 
     private AuthenticationToken alwaysAllowtoken = new TestAlwaysAllowLocalAuthenticationToken("UpgradeSessionBeanTest");

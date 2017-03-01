@@ -27,7 +27,7 @@ import org.junit.Test;
  */
 public class RoleMemberDataSessionTest {
 
-    private RoleMemberProxySessionRemote roleMemberProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private RoleMemberDataProxySessionRemote roleMemberProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberDataProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     /**
      * Simple sanity test, meant to involve other session beans as little as possible.

@@ -16,7 +16,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 
 /**
- * CRUD session bean for managing RoleMemberData objects
+ * Session bean for managing role members, taking authorization of the authentication token into account.
  * 
  * @version $Id$
  *
