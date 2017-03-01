@@ -49,11 +49,11 @@
     </h:panelGroup>
     <h:outputText value="#{msg.manage_requests_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToManageRequests}"/>
     <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToManageRequests}">
-        <h:panelGroup layout="block">
-            <h:link outcome="managerequests" rendered="#{not raManageRequestBean.editDataVisible and raManageRequestsBean.tab != null}" styleClass="pure-button ra-button" includeViewParams="true">
+        <h:panelGroup styleClass="topLinks" layout="block">
+            <h:link outcome="managerequests" rendered="#{not raManageRequestBean.editDataVisible and raManageRequestsBean.tab != null}" styleClass="backLink" includeViewParams="true">
                 <h:outputText value="#{msg.generic_back}"/>
             </h:link>
-            <h:link rendered="#{raManageRequestBean.editDataVisible}" styleClass="pure-button ra-button" includeViewParams="true">
+            <h:link rendered="#{raManageRequestBean.editDataVisible}" styleClass="backLink" includeViewParams="true">
                 <h:outputText value="#{msg.generic_back}"/>
             </h:link>
         </h:panelGroup>
@@ -125,7 +125,7 @@
                 </ui:repeat>
                 
                 <h:panelGroup layout="block" styleClass="editButtons">
-                    <h:commandButton id="commandSaveData" action="#{raManageRequestBean.saveRequestData}" value="#{msg.view_request_page_save_data_command}" styleClass="pure-button ra-button" />
+                    <h:commandButton id="commandSaveData" action="#{raManageRequestBean.saveRequestData}" value="#{msg.view_request_page_save_data_command}" styleClass="pure-button ra-button executeActionButton" />
                     <h:commandButton id="commandCancelEdit" action="#{raManageRequestBean.cancelEdit}" value="#{msg.generic_cancel}" styleClass="pure-button ra-button" />
                 </h:panelGroup>
             </h:panelGroup>
@@ -165,8 +165,8 @@
                     </ui:repeat>
                     
                     <h:panelGroup id="approvalButtonsPanel" layout="block">
-                        <h:commandButton id="commandApprove" action="#{raManageRequestBean.approve}" value="#{msg.view_request_page_approve_command}" styleClass="pure-button ra-button" />
-                        <h:commandButton id="commandReject" action="#{raManageRequestBean.reject}" value="#{msg.view_request_page_reject_command}" styleClass="pure-button ra-button" />
+                        <h:commandButton id="commandApprove" action="#{raManageRequestBean.approve}" value="#{msg.view_request_page_approve_command}" styleClass="pure-button ra-button executeActionButton" />
+                        <h:commandButton id="commandReject" action="#{raManageRequestBean.reject}" value="#{msg.view_request_page_reject_command}" styleClass="pure-button ra-button executeActionButton" />
                     </h:panelGroup>
                 </h:panelGroup>
                 
