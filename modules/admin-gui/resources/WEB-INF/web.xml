@@ -47,6 +47,18 @@
         <param-value>Production</param-value>
     </context-param>
 
+    <!-- When using the CSRFGuard filter below we need to hack in before it to set the correct character 
+    encoding (i.e. UTF-8) to support intl characters. We do that using a filter that sits before
+    the CSRF Guard filter. -->
+	<filter>
+		<filter-name>EncodingFilter</filter-name>
+		<filter-class>org.ejbca.util.owaspcsrfguard.EncodingFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>EncodingFilter</filter-name> 
+		<url-pattern>*.jsp</url-pattern>
+	</filter-mapping>
+
 	<filter>
 		<filter-name>CSRFGuard</filter-name>
 		<filter-class>org.owasp.csrfguard.CsrfGuardFilter</filter-class>
