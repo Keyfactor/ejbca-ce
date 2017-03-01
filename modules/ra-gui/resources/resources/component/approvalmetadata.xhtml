@@ -72,7 +72,7 @@
                             <h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
                                 || !raManageRequestBean.canApproveParition(partition)
                                 || raManageRequestBean.isPropertyReadOnly(property.name)}" 
-                                value="#{property.value}" style="text-align: right;" >
+                                value="#{property.value}">
                                <f:converter converterId="javax.faces.Long"/>
                             </h:inputText>
                         </h:panelGroup>
@@ -80,7 +80,7 @@
                             <h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
                                 || !raManageRequestBean.canApproveParition(partition)
                                 || raManageRequestBean.isPropertyReadOnly(property.name)}" 
-                                value="#{property.value}" style="text-align: right;" size="6">
+                                value="#{property.value}" size="6">
                                <f:converter converterId="javax.faces.Integer"/>
                             </h:inputText>
                         </h:panelGroup>             
