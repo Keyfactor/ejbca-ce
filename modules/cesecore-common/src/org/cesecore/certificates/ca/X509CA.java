@@ -220,6 +220,7 @@ public class X509CA extends CA implements Serializable {
         setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
         setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL());
         setCmpRaAuthSecret(cainfo.getCmpRaAuthSecret());
+        // CA Issuer URI to put in CRLs (RFC5280 section 5.2.7, not the URI to put in certs
         setAuthorityInformationAccess(cainfo.getAuthorityInformationAccess());
         setCertificateAiaDefaultCaIssuerUri(cainfo.getCertificateAiaDefaultCaIssuerUri());
         setNameConstraintsPermitted(cainfo.getNameConstraintsPermitted());
@@ -299,11 +300,19 @@ public class X509CA extends CA implements Serializable {
         data.put(AUTHORITYKEYIDENTIFIERCRITICAL, Boolean.valueOf(authoritykeyidentifiercritical));
     }
     
+    /** CA Issuer URI to put in CRLs (RFC5280 section 5.2.7, not the URI to put in certs
+     * 
+     * @return List of strings
+     */
     @SuppressWarnings("unchecked")
     public List<String> getAuthorityInformationAccess() {
         return (List<String>) data.get(AUTHORITY_INFORMATION_ACCESS);
     }
 
+    /** CA Issuer URI to put in CRLs (RFC5280 section 5.2.7, not the URI to put in certs
+     * 
+     * @param authorityInformationAccess List of strings
+     */
     public void setAuthorityInformationAccess(List<String> authorityInformationAccess) {
         data.put(AUTHORITY_INFORMATION_ACCESS, authorityInformationAccess);
     }
