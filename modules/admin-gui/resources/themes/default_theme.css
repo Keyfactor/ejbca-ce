@@ -969,9 +969,10 @@ tr#LogTextRow1 { color: black; font-size: 7pt; background-color: #E5ECFF; }
 .valueColumn { text-align: left; width: 20%; }
 .commandColumn { text-align: left; width: 5%; }
 
-.rulesColumn1 { text-align: left; width: 70%; }
-.rulesColumn2 { text-align: center; width: 15%; }
+.rulesColumn1 { text-align: left; width: 50%; }
+.rulesColumn2 { text-align: center; width: 50%; }
 
+table.selectStateRadio td * { vertical-align: middle; }
 
 /*--------------------------------------------------------------------------*/
 /* POPUPS */
@@ -1146,6 +1147,7 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
 .alignright {
     text-align: right;
 }
+.alignmiddle { vertical-align: middle; }
 
 /* CSS2 compatible expandable text */
 .expandOnClick { width: 25em;  height: 1em;  display: block; overflow: hidden; white-space: nowrap; }

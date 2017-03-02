@@ -15,12 +15,16 @@ package org.ejbca.ui.web.admin.administratorprivileges;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -39,13 +43,17 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.rules.AccessRulePlugin;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingRules;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -186,6 +194,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     private Map<Integer, String> eepIdToNameMap;
     private String roleIdParam;
     private String advancedParam;
+    private String summaryParam;
     private Role role;
 
     private String accessRulesTemplateSelected = TEMPLATE_NAME_CUSTOM;
@@ -208,14 +217,32 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         roleIdParam = requestParameterMap.get("roleId");
         // Read HTTP param "advanced" that should be interpreted as an boolean
         advancedParam = requestParameterMap.get("advanced");
+        // Read HTTP param "summary" that should be interpreted as an boolean
+        summaryParam = requestParameterMap.get("summary");
         caIdToNameMap = caSession.getCAIdToNameMap();
         eepIdToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
         reinitSelection();
     }
 
+    private void nonAjaxPostRedirectGet() {
+        String requestParams = "?roleId=" + role.getRoleId();
+        if (isAdvancedMode()) {
+            requestParams += "&advanced=true";
+            if (isAdvancedModeSummary()) {
+                requestParams += "&summary=true";
+            }
+        }
+        super.nonAjaxPostRedirectGet(requestParams);
+    }
+
     /** @return true in advanced access rule mode */
     public boolean isAdvancedMode() {
         return Boolean.parseBoolean(advancedParam);
+    }
+    
+    /** @return true in advanced access rule mode */
+    public boolean isAdvancedModeSummary() {
+        return Boolean.parseBoolean(summaryParam);
     }
     
     /** @return true when admin is authorized to edit access rules of this role */
@@ -576,7 +603,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         } catch (AuthorizationDeniedException e) {
             super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "ACCESSRULES_ERROR_UNAUTH", e.getMessage());
         } finally {
-            super.nonAjaxPostRedirectGet("?roleId=" + role.getRoleId());
+            nonAjaxPostRedirectGet();
         }
     }
 
@@ -592,15 +619,276 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     }
     
     /** @return a normalized, minimized and sorted list of access rules  */
-    public List<AccessRule> getAccessRules() {
-        final List<AccessRule> ret = new ArrayList<>();
-        final LinkedHashMap<String, Boolean> accessRules = getRole().getAccessRules();
-        AccessRulesHelper.normalizeResources(accessRules);
-        AccessRulesHelper.minimizeAccessRules(accessRules);
-        AccessRulesHelper.sortAccessRules(accessRules);
-        for (final Entry<String,Boolean> entry : accessRules.entrySet()) {
-            ret.add(new AccessRule(entry.getKey(), entry.getValue()));
+    public List<AccessRuleItem> getAccessRules() {
+        final List<AccessRuleItem> ret = new ArrayList<>();
+        for (final AccessRuleItem accessRuleItem : getAuthorizedAccessRuleItems()) {
+            if (!AccessRuleState.UNDEFINED.name().equals(accessRuleItem.getState())) {
+                ret.add(accessRuleItem);
+            }
+        }
+        Collections.sort(ret);
+        return ret;
+    }
+
+    public static class AccessRuleCollection {
+        private String name;
+        private List<AccessRuleItem> collection;
+
+        public AccessRuleCollection(String name, List<AccessRuleItem> collection) {
+            this.name = name;
+            this.collection = collection;
+        }
+
+        public String getName() { return name; }
+        public List<AccessRuleItem> getCollection() { return collection; }
+    }
+
+    public static enum AccessRuleState {
+        UNDEFINED, ALLOW, DENY;
+
+        public static AccessRuleState toAccessRuleState(final Boolean state) {
+            return state==null ? UNDEFINED : state ? ALLOW : DENY;
+        }
+    }
+
+    public static class AccessRuleItem implements Comparable<AccessRuleItem> {
+        private final String category;
+        private final String resource;
+        private final String resourceName;
+        private final String resourceMain;
+        private final String resourceSub;
+        private AccessRuleState state = AccessRuleState.UNDEFINED;
+
+        public AccessRuleItem(final String category, final String resource, final String resourceName) {
+            this.category = category;
+            this.resource = AccessRulesHelper.normalizeResource(resource);
+            this.resourceName = resourceName==null ? this.resource : AccessRulesHelper.normalizeResource(resourceName);
+            final String[] resourceSplit = this.resourceName.split("/");
+            if (resourceSplit.length==0) {
+                this.resourceSub = "/";
+                this.resourceMain = "";
+            } else {
+                this.resourceSub = resourceSplit[resourceSplit.length-1] + "/";
+                String resourceMain = "/";
+                for (int i=1; i<resourceSplit.length-1; i++) {
+                    resourceMain += resourceSplit[i] + "/";
+                }
+                this.resourceMain = resourceMain;
+            }
+        }
+
+        public String getCategory() { return category; }
+        public String getResource() { return resource; }
+        public String getResourceName() { return resourceName; }
+        public String getResourceMain() { return resourceMain; }
+        public String getResourceSub() { return resourceSub; }
+        public String getState() { return state.name(); }
+        public AccessRuleState getStateEnum() { return state; }
+        public void setState(String state) { this.state = AccessRuleState.valueOf(state); }
+        public boolean isRootResource() { return StandardRules.ROLE_ROOT.resource().equals(resource); }
+
+        @Override
+        public int compareTo(final AccessRuleItem other) {
+            return getResourceName().compareTo(other.getResourceName());
+        }
+    }
+
+    // TODO: Move up and lazy get
+    @EJB
+    private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private UserDataSourceSessionLocal userDataSourceSession;
+
+    public List<AccessRuleCollection> getAuthorizedResourcesByCategory() {
+        final List<AccessRuleItem> allAccessRuleItems = getAuthorizedAccessRuleItems();
+        final LinkedHashMap<String, Boolean> rolesAccesssRules = getRole().getAccessRules();
+        AccessRulesHelper.minimizeAccessRules(rolesAccesssRules);
+        final Map<String, Set<AccessRuleItem>> categoryToResourcesMap = new LinkedHashMap<>();
+        for (final AccessRuleItem accessRuleItem : allAccessRuleItems) {
+            final String category = accessRuleItem.getCategory();
+            Set<AccessRuleItem> accessRulesInCategory = categoryToResourcesMap.get(category);
+            if (accessRulesInCategory==null) {
+                accessRulesInCategory = new HashSet<>();
+                categoryToResourcesMap.put(category, accessRulesInCategory);
+            }
+            accessRulesInCategory.add(accessRuleItem);
+        }
+        
+        final List<AccessRuleCollection> ret = new ArrayList<>();
+        for (final Entry<String,Set<AccessRuleItem>> categoryResources : categoryToResourcesMap.entrySet()) {
+            final List<AccessRuleItem> accessRuleItems = new ArrayList<AccessRuleItem>(categoryResources.getValue());
+            Collections.sort(accessRuleItems);
+            ret.add(new AccessRuleCollection(categoryResources.getKey(), accessRuleItems));
         }
         return ret;
+    }
+    
+    private List<AccessRuleItem> authorizedAccessRuleItems = null;
+
+    private List<AccessRuleItem> getAuthorizedAccessRuleItems() {
+        if (authorizedAccessRuleItems==null) {
+            final Map<Integer, String> userDataSourceIdToNameMap = userDataSourceSession.getUserDataSourceIdToNameMap();
+            final Map<Integer,String> cryptoTokenIdToNameMap = cryptoTokenSession.getCryptoTokenIdToNameMap();
+            final List<AccessRuleItem> allAccessRuleItems = getAllAccessRuleItems(true, isEnabledIssueHardwareTokens(), isEnabledKeyRecovery(),
+                    Arrays.asList(EjbcaConfiguration.getCustomAvailableAccessRules()),
+                    eepIdToNameMap, userDataSourceIdToNameMap, cryptoTokenIdToNameMap, caIdToNameMap);
+            final LinkedHashMap<String, Boolean> rolesAccesssRules = getRole().getAccessRules();
+            AccessRulesHelper.minimizeAccessRules(rolesAccesssRules);
+            for (final AccessRuleItem accessRuleItem : allAccessRuleItems) {
+                if (!authorizationSession.isAuthorizedNoLogging(getAdmin(), accessRuleItem.getResource())) {
+                    // Note that for EEPs you are only "really" authorized to it if you also are authorized to all the CAs in it
+                    // Similar goes for UserDataSources which is super-inefficient to check..
+                    // TODO: Upgrade away from this???
+                    // BUT if the current admin is authorized to a rule he is also authorized to give the same access to others
+                    continue;
+                }
+                // Check current Role' state of this rule
+                accessRuleItem.setState(AccessRuleState.toAccessRuleState(rolesAccesssRules.get(accessRuleItem.getResource())).name());
+            }
+            authorizedAccessRuleItems = allAccessRuleItems;
+        }
+        return authorizedAccessRuleItems;
+    }
+
+    private List<AccessRuleItem> getAllAccessRuleItems(boolean enableendentityprofilelimitations, boolean usehardtokenissuing, boolean usekeyrecovery,
+            Collection<String> customAccessRules, Map<Integer,String> eepIdToNameMap, Map<Integer, String> userDataSourceIdToNameMap,
+            Map<Integer,String> cryptoTokenIdToNameMap, Map<Integer,String> caIdToNameMap) {
+        final List<AccessRuleItem> allAccessRuleItem = new ArrayList<>();
+        // Role based access rules
+        final String CATEGORY_ROLEBASED = "ROLEBASEDACCESSRULES";
+        allAccessRuleItem.add(new AccessRuleItem(CATEGORY_ROLEBASED, AccessRulesConstants.ROLE_PUBLICWEBUSER, null));
+        allAccessRuleItem.add(new AccessRuleItem(CATEGORY_ROLEBASED, AccessRulesConstants.ROLE_ADMINISTRATOR, null));
+        allAccessRuleItem.add(new AccessRuleItem(CATEGORY_ROLEBASED, StandardRules.ROLE_ROOT.resource(), null));
+        // Standard rules (including custom access rules)
+        final String CATEGORY_REGULAR = "REGULARACCESSRULES";
+        for (final String resource : AccessRulesConstants.STANDARDREGULARACCESSRULES) {
+            allAccessRuleItem.add(new AccessRuleItem(CATEGORY_REGULAR, resource, null));
+        }
+        if (usehardtokenissuing) {
+            for (final String resource : AccessRulesConstants.HARDTOKENACCESSRULES) {
+                allAccessRuleItem.add(new AccessRuleItem(CATEGORY_REGULAR, resource, null));
+            }
+            allAccessRuleItem.add(new AccessRuleItem(CATEGORY_REGULAR, AccessRulesConstants.REGULAR_VIEWHARDTOKENS, null));
+            allAccessRuleItem.add(new AccessRuleItem(CATEGORY_REGULAR, AccessRulesConstants.REGULAR_VIEWPUKS, null));
+        }
+        if (usekeyrecovery) {
+            allAccessRuleItem.add(new AccessRuleItem(CATEGORY_REGULAR, AccessRulesConstants.REGULAR_KEYRECOVERY, null));
+        }
+        for (final String resource : customAccessRules) {
+            if (!StringUtils.isEmpty(resource)) {
+                allAccessRuleItem.add(new AccessRuleItem(CATEGORY_REGULAR, resource.trim(), null));
+            }
+        }
+        // Insert CA access rules
+        final String CATEGORY_CAACCESS = "CAACCESSRULES";
+        allAccessRuleItem.add(new AccessRuleItem(CATEGORY_CAACCESS, StandardRules.CAACCESSBASE.resource(), null));
+        for (final int caId : caIdToNameMap.keySet()) {
+            final String caName = caIdToNameMap.get(caId);
+            allAccessRuleItem.add(new AccessRuleItem(CATEGORY_CAACCESS, StandardRules.CAACCESS.resource() + caId, StandardRules.CAACCESS.resource() + caName));
+        }
+        // End entity profile rules
+        final String CATEGORY_ENDENTITYPROFILEACCESS = "ENDENTITYPROFILEACCESSR";
+        if (enableendentityprofilelimitations) {
+            // Add most basic rule if authorized to it.
+            allAccessRuleItem.add(new AccessRuleItem(CATEGORY_ENDENTITYPROFILEACCESS, AccessRulesConstants.ENDENTITYPROFILEBASE, null));
+            // Add all authorized End Entity Profiles
+            for (final int eepId : eepIdToNameMap.keySet()) {
+                final String eepName = eepIdToNameMap.get(eepId);
+                // Administrator is authorized to this End Entity Profile, add it.
+                allAccessRuleItem.add(new AccessRuleItem(CATEGORY_ENDENTITYPROFILEACCESS, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId,
+                        AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepName));
+                for (final String subResource : AccessRulesConstants.ENDENTITYPROFILE_ENDINGS) {
+                    allAccessRuleItem.add(new AccessRuleItem(CATEGORY_ENDENTITYPROFILEACCESS, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + subResource,
+                            AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepName + subResource));
+                }
+                if (usehardtokenissuing) {
+                    allAccessRuleItem.add(new AccessRuleItem(CATEGORY_ENDENTITYPROFILEACCESS,
+                            AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.HARDTOKEN_RIGHTS,
+                            AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepName + AccessRulesConstants.HARDTOKEN_RIGHTS));
+                    allAccessRuleItem.add(new AccessRuleItem(CATEGORY_ENDENTITYPROFILEACCESS,
+                            AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS,
+                            AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepName + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS));
+                }
+                if (usekeyrecovery) {
+                    allAccessRuleItem.add(new AccessRuleItem(CATEGORY_ENDENTITYPROFILEACCESS,
+                            AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.KEYRECOVERY_RIGHTS,
+                            AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepName + AccessRulesConstants.KEYRECOVERY_RIGHTS));
+                }
+            }
+        }
+        // Crypto token rules
+        final String CATEGORY_CRYPTOTOKENACCESS = "CRYPTOTOKENACCESSRULES";
+        for (final CryptoTokenRules rule : CryptoTokenRules.values()) {
+            allAccessRuleItem.add(new AccessRuleItem(CATEGORY_CRYPTOTOKENACCESS, rule.resource(), null));
+        }
+        for (final int cryptoTokenId : cryptoTokenIdToNameMap.keySet()) {
+            final String cryptoTokenName = cryptoTokenIdToNameMap.get(cryptoTokenId);
+            for (final CryptoTokenRules rule : CryptoTokenRules.values()) {
+                if (!rule.equals(CryptoTokenRules.BASE) && !rule.equals(CryptoTokenRules.MODIFY_CRYPTOTOKEN) && !rule.equals(CryptoTokenRules.DELETE_CRYPTOTOKEN)) {
+                    allAccessRuleItem.add(new AccessRuleItem(CATEGORY_CRYPTOTOKENACCESS, rule.resource() + "/" + cryptoTokenId, rule.resource() + "/" + cryptoTokenName));
+                }
+            }
+        }
+        // Insert User data source access rules
+        final String CATEGORY_USERDATASOURCEACCESS = "USERDATASOURCEACCESSRULES";
+        allAccessRuleItem.add(new AccessRuleItem(CATEGORY_USERDATASOURCEACCESS, AccessRulesConstants.USERDATASOURCEBASE, null));
+        for (final int userDataSourceId : userDataSourceIdToNameMap.keySet()) {
+            final String userDataSourceName = userDataSourceIdToNameMap.get(userDataSourceId);
+            allAccessRuleItem.add(new AccessRuleItem(CATEGORY_USERDATASOURCEACCESS,
+                    AccessRulesConstants.USERDATASOURCEPREFIX + userDataSourceId + AccessRulesConstants.UDS_FETCH_RIGHTS,
+                    AccessRulesConstants.USERDATASOURCEPREFIX + userDataSourceName + AccessRulesConstants.UDS_FETCH_RIGHTS));
+            allAccessRuleItem.add(new AccessRuleItem(CATEGORY_USERDATASOURCEACCESS,
+                    AccessRulesConstants.USERDATASOURCEPREFIX + userDataSourceId + AccessRulesConstants.UDS_REMOVE_RIGHTS,
+                    AccessRulesConstants.USERDATASOURCEPREFIX + userDataSourceName + AccessRulesConstants.UDS_REMOVE_RIGHTS));
+        }
+        // Insert plugin rules 
+        for (final AccessRulePlugin accessRulePlugin : ServiceLoader.load(AccessRulePlugin.class)) {
+            for (final String resource : accessRulePlugin.getRules()) {
+                allAccessRuleItem.add(new AccessRuleItem(accessRulePlugin.getCategory(), resource, null));
+            }
+        }
+        return allAccessRuleItem;
+    }
+
+    private final List<SelectItem> availableAccessRuleStates = new ArrayList<SelectItem>();
+    /** @return a viewable list of the possible values for a access rule */
+    public List<SelectItem> getAvailableAccessRuleStates() {
+        if (availableAccessRuleStates.isEmpty()) {
+            availableAccessRuleStates.add(new SelectItem(AccessRuleState.ALLOW.name(), super.getEjbcaWebBean().getText("ACCESSRULES_STATE_"+AccessRuleState.ALLOW.name())));
+            availableAccessRuleStates.add(new SelectItem(AccessRuleState.DENY.name(), super.getEjbcaWebBean().getText("ACCESSRULES_STATE_"+AccessRuleState.DENY.name())));
+            availableAccessRuleStates.add(new SelectItem(AccessRuleState.UNDEFINED.name(), super.getEjbcaWebBean().getText("ACCESSRULES_STATE_"+AccessRuleState.UNDEFINED.name())));
+        }
+        return availableAccessRuleStates;
+    }
+
+    /** @return a viewable list of the possible values for a access rule */
+    public List<SelectItem> getAvailableAccessRuleStatesRoot() {
+        final List<SelectItem> result = new ArrayList<SelectItem>();
+        result.add(new SelectItem(AccessRuleState.ALLOW.name(), getEjbcaWebBean().getText("ACCESSRULES_STATE_"+AccessRuleState.ALLOW.name())));
+        result.add(new SelectItem(AccessRuleState.DENY.name(), getEjbcaWebBean().getText("ACCESSRULES_STATE_"+AccessRuleState.DENY.name()), null, true));
+        result.add(new SelectItem(AccessRuleState.UNDEFINED.name(), getEjbcaWebBean().getText("ACCESSRULES_STATE_"+AccessRuleState.UNDEFINED.name() + "_ROOT")));
+        return result;
+    }
+    
+    public void actionSaveAccessRulesAdvanced() {
+        final Role role = getRole();
+        final LinkedHashMap<String, Boolean> accessRules = role.getAccessRules();
+        accessRules.clear();
+        for (final AccessRuleItem accessRuleItem : authorizedAccessRuleItems) {
+            if (!AccessRuleState.UNDEFINED.equals(accessRuleItem.getStateEnum())) {
+                accessRules.put(accessRuleItem.getResource(), AccessRuleState.ALLOW.equals(accessRuleItem.getStateEnum()));
+            }
+        }
+        try {
+            this.role = roleSession.persistRole(getAdmin(), role);
+            super.addGlobalMessage(FacesMessage.SEVERITY_INFO, "ACCESSRULES_INFO_SAVED");
+        } catch (RoleExistsException e) {
+            throw new IllegalStateException(e);
+        } catch (AuthorizationDeniedException e) {
+            super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "ACCESSRULES_ERROR_UNAUTH", e.getMessage());
+        } finally {
+            nonAjaxPostRedirectGet();
+        }
+        authorizedAccessRuleItems = null;
     }
 }

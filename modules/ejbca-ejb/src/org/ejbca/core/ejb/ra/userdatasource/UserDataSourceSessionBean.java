@@ -359,6 +359,16 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
+    public Map<Integer,String> getUserDataSourceIdToNameMap() {
+        final Map<Integer,String> ret = new HashMap<>();
+        for (final UserDataSourceData userDataSourceData : UserDataSourceData.findAll(entityManager)) {
+            ret.put(userDataSourceData.getId(), userDataSourceData.getName());
+        }
+        return ret;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public HashMap<Integer,String> getUserDataSourceIdToNameMap(AuthenticationToken admin) {
         HashMap<Integer,String> returnval = new HashMap<Integer,String>();
         Collection<UserDataSourceData> result = UserDataSourceData.findAll(entityManager);

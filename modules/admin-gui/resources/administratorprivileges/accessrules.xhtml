@@ -57,15 +57,24 @@
                         <h:outputText value="#{web.text.BASICMODE}" rendered="#{accessRulesBean.advancedMode}"/>
                         <h:outputText value="#{web.text.ADVANCEDMODE}" rendered="#{!accessRulesBean.advancedMode}"/>
                     </h:outputLink>
+                    <h:outputLink value="accessrules.xhtml" rendered="#{not empty accessRulesBean.role and accessRulesBean.advancedMode}">
+                        <f:param name="roleId" value="#{accessRulesBean.role.roleId}"/>
+                        <f:param name="advanced" value="#{accessRulesBean.advancedMode}"/>
+                        <f:param name="summary" value="#{!accessRulesBean.advancedModeSummary}"/>
+                        <h:outputText value="#{web.text.ACCESSRULES_LINK_CONFIG}" rendered="#{accessRulesBean.advancedModeSummary}"/>
+                        <h:outputText value="#{web.text.ACCESSRULES_LINK_SUMMARY}" rendered="#{!accessRulesBean.advancedModeSummary}"/>
+                    </h:outputLink>
                 </h:panelGrid>
             </h:panelGrid>
             <h:outputText styleClass="alert" rendered="#{empty accessRulesBean.role}" value="#{web.text.ACCESSRUlES_ERROR_UNAUTH}"/>
             
-            <h:form id="rolemembers" rendered="#{not empty accessRulesBean.role}">
+            <h:form id="accessRulesForm" rendered="#{not empty accessRulesBean.role}">
                 <ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
                 <h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
 
-                <h:panelGrid columns="2" styleClass="fullwidth" rowClasses="Row0,Row1" columnClasses="label,field" rendered="#{!accessRulesBean.advancedMode}">
+                <h:panelGrid columns="2" styleClass="edit fullwidth" rowClasses="Row0,Row1" columnClasses="label,field" rendered="#{!accessRulesBean.advancedMode}">
+                    <h:panelGroup layout="block" id="headerFiller"/>
+                    <h:panelGroup/>
                     <h:outputText value="#{web.text.ROLETEMPLATE}"/>
                     <h:panelGroup>
                         <h:selectOneMenu id="selectrole" value="#{accessRulesBean.accessRulesTemplateSelected}" style="min-width: 220px;"
@@ -74,7 +83,7 @@
                             <f:ajax execute="@this" render="@form" listener="#{accessRulesBean.actionAccessRulesTemplateSelectAjaxListener}"/>
                         </h:selectOneMenu>
                         <h:commandButton id="applySelection" value="#{web.text.ACCESSRULES_SELECT}" action="#{accessRulesBean.actionAccessRulesTemplateSelect}"/>
-                        <script>document.getElementById("rolemembers:applySelection").style.display = "none";</script>
+                        <script>document.getElementById("accessRulesForm:applySelection").style.display = "none";</script>
                     </h:panelGroup>
 
                     <h:outputText value="#{web.text.AUTHORIZEDCAS}"/>
@@ -118,18 +127,54 @@
                 </h:panelGrid>
 
                 <h:panelGroup rendered="#{accessRulesBean.advancedMode}">
-                    <h:outputText value="Advanced mode not implemented."/>
 
-                    <h:dataTable id="accessrules" value="#{accessRulesBean.accessRules}" var="accessRule" headerClass="listHeader" rowClasses="Row0,Row1">
-                        <h:column>
-                            <f:facet name="header"><h:outputText value="#{web.text.ACCESSRULES_RESOURCE}"/></f:facet>
-                            <h:outputText value="#{accessRule.resource}"/>
-                        </h:column>
-                        <h:column>
-                            <f:facet name="header"><h:outputText value="#{web.text.ACCESSRULES_STATE}"/></f:facet>
-                            <h:outputText value="#{accessRule.state}"/>
-                        </h:column>
-                    </h:dataTable>
+                    <h:panelGroup id="summary" rendered="#{accessRulesBean.advancedModeSummary}">
+                        <h:dataTable id="accessrules" value="#{accessRulesBean.accessRules}" var="accessRuleItem" headerClass="listHeader" rowClasses="Row0,Row1">
+                            <h:column>
+                                <f:facet name="header"><h:outputText value="#{web.text.ACCESSRULES_RESOURCE}"/></f:facet>
+                                <h:outputText value="#{accessRuleItem.resourceName}" styleClass="monospace" title="#{accessRuleItem.resource}"/>
+                            </h:column>
+                            <h:column>
+                                <f:facet name="header"><h:outputText value="#{web.text.ACCESSRULES_STATE}"/></f:facet>
+                                <h:outputText value="#{web.text['ACCESSRULES_STATE_'.concat(accessRuleItem.state)]}"/>
+                            </h:column>
+                        </h:dataTable>
+                    </h:panelGroup>
+
+                    <h:panelGroup id="config" rendered="#{!accessRulesBean.advancedModeSummary}">
+                        <h:dataTable value="#{accessRulesBean.authorizedResourcesByCategory}" var="accessRuleCollection"
+                            headerClass="listHeader" styleClass="fullwidth">
+                            <h:column>
+                                <h:dataTable value="#{accessRuleCollection.collection}" var="accessRuleItem" rendered="#{not empty accessRuleCollection.collection}"
+                                    headerClass="listHeader" rowClasses="Row0,Row1" columnClasses="rulesColumn1 alignmiddle,rulesColumn2 alignmiddle" styleClass="fullwidth">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{web.text[accessRuleCollection.name]}"/>
+                                    </f:facet>
+                                    <h:column>
+                                        <h:outputText value="#{accessRuleItem.resourceMain}" style="color: #808080;" styleClass="monospace"/>
+                                        <h:outputText value="#{accessRuleItem.resourceSub}"  style="color: #000000;" styleClass="monospace"/>
+                                    </h:column>
+                                    <h:column>
+                                        <h:selectOneRadio styleClass="selectStateRadio" layout="lineDirection" value="#{accessRuleItem.state}"
+                                            disabled="#{!accessRulesBean.authorizedToEditRole}" rendered="#{!accessRuleItem.rootResource}">
+                                            <f:selectItems value="#{accessRulesBean.availableAccessRuleStates}"/>
+                                        </h:selectOneRadio>
+                                        <h:selectOneRadio styleClass="selectStateRadio" layout="lineDirection" value="#{accessRuleItem.state}"
+                                            disabled="#{!accessRulesBean.authorizedToEditRole}" rendered="#{accessRuleItem.rootResource}">
+                                            <f:selectItems value="#{accessRulesBean.availableAccessRuleStatesRoot}"/>
+                                        </h:selectOneRadio>
+                                    </h:column>
+                                </h:dataTable>
+                            </h:column>
+                            <f:facet name="footer">
+                                <h:panelGrid styleClass="edit-bottom fullwidth" columns="1" style="text-align: center;">
+                                    <h:commandButton action="#{accessRulesBean.actionSaveAccessRulesAdvanced}" value="#{web.text.SAVE}">
+                                        <f:ajax execute="@form" render="@all"/>
+                                    </h:commandButton>
+                                </h:panelGrid>
+                            </f:facet>
+                        </h:dataTable>
+                    </h:panelGroup>
 
                 </h:panelGroup>
 
