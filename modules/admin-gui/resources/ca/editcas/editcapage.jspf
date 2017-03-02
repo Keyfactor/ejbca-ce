@@ -1328,7 +1328,7 @@ function toggleCANameChange(){
           <% if (isexternal) {
                out.write(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
              } else { %>
-        <input type="obligatory" name="<%=TEXTFIELD_CRLPERIOD%>" id="<%=TEXTFIELD_CRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMODHMS") %>"
+        <input type="obligatory" name="<%=TEXTFIELD_CRLPERIOD%>" id="<%=TEXTFIELD_CRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
           <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
                else { out.write(" value='1"+SimpleTime.TYPE_DAYS+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
           <% } %>
