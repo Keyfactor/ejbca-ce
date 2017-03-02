@@ -40,6 +40,9 @@ public interface CryptoTokenSessionLocal extends CryptoTokenSession {
     /** @return a list of all CryptoToken identifiers in the database. */
     List<Integer> getCryptoTokenIds();
 
+    /** @return a list of all CryptoToken identifiers and corresponding human readable name in the database. */
+    Map<Integer, String> getCryptoTokenIdToNameMap();
+
     /** @return a (copy of a) name to id lookup table */
     Map<String, Integer> getCachedNameToIdMap();
 

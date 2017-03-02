@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -232,5 +233,15 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     @Override
     public List<Integer> getCryptoTokenIds() {
         return entityManager.createQuery("SELECT a.id FROM CryptoTokenData a").getResultList();
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Map<Integer,String> getCryptoTokenIdToNameMap() {
+        final Map<Integer,String> ret = new HashMap<>();
+        for (final CryptoTokenData cryptoTokenData : entityManager.createQuery("SELECT a FROM CryptoTokenData a", CryptoTokenData.class).getResultList()) {
+            ret.put(cryptoTokenData.getId(), cryptoTokenData.getTokenName());
+        }
+        return ret;
     }
 }
