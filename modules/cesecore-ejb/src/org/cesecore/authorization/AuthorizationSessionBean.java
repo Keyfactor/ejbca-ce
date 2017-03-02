@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.authorization;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,7 +56,7 @@ import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 import org.cesecore.time.providers.TrustedTimeProviderException;
 
 /**
- * 
+ * Business logic for the EJBCA 6.8.0+ authorization system.
  * 
  * @version $Id$
  */
@@ -213,13 +215,15 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     private void debugLogAccessRules(final AuthenticationToken authenticationToken, final HashMap<String, Boolean> accessRules) {
         final StringBuilder sb = new StringBuilder(authenticationToken.toString()).append(" has the following access rules:\n");
-        for (final Entry<String,Boolean> entry : accessRules.entrySet()) {
-            if (entry.getValue().booleanValue()) {
+        final List<String> resources = new ArrayList<>(accessRules.keySet());
+        Collections.sort(resources);
+        for (final String resource : resources) {
+            if (accessRules.get(resource).booleanValue()) {
                 sb.append(" allow ");
             } else {
                 sb.append(" deny  ");
             }
-            sb.append(entry.getKey()).append('\n');
+            sb.append(resource).append('\n');
         }
         log.debug(sb);
     }
