@@ -4688,7 +4688,7 @@ In EJBCA the parameters are configured in <i>conf/cesecore.properties</i>.
 When creating a new CA using the implicitlyCA facility, you first configure your curve parameters in conf/cesecore.properties and issue commands:
 <ul>
 <li>ant clean</li>
-<li>ant deploy</li>
+<li>ant deployear</li>
 </ul>
 After restarting the application server you can now create a new CA using the name 'implicitlyCA' instead of a curve name as keyspec in the admin-GUI or CLI.
 <br/>
