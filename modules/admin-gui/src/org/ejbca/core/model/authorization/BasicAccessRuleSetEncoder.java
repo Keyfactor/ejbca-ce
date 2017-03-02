@@ -32,6 +32,7 @@ import org.cesecore.keybind.InternalKeyBindingRules;
  * 
  * @version $Id$
  */
+@Deprecated // See deprecation of RolesManagedBean
 public class BasicAccessRuleSetEncoder implements Serializable {
 
     private static final long serialVersionUID = 2823487794362088820L;
