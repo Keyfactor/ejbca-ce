@@ -1388,7 +1388,7 @@ function toggleCANameChange(){
    <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("EXT_PKIX_AIA_CAISSUERS_URI") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#CA%20Issuer%20URI") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20CA%20Issuer%20URI") %>
       </td>
       <td width="50%">
       	<% String authorityInformationAccess = "";
