@@ -734,16 +734,16 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     eepIdToNameMap, userDataSourceIdToNameMap, cryptoTokenIdToNameMap, caIdToNameMap);
             final LinkedHashMap<String, Boolean> rolesAccesssRules = getRole().getAccessRules();
             AccessRulesHelper.minimizeAccessRules(rolesAccesssRules);
-            for (final AccessRuleItem accessRuleItem : allAccessRuleItems) {
-                if (!authorizationSession.isAuthorizedNoLogging(getAdmin(), accessRuleItem.getResource())) {
+            for (final AccessRuleItem accessRuleItem : new ArrayList<>(allAccessRuleItems)) {
+                if (authorizationSession.isAuthorizedNoLogging(getAdmin(), accessRuleItem.getResource())) {
+                    // Check current Role' state of this rule
+                    accessRuleItem.setState(AccessRuleState.toAccessRuleState(rolesAccesssRules.get(accessRuleItem.getResource())).name());
+                } else {
                     // Note that for EEPs you are only "really" authorized to it if you also are authorized to all the CAs in it
                     // Similar goes for UserDataSources which is super-inefficient to check..
-                    // TODO: Upgrade away from this???
                     // BUT if the current admin is authorized to a rule he is also authorized to give the same access to others
-                    continue;
+                    allAccessRuleItems.remove(accessRuleItem);
                 }
-                // Check current Role' state of this rule
-                accessRuleItem.setState(AccessRuleState.toAccessRuleState(rolesAccesssRules.get(accessRuleItem.getResource())).name());
             }
             authorizedAccessRuleItems = allAccessRuleItems;
         }
