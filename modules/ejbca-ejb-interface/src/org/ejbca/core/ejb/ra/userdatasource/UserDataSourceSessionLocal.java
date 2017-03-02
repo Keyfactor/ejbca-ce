@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.userdatasource;
 
+import java.util.Map;
+
 import javax.ejb.Local;
 
 /**
@@ -20,4 +22,6 @@ import javax.ejb.Local;
 @Local
 public interface UserDataSourceSessionLocal extends UserDataSourceSession {
 
+    /** @return the ID to name map */
+    Map<Integer,String> getUserDataSourceIdToNameMap();
 }
