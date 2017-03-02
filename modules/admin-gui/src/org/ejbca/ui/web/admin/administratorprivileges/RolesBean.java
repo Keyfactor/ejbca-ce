@@ -223,6 +223,7 @@ public class RolesBean extends BaseManagedBean implements Serializable {
         } catch (AuthorizationDeniedException e) {
             super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "ROLES_ERROR_UNAUTHORIZED", e.getMessage());
         }
+        super.nonAjaxPostRedirectGet(null);
     }
 
     /** @return true when the admin is in process of deleting a new role */
@@ -252,5 +253,6 @@ public class RolesBean extends BaseManagedBean implements Serializable {
         }
         actionDeleteRoleReset();
         reloadRolesAndNameSpaces();
+        super.nonAjaxPostRedirectGet(null);
     }
 }
