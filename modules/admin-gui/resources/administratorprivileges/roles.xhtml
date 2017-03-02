@@ -39,7 +39,8 @@
                 <ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
                 <h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
 
-                <h:dataTable id="list" value="#{rolesBean.rolesAvailable}" var="role" headerClass="listHeader" rowClasses="Row0,Row1">
+                <h:dataTable id="list" value="#{rolesBean.rolesAvailable}" var="role" headerClass="listHeader" rowClasses="Row0,Row1"
+                    columnClasses="alignmiddle,alignmiddle,alignmiddle,alignmiddle">
                     <h:column rendered="#{!rolesBean.onlyEmptyNameSpaceInUse}">
                         <f:facet name="header"><h:outputText value="#{web.text.ROLES_LABEL_NAMESPACE}"/></f:facet>
                         <h:outputText value="#{role.nameSpace}"/>
