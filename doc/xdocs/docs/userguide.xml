@@ -512,6 +512,15 @@ There are four settings in CA configuration dictating the times when CRL generat
 </p>
 </subsubsection>
 
+<subsubsection name="CRL CA Issuer URI">
+<p>
+This value is used for the Authority Information Access CRL extensions field 'CA Issuer' as specified in <a href="http://tools.ietf.org/rfc/rfc5280.txt">RFC5280</a> (section 5.2.7).<br/>
+It should be a URL that points to either a single DER encoded certificate or a collection of certificates in a BER or DER encoded "certs-only" CMS message.
+For example 'http://ca.example.xy/cacert.cer'. Multiple URIs are specified as a semi-colon separated list and each URI must point to a file containing either a single certificate (.cer) or a collection of certificates (.p7c).
+<br/>See also <a href="#CA%20Issuer%20URI">CA Issuer URI in certificates</a>. 
+</p>
+</subsubsection>
+
 <subsubsection name="Default user certificate AIA extension">
 <p>
 The values of the semi-colon separated list for the 'CA issuer' and 'OCSP Service Locator' (only one URL possible) are used for the certificates Authority Information Access extension as specified in <a href="http://tools.ietf.org/rfc/rfc5280.txt">RFC5280</a> (section 4.2.2.1).<br/>
@@ -1278,8 +1287,9 @@ The default URL for the internal OCSP responder in EJBCA is http://hostname:8080
 
 <subsubsection name="CA Issuer URI">
 <p>
-This value is used for the Authority Information Access CRL extensions field 'CA Issuer' as specified in <a href="http://tools.ietf.org/rfc/rfc5280.txt">RFC5280</a> (section 5.2.7).<br/>
-The URIs specified in this semi-colon separated list must point to files containing either a single certificate (.cer or .der) or a collection of certificates (.p7c).
+This value is used for the Authority Information Access extension field 'CA Issuer' as specified in <a href="http://tools.ietf.org/rfc/rfc5280.txt">RFC5280</a> (section 4.2.2.1).<br/>
+It should be a URL that points to either a single DER encoded certificate or a collection of certificates in a BER or DER encoded "certs-only" CMS message.<br/>
+For example 'http://ca.example.xy/cacert.cer'. Multiple URIs are specified as a semi-colon separated list and each URI must point to a file containing either a single certificate (.cer) or a collection of certificates (.p7c).
 </p>
 </subsubsection>
 
