@@ -82,8 +82,9 @@
                             <f:selectItems value="#{accessRulesBean.availableAccessRulesTemplates}"/>
                             <f:ajax execute="@this" render="@form" listener="#{accessRulesBean.actionAccessRulesTemplateSelectAjaxListener}"/>
                         </h:selectOneMenu>
-                        <h:commandButton id="applySelection" value="#{web.text.ACCESSRULES_SELECT}" action="#{accessRulesBean.actionAccessRulesTemplateSelect}"/>
-                        <script>document.getElementById("accessRulesForm:applySelection").style.display = "none";</script>
+                        <h:commandButton id="applySelection" value="#{web.text.ACCESSRULES_SELECT}" action="#{accessRulesBean.actionAccessRulesTemplateSelect}"
+                            rendered="#{accessRulesBean.authorizedToEditRole}"/>
+                        <script>var button = document.getElementById("accessRulesForm:applySelection"); if (button) { button.style.display = "none"; }</script>
                     </h:panelGroup>
 
                     <h:outputText value="#{web.text.AUTHORIZEDCAS}"/>
@@ -168,7 +169,8 @@
                             </h:column>
                             <f:facet name="footer">
                                 <h:panelGrid styleClass="edit-bottom fullwidth" columns="1" style="text-align: center;">
-                                    <h:commandButton action="#{accessRulesBean.actionSaveAccessRulesAdvanced}" value="#{web.text.SAVE}">
+                                    <h:commandButton action="#{accessRulesBean.actionSaveAccessRulesAdvanced}" value="#{web.text.SAVE}"
+                                        rendered="#{accessRulesBean.authorizedToEditRole}">
                                         <f:ajax execute="@form" render="@all"/>
                                     </h:commandButton>
                                 </h:panelGrid>
