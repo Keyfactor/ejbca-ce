@@ -36,7 +36,7 @@ import org.ejbca.ui.web.RequestHelper;
 */
 public class EncodingFilter implements Filter {
 
-    static final Logger log = Logger.getLogger(EncodingFilter.class.getName());
+    private static final Logger log = Logger.getLogger(EncodingFilter.class.getName());
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException,IOException {
