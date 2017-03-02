@@ -27,6 +27,7 @@ import org.cesecore.authorization.rules.AccessRuleState;
  * 
  * @version $Id$
  */
+@Deprecated // See deprecation of RolesManagedBean
 public class BasicAccessRuleSetDecoder implements Serializable {
 
     private static final long serialVersionUID = -5005027426714699357L;
