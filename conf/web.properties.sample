@@ -237,8 +237,10 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #cryptotoken.p11.lib.71.file=/usr/lib64/libgpkcs11cc2000.so
 #cryptotoken.p11.lib.72.name=Bull TrustWay Proteccio
 #cryptotoken.p11.lib.72.file=/usr/lib64/libnethsm64.so
-#cryptotoken.p11.lib.80.name=SoftHSM
+#cryptotoken.p11.lib.80.name=SoftHSM2
 #cryptotoken.p11.lib.80.file=/usr/local/lib/softhsm/libsofthsm2.so
+#cryptotoken.p11.lib.81.name=PKCS11Spy
+#cryptotoken.p11.lib.81.file=/usr/lib/x86_64-linux-gnu/pkcs11-spy.so
 #
 # You can add your own values with an available number, or override numbers from defaults...
 #cryptotoken.p11.lib.255.name=P11 Proxy
