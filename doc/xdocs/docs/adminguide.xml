@@ -4401,6 +4401,16 @@ sudo apt-get install softhsm2
 softhsm2-util  --init-token --slot 1 --label slot1 --pin foo123 --so-pin foo123
 </source>
 </subsection>
+<subsection name="PKCS11 Spy">
+<p>You can debug PKCS11 sessions, all calls made, using OpenSC's P11Spy. From EJBCA 6.8.0 it is included by default in known P11 implementation in con/web.properties.</p>
+<p>Stop JBoss, install p11spy and set a couple of environment variables that are used in the JBoss terminal.</p>
+<source>
+apt-get install opensc-pkcs11
+export PKCS11SPY=/usr/local/lib/softhsm/libsofthsm2.so
+export PKCS11SPY_OUTPUT=logfile.log
+</source>
+<p>Start JBoss, and create a new PKCS11 Crypto Token using the PKCS11Spy 'PKCS#11 Library'.</p>
+</subsection>
 <subsection name="Support for new HSMs">
 <p>
 EJBCA uses PKCS#11 so in theory can support any HSMs that provide a decent PKCS#11 implementation.
