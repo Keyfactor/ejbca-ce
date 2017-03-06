@@ -38,6 +38,10 @@ public class RaRoleSearchResponse implements Serializable {
     public boolean isMightHaveMoreResults() { return mightHaveMoreResults; }
     public void setMightHaveMoreResults(boolean mightHaveMoreResults) { this.mightHaveMoreResults = mightHaveMoreResults; }
     
+    /**
+     * Adds the roles from another search response object to this one, such that the result is the union of both search results. 
+     * @param other Search response object to add roles from.
+     */
     public void merge(final RaRoleSearchResponse other) {
         final Map<Integer,Role> roleMap = new HashMap<>();
         for (final Role role : roles) {
