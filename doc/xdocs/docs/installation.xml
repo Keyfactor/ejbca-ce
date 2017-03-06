@@ -765,6 +765,7 @@ If you are using another type of database, adapt the statement above with the co
 
 <subsubsection name="Deploy EJBCA">
 <p>Finally build and deploy the EJBCA (application ear file) to WildFly, without touching any WildFly configuration, by running the following EJBCA command.</p>
+<p>Before running deployear below, don't forget to point to your application server by setting APPSRV_HOME, and configure your database in conf/database.properties.</p>
 <p>Run the following commands at the regular command prompt in EJBCA_HOME.</p>
 <source>
 ant clean deployear
