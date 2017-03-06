@@ -29,6 +29,6 @@ public interface RoleSessionLocal extends RoleSession {
      * Checks if the administrator is allowed to add/edit/remove role members from role with the given ID.
      * Note that role member objects may reference a CA also, which must be checked for access as well. 
      */
-    void assertAuthorizedToEditRoleMembers(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
+    void assertAuthorizedToRoleMembers(AuthenticationToken authenticationToken, int roleId, boolean requireEditAccess) throws AuthorizationDeniedException;
     
 }
