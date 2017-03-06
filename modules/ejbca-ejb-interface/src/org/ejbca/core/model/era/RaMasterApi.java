@@ -111,6 +111,8 @@ public interface RaMasterApi {
 
     /**
      * Deletes a role.
+     * @param authenticationToken Administrator
+     * @param roleId ID of role to delete.
      * @return true if the role was found and was deleted, and false if it didn't exist.
      * @throws AuthorizationDeniedException If unauthorized, or if trying to delete a role that the requesting admin belongs to itself.
      * @since Master RA API version 1 (EJBCA 6.8.0)
@@ -137,6 +139,9 @@ public interface RaMasterApi {
     
     /**
      * Removes a role member from a role.
+     * @param authenticationToken Administrator
+     * @param roleId ID of role (used as a safety check to prevent ID collisions).
+     * @param roleMemberId ID of role member to delete.
      * @return true if the role member was found and was deleted, and false if it didn't exist.
      * @throws AuthorizationDeniedException If not authorized to edit the given role
      * @since Master RA API version 1 (EJBCA 6.8.0)
