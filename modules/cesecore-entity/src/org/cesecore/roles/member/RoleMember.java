@@ -35,7 +35,7 @@ public class RoleMember implements Serializable {
     private int tokenMatchKey;
     private int tokenMatchOperator;
     private String tokenMatchValue;
-    private Integer roleId; 
+    private int roleId;
     private String memberBindingType;
     private String memberBindingValue;
     
@@ -115,11 +115,11 @@ public class RoleMember implements Serializable {
         this.tokenMatchValue = tokenMatchValue;
     }
 
-    public Integer getRoleId() {
+    public int getRoleId() {
         return roleId;
     }
 
-    public void setRoleId(Integer roleId) {
+    public void setRoleId(int roleId) {
         this.roleId = roleId;
     }
 

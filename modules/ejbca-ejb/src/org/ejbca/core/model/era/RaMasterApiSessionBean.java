@@ -257,7 +257,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public List<String> getAuthorizedRoleNamespaces(final AuthenticationToken authenticationToken, final int roleId) {
         // Skip roles that come from other peers if roleId is set
         try {
-            if (roleId != 0 && getRole(authenticationToken, roleId) == null) {
+            if (roleId != Role.ROLE_ID_UNASSIGNED && getRole(authenticationToken, roleId) == null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Requested role with ID " + roleId + " does not exist on this system, returning empty list of namespaces");
                 }
@@ -275,7 +275,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public Map<String,RaRoleMemberTokenTypeInfo> getAuthorizedRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
+    public Map<String,RaRoleMemberTokenTypeInfo> getAvailableRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
         final Map<String,RaRoleMemberTokenTypeInfo> result = new HashMap<>();
         for (final String tokenType : AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes()) {
             if (!AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType).isUserConfigurable()) {
@@ -287,8 +287,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 stringToNumberMap.put(entry.getKey(), entry.getValue().getNumericValue());
             }
             final AccessMatchValue defaultValue = AccessMatchValueReverseLookupRegistry.INSTANCE.getDefaultValueForTokenType(tokenType);
+            final boolean hasMatchTypes = !defaultValue.getAvailableAccessMatchTypes().isEmpty();
             
-            result.put(tokenType, new RaRoleMemberTokenTypeInfo(stringToNumberMap, defaultValue.name(), defaultValue.isIssuedByCa()));
+            result.put(tokenType, new RaRoleMemberTokenTypeInfo(stringToNumberMap, defaultValue.name(), defaultValue.isIssuedByCa(),
+                    hasMatchTypes, hasMatchTypes ? defaultValue.getAvailableAccessMatchTypes().get(0).getNumericValue() : 0));
             
         }
         return result;
@@ -332,6 +334,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             log.debug("Persisting a role member with ID " + roleMember.getRoleId() + " and match value '" + roleMember.getTokenMatchValue() + "'");
         }
         int id = roleMemberSession.createOrEdit(authenticationToken, roleMember);
+        if (id == RoleMember.ROLE_MEMBER_ID_UNASSIGNED) {
+            return null;
+        }
         roleMember.setId(id);
         return roleMember;
     }
@@ -1265,7 +1270,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         // Token types
-        final List<String> authorizedLocalTokenTypes = new ArrayList<>(getAuthorizedRoleMemberTokenTypes(authenticationToken).keySet());
+        final List<String> authorizedLocalTokenTypes = new ArrayList<>(getAvailableRoleMemberTokenTypes(authenticationToken).keySet());
         if (!request.getTokenTypes().isEmpty()) {
             authorizedLocalTokenTypes.retainAll(request.getTokenTypes());
         }
@@ -1300,7 +1305,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         
         // Execute
         try {
-            final List<RoleMemberData> roleMemberDatas = (List<RoleMemberData>) query.getResultList();
+            final List<RoleMemberData> roleMemberDatas = query.getResultList();
             for (final RoleMemberData roleMemberData : roleMemberDatas) {
                 response.getRoleMembers().add(roleMemberData.asValueObject());
             }
