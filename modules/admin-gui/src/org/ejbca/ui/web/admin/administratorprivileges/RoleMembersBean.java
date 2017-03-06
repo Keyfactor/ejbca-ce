@@ -98,7 +98,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     public boolean isAuthorizedToEditRole() {
         try {
             if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EDITROLES.resource()) && getRole()!=null) {
-                roleSession.assertAuthorizedToEditRoleMembers(getAdmin(), getRole().getRoleId());
+                roleSession.assertAuthorizedToRoleMembers(getAdmin(), getRole().getRoleId(), true);
                 return true;
             }
         } catch (AuthorizationDeniedException e) {

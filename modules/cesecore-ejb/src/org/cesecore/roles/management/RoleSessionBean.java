@@ -165,9 +165,13 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public void assertAuthorizedToEditRoleMembers(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+    public void assertAuthorizedToRoleMembers(final AuthenticationToken authenticationToken, final int roleId, final boolean requireEditAccess) throws AuthorizationDeniedException {
         // Check if the caller is authorized to edit roles in general
-        assertAuthorizedToEditRoles(authenticationToken);
+        if (requireEditAccess) {
+            assertAuthorizedToEditRoles(authenticationToken);
+        } else {
+            assertAuthorizedToViewRoles(authenticationToken);
+        }
         // Is the authToken authorized to the role found by id in the database?
         final Role roleById = roleId==Role.ROLE_ID_UNASSIGNED ? null : roleDataSession.getRole(roleId);
         if (roleById!=null) {
@@ -280,6 +284,14 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
      */
     private void assertAuthorizedToEditRoles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
         if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.EDITROLES.resource())) {
+            String msg = InternalResources.getInstance().getLocalizedMessage("authorization.notauthorizedtoeditroles", authenticationToken.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
+    }
+    
+    /** Like {@link #assertAuthorizedToEditRoles(AuthenticationToken)}, but check for view access */
+    private void assertAuthorizedToViewRoles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.VIEWROLES.resource())) {
             String msg = InternalResources.getInstance().getLocalizedMessage("authorization.notauthorizedtoeditroles", authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
