@@ -239,12 +239,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public Map<String,RaRoleMemberTokenTypeInfo> getAuthorizedRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
+    public Map<String,RaRoleMemberTokenTypeInfo> getAvailableRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
         final HashMap<String,RaRoleMemberTokenTypeInfo> result = new HashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    final Map<String,RaRoleMemberTokenTypeInfo> mergeWith = raMasterApi.getAuthorizedRoleMemberTokenTypes(authenticationToken);
+                    final Map<String,RaRoleMemberTokenTypeInfo> mergeWith = raMasterApi.getAvailableRoleMemberTokenTypes(authenticationToken);
                     for (final Map.Entry<String,RaRoleMemberTokenTypeInfo> entry : mergeWith.entrySet()) {
                         final String tokenType = entry.getKey();
                         final RaRoleMemberTokenTypeInfo entryInfo = entry.getValue();
@@ -266,6 +266,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public Role saveRole(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException, RoleExistsException {
         AuthorizationDeniedException authorizationDeniedException = null;
+        // Try to save/update on the systems until successful, starting with the remote systems first.
+        // (The save operation might be unsuccessful if we're editing an existing role that belongs to another system, for instance)
         for (final RaMasterApi raMasterApi : raMasterApis) {
             try {
                 if (raMasterApi.isBackendAvailable()) {
@@ -333,6 +335,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public RoleMember saveRoleMember(AuthenticationToken authenticationToken, RoleMember roleMember) throws AuthorizationDeniedException {
         AuthorizationDeniedException authorizationDeniedException = null;
+        // Try to save/update on the systems until successful, starting with the remote systems first.
+        // (The save operation might be unsuccessful if we're editing an existing role member that belongs to another system,
+        // or if we're trying to add a role member and the role it references to belongs to another system)
         for (final RaMasterApi raMasterApi : raMasterApis) {
             try {
                 if (raMasterApi.isBackendAvailable()) {
@@ -611,7 +616,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public IdNameHashMap<EndEntityProfile> getAuthorizedEndEntityProfiles(final AuthenticationToken authenticationToken, final String endEntityAccessRule) {
-        final IdNameHashMap<EndEntityProfile> ret = new IdNameHashMap<EndEntityProfile>();
+        final IdNameHashMap<EndEntityProfile> ret = new IdNameHashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
@@ -629,7 +634,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken) {
-        final IdNameHashMap<CAInfo> ret = new IdNameHashMap<CAInfo>();
+        final IdNameHashMap<CAInfo> ret = new IdNameHashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
@@ -647,7 +652,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken) {
-        final IdNameHashMap<CertificateProfile> ret = new IdNameHashMap<CertificateProfile>();
+        final IdNameHashMap<CertificateProfile> ret = new IdNameHashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {

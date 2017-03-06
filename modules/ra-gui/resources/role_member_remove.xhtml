@@ -52,15 +52,6 @@
         </h:panelGroup>
         <h:outputText value="#{msg.manage_role_members_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEditRoleMembers}"/>
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToEditRoleMembers}">
-            <ui:remove>
-            <!--
-            <h:panelGroup styleClass="topLinks" layout="block">
-                <h:link outcome="role_members" styleClass="backLink" includeViewParams="true">
-                    <h:outputText value="#{msg.generic_back}"/>
-                </h:link>
-            </h:panelGroup>
-            -->
-            </ui:remove>
             <h:form id="roleForm" class="pure-form">
                 <h:panelGroup id="basic" styleClass="">
                     <h:outputText value="#{raRoleMemberBean.removeConfirmationText}"/>

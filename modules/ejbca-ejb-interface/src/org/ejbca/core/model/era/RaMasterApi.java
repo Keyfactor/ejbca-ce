@@ -94,7 +94,7 @@ public interface RaMasterApi {
      * @return a list of token types and their match keys, which the caller is authorized to. Only user-configurable token types are returned.
      * @since Master RA API version 1 (EJBCA 6.8.0)
      */
-    Map<String,RaRoleMemberTokenTypeInfo> getAuthorizedRoleMemberTokenTypes(AuthenticationToken authenticationToken);
+    Map<String,RaRoleMemberTokenTypeInfo> getAvailableRoleMemberTokenTypes(AuthenticationToken authenticationToken);
     
     
     /**

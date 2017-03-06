@@ -55,11 +55,6 @@
         </h:panelGroup>
         <h:outputText value="#{msg.manage_role_members_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEditRoleMembers}"/>
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToEditRoleMembers}">
-            <h:panelGroup styleClass="topLinks" layout="block">
-                <h:link outcome="role_members" styleClass="backLink" includeViewParams="true">
-                    <h:outputText value="#{msg.role_member_page_back_to_role_members_page}"/>
-                </h:link>
-            </h:panelGroup>
             <h:form id="roleMemberForm" class="pure-form">
                 <h:panelGroup id="basic" styleClass="pure-g">
                     <h:panelGroup id="parentRole" layout="block" styleClass="pure-u-1">
@@ -89,21 +84,22 @@
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
-                        <h:panelGroup id="parentMatchType" layout="block" styleClass="pure-u-1">
-                            <h:outputLabel for="matchType" value="#{msg.role_member_page_matchtype_label}" styleClass="pure-u-lg-1-5"/>
-                            <h:selectOneMenu id="matchType" value="#{raRoleMemberBean.matchType}" styleClass=" pure-input pure-u-lg-3-5">
-                                <f:selectItems value="#{raRoleMemberBean.availableMatchTypes}"/>
+                        <h:panelGroup id="parentMatchKey" layout="block" styleClass="pure-u-1">
+                            <h:outputLabel for="matchKey" value="#{msg.role_member_page_matchkey_label}" styleClass="pure-u-lg-1-5"/>
+                            <h:selectOneMenu id="matchKey" value="#{raRoleMemberBean.matchKey}" styleClass=" pure-input pure-u-lg-3-5">
+                                <f:selectItems value="#{raRoleMemberBean.availableMatchKeys}"/>
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
-                        <!-- TODO search? -->
-                        <h:panelGroup id="parentMatchValue" layout="block" styleClass="pure-u-1">
+                        <ui:remove><!-- TODO search? --></ui:remove>
+                        
+                        <h:panelGroup id="parentMatchValue" layout="block" styleClass="pure-u-1" rendered="#{raRoleMemberBean.tokenTypeHasMatchValue}">
                             <h:outputLabel for="matchValue" value="#{msg.role_member_page_matchvalue_label}" styleClass="pure-u-lg-1-5"/>
                             <h:inputText id="matchValue" value="#{raRoleMemberBean.matchValue}" styleClass="pure-input pure-u-lg-3-5 bottomMargin" size="20"/>
                         </h:panelGroup>
                     </h:panelGroup>
                     
-                    <!-- TODO member bindings. perhaps have a "Use default member binding" and automatically link to the username based on the cert serno -->
+                    <ui:remove><!-- TODO member bindings (ECA-5714). perhaps have a "Use default member binding" and automatically link to the username based on the cert serno --></ui:remove>
 
                     <h:panelGroup id="buttons" layout="block" styleClass="pure-u-lg-5-5">
                         <h:commandButton id="saveButton" action="#{raRoleMemberBean.save}" value="#{raRoleMemberBean.saveButtonText}" styleClass="pure-button ra-button executeActionButton saveButton"/>

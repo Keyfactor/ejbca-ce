@@ -167,11 +167,13 @@ public class RaRoleMembersBean implements Serializable {
         // Add names of CAs and roles
         resultsFiltered = new ArrayList<>();
         for (final RoleMember member : lastExecutedResponse.getRoleMembers()) {
-            final String caName = caIdToNameMap.get(member.getTokenIssuerId());
-            final String roleName = roleIdToNameMap.get(member.getRoleId());
+            final String caName = StringUtils.defaultString(caIdToNameMap.get(member.getTokenIssuerId()));
+            final String roleName = StringUtils.defaultString(roleIdToNameMap.get(member.getRoleId()));
             final String tokenTypeText = raLocaleBean.getMessage("role_member_token_type_" + member.getTokenType());
             resultsFiltered.add(new RaRoleMemberGUIInfo(member, caName, roleName, tokenTypeText));
         }
+        
+        sort();
     }
     
     public List<RaRoleMemberGUIInfo> getFilteredResults() {
@@ -194,9 +196,9 @@ public class RaRoleMembersBean implements Serializable {
                 // TODO locale-aware sorting
                 case ROLE: return o1.getRoleName().compareTo(o2.getRoleName()) * sortDir;
                 case CA: return o1.getCaName().compareTo(o2.getCaName()) * sortDir;
-                case TOKENTYPE: return rm1.getTokenType().compareTo(rm2.getTokenType()) * sortDir;
-                case TOKENMATCHVALUE: return rm1.getTokenMatchValue().compareTo(rm2.getTokenMatchValue()) * sortDir;
-                case BINDING: return rm1.getMemberBindingValue().compareTo(rm2.getMemberBindingValue());
+                case TOKENTYPE: return StringUtils.defaultString(rm1.getTokenType()).compareTo(StringUtils.defaultString(rm2.getTokenType())) * sortDir;
+                case TOKENMATCHVALUE: return StringUtils.defaultString(rm1.getTokenMatchValue()).compareTo(StringUtils.defaultString(rm2.getTokenMatchValue())) * sortDir;
+                case BINDING: return StringUtils.defaultString(rm1.getMemberBindingValue()).compareTo(StringUtils.defaultString(rm2.getMemberBindingValue())) * sortDir;
                 default:
                     throw new IllegalStateException("Invalid sortBy value");
                 }
@@ -307,7 +309,7 @@ public class RaRoleMembersBean implements Serializable {
     public List<SelectItem> getAvailableTokenTypes() {
         if (availableTokenTypes == null) {
             if (tokenTypeInfos == null) {
-                tokenTypeInfos = raMasterApiProxyBean.getAuthorizedRoleMemberTokenTypes(raAuthenticationBean.getAuthenticationToken());
+                tokenTypeInfos = raMasterApiProxyBean.getAvailableRoleMemberTokenTypes(raAuthenticationBean.getAuthenticationToken());
             }
             final List<String> tokenTypes = new ArrayList<>(tokenTypeInfos.keySet());
             Collections.sort(tokenTypes);

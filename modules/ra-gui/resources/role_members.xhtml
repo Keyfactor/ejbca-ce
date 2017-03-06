@@ -154,7 +154,7 @@
                         <h:column>
                             <f:facet name="header">
                                 <h:outputLabel for="sortTokenMatchValue" value="#{msg.role_members_page_colhead_tokenidentifier} #{raRoleMembersBean.sortedByTokenMatchValue}"/>
-                                <h:commandButton id="sortTokenMatchValue" action="#{raRoleMembersBean.sortByMatchValue}" value="#{msg.generic_sort_command}" style="display: none;">
+                                <h:commandButton id="sortTokenMatchValue" action="#{raRoleMembersBean.sortByTokenMatchValue}" value="#{msg.generic_sort_command}" style="display: none;">
                                     <f:ajax execute="@this" render=":roleMembersForm:filteredResults"
                                         onevent="function(data){ejbca.ra.onAjaxEvent(data,'roleMembersForm:filteredResults');}"
                                         onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
@@ -166,6 +166,9 @@
                                 <h:outputText value="#{raRoleMember.roleMember.tokenMatchValue}"/>
                             </h:outputLink>
                         </h:column>
+                        
+                        <ui:remove>
+                        <!-- Member bindings are not yet fully implemented. See ECA-5714
                         <h:column>
                             <f:facet name="header">
                                 <h:outputLabel for="sortBinding" value="#{msg.role_members_page_colhead_binding} #{raRoleMembersBean.sortedByBinding}"/>
@@ -177,6 +180,8 @@
                             </f:facet>
                             <h:outputText value="#{raRoleMember.roleMember.memberBindingValue}" style="white-space: nowrap"/>
                         </h:column>
+                        -->
+                        </ui:remove>
                         
                         
                         <h:column>
@@ -187,7 +192,7 @@
                         </h:column>
                         
                         <h:column>
-                            <h:link id="removeButton" styleClass="viewMoreLink" outcome="remove_role_member" includeViewParams="true">
+                            <h:link id="removeButton" styleClass="viewMoreLink" outcome="role_member_remove" includeViewParams="true">
                                 <f:param name="roleMemberId" value="#{raRoleMember.roleMember.id}"/>
                                 <h:outputText value="#{msg.role_members_page_remove_command}"/>
                             </h:link>
