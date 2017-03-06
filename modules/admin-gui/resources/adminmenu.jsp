@@ -406,7 +406,7 @@ if(configheaderprinted){
    }catch(AuthorizationDeniedException e){}
 %>
 
-		<li id="cat9"><a href="<%= RAWEB_LINK %>" target="_ejbcapublicweb"><%=ejbcawebbean.getText("RAWEB") %></a>
+		<li id="cat9"><a href="<%= RAWEB_LINK %>" target="_ejbcaraweb"><%=ejbcawebbean.getText("RAWEB") %></a>
 		</li>
 
 		<li id="cat9"><a href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb"><%=ejbcawebbean.getText("PUBLICWEB") %></a>
