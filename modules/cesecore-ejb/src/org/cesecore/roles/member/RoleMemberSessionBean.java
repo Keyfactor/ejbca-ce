@@ -23,6 +23,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 
 /**
@@ -42,6 +43,8 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
     @EJB
     private RoleSessionLocal roleSession;
     @EJB
+    private RoleDataSessionLocal roleDataSession;
+    @EJB
     private RoleMemberDataSessionLocal roleMemberDataSession;
 
     
@@ -59,17 +62,20 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
     
     @Override
     public int createOrEdit(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
-        roleSession.assertAuthorizedToEditRoleMembers(authenticationToken, roleMember.getRoleId());
-        checkRoleAuth(authenticationToken, roleMember);
+        roleSession.assertAuthorizedToRoleMembers(authenticationToken, roleMember.getRoleId(), true);
         
         final RoleMemberData roleMemberData;
         if (roleMember.getId() != RoleMember.ROLE_MEMBER_ID_UNASSIGNED) {
             roleMemberData = roleMemberDataSession.find(roleMember.getId());
+            if (roleMemberData == null) {
+                return RoleMember.ROLE_MEMBER_ID_UNASSIGNED;
+            }
             checkRoleAuth(authenticationToken, roleMemberData.asValueObject());
         } else {
             roleMemberData = new RoleMemberData();
         }
         
+        checkRoleAuth(authenticationToken, roleMember);
         roleMemberData.updateValuesFromValueObject(roleMember);
         
         if (log.isDebugEnabled()) {
@@ -82,11 +88,11 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
     @Override
     public RoleMember getRoleMember(final AuthenticationToken authenticationToken, final int roleMemberId) throws AuthorizationDeniedException {
         final RoleMember roleMember = roleMemberDataSession.findRoleMember(roleMemberId);
-        // Authorization checks
         if (roleMember == null) {
             return null;
         }
-        roleSession.assertAuthorizedToEditRoleMembers(authenticationToken, roleMember.getRoleId());
+        // Authorization checks
+        roleSession.assertAuthorizedToRoleMembers(authenticationToken, roleMember.getRoleId(), false);
         checkRoleAuth(authenticationToken, roleMember);
         return roleMember;
     }
@@ -94,7 +100,10 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
     @Override
     public boolean remove(final AuthenticationToken authenticationToken, final int roleMemberId) throws AuthorizationDeniedException {
         final RoleMember roleMember = roleMemberDataSession.findRoleMember(roleMemberId);
-        roleSession.assertAuthorizedToEditRoleMembers(authenticationToken, roleMember.getRoleId());
+        if (roleMember == null) {
+            return false;
+        }
+        roleSession.assertAuthorizedToRoleMembers(authenticationToken, roleMember.getRoleId(), true);
         checkRoleAuth(authenticationToken, roleMember);
         return roleMemberDataSession.remove(roleMemberId);
     }
