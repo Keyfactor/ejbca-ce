@@ -104,27 +104,28 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     /** Set the serialNumber search string as a decimal String if it has potential to be a decimal certificate serial number. */
     public void setSerialNumberSearchStringFromDec(final String serialNumberSearchStringFromDec) {
         // Assuming 8 octets and some leading zeroes
+        String value = "";
         if (serialNumberSearchStringFromDec.length()>=16) {
             try {
-                this.serialNumberSearchStringFromDec = new BigInteger(serialNumberSearchStringFromDec, 10).toString(10);
+                value = new BigInteger(serialNumberSearchStringFromDec, 10).toString(10);
             } catch (NumberFormatException e) {
             }
         }
-        this.serialNumberSearchStringFromDec = "";
+        this.serialNumberSearchStringFromDec = value;
 
     }
     public String getSerialNumberSearchStringFromHex() { return serialNumberSearchStringFromHex; }
     /** Set the serialNumber search string as a decimal String if it has potential to be a hex certificate serial number. */
     public void setSerialNumberSearchStringFromHex(final String serialNumberSearchStringFromHex) {
         // Assuming 8 octets and some leading zeroes
+        String value = "";
         if (serialNumberSearchStringFromHex.length()>=14) {
             try {
-                this.serialNumberSearchStringFromHex = new BigInteger(serialNumberSearchStringFromHex, 16).toString(10);
+                value = new BigInteger(serialNumberSearchStringFromHex, 16).toString(10);
             } catch (NumberFormatException e) {
             }
         }
-        this.serialNumberSearchStringFromHex = "";
-
+        this.serialNumberSearchStringFromHex = value;
     }
 
     public long getIssuedAfter() { return issuedAfter; }
