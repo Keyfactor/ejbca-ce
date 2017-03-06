@@ -14,6 +14,7 @@ package org.ejbca.core.model.era;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
@@ -46,6 +47,11 @@ public class RaRoleSearchRequest implements Serializable {
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
+    }
+    
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
     }
 
 }
