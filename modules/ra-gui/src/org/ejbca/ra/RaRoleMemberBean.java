@@ -233,7 +233,7 @@ public class RaRoleMemberBean implements Serializable {
             final List<String> namesSorted = new ArrayList<>(tokenTypeInfo.getMatchKeysMap().keySet());
             Collator coll = Collator.getInstance();
             coll.setStrength(Collator.PRIMARY);
-            Collections.sort(namesSorted);
+            Collections.sort(namesSorted, coll);
             for (final String name : namesSorted) {
                 if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) && "NONE".equals(name) &&
                         !matchKey.equals(tokenType)) {
