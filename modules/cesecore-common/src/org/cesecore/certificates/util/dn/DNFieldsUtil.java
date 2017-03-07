@@ -13,8 +13,11 @@
 package org.cesecore.certificates.util.dn;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -32,6 +35,60 @@ public abstract class DNFieldsUtil {
 	private static final Logger LOG = Logger.getLogger(DNFieldsUtil.class);
 	private static final int EMPTY = -1;
 	private static final String MSG_ERROR_MISSING_EQUAL = "DN field definition is missing the '=': ";
+	private static final String ATTRIBUTE_SEPARATOR = ",";
+	private static final String KEY_VALUE_SEPARATOR = "=";
+	
+	/**
+     * The method splits an DN string into a map of it's attributes and values.
+     * 
+     * @param dnString the DN String to split (i.e.: 'C=DE,CN=test,SN=1').
+     * @return a map containing the attributes and values.
+     */
+    public static final Map<String, String> dnStringToMap(final String dnString) {
+        final String[] dnTokens = dnString.split(ATTRIBUTE_SEPARATOR);
+        final Map<String, String> result = new HashMap<String,String>();
+        if (StringUtils.isNotBlank(dnString)) {
+            String[] tokens;
+            for (int i = 0; i<dnTokens.length;i++) {
+                tokens = dnTokens[i].split(KEY_VALUE_SEPARATOR);
+                if (tokens.length > 1) {
+                    result.put(tokens[0], tokens[1]);
+                } else {
+                    result.put(tokens[0], StringUtils.EMPTY);
+                }
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * The method checks if the subject-DN contains both C and CN attributes
+     * (in a potential CVCA/CSCA certificate at least the attributes C and CN must be set).
+     * 
+     * @param map the map of DN attributes and values.
+     * @return true if the DN map contains non-empty values for both C and CN.
+     */
+    private static final boolean mapContainsCountryAndCN(final Map<String,String> map) {
+        boolean result = false;
+        if (map.size() >= 2) {
+            result = StringUtils.isNotBlank(map.get("C")) && StringUtils.isNotBlank(map.get("CN"));
+        }
+        return result;
+    }
+
+    /**
+     * The method checks if the two subject-DN belongs to the same CSCA (C and CN must be equal, SN could be changed).
+     * @param map1 the left side subject-DN map.
+     * @param map2 the right side subject-DN map.
+     * @return true if both subject-DN belongs to the same CSCA.
+     */
+    public static final boolean caCertificatesOfSameCSCA(final Map<String,String> map1, final Map<String,String> map2) {
+        if (!mapContainsCountryAndCN(map1) || !mapContainsCountryAndCN(map2)) {
+            return false;
+        }
+        return StringUtils.equals(map1.get("C"), map2.get("C")) && StringUtils.equals(map1.get("CN"), map2.get("CN"));
+    }
+
 
 	/** Invoke removeEmpties and only return the fully clean dn String. */
 	public static String removeAllEmpties(final String dn) {

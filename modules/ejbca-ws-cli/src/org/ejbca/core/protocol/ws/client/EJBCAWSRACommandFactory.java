@@ -89,6 +89,10 @@ public class EJBCAWSRACommandFactory {
             return new GenerateCryptoTokenKeysCommand(args);
         } else if (args[0].equals("createca")) {
             return new CreateCACommand(args);
+        } else if (args[0].equals("importcacert")) {
+           return new ImportCaCertCommand(args);
+        }  else if (args[0].equals("updatecacert")) {
+            return new UpdateCaCertCommand(args);
         } else if (args[0].equals("addadmintorole")) {
             return new AddSubjectToRoleCommand(args);
         } else if (args[0].equals("removeadminfromrole")) {

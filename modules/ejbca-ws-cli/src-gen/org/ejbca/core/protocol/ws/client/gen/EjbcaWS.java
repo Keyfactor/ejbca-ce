@@ -466,6 +466,44 @@ public interface EjbcaWS {
 
     /**
      * 
+     * @param arg1
+     * @param arg0
+     * @throws EjbcaException_Exception
+     * @throws AuthorizationDeniedException_Exception
+     * @throws CAExistsException_Exception
+     */
+    @WebMethod
+    @RequestWrapper(localName = "importCaCert", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.ImportCaCert")
+    @ResponseWrapper(localName = "importCaCertResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.ImportCaCertResponse")
+    public void importCaCert(
+        @WebParam(name = "arg0", targetNamespace = "")
+        String arg0,
+        @WebParam(name = "arg1", targetNamespace = "")
+        byte[] arg1)
+        throws AuthorizationDeniedException_Exception, CAExistsException_Exception, EjbcaException_Exception
+    ;
+
+    /**
+     * 
+     * @param arg1
+     * @param arg0
+     * @throws EjbcaException_Exception
+     * @throws CADoesntExistsException_Exception
+     * @throws AuthorizationDeniedException_Exception
+     */
+    @WebMethod
+    @RequestWrapper(localName = "updateCaCert", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.UpdateCaCert")
+    @ResponseWrapper(localName = "updateCaCertResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.UpdateCaCertResponse")
+    public void updateCaCert(
+        @WebParam(name = "arg0", targetNamespace = "")
+        String arg0,
+        @WebParam(name = "arg1", targetNamespace = "")
+        byte[] arg1)
+        throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception
+    ;
+
+    /**
+     * 
      * @param arg3
      * @param arg2
      * @param arg1
