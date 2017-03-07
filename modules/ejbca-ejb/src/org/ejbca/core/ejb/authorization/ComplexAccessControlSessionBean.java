@@ -73,6 +73,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
  * @version $Id$
  * 
  */
+@Deprecated // Use new AuthorizationSystemSessionBean introduced in EJBCA 6.8.0 instead 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ComplexAccessControlSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ComplexAccessControlSessionBean implements ComplexAccessControlSessionLocal, ComplexAccessControlSessionRemote {

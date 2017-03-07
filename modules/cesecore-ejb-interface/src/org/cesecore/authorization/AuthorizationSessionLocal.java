@@ -12,8 +12,13 @@
  *************************************************************************/
 package org.cesecore.authorization;
 
+import java.util.HashMap;
+
 import javax.ejb.Local;
 import javax.ejb.Timer;
+
+import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * 
@@ -30,4 +35,7 @@ public interface AuthorizationSessionLocal extends AuthorizationSession {
 
     /** Initialize background cache refresh timeouts */
     void scheduleBackgroundRefresh();
+
+    /** @return the access rules available to the AuthenticationToken and its nested tokens, taking each such tokens role membership into account */
+    HashMap<String, Boolean> getAccessAvailableToAuthenticationToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
 }

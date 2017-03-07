@@ -108,7 +108,6 @@ import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.DatabaseConfiguration;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -119,6 +118,7 @@ import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
+import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
@@ -177,6 +177,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
+    @EJB
+    private AuthorizationSystemSessionLocal authorizationSystemSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -1584,7 +1586,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     /**
      * EJBCA 6.8.0:
      * 
-     * 1.   Converts AdminGroupData, AccessRuleData and AdminEntityData to RoleData and RoleMemeberData
+     * 1.   Converts AdminGroupData, AccessRuleData and AdminEntityData to RoleData and RoleMemberData
      * 
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
@@ -1594,15 +1596,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase680() throws UpgradeFailedException {
         log.debug("migrateDatabase680: Upgrading roles, rules and role members.");
         // Get largest possible list of all access rules on this system
-        final Map<String, Set<String>> categorizedAccessRules = complexAccessControlSession.getAuthorizedAvailableAccessRules(authenticationToken,
-                true, true, true, endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet(),
-                userDataSourceSession.getAuthorizedUserDataSourceIds(authenticationToken, true), EjbcaConfiguration.getCustomAvailableAccessRules());
-        final Collection<String> allKnownResourcesInInstallation = new HashSet<>();
-        for (final Set<String> acessRuleSet : categorizedAccessRules.values()) {
-            allKnownResourcesInInstallation.addAll(acessRuleSet);
-        }
+        final Set<String> allResourcesInUseOnThisInstallation = authorizationSystemSession.getAllResources(true);
         // Migrate one AdminGroupData at the time
-        final AccessRulesMigrator accessRulesMigrator = new AccessRulesMigrator(allKnownResourcesInInstallation);
+        final AccessRulesMigrator accessRulesMigrator = new AccessRulesMigrator(allResourcesInUseOnThisInstallation);
         final Collection<AdminGroupData> adminGroupDatas = roleMgmtSession.getAllRolesAuthorizedToEdit(authenticationToken);
         for (final AdminGroupData adminGroupData : adminGroupDatas) {
             // Convert AdminGroupData and linked AccessRuleDatas to RoleData

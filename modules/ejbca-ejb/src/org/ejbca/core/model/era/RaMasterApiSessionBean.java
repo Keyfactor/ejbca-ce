@@ -55,6 +55,7 @@ import org.cesecore.ErrorCode;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
@@ -94,6 +95,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
@@ -108,6 +110,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
@@ -116,6 +119,7 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -163,6 +167,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @EJB
     private AccessControlSessionLocal accessControlSession;
     @EJB
+    private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private AuthorizationSystemSessionLocal authorizationSystemSession;
+    @EJB
     private CaSessionLocal caSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
@@ -170,6 +178,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CertificateCreateSessionLocal certificateCreateSession;
+    @EJB
+    private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
@@ -182,6 +192,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private HardTokenSessionLocal hardTokenSession;
     @EJB
     private KeyRecoverySessionLocal keyRecoverySessionLocal;
+    @EJB
+    private UserDataSourceSessionLocal userDataSourceSession;
     @EJB
     private SignSessionLocal signSessionLocal;
     @EJB
@@ -219,21 +231,22 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException  {
-        return accessControlSession.getAccessSetForAuthToken(authenticationToken);
+        final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
+        return AccessSet.fromAccessRules(accessRules, authorizationSystemSession.getAllResources(false));
     }
     
     @Override
     public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens)  {
         final List<AccessSet> ret = new ArrayList<>();
-        for (AuthenticationToken authToken : authenticationTokens) {
-            // Always add, even if null. Otherwise the caller won't be able to determine which AccessSet belongs to which AuthenticationToken
-            AccessSet as;
+        final Set<String> allResourcesInUse = authorizationSystemSession.getAllResources(false);
+        for (final AuthenticationToken authenticationToken : authenticationTokens) {
             try {
-                as = accessControlSession.getAccessSetForAuthToken(authToken);
+                final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
+                ret.add(AccessSet.fromAccessRules(accessRules, allResourcesInUse));
             } catch (AuthenticationFailedException e) {
-                as = null;
+                // Always add, even if null. Otherwise the caller won't be able to determine which AccessSet belongs to which AuthenticationToken
+                ret.add(null);
             }
-            ret.add(as);
         }
         return ret;
     }
