@@ -178,8 +178,9 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         AuthorizationCache.INSTANCE.refresh(authorizationCacheCallback);
     }
     
-    /** @return the access rules available to the AuthenticationToken and its nested tokens, taking each such tokens role membership into account */
-    private HashMap<String, Boolean> getAccessAvailableToAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public HashMap<String, Boolean> getAccessAvailableToAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         return AuthorizationCache.INSTANCE.get(authenticationToken, authorizationCacheCallback);
     }
     
