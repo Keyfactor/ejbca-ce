@@ -471,27 +471,27 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public RaRequestsSearchResponse searchForApprovalRequests(AuthenticationToken authenticationToken,
             RaRequestsSearchRequest raRequestsSearchRequest) {
-        final RaRequestsSearchResponse ret = new RaRequestsSearchResponse();
+        final RaRequestsSearchResponse searchResponse = new RaRequestsSearchResponse();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    ret.merge(raMasterApi.searchForApprovalRequests(authenticationToken, raRequestsSearchRequest));
+                    searchResponse.merge(raMasterApi.searchForApprovalRequests(authenticationToken, raRequestsSearchRequest));
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        return ret;
+        return searchResponse;
     }
 
     @Override
     public CertificateDataWrapper searchForCertificate(final AuthenticationToken authenticationToken, final String fingerprint) {
-        CertificateDataWrapper ret = null;
+        CertificateDataWrapper searchResponse = null;
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    ret = raMasterApi.searchForCertificate(authenticationToken, fingerprint);
-                    if (ret != null) {
+                    searchResponse = raMasterApi.searchForCertificate(authenticationToken, fingerprint);
+                    if (searchResponse != null) {
                         break;
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
@@ -499,7 +499,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 }
             }
         }
-        return ret;
+        return searchResponse;
     }
 
     @Override
