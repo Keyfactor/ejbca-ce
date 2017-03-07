@@ -15,11 +15,14 @@ package org.cesecore.authorization.access;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.cesecore.roles.AccessRulesHelper;
 
 /**
  * Represents all access rules that a given AuthenticationToken is allowed to access.
@@ -174,5 +177,41 @@ public final class AccessSet implements Serializable {
         int result = 1;
         result = prime * result + ((set == null) ? 0 : set.hashCode());
         return result;
+    }
+    
+    /**
+     * Conversion from EJBCA 6.8.0+ access rules to the AccessSet introduced in EJBCA 6.6.0.
+     * 
+     * @param accessRules the EJBCA 6.8.0+ style access rules
+     * @param allResources whole universe of resources that exists
+     * @return an AccessSet of every single accepted resource enriched with "*SOME" and "*ALL", but no "*RECURSIVE"
+     */
+    public static AccessSet fromAccessRules(final HashMap<String, Boolean> accessRules, final Set<String> allResources) {
+        final Set<String> ret = new HashSet<>();
+        final Set<String> falsePositives = new HashSet<>();
+        for (final String current : allResources) {
+            // De-normalize if needed
+            final String resource = (current.length()>1 && current.charAt(current.length()-1)=='/') ? current.substring(0, current.length()-1) : current;
+            final boolean authorizedToResource = AccessRulesHelper.hasAccessToResource(accessRules, resource);
+            if (authorizedToResource) {
+                ret.add(resource);
+            }
+            // Check if we have an (integer) ID in the resource
+            final Matcher matcher = idInRulename.matcher(resource);
+            if (matcher.find()) {
+                final String allResource = matcher.replaceFirst("/$1/" + WILDCARD_ALL + "$3");
+                if (authorizedToResource) {
+                    ret.add(matcher.replaceFirst("/$1/" + WILDCARD_SOME + "$3"));
+                    ret.add(allResource);
+                } else {
+                    falsePositives.add(allResource);
+                }
+            }
+        }
+        for (final String current : falsePositives) {
+            ret.remove(current);
+        }
+        // Since expect the whole universe of rules to be provided, there should be no need to add the WILDCARD_RECURSIVE rule
+        return new AccessSet(ret);
     }
 }
