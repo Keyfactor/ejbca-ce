@@ -1560,7 +1560,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (StringUtils.isEmpty(request.getAcmeBaseUrl())) {
             throw new IllegalArgumentException("ACME base URL must be set");
         }
-        if (request.getType() == 0) {
+        if (request.getType() == 0) { // default value for uninitialized int value in java
             throw new IllegalArgumentException("ACME request type must be set");
         }
         

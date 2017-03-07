@@ -48,7 +48,7 @@
         <h:panelGroup layout="block" class="header" id="title">
             <h1><h:outputText value="#{msg.role_members_page_title}"/></h1>
         </h:panelGroup>
-        <h:outputText value="#{msg.manage_roles_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToRoleMembers}"/>
+        <h:outputText value="#{msg.role_members_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToRoleMembers}"/>
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToRoleMembers}">
         
             <h:panelGroup id="basic" layout="block">

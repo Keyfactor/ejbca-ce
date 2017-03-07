@@ -53,7 +53,7 @@
         <h:panelGroup layout="block" class="header" id="title">
             <h1><h:outputText value="#{raRoleMemberBean.editPageTitle}"/></h1>
         </h:panelGroup>
-        <h:outputText value="#{msg.manage_role_members_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEditRoleMembers}"/>
+        <h:outputText value="#{msg.role_members_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEditRoleMembers}"/>
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToEditRoleMembers}">
             <h:form id="roleMemberForm" class="pure-form">
                 <h:panelGroup id="basic" styleClass="pure-g">
@@ -76,7 +76,7 @@
                         <h:commandButton action="#{raRoleMemberBean.update}" value="#{msg.generic_update}" styleClass="pure-button updateButton jsHide"/>
                     </h:panelGroup>
                     
-                    <h:panelGroup id="tokenTypeDependent">
+                    <h:panelGroup id="tokenTypeDependent" styleClass="plainDiv">
                         <h:panelGroup id="parentCA" layout="block" styleClass="pure-u-1" rendered="#{raRoleMemberBean.tokenTypeIssuedByCA}">
                             <h:outputLabel for="caId" value="#{msg.role_member_page_ca_label}" styleClass="pure-u-lg-1-5"/>
                             <h:selectOneMenu id="caId" value="#{raRoleMemberBean.caId}" styleClass=" pure-input pure-u-lg-3-5">
