@@ -89,7 +89,8 @@
                         <h:panelGroup layout="block" styleClass="internal-frame">
                             <h:panelGroup layout="block" styleClass="accessRuleSectionHeader jsRuleHeader">
                                 <h:outputText value="#{ruleSection.header}" styleClass="jsRuleHeaderText"/>
-                                <h:inputHidden id="fullHeaderText" value="#{ruleSection.fullHeaderText}"/>
+                                <ui:remove><!-- Do not remove the following comment. It is used as a template for the Javascript section expand/collapse code --></ui:remove>
+                                <!--#{ruleSection.fullHeaderText}-->
                             </h:panelGroup>
                             
                             <h:panelGroup layout="block" styleClass="">
