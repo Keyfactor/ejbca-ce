@@ -14,6 +14,7 @@
 	<property name="systemtests.dist.dir" location="${ejbca.home}/modules/dist"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src.test.dir" location="${this.dir}/src-test"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
 	<property name="src.interface.dir" location="${this.dir}/src-interface"/>
 
 	<!-- Include endorsed jars from Glassfish -->
@@ -185,6 +186,9 @@
 		<copy file="${jboss-ejb-client.properties}" todir="${build.dir}" failonerror="false"/>
 		<!-- needed by the cesecore tests -->
 		<copy todir="${build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
+		<copy todir="${build.test.dir}/org/ejbca/core/protocol/ws" enablemultiplemappings="true">
+		    <fileset dir="${resources.dir}" includes="**/*" />
+		</copy>
 	</target>
 
 	<target name="assert-notinproduction">

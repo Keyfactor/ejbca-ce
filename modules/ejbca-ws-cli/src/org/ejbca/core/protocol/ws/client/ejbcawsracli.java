@@ -41,7 +41,7 @@ public class ejbcawsracli  {
                     "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | certreq | revokecert | " +
                     "getpublisherqueuelength | revoketoken | revokeuser | checkrevocationstatus | generatenewuser | " +
                     "createcrl | cacertrequest | cacertresponse | customlog | getprofile | createcryptotoken | " + 
-                    "generatectkeys | createca | addadmintorole | removeadminfromrole | getexpiredcerts | " +
+                    "generatectkeys | createca | importcacert | updatecacert | addadmintorole | removeadminfromrole | getexpiredcerts | " +
                     "getexpiredcertsbyissuer | getexpiredcertsbytype | stress");
             }
         } catch (ErrorAdminCommandException e) {

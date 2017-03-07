@@ -19,8 +19,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
@@ -47,7 +50,10 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import javax.ejb.RemoveException;
+import javax.xml.ws.soap.SOAPFaultException;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
@@ -90,6 +96,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoToken;
@@ -131,6 +138,7 @@ import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
@@ -148,6 +156,7 @@ import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
+import org.ejbca.cvc.CardVerifiableCertificate;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -292,7 +301,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         final String subCaSubjectDn = "CN=" + subCaName;
         X509CA subCA = null;
         X509CA rootCA = null;
-
         try {
             //rootCA a rootCA
             rootCA = CaTestUtils.createTestX509CA(rootCaDn, PASSWORD.toCharArray(), false);
@@ -1717,6 +1725,179 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
     }
     
+    @Test
+    public void test76ImportCaCert() throws Exception {
+        log.trace(">test76ImportCaCert");
+        
+        // A: Imports a CA certificate of an external CVCA (CVC certificate with at least C=${ISO-3166-2}, CN != null).
+        log.debug("Test import a CA certificate of an external CVCA.");
+        String caname = "Test-Import-CVCA";
+        if(caSession.existsCa(caname)) {
+            log.debug("Remove CA " + caname + " before test.");
+            caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caname).getCAId());
+        }
+        byte[] file = readDerFile("external_cvca_certificate_for_import.der");
+        ejbcaraws.importCaCert(caname, file);
+        assertTrue("Imported CVCA must exists.", caSession.existsCa(caname));
+        CAInfo cainfo = caSession.getCAInfo(intAdmin, caname);
+        assertEquals("CVCA must be a CVC CA.", cainfo.getCAType(), CAInfo.CATYPE_CVC);
+        final CardVerifiableCertificate cvc = (CardVerifiableCertificate) CertTools.getCertfromByteArray(file);
+        // ECA-5337: DN should match ...
+        
+        // B: Imports a CA certificate of an external CSCA (X.509 certificate with at least C=${ISO-3166-2}, CN != null and serialNumber != null).
+        log.debug("Test import a CA certificate of an external CSCA.");
+        caname = "Test-Import-CSCA";
+        if(caSession.existsCa(caname)) {
+            log.debug("Remove CA " + caname + " before test.");
+            caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caname).getCAId());
+        }
+        file = readPemFile("external_csca_certificate_for_import.pem").getBytes();
+        ejbcaraws.importCaCert(caname, file);
+        assertTrue("Imported CSCA must exists.", caSession.existsCa(caname));
+        cainfo = caSession.getCAInfo(intAdmin, caname);
+        assertEquals("CSCA must be a X.509 CA.", cainfo.getCAType(), CAInfo.CATYPE_X509);
+        final List<X509Certificate> x509Certificates = (List<X509Certificate>) CertTools.getCertsFromPEM(new ByteArrayInputStream(file), X509Certificate.class);
+        final X509Certificate x509Certificate = x509Certificates.get(0);
+        assertEquals("The certificates Subject-DN must match the CAs subject-DN.", DNFieldsUtil.dnStringToMap(cainfo.getSubjectDN()), DNFieldsUtil.dnStringToMap(x509Certificate.getSubjectDN().toString()));
+        
+        // Exceptions: Import of the same CA again must throw a CAExistsException.
+        log.debug("Test import a CA certificate of an external CVCA again (one time too much).");
+        caname = "Test-Import-CVCA";
+        try {
+            ejbcaraws.importCaCert(caname, readDerFile("external_cvca_certificate_for_import.der"));
+            fail();
+        } catch(Exception e) {
+            assertEjbcaException(e, ErrorCode.INTERNAL_ERROR, "CA with name " + caname + " already exists.");
+        }
+        // Exceptions: Import of the same CA certificate again (with other name) must throw a CAExistsException.
+        log.debug("Test import a CA certificate of an external CVCA again (with other name).");
+        caname = "Test-Import-CVCA-new";
+        if(caSession.existsCa(caname)) {
+            log.debug("Remove CA " + caname + " before test.");
+            caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caname).getCAId());
+        }
+        try {
+            ejbcaraws.importCaCert(caname, readPemFile("external_cvca_certificate_for_import.pem").getBytes());
+            fail();
+        } catch(Exception e) {
+            final int caid = caSession.getCAInfo(intAdmin, "Test-Import-CVCA").getCAId();
+            assertEjbcaException(e, ErrorCode.INTERNAL_ERROR, "CA with id " + caid + " already exists.");
+        }
+        // Exceptions: Import of technical invalid file must throw an EjbcaException with a CertificateParsingException.
+        log.debug("Test import a CA certificate with an invalid PEM file.");
+        try {
+            ejbcaraws.importCaCert(caname, readPemFile("invalid_certificate.pem").getBytes());
+            fail();
+        } catch(Exception e) {
+            // ECA-5337: CertificateParsingException should be caught (EjbcaException_Exception with errorCode CERT_COULD_NOT_BE_PARSED);
+            assertEjbcaException(e, ErrorCode.INTERNAL_ERROR, null);
+        }
+        // Exceptions: Import of a certificate file with an invalid certificate chain must throw an EjbcaException with a CertificateImportException.
+        log.debug("Test import a CA certificate with an invalid PEM certificate chain.");
+        try {
+            ejbcaraws.importCaCert(caname, readPemFile("invalid_certificate_chain.pem").getBytes());
+            fail();
+        } catch(Exception e) {
+            assertEjbcaException(e, ErrorCode.CERTIFICATE_IMPORT, "The provided certificates does not form a full certificate chain.");
+        }
+        log.trace("<test76ImportCaCert");
+    }
+    
+    /** Test to update a previously imported CA certificate.
+     * A pre-condition to this test is that test76ImportCaCert has been run.
+     */
+    @Test
+    public void test77UpdateCaCert() throws Exception  {
+        log.trace(">test76UpdateCaCert");
+        
+        try {
+            // A: Updates a CA certificate of an external CVCA (CVC certificate with at least C=${ISO-3166-2}, CN != null).
+            log.debug("Test update a CA certificate of an external CVCA.");
+            String caname = "Test-Import-CVCA";
+            ejbcaraws.updateCaCert(caname, readDerFile("external_cvca_certificate_for_update.der"));
+            
+            // B: Updates a CA certificate of an external CSCA (X.509 certificate with at least C=${ISO-3166-2}, CN != null and serialNumber != null).
+            log.debug("Test update a CA certificate of an external CSCA.");
+            caname = "Test-Import-CSCA";
+            ejbcaraws.updateCaCert(caname, readPemFile("external_csca_certificate_for_update.pem").getBytes());
+            // ECA-5337: Optional change of serialNumber could be checked here. 
+            
+            // Exceptions: Update of the same CA again must throw a CertificateImportException.
+            log.debug("Test update a CA certificate of an external CVCA again (one time to much).");
+            caname = "Test-Import-CVCA";
+            try {
+                ejbcaraws.updateCaCert(caname, readDerFile("external_cvca_certificate_for_update.der"));
+                fail();
+            } catch(Exception e) {
+                assertEjbcaException(e, ErrorCode.CERTIFICATE_IMPORT, "The CA certificate chain is already imported.");
+            }
+            // Exceptions: Update of a CA with a DN which does not match (except CSCA certificates with at least C=${ISO-3166-2}, CN != null and different serialNumber).
+            log.debug("Test update a CA certificate of an external CA with different Subject-DN.");
+            caname = "Test-Import-CSCA";
+            try {
+                ejbcaraws.updateCaCert(caname, readDerFile("external_cvca_certificate_for_update.der"));
+                fail();
+            } catch(Exception e) {
+                assertEjbcaException(e, ErrorCode.CERTIFICATE_IMPORT, "Only able to update imported CA certificate if Subject DN of the leaf CA certificate is the same.");
+            }
+            // Exceptions: Update of technical invalid file must throw an EjbcaException with a CertificateParsingException.
+            log.debug("Test update a CA certificate of an invalid PEM certificate file.");
+            try {
+                ejbcaraws.updateCaCert(caname, readPemFile("invalid_certificate.pem").getBytes());
+                fail();
+            } catch(Exception e) {
+                // ECA-5337: CertificateParsingException should be caught (EjbcaException_Exception with errorCode CERT_COULD_NOT_BE_PARSED);
+                assertEjbcaException(e, ErrorCode.INTERNAL_ERROR, null);
+            }
+            
+            // Exceptions: Import of a certificate file with an invalid certificate chain must throw an EjbcaException with a CertificateImportException.
+            log.debug("Test update a CA certificate of an external CA with an invalid PEM certificate chain.");
+            try {
+                ejbcaraws.updateCaCert(caname, readPemFile("invalid_certificate_chain.pem").getBytes());
+                fail();
+            } catch(Exception e) {
+                assertEjbcaException(e, ErrorCode.CERTIFICATE_IMPORT, "The provided certificates does not form a full certificate chain.");
+            }
+            // Exceptions: Update of a CA which not exists must throw a CADoesNotExistsException.
+            log.debug("Test update a CA certificate of CA which does not exist.");
+            caname = "Test-Import-CA-which-does-not-exist.";
+            if(caSession.existsCa(caname)) {
+                log.debug("Remove CA " + caname);
+                caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caname).getCAId());
+            }
+            try {
+                ejbcaraws.updateCaCert(caname, readDerFile("external_cvca_certificate_for_update.der"));
+                fail();
+            } catch(Exception e) {
+                assertEjbcaException(e, ErrorCode.CA_NOT_EXISTS, "CA with name Test-Import-CA-which-does-not-exist. does not exist.");
+            }            
+        } finally {
+            // Clean up.
+            String caname = "Test-Import-CVCA";
+            if(caSession.existsCa(caname)) {
+                log.debug("Remove CA " + caname + " after test.");
+                caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caname).getCAId());
+            }
+            caname = "Test-Import-CSCA";
+            if(caSession.existsCa(caname)) {
+                log.debug("Remove CA " + caname + " after test.");
+                caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caname).getCAId());
+            }            
+        }
+        
+        log.trace("<test76UpdateCaCert");
+    }
+    
+    private void assertEjbcaException(final Exception exception, final ErrorCode errorCode, final String errorMessage) {
+        assertTrue("EjbcaException expected.", exception instanceof EjbcaException_Exception);
+        if (StringUtils.isNotEmpty(errorCode.getInternalErrorCode())) {
+            assertEquals("Error code:",  errorCode.getInternalErrorCode(), ((EjbcaException_Exception) exception).getFaultInfo().getErrorCode().getInternalErrorCode());
+        }
+        if (StringUtils.isNotEmpty(errorMessage)) {
+            assertEquals("Error message:", errorMessage, ((EjbcaException_Exception) exception).getMessage());
+        }
+    }
+    
     private void testCertificateRequestWithEeiDnOverride(boolean allowDNOverrideByEndEntityInformation, boolean useCsr, String requestedSubjectDN, String expectedSubjectDN) throws Exception {
         if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
             certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
@@ -1885,7 +2066,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     } // createHardToken
 
     /**
-     * Create a user a generate cert.
+     * Create a user a generate certificate.
      */
     private X509Certificate createUserAndCert(String username, int caID) throws Exception {
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
@@ -1897,5 +2078,22 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         assertTrue(userCerts.size() == 1);
         return (X509Certificate) userCerts.iterator().next();
     }
+    
+    /** Reads a PEM file by the class path. */
+    private String readPemFile(final String filename) throws IOException {
+        final InputStream stream = getClass().getResourceAsStream(filename);
+        final StringWriter writer = new StringWriter();
+        IOUtils.copy(stream, writer);
+        IOUtils.closeQuietly(stream);
+        return writer.toString();
+    }
 
+    /** Reads a DER file by the class path. */
+    private byte[] readDerFile(final String filename) throws IOException {
+        final InputStream stream = getClass().getResourceAsStream(filename);
+        final byte[] data = new byte[stream.available()]; 
+        stream.read(data);
+        IOUtils.closeQuietly(stream);
+        return data;
+    }
 }

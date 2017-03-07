@@ -14,8 +14,14 @@
 package org.cesecore.certificates.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.junit.Test;
 
@@ -49,6 +55,45 @@ public class DNFieldsUtilTest {
     final private static String simple2AfterA = "CN=userName,O=linagora";
     final private static String simple2AfterT = "CN=userName,O=, O=linagora";
 
+    @Test
+    public void testDnStringToMap() throws Exception {
+        // Test empty string -> empty map.
+        String string = StringUtils.EMPTY;
+        Map<String,String> map = new HashMap<String,String>();
+        Map<String,String> dnMap = DNFieldsUtil.dnStringToMap(string);
+        assertEquals("An empty DN string must result in an empty map.", map, dnMap);
+        
+        // Test valid string with some attributes -> must be all in the map.
+        string = "C=SE,O=,OU=Test,CN=Tester";
+        map = new HashMap<String,String>();
+        map.put("C", "SE");
+        map.put("O", StringUtils.EMPTY);
+        map.put("OU", "Test");
+        map.put("CN", "Tester");
+        dnMap = DNFieldsUtil.dnStringToMap(string);
+        assertEquals("The DN map size must match the number of DN attributes.", 4, map.size());
+        assertTrue("The DN map must contain all attributes.", dnMap.containsKey("C") && dnMap.containsKey("O") && dnMap.containsKey("OU") && dnMap.containsKey("CN"));
+        assertEquals("The DN map must contain all attributes and values.", map, dnMap);
+    }
+    
+    @Test
+    public void testCaCertificatesOfSameCSCA() {
+        // Test empty DN strings.
+        String string1 = StringUtils.EMPTY;
+        String string2 = StringUtils.EMPTY;
+        assertFalse("Empty DNs do not belong to the same CSCA (no valid CSCA subject-DNs).", DNFieldsUtil.caCertificatesOfSameCSCA(DNFieldsUtil.dnStringToMap(string1), DNFieldsUtil.dnStringToMap(string2)));
+        
+        // Test CSCA subject-DNs without serialNumber
+        string1 = "C=SE,CN=CSCA";
+        assertTrue("DNs with the same values for C and CN can belong to the subject-DN of the same CSCA.", DNFieldsUtil.caCertificatesOfSameCSCA(DNFieldsUtil.dnStringToMap(string1), DNFieldsUtil.dnStringToMap(string1)));
+
+        // Test subject-DN string with a missing attribute.
+        string1 = "C=SE";
+        string2 = "C=SE";
+        assertFalse("A subject-DN string with missing CN does not belong to a CSCA certificate.", DNFieldsUtil.caCertificatesOfSameCSCA(DNFieldsUtil.dnStringToMap(string1), DNFieldsUtil.dnStringToMap(string1)));
+
+    }
+    
     @Test
     public void testRemoveAllEmpties() throws Exception {
     	assertEquals(allSpacesRemovedDN, removeEmpties(originalDN, false));
