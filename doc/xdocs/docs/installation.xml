@@ -672,7 +672,7 @@ This makes your configuration robust, and possible to script on your own.</p>
 Run your installation without mixing root and user accounts as this may lead to root privileges being set on files, which later WildFly is unable to read. Therefore the advice is to run everything as your "wildfly" user.
 </note>
 <subsubsection name="Add database driver">
-<p>Add MariaDB database driver by hot-deploying it into the Ddeployment directory. This will be picked up by WildFly and deployed so we can create a datasource straight away.
+<p>Add MariaDB database driver by hot-deploying it into the Deployment directory. This will be picked up by WildFly and deployed so we can create a datasource straight away.
 You can use a generic name, without version number, in order to get a generic 'driver-name' for the data source command.
 </p>
 <source>
@@ -777,7 +777,7 @@ ant clean deployear
 <note>If you are moving an existing installation that already have TLS keystores available, this step is not needed.</note>
 <p></p>
 <source>
-ant runinstall
+ant install
 </source>
 </subsubsection>
 
@@ -861,7 +861,7 @@ WildFly by default isolates away most sun classes. EJBCA configures JBoss/WildFl
 <p>For WildFly deploy and install does not automagically configure the Application server for you, instead we supply configuration instructions for the Application server for you to follow.</p>
 
 <subsubsection name="Add database driver">
-<p>Add MariaDB database driver by hot-deploying it into the Ddeployment directory. This will be picked up by WildFly and deployed so we can create a datasource straight away.
+<p>Add MariaDB database driver by hot-deploying it into the Deployment directory. This will be picked up by WildFly and deployed so we can create a datasource straight away.
 You can use a generic name, without version number, in order to get a generic 'driver-name' for the data source command.
 </p>
 <source>
@@ -944,7 +944,7 @@ ant clean deployear
 <note>If you are moving an existing installation that already have TLS keystores available, this step is not needed.</note>
 <p></p>
 <source>
-ant runinstall
+ant install
 </source>
 </subsubsection>
 
