@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -27,6 +28,7 @@ import javax.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.roles.Role;
@@ -229,9 +231,11 @@ public class RaRoleMemberBean implements Serializable {
         final List<SelectItem> result = new ArrayList<>();
         if (tokenTypeInfo != null) {
             final List<String> namesSorted = new ArrayList<>(tokenTypeInfo.getMatchKeysMap().keySet());
+            Collator coll = Collator.getInstance();
+            coll.setStrength(Collator.PRIMARY);
             Collections.sort(namesSorted);
             for (final String name : namesSorted) {
-                if ("CertificateAuthenticationToken".equals(tokenType) && "NONE".equals(name) &&
+                if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) && "NONE".equals(name) &&
                         !matchKey.equals(tokenType)) {
                     continue; // deprecated value
                 }

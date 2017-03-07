@@ -152,13 +152,13 @@ public class RaRoleMembersBean implements Serializable {
         
         // Make search request
         final RaRoleMemberSearchRequest searchRequest = new RaRoleMemberSearchRequest();
-        if (criteriaCaId != null) {
+        if (criteriaCaId != null && criteriaCaId.intValue() != 0) { // JBoss EAP 6.4 sets the parameters to 0 instead of null
             searchRequest.setCaIds(new ArrayList<>(Arrays.asList(criteriaCaId)));
         }
-        if (criteriaRoleId != null) {
+        if (criteriaRoleId != null && criteriaRoleId.intValue() != 0) {
             searchRequest.setRoleIds(new ArrayList<>(Arrays.asList(criteriaRoleId)));
         }
-        if (criteriaTokenType != null) {
+        if (!StringUtils.isEmpty(criteriaTokenType)) {
             searchRequest.setTokenTypes(new ArrayList<>(Arrays.asList(criteriaTokenType)));
         }
         searchRequest.setGenericSearchString(genericSearchString);

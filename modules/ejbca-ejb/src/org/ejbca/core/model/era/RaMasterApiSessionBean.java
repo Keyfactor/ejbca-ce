@@ -54,6 +54,7 @@ import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.access.AccessSet;
@@ -110,6 +111,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -291,9 +293,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public Map<String,RaRoleMemberTokenTypeInfo> getAvailableRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
         final Map<String,RaRoleMemberTokenTypeInfo> result = new HashMap<>();
         for (final String tokenType : AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes()) {
-            if (!AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType).isUserConfigurable()) {
+            // Disallow access to Public Access and CLI token types on the RA, as well as non-user-configurable token types such as AlwaysAllowLocal 
+            if (!AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType).isUserConfigurable() ||
+                    PublicAccessAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) ||
+                    CliAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType)) {
                 continue;
-            }
+            } 
             
             final Map<String,Integer> stringToNumberMap = new HashMap<>();
             for (final Entry<String,AccessMatchValue> entry : AccessMatchValueReverseLookupRegistry.INSTANCE.getNameLookupRegistryForTokenType(tokenType).entrySet()) {
@@ -1288,8 +1293,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             authorizedLocalTokenTypes.retainAll(request.getTokenTypes());
         }
         
-        if (authorizedLocalCaIds.isEmpty() || authorizedLocalRoleIds.isEmpty() || authorizedLocalTokenTypes.isEmpty()) {
-            log.debug("No authorized CAs, no authorized Roles, and/or token types. Returning empty response in role member search");
+        if (authorizedLocalCaIds.isEmpty()) {
+            log.debug("No authorized CAs. Returning empty response in role member search");
+            return response;
+        }
+        if (authorizedLocalRoleIds.isEmpty()) {
+            log.debug("No authorized Roles. Returning empty response in role member search");
+            return response;
+        }
+        if (authorizedLocalTokenTypes.isEmpty()) {
+            log.debug("No authorized token types. Returning empty response in role member search");
             return response;
         }
         
