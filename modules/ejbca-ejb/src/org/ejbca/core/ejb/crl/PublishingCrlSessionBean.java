@@ -655,31 +655,37 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         final String cafp = CertTools.getFingerprintAsString(ca.getCACertificate());
         String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate()); 
         
+        int fullcrlnumber = lastBaseCrlInfo==null ? 0 : lastBaseCrlInfo.getLastCRLNumber();
         //If this is the first time to create CRL for CA that has gone through Name Change process make sure
         //that first CRL will continue CRL numbering where CA left before the last Name Change process
-        if (ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged() && lastBaseCrlInfo == null) {
-            Certificate lastRenewedCACertificate = null;
-            ArrayList<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
-            if(renewedCertificateChain == null){
-                throw new IllegalStateException("Was not able to retrieve renewed certificate chain for CA = " + ca.getName() + ". Could not proceed with generating and storing CRL");
-            }
-            lastRenewedCACertificate = renewedCertificateChain.get(renewedCertificateChain.size()-1);
-            String lastRenewedCACertificateSubjectDN = CertTools.getSubjectDN(lastRenewedCACertificate);
-            if(!lastRenewedCACertificateSubjectDN.equalsIgnoreCase(certSubjectDN)){
-                if (log.isDebugEnabled()) {
-                    log.debug("First creation of CRL detected after CA has gone through Name Change process. Continuing CRL number left with old CA name " + lastRenewedCACertificateSubjectDN);
+        if (ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()) {
+            if (lastBaseCrlInfo == null) {
+                Certificate lastRenewedCACertificate = null;
+                ArrayList<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
+                if(renewedCertificateChain == null){
+                    throw new IllegalStateException("Was not able to retrieve renewed certificate chain for CA = " + ca.getName() + ". Could not proceed with generating and storing CRL");
                 }
-                certSubjectDN = lastRenewedCACertificateSubjectDN;
-            }else{
-                throw new IllegalStateException("CA " + ca.getName() + " is marked as it has gone through CA Name Change but old name seems the same as new one! Could not proceed with generating and storing CRL");
+                lastRenewedCACertificate = renewedCertificateChain.get(renewedCertificateChain.size()-1);
+                String lastRenewedCACertificateSubjectDN = CertTools.getSubjectDN(lastRenewedCACertificate);
+                if(!lastRenewedCACertificateSubjectDN.equalsIgnoreCase(certSubjectDN)){
+                    if (log.isDebugEnabled()) {
+                        log.debug("First creation of CRL detected for CA "+ca.getName()+" after CA has gone through Name Change process. Continuing CRL number left with old CA name " + lastRenewedCACertificateSubjectDN);
+                    }
+                    certSubjectDN = lastRenewedCACertificateSubjectDN;
+                    // Since we don't have a fullcrlnumber from the renewed CA, use the full crlnumber from the old CA that we are changing from
+                    fullcrlnumber = crlSession.getLastCRLNumber(certSubjectDN, false);
+                }else{
+                    throw new IllegalStateException("CA " + ca.getName() + " is marked as it has gone through CA Name Change process but old name seems the same as new one! Could not proceed with generating and storing CRL");
+                }
+            } else {
+                log.debug("CA "+ca.getName()+" has gone through CA Name Change process, but this is not the first CRL to be generated. Not getting CRL number from old CA name.");
             }
         }
         
-        final int fullnumber = lastBaseCrlInfo==null ? 0 : lastBaseCrlInfo.getLastCRLNumber();
-        final int deltanumber = crlSession.getLastCRLNumber(certSubjectDN, true);
+        final int deltacrlnumber = crlSession.getLastCRLNumber(certSubjectDN, true);
         // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
-        final int nextCrlNumber = ( fullnumber > deltanumber ? fullnumber : deltanumber ) +1; 
-        final byte[] crlBytes = crlCreateSession.generateAndStoreCRL(admin, ca, certs, delta?fullnumber:-1, nextCrlNumber);
+        final int nextCrlNumber = ( fullcrlnumber > deltacrlnumber ? fullcrlnumber : deltacrlnumber ) +1; 
+        final byte[] crlBytes = crlCreateSession.generateAndStoreCRL(admin, ca, certs, delta?fullcrlnumber:-1, nextCrlNumber);
         this.publisherSession.storeCRL(admin, ca.getCRLPublishers(), crlBytes, cafp, nextCrlNumber, certSubjectDN);
         return crlBytes;
     }
