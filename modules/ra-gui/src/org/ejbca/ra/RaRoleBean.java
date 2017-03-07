@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,14 +21,16 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
+import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 
@@ -38,7 +41,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
  */
 @ManagedBean
 @ViewScoped
-public class RaRoleBean {
+public class RaRoleBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaRoleBean.class);
@@ -74,6 +77,56 @@ public class RaRoleBean {
     private boolean hasAccessToEmptyNamespace;
     private List<String> namespaces;
     private List<SelectItem> namespaceOptions = new ArrayList<>();
+    
+    private List<RuleSectionGuiInfo> ruleSections;
+    
+    public final class RuleSectionGuiInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
+        
+        private final String header, accessRule;
+        private Boolean allowed;
+        private final List<RuleSectionGuiInfo> rules = new ArrayList<>();
+        private final List<RuleSectionGuiInfo> objectRules = new ArrayList<>();
+        
+        public RuleSectionGuiInfo(final String header) {
+            this.header = header;
+            this.accessRule = null;
+        }
+        
+        public RuleSectionGuiInfo(final String header, final String accessRule) {
+            this.header = header;
+            this.accessRule = accessRule;
+        }
+
+        public Boolean getAllowed() {
+            return allowed;
+        }
+
+        public void setAllowed(Boolean allowed) {
+            this.allowed = allowed;
+        }
+
+        public String getHeader() {
+            return header;
+        }
+        
+        public String getFullHeaderText() {
+            return raLocaleBean.getMessage("role_page_selected_items", header);
+        }
+        
+        public String getAccessRule() {
+            return accessRule;
+        }
+
+        public List<RuleSectionGuiInfo> getRules() {
+            return rules;
+        }
+
+        public List<RuleSectionGuiInfo> getObjectRules() {
+            return objectRules;
+        }
+        
+    }
 
     
     public void initialize() throws AuthorizationDeniedException {
@@ -101,6 +154,23 @@ public class RaRoleBean {
             if (!namespace.equals("")) {
                 namespaceOptions.add(new SelectItem(namespace, namespace));
             }
+        }
+        
+        // Get available access rules and their values in this role
+        ruleSections = new ArrayList<>();
+        
+        final IdNameHashMap<CAInfo> authorizedCas = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
+        if (!authorizedCas.isEmpty()) {
+            final RuleSectionGuiInfo section = new RuleSectionGuiInfo(raLocaleBean.getMessage("role_page_section_cas"));
+            
+            //section.
+            
+            for (final KeyToValueHolder<CAInfo> kv : authorizedCas.values()) {
+                final CAInfo ca = kv.getValue();
+                section.objectRules.add(new RuleSectionGuiInfo(ca.getName(), "/ca/"+kv.getId()));
+            }
+            
+            ruleSections.add(section);
         }
     }
     
@@ -160,6 +230,14 @@ public class RaRoleBean {
         return namespaceOptions;
     }
     
+    public List<RuleSectionGuiInfo> getRuleSections() {
+        return ruleSections;
+    }
+    
+    public void setRuleSections(final List<RuleSectionGuiInfo> ruleSections) {
+        this.ruleSections = ruleSections;
+    }
+    
     
     public String getPageTitle() {
         if (roleId != null) {
@@ -185,9 +263,11 @@ public class RaRoleBean {
 
     public String save() throws AuthorizationDeniedException, RoleExistsException {
         final String namespaceToUse;
+        log.debug("Save role button pressed");
         if (!isLimitedToOneNamespace()) {
             if (NEW_NAMESPACE_ITEM.equals(namespace)) {
                 if (StringUtils.isBlank(newNamespace)) {
+                    log.debug("Empty namespace entered when 'New namespace' was selected, cannot save role");
                     raLocaleBean.addMessageError("role_page_error_empty_namespace");
                     return "";
                 }
@@ -201,11 +281,10 @@ public class RaRoleBean {
         
         // TODO access rules
         
+        log.debug("Calling saveRole method with RA Master API");
         role = raMasterApiProxyBean.saveRole(raAuthenticationBean.getAuthenticationToken(), role);
+        log.debug("Done saving role, result was: " + role);
         roleId = role.getRoleId();
-        
-        // XXX note: the CA must check namespace access, including access to use the "" namespace and access to create new namespaces (which is the same)
-        
         return "roles?faces-redirect=true&includeViewParams=true";
     }
 

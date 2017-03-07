@@ -50,7 +50,7 @@
                 </h:link>
             </h:panelGroup>
             <h:form id="roleForm" class="pure-form">
-                <h:panelGroup id="basic" styleClass="pure-g">
+                <h:panelGroup id="roleProperties" styleClass="pure-g">
                     <h:panelGroup  layout="block" styleClass="pure-u-1 pure-u-lg-5-5">
                         <h:outputText value="TODO page is under construction"/>
                     </h:panelGroup>
@@ -81,6 +81,33 @@
                             <h:outputText value="#{msg.generic_cancel}"/>
                         </h:link>
                     </h:panelGroup>
+                </h:panelGroup>
+                
+                
+                <h:panelGroup id="roleRules">
+                    <ui:repeat value="#{raRoleBean.ruleSections}" var="ruleSection">
+                        <h:panelGroup layout="block" styleClass="internal-frame">
+                            <h:panelGroup layout="block" styleClass="accessRuleSectionHeader jsRuleHeader">
+                                <h:outputText value="#{ruleSection.header}" styleClass="jsRuleHeaderText"/>
+                                <h:inputHidden id="fullHeaderText" value="#{ruleSection.fullHeaderText}"/>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup layout="block" styleClass="">
+                                <h:selectBooleanCheckbox id="level1RuleCheckbox" value="#{objectRule.allowed}"/>
+                                <h:outputLabel for="level1RuleCheckbox" value="#{objectRule.header}"/>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup layout="block" styleClass="accessRuleSectionContents">
+                                <ui:repeat value="#{ruleSection.objectRules}" var="objectRule">
+                                    <h:panelGroup layout="block" styleClass="level1Rule">
+                                        <h:selectBooleanCheckbox id="level1RuleCheckbox" value="#{objectRule.allowed}"/>
+                                        <h:outputLabel for="level1RuleCheckbox" value="#{objectRule.header}"/>
+                                    </h:panelGroup>
+                                </ui:repeat>
+                                
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </ui:repeat>
                 </h:panelGroup>
             </h:form>
         </h:panelGroup>
