@@ -292,7 +292,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     /** Like {@link #assertAuthorizedToEditRoles(AuthenticationToken)}, but check for view access */
     private void assertAuthorizedToViewRoles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
         if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.VIEWROLES.resource())) {
-            String msg = InternalResources.getInstance().getLocalizedMessage("authorization.notauthorizedtoeditroles", authenticationToken.toString());
+            String msg = InternalResources.getInstance().getLocalizedMessage("authorization.notauthorizedtoviewroles", authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
     }
