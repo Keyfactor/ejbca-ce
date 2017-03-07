@@ -29,4 +29,6 @@ public interface AuthorizationSystemSessionLocal extends AuthorizationSystemSess
 
     /** @return a Set of all resources on this installation (optionally ignoring if certain resources is not in use) */
     Set<String> getAllResources(boolean ignoreLimitations);
+
+    boolean initializeAuthorizationModule();
 }
