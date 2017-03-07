@@ -42,7 +42,9 @@ public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSe
      * This method only performs any operation of RoleData and CAData both have no entries. 
      * 
      * @return true if initialization was done. This also means that this is a fresh installation of EJBCA.
+     * @deprecated superseded by AuthorizationSystemSessionLocal.initializeAuthorizationModule()
      */
+    @Deprecated
     boolean initializeAuthorizationModule();
     
     /**

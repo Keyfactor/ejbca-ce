@@ -33,7 +33,9 @@ public interface ComplexAccessControlSession {
 	 * @param superAdminCN the CN of the superadmin to match in the rule
 	 * @throws AuthorizationDeniedException 
 	 * @throws RoleExistsException 
+     * @deprecated superseded by AuthorizationSystemSessionLocal.initializeAuthorizationModule() and use of RoleSession and RoleMemberSession
 	 */
+    @Deprecated
     void initializeAuthorizationModule(AuthenticationToken admin, int caid, String superAdminCN) throws RoleExistsException, AuthorizationDeniedException;
 
     /**

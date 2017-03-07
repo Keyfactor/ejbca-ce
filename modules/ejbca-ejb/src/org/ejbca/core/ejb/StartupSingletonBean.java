@@ -63,6 +63,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
@@ -94,6 +95,8 @@ public class StartupSingletonBean {
     
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private AuthorizationSystemSessionLocal authorizationSystemSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
@@ -211,8 +214,12 @@ public class StartupSingletonBean {
         }
 
         // Initialize authorization system, if not done already
-        log.trace(">init ComplexAccessControlSession to check for initial root role");
-        final boolean isFreshInstallation = complexAccessControlSession.initializeAuthorizationModule();
+        log.trace(">init AuthorizationSystemSession to check for initial root role");
+        final boolean isFreshInstallation = authorizationSystemSession.initializeAuthorizationModule();
+        if (isFreshInstallation) {
+            // Initialize the old access system (TODO: should be removed during cleanup under ECA-5695)
+            complexAccessControlSession.initializeAuthorizationModule();
+        }
 
         log.trace(">init calling ServiceSession.load");
         try {
