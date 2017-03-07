@@ -18,4 +18,7 @@ package org.ejbca.core.ejb.authorization;
  * @version $Id$
  */
 public interface AuthorizationSystemSession {
+
+    public static final String SUPERADMIN_ROLE = ComplexAccessControlSessionLocal.SUPERADMIN_ROLE;
+
 }

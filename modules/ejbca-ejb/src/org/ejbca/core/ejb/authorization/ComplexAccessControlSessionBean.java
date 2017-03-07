@@ -100,6 +100,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
+    @Deprecated
     public boolean initializeAuthorizationModule() {
         Collection<AdminGroupData> roles = roleAccessSession.getAllRoles();
         List<CAData> cas = CAData.findAll(entityManager);

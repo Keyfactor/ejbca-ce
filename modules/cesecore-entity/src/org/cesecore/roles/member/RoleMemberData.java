@@ -58,7 +58,12 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
 
     public RoleMemberData() {
     }
-    
+
+    /** Construct the object from RoleMember value object */
+    public RoleMemberData(final RoleMember roleMember) {
+        updateValuesFromValueObject(roleMember);
+    }
+
     /**
      * Slightly more verbose constructor used for upgrades.
      * 

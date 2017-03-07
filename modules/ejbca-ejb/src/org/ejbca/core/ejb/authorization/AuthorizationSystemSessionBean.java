@@ -24,20 +24,36 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRulePlugin;
+import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleDataSessionLocal;
+import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberData;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
+import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
+import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
+import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
@@ -60,7 +76,18 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
+    private RoleSessionLocal roleSession;
+    @EJB
+    private RoleDataSessionLocal roleDataSession;
+    @EJB
+    private RoleMemberSessionLocal roleMemberSession;
+    @EJB
+    private RoleMemberDataSessionLocal roleMemberDataSession;
+    @EJB
     private UserDataSourceSessionLocal userDataSourceSession;
+
+    @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
+    private EntityManager entityManager;
 
     @Override
     public Set<String> getAllResources(final boolean ignoreLimitations) {
@@ -201,5 +228,34 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
             }
         }
         return ret;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public boolean initializeAuthorizationModule() {
+        if (roleDataSession.getAllRoles().isEmpty() && caSession.getAllCaIds().isEmpty()) {
+            log.info("No roles or CAs exist, intializing Super Administrator Role with default CLI user.");
+            // Create "Super Administrator Role"
+            final Role role = new Role(null, SUPERADMIN_ROLE);
+            role.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
+            role.setRoleId(roleDataSession.persistRole(role));
+            // We won't create any RoleMember for a Super Admin certificate here
+            // Add CLI user role member
+            final String username = EjbcaConfiguration.getCliDefaultUser();
+            final RoleMember roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, CliAuthenticationTokenMetaData.TOKEN_TYPE,
+                    RoleMember.NO_ISSUER, CliUserAccessMatchValue.USERNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                    username, role.getRoleId(), null, null);
+            roleMember.setId(roleMemberDataSession.createOrEdit(new RoleMemberData(roleMember)));
+            // Add CLI user end entity
+            final UserData userData = new UserData(username, EjbcaConfiguration.getCliDefaultPassword(), false, "UID=" + username, 0, null, null, null, 0,
+                    SecConst.EMPTY_ENDENTITYPROFILE, 0, 0, 0, null);
+            userData.setStatus(EndEntityConstants.STATUS_GENERATED);
+            if (entityManager.find(UserData.class, username)==null) {
+                entityManager.persist(userData);
+            }
+            return true;
+        }
+        log.info("Roles or CAs exist, not intializing " + SUPERADMIN_ROLE);
+        return false;
     }
 }
