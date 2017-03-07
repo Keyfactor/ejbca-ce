@@ -232,6 +232,39 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
     
     @Override
+    public void editCAWithNewSubjectDn(final AuthenticationToken admin, final CA ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException {
+        if (ca != null) {
+            if (log.isTraceEnabled()) {
+                log.trace(">editCA (CA): "+ca.getName());
+            }
+            final CA orgca = getCAInternal(ca.getCAId(), null, true);
+            // Check if we can edit the CA (also checks authorization)
+            assertAuthorizationAndTargetWithNewSubjectDn(admin, ca.getName(), ca.getSubjectDN(), ca.getCAToken().getCryptoTokenId(), orgca);
+            // Store it
+            mergeCa(ca);
+            if (auditlog) {
+                // Get the diff of what changed
+                final Map<Object, Object> diff = orgca.diff(ca);
+                String msg = intres.getLocalizedMessage("caadmin.editedca", ca.getCAId(), ca.getName(), ca.getStatus());
+                // Use a LinkedHashMap because we want the details logged (in the final log string) in the order we insert them, and not randomly 
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                for (Map.Entry<Object,Object> entry : diff.entrySet()) {
+                    details.put(entry.getKey().toString(), entry.getValue().toString());                
+                }
+                details.put("tokenproperties", ca.getCAToken().getProperties());
+                details.put("tokensequence", ca.getCAToken().getKeySequence());
+                logSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), String.valueOf(ca.getCAId()), null, null, details);              
+            }
+            if (log.isTraceEnabled()) {
+                log.trace("<editCA (CA): "+ca.getName());
+            }
+        } else {
+            log.debug("Trying to edit null CA, nothing done.");
+        }       
+    }
+    
+    @Override
     public boolean existsCa(final int caId) {
         return entityManager.find(CAData.class, caId) != null;
     }
@@ -243,6 +276,15 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	/** Ensure that the caller is authorized to the CA we are about to edit and that the CA name and subjectDN matches. */
 	private void assertAuthorizationAndTarget(AuthenticationToken admin, final String name, final String subjectDN, final int cryptoTokenId, final CA ca)
 			throws CADoesntExistsException, AuthorizationDeniedException {
+		assertAuthorizationAndTargetWithNewSubjectDn(admin, name, subjectDN, cryptoTokenId, ca);
+        if (!StringUtils.equals(subjectDN, ca.getSubjectDN()) && ca.getCAInfo().getStatus() != CAConstants.CA_UNINITIALIZED) {
+            throw new CADoesntExistsException("Not same CA subject DN.");
+        }
+	}
+	
+	/** Ensure that the caller is authorized to the CA we are about to edit and that the CA name matches. */
+    private void assertAuthorizationAndTargetWithNewSubjectDn(AuthenticationToken admin, final String name, final String subjectDN, final int cryptoTokenId, final CA ca)
+            throws CADoesntExistsException, AuthorizationDeniedException {
         // Check if we are authorized to edit CA and authorization to specific CA
         if (cryptoTokenId == ca.getCAToken().getCryptoTokenId() || cryptoTokenId==0) {
             if (!accessSession.isAuthorized(admin, StandardRules.CAEDIT.resource(), StandardRules.CAACCESS.resource())) {
@@ -256,15 +298,13 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 throw new AuthorizationDeniedException(msg);
             }
         }
-		// The CA needs the same name and subject DN in order to store it
-		if (name == null || subjectDN == null) {
-		    throw new CADoesntExistsException("Null CA name or SubjectDN");
-		} else if (!StringUtils.equals(name, ca.getName())) {
-		    throw new CADoesntExistsException("Not same CA name.");
-		} else if (!StringUtils.equals(subjectDN, ca.getSubjectDN()) && ca.getCAInfo().getStatus() != CAConstants.CA_UNINITIALIZED) {
-            throw new CADoesntExistsException("Not same CA subject DN.");
+        // The CA needs the same name and subject DN in order to store it
+        if (name == null || subjectDN == null) {
+            throw new CADoesntExistsException("Null CA name or SubjectDN");
+        } else if (!StringUtils.equals(name, ca.getName())) {
+            throw new CADoesntExistsException("Not same CA name.");
         }
-	}
+    }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

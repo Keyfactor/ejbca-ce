@@ -131,6 +131,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
@@ -1729,7 +1730,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void importCACertificateUpdate(final AuthenticationToken authenticationToken, final int caId, Collection<CertificateWrapper> wrappedCerts)
+    public void updateCACertificate(final AuthenticationToken authenticationToken, final int caId, Collection<CertificateWrapper> wrappedCerts)
             throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException {
         Collection<Certificate> certificates = EJBTools.unwrapCertCollection(wrappedCerts);
         // Re-order if needed and validate chain
@@ -1777,9 +1778,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new CertificateImportException("The CA certificate chain is already imported.");
             }
         }
-        if (!CertTools.getSubjectDN(oldCaCertificate).equals(newSubjectDn)) {
-            throw new CertificateImportException("Only able to update imported CA certificate if Subject DN of the leaf CA certificate is the same.");
+        
+        
+        final String oldSubjectDn = CertTools.getSubjectDN(oldCaCertificate);
+        if (!oldSubjectDn.equals(newSubjectDn)) {
+            // Could be a CSCA certificate with other SubjectDN SN (C and CN attribute must match). 
+            // This is only for X.509 CAs (serialNumber in CVC certificates is the key sequence).
+        	// For example the German CSCA has same subjectDN except a SN (serialNumber) element after rollover.
+            if (!DNFieldsUtil.caCertificatesOfSameCSCA(DNFieldsUtil.dnStringToMap(oldSubjectDn), DNFieldsUtil.dnStringToMap(newSubjectDn))) {
+                throw new CertificateImportException("Only able to update imported CA certificate if Subject DN of the leaf CA certificate is the same.");
+            }
+            if (caInfo instanceof X509CAInfo) {
+                caInfo.setSubjectDN(newSubjectDn);
+            }
         }
+        
         // Check that update is newer if information is present
         final Date newValidFrom = CertTools.getNotBefore(newCaCertificate);
         final Date oldValidFrom = CertTools.getNotBefore(oldCaCertificate);
@@ -1801,11 +1814,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         ca.setCertificateChain(certificates);
         // Update CA in database
-        caSession.editCA(authenticationToken, ca, true);
+        caSession.editCAWithNewSubjectDn(authenticationToken, ca, true);
         // Persist ("Publish") the CA certificates to the local CertificateData database.
         publishCACertificate(authenticationToken, certificates, null, ca.getSubjectDN());
     }
-
+           
     @Override
     public void initExternalCAService(AuthenticationToken admin, int caid, ExtendedCAServiceInfo info) throws CADoesntExistsException,
             AuthorizationDeniedException, CAOfflineException {
@@ -1989,7 +2002,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             details.put("sequence", caToken.getKeySequence());
             auditSession.log(EventTypes.CA_KEYACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
                     String.valueOf(caid), null, null, details);
-            // if issuer is insystem CA or selfsigned, then generate new certificate.
+            // if issuer is in-system CA or selfsigned, then generate new certificate.
             log.info("Renewing CA using " + caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             final PublicKey caPublicKey = cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             ca.setCAToken(caToken);

@@ -146,6 +146,7 @@ import org.bouncycastle.util.CollectionStore;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -1211,6 +1212,57 @@ public abstract class CertTools {
         }
         return certs;
     }
+    
+    /**
+     * Reads a CA certificate and its certificate chain by a file. If it is a chain it is a file with multiple PEM encoded certificates.
+     * A single certificate is either in PEM or binary format.
+     *  
+     * @param the full path of the file.
+     * @return a byte array containing one PEM or binary certificate, or all certificates in the chain in PEM format. First is the CA certificate, followed by its certificate chain.
+     * @throws FileNotFoundException if the file cannot be found.
+     * @throws CertificateParsingException if a certificate could not be parsed.
+     * @throws CertificateEncodingException if a certificate cannot be encoded.
+     */
+    public static final byte[] readCertificateChainAsArrayOrThrow(final String file)
+            throws FileNotFoundException, IOException, CertificateParsingException, CertificateEncodingException {
+        
+        final List<byte[]> cachain = new ArrayList<byte[]>();
+        try (FileInputStream fis = new FileInputStream(file)) {
+            Collection<Certificate> certs = CertTools.getCertsFromPEM(fis, Certificate.class);
+            Iterator<Certificate> iter = certs.iterator();
+            while (iter.hasNext()) {
+                Certificate cert = iter.next();
+                cachain.add(cert.getEncoded());
+            }
+        } catch (CertificateParsingException e) {
+            // It was perhaps not a PEM chain...see if it was a single binary certificate
+            byte[] certbytes = FileTools.readFiletoBuffer(file);
+            Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class); // check if it is a good cert, decode PEM if it is PEM, etc
+            cachain.add(cert.getEncoded());
+        }
+        
+        try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            for (byte[] bytes : cachain) {
+                bos.write(bytes);
+            }
+            final byte[] result = bos.toByteArray();
+            return result;
+        }
+    }
+    
+    public static final List<CertificateWrapper> bytesToListOfCertificateWrapperOrThrow(final byte[] bytes) throws CertificateParsingException {
+        Collection<java.security.cert.Certificate> certs = null;
+        try {
+            certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(bytes), java.security.cert.Certificate.class);
+        } catch (CertificateException e) {
+            log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
+            // See if it is a single binary certificate
+            java.security.cert.Certificate cert = CertTools.getCertfromByteArray(bytes, java.security.cert.Certificate.class);
+            certs = new ArrayList<java.security.cert.Certificate>();
+            certs.add(cert);
+        }
+        return EJBTools.wrapCertCollection(certs);
+    }
 
     /**
      * Reads certificates in PEM-format from an InputStream. 
@@ -1227,8 +1279,6 @@ public abstract class CertTools {
     public static List<Certificate> getCertsFromPEM(InputStream certstream) throws CertificateParsingException {
         return getCertsFromPEM(certstream, Certificate.class);
     }
-    
-    
     
     /**
      * Reads certificates in PEM-format from an InputStream. 
@@ -1622,7 +1672,7 @@ public abstract class CertTools {
      * Checks if a certificate is a CA certificate according to BasicConstraints (X.509), or role (CVC). If there is no basic constraints extension on
      * a X.509 certificate, false is returned.
      * 
-     * @param cert the certificate that skall be checked.
+     * @param cert the certificate that shall be checked.
      * 
      * @return boolean true if the certificate belongs to a CA.
      */

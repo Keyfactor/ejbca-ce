@@ -18,6 +18,7 @@ import java.util.List;
 import org.cesecore.CesecoreException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -405,10 +406,34 @@ public interface IEjbcaWS {
 	void caCertResponseForRollover(String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CesecoreException;
 
 	/**
+	 * Imports a root or sub CA certificate of an external X.509 CA or CVC CA.
+	 * 
+	 * @param caname the logical name of the CA in EJBCA.
+	 * @param certbytes a byte array containing the CA certificate, and optional it's CA certificate chain.
+	 * 
+	 * @throws AuthorizationDeniedException
+	 * @throws CAExistsException if a CA with that logical name or CA certificate subject DN already exists.
+	 * @throws EjbcaException if an other exception occurs.
+	 */
+	void importCaCert(String caname, byte[] certbytes) throws AuthorizationDeniedException, CAExistsException, EjbcaException;
+	
+	/**
+	 * Updates a root or sub CA certificate of an external X.509 CA or CVC CA.
+	 * 
+	 * @param caname the logical name of the CA in EJBCA
+	 * @param certbytes a byte array containing the CA certificate, and optional it's CA certificate chain.
+	 * 
+	 * @throws AuthorizationDeniedException
+	 * @throws CADoesntExistsException if a CA with that logical name does not exists in EJBCA.
+	 * @throws EjbcaException if an other exception occurs.
+	 */
+	void updateCaCert(String caname, byte[] certbytes) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
+	
+	/**
 	 * Performs a certificate rollover for a CA with a rollover certificate previously added with caCertResponseForRollover.
      * @throws AuthorizationDeniedException if administrator is not authorized to import certificate.
      * @throws CADoesntExistsException if caname does not exist
-     * @throws EjbcaException other errors in which case an org.ejbca.core.ErrorCade is set in the EjbcaException
+     * @throws EjbcaException other errors in which case an org.ejbca.core.ErrorCode is set in the EjbcaException
      */
     void rolloverCACert(String caname) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
 	

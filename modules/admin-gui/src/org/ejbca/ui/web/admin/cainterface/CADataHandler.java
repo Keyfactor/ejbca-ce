@@ -152,7 +152,7 @@ public class CADataHandler implements Serializable {
           certs = new ArrayList<Certificate>();
           certs.add(CertTools.getCertfromByteArray(certbytes, Certificate.class));
       }
-      caadminsession.importCACertificateUpdate(administrator, caId, EJBTools.wrapCertCollection(certs));
+      caadminsession.updateCACertificate(administrator, caId, EJBTools.wrapCertCollection(certs));
       info.cAsEdited();
   }
 

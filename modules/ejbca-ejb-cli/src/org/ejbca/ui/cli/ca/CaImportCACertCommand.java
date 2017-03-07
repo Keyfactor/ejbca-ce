@@ -155,7 +155,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                     }
                     // CA exists and this is assumed to be an update of the imported CA certificate
                     log.info("CA '" + caName + "' is an external CA created by CA certificate import. Trying to update the CA certificate chain.");
-                    caAdminSession.importCACertificateUpdate(getAuthenticationToken(), cainfo.getCAId(), EJBTools.wrapCertCollection(certs));
+                    caAdminSession.updateCACertificate(getAuthenticationToken(), cainfo.getCAId(), EJBTools.wrapCertCollection(certs));
                     log.info("Updated certificate chain for imported external CA " + caName);
                 } else {
                     log.error("CA '" + caName + "' already exists and is not waiting for certificate response from an external CA.");

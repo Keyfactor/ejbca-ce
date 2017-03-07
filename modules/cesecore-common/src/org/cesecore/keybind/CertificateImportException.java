@@ -16,7 +16,8 @@ import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 
 /**
- * An exception thrown when someone tries to import a Certificate that is not compatible with an InternalKeyBinding implementation.
+ * An exception thrown when someone tries to import a certificate and an error occurs.
+ * Not restricted to key binding imort, but kept in this package for backwards compatibility reasons.
  *
  * @version $Id$
  */

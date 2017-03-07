@@ -355,6 +355,20 @@ bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvc
   </source>
   </section>
   
+  <section name="Importing foreign CVCA and CSCA certifciates">
+  <p>Foreign CVCA (CVC CA) or CSCA (X.509 CA) certificate can be imported using the AdminWeb 
+  'Import CA certificate' function as well as with the ClientToolBox or the EJBCA web services.
+  </p>
+  </section>
+  
+  <section name="Updating foreign CVCA and CSCA certifciates">
+  <p>Foreign CVCAs or CSCAs certificates can be updated using the AdminWeb 
+  'Import renewed CA certificates' function as well as with the ClientToolBox or the EJBCA web services.
+  <br/>
+  For CSCA certificates the DN component serialNumber may have changed and in that case the CAs subject DN is updated with the new subjectDN.
+  </p>
+  </section>
+  
   <section name="Using HSMs">
   <p>
   The EU policy surely requires that you use an HSM to protect the CAs signature keys. 

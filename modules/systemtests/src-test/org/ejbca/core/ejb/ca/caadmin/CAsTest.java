@@ -1252,14 +1252,14 @@ public class CAsTest extends CaTestCase {
                 // Expected
             }
             try {
-                caAdminSession.importCACertificateUpdate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {oldCaCertificate})));
+                caAdminSession.updateCACertificate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {oldCaCertificate})));
                 fail("Should not be allowed to update with existing CA certificate");
             } catch (CertificateImportException e) {
                 // Expected
             }
             final X509Certificate newDnCaCertificate = CertTools.genSelfCert(subjectDn+"x", 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
             try {
-                caAdminSession.importCACertificateUpdate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {newDnCaCertificate})));
+                caAdminSession.updateCACertificate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {newDnCaCertificate})));
                 fail("Should not be allowed to update existing CA with a different subject DN.");
             } catch (CertificateImportException e) {
                 // Expected
@@ -1270,20 +1270,20 @@ public class CAsTest extends CaTestCase {
             Thread.sleep(waitTime);
             final X509Certificate newCaCertificate = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
             log.debug("new notBefore:" + newCaCertificate.getNotBefore());
-            caAdminSession.importCACertificateUpdate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {newCaCertificate})));
+            caAdminSession.updateCACertificate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {newCaCertificate})));
             final CAInfo newCaInfo = caSession.getCAInfo(admin, TEST_NAME);
             assertEquals("Wrong certificate profile.", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, newCaInfo.getCertificateProfileId());
             assertEquals("Wrong status.", CAConstants.CA_EXTERNAL, newCaInfo.getStatus());
             assertEquals("Wrong 'signed by'.", CAInfo.SELFSIGNED, newCaInfo.getSignedBy());
             try {
-                caAdminSession.importCACertificateUpdate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {oldCaCertificate})));
+                caAdminSession.updateCACertificate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {oldCaCertificate})));
                 fail("Should not be allowed to update existing CA with an older CA certificate.");
             } catch (CertificateImportException e) {
                 // Expected
             }
             final X509Certificate nonCaCertificate2 = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
             try {
-                caAdminSession.importCACertificateUpdate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {nonCaCertificate2})));
+                caAdminSession.updateCACertificate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {nonCaCertificate2})));
                 fail("Import of non-CA certificate should not be allowed using this method.");
             } catch (CertificateImportException e) {
                 // Expected

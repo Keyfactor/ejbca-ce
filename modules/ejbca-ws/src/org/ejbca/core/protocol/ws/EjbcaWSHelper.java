@@ -17,6 +17,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -52,18 +53,22 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.EjbcaException;
@@ -828,24 +833,29 @@ public class EjbcaWSHelper {
 	}
 
 	/**
-	 * @throws CesecoreException 
+	 * @throws AuthorizationDeniedException
+	 * @throws EjbcaException
+	 * @throws ApprovalException
+	 * @throws WaitingForApprovalException
+	 * @throws CertPathValidatorException
+	 * @throws CesecoreException
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caRenewCertRequest 
 	 */
 	protected void caCertResponse(EjbcaWSHelper ejbhelper, AuthenticationToken admin, String caname, byte[] cert, List<byte[]> cachain, String keystorepwd, boolean futureRollover) 
-		throws AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CertPathValidatorException, CesecoreException {
-		try {
-			CAInfo cainfo = caSession.getCAInfo(admin, caname);
-			// create response messages, for CVC certificates we use a regular X509ResponseMessage
-			X509ResponseMessage msg = new X509ResponseMessage();
-			msg.setCertificate(CertTools.getCertfromByteArray(cert, java.security.cert.Certificate.class));
-			// Activate the CA's token using the provided keystorepwd if any
-			if (keystorepwd!=null) {
-	            cryptoTokenManagementSession.activate(admin, cainfo.getCAToken().getCryptoTokenId(), keystorepwd.toCharArray());
-			}
-			caAdminSession.receiveResponse(admin, cainfo.getCAId(), msg, cachain, null, futureRollover);
-		} catch (CertificateException e) {
+	    throws AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CertPathValidatorException, CesecoreException {
+        try {
+            CAInfo cainfo = caSession.getCAInfo(admin, caname);
+            // create response messages, for CVC certificates we use a regular X509ResponseMessage
+            X509ResponseMessage msg = new X509ResponseMessage();
+            msg.setCertificate(CertTools.getCertfromByteArray(cert, java.security.cert.Certificate.class));
+            // Activate the CA's token using the provided keystorepwd if any
+            if (keystorepwd!=null) {
+                cryptoTokenManagementSession.activate(admin, cainfo.getCAToken().getCryptoTokenId(), keystorepwd.toCharArray());
+            }
+            caAdminSession.receiveResponse(admin, cainfo.getCAId(), msg, cachain, null, futureRollover);
+        } catch (CertificateException e) {
             throw EjbcaWSHelper.getInternalException(e, null);
-		}
+        }
 	}
 
 	/**
@@ -869,6 +879,38 @@ public class EjbcaWSHelper {
 		}
         return caAdminSession.makeRequest(admin, cainfo.getCAId(), cachain, nextSignKeyAlias);
 	}
+	
+	/**
+     * @throws AuthorizationDeniedException
+     * @throws CAExistsException
+     * @throws CertificateImportException
+     * @throws EjbcaException
+     * @throws CertificateParsingException
+     * @throws IllegalCryptoTokenException
+     * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#importCaCert
+     */
+	public void importCaCert(AuthenticationToken admin, String caname, byte[] certbytes) throws AuthorizationDeniedException, 
+	    CAExistsException, IllegalCryptoTokenException, CertificateImportException, EjbcaException, CertificateParsingException
+	{
+	    final Collection<CertificateWrapper> cachain = CertTools.bytesToListOfCertificateWrapperOrThrow(certbytes);
+        caAdminSession.importCACertificate(admin, caname, cachain);
+	}
+	
+   /**
+	* @throws AuthorizationDeniedException
+	* @throws CADoesntExistsException
+	* @throws CertificateImportException
+	* @throws EjbcaException
+	* @throws CertificateParsingException
+    * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#updateCaCert
+    */
+	public void updateCaCert(AuthenticationToken admin, String caname, byte[] certbytes) throws AuthorizationDeniedException, 
+	    CADoesntExistsException, CertificateImportException, EjbcaException, CertificateParsingException 
+	{
+        final Collection<CertificateWrapper> cachain = CertTools.bytesToListOfCertificateWrapperOrThrow(certbytes);
+        final int caid = caSession.getCA(admin, caname).getCAId();
+        caAdminSession.updateCACertificate(admin, caid, cachain);
+	}	    
 	
 	public void rolloverCACert(EjbcaWSHelper ejbhelper, AuthenticationToken admin, String caname) throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException {
 	    int caid = caSession.getCAInfo(admin, caname).getCAId();
