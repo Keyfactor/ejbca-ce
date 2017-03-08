@@ -12,7 +12,7 @@ EJBCA 6.7.0
 -----------
 We are pleased to release EJBCA 6.7.0. This release adds official support for MS Autoenrollment, implemented as an enrollment Proxy/Gateway, which is
 delivered as a separate component. In addition to this, there are many security fixes and enhancements in this release, plugging a few holes and 
-making it harder than ever to misuse EJBCA. All in all, 76 issues that have been fixed for this release
+making it harder than ever to misuse EJBCA. All in all, 82 issues that have been fixed for this release
 
 The most notable changes are:
 

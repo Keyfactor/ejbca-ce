@@ -1,3 +1,95 @@
+EJBCA 6.7.0, 2017-03-08
+---
+Bug
+    [ECA-2971] - Show error when validity is specified without unit in Certificate Profile form
+    [ECA-4021] - Creating a CA using an validity date in the past fails silently
+    [ECA-4140] - Access Rules: Remove forcing Advanced Mode
+    [ECA-4467] - SCEP rollover test case fails in certain circumstances
+    [ECA-5025] - Debug log if certain special characters in SubjectDNs are present when using statedump
+    [ECA-5284] - Requesting admin can still see approval options on CA
+    [ECA-5396] - Enrollment code (password) is not evaluated inside approval notification e-mail
+    [ECA-5530] - Regression: Order of CT logs is lost when saving system configuration
+    [ECA-5548] - Minor security issue
+    [ECA-5562] - Avoid read of cached GlobalConfigurationData from making it a managed entity
+    [ECA-5569] - Special characters are not displayed correctly in the AdminGUI
+    [ECA-5574] - Fix printing null as exception message on enrollment pages 
+    [ECA-5580] - Accumulative profiles do not validate values
+    [ECA-5598] - KaRA approving certificate revocation requires /ca_functionality/approve_caaction privileges
+    [ECA-5599] - Autocomplete should be off in password fields
+    [ECA-5601] - Security Issue
+    [ECA-5605] - Security improvement
+    [ECA-5606] - Document that Public web self registration requires a new Approval profile after upgrade to 6.6.0 (or an NPE is thrown)
+    [ECA-5624] - Security improvement
+    [ECA-5626] - Regression: not possible to list CMP aliases that reference the KeyId end entity profile
+    [ECA-5643] - SLF4J gives warning output in CLI
+    [ECA-5682] - Unescape + character before generating a certificate
+    [ECA-5687] - EJBCA 6.5.0 Community post-upgrade does not fail gracefully
+    [ECA-5690] - EJBCA plugins doesn't work with JDK 8
+    [ECA-5718] - Regression: Characters ÄÅÖ are displayed incorrectly when you Add End Entity
+    [ECA-5738] - CA Name Change, CRL number of Name Changed CA CRL is not in sequence with the original CA
+
+New Feature
+    [ECA-5124] - Custom search for approvals, for searching by date, for expired requests or different admin
+    [ECA-5139] - Limit OIDs that are acceptable in Extension Override
+    [ECA-5304] - Default "CA issuer URI" for CA
+    [ECA-5352] - Statedump should include approval profiles
+    [ECA-5550] - Ensure that self signed CA's include their own certificate in their revocation CRLs
+    [ECA-5593] - CMP: Allowing native CAs to be Vendor CAs in test mode
+    [ECA-5689] - OCSP transaction logging, add revocation reason as field
+
+Task
+    [ECA-5494] - Remove references to superseeded app.version.effective property
+    [ECA-5508] - Subtract actual wait in PeerRaThrottleCounter
+
+Improvement
+    [ECA-4294] - Use JDBC to detect index presence
+    [ECA-4382] - Deprecate ocsp.responderidtype in ocsp.properties
+    [ECA-4585] - Clarify value 0 for OCSP response validity and max-age
+    [ECA-4603] - Update CT jar and its dependencies
+    [ECA-4835] - Security hardening
+    [ECA-4838] - Security hardening
+    [ECA-4859] - Implement support for CT logs that use RSA instead of ECC
+    [ECA-4901] - Handle empty UserData and CertificateData subjectDN on Oracle and DB2 in Oracle compatibility mode
+    [ECA-4997] - Regression: Reimplement CMP Unid support 
+    [ECA-5086] - KaRA-Approvals: Remove cache when getting approval profile authorization string
+    [ECA-5116] - Support for renaming key aliases via statedump overrides
+    [ECA-5308] - approvalSession.addApprovalRequest should return created id
+    [ECA-5325] - Improve javadoc of EnrollMakeNewRequestBean.getSubjectDn
+    [ECA-5369] - KaRA: Ability to un-expire an expired approval request
+    [ECA-5374] - Remove unused authenticationToken in ApprovalSession.query
+    [ECA-5423] - Fix spelling of getEndEntityProfileiId
+    [ECA-5426] - Audit log does not show the changes made in EE
+    [ECA-5457] - Rename ApprovalProfile.getApprovalProfileIdentifier()
+    [ECA-5463] - Add confirmation when saving End Entity Profiles
+    [ECA-5477] - Document that Allow subject DN override by CSR is a pre-requisite for CMPTest
+    [ECA-5504] - Make it possible to re-order CT logs
+    [ECA-5522] - newly added Log URL and Timeout (ms) display
+    [ECA-5551] - Minor EJBCA WS test robustness fixes
+    [ECA-5556] - Put public static variables in GeneralPurposeCustomPublisher in correct case
+    [ECA-5557] - Keep key aliases (key pair infos) sorted in statedumps
+    [ECA-5559] - Show key specification when viewing an approval request
+    [ECA-5560] - Replace references to the deprecated class X509Extension
+    [ECA-5561] - Approval requests from unauthenticated RA users appear to originate from CLI 
+    [ECA-5563] - Pre-6.6.1 statedumps can no longer be imported since EJBCA 6.6.1 
+    [ECA-5564] - Show all warnings from Statedump in CLI / AdminWeb output
+    [ECA-5572] - GenerateToken.generateOrKeyRecoverToken throws Exception
+    [ECA-5573] - Try to use NoSuchEndEntityException for all exception handling of lost EEs
+    [ECA-5576] - Remove unused variables in RAAuthorization
+    [ECA-5583] - ExternalRA tests can't run due to missing JARs 
+    [ECA-5588] - Replace UserDoesntFullfillEndEntityProfile with EndEntityProfileValidationException
+    [ECA-5589] - Keep sort and search settings when going back in Manage Requests page
+    [ECA-5597] - Replace dummy CN values in keystore certs
+    [ECA-5636] - KaRA: add a request control filter
+    [ECA-5638] - Security: Upgrade commons-fileupload to 1.3.2
+    [ECA-5639] - Security: Upgrade batik to 1.7.1
+    [ECA-5640] - Security: Upgrade xstream to 1.4.9
+    [ECA-5641] - Security: Upgrade commons-beanutils to 1.9.3
+    [ECA-5645] - CSR should be stored as Base64 in ExtendedInformation instead of binary
+    [ECA-5646] - Add CSR if available to findendentity cli command
+    [ECA-5650] - Don't require @ in rfc822Name when validating End Entity profiles
+    [ECA-5651] - Add some documentation for Native MS Autoenrollment
+    [ECA-5691] - Add possibility to get any CRL using CLI command
+
 EJBCA 6.6.4, 2017-02-20
 ---
 Bug
