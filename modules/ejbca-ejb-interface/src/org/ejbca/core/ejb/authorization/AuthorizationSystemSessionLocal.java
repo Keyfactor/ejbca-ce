@@ -30,5 +30,12 @@ public interface AuthorizationSystemSessionLocal extends AuthorizationSystemSess
     /** @return a Set of all resources on this installation (optionally ignoring if certain resources is not in use) */
     Set<String> getAllResources(boolean ignoreLimitations);
 
+    /**
+     * Setup the initial Role with the a single EJBCA CLI RoleMember under the condition that this is system is
+     * connected to a database that has not been used for an installation so far.
+     * (Actual check for a "fresh" system is to confirm that there exists no Roles or CAs.)
+     * 
+     * @return true if this was a fresh system and the authorization module has now been initialized.
+     */
     boolean initializeAuthorizationModule();
 }
