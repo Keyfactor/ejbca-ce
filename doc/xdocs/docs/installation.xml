@@ -944,7 +944,7 @@ ant clean deployear
 <note>If you are moving an existing installation that already have TLS keystores available, this step is not needed.</note>
 <p></p>
 <source>
-ant install
+ant runinstall
 </source>
 </subsubsection>
 
@@ -1176,7 +1176,7 @@ asadmin deploy --precompilejsp $EJBCA_HOME/dist/ejbca.ear
 You can check that everything was ok in APPSRV_HOME/domains/domain1/logs/server.log.</li><br/>
 <li>Install EJBCA
 <pre>
-ant install
+ant runinstall
 </pre>
 </li>
 <li>Configure SSL in Glassfish<br/>
