@@ -219,7 +219,7 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #cryptotoken.p11.lib.32.file=/etc/utimaco/libcs2_pkcs11.so
 #cryptotoken.p11.lib.33.name=Utimaco
 #cryptotoken.p11.lib.33.file=C:/Program Files/Utimaco/SafeGuard CryptoServer/Lib/cs2_pkcs11.dll
-#cryptotoken.p11.lib.40.name=nCipher
+#cryptotoken.p11.lib.40.name=Thales
 #cryptotoken.p11.lib.40.file=/opt/nfast/toolkits/pkcs11/libcknfast.so
 #cryptotoken.p11.lib.50.name=ARX CoSign
 #cryptotoken.p11.lib.50.file=C:/windows/system32/sadaptor.dll
