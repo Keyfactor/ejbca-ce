@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.roles.member;
 
+import java.util.List;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 
@@ -41,4 +43,10 @@ public interface RoleMemberSession {
      * @return true if successfully deleted, false if it did not exist.
      */
     boolean remove(final AuthenticationToken authenticationToken, final int roleMemberId) throws AuthorizationDeniedException;
+
+    /**
+     * @return a list of RoleMembers that belongs to the specified Role
+     * @throws AuthorizationDeniedException if the caller is not authorized to the role (including any of the RoleMember's tokenIssuerIds)
+     */
+    List<RoleMember> getRoleMembersByRoleId(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
 }

@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.cesecore.roles.member;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -19,9 +24,12 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
@@ -96,7 +104,35 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         checkRoleAuth(authenticationToken, roleMember);
         return roleMember;
     }
-    
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<RoleMember> getRoleMembersByRoleId(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+        // Ensure that the role exists and that the caller is authorized to it
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.VIEWROLES.resource())) {
+            final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.notauthorizedtoviewroles", authenticationToken.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
+        if (roleSession.getRole(authenticationToken, roleId)==null) {
+            return null;
+        }
+        final List<RoleMember> ret = new ArrayList<>();
+        final Set<String> requiredCaAccessResources = new HashSet<>();
+        for (final RoleMemberData roleMemberData : roleMemberDataSession.findByRoleId(roleId)) {
+            final RoleMember roleMember = roleMemberData.asValueObject();
+            final AuthenticationTokenMetaData metaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(roleMember.getTokenType());
+            if (metaData.getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey()).isIssuedByCa()) {
+                requiredCaAccessResources.add(StandardRules.CAACCESS.resource() + roleMember.getTokenIssuerId());
+            }
+            ret.add(roleMember);
+        }
+        final String[] requiredCaAccessResourcesArray = requiredCaAccessResources.toArray(new String[requiredCaAccessResources.size()]);
+        if (!requiredCaAccessResources.isEmpty() && !authorizationSession.isAuthorizedNoLogging(authenticationToken, requiredCaAccessResourcesArray)) {
+            throw new AuthorizationDeniedException("Not authorized to all members in role.");
+        }
+        return ret;
+    }
+
     @Override
     public boolean remove(final AuthenticationToken authenticationToken, final int roleMemberId) throws AuthorizationDeniedException {
         final RoleMember roleMember = roleMemberDataSession.findRoleMember(roleMemberId);

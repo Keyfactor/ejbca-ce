@@ -45,6 +45,7 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -98,6 +99,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.control.StandardRules;
@@ -147,10 +149,14 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AdminGroupData;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -339,6 +345,96 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     protected static List<File> setupAccessRights(final String wsadminRoleName) throws CADoesntExistsException,
+        AuthorizationDeniedException, EndEntityExistsException, WaitingForApprovalException, EjbcaException,
+        RoleExistsException, RoleNotFoundException, UnrecoverableKeyException, InvalidAlgorithmParameterException, OperatorCreationException,
+        CertificateException, SignRequestSignatureException, IllegalKeyException, CertificateCreateException, IllegalNameException,
+        CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
+        InvalidAlgorithmException, CustomCertificateSerialNumberException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException,
+        InvalidKeySpecException, IOException, NoSuchEndEntityException, EndEntityProfileValidationException {
+        
+        final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        final CAInfo caInfo = caSession.getCAInfo(intAdmin, getAdminCAName());
+        assertNotNull("No CA with name " + getAdminCAName() + " was found.", caInfo);
+        final EndEntityInformation endEntityInformation1 = new EndEntityInformation();
+        endEntityInformation1.setUsername(TEST_ADMIN_USERNAME);
+        endEntityInformation1.setPassword(PASSWORD);
+        endEntityInformation1.setDN("CN="+TEST_ADMIN_USERNAME);
+        endEntityInformation1.setCAId(caInfo.getCAId());
+        endEntityInformation1.setEmail(null);
+        endEntityInformation1.setSubjectAltName(null);
+        endEntityInformation1.setStatus(UserDataVOWS.STATUS_NEW);
+        endEntityInformation1.setTokenType(SecConst.TOKEN_SOFT_JKS);
+        endEntityInformation1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
+        endEntityInformation1.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        endEntityInformation1.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
+        if (!endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
+            log.info("Adding new user: " + endEntityInformation1.getUsername());
+            endEntityManagementSession.addUser(intAdmin, endEntityInformation1, true);
+        } else {
+            log.info("Changing user: " + endEntityInformation1.getUsername());
+            endEntityManagementSession.changeUser(intAdmin, endEntityInformation1, true);
+        }
+        final EndEntityInformation endEntityInformation2 = new EndEntityInformation();
+        endEntityInformation2.setUsername(TEST_NONADMIN_USERNAME);
+        endEntityInformation2.setPassword(PASSWORD);
+        endEntityInformation2.setDN(TEST_NONADMIN_CN);
+        endEntityInformation2.setCAId(caInfo.getCAId());
+        endEntityInformation2.setEmail(null);
+        endEntityInformation2.setSubjectAltName(null);
+        endEntityInformation2.setStatus(UserDataVOWS.STATUS_NEW);
+        endEntityInformation2.setTokenType(SecConst.TOKEN_SOFT_JKS);
+        endEntityInformation2.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
+        endEntityInformation2.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        endEntityInformation2.setType(EndEntityTypes.ENDUSER.toEndEntityType());
+        if (!endEntityManagementSession.existsUser(TEST_NONADMIN_USERNAME)) {
+            log.debug("Adding new user: " + endEntityInformation2.getUsername());
+            endEntityManagementSession.addUser(intAdmin, endEntityInformation2, true);
+        } else {
+            log.debug("Changing user: " + endEntityInformation2.getUsername());
+            endEntityManagementSession.changeUser(intAdmin, endEntityInformation2, true);
+        }
+        List<File> fileHandles = new ArrayList<File>();
+        File p12Directory = new File(P12_FOLDER_NAME);
+        try {
+            fileHandles.add(BatchCreateTool.createUser(intAdmin, p12Directory, endEntityInformation1.getUsername()));
+            fileHandles.add(BatchCreateTool.createUser(intAdmin, p12Directory, endEntityInformation2.getUsername()));
+        } catch (NoSuchEndEntityException e) {
+            throw new IllegalStateException("End entity not created.", e);
+        }
+        // Setup Role and RoleMember
+        final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+        final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
+        Role role = roleSession.getRole(intAdmin, null, wsadminRoleName);
+        if (role == null) {
+            log.info("Creating new role: " + wsadminRoleName);
+            final Role newRole = new Role(null, wsadminRoleName);
+            newRole.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
+            role = roleSession.persistRole(intAdmin, newRole);
+        }
+        boolean adminExists = false;
+        for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(intAdmin, role.getRoleId())) {
+            if (TEST_ADMIN_USERNAME.equals(roleMember.getTokenMatchValue())) {
+                adminExists = true;
+                break;
+            }
+        }
+        if (!adminExists) {
+            log.info("Adding member to role: " + wsadminRoleName);
+            final RoleMember roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                    caInfo.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                    TEST_ADMIN_USERNAME, role.getRoleId(), null, null);
+            roleMemberSession.createOrEdit(intAdmin, roleMember);
+            // It should not be necessary to manually clear caches after this change
+            //EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSessionRemote.class).forceCacheExpire();
+        }
+        // Do legacy setup as well until everything is migrated
+        setupAccessRightsLegacy(wsadminRoleName, caInfo.getCAId());
+        return fileHandles;
+    }
+
+    @Deprecated // TODO: Remove during cleanup before 6.8.0 release
+    private static void setupAccessRightsLegacy(final String wsadminRoleName, final int caId) throws CADoesntExistsException,
             AuthorizationDeniedException, EndEntityExistsException, WaitingForApprovalException, EjbcaException,
             RoleExistsException, RoleNotFoundException, UnrecoverableKeyException, InvalidAlgorithmParameterException, OperatorCreationException,
             CertificateException, SignRequestSignatureException, IllegalKeyException, CertificateCreateException, IllegalNameException,
@@ -346,35 +442,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             InvalidAlgorithmException, CustomCertificateSerialNumberException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException,
             InvalidKeySpecException, IOException, NoSuchEndEntityException, EndEntityProfileValidationException {
         AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
-        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
         RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        
-        EndEntityInformation user1 = new EndEntityInformation();
-        user1.setUsername(TEST_ADMIN_USERNAME);
-        user1.setPassword(PASSWORD);
-        user1.setDN("CN="+TEST_ADMIN_USERNAME);
-        CAInfo cainfo = caSession.getCAInfo(intAdmin, getAdminCAName());
-        assertNotNull("No CA with name " + getAdminCAName() + " was found.", cainfo);
-        user1.setCAId(cainfo.getCAId());
-        user1.setEmail(null);
-        user1.setSubjectAltName(null);
-        user1.setStatus(UserDataVOWS.STATUS_NEW);
-        user1.setTokenType(SecConst.TOKEN_SOFT_JKS);
-        user1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-        user1.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        user1.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
-
-
-        if (!endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
-            log.info("Adding new user: " + user1.getUsername());
-            endEntityManagementSession.addUser(intAdmin, user1, true);
-        } else {
-            log.info("Changing user: " + user1.getUsername());
-            endEntityManagementSession.changeUser(intAdmin, user1, true);
-        }
-
         boolean adminExists = false;
         AdminGroupData role = roleAccessSession.findRole(wsadminRoleName);
         if (role == null) {
@@ -392,42 +461,79 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         if (!adminExists) {
             log.info("Adding admin to role: "+wsadminRoleName);
             List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
-            list.add(new AccessUserAspectData(wsadminRoleName, cainfo.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
+            list.add(new AccessUserAspectData(wsadminRoleName, caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
                     TEST_ADMIN_USERNAME));
             roleManagementSession.addSubjectsToRole(intAdmin, role, list);
             accessControlSession.forceCacheExpire();
         } 
-        EndEntityInformation user2 = new EndEntityInformation();
-        user2.setUsername(TEST_NONADMIN_USERNAME);
-        user2.setPassword(PASSWORD);
-        user2.setDN(TEST_NONADMIN_CN);
-        user2.setCAId(cainfo.getCAId());
-        user2.setEmail(null);
-        user2.setSubjectAltName(null);
-        user2.setStatus(UserDataVOWS.STATUS_NEW);
-        user2.setTokenType(SecConst.TOKEN_SOFT_JKS);
-        user2.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-        user2.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        user2.setType(EndEntityTypes.ENDUSER.toEndEntityType());
+    }
 
-
-            if (!endEntityManagementSession.existsUser(TEST_NONADMIN_USERNAME)) {
-                log.debug("Adding new user: " + user2.getUsername());
-                endEntityManagementSession.addUser(intAdmin, user2, true);
-            } else {
-                log.debug("Changing user: " + user2.getUsername());
-                endEntityManagementSession.changeUser(intAdmin, user2, true);
-            }
-
-        List<File> fileHandles = new ArrayList<File>();
-        File p12Directory = new File(P12_FOLDER_NAME);
-        try {
-            fileHandles.add(BatchCreateTool.createUser(intAdmin, p12Directory, user1.getUsername()));
-            fileHandles.add(BatchCreateTool.createUser(intAdmin, p12Directory, user2.getUsername()));
-        } catch (NoSuchEndEntityException e) {
-            throw new IllegalStateException("End entity not created.", e);
+    protected static void cleanUpAdmins(final String wsadminRoleName) throws Exception {
+        final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+        final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+        final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        if (new File(TEST_ADMIN_FILE).exists()) {
+            new File(TEST_ADMIN_FILE).delete();
         }
-        return fileHandles;
+        if (new File(TEST_NONADMIN_FILE).exists()) {
+            new File(TEST_NONADMIN_FILE).delete();
+        }
+        // Remove test user's ignore errors, because it probably is because the user does not exist.
+        // possibly because some of the tests failed.
+        final String[] endEntityUsernames = {TEST_ADMIN_USERNAME, TEST_NONADMIN_USERNAME, CA1_WSTESTUSER1, CA1_WSTESTUSER2, CA2_WSTESTUSER1,
+                CA1_WSTESTUSER1CVCRSA, CA2_WSTESTUSER1CVCEC, "WSTESTUSERKEYREC1", "WSTESTUSER30", "WSTESTUSER31"};
+        for (final String endEntityUsername : endEntityUsernames) {
+            try {
+                if (endEntityManagementSession.existsUser(endEntityUsername)) {
+                    endEntityManagementSession.revokeAndDeleteUser(intAdmin, endEntityUsername, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+                }
+            } catch (Exception e) {
+                // NOPMD: ignore
+            }
+        }
+        // Remove Key recovery end entity profile
+        for (final String endEntityProfileName : Arrays.asList("KEYRECOVERY", WS_EEPROF_EI)) {
+            try {
+                endEntityProfileSession.removeEndEntityProfile(intAdmin, endEntityProfileName);
+            } catch (Exception e) {
+                // NOPMD: ignore
+            }
+        }
+        for (final String caName : Arrays.asList(CA1, CA2)) {
+            try {
+                removeTestCA(caName);
+            } catch (Exception e) {
+                // NOPMD: ignore
+            }
+        }
+        try {
+            certificateProfileSession.removeCertificateProfile(intAdmin, WS_CERTPROF_EI);
+        } catch (Exception e) {
+            // NOPMD: ignore
+        }
+        // Remove Role
+        final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+        final Role role = roleSession.getRole(intAdmin, null, wsadminRoleName);
+        if (role != null) {
+            roleSession.deleteRoleIdempotent(intAdmin, role.getRoleId());
+            // It should not be necessary to manually clear caches after this change
+            //EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSessionRemote.class).forceCacheExpire();
+        }
+        // Do legacy clean up as well until everything is migrated
+        cleanUpAdminsLegacy(wsadminRoleName);
+    }
+
+    @Deprecated // TODO: Remove during cleanup before 6.8.0 release
+    private static void cleanUpAdminsLegacy(final String wsadminRoleName) throws Exception {
+        AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
+        RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+        RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+        // Remove from role
+        AdminGroupData role = roleAccessSession.findRole(wsadminRoleName);
+        if (role != null) {
+            roleManagementSession.remove(intAdmin, role);
+            accessControlSession.forceCacheExpire();
+        }
     }
 
     private String getDN(String userName) {
@@ -2743,104 +2849,4 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         caref = cert.getCertificateBody().getAuthorityReference().getConcatenated();
         assertEquals(cvcaref, caref);
     } // caMakeRequestAndFindCA
-
-    protected static void cleanUpAdmins(final String wsadminRoleName) throws Exception {
-        AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
-        EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-        RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-        RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        
-            // Remove from role
-        AdminGroupData role = roleAccessSession.findRole(wsadminRoleName);
-        if (role != null) {
-            roleManagementSession.remove(intAdmin, role);
-            accessControlSession.forceCacheExpire();
-        }
-        if (endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
-            // Remove user
-            endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        }
-        // Remove role
-        if (endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
-            // Remove user
-            endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        }
-        if (endEntityManagementSession.existsUser(TEST_NONADMIN_USERNAME)) {
-            endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_NONADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        }
-        if (new File(TEST_ADMIN_FILE).exists()) {
-            new File(TEST_ADMIN_FILE).delete();
-        }
-        if (new File(TEST_NONADMIN_FILE).exists()) {
-            new File(TEST_NONADMIN_FILE).delete();
-        }
-
-        // Remove test user's ignore errors, because it probably is because the user does not exist.
-        // possibly because some of the tests failed.
-        try {
-            endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        try {
-            endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER2, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        try {
-            endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        try {
-            endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1CVCRSA, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        try {
-            endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1CVCEC, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        try {
-            endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTUSERKEYREC1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        try {
-            endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER30", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        try {
-            endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER31", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        // Remove Key recovery end entity profile
-        try {
-            endEntityProfileSession.removeEndEntityProfile(intAdmin, "KEYRECOVERY");
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        try {
-            removeTestCA(CA1);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        try {
-            removeTestCA(CA2);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        try {
-            endEntityProfileSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-        certificateProfileSession.removeCertificateProfile(intAdmin, WS_CERTPROF_EI);
-    } // cleanUpAdmins
-
 }
