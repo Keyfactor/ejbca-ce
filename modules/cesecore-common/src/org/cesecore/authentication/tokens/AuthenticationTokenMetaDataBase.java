@@ -19,7 +19,7 @@ import java.util.Map;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
 /**
- * Common functions for meta data definitions for AuthentcationTokens that should be auto-detected via ServiceLoader of AuthenticationTokenMetaData.
+ * Common functions for meta data definitions for AuthenticationTokens that should be auto-detected via ServiceLoader of AuthenticationTokenMetaData.
  * 
  * @version $Id$
  */
