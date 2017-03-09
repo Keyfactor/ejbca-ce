@@ -31,6 +31,7 @@ import java.util.Set;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
@@ -539,7 +540,7 @@ public class UpgradeSessionBeanTest {
             List<RoleMember> newRoleMembers = roleMemberProxySession.findRoleMemberByRoleId(newRole.getRoleId());
             assertEquals("For some strange reason, a single role member was turned into several", 1, newRoleMembers.size());
             RoleMember newRoleMember = newRoleMembers.get(0);
-            assertEquals("Match value token type was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY.getTokenType(), newRoleMember.getTokenType());
+            assertEquals("Match value token type was not upgraded properly." , X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, newRoleMember.getTokenType());
             assertEquals("Match value key was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue(), newRoleMember.getTokenMatchKey());
             assertEquals("Match value value was not upgraded properly." , "SE", newRoleMember.getTokenMatchValue());
         } finally {

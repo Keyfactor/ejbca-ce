@@ -94,6 +94,7 @@ import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -640,7 +641,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Update CLI admins where this username is used in AdminEntityData table.
         final List<AccessUserAspectData> accessUserAspectDatas = (List<AccessUserAspectData>) entityManager.createQuery(
                 "SELECT a FROM AccessUserAspectData a WHERE a.tokenType=:tokenType AND a.matchWith=:matchWith AND a.matchValue=:matchValue")
-                .setParameter("tokenType", CliUserAccessMatchValue.USERNAME.getTokenType())
+                .setParameter("tokenType", CliAuthenticationTokenMetaData.TOKEN_TYPE)
                 .setParameter("matchWith", CliUserAccessMatchValue.USERNAME.getNumericValue())
                 .setParameter("matchValue", currentUsername)
                 .getResultList();
