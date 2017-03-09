@@ -387,7 +387,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         ServiceLoader<? extends AccessRulePlugin> serviceLoader = ServiceLoader.load(AccessRulePlugin.class);
         for (AccessRulePlugin accessRulePlugin : serviceLoader) {
             Set<String> pluginRules = new LinkedHashSet<String>();
-            for (String rule : accessRulePlugin.getRules()) {
+            for (String rule : accessRulePlugin.getRules().keySet()) {
                 if (accessControlSession.isAuthorizedNoLogging(authenticationToken, rule) || restrictToCaChecks) {
                     pluginRules.add(rule);
                 }

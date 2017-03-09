@@ -12,9 +12,9 @@
  *************************************************************************/
 package org.cesecore.authorization.control;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @version $Id$
@@ -30,11 +30,11 @@ public enum AuditLogRules {
     LOG_CUSTOM(BASE.resource() + "/log_custom_events");
 
     private final String resource;
-    private static final List<String> allResources = new ArrayList<String>();
+    private static final Map<String,String> allResources = new HashMap<>();
     
     static {
         for (AuditLogRules rule : AuditLogRules.values()) {
-            allResources.add(rule.resource());
+            allResources.put(rule.resource(), rule.resource());
         }
     }
     
@@ -50,7 +50,7 @@ public enum AuditLogRules {
         return this.resource;
     }
 
-    public static List<String> getAllResources() {
-        return Collections.unmodifiableList(allResources);
+    public static Map<String,String> getAllResources() {
+        return Collections.unmodifiableMap(allResources);
     }
 }
