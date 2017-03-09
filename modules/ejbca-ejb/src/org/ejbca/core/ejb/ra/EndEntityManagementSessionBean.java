@@ -56,7 +56,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -156,7 +156,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private EntityManager entityManager;
 
     @EJB
-    private AuthorizationSessionLocal authorizationSession;
+    private AccessControlSessionLocal authorizationSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
