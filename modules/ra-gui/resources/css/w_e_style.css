@@ -254,6 +254,10 @@ span .approvalStep,
 /* For fields/labels in forms etc., to get some extra padding between it and unrelated fields below */  
 .bottomMargin { margin-bottom: 1em; }
 
+.addRemoveListEnabled label, .addRemoveListAvailable label { color: #fff; }
+
+.collapsableSectionHeader { color: #fff; }
+
 .language_button,
 .language_button:hover,
 .language_button:hover {

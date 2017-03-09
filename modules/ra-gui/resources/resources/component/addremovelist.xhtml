@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:composite="http://java.sun.com/jsf/composite" 
+    xmlns:component="http://java.sun.com/jsf/composite/component"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+    <ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     version: $Id$
+     -->
+    </ui:remove>
+    <f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
+    <h:head dir="#{raLocaleBean.direction}"/>
+    <h:body>
+        <composite:interface>
+            <composite:attribute name="state" required="true"/>
+            <composite:attribute name="editable" required="false" default="true"/>
+            <composite:attribute name="enabledHeader" required="false" default="#{msg.generic_enabled_list}"/>
+        </composite:interface>
+
+        <composite:implementation>
+            <h:panelGroup layout="block" styleClass="addRemoveList">
+                <h:panelGroup layout="block" styleClass="addRemoveListEnabled">
+                    <h:outputLabel for="enabledList" value="#{cc.attrs.enabledHeader}"/>
+                    <h:selectManyListbox id="enabledList" value="#{cc.attrs.state.selectedInEnabledList}" size="10" styleClass="addRemoveList">
+                        <f:selectItems value="#{cc.attrs.state.enabledSelectItems}"/>
+                    </h:selectManyListbox>
+                </h:panelGroup>
+                
+                <h:panelGroup layout="block" styleClass="addRemoveListButtons" rendered="#{cc.attrs.editable}">
+                    <h:commandButton id="addButton" action="#{cc.attrs.state.add}" value="#{msg.generic_add_from_list}" styleClass="pure-button ra-button multilistAddButton"/>
+                    <h:commandButton id="addAllButton" action="#{cc.attrs.state.addAll}" value="#{msg.generic_add_all_from_list}" styleClass="pure-button ra-button multilistAddAllButton"/>
+                    <h:commandButton id="removeButton" action="#{cc.attrs.state.remove}" value="#{msg.generic_remove_from_list}" styleClass="pure-button ra-button multilistRemoveButton"/>
+                    <h:commandButton id="removeAllButton" action="#{cc.attrs.state.removeAll}" value="#{msg.generic_remove_all_from_list}" styleClass="pure-button ra-button multilistRemoveAllButton"/>
+                </h:panelGroup>
+                
+                <h:panelGroup layout="block" styleClass="addRemoveListAvailable">
+                    <h:outputLabel for="enabledList" value="#{msg.generic_available_list}"/>
+                    <h:selectManyListbox id="availableList" value="#{cc.attrs.state.selectedInAvailableList}" size="10" styleClass="addRemoveList" rendered="#{cc.attrs.editable}">
+                        <f:selectItems value="#{cc.attrs.state.availableSelectItems}"/>
+                    </h:selectManyListbox>
+                </h:panelGroup>
+            </h:panelGroup>
+        </composite:implementation>
+    </h:body>
+    </f:view>
+</html>

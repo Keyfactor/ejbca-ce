@@ -187,6 +187,27 @@
     padding: 0;
 }
 
+/* Add-Remove controls */
+.addRemoveListEnabled, .addRemoveListButtons, .addRemoveListAvailable {
+    display: inline-block;
+}
+.addRemoveListEnabled label, .addRemoveListAvailable label {
+    display: block;
+}
+.pure-form .addRemoveListEnabled select, .pure-form .addRemoveListAvailable select {
+    min-width: 20em;
+}
+.addRemoveListButtons {
+    width: 7em;
+    vertical-align: middle;
+    margin: 0 1em;
+}
+.addRemoveListButtons input {
+    min-width: 100%;
+    margin: 0;
+    padding: 0.75ex 0;
+}
+
 /* CSS specific for the top menu */
 
 .ejbca-menu {

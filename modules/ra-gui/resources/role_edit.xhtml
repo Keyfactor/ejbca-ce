@@ -42,7 +42,7 @@
         <h:panelGroup layout="block" class="header" id="title">
             <h1><h:outputText value="#{raRoleBean.pageTitle}"/></h1>
         </h:panelGroup>
-        <h:outputText value="#{msg.manage_role_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEditRoleRules}"/>
+        <h:outputText value="#{msg.roles_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEditRoleRules}"/>
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToEditRoleRules}">
             <h:panelGroup styleClass="topLinks" layout="block">
                 <h:link outcome="roles" styleClass="backLink" includeViewParams="true">
@@ -73,32 +73,42 @@
                         <h:outputLabel for="roleName" value="#{msg.role_page_role_name_label}" styleClass="pure-u-lg-1-5"/>
                         <h:inputText id="roleName" value="#{raRoleBean.name}" styleClass="pure-input pure-u-lg-3-5" size="20"/>
                     </h:panelGroup>
-
-                    <h:panelGroup id="buttons" layout="block" styleClass="pure-u-lg-5-5">
-                        <h:commandButton id="saveButton" action="#{raRoleBean.save}" value="#{raRoleBean.saveButtonText}" styleClass="pure-button ra-button executeActionButton saveButton"/>
-                        
-                        <h:link id="cancelButton" styleClass="pure-button ra-button" outcome="roles" includeViewParams="true">
-                            <h:outputText value="#{msg.generic_cancel}"/>
-                        </h:link>
-                    </h:panelGroup>
                 </h:panelGroup>
                 
                 
-                <h:panelGroup id="roleRules">
+                <h:panelGroup id="roleRules" layout="block" styleClass="internal-frame">
+                    <h:panelGroup layout="block" styleClass="collapsableSectionHeader jsSectionHeader">
+                        <h:outputText value="#{msg.role_page_section_cas}" styleClass="jsRuleHeaderText"/>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup layout="block" styleClass="collapsableSection jsSectionContent">
+                        <component:addremovelist state="#{raRoleBean.caListState}" editable="#{raRoleBean.canEdit}"/>
+                    </h:panelGroup>
+                    
+                    <ui:remove>
+                    <!--
                     <ui:repeat value="#{raRoleBean.ruleSections}" var="ruleSection">
                         <h:panelGroup layout="block" styleClass="internal-frame">
                             <h:panelGroup layout="block" styleClass="accessRuleSectionHeader jsRuleHeader">
                                 <h:outputText value="#{ruleSection.header}" styleClass="jsRuleHeaderText"/>
-                                <ui:remove><!-- Do not remove the following comment. It is used as a template for the Javascript section expand/collapse code --></ui:remove>
-                                <!--#{ruleSection.fullHeaderText}-->
+                                <ui:remove><!-x- Do not remove the following comment. It is used as a template for the Javascript section expand/collapse code -x-></ui:remove>
+                                <!-x-#{ruleSection.fullHeaderText}-x->
                             </h:panelGroup>
                             
                             <h:panelGroup layout="block" styleClass="">
-                                <h:selectBooleanCheckbox id="level1RuleCheckbox" value="#{objectRule.allowed}"/>
-                                <h:outputLabel for="level1RuleCheckbox" value="#{objectRule.header}"/>
+                                <h:selectBooleanCheckbox id="level1RuleCheckbox" value="#{ruleSection.allowed}"/>
+                                <h:outputLabel for="level1RuleCheckbox" value="#{ruleSection.header}"/>
                             </h:panelGroup>
                             
-                            <h:panelGroup layout="block" styleClass="accessRuleSectionContents">
+                            <component:addremovelist state="#{ruleSection.state}" enabledLabel="#{msg.role_page_allowed_label}" editable="#{raRoleBean.canEdit}"/>
+                            
+                            <!-x- FIXME should have two boxes with add/remove buttons, perhaps as a new control -x->
+                            <h:panelGroup layout="block" styleClass="accessRuleSectionContents jsSelectAllBoundary">
+                                <h:panelGroup layout="block" styleClass="jsSHow">
+                                    <label><input type="checkbox" value="#{ruleSection.allObjectRulesSelected}" onchange="ejbca.ra.selectAllCheckboxes(this)"/>
+                                    <h:outputText value="#{msg.generic_select_all}"/></label>
+                                </h:panelGroup>
+                                
                                 <ui:repeat value="#{ruleSection.objectRules}" var="objectRule">
                                     <h:panelGroup layout="block" styleClass="level1Rule">
                                         <h:selectBooleanCheckbox id="level1RuleCheckbox" value="#{objectRule.allowed}"/>
@@ -109,6 +119,17 @@
                             </h:panelGroup>
                         </h:panelGroup>
                     </ui:repeat>
+                    -->
+                    </ui:remove>
+                </h:panelGroup>
+                
+                <h:panelGroup id="buttons" layout="block" styleClass="pure-u-lg-5-5">
+                    <h:commandButton id="saveButton" action="#{raRoleBean.save}" value="#{raRoleBean.saveButtonText}" styleClass="pure-button ra-button executeActionButton saveButton" rendered="#{raRoleBean.canEdit}"/>
+                    
+                    <h:link id="cancelButton" styleClass="pure-button ra-button" outcome="roles" includeViewParams="true">
+                        <h:outputText value="#{msg.generic_cancel}" rendered="#{raRoleBean.canEdit}"/>
+                        <h:outputText value="#{msg.generic_back}" rendered="#{not raRoleBean.canEdit}"/>
+                    </h:link>
                 </h:panelGroup>
             </h:form>
         </h:panelGroup>
