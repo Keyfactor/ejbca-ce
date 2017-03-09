@@ -129,6 +129,8 @@ public class RoleDataSessionBean implements RoleDataSessionLocal {
             role.setRoleId(findFreeRoleId());
             entityManager.persist(new RoleData(role));
         } else {
+            // Retrieve RoleData as a managed JPA entity and update it with the Role value object
+            // to correctly increase the RoleData.rowVersion used for optimistic locking.
             final RoleData roleData = getRoleData(role.getRoleId());
             roleData.setRole(role);
         }
