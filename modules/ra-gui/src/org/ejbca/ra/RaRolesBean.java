@@ -138,8 +138,20 @@ public class RaRolesBean implements Serializable {
                 int sortDir = (isSortAscending() ? 1 : -1);
                 switch (sortBy) {
                 // TODO locale-aware sorting
-                case NAMESPACE: return o1.getNameSpace().compareTo(o2.getNameSpace()) * sortDir;
-                case ROLE: return o1.getRoleName().compareTo(o2.getRoleName()) * sortDir;
+                case NAMESPACE: {
+                    int difference = o1.getNameSpace().compareTo(o2.getNameSpace());
+                    if (difference == 0) {
+                        return o1.getRoleName().compareTo(o2.getRoleName()) * sortDir; // Sort roles in the same namespace by role name
+                    }
+                    return difference * sortDir;
+                }
+                case ROLE: {
+                    int difference = o1.getRoleName().compareTo(o2.getRoleName());
+                    if (difference == 0) {
+                        return o1.getNameSpace().compareTo(o2.getNameSpace()) * sortDir; // Sort roles with the same name by namespace
+                    }
+                    return difference * sortDir;
+                }
                 default:
                     throw new IllegalStateException("Invalid sortBy value");
                 }
