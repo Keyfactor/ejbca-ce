@@ -125,33 +125,22 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         final List<Role> roles = new ArrayList<>();
         final Set<Integer> roleIdsCallerBelongsTo = roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
         for (final Role role : roleDataSession.getAllRoles()) {
-            try {
-                // Verify that the caller is authorized to role's namespace
-                if (!isAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo)) {
-                    throw new AuthorizationDeniedException("Current AuthenticationToken is not authorized to the namespace '"+role.getNameSpace()+"'.");
-                }
-                // Verify that the caller is authorized to all access rules in this role
-                assertAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo);
-                // Verify that the caller is authorized to all CAs that are issuers of members in this role
-                final Set<Integer> tokenIssuerIds = new HashSet<>();
-                for (final RoleMemberData roleMemberData : roleMemberDataSession.findByRoleId(role.getRoleId())) {
-                    final AuthenticationTokenMetaData metaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(roleMemberData.getTokenType());
-                    final AccessMatchValue accessMatchValue = metaData.getAccessMatchValueIdMap().get(roleMemberData.getTokenMatchKey());
-                    if (accessMatchValue.isIssuedByCa()) {
-                        tokenIssuerIds.add(roleMemberData.getTokenIssuerId());
-                    }
-                }
-                for (int tokenIssuerId : tokenIssuerIds) {
-                    if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + tokenIssuerId)) {
-                        throw new AuthorizationDeniedException("Not authorized to all members in role.");
-                    }
-                }
-                roles.add(role);
-            } catch (AuthorizationDeniedException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("'" + authenticationToken.toString() + "' is not authorized to role '" + role.getRoleNameFull() + "': " + e.getMessage());
-                }
+            // Verify that the caller is authorized to role's namespace
+            if (!isAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo)) {
+                log.debug("'" + authenticationToken.toString() + "' is not authorized to the namespace '"+role.getNameSpace()+"'.");
+                continue;
             }
+            // Verify that the caller is authorized to all access rules in this role
+            if (!isAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo)) {
+                log.debug("'" + authenticationToken.toString() + "' is not authorized to all access rules in role '"+role.getRoleNameFull()+"'.");
+                continue;
+            }
+            // Verify that the caller is authorized to all CAs that are issuers of members in this role
+            if (!isAuthorizedToAllRoleMembersIssuers(authenticationToken, role.getRoleId())) {
+                log.debug("'" + authenticationToken.toString() + "' is not authorized to all members in role '"+role.getRoleNameFull()+"'.");
+                continue;
+            }
+            roles.add(role);
         }
         return roles;
     }
@@ -321,12 +310,19 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
 
     /** @throws AuthorizationDeniedException if the caller is not authorized to one of the rules granted access to (even implied) by this role */
     private void assertAuthorizedToAllAccessRules(final AuthenticationToken authenticationToken, final Role role, final Set<Integer> roleIdsCallerBelongsTo) throws AuthorizationDeniedException {
+        if (!isAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo)) {
+            throw new AuthorizationDeniedException("Not authorized to all access rules in role.");
+        }
+    }
+
+    /** @throws AuthorizationDeniedException if the caller is not authorized to one of the rules granted access to (even implied) by this role */
+    private boolean isAuthorizedToAllAccessRules(final AuthenticationToken authenticationToken, final Role role, final Set<Integer> roleIdsCallerBelongsTo) {
         // Verify that authenticationToken has access to every single added allow access rule
         for (final Entry<String, Boolean> entry : role.getAccessRules().entrySet()) {
             if (entry.getValue().booleanValue()) {
                 if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, entry.getKey())) {
                     // Role would allow what is is not granted to current authenticationToken
-                    throw new AuthorizationDeniedException("Not authorized to all access rules in role.");
+                    return false;
                 }
             }
         }
@@ -339,10 +335,11 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             if (!entry.getValue().booleanValue()) {
                 if (role.hasAccessToResource(entry.getKey())) {
                     // Role would allow what is denied to current authenticationToken
-                    throw new AuthorizationDeniedException("Not authorized to all access rules in role.");
+                    return false;
                 }
             }
         }
+        return true;
     }
 
     /** @throws AuthorizationDeniedException if the nameSpace is not "owned" by the caller. */
@@ -353,6 +350,20 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         }
     }
     
+    /** @return true if the authenticationToken is authorized to all CAs that are issuers of RoleMembers in this Role */
+    private boolean isAuthorizedToAllRoleMembersIssuers(final AuthenticationToken authenticationToken, final int roleId) {
+        // Verify that the caller is authorized to all CAs that are issuers of members in this role
+        final Set<String> tokenIssuerAccessRules = new HashSet<>();
+        for (final RoleMemberData roleMemberData : roleMemberDataSession.findByRoleId(roleId)) {
+            final AuthenticationTokenMetaData metaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(roleMemberData.getTokenType());
+            final AccessMatchValue accessMatchValue = metaData.getAccessMatchValueIdMap().get(roleMemberData.getTokenMatchKey());
+            if (accessMatchValue.isIssuedByCa()) {
+                tokenIssuerAccessRules.add(StandardRules.CAACCESS.resource() + roleMemberData.getTokenIssuerId());
+            }
+        }
+        return authorizationSession.isAuthorizedNoLogging(authenticationToken, tokenIssuerAccessRules.toArray(new String[tokenIssuerAccessRules.size()]));
+    }
+
     /** @throws AuthorizationDeniedException if the caller part of this role (to prevent suicide). */
     private void assertNotMember(final AuthenticationToken authenticationToken, final Role role, final Set<Integer> roleIdsCallerBelongsTo) throws AuthorizationDeniedException {
         if (role.getRoleId()!=Role.ROLE_ID_UNASSIGNED) {
